@@ -73,6 +73,7 @@ public class GermplasmLogic {
         Collection<URI> existingUris = checkExistence(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList()));
+
         List<GermplasmModel> germplasmModelsToUpdate = new ArrayList<>();
         List<GermplasmModel> germplasmModelsToCreate = new ArrayList<>();
         germplasmModels.forEach(germplasmModel -> {
@@ -85,12 +86,7 @@ public class GermplasmLogic {
 
         var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, true);
         if (multipleErrorObject.hasErrors()){
-            multipleErrorObject.getErrors()
-                    .forEach((uri, error) -> {
-                        if (existingUris.stream().anyMatch( existingUri -> SPARQLDeserializers.compareURIs(URI.create(uri), existingUri))) {
-                            error.SetIsUpdate(true);
-                        }
-                    });
+            setIsUpdateForRelevantModels(germplasmModels, existingUris, multipleErrorObject);
             throw new MultipleErrorException("getting errors while upserting germplasms", multipleErrorObject);
         }
 
@@ -169,12 +165,11 @@ public class GermplasmLogic {
     /**
      * @return A map of errors with the key being the germplasm URI (as a string) and the value being the error message
      */
-    public MultipleErrorObjectList<MultipleCreateUpdateErrorObject> checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {
-        MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors = new MultipleErrorObjectList<>("germplasms errors", MultipleCreateUpdateErrorObject::new);
+    public MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {
+        MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors = new MultipleErrorObjectList<>("germplasms errors", germplasmModels, MultipleCreateUpdateErrorObject::new);
 
         if (!update) {
-            var uriList = germplasmModels.stream().map(SPARQLResourceModel::getUri).toList();
-            lookForAlreadyExistantUri(uriList, errors);
+            lookForAlreadyExistantUri(germplasmModels, errors);
         }
 
         globalFormatValidation(germplasmModels, errors);
@@ -193,41 +188,37 @@ public class GermplasmLogic {
     /**
      * check the uri format of the germplasm and its type, check also the germplasm has a name
      */
-    private void globalFormatValidation(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
+    private void globalFormatValidation(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) {
         germplasmModels.forEach(germplasmModel -> {
             if (!URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
-                errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getUri().toString());
+                errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getType() == null || !URIDeserializer.validateURI(germplasmModel.getType().toString())) {
-                errors.addError(germplasmModel.getUri().toString(), "Invalid URI format for URI: " + germplasmModel.getUri().toString());
+                errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
-                errors.addError(germplasmModel.getUri().toString(), "Germplasm name is mandatory");
+                errors.addError(germplasmModel, "Germplasm name is mandatory");
             }
         });
     }
 
     /**
-     * @param germplasmsUris to check if they are not already in the database
+     * @param germplasmModels to check if they are not already in the database
      * @param errors map in which to put the errors
      */
-    private void lookForAlreadyExistantUri(List<URI> germplasmsUris, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws SPARQLException {
-        Set<URI> uniqueUris = new HashSet<>(germplasmsUris);
-        Set<URI> nonExistingUris = new HashSet<>();
-        for (URI germplasmUri : uniqueUris) {
-            if (sparql.uriExists(GermplasmModel.class, germplasmUri)) {
-                nonExistingUris.add(germplasmUri);
+    private void lookForAlreadyExistantUri(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws SPARQLException {
+        for (GermplasmModel gerplasm : germplasmModels) {
+            if (sparql.uriExists(GermplasmModel.class, gerplasm.getUri())) {
+                errors.addError(gerplasm, "Germplasm URI already exists, it cannot be created again.");
             }
         }
-
-        nonExistingUris.forEach(uri -> errors.addError(uri.toString(), "Germplasm URI already exists"));
     }
 
     /**
      * @param germplasmModels to check if their types exist in the database (basically if they are species, variety or accession)
      * @param errors map in which to put the errors. Error format : key = germplasm URI, value = error message (explaining which type doesn't exist)
      */
-    private void validateTypes(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
+    private void validateTypes(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) {
         Set<URI> uniqueTypes = germplasmModels.stream()
                 .map(GermplasmModel::getType)
                 .collect(Collectors.toSet());
@@ -241,22 +232,22 @@ public class GermplasmLogic {
         }
 
         if (!nonExistingTypes.isEmpty()) {
-            Map<URI, List<URI>> germplasmsErrorByType = new HashMap<>();
+            Map<URI, List<GermplasmModel>> germplasmsErrorByType = new HashMap<>();
             nonExistingTypes.forEach(type -> germplasmsErrorByType.put(type, new ArrayList<>()));
             germplasmModels.forEach(germplasmModel -> {
                 if (nonExistingTypes.contains(germplasmModel.getType())) {
-                    germplasmsErrorByType.get(germplasmModel.getType()).add(germplasmModel.getUri());
+                    germplasmsErrorByType.get(germplasmModel.getType()).add(germplasmModel);
                 }
             });
 
-            germplasmsErrorByType.forEach((type, uris) -> uris.forEach(uri -> errors.addError(uri.toString(), type+" : rdfType doesn't exist in the ontology")));
+            germplasmsErrorByType.forEach((type, uris) -> uris.forEach(germplasm -> errors.addError(germplasm, type+" : rdfType doesn't exist in the ontology")));
         }
     }
 
     /**
      * validate that every accession, variety or species, that one (or many) germplasm depend on, exist in the database and has the right type, and the URI is valid.
      */
-    private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws SPARQLException, DisplayableResponseException {
+    private void validateGermplasmDependenciesExists(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws SPARQLException, DisplayableResponseException {
 
         //list every URI by type, type being species, variety or accession only if uri is valid
         Map<Resource, Set<URI>> urisByType = Map.of(Oeso.Species, new HashSet<>(), Oeso.Variety, new HashSet<>(), Oeso.Accession, new HashSet<>());
@@ -265,19 +256,19 @@ public class GermplasmLogic {
                 if (URIDeserializer.validateURI(germplasmModel.getSpecies().getUri().toString())) {
                     urisByType.get(Oeso.Species).add(germplasmModel.getSpecies().getUri());
                 }
-                else errors.addError(germplasmModel.getUri().toString(), "Invalid species URI format for URI: " + germplasmModel.getUri().toString());
+                else errors.addError(germplasmModel, "Invalid species URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getVariety() != null) {
                 if (URIDeserializer.validateURI(germplasmModel.getVariety().getUri().toString())) {
                     urisByType.get(Oeso.Variety).add(germplasmModel.getVariety().getUri());
                 }
-                else errors.addError(germplasmModel.getUri().toString(), "Invalid variety URI format for URI: " + germplasmModel.getUri().toString());
+                else errors.addError(germplasmModel, "Invalid variety URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getAccession() != null) {
                 if (URIDeserializer.validateURI(germplasmModel.getAccession().getUri().toString())) {
                     urisByType.get(Oeso.Accession).add(germplasmModel.getAccession().getUri());
                 }
-                else errors.addError(germplasmModel.getUri().toString(), "Invalid accession URI format for URI: " + germplasmModel.getUri().toString());
+                else errors.addError(germplasmModel, "Invalid accession URI format for URI: " + germplasmModel.getUri().toString());
             }
         });
 
@@ -294,27 +285,27 @@ public class GermplasmLogic {
                     var specieUri = germplasmModel.getSpecies().getUri();
                     var typeToCheck = Oeso.Species;
                     var nonExistingURI = uriThatDoesntExistWithThisType.get(typeToCheck);
-                    addErrorIfUriDoesntExistForDependency(germplasmModel.getUri(), typeToCheck, specieUri, nonExistingURI, errors);
+                    addErrorIfUriDoesntExistForDependency(germplasmModel, typeToCheck, specieUri, nonExistingURI, errors);
                 }
                 if (germplasmModel.getVariety() != null) {
                     var varietyUri = germplasmModel.getVariety().getUri();
                     var typeToCheck = Oeso.Variety;
                     var nonExistingURI = uriThatDoesntExistWithThisType.get(typeToCheck);
-                    addErrorIfUriDoesntExistForDependency(germplasmModel.getUri(), typeToCheck, varietyUri, nonExistingURI, errors);
+                    addErrorIfUriDoesntExistForDependency(germplasmModel, typeToCheck, varietyUri, nonExistingURI, errors);
                 }
                 if (germplasmModel.getAccession() != null) {
                     var accessionUri = germplasmModel.getAccession().getUri();
                     var typeToCheck = Oeso.Accession;
                     var nonExistingURI = uriThatDoesntExistWithThisType.get(typeToCheck);
-                    addErrorIfUriDoesntExistForDependency(germplasmModel.getUri(), typeToCheck, accessionUri, nonExistingURI, errors);
+                    addErrorIfUriDoesntExistForDependency(germplasmModel, typeToCheck, accessionUri, nonExistingURI, errors);
                 }
             });
         }
     }
 
-    private void addErrorIfUriDoesntExistForDependency(URI germplasmUri, Resource type, URI dependencyUri, List<URI>notExistingURI, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) {
+    private void addErrorIfUriDoesntExistForDependency(GermplasmModel germplasm, Resource type, URI dependencyUri, List<URI>notExistingURI, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) {
         if (notExistingURI != null && SPARQLDeserializers.containsURI(notExistingURI, dependencyUri)) {
-            errors.addError(germplasmUri.toString(), String.format("no %s found with this uri : %s .", type.getLocalName(), dependencyUri));
+            errors.addError(germplasm, String.format("no %s found with this uri : %s .", type.getLocalName(), dependencyUri));
         }
     }
 
@@ -340,7 +331,7 @@ public class GermplasmLogic {
     /**
      * A Variety should have a species, an Accession should have a variety or a species, and other types should have a specie, a variety or an accession
      */
-    private void validateAccessionVarietyOrSpeciesAreGiven(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors) throws DisplayableResponseException {
+    private void validateAccessionVarietyOrSpeciesAreGiven(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws DisplayableResponseException {
         Map<String, String> messages = Map.of(
                 SPARQLDeserializers.getExpandedURI(Oeso.Variety.getURI()), "species",
                 SPARQLDeserializers.getExpandedURI(Oeso.Accession.getURI()), "variety or species"
@@ -354,20 +345,20 @@ public class GermplasmLogic {
                 if (germplasmModel.getSpecies() == null && germplasmModel.getVariety() == null && germplasmModel.getAccession() == null) {
                     String typeOfGermplasmMissing = messages.getOrDefault(SPARQLDeserializers.getExpandedURI(germplasmModel.getType().toString()),
                             "accession, variety or species");
-                    errors.addError(germplasmModel.getUri().toString(), String.format(missingLinkMessage, typeOfGermplasmMissing));
+                    errors.addError(germplasmModel, String.format(missingLinkMessage, typeOfGermplasmMissing));
                 }
             }
         }
     }
 
-    private void checkSpeciesCoherency(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject> errors){
+    private void checkSpeciesCoherency(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors){
         germplasmModels.forEach( germplasmModel -> {
             boolean isRelated;
             if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {
                 //check coherence between variety and species
                 isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkVarietySpecies);
                 if (!isRelated) {
-                    errors.addError(germplasmModel.getUri().toString(), "The given species doesn't match with the given variety. Wrong species : "+germplasmModel.getSpecies().toString());
+                    errors.addError(germplasmModel, "The given species doesn't match with the given variety. Wrong species : "+germplasmModel.getSpecies().toString());
                 }
             }
 
@@ -375,7 +366,7 @@ public class GermplasmLogic {
                 //check coherence between accession and species
                 isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionSpecies);
                 if (!isRelated) {
-                    errors.addError(germplasmModel.getUri().toString(), "The given species doesn't match with the given accession. Wrong species : "+germplasmModel.getSpecies().toString());
+                    errors.addError(germplasmModel, "The given species doesn't match with the given accession. Wrong species : "+germplasmModel.getSpecies().toString());
                 }
             }
 
@@ -383,10 +374,28 @@ public class GermplasmLogic {
                 //check coherence between variety and accession
                 isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionVariety);
                 if (!isRelated) {
-                    errors.addError(germplasmModel.getUri().toString(), "The given variety doesn't match with the given accession. Wrong variety : "+germplasmModel.getVariety().toString());
+                    errors.addError(germplasmModel, "The given variety doesn't match with the given accession. Wrong variety : "+germplasmModel.getVariety().toString());
                 }
             }
         });
+    }
+
+    /**
+     * Set the isUpdate property to true for the models that already exist in the database.
+     * @param germplasmModels the list of germplasm models among which some may already exist in the database.
+     * @param existingUris the URIs of the germplasm that already exist in the database.
+     * @param multipleErrorObject the list of errors that will be updated with the isUpdate property for the models that already exist.
+     */
+    private static void setIsUpdateForRelevantModels(List<GermplasmModel> germplasmModels, Collection<URI> existingUris, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> multipleErrorObject) {
+        Collection<GermplasmModel> modelsWithExistingUris = germplasmModels.stream()
+                .filter(germplasmModel -> existingUris.stream().anyMatch(existingUri -> SPARQLDeserializers.compareURIs(germplasmModel.getUri(), existingUri)))
+                .toList();
+        multipleErrorObject.getModelsWithErrorsAsObjects()
+                .forEach((modelAsObject, error) -> {
+                    if (modelsWithExistingUris.stream().anyMatch( modelThatAlreadyExist ->  modelThatAlreadyExist == modelAsObject)) {
+                        error.SetIsUpdate(true);
+                    }
+                });
     }
 
     /**

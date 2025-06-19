@@ -37,12 +37,20 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+// import org.opensilex.sparql.ontology.dal.*;
+// import org.opensilex.core.ontology.api.URITypesDTO;
+// import java.util.stream.Collectors;
+// import java.util.Arrays;
+
+import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
+import java.util.Set;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -63,6 +71,8 @@ public class DocumentDAO {
         this.nosql = nosql;
         this.fs = fs;
     }
+
+    //private OntologyDAO ontologyDAO;
 
     /**
      * Creates a document, either with a file or from a source URL if the `file` parameter is null.
@@ -130,7 +140,7 @@ public class DocumentDAO {
     }
 
     public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
-        return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());   
+        return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());
     }
 
     public DocumentModel update(DocumentModel instance, AccountModel user) throws Exception {
@@ -179,7 +189,49 @@ public class DocumentDAO {
      * @throws Exception
      */
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        
+        System.out.println("*** DocumentDAO search method called ListWithPagination<DocumentModel> ***");
+        System.out.println("==> Targets URI : " + targets);
+        //targets.forEach(target -> System.out.println("  - " + target));
+        Set<URI> userExperiments;
+        userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(user);
+        //System.out.println("User Experiments: " + userExperiments);
+        System.out.println("==> User Experiments:");
+        if (userExperiments != null && !userExperiments.isEmpty()) {
+            userExperiments.forEach(experiment -> {
+                System.out.println("  - " + experiment + " - " + Oeso.Experiment.getURI());
+                System.out.println(SPARQLDeserializers.compareURIs(experiment, Oeso.Experiment.getURI()));
+                String exp_uri = SPARQLDeserializers.nodeURI(experiment).toString();
+                System.out.println(SPARQLDeserializers.compareURIs(exp_uri, Oeso.Experiment.getURI()));
+                System.out.println(exp_uri);
+                // if (sparql.uriExists(experiment, Oeso.Experiment)) {
+                //     System.out.println("    Type: Experiment OESO");
+                // }
+                try {
+                        UriSearchSparqlDao UriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
+                        UriSearchSparqlDao.SparqlNamedResourceModelPlus sparqlMatch = UriSearchSparqlDao.searchByUri(URI.create(exp_uri));
+                        System.out.println("sparqlMatch : ");
+                        System.out.println(sparqlMatch.toString());
+                        System.out.println("Model: " + sparqlMatch.getModel());
+                        System.out.println("Contexte: " + sparqlMatch.getContext());
+                        System.out.println("rdfTypeName: " + sparqlMatch.getRdfTypeName());
+                        System.out.println("Publisher: " + sparqlMatch.getPublisher());
+                        System.out.println("rdfsComment : " + sparqlMatch.getRdfsComment());
+                        System.out.println("Factor : " + sparqlMatch.getFactor());
+
+                    } catch (Exception e) {
+                        e.printStackTrace(); // ou une gestion d’erreur plus élégante
+                    }
+            });
+
+            // OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+            // List<URITypesDTO> types = ontologyDAO.getSuperClassesByURI(Arrays.asList(targets))
+            //         .stream().map(URITypesDTO::fromModel)
+            //         .collect(Collectors.toList());
+            
+            // System.out.println("list : ");
+            // System.out.println(types);
+        }
+
         return sparql.searchWithPagination(
             DocumentModel.class,
             user.getLanguage(),
@@ -187,7 +239,7 @@ public class DocumentDAO {
                 Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
                 ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                 ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
-               
+
                 appendTypeFilter(select, type);
                 appendTitleFilter(select, title);
                 appendDateFilter(select, date);
@@ -212,7 +264,7 @@ public class DocumentDAO {
 
     /**
      * Count total of documents binded to a target URI
-     * 
+     *
      * @param target the URI on which find associated documents
      * @return the number of documents associated to a target
      */
@@ -254,8 +306,8 @@ public class DocumentDAO {
             select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, title));
         }
     }
-   
-    private void appendDeprecatedFilter(SelectBuilder select, String deprecated) throws Exception {        
+
+    private void appendDeprecatedFilter(SelectBuilder select, String deprecated) throws Exception {
         if (!StringUtils.isEmpty(deprecated)) {
             select.addFilter(SPARQLQueryHelper.eq(DocumentModel.DEPRECATED_FIELD, deprecated));
         }
@@ -284,7 +336,7 @@ public class DocumentDAO {
 
             Expr authorsEqExpr = SPARQLQueryHelper.regexFilter(DocumentModel.AUTHORS_FIELD, authors);
             authorsGraphGroupElem.addElementFilter(new ElementFilter(authorsEqExpr));
-    
+
         }
     }
 

@@ -27,6 +27,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -338,7 +339,7 @@ public class DocumentAPI {
                 page,
                 pageSize
         );
-
+        System.out.println("*** DocumentAPI searchDocuments method called ***");
         // Convert paginated list to DTO
         ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();

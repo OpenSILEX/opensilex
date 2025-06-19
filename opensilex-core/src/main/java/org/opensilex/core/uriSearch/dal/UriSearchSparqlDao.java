@@ -65,6 +65,7 @@ public class UriSearchSparqlDao {
      * Precondition: if multiple elements have same uri then we suppose they are SCIENTIFIC OBJECTS
      */
     public SparqlNamedResourceModelPlus searchByUri(URI uri) throws Exception {
+        System.out.println("**** searchByUri ****");
         List<SparqlNamedResourceModelPlus> resultsAsModels = new ArrayList<>();
         sparql.executeSelectQueryAsStream(
                 generateSparqlRequest(uri)).forEach((SPARQLResult result) -> resultsAsModels.add(buildModelFromSparqlResult(result)));
@@ -106,6 +107,9 @@ public class UriSearchSparqlDao {
         //type
         String typeUri = SPARQLDeserializers.getExpandedURI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD));
         model.setType(URI.create(typeUri));
+
+        //type name
+        String rdfTypeName = result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD);
 
         //typename
         SPARQLLabel typeLabel = new SPARQLLabel();
@@ -155,7 +159,7 @@ public class UriSearchSparqlDao {
             }
         }
 
-        return new SparqlNamedResourceModelPlus(model, publisher, contextUri, rdfsComment, factor);
+        return new SparqlNamedResourceModelPlus(model, publisher, contextUri, rdfTypeName, rdfsComment, factor);
     }
 
     /**
@@ -265,13 +269,15 @@ public class UriSearchSparqlDao {
         private final SPARQLNamedResourceModel model;
         private final PersonModel publisher;
         private final URI context;
+        private final String rdfTypeName;
         private final String rdfsComment;
         private final URI factor;
 
-        public SparqlNamedResourceModelPlus(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfsComment, URI factor) {
+        public SparqlNamedResourceModelPlus(SPARQLNamedResourceModel model, PersonModel publisher, URI context, String rdfTypeName, String rdfsComment, URI factor) {
             this.model = model;
             this.publisher = publisher;
             this.context = context;
+            this.rdfTypeName = rdfTypeName;
             this.rdfsComment = rdfsComment;
             this.factor = factor;
         }
@@ -286,6 +292,10 @@ public class UriSearchSparqlDao {
 
         public URI getContext() {
             return context;
+        }
+
+        public String getRdfTypeName() {
+            return rdfTypeName;
         }
 
         public String getRdfsComment() {

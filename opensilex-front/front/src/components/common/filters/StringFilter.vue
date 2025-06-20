@@ -126,7 +126,9 @@ const onInput = (event: Event) => {
 // Bouton clear
 const clear = () => {
   formRef.value?.reset();
-  onInput(new Event('input', { bubbles: true }));
+  filterValue.value = '';
+  emit('update:filter', '');
+  emit('update', '');
 };
 
 // Touche Entrée

@@ -574,13 +574,14 @@ body.modal-open {
     z-index: 1100;
     width: 56%;
 }
-.greenThemeColor {
+
+.greenThemeColor, .n-button.greenThemeColor {
     background-color: #00A38D;
     border-color: #00A38D;
     color: #fff;
 }
 
-.greenThemeColor:hover {
+.greenThemeColor:hover, .n-button.greenThemeColor:hover {
     background-color: #018371;
     border-color:#018371;
     color: #fff;

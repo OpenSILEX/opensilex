@@ -99,7 +99,6 @@
         <div v-if="isAnnotationTab">
             <opensilex-AnnotationList
                 ref="annotationList"
-                :columnsToDisplay="new Set(['creator', 'motivation', 'created'])"
                 :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
                 :enableActions="true"
                 :modificationCredentialId="

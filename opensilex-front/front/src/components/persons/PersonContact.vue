@@ -70,16 +70,25 @@ import copy from "copy-to-clipboard"
 import Vue from "vue"
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin"
 import {PersonDTO} from "opensilex-security/index";
+import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
 export default class PersonContact extends Vue {
   $opensilex: OpenSilexVuePlugin
 
-  @Prop()
-  personContact: PersonDTO
+  @Prop({ required: true })
+  personContact!: PersonDTO | AccountGetDTO
 
   @Prop()
   customDisplayableName: String
+
+  private isAccountDTO(person: any): person is AccountGetDTO {
+    return 'person_first_name' in person || 'person_last_name' in person;
+  }
+
+  private isPersonDTO(person: any): person is PersonDTO {
+    return 'first_name' in person || 'last_name' in person;
+  }
 
   get displayableName(): String {
     return this.customDisplayableName ?
@@ -95,16 +104,31 @@ export default class PersonContact extends Vue {
     return this.personContact.uri
   }
 
-  get last_name(): string {
-    return this.personContact.last_name
+  get first_name(): string {
+    if (this.isPersonDTO(this.personContact)) {
+      return this.personContact.first_name || "";
+    }
+    if (this.isAccountDTO(this.personContact)) {
+      return this.personContact.person_first_name || "";
+    }
+    return "";
   }
 
-  get first_name(): string {
-    return this.personContact.first_name
+  get last_name(): string {
+    if (this.isPersonDTO(this.personContact)) {
+      return this.personContact.last_name || "Contact";
+    }
+    if (this.isAccountDTO(this.personContact)) {
+      return this.personContact.person_last_name || "Contact";
+    }
+    return "Contact";
   }
 
   get orcid(): string {
-    return this.personContact.orcid
+    if (this.isPersonDTO(this.personContact)) {
+      return this.personContact.orcid || "";
+    }
+    return "";
   }
 
   get mail(): string {
@@ -116,17 +140,22 @@ export default class PersonContact extends Vue {
   }
 
   get affiliation(): string {
-    return this.personContact.affiliation
+    if (this.isPersonDTO(this.personContact)){
+      return this.personContact.affiliation || "";
+    }
+    return "";
   }
 
   get phone(): string {
-    return this.personContact.phone_number
+    if (this.isPersonDTO(this.personContact)) {
+      return this.personContact.phone_number || "";
+    }
+    return "";
   }
 
-
   showPopup() {
-    let modalRef: any = this.$refs.popup
-    modalRef.show()
+    let modalRef: any = this.$refs.popup;
+    modalRef.show();
   }
 
   copyURI(address) {
@@ -192,4 +221,11 @@ export default class PersonContact extends Vue {
 }
 </style>
 
-
+<i18n>
+en:
+  Annotation:
+    publisher: Publisher
+fr:
+  Annotation:
+    publisher: Publieur
+</i18n>

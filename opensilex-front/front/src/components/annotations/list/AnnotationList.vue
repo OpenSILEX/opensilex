@@ -27,19 +27,16 @@
                 </opensilex-TextView>
               </template>
 
-              <template v-slot:cell(author)="{data}">
-                <opensilex-TextView v-if="data.item.author"
-                                    :value="getAccountNames(data.item.author)">
-                </opensilex-TextView>
+              <template v-slot:cell(publisher)="{data}">
+                <opensilex-PersonContact
+                    v-if="data.item.publisher && accountsByUri.get(data.item.publisher)"
+                    :personContact="accountsByUri.get(data.item.publisher)"
+                    :customDisplayableName="getAccountNames(data.item.publisher)"
+                />
               </template>
 
               <template v-slot:cell(description)="{data}">
                 <opensilex-TextView v-if="data.item.description" :value="data.item.description">
-                </opensilex-TextView>
-              </template>
-
-              <template v-slot:cell(motivation)="{data}">
-                <opensilex-TextView v-if="data.item.motivation" :value="data.item.motivation.name">
                 </opensilex-TextView>
               </template>
 
@@ -48,13 +45,15 @@
                 </opensilex-TextView>
               </template>
 
-              <template v-slot:cell(uri)="{data}">
-                <opensilex-UriLink :uri="data.item.uri" :value="data.item.uri">
-                </opensilex-UriLink>
-              </template>
-
               <template v-slot:cell(actions)="{data}">
                 <b-button-group size="sm">
+                  <opensilex-DetailButton
+                      v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                      @click="showDetails(data.item)"
+                      label="Annotation.details"
+                      :title="$t('Annotation.details')"
+                      :small="true"
+                  />
                   <opensilex-EditButton
                       v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
                       @click="editAnnotation(data.item)"
@@ -74,9 +73,14 @@
         </opensilex-PageContent>
       </div>
     </div>
-
+    <!-- Modal pour afficher les détails de l'annotation -->
+    <opensilex-AnnotationDetails
+        v-if="selectedAnnotation"
+        :value="isModalVisible"
+        :annotationDetails="selectedAnnotation"
+        @close="isModalVisible = false"
+    />
     <opensilex-AnnotationModalForm
-
         ref="annotationModalForm"
         @onCreate="refresh"
         @onUpdate="refresh"
@@ -100,6 +104,9 @@ import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
 export default class AnnotationList extends Vue {
+
+  private selectedAnnotation: AnnotationGetDTO | null = null;
+  private isModalVisible = false;
 
   $opensilex: OpenSilexVuePlugin;
   $service: AnnotationsService
@@ -136,7 +143,7 @@ export default class AnnotationList extends Vue {
 
 
   static getDefaultColumns() {
-    return new Set(["published", "description", "publisher", "motivation", "uri"]);
+    return new Set(["published", "description", "publisher"]);
   }
 
   get user() {
@@ -194,7 +201,6 @@ export default class AnnotationList extends Vue {
   }
 
   search(options) {
-
     return new Promise((resolve, reject) => {
       this.$service.searchAnnotations(
           this.filter.bodyValue,
@@ -227,7 +233,9 @@ export default class AnnotationList extends Vue {
 
     let uniqueUsers = new Set<string>();
     annotations.forEach(annotation => {
-      uniqueUsers.add(annotation.publisher);
+      if (annotation.publisher) {
+        uniqueUsers.add(annotation.publisher);
+      }
     });
 
     return this.$securityService.getAccountsByURI(Array.from(uniqueUsers)).then(http => {
@@ -241,9 +249,11 @@ export default class AnnotationList extends Vue {
     if (!accounturi) {
       return undefined;
     }
-    let accountDTO = this.accountsByUri.get(accounturi);
-    if (accountDTO){
-      return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
+    const accountDTO = this.accountsByUri.get(accounturi);
+    if (accountDTO) {
+      return accountDTO.linked_person
+          ? `${accountDTO.person_first_name} ${accountDTO.person_last_name}`
+          : accountDTO.email;
     }
     return undefined;
   }
@@ -262,6 +272,14 @@ export default class AnnotationList extends Vue {
     this.annotationModalForm.showEditForm(copy);
   }
 
+  showDetails(annotation: any) {
+    this.selectedAnnotation = {
+      uri: annotation.uri,
+      motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined
+    };
+    this.isModalVisible = true;
+  }
+
   get fields() {
 
     let tableFields = [];
@@ -274,13 +292,6 @@ export default class AnnotationList extends Vue {
     }
     if (this.columnsToDisplay.has("description")) {
       tableFields.push({key: "description", label: "Annotation.description", sortable: true});
-    }
-
-    if (this.columnsToDisplay.has("motivation")) {
-      tableFields.push({key: "motivation", label: "Annotation.motivation", sortable: true});
-    }
-    if (this.columnsToDisplay.has("uri")) {
-      tableFields.push({key: "uri", label: "component.common.uri", sortable: true});
     }
     if (this.columnsToDisplay.has("targets")) {
       tableFields.push({key: "targets", label: "Annotation.targets", sortable: true});
@@ -325,12 +336,13 @@ en:
     add: Add annotation
     edit: Edit annotation
     delete: Delete annotation
+    details: Details annotation
     motivation: Motivation
     motivation-placeholder: Select a motivation
     motivation-help: Intent or motivation for the creation of the Annotation.
     description: Description
     publisher: Publisher
-    published: Published
+    published: Date
     target: Target
     list-title: Annotations
     already-exist: the annotation already exist
@@ -341,11 +353,12 @@ fr:
     add: Ajouter une annotation
     edit: Éditer l'annotation
     delete: Supprimer l'annotation
+    details: Détailler l'annotation
     motivation: Motivation
     motivation-placeholder: Sélectionnez une motivation
     motivation-help: "Intention ou motivation guidant la création de l'annotation"
     description: Description
-    published: Publié le
+    published: Date
     publisher: Publieur
     target: Cible
     list-title: Annotations

@@ -144,6 +144,12 @@ public class AnnotationDAO {
             return Stream.of(motivationNameOrdering, motivationDefaultNameOrdering);
         }));
 
+        // sorting by publication date
+        specificExprMapping.put("published", publishedField -> Stream.of(new ExprVar(AnnotationModel.PUBLICATION_DATE_FIELD)));
+
+        // Default sort is in reverse chronological order (from latest to oldest)
+        defaultOrderByList.add(new OrderBy(AnnotationModel.PUBLICATION_DATE_FIELD, Order.DESCENDING));
+
         SPARQLQueryHelper.computeCustomOrderByList(orderByList,defaultOrderByList,specificOrderMap,specificExprMapping);
 
         return sparql.searchWithPagination(

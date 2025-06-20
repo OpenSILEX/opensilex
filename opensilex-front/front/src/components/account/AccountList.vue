@@ -173,16 +173,16 @@ export default class AccountList extends Vue {
 
   async searchAccounts(options) {
     let accountsResponse = await this.service.searchAccounts(
-            this.filter,
-            options.orderBy,
-            options.currentPage,
-            options.pageSize
-        )
+        this.filter,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+    )
 
     let key_personUri_value_accountUri : {[id: string]: string} = {}
 
-     accountsResponse.response.result.forEach( account => {
-       this.personByAccountUri[account.uri] = null
+    accountsResponse.response.result.forEach( account => {
+      this.personByAccountUri[account.uri] = null
       if (account.linked_person) {
         key_personUri_value_accountUri[account.linked_person] = account.uri
       }
@@ -205,7 +205,7 @@ export default class AccountList extends Vue {
     if ( Object.keys(key_personUri_value_accountUri).length !== 0 ) {
       let personsResponse = await this.service.getPersonsByURI(Object.keys(key_personUri_value_accountUri))
       personsResponse.response.result.forEach(person => {
-        let accountUri = key_personUri_value_accountUri[person.uri]
+        let accountUri = key_personUri_value_accountUri[this.$opensilex.getLongUri(person.uri)]
         this.personByAccountUri[accountUri] = person
       })
     }

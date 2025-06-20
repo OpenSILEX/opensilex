@@ -816,6 +816,8 @@ import AnnotationForm from './annotations/form/AnnotationForm.vue';
 components["opensilex-AnnotationForm"] = AnnotationForm;
 import AnnotationList from './annotations/list/AnnotationList.vue';
 components["opensilex-AnnotationList"] = AnnotationList;
+import AnnotationDetails from './annotations/form/AnnotationDetails.vue';
+components["opensilex-AnnotationDetails"] = AnnotationDetails;
 
 // DEVICES
 import DeviceView from './devices/DeviceView.vue';

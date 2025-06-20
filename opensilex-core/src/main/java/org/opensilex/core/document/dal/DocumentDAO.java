@@ -41,7 +41,6 @@ import org.opensilex.utils.OrderBy;
 // import org.opensilex.sparql.ontology.dal.*;
 // import org.opensilex.core.ontology.api.URITypesDTO;
 import java.util.stream.Collectors;
-// import java.util.Arrays;
 import org.opensilex.security.group.dal.GroupModel;
 
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
@@ -53,6 +52,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
+import java.util.ArrayList;
+
 import java.util.Set;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -192,7 +193,7 @@ public class DocumentDAO {
      * @throws Exception
      */
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        System.out.println("*** DocumentDAO search method called ListWithPagination<DocumentModel> ***");
+        /*System.out.println("*** DocumentDAO search method called ListWithPagination<DocumentModel> ***");
         System.out.println("==> Targets URI : " + targets);
         //targets.forEach(target -> System.out.println("  - " + target));
         Set<URI> userExperiments;
@@ -200,28 +201,6 @@ public class DocumentDAO {
         System.out.println("User Experiments: " + userExperiments);
         System.out.println("==> User Experiments:");
         if (userExperiments != null && !userExperiments.isEmpty()) {
-            /*userExperiments.forEach(experiment -> {
-                System.out.println("  - " + experiment + " - " + Oeso.Experiment.getURI());
-                System.out.println(SPARQLDeserializers.compareURIs(experiment, Oeso.Experiment.getURI()));
-                String exp_uri = SPARQLDeserializers.nodeURI(experiment).toString();
-                System.out.println(SPARQLDeserializers.compareURIs(exp_uri, Oeso.Experiment.getURI()));
-                System.out.println(exp_uri);
-                try {
-                        UriSearchSparqlDao UriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
-                        UriSearchSparqlDao.SparqlNamedResourceModelPlus sparqlMatch = UriSearchSparqlDao.searchByUri(URI.create(exp_uri));
-                        System.out.println("sparqlMatch : ");
-                        System.out.println(sparqlMatch.toString());
-                        System.out.println("Model: " + sparqlMatch.getModel());
-                        System.out.println("Contexte: " + sparqlMatch.getContext());
-                        System.out.println("rdfTypeName: " + sparqlMatch.getRdfTypeName());
-                        System.out.println("Publisher: " + sparqlMatch.getPublisher());
-                        System.out.println("rdfsComment : " + sparqlMatch.getRdfsComment());
-                        System.out.println("Factor : " + sparqlMatch.getFactor());
-
-                    } catch (Exception e) {
-                        e.printStackTrace(); // ou une gestion d’erreur plus élégante
-                    }
-            });*/
             for (URI experiment : userExperiments) {
                 System.out.println("  - " + experiment + " - " + Oeso.Experiment.getURI());
                 System.out.println(SPARQLDeserializers.compareURIs(experiment, Oeso.Experiment.getURI()));
@@ -286,10 +265,90 @@ public class DocumentDAO {
             orderByList,
             page,
             pageSize
-        );
+        );*/
+
+            System.out.println("*** DocumentDAO search method called ListWithPagination<DocumentModel> ***");
+            // 1. Récupérer tous les documents sans pagination
+            List<DocumentModel> allDocuments = sparql.search(
+                DocumentModel.class,
+                user.getLanguage(),
+                (SelectBuilder select) -> {
+                    Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
+                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+                    ElementGroup multipleGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
+
+                    appendTypeFilter(select, type);
+                    appendTitleFilter(select, title);
+                    appendDateFilter(select, date);
+                    appendTargetsFilter(multipleGraphGroupElem, targets);
+                    appendAuthorsFilter(multipleGraphGroupElem, authors);
+
+                    if (StringUtils.isNotEmpty(subject) || StringUtils.isNotEmpty(multiple)) {
+                        appendSubjectsListClause(multipleGraphGroupElem);
+                        appendSubjectsListFilter(multipleGraphGroupElem, subject);
+                        appendMultipleFilter(select, multiple);
+                    }
+
+                    appendDeprecatedFilter(select, deprecated);
+                },
+                orderByList
+            );
+
+            // 2. Filtrage en fonction des droits d'accès aux expérimentations
+            List<DocumentModel> filteredDocs = new ArrayList<>();
+
+            for (DocumentModel doc : allDocuments) {
+                boolean keep = true;
+
+                for (URI targetUri : doc.getTargets()) {
+                    //System.out.println("targetURI : " + targetURI.toString());
+                    try {
+                        UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
+                        UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
+                        System.out.println("user.isAdmin() : " + user.isAdmin());
+                        System.out.println("targetInfo.getRdfsComment() : " + targetInfo.getRdfsComment());
+                        System.out.println("experiment".equalsIgnoreCase(targetInfo.getRdfsComment()));
+                        System.out.println("targetInfo.getRdfTypeName() : " + targetInfo.getRdfTypeName());
+                        System.out.println("experiment".equalsIgnoreCase(targetInfo.getRdfTypeName()));
+                        // Cas expérimentation
+                        if (!user.isAdmin() && "experiment".equalsIgnoreCase(targetInfo.getRdfTypeName())) {
+                            if (!isUserInExperimentGroups(targetUri, user)) {
+                                keep = false;
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println("error : " + e);
+                        e.printStackTrace();
+                        keep = false;
+                        break;
+                    }
+                }
+
+                if (keep) {
+                    filteredDocs.add(doc);
+                }
+            }
+
+            // 3. Pagination manuelle
+            int fromIndex = Math.min(page * pageSize, filteredDocs.size());
+            int toIndex = Math.min(fromIndex + pageSize, filteredDocs.size());
+            List<DocumentModel> pagedDocs = filteredDocs.subList(fromIndex, toIndex);
+            long total = pagedDocs.size();
+
+            // 4. Création de l’objet de retour
+            // ListWithPagination<DocumentModel> result = new ListWithPagination<>();
+            // result.setList(pagedDocs);
+            // result.setPage(page);
+            // result.setPageSize(pageSize);
+            // result.setTotal(filteredDocs.size());
+
+            ListWithPagination<DocumentModel> result = new ListWithPagination<>(pagedDocs, page, pageSize, total);
+            return result;
     }
 
     private boolean isUserInExperimentGroups(URI experimentURI, AccountModel user) throws Exception{
+        System.out.println("*** isUserInExperimentGroups ***");
         // Récupère le modèle d'expérience avec ses groupes
         ExperimentModel experimentModel = sparql.getByURI(ExperimentModel.class, experimentURI, user.getLanguage());
         List<GroupModel> experimentGroups = experimentModel.getGroups();
@@ -302,10 +361,12 @@ public class DocumentDAO {
         for (GroupModel userGroup : userGroups) {
             for (GroupModel experimentGroup : experimentGroups) {
                 if (userGroup.getUri().equals(experimentGroup.getUri())) {
+                    System.out.println("true");
                     return true;
                 }
             }
         }
+        System.out.println("false");
         return false;
     }
 

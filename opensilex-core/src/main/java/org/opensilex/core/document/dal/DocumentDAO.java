@@ -37,12 +37,15 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+
 // import org.opensilex.sparql.ontology.dal.*;
 // import org.opensilex.core.ontology.api.URITypesDTO;
-// import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 // import java.util.Arrays;
+import org.opensilex.security.group.dal.GroupModel;
 
 import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
+import org.opensilex.security.group.dal.GroupDAO;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -194,18 +197,15 @@ public class DocumentDAO {
         //targets.forEach(target -> System.out.println("  - " + target));
         Set<URI> userExperiments;
         userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(user);
-        //System.out.println("User Experiments: " + userExperiments);
+        System.out.println("User Experiments: " + userExperiments);
         System.out.println("==> User Experiments:");
         if (userExperiments != null && !userExperiments.isEmpty()) {
-            userExperiments.forEach(experiment -> {
+            /*userExperiments.forEach(experiment -> {
                 System.out.println("  - " + experiment + " - " + Oeso.Experiment.getURI());
                 System.out.println(SPARQLDeserializers.compareURIs(experiment, Oeso.Experiment.getURI()));
                 String exp_uri = SPARQLDeserializers.nodeURI(experiment).toString();
                 System.out.println(SPARQLDeserializers.compareURIs(exp_uri, Oeso.Experiment.getURI()));
                 System.out.println(exp_uri);
-                // if (sparql.uriExists(experiment, Oeso.Experiment)) {
-                //     System.out.println("    Type: Experiment OESO");
-                // }
                 try {
                         UriSearchSparqlDao UriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
                         UriSearchSparqlDao.SparqlNamedResourceModelPlus sparqlMatch = UriSearchSparqlDao.searchByUri(URI.create(exp_uri));
@@ -221,17 +221,44 @@ public class DocumentDAO {
                     } catch (Exception e) {
                         e.printStackTrace(); // ou une gestion d’erreur plus élégante
                     }
-            });
+            });*/
+            for (URI experiment : userExperiments) {
+                System.out.println("  - " + experiment + " - " + Oeso.Experiment.getURI());
+                System.out.println(SPARQLDeserializers.compareURIs(experiment, Oeso.Experiment.getURI()));
+                String exp_uri = SPARQLDeserializers.nodeURI(experiment).toString();
+                System.out.println(SPARQLDeserializers.compareURIs(exp_uri, Oeso.Experiment.getURI()));
+                System.out.println(exp_uri);
+                try {
+                    UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
+                    UriSearchSparqlDao.SparqlNamedResourceModelPlus sparqlMatch = uriSearchSparqlDao.searchByUri(URI.create(exp_uri));
+                    
+                    // Debug info
+                    System.out.println("sparqlMatch : " + sparqlMatch);
+                    System.out.println("Model: " + sparqlMatch.getModel());
+                    System.out.println("Contexte: " + sparqlMatch.getContext());
+                    System.out.println("rdfTypeName: " + sparqlMatch.getRdfTypeName());
+                    System.out.println("Publisher: " + sparqlMatch.getPublisher());
+                    System.out.println("rdfsComment : " + sparqlMatch.getRdfsComment());
+                    System.out.println("Factor : " + sparqlMatch.getFactor());
 
-            // OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            // List<URITypesDTO> types = ontologyDAO.getSuperClassesByURI(Arrays.asList(targets))
-            //         .stream().map(URITypesDTO::fromModel)
-            //         .collect(Collectors.toList());
-            
-            // System.out.println("list : ");
-            // System.out.println(types);
+                    // Si ce n'est pas un admin ET que c'est une expérimentation
+                    if (!user.isAdmin() && "experiment".equalsIgnoreCase(sparqlMatch.getRdfsComment())) {
+                        if (!isUserInExperimentGroups(experiment, user)) {
+                            System.out.println("Utilisateur NON autorisé à voir l'expérimentation : " + experiment);
+                            continue; // Ne pas afficher ce document
+                        }
+                    }
+
+                    // Logique à appliquer si l'utilisateur est autorisé
+                    System.out.println("Utilisateur autorisé à voir : " + experiment);
+                    // ... ici tu pourrais stocker les documents autorisés, si besoin ...
+
+                } catch (Exception e) {
+                    e.printStackTrace(); // ou gestion plus élégante
+                }
+            }
         }
-
+        
         return sparql.searchWithPagination(
             DocumentModel.class,
             user.getLanguage(),
@@ -260,6 +287,26 @@ public class DocumentDAO {
             page,
             pageSize
         );
+    }
+
+    private boolean isUserInExperimentGroups(URI experimentURI, AccountModel user) throws Exception{
+        // Récupère le modèle d'expérience avec ses groupes
+        ExperimentModel experimentModel = sparql.getByURI(ExperimentModel.class, experimentURI, user.getLanguage());
+        List<GroupModel> experimentGroups = experimentModel.getGroups();
+
+        // Récupère les groupes de l'utilisateur via le GroupDAO
+        GroupDAO groupDAO = new GroupDAO(sparql);
+        List<GroupModel> userGroups = groupDAO.getUserGroups(user.getUri());
+
+        // Vérifie si l'utilisateur partage au moins un groupe avec l'expérience
+        for (GroupModel userGroup : userGroups) {
+            for (GroupModel experimentGroup : experimentGroups) {
+                if (userGroup.getUri().equals(experimentGroup.getUri())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

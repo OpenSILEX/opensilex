@@ -643,13 +643,13 @@ public class DataFilesAPI {
         MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO> query = new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
                 .setFilter(filter)
                 .setConvertFunction(model -> {
-                    DataFileGetDTO next = DataFileGetDTO.fromModel(model);
+                    DataFileGetDTO nextDto = DataFileGetDTO.fromModel(model);
                     if (Objects.nonNull(model.getPublisher())) {
                         List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
-                        publishersDataFiles.add(next);
+                        publishersDataFiles.add(nextDto);
                         publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
                     }
-                    return next;
+                    return nextDto;
                 })
                 .setPaginationStrategy(PaginatedSearchStrategy.HAS_NEXT_PAGE);
 

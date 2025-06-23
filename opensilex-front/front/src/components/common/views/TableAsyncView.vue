@@ -661,9 +661,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     if(!this.countMethod){
       return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow );
     }else{
-      // results but less than pageSize: display count of elements on this page
+      // results but less than pageSize: display calculated total count
       if(this.hasResults && this.nbOfResultsOnCurrentPage < this.pageSize){
-        return this.$i18n.n(this.nbOfResultsOnCurrentPage)
+        return this.$i18n.n(this.calculatedTotalCount);
       }
       // results but count is equal or bigger than pageSize: display number equal to pagesize
       if(this.hasResults && ((this.nbOfResultsOnCurrentPage >= this.pageSize) || (this.nbOfResultsOnCurrentPage === undefined))){

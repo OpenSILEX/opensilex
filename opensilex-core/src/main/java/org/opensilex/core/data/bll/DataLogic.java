@@ -551,27 +551,55 @@ public class DataLogic {
      * @return a list of uris if the caller wasn't the import function
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
-        // Create logic handler for Facility operations
         var facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        //Maps to remember which facilities have which variables and devices
+        //, we will update the facilities all together at the end
+        Map<String, Set<String>> variablesPerFacility = new HashMap<>();
+        Map<String, Set<String>> devicesPerFacility = new HashMap<>();
+        //Map to remember facility uris that have already come up
+        Map<String, FacilityModel> facilityPerUri =  new HashMap<>();
 
-
-// Loop through each data model
         for (DataModel model : models) {
 
-            // Check if the model has a defined target
             if (model.getTarget() != null) {
+                String facilityUriString = SPARQLDeserializers.getShortURI(model.getTarget());
+                FacilityModel matchedFacility = facilityPerUri.get(facilityUriString);
+                if(matchedFacility == null){
+                    //TODO max does this throw an exception if the target isnt a facility?
+                    matchedFacility = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
+                    facilityPerUri.put(facilityUriString, matchedFacility);
+                }
+                if(matchedFacility != null){
+                    // Add variable to this facility
+                    Set<String> variablesForFacility = variablesPerFacility.getOrDefault(facilityUriString,  new HashSet<>());
+                    boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(model.getVariable()));
+                    if(addedVar){
+                        variablesPerFacility.put(facilityUriString, variablesForFacility);
+                    }
 
-                // Retrieve the facility corresponding to the target URI
-                var facilityModel = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
+                }
+
+
+                /*
 
                 if (facilityModel != null) {
-                    // Create a new variable model from the variable URI
-                    VariableModel variableModel = new VariableModel();
-                    variableModel.setUri(model.getVariable());
 
-                    // Fetch devices associated with this variable
+
+                    // Fetch device uris associated with this variable, use them in DeviceModels with only uri filled
+                    // so that we can update the facility
                     VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
-                    List<DeviceModel> associatedDevices = variableDAO.getDevicesFromVariable(variableModel.getUri(), user.getLanguage());
+                    *//*List<DeviceModel> associatedDevices = variableDAO.getDeviceUrisFromVariable(variableModel.getUri())
+                            .stream().map(e -> {
+                                DeviceModel deviceModel = new DeviceModel();
+                                deviceModel.setUri(e);
+                                return deviceModel;
+                            }).toList();*//*
+                    *//*List<DeviceModel> associatedDevices = csvValidation.getVariablesToDevices().(variableModel.getUri())
+                            .stream().map(e -> {
+                                DeviceModel deviceModel = new DeviceModel();
+                                deviceModel.setUri(e);
+                                return deviceModel;
+                            }).toList();
 
                     // Add the variable to the facility's list of variables
                     List<VariableModel> facilityVariables = facilityModel.getVariables();
@@ -584,11 +612,10 @@ public class DataLogic {
                     facilityModel.setDevices(facilityDevices);
 
                     // Update the facility in the database
-                    facilityLogic.update(facilityModel, null, user);
-                }
+                    facilityLogic.update(facilityModel, null, user);*//*
+                }*/
             }
         }
-
 
         DataPostInsert postInsert;
         if (!csvImport) {
@@ -619,12 +646,6 @@ public class DataLogic {
         if (csvImport) {
             return Collections.emptyList();
         }
-//        for (DataModel dataModel : models) {
-//            for (ProvEntityModel agent : dataModel.getProvenance().getProvWasAssociatedWith()) {
-//                SPARQLDeserializers.compareURIs(agent.getType(), Oeso.SensingDevice.getURI());
-//            }
-//        }
-
 
         return models.stream()
                 .map(MongoModel::getUri)

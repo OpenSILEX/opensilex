@@ -362,6 +362,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      * @throws Exception
      */
     public boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
+        //TODO MAX if it wont impact anything else too much, change this to use the non dynamic oeso.measures in DeviceModel she added because she didnt understand
         List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
         if (!variables.isEmpty()) {
@@ -371,55 +372,19 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     }
 
-// first method to get list of devices from variable
-//    /**
-//     * Returns the device if the given variable is associated with it.
-//     *
-//     * @param device the device to check
-//     * @param variable the variable URI to look for
-//     * @return the device if associated, otherwise null
-//     */
-//    public DeviceModel getDeviceAssociatedToVariable(DeviceModel device, URI variable) {
-//        boolean isAssociated = variableIsAssociatedToDevice(device, variable);
-//        if (isAssociated) {
-//            return device;
-//        }
-//        return null;
-//    }
-
-
-// second method to get list of devices from variable
-
 
 
     /**
-     * Fetch devices associated with a given variable using a SPARQL query.
-     *
-     * @param variable URI of the variable (e.g., {@code http://opensilex.dev/id/variable/stem_height_image_analysis_centimeter}) whose associated devices are to be retrieved
-     * @param language Language code used to fetch translated labels of the devices
-     * @return List of {@link DeviceModel} instances associated with the given variable
-     * @throws Exception if SPARQL query evaluation fails
-     * @apiNote Example of generated SPARQL query
-     *
-     * <pre>
-     * SELECT ?device ?device_name WHERE {
-     *     ?device oeso:measures <http://opensilex.dev/id/variable/stem_height_image_analysis_centimeter> .
-     *     ?device rdfs:label ?device_name .
-     *     FILTER langMatches(lang(?device_name), "en")
-     * }
-     * </pre>
-     *
-     * @author JIANG Lijuan
+     * Fetches Device uris that are connected to  the variable via the oeso.measures property
+     * @param variable measured by the devices we are getting the uris for.
      */
-
-    public List<DeviceModel> getDevicesFromVariable(URI variable, String language) throws Exception {
-        List<URI> deviceURIs = sparql.searchURIs(
+    public List<URI> getDeviceUrisFromVariable(URI variable) throws Exception {
+        return sparql.searchURIs(
                 DeviceModel.class,
                 user.getLanguage(),
                 (select) -> {
                     select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.measures, SPARQLDeserializers.nodeURI(variable));
                 });
-        return sparql.getListByURIs(DeviceModel.class, deviceURIs, language);
     }
 
 

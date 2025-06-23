@@ -88,7 +88,6 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     )
     private List<DeviceModel> devices;
 
-//    private Map<VariableModel, List<DeviceModel>> variableDeviceMap = new HashMap<>();
 
     @SPARQLProperty(
             ontology = VCARD4.class,
@@ -142,7 +141,6 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
                 .collect(Collectors.toList());
     }
 
-
     public List<SiteModel> getSites() {
         return sites;
     }
@@ -192,25 +190,12 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
         this.variables = variables;
     }
 
-    public List<DeviceModel> getDevices() {return devices;}
+    public List<DeviceModel> getDevices() {
+        return devices;
+    }
 
-    public void setDevices(List<DeviceModel> devices) {this.devices = devices;}
-
-
-//    public Map<VariableModel, List<DeviceModel>> getVariableDeviceMap() {
-//        return variableDeviceMap;
-//    }
-
-//    public void setVariableDeviceMap(Map<VariableModel, List<DeviceModel>> variableDeviceMap) {
-//        this.variableDeviceMap = variableDeviceMap;
-//    }
-//
-//    public void addVariableDeviceMapping(VariableModel variable, List<DeviceModel> devices) {
-//        this.variableDeviceMap.put(variable, devices);
-//        if (!variables.contains(variable)) {
-//            variables.add(variable);
-//        }
-//    }
-
+    public void setDevices(List<DeviceModel> devices) {
+        this.devices = devices;
+    }
 
 }

@@ -87,8 +87,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "measures",
-            inverse = true
+            property = "measures"
     )
     List<VariableModel> variables;
     public static final String VARIABLES_FIELD = "variables";

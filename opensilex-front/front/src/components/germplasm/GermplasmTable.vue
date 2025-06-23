@@ -261,11 +261,6 @@ export default class GermplasmTable extends Vue {
 
   private langUnwatcher;
 
-  /**
-   * Map where keys are URIs of the germplasm and values are the row index in the table. Used to update the table with the status of the insertion/update. Instantiated in getDtosFromTableData, just before API calls.
-   */
-  private rowIndexByUri: Map<string, number> = new Map<string, number>();
-
   private errorsByIndex: Map<number, Array<string>> = new Map<number, Array<string>>();
   private indexRowOfErrorsToShowInModal: number = null;
   //endregion
@@ -777,7 +772,7 @@ export default class GermplasmTable extends Vue {
                 this.$t("GermplasmTable.multipleErrorMessage", {count: errorDto.errors.length}) :
                 errorDto.errors[0];
 
-            let rowIndex = this.getRowIndexForUri(errorDto.uri);
+            let rowIndex = errorDto.index;
             if (rowIndex != null) {
               this.tabulator.updateData([{
                 rowNumber: rowIndex,
@@ -792,14 +787,6 @@ export default class GermplasmTable extends Vue {
 
           this.filter = "NOK";
         })
-  }
-
-  private getRowIndexForUri(uri: string): number {
-    let res = this.rowIndexByUri.get(this.$opensilex.getShortUri(uri));
-    if (res == null) {
-      res = this.rowIndexByUri.get(this.$opensilex.getLongUri(uri));
-    }
-    return res;
   }
 
   /**
@@ -844,7 +831,6 @@ export default class GermplasmTable extends Vue {
 
   private async getDtosFromTableData(): Promise<Array<GermplasmCreationDTO>> {
     let creationDtos: Array<GermplasmCreationDTO> = [];
-    this.rowIndexByUri.clear();
 
     let dataToInsert = this.tabulator.getData();
 
@@ -870,7 +856,6 @@ export default class GermplasmTable extends Vue {
 
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
-        this.rowIndexByUri.set(dataToInsert[idx].uri, idx+1);
       }
       if (dataToInsert[idx].name != null && dataToInsert[idx].name != "") {
         form.name = dataToInsert[idx].name;

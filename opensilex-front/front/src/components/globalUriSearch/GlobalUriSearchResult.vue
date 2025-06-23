@@ -104,7 +104,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
 import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
-import DataList from "../data/DataList.vue";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -144,11 +143,11 @@ export default class GlobalUriSearchResult extends Vue {
 
     //If the result is a data or datafile
     try {
-      const provenanceSearchResult = await DataList.getProvenance(this.dataDto.provenance.uri, this.dataService);
+      const provenanceSearchResult = await this.$opensilex.getProvenance(this.dataDto.provenance.uri, this.dataService);
       //Only get Batch if it is data
       let batchSearchResult = null;
       if(this.isData){
-        batchSearchResult = await DataList.getBatch(this.searchResult.data_dto.batchUri, this.dataService);
+        batchSearchResult = await this.$opensilex.getBatch(this.searchResult.data_dto.batchUri, this.dataService);
       }
       const value = {
         provenance: provenanceSearchResult,

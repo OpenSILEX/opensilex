@@ -190,11 +190,11 @@ public class GermplasmLogic {
      */
     private void globalFormatValidation(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) {
         germplasmModels.forEach(germplasmModel -> {
-            if (!URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
+            if (germplasmModel.getUri() != null && !URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
                 errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());
             }
             if (germplasmModel.getType() == null || !URIDeserializer.validateURI(germplasmModel.getType().toString())) {
-                errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());
+                errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getType().toString());
             }
             if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
                 errors.addError(germplasmModel, "Germplasm name is mandatory");

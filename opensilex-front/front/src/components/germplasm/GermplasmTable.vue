@@ -330,10 +330,6 @@ export default class GermplasmTable extends Vue {
   private onSelectAllColumnSwitchChange(checked) {
     this.newColumnsselected = checked ? this.newColumnModalCheckboxData.slice().map(column => column.value) : []
   }
-
-  private onErrorDetailsClick(log: string){
-    alert(log)
-  }
   //#endregion
 
   //#region Hooks
@@ -772,7 +768,7 @@ export default class GermplasmTable extends Vue {
                 this.$t("GermplasmTable.multipleErrorMessage", {count: errorDto.errors.length}) :
                 errorDto.errors[0];
 
-            let rowIndex = errorDto.index;
+            let rowIndex = errorDto.index + 1;
             if (rowIndex != null) {
               this.tabulator.updateData([{
                 rowNumber: rowIndex,

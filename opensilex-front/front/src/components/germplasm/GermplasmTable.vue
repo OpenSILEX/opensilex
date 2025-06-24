@@ -129,8 +129,6 @@
     </b-modal>
 
     <b-modal
-        :no-close-on-backdrop="true"
-        :no-close-on-esc="true"
         ref="errorDetailsModal"
         centered
         hide-footer

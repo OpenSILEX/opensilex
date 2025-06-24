@@ -305,7 +305,7 @@ public class DocumentDAO {
                     try {
                         UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
                         UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
-                        System.out.println("user.isAdmin() : " + user.isAdmin());
+                        System.out.println("user.isAdmin() AAA : " + user.isAdmin());
                         System.out.println("targetInfo.getRdfsComment() : " + targetInfo.getRdfsComment());
                         System.out.println("experiment".equalsIgnoreCase(targetInfo.getRdfsComment()));
                         System.out.println("targetInfo.getRdfTypeName() : " + targetInfo.getRdfTypeName());

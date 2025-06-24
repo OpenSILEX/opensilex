@@ -40,6 +40,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
@@ -552,12 +553,14 @@ public class DataLogic {
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
         var facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         //Maps to remember which facilities have which variables and devices
         //, we will update the facilities all together at the end
         Map<String, Set<String>> variablesPerFacility = new HashMap<>();
         Map<String, Set<String>> devicesPerFacility = new HashMap<>();
         //Map to remember facility uris that have already come up
         Map<String, FacilityModel> facilityPerUri =  new HashMap<>();
+
 
         for (DataModel model : models) {
 
@@ -576,6 +579,21 @@ public class DataLogic {
                     if(addedVar){
                         variablesPerFacility.put(facilityUriString, variablesForFacility);
                     }
+                    //Add devices to this facility
+                    DataProvenanceModel dataProvenanceModel = model.getProvenance();
+                    Set<String> devicesForFacility = devicesPerFacility.getOrDefault(facilityUriString,  new HashSet<>());
+                    List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
+                    if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
+                        provWasAssociatedWith.stream().forEach(provEntityModel -> {
+                            try {
+                                if(provEntityModel.getType() != null && deviceDAO.isDeviceType(provEntityModel.getType())){
+                                    devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
+                                }
+                            } catch (SPARQLException ignore) {}
+                        });
+                        devicesPerFacility.put(facilityUriString, devicesForFacility);
+                    }
+
 
                 }
 

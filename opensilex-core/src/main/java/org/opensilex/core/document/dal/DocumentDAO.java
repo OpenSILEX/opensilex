@@ -24,9 +24,12 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -37,15 +40,6 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-
-// import org.opensilex.sparql.ontology.dal.*;
-// import org.opensilex.core.ontology.api.URITypesDTO;
-import java.util.stream.Collectors;
-import org.opensilex.security.group.dal.GroupModel;
-
-import org.opensilex.core.uriSearch.dal.UriSearchSparqlDao;
-import org.opensilex.security.group.dal.GroupDAO;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,8 +47,6 @@ import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.ArrayList;
-
-import java.util.Set;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 

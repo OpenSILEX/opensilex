@@ -1526,6 +1526,30 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    private  <T extends SPARQLResourceModel> void update(Node graph, T instance, T oldInstance) throws Exception {
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+
+        @SuppressWarnings("unchecked")
+        Class<T> objectClass = (Class<T>) instance.getClass();
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+
+            if (oldInstance == null) {
+                throw new SPARQLInvalidURIException(instance.getUri());
+            }
+            mapper.updateInstanceFromOldValues(oldInstance, instance);
+
+            // update dependants fields
+            updateAutoUpdateFields(mapper, oldInstance, instance);
+
+            deleteCustomRelations(graph,mapper,instance);
+
+            // delete and create new instance
+            UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance);
+            executeDeleteQuery(delete);
+            create(graph, instance, false, false);
+
+    }
+
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
         update(null, instances);
     }
@@ -1539,13 +1563,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
                 validate(instances, null);
 
+                @SuppressWarnings("unchecked")
+                Class<T> objectClass = (Class<T>) instances.get(0).getClass();
+                List<T> oldInstances = loadListByURIs(objectClass, instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()), getDefaultLang());
+
+
                 for (T instance : instances) {
+                    T oldInstance = oldInstances.stream()
+                            .filter(old -> SPARQLDeserializers.compareURIs(old.getUri(), instance.getUri()))
+                            .findFirst()
+                            .orElse(null);
+
                     Node instanceGraph = graph;
                     if (graph == null) {
                         instanceGraph = getDefaultGraph(instance.getClass());
                     }
-
-                    update(instanceGraph, instance);
+                    update(instanceGraph, instance, oldInstance);
                 }
             }
             commitTransaction();

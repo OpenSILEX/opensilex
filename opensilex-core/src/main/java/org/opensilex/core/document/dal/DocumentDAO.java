@@ -193,180 +193,102 @@ public class DocumentDAO {
      * @throws Exception
      */
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        /*System.out.println("*** DocumentDAO search method called ListWithPagination<DocumentModel> ***");
-        System.out.println("==> Targets URI : " + targets);
-        //targets.forEach(target -> System.out.println("  - " + target));
-        Set<URI> userExperiments;
-        userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(user);
-        System.out.println("User Experiments: " + userExperiments);
-        System.out.println("==> User Experiments:");
-        if (userExperiments != null && !userExperiments.isEmpty()) {
-            for (URI experiment : userExperiments) {
-                System.out.println("  - " + experiment + " - " + Oeso.Experiment.getURI());
-                System.out.println(SPARQLDeserializers.compareURIs(experiment, Oeso.Experiment.getURI()));
-                String exp_uri = SPARQLDeserializers.nodeURI(experiment).toString();
-                System.out.println(SPARQLDeserializers.compareURIs(exp_uri, Oeso.Experiment.getURI()));
-                System.out.println(exp_uri);
-                try {
-                    UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
-                    UriSearchSparqlDao.SparqlNamedResourceModelPlus sparqlMatch = uriSearchSparqlDao.searchByUri(URI.create(exp_uri));
-                    
-                    // Debug info
-                    System.out.println("sparqlMatch : " + sparqlMatch);
-                    System.out.println("Model: " + sparqlMatch.getModel());
-                    System.out.println("Contexte: " + sparqlMatch.getContext());
-                    System.out.println("rdfTypeName: " + sparqlMatch.getRdfTypeName());
-                    System.out.println("Publisher: " + sparqlMatch.getPublisher());
-                    System.out.println("rdfsComment : " + sparqlMatch.getRdfsComment());
-                    System.out.println("Factor : " + sparqlMatch.getFactor());
-
-                    // Si ce n'est pas un admin ET que c'est une expérimentation
-                    if (!user.isAdmin() && "experiment".equalsIgnoreCase(sparqlMatch.getRdfsComment())) {
-                        if (!isUserInExperimentGroups(experiment, user)) {
-                            System.out.println("Utilisateur NON autorisé à voir l'expérimentation : " + experiment);
-                            continue; // Ne pas afficher ce document
-                        }
-                    }
-
-                    // Logique à appliquer si l'utilisateur est autorisé
-                    System.out.println("Utilisateur autorisé à voir : " + experiment);
-                    // ... ici tu pourrais stocker les documents autorisés, si besoin ...
-
-                } catch (Exception e) {
-                    e.printStackTrace(); // ou gestion plus élégante
-                }
-            }
-        }
-        
-        return sparql.searchWithPagination(
+        // 1. Retrieve all documents without pagination
+        List<DocumentModel> allDocuments = sparql.search(
             DocumentModel.class,
             user.getLanguage(),
             (SelectBuilder select) -> {
                 Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
                 ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
+                ElementGroup multipleGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
 
                 appendTypeFilter(select, type);
                 appendTitleFilter(select, title);
                 appendDateFilter(select, date);
                 appendTargetsFilter(multipleGraphGroupElem, targets);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);
-                // If either the subject or the "multiple" (ie. title or subject) fields is present, then the "subject"
-                // clause must be added in the query (because it is not present by default)
+
                 if (StringUtils.isNotEmpty(subject) || StringUtils.isNotEmpty(multiple)) {
-                    // Appends the subject clause with its triple
                     appendSubjectsListClause(multipleGraphGroupElem);
-                    // Appends the subject and/or multiple filters
                     appendSubjectsListFilter(multipleGraphGroupElem, subject);
                     appendMultipleFilter(select, multiple);
                 }
+
                 appendDeprecatedFilter(select, deprecated);
             },
-            orderByList,
-            page,
-            pageSize
-        );*/
+            orderByList
+        );
 
-            System.out.println("*** DocumentDAO search method called ListWithPagination<DocumentModel> ***");
-            // 1. Récupérer tous les documents sans pagination
-            List<DocumentModel> allDocuments = sparql.search(
-                DocumentModel.class,
-                user.getLanguage(),
-                (SelectBuilder select) -> {
-                    Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
-                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-                    ElementGroup multipleGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
+        // 2. Filtering by experiment access rights
+        List<DocumentModel> filteredDocs = new ArrayList<>();
 
-                    appendTypeFilter(select, type);
-                    appendTitleFilter(select, title);
-                    appendDateFilter(select, date);
-                    appendTargetsFilter(multipleGraphGroupElem, targets);
-                    appendAuthorsFilter(multipleGraphGroupElem, authors);
+        for (DocumentModel doc : allDocuments) {
+            boolean keep = true;
 
-                    if (StringUtils.isNotEmpty(subject) || StringUtils.isNotEmpty(multiple)) {
-                        appendSubjectsListClause(multipleGraphGroupElem);
-                        appendSubjectsListFilter(multipleGraphGroupElem, subject);
-                        appendMultipleFilter(select, multiple);
+            for (URI targetUri : doc.getTargets()) {
+                try {
+                    UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
+                    UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
+                    String expLabel = "experiment";
+                    if(user.getLanguage().equals("fr")){
+                        expLabel = "expérimentation";
                     }
-
-                    appendDeprecatedFilter(select, deprecated);
-                },
-                orderByList
-            );
-
-            // 2. Filtrage en fonction des droits d'accès aux expérimentations
-            List<DocumentModel> filteredDocs = new ArrayList<>();
-
-            for (DocumentModel doc : allDocuments) {
-                boolean keep = true;
-
-                for (URI targetUri : doc.getTargets()) {
-                    //System.out.println("targetURI : " + targetURI.toString());
-                    try {
-                        UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
-                        UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
-                        System.out.println("user.isAdmin() AAA : " + user.isAdmin());
-                        System.out.println("targetInfo.getRdfsComment() : " + targetInfo.getRdfsComment());
-                        System.out.println("experiment".equalsIgnoreCase(targetInfo.getRdfsComment()));
-                        System.out.println("targetInfo.getRdfTypeName() : " + targetInfo.getRdfTypeName());
-                        System.out.println("experiment".equalsIgnoreCase(targetInfo.getRdfTypeName()));
-                        // Cas expérimentation
-                        if (!user.isAdmin() && "experiment".equalsIgnoreCase(targetInfo.getRdfTypeName())) {
-                            if (!isUserInExperimentGroups(targetUri, user)) {
-                                keep = false;
-                                break;
-                            }
+                    // Cas expérimentation
+                    if (!user.isAdmin() && expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
+                        if (!isUserInExperimentGroups(targetUri, user)) {
+                            keep = false;
+                            break;
                         }
-                    } catch (Exception e) {
-                        System.out.println("error : " + e);
-                        e.printStackTrace();
-                        keep = false;
-                        break;
                     }
-                }
-
-                if (keep) {
-                    filteredDocs.add(doc);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    keep = false;
+                    break;
                 }
             }
+            if (keep) {
+                filteredDocs.add(doc);
+            }
+        }
+        // 3. Manual pagination
+        int fromIndex = Math.min(page * pageSize, filteredDocs.size());
+        int toIndex = Math.min(fromIndex + pageSize, filteredDocs.size());
+        List<DocumentModel> pagedDocs = filteredDocs.subList(fromIndex, toIndex);
+        long total = pagedDocs.size();
 
-            // 3. Pagination manuelle
-            int fromIndex = Math.min(page * pageSize, filteredDocs.size());
-            int toIndex = Math.min(fromIndex + pageSize, filteredDocs.size());
-            List<DocumentModel> pagedDocs = filteredDocs.subList(fromIndex, toIndex);
-            long total = pagedDocs.size();
-
-            // 4. Création de l’objet de retour
-            // ListWithPagination<DocumentModel> result = new ListWithPagination<>();
-            // result.setList(pagedDocs);
-            // result.setPage(page);
-            // result.setPageSize(pageSize);
-            // result.setTotal(filteredDocs.size());
-
-            ListWithPagination<DocumentModel> result = new ListWithPagination<>(pagedDocs, page, pageSize, total);
-            return result;
+        // 4. Creating the return object
+        ListWithPagination<DocumentModel> result = new ListWithPagination<>(pagedDocs, page, pageSize, total);
+        return result;
     }
 
+    /**
+     * Checks whether a user belongs to at least one group associated with a given experiment.
+     * This method retrieves the list of groups linked to the specified experiment and the list
+     * of groups the user is part of. It then verifies if there is any intersection between the two lists.
+     * If the user shares at least one group with the experiment, the method returns {@code true}; otherwise, it returns {@code false}.
+     *
+     * @param experimentURI The URI of the experiment to check.
+     * @param user The user whose group memberships are being verified.
+     * @return {@code true} if the user belongs to at least one of the experiment's groups, {@code false} otherwise.
+     * @throws Exception If an error occurs while retrieving data from the database.
+     */
     private boolean isUserInExperimentGroups(URI experimentURI, AccountModel user) throws Exception{
-        System.out.println("*** isUserInExperimentGroups ***");
-        // Récupère le modèle d'expérience avec ses groupes
+        // Retrieve the experience model with its groups
         ExperimentModel experimentModel = sparql.getByURI(ExperimentModel.class, experimentURI, user.getLanguage());
         List<GroupModel> experimentGroups = experimentModel.getGroups();
 
-        // Récupère les groupes de l'utilisateur via le GroupDAO
+        // Retrieves user groups via GroupDAO
         GroupDAO groupDAO = new GroupDAO(sparql);
         List<GroupModel> userGroups = groupDAO.getUserGroups(user.getUri());
 
-        // Vérifie si l'utilisateur partage au moins un groupe avec l'expérience
+        // Checks whether the user shares at least one group with the experiment
         for (GroupModel userGroup : userGroups) {
             for (GroupModel experimentGroup : experimentGroups) {
                 if (userGroup.getUri().equals(experimentGroup.getUri())) {
-                    System.out.println("true");
                     return true;
                 }
             }
         }
-        System.out.println("false");
         return false;
     }
 

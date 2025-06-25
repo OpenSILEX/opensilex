@@ -192,9 +192,6 @@ public class FacilityAPI {
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();
     }
 
-
-
-
     @GET
     @Path("by_uris")
     @ApiOperation("Get facilities by their URIs")

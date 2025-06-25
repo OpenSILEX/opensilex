@@ -85,13 +85,6 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     MetaDataModel metaDataModel;
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "measures"
-    )
-    List<VariableModel> variables;
-    public static final String VARIABLES_FIELD = "variables";
-
     public String getBrand() {
         return brand;
     }
@@ -154,14 +147,6 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setMetaDataModel(MetaDataModel metaDataModel) {
         this.metaDataModel = metaDataModel;
-    }
-
-    public List<VariableModel> getVariables() {
-        return variables;
-    }
-
-    public void setVariables(List<VariableModel> variables) {
-        this.variables = variables;
     }
 
     @Override

@@ -248,6 +248,16 @@ public class FacilityLogic {
     }
 
     /**
+     * Updates many facilities, will NOT affect their locations.
+     *
+     * @param facilities
+     * @throws Exception
+     */
+    public void updateMany(List<FacilityModel> facilities) throws Exception {
+        facilityDAO.updateMany(facilities);
+    }
+
+    /**
      * Deletes a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
      * for further information on  access validation.
      *

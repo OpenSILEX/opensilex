@@ -28,8 +28,6 @@ import java.util.Objects;
 @ApiModel
 public class FacilityDTO extends RDFObjectDTO {
 
-
-
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
 
@@ -38,8 +36,6 @@ public class FacilityDTO extends RDFObjectDTO {
     protected String description;
 
     protected FacilityAddressDTO address;
-
-
 
     public String getName() {
         return name;
@@ -132,6 +128,5 @@ public class FacilityDTO extends RDFObjectDTO {
 
         return dto;
     }
-
 
 }

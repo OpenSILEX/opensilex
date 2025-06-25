@@ -98,6 +98,10 @@ public class FacilityDAO {
         return instance;
     }
 
+    public void updateMany(List<FacilityModel> facilities) throws Exception {
+        sparql.update(facilities);
+    }
+
     public boolean exists(URI facilityUri) throws SPARQLException {
         return sparql.uriExists(FacilityModel.class, facilityUri);
     }

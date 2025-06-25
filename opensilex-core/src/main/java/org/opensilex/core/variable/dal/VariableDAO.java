@@ -86,15 +86,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     private final FileStorageService fs;
     private final AccountModel user;
 
-
-
     public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         super(VariableModel.class, sparql);
         this.nosql = nosql;
         this.fs = fs;
         this.user = user;
     }
-
 
     public void delete(URI uri, AccountModel currentUser) throws Exception {
         long linkedDataNb = getLinkedDataNb(uri, currentUser);
@@ -362,7 +359,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      * @throws Exception
      */
     public boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
-        //TODO MAX if it wont impact anything else too much, change this to use the non dynamic oeso.measures in DeviceModel she added because she didnt understand
         List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
         if (!variables.isEmpty()) {
@@ -371,22 +367,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         return false;
 
     }
-
-
-
-    /**
-     * Fetches Device uris that are connected to  the variable via the oeso.measures property
-     * @param variable measured by the devices we are getting the uris for.
-     */
-    public List<URI> getDeviceUrisFromVariable(URI variable) throws Exception {
-        return sparql.searchURIs(
-                DeviceModel.class,
-                user.getLanguage(),
-                (select) -> {
-                    select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.measures, SPARQLDeserializers.nodeURI(variable));
-                });
-    }
-
 
     /**
      * Update the given SPARQL query by applying filter

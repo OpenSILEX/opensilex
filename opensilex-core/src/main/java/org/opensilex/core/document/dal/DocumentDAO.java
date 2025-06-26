@@ -127,7 +127,8 @@ public class DocumentDAO {
         return instance;
     }
 
-    public byte[] getFile(URI uri) throws Exception {
+    public byte[] getFile(URI uri, AccountModel user) throws Exception {
+        docAccess(uri, user);
         try {
             return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
         }catch (NoSuchFileException | FileNotFoundException ex){
@@ -136,6 +137,7 @@ public class DocumentDAO {
     }
 
     public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
+        docAccess(uri, user);
         return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());
     }
 
@@ -225,7 +227,7 @@ public class DocumentDAO {
                     if(user.getLanguage().equals("fr")){
                         expLabel = "expérimentation";
                     }
-                    // Cas expérimentation
+                    // If current document is an experiment
                     if (!user.isAdmin() && expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
                         if (!isUserInExperimentGroups(targetUri, user)) {
                             keep = false;
@@ -434,7 +436,6 @@ public class DocumentDAO {
         Node uriVar = SPARQLDeserializers.nodeURI(documentURI);
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
 
-
         AskBuilder ask = sparql.getUriExistsQuery(DocumentModel.class, documentURI);
 
         if (!sparql.executeAskQuery(ask)) {
@@ -469,4 +470,35 @@ public class DocumentDAO {
             }
         }
     }
+
+    public void docAccess(URI documentURI, AccountModel user) throws Exception {
+        if (!sparql.uriExists(DocumentModel.class, documentURI)) {
+            throw new NotFoundURIException("Document URI not found: ", documentURI);
+        }
+
+        if (user.isAdmin()) {
+            return; // Admin users have access to all documents
+        }
+
+        // Get the document metadata
+        DocumentModel document = sparql.getByURI(DocumentModel.class, documentURI, user.getLanguage());
+
+        for (URI targetUri : document.getTargets()) {
+            UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
+            UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
+
+            String expLabel = "experiment";
+            if (user.getLanguage().equals("fr")) {
+                expLabel = "expérimentation";
+            }
+
+            // If the target is an experiment, check group access
+            if (expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
+                if (!isUserInExperimentGroups(targetUri, user)) {
+                    throw new NotFoundURIException("Access denied for document URI: ", documentURI);
+                }
+            }
+        }
+    }
+
 }

@@ -220,7 +220,7 @@ public class DocumentAPI {
         }
 
         try {
-            byte[] file = documentDAO.getFile(uri);
+            byte[] file = documentDAO.getFile(uri, currentUser);
             return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
                             .build();  
         } 

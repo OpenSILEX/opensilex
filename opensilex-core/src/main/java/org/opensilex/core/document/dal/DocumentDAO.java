@@ -223,10 +223,7 @@ public class DocumentDAO {
                 try {
                     UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
                     UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
-                    String expLabel = "experiment";
-                    if(user.getLanguage().equals("fr")){
-                        expLabel = "expérimentation";
-                    }
+                    String expLabel = getExpLabel(user.getLanguage());
                     // If current document is an experiment
                     if (!user.isAdmin() && expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
                         if (!isUserInExperimentGroups(targetUri, user)) {
@@ -471,6 +468,13 @@ public class DocumentDAO {
         }
     }
 
+    /**
+     * Checks whether a user has access to a specific document.
+     *
+     * @param documentURI The URI of the document to check.
+     * @param user The user account attempting to access the document.
+     * @throws Exception if the document does not exist or if the user does not have access rights.
+     */
     public void docAccess(URI documentURI, AccountModel user) throws Exception {
         if (!sparql.uriExists(DocumentModel.class, documentURI)) {
             throw new NotFoundURIException("Document URI not found: ", documentURI);
@@ -486,11 +490,7 @@ public class DocumentDAO {
         for (URI targetUri : document.getTargets()) {
             UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
             UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
-
-            String expLabel = "experiment";
-            if (user.getLanguage().equals("fr")) {
-                expLabel = "expérimentation";
-            }
+            String expLabel = getExpLabel(user.getLanguage());
 
             // If the target is an experiment, check group access
             if (expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
@@ -499,6 +499,20 @@ public class DocumentDAO {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the appropriate label for the term “experiment”.
+     * depending on the language specified.
+     *
+     * @param language The desired language (e.g. “fr” for French or "en" for English).
+     * @return The corresponding label: “experiment” in English (default),
+     experiment“ in English (default), * ”expérimentation" in French.
+    */
+    private String getExpLabel(String language){
+        String expLabel = "experiment";
+        if (language.equals("fr")) { expLabel = "expérimentation"; }
+        return expLabel;
     }
 
 }

@@ -16,6 +16,9 @@
         />
       </p>
       <p><strong>Motivation :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name ? annotationDetails.motivation.name : "Non spécifié" }}</p>
+      <p><strong>Publieur :</strong> {{ annotationDetails.publisher || "Non spécifié" }}</p>
+      <p><strong>Published :</strong> {{ formatDate(annotationDetails.published) }}</p>
+      <p><strong>Description :</strong> {{ annotationDetails.description || "Non spécifiée" }}</p>
     </div>
     <div class="text-right">
       <b-button variant="primary" class="helpButton" @click="close">OK</b-button>
@@ -25,16 +28,42 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
+import dayjs from 'dayjs';
 
 @Component
 export default class AnnotationDetails extends Vue {
-  @Prop({ default: () => ({}) }) annotationDetails!: { uri?: string; motivation?: { name?: string } };
+  @Prop({ default: () => ({}) }) annotationDetails!: {
+    uri?: string;
+    motivation?: { name?: string };
+    publisher?:string;
+    published?:string;
+    description?:string
+  };
   @PropSync("value",{ default: false }) isVisible!: boolean;
 
-  close() {
-    this.$emit("input", false); // Ferme la modale correctement
-    this.$emit("close"); // Envoie un événement "close" au parent si besoin
+  mounted() {
+    window.addEventListener('keydown', this.onKeyDown);
   }
+
+  beforeDestroy() {
+    window.removeEventListener('keydown', this.onKeyDown);
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (this.isVisible && event.key === 'Enter') {
+      this.close();
+    }
+  }
+
+  close() {
+    this.$emit("input", false);
+    this.$emit("close");
+  }
+
+  formatDate(dateStr: string): string {
+    return dayjs(dateStr).format("YYYY-MM-DD HH:mm");
+  }
+
 }
 </script>
 

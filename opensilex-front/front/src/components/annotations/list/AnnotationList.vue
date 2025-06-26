@@ -23,7 +23,7 @@
 
               <template v-slot:cell(published)="{data}">
                 <opensilex-TextView
-                    :value="new Date(data.item.published).toLocaleString()">
+                    :value="formatDate(data.item.published)">
                 </opensilex-TextView>
               </template>
 
@@ -101,6 +101,7 @@ import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
+import dayjs from 'dayjs';
 
 @Component
 export default class AnnotationList extends Vue {
@@ -141,6 +142,9 @@ export default class AnnotationList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
+  formatDate(dateStr: string): string {
+    return dayjs(dateStr).format('YYYY-MM-DD HH:mm');
+  }
 
   static getDefaultColumns() {
     return new Set(["published", "description", "publisher"]);
@@ -275,7 +279,10 @@ export default class AnnotationList extends Vue {
   showDetails(annotation: any) {
     this.selectedAnnotation = {
       uri: annotation.uri,
-      motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined
+      motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined,
+      published: annotation.published,
+      publisher: this.getAccountNames(annotation.publisher),
+      description: annotation.description
     };
     this.isModalVisible = true;
   }

@@ -36,10 +36,12 @@
       <div class="col">
         <!-- bodyValue -->
         <opensilex-TextAreaForm
-            :value.sync="form.description"
+            v-model="form.description"
             :required="true"
-            label="Annotation.description">
-        </opensilex-TextAreaForm>
+            label="Annotation.description"
+            @keydown.enter.stop="handleEnter"
+        />
+
       </div>
     </div>
 
@@ -83,6 +85,7 @@ export default class AnnotationForm extends Vue {
           this.searchMotivations();
         }
     );
+
   }
 
   beforeDestroy() {
@@ -142,5 +145,9 @@ export default class AnnotationForm extends Vue {
   validate() {
     return this.validatorRef.validate();
   }
+  handleEnter(event: KeyboardEvent) {
+    event.stopPropagation();
+  }
+
 }
 </script>

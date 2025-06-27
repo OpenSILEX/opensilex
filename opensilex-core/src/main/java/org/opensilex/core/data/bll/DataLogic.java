@@ -42,6 +42,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -667,30 +668,48 @@ public class DataLogic {
         for(String facilityUri : facilityPerUri.keySet()){
             FacilityModel nextFacility = facilityPerUri.get(facilityUri);
             //Only add this facility to the update list if the number of variables or devices has changed
-            if(nextFacility.getVariables().size() == variablesPerFacility.get(facilityUri).size() &&
-                    nextFacility.getDevices().size() == devicesPerFacility.get(facilityUri).size()
+            if(collectionsAreBothNullOrSameSize(nextFacility.getVariables(), variablesPerFacility.get(facilityUri))
+                    &&
+                collectionsAreBothNullOrSameSize(nextFacility.getDevices(), devicesPerFacility.get(facilityUri))
             ){
                 continue;
             }
-            nextFacility.setVariables(variablesPerFacility.get(facilityUri).stream()
-                    .map(e -> {
-                        VariableModel variable = new VariableModel();
-                        variable.setUri(URI.create(e));
-                        return variable;
-                    })
-                    .collect(Collectors.toList())
-            );
-            nextFacility.setDevices(devicesPerFacility.get(facilityUri).stream()
-                    .map(e -> {
-                        DeviceModel device = new DeviceModel();
-                        device.setUri(URI.create(e));
-                        return device;
-                    })
-                    .collect(Collectors.toList())
-            );
+            if(!CollectionUtils.isEmpty(variablesPerFacility.get(facilityUri))){
+                nextFacility.setVariables(variablesPerFacility.get(facilityUri).stream()
+                        .map(e -> {
+                            VariableModel variable = new VariableModel();
+                            variable.setUri(URI.create(e));
+                            return variable;
+                        })
+                        .collect(Collectors.toList())
+                );
+            }
+            if(!CollectionUtils.isEmpty(devicesPerFacility.get(facilityUri))){
+                nextFacility.setDevices(devicesPerFacility.get(facilityUri).stream()
+                        .map(e -> {
+                            DeviceModel device = new DeviceModel();
+                            device.setUri(URI.create(e));
+                            return device;
+                        })
+                        .collect(Collectors.toList())
+                );
+            }
             result.add(nextFacility);
         }
         return result;
+    }
+
+    private <T extends SPARQLResourceModel> boolean  collectionsAreBothNullOrSameSize(List<T> models, Set<String> uris){
+        boolean modelsEmpty = CollectionUtils.isEmpty(models);
+        boolean urisEmpty = CollectionUtils.isEmpty(uris);
+        if(modelsEmpty && urisEmpty){
+            return true;
+        }
+        if(modelsEmpty != urisEmpty){
+            return false;
+        }
+        //else we know they both aren't empty
+        return models.size() == uris.size();
     }
 
     private int createManyNoTransaction(

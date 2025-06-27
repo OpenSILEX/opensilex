@@ -22,6 +22,7 @@
       <div class="col-md-6">
         <opensilex-AssociatedVariableList
             :variableList="selected.variables"
+            :deviceList="selected.devices"
             :facilityUri="selected.uri"
         ></opensilex-AssociatedVariableList>
       </div>

@@ -19,13 +19,14 @@
 
         <template v-slot:cell(devices)="{ data }">
           <div class="variables-list">
-            <template v-for="(name, index) in data.item.devices.split(', ')">
-              <opensilex-UriLink
-                  :key="index"
-                  :uri="data.item.uri[index]"
-                  :value="name"
-                  :to="{ path: '/device/details/' + encodeURIComponent(data.item.uri[index]) }"
-              />
+            <template v-if="data.item.devices && data.item.devices.length">
+              <div v-for="(device, index) in data.item.devices" :key="index">
+                <opensilex-UriLink
+                  :uri="device.uri"
+                  :value="device.name"
+                  :to="{ path: '/device/details/' + encodeURIComponent(device.uri) }"
+                />
+              </div>
             </template>
           </div>
         </template>
@@ -38,23 +39,24 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from 'vue';
-import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
-import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
+import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
+import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 
 @Component({})
 export default class AssociatedVariablesList extends Vue {
   $opensilex: any;
   $i18n: any;
   $store: any;
-  service: DevicesService;
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop()
   variableList!: Array<NamedResourceDTOVariableModel>;
+
+  @Prop()
+  deviceList!: Array<DeviceGetDTO>;
 
   @Prop()
   facilityUri!: string;
@@ -64,7 +66,7 @@ export default class AssociatedVariablesList extends Vue {
   fields = [
     {
       key: "variableName",
-      label: "component.common.name"
+      label: "AssociatedVariablesList.variables"
     },
     {
       key: "devices",
@@ -72,51 +74,37 @@ export default class AssociatedVariablesList extends Vue {
     }
   ];
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.DevicesService");
-  }
-
   mounted(){
     this.loadVariableAndDeviceList();
   }
 
-  async loadVariableAndDeviceList() {
-    const promises = this.variableList.map(variable => {
-      return this.service.searchDevices(
-          undefined,
-          true,
-          undefined,
-          variable.uri,
-          undefined,
-          undefined,
-          this.facilityUri,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined
-      ).then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDetailsDTO>>>) => {
-        const devices = http.response.result;
-        return {
-          variableName: variable.name,
-          variableUri: variable.uri,
-          devices: devices.map(d => d.name).join(", "),
-          uri: devices.map(d => d.uri)
-        };
-      }).catch((error: any) => {
-        this.$opensilex.errorHandler(error);
-        return {
-          variableName: variable.name,
-          variableUri: variable.uri,
-          devices: "Erreur de chargement",
-          uri: []
-        };
-      });
-    });
+  loadVariableAndDeviceList() {
 
-    this.variableAndDeviceListData = await Promise.all(promises);
+    this.variableAndDeviceListData = this.variableList.map(variable => {
+      let devicesForVariable = this.deviceList.filter(device =>{
+          let doesMeasureVariable: boolean = false;
+          let relationsIndex = 0;
+          while(!doesMeasureVariable && relationsIndex < device.relations.length){
+            const relation = device.relations[relationsIndex];
+            if(this.isVariableRelation(relation)){
+              doesMeasureVariable = relation.value == this.$opensilex.getShortUri(variable.uri);
+            }
+            relationsIndex++;
+          }
+          return doesMeasureVariable;
+        }
+      );
+      return {
+        variableName: variable.name,
+        variableUri: variable.uri,
+        devices: devicesForVariable
+      };
+    });
+  }
+
+  private isVariableRelation(relation: RDFObjectRelationDTO): boolean {
+    const measures_prop = this.$opensilex.Oeso.MEASURES_PROP_URI;
+    return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
   }
 }
 </script>
@@ -124,11 +112,9 @@ export default class AssociatedVariablesList extends Vue {
 
 <style scoped lang="scss">
 .variables-list {
-  //text-overflow: ellipsis;
   overflow:hidden;
   white-space: nowrap;
   display: inline-block;
-  //max-width: 150px;
   max-width:100%;
 }
 </style>
@@ -136,13 +122,15 @@ export default class AssociatedVariablesList extends Vue {
 <i18n>
 en:
   AssociatedVariablesList:
-    variablesNameFilter: Search on variables name
+    variablesNameFilter: Search by variable name
     relatedVariables: Related Variables
-    devices: devices
+    devices: Devices
+    variables: Variables
 
 fr:
   AssociatedVariablesList:
-    variablesNameFilter: Chercher sur le nom de variable
-    relatedVariables: variables connexes
-    devices: dispositifs
+    variablesNameFilter: Rechercher par nom de variable
+    relatedVariables: Variables liées
+    devices: Appareils
+    variables: Variables
 </i18n>

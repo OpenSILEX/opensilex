@@ -15,7 +15,6 @@
         :required="required"
         :placeholder="$t(placeholder)"
         :autocomplete="autocomplete"
-        rows="3"
       ></b-form-textarea>
     </template>
   </opensilex-FormField>

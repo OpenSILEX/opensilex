@@ -17,7 +17,7 @@
       </p>
       <p><strong>Motivation :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name ? annotationDetails.motivation.name : "Non spécifié" }}</p>
       <p><strong>Publieur :</strong> {{ annotationDetails.publisher || "Non spécifié" }}</p>
-      <p><strong>Published :</strong> {{ formatDate(annotationDetails.published) }}</p>
+      <p><strong>Date :</strong> {{ formatDate(annotationDetails.published) }}</p>
       <p><strong>Description :</strong> {{ annotationDetails.description || "Non spécifiée" }}</p>
     </div>
     <div class="text-right">

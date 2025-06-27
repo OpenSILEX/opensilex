@@ -61,7 +61,9 @@ export default class AnnotationDetails extends Vue {
   }
 
   formatDate(dateStr: string): string {
-    return dayjs(dateStr).format("YYYY-MM-DD HH:mm");
+    const localeString = new Date(dateStr).toLocaleString();
+
+    return localeString.replace(/\//g, '-');
   }
 
 }

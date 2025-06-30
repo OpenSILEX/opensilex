@@ -215,7 +215,6 @@ export default class DocumentDetails extends Vue {
           this.loadTargetsTypes();
         }  
       })
-      //.catch(this.$opensilex.errorHandler);
       .catch((error) => {
         this.canDisplayDocument = false;
         this.$opensilex.errorHandler(error);

@@ -28,7 +28,6 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
-import dayjs from 'dayjs';
 
 @Component
 export default class AnnotationDetails extends Vue {

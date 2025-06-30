@@ -65,7 +65,6 @@ public class UriSearchSparqlDao {
      * Precondition: if multiple elements have same uri then we suppose they are SCIENTIFIC OBJECTS
      */
     public SparqlNamedResourceModelPlus searchByUri(URI uri) throws Exception {
-        System.out.println("**** searchByUri ****");
         List<SparqlNamedResourceModelPlus> resultsAsModels = new ArrayList<>();
         sparql.executeSelectQueryAsStream(
                 generateSparqlRequest(uri)).forEach((SPARQLResult result) -> resultsAsModels.add(buildModelFromSparqlResult(result)));

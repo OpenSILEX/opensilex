@@ -339,7 +339,6 @@ public class DocumentAPI {
                 page,
                 pageSize
         );
-        System.out.println("*** DocumentAPI searchDocuments method called ***");
         // Convert paginated list to DTO
         ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();

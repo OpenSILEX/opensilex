@@ -123,9 +123,7 @@ public class GermplasmAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = URI.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 409, message = "A germplasm with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
 
     public Response createGermplasm(
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
@@ -661,7 +659,7 @@ public class GermplasmAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Germplasm updated", response = URI.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Germplasm URI", response = ErrorResponse.class)})
+        @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
     public Response updateGermplasm(
             @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
     ) throws Exception {

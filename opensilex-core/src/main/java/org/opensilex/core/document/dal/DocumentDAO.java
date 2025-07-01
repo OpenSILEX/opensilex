@@ -68,8 +68,6 @@ public class DocumentDAO {
         this.fs = fs;
     }
 
-    //private OntologyDAO ontologyDAO;
-
     /**
      * Creates a document, either with a file or from a source URL if the `file` parameter is null.
      *

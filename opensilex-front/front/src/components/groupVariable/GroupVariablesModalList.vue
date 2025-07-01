@@ -19,7 +19,7 @@
                 v-if="loadList"
                 ref="groupVariableSelection"
                 :maximumSelectedRows="maximumSelectedRows"
-                iconNumberOfSelectedRow="ik#ik-globe"
+                iconNumberOfSelectedRow="fa#fa-flask-vial"
               />
             </div>
           </div>

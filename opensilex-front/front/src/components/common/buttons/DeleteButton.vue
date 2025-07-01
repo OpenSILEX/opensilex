@@ -10,6 +10,7 @@
     />
 
     <!-- Modal Bootstrap 5 -->
+    <teleport to="body">
     <div
       class="modal fade"
       tabindex="-1"
@@ -42,6 +43,7 @@
         </div>
       </div>
     </div>
+    </teleport>
   </div>
 </template>
 

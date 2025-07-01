@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue';
+import { ref, nextTick, computed, onMounted} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FormInst } from 'naive-ui';
 
@@ -70,8 +70,16 @@ const editMode = ref(false);
 const form = ref({});
 const rules = ref({});
 
+onMounted(() => {
+  console.log("ModalForm mounted")
+})
+
 const translatedTitle = computed(() => {
-  return editMode.value ? t(props.editTitle) : t(props.createTitle);
+  console.log("editTitle : ", props.editTitle  )
+  // return editMode.value ? t(props.editTitle) : t(props.createTitle);
+    const key = editMode.value ? props.editTitle : props.createTitle;
+  console.log('t key:', key, '->', t(key));
+  return t(key);
 });
 
 function getFormRef() {
@@ -136,6 +144,7 @@ function showCreateForm(passedForm?: any) {
 }
 
 function showEditForm(editForm: any) {
+  console.log("ModalForm showEditForm")
   editMode.value = true;
   nextTick(() => {
     form.value = editForm;

@@ -6,24 +6,15 @@
     :label="label"
     :disabled="disabled"
     icon="fa#pencil-alt"
-  ></opensilex-Button>
+  />
 </template>
 
-<script lang="ts">
-import { ref, defineProps, }  from 'vue';
-
+<script setup lang="ts">
 const props = defineProps<{
   label: string;
   small?: boolean;
   disabled?: boolean;
 }>();
 
-export default {
-  props,
-};
-
+const emit = defineEmits(['click']);
 </script>
-
-<style scoped lang="scss">
-</style>
-

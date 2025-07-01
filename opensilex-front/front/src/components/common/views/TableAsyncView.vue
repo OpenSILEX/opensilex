@@ -620,7 +620,7 @@ defineExpose({
 
 .title-icon {
   position: relative;
-  top: -5px;
+  /* top: -5px; */
 }
 </style>
 

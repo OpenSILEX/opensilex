@@ -32,7 +32,9 @@
         :small="true"
         class="helpButton"
       />
+
       <opensilex-CreateButton
+        v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
         @click="showCreateForm"
         :label="buttonTitle"
         class="createButton"
@@ -45,13 +47,15 @@
       :is="currentTabComponent"
       v-on="currentTab === 'variables' ? variableListeners : {}"
       :ref="tabDefinitions.find(tab => tab.key === currentTab)?.refKey"
-      v-show="currentTab !== 'groups' || loadGroupForm"
+      :elementType="elementType"
     />
+      <!-- v-show="currentTab !== 'groups' || loadGroupForm" -->
       <!-- @ready="markTabReady(currentTab)" -->
 
     <!-- Composant de crea/edit variable (invisible) -->
     <opensilex-VariableCreate
       ref="variableCreate" 
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
     />
 
 <opensilex-ExternalReferencesModalForm
@@ -82,13 +86,16 @@ import { useI18n } from 'vue-i18n';
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import { VariablesService, DataService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
-
+import { useStore } from "vuex";
 import VariableCreate from './form/VariableCreate.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const variablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
 const datasService = opensilex.getService<DataService>("opensilex.DataService");
 const { t } = useI18n();
+const store = useStore();
+const user = computed(() => store.state.user);
+const credentials = computed(() => store.state.credentials);
 
 // Onglets
 const tabDefinitions = [
@@ -98,7 +105,7 @@ const tabDefinitions = [
   { key: 'characteristics', labelKey: 'VariableView.characteristic', component: () => import('./agroportal/AgroportalCharacteristicForm.vue'), refKey: 'characteristicForm' },
   { key: 'methods', labelKey: 'VariableView.method', component: () => import('./agroportal/AgroportalMethodForm.vue'), refKey: 'methodForm' },
   { key: 'units', labelKey: 'VariableView.unit', component: () => import('./agroportal/AgroportalUnitForm.vue'), refKey: 'unitForm' },
-  { key: 'groups', labelKey: 'VariableView.groupVariable', component: () => import('./../groupVariable/GroupVariablesForm.vue'), refKey: 'groupVariablesForm' }
+  { key: 'groups', labelKey: 'VariableView.groupVariable', component: () => import('./../groupVariable/GroupVariablesView.vue'), refKey: 'groupVariablesView' }
 ];
 
 const tabs = computed(() =>
@@ -177,6 +184,19 @@ const tabRefMap = {
   groups: formRefs.groupVariablesForm
 };
 
+const tabToElementType = {
+  variables: 'VARIABLE_TYPE',
+  entities: 'ENTITY_TYPE',
+  interestEntity: 'INTEREST_ENTITY_TYPE',
+  characteristics: 'CHARACTERISTIC_TYPE',
+  methods: 'METHOD_TYPE',
+  units: 'UNIT_TYPE',
+  groups: 'GROUP_VARIABLE_TYPE'
+};
+
+const elementType = computed(() => tabToElementType[currentTab.value] || 'VARIABLE_TYPE');
+
+
 function showCreateForm() {
   if (currentTab.value === 'groups') {
     loadGroupForm.value = true;
@@ -212,9 +232,6 @@ async function onEditVariable(uri: string) {
     currentEditRequest = null;
   }
 }
-
-
-
 const selected = ref(null);
 const skosReferences = ref(null); // accès à la modale
 

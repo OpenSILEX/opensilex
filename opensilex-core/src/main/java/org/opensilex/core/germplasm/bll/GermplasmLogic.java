@@ -117,7 +117,10 @@ public class GermplasmLogic {
     }
 
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {
-        checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
+        var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
+        if (multipleErrorObjectList.hasErrors()){
+            throw new MultipleErrorException("getting errors while updating germplasm", multipleErrorObjectList);
+        }
         retrieveLinkedSpeciesAndVariety(germplasmModel);
         return dao.update(germplasmModel);
     }

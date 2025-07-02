@@ -137,8 +137,8 @@ public class GermplasmAPI {
             try {
                 GermplasmModel germplasm = germplasmBusiness.create(model);
                 return new CreatedUriResponse(germplasm.getUri()).getResponse();
-            } catch (DisplayableResponseException exception){
-                return exception.getResponse();
+            } catch ( WebApplicationException exception){
+                throw exception;
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }

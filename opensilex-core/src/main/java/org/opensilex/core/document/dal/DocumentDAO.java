@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
+import java.util.Set;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -179,7 +180,9 @@ public class DocumentDAO {
      * @throws Exception
      */
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        
+        ExperimentDAO exp = new ExperimentDAO(sparql, nosql);
+        Set<URI> userExperiments = exp.getUserExperiments(user);
+
         return sparql.searchWithPagination(
             DocumentModel.class,
             user.getLanguage(),
@@ -348,51 +351,8 @@ public class DocumentDAO {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
-    public void validateDocumentAccess(URI documentURI, AccountModel user) throws Exception {
-        if (!sparql.uriExists(DocumentModel.class, documentURI)) {
-            throw new NotFoundURIException("Document URI not found: ", documentURI);
-        }
-
-        if (user.isAdmin()) {
-            return;
-        }
-
-        Node uriVar = SPARQLDeserializers.nodeURI(documentURI);
-        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-
-
-        AskBuilder ask = sparql.getUriExistsQuery(DocumentModel.class, documentURI);
-
-        if (!sparql.executeAskQuery(ask)) {
-            // check related document experiment
-            List<URI> xpUris = sparql.searchURIs(ExperimentModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ExperimentModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
-            });
-
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
-            for (URI xpUri : xpUris) {
-                try {
-                    xpDAO.validateExperimentAccess(xpUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
-
-            // check related document scientific object
-            List<URI> soUris = sparql.searchURIs(ScientificObjectModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
-            });
-
-            ExperimentDAO xpsoDAO = new ExperimentDAO(sparql, nosql);
-            for (URI soUri : soUris) {
-                try {
-                    xpsoDAO.validateExperimentAccess(soUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
-        }
-    }
+    //J.D.
+    //List<URI> calculateRestrictedDocumentUris(URI uri){
+    //    return none;
+    //}
 }

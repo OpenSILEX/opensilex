@@ -419,53 +419,6 @@ public class DocumentDAO {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
-    public void validateDocumentAccess(URI documentURI, AccountModel user) throws Exception {
-        if (!sparql.uriExists(DocumentModel.class, documentURI)) {
-            throw new NotFoundURIException("Document URI not found: ", documentURI);
-        }
-
-        if (user.isAdmin()) {
-            return;
-        }
-
-        Node uriVar = SPARQLDeserializers.nodeURI(documentURI);
-        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-
-        AskBuilder ask = sparql.getUriExistsQuery(DocumentModel.class, documentURI);
-
-        if (!sparql.executeAskQuery(ask)) {
-            // check related document experiment
-            List<URI> xpUris = sparql.searchURIs(ExperimentModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ExperimentModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
-            });
-
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
-            for (URI xpUri : xpUris) {
-                try {
-                    xpDAO.validateExperimentAccess(xpUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
-
-            // check related document scientific object
-            List<URI> soUris = sparql.searchURIs(ScientificObjectModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
-            });
-
-            ExperimentDAO xpsoDAO = new ExperimentDAO(sparql, nosql);
-            for (URI soUri : soUris) {
-                try {
-                    xpsoDAO.validateExperimentAccess(soUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
-        }
-    }
-
     /**
      * Checks whether a user has access to a specific document.
      *

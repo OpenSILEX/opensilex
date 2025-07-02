@@ -89,6 +89,8 @@ public class ScientificObjectDAO {
 
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
+    public static final String NO_NAME_ERROR_MSG = "Object name must be present which is %s";
+
 
     private final URI defaultGraphURI;
     private final Node defaultGraphNode;
@@ -713,7 +715,7 @@ public class ScientificObjectDAO {
         }
     }
 
-    private void checkLocalDuplicates(List<ScientificObjectModel> models) throws DuplicateNameListException{
+    public void checkLocalDuplicates(List<ScientificObjectModel> models) throws DuplicateNameListException{
 
         Set<String> uniquesNames = new HashSet<>();
 

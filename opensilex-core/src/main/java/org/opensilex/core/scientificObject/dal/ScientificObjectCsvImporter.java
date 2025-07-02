@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
@@ -35,7 +36,6 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -251,6 +251,15 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     @Override
     protected void handleURIMapping(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, List<ScientificObjectModel> modelChunkToCreate, List<ScientificObjectModel> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+        if(model.getName() == null) {
+            String rdfsLabel = URIDeserializer.getShortURI(RDFS.LABEL.stringValue());
+            String errorMsg = String.format(ScientificObjectDAO.NO_NAME_ERROR_MSG, model.getUri() == null ? "A new object " : model.getUri().toString());
+
+            CsvCellValidationContext cell = new CsvCellValidationContext(totalRowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, model.getName(), rdfsLabel);
+            cell.setMessage(errorMsg);
+            validator.addMissingRequiredValue(cell);
+        }
+
         // inside an XP
         if (withinExperiment()) {
             // query used to check if a SO with a name already exists in XP
@@ -370,17 +379,12 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     // to remove this method after validating
     @Override
-    protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) throws IOException {
-//
-//        if (experiment != null) {
-//            try {
-//                scientificObjectDAO.checkUniqueNameByGraph(modelChunk, experiment);
-//            } catch (DuplicateNameListException e) {
-//                // addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(),offset);
-//            } catch (SPARQLException e) {
-//                throw new IOException(e);
-//            }
-//        }
+    protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
+            try {
+                scientificObjectDAO.checkLocalDuplicates(modelChunk);
+            } catch (DuplicateNameListException e) {
+                addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(),offset);
+            }
     }
 
     private void addDuplicateNameErrors(List<ScientificObjectModel> objects, CsvOwlRestrictionValidator validator, Map<String, URI> existingUriByName, int offset) {

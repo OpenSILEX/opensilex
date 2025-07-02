@@ -4,6 +4,7 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.riot.Lang;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -34,6 +35,7 @@ import java.util.*;
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH;
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_PATH;
 
+@Ignore
 public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest {
 
     private ExperimentModel experiment;

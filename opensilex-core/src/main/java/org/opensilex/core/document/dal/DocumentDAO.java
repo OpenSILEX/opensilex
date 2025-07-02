@@ -221,9 +221,7 @@ public class DocumentDAO {
                 try {
                     UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
                     UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
-                    String expLabel = getExpLabel(user.getLanguage());
-                    // If current document is an experiment
-                    if (!user.isAdmin() && expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
+                    if(!user.isAdmin() && SPARQLDeserializers.compareURIs(Oeso.Experiment.getURI(), targetInfo.getModel().getType())){
                         if (!isUserInExperimentGroups(targetUri, user)) {
                             keep = false;
                             break;
@@ -441,29 +439,13 @@ public class DocumentDAO {
         for (URI targetUri : document.getTargets()) {
             UriSearchSparqlDao uriSearchSparqlDao = new UriSearchSparqlDao(sparql, user);
             UriSearchSparqlDao.SparqlNamedResourceModelPlus targetInfo = uriSearchSparqlDao.searchByUri(targetUri);
-            String expLabel = getExpLabel(user.getLanguage());
 
             // If the target is an experiment, check group access
-            if (expLabel.equalsIgnoreCase(targetInfo.getRdfTypeName())) {
+            if(SPARQLDeserializers.compareURIs(Oeso.Experiment.getURI(), targetInfo.getModel().getType())){
                 if (!isUserInExperimentGroups(targetUri, user)) {
                     throw new NotFoundURIException("Access denied for document URI: ", documentURI);
                 }
             }
         }
     }
-
-    /**
-     * Returns the appropriate label for the term “experiment”.
-     * depending on the language specified.
-     *
-     * @param language The desired language (e.g. “fr” for French or "en" for English).
-     * @return The corresponding label: “experiment” in English (default),
-     experiment“ in English (default), * ”expérimentation" in French.
-    */
-    private String getExpLabel(String language){
-        String expLabel = "experiment";
-        if (language.equals("fr")) { expLabel = "expérimentation"; }
-        return expLabel;
-    }
-
 }

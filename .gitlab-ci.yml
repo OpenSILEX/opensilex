@@ -155,8 +155,8 @@ variables:
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
   tags:
-    - runnermia # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
-                # to our instances through SSH.
+    - forge_inrae # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
+    # to our instances through SSH.
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -168,7 +168,7 @@ variables:
         exit 0;
       fi
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forge.inrae.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
     # Directory details
     - ls $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
@@ -281,13 +281,27 @@ merge-request:check:
     - >-
       CC_REGEX="^(Draft: )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([[:alnum:]._-]+\))?(!)?: ([[:alnum:]])+([[:space:][:print:]]*)"
     - if [[ ! "$CI_MERGE_REQUEST_TITLE" =~ "$CC_REGEX" ]]; then
-    -   echo 'The merge request title must respect the Conventional Commit naming convention. Please see 
-        https://www.conventionalcommits.org/en/v1.0.0/ for more information.'
+    -   echo 'The merge request title must respect the Conventional Commit naming convention. Please see
+      https://www.conventionalcommits.org/en/v1.0.0/ for more information.'
     -   exit 1
     - fi
     # query the merge request description to extract changelog and ignore-changelog fields
     - export API_MR_URL="$CI_API_V4_URL/projects/$CI_MERGE_REQUEST_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID"
-    - FRONT_MATTER=$(curl -s -X GET -F "private_token=$JOB_API_TOKEN" $API_MR_URL
+    - echo $API_MR_URL
+    - MR_CONTENT_JSON=$(curl -s -X GET -F "private_token=$JOB_API_TOKEN" $API_MR_URL)
+    - ERROR=$(echo $MR_CONTENT_JSON | yq '.error // ""')
+    - ERROR_DESCRIPTION=$(echo $MR_CONTENT_JSON | yq '.error_description // ""')
+    - if [[ -n "$ERROR" ]]; then
+    -   echo 'An error occured while making the query to Gitlab. See the error message below.'
+    -   echo "$ERROR - $ERROR_DESCRIPTION"
+    -   if [[ "$ERROR" == "invalid_token" ]]; then
+    -     echo "About the error ; the token used to query the Gitlab API from the job has maybe expired. In that case,
+      please create a new Personnal Access Token (PAT) in your Gitlab account and copy the value into the
+      JOB_API_TOKEN variable in the project CI/CD settings."
+    -   fi
+    -   exit 1
+    - fi
+    - FRONT_MATTER=$(echo $MR_CONTENT_JSON
       | yq '.description'
       | yq -f extract -o json '.')
     - CHANGELOG=$(echo $FRONT_MATTER | yq '.changelog // ""')
@@ -297,13 +311,13 @@ merge-request:check:
     # check that the changelog entry is empty when ignore-changelog is set to true
     - if [[ ${#CHANGELOG} -gt 0 && "$IGNORE_CHANGELOG" == "true" ]]; then
     -   echo 'Changelog description is not empty while "ignore-changelog" is set to "true". This is an
-        undefined behaviour ;  either remove the changelog description or set "ignore-changelog" to "false" to resolve
-        it, then retry this job.'
+      undefined behaviour ;  either remove the changelog description or set "ignore-changelog" to "false" to resolve
+      it, then retry this job.'
     -   exit 1
     # check that the changelog entry is not empty when ignore-changelog is not set to true
     - elif [[ ${#CHANGELOG} -eq 0 && "$IGNORE_CHANGELOG" != "true" ]]; then
     -   echo 'Changelog description is empty while "ignore-changelog" is set to "false". Please fill the
-        changelog description or set "ignore-changelog" to "true", then retry this job.'
+      changelog description or set "ignore-changelog" to "true", then retry this job.'
     -   exit 1
     - fi
   rules:
@@ -408,7 +422,7 @@ opensilex-release:close:
     - RELEASE_INTERMEDIATE_BRANCH="release-$RELEASE_TAG"
     - git config user.name "OpenSILEX Team"
     - git config user.email opensilex@gmail.com
-    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forge.inrae.fr/OpenSILEX/opensilex-dev.git"
     # Fetch and unshallows the project
     - git fetch origin --unshallow
     # Remove local tags
@@ -446,7 +460,7 @@ opensilex-release:close:
       curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release"
       -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop"
       -F "remove_source_branch=true" -F "labels[]=finishing release"
-      https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+      https://forge.inrae.fr/api/v4/projects/1675/merge_requests
     # Transmit release tag variable to next job (name must be different)
     - echo "PUBLISH_RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
   rules:
@@ -526,7 +540,7 @@ update:nightly:builds:branch:
     - apt update && apt install -y git
     - git config --global user.name "anonymous"
     - git config --global user.email "anonymous@opensilex.org"
-    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forge.inrae.fr/OpenSILEX/opensilex-dev.git"
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
     - git fetch origin
     - git reset --hard origin/develop
@@ -559,19 +573,19 @@ update:nightly:builds:branch:
   rules:
     - if: $NIGHTLY_BUILD == "true"
 
-##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
- 
+  ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
+
 
 .with_java11: &java11
   variables:
     JAVA_VERSION: 11
-    MVN_PROFILE: "for-java-11" 
-    
+    MVN_PROFILE: "for-java-11"
+
 .with_java21: &java21
   variables:
-    JAVA_VERSION: 21  
+    JAVA_VERSION: 21
 
-test:build:java11: 
+test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
@@ -742,62 +756,62 @@ test:valentin:deploy:
     - test:valentin:build
 
 ###################################
-##  BERNHARD-TEST-BUILD-DEPLOYMENT
+##  DHRUTHI-TEST-BUILD-DEPLOYMENT
 ###################################
 
-test:bernhard:build:
+test:dhruthi:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
 
-test:bernhard:deploy:
+test:dhruthi:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/bernhard"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
+    INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4091
+    OPENSILEX_JAR_PORT: 8091
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
+      when: on_success
+  needs:
+    - test:dhruthi:build
+
+###################################
+##  JONATHAN-TEST-BUILD-DEPLOYMENT-FROM-SIDURI-TEAM
+###################################
+
+test:jonathan:build:
+  <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "test/jonathan"
+
+test:jonathan:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/jonathan_siduri"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4091
     OPENSILEX_JAR_PORT: 8091
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/bernhard"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/jonathan_siduri"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/bernhard"
+    - if: $CI_COMMIT_BRANCH == "test/jonathan"
       when: on_success
   needs:
-    - test:bernhard:build
-
-###################################
-##  GABRIEL-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:gabriel:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/gabriel"
-
-test:gabriel:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4091
-    OPENSILEX_JAR_PORT: 8091
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/gabriel"
-      when: on_success
-  needs:
-    - test:gabriel:build
+    - test:jonathan:build
 
 ######################################
 ##  OPTIMIZATION-TEST-BUILD-DEPLOYMENT
@@ -887,37 +901,37 @@ test:temporary2:deploy:
     - test:temporary2:build
 
 ###################################
-##  alexiaChiavarino-TEST-BUILD-DEPLOYMENT
+##  LYDIA-TEST-BUILD-DEPLOYMENT
 ###################################
 
-test:alexiaChiavarino:build:
+test:lydia:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/alexia"
+    - if: $CI_COMMIT_BRANCH == "test/lydia"
   tags:
     - stable
 
-test:alexiaChiavarino:deploy:
+test:lydia:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/alexia"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/lydia"
+    INSTANCE_CONFIGURATION_FILE_NAME: "lydia.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4087
     OPENSILEX_JAR_PORT: 8087
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/alexia"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/lydia"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/alexia"
+    - if: $CI_COMMIT_BRANCH == "test/lydia"
       when: on_success
   tags:
     - stable
   needs:
-    - test:alexiaChiavarino:build
+    - test:lydia:build
 
 ###################################
 ##  RENAUD-TEST-BUILD-DEPLOYMENT

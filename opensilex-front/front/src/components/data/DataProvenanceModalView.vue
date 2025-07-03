@@ -23,6 +23,8 @@
       <pre>{{ data }}</pre>
       <h3>Provenance</h3>
       <pre>{{ provenance }}</pre>
+      <h3 v-if="batch">Batch</h3>
+      <pre v-if="batch">{{ batch }}</pre>
     </template>
 
     <template v-slot:modal-footer>
@@ -52,11 +54,14 @@ export default class DataProvenanceModalView extends Vue {
   modalShow: boolean = false;
 
   info: any = null;
-  data: any = null;
-  provenance: any = null;
-  setProvenance(value) {
+  data: string = null;
+  provenance: string = null;
+  batch: string = null;
+
+  setProvenanceAndBatch(value) {
     this.data = JSON.stringify(value.data, null, 2);
     this.provenance = JSON.stringify(value.provenance, null, 2);
+    this.batch = JSON.stringify(value.batch, null, 2);
   }
 
   show() {

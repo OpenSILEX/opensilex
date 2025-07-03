@@ -709,6 +709,8 @@ import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
 components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
+import BatchDetails from './data/BatchDetails.vue';
+components["opensilex-BatchDetails"] = BatchDetails;
 import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';
@@ -744,6 +746,8 @@ import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
 import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
+import DeleteByBatchModal from './data/DeleteByBatchModal.vue';
+components["opensilex-DeleteByBatchModal"] = DeleteByBatchModal;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';

@@ -43,7 +43,7 @@
                 <b-button-group size="sm">
                     <opensilex-DetailButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-                        @click="showDataProvenanceDetailsModal(data.item)"
+                        @click="showDataDetailsModal(data.item)"
                         label="DataView.list.details"
                         :small="true"
                     ></opensilex-DetailButton>
@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import {Prop, Component, Ref, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ProvenanceGetDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -67,6 +67,9 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataService} from "opensilex-core/api/data.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
+import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
+import DataProvenanceModalView from "./DataProvenanceModalView.vue"
 
 @Component
 export default class DataList extends Vue {
@@ -100,7 +103,8 @@ export default class DataList extends Vue {
                     targets: [],
                     devices: [],
                     facilities: [],
-                    operators: []
+                    operators: [],
+                    batch_uri: null
                 };
             },
         })
@@ -116,7 +120,7 @@ export default class DataList extends Vue {
 
     @Ref("templateForm") readonly templateForm!: any;
     @Ref("tableRef") readonly tableRef!: any;
-    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: DataProvenanceModalView;
     @Ref("exportModal") readonly exportModal!: any;
 
     get fields() {
@@ -179,36 +183,31 @@ export default class DataList extends Vue {
         }
     }
 
-    getProvenance(uri) {
-        if (uri != undefined) {
-            return this.dataService
-                .getProvenance(uri)
-                .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-                    return http.response.result;
-                });
-        }
-    }
-
     loadProvenance(selectedValue) {
         if (selectedValue != undefined) {
-            this.getProvenance(selectedValue.id).then((prov) => {
+            this.$opensilex.getProvenance(selectedValue.id, this.dataService).then((prov) => {
                 this.selectedProvenance = prov;
             });
         }
     }
 
-    showDataProvenanceDetailsModal(item) {
+    async showDataDetailsModal(item: DataGetSearchDTO) {
         this.$opensilex.enableLoader();
-        this.getProvenance(item.provenance.uri)
-            .then(result => {
-                let value = {
-                    provenance: result,
-                    data: item
-                }
-                this.dataProvenanceModalView.setProvenance(value);
-                this.dataProvenanceModalView.show();
-            });
+        try {
+            const provenanceSearchResult = await this.$opensilex.getProvenance(item.provenance.uri, this.dataService);
+            const batchSearchResult = await this.$opensilex.getBatch(item.batchUri, this.dataService);
+            const value = {
+                provenance: provenanceSearchResult,
+                data: item,
+                batch: batchSearchResult
+            };
+            this.dataProvenanceModalView.setProvenanceAndBatch(value);
+            this.dataProvenanceModalView.show();
+        } catch (error) {
+            console.error("Failed to fetch provenance or Batch:", error);
+        }
     }
+
 
     objects : {[key : string] : string} = {};
     objectsPath : {[key : string] : string} = {};
@@ -242,10 +241,12 @@ export default class DataList extends Vue {
            this.filter.germplasm_group,
            this.filter.germplasm,
            0,
+         this.filter.batch_uri,
            [].concat(
                this.filter.scientificObjects,
                this.filter.facilities,
                this.filter.targets) // targets & os & facilities
+
        )
     }
 
@@ -271,6 +272,7 @@ export default class DataList extends Vue {
                 this.filter.germplasm_group,
                 this.$opensilex.prepareGetParameter(this.filter.operators),
                 this.filter.germplasm,
+                this.filter.batch_uri,
                 options.orderBy,
                 options.currentPage,
                 options.pageSize,

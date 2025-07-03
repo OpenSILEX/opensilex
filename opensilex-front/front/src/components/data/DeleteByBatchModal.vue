@@ -88,7 +88,7 @@ export default class DeleteByBatchModal extends Vue {
     this.modal.hide();
   }
 
-  async deleteData() {
+  private async deleteData() {
     let result = (await this.dataService.deleteDataOnSearch(
       this.experimentUri,
       undefined,

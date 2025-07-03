@@ -326,41 +326,51 @@ export default class DataImportForm extends Vue {
 
         return promise
           .then((data) => {
-            this.checkCSVValidation(data);
-            if (this.isValid) {
-              let results = data.result;
+            //First test if there was a mongo insertion error
+            if(data.metadata.status === 409){
+              this.insertionDataError = data.result;
+              this.isImported = false;
+              this.insertionError = true;
+              this.$opensilex.disableLoader();
+              reject(new Error("Conflict status 409: insertion failed"));
 
-              if ("message" in results) {
-                this.insertionDataError = results;
-                this.isImported = false;
-                this.insertionError = true;
-                this.$opensilex.disableLoader();
-                resolve(false);
-              } else {
-                if (results.dataErrors.tooLargeDataset) {
-                  this.tooLargeDataset = true;
-                  this.isImported = false;
-                  this.insertionError = true;
-                  this.$opensilex.disableLoader();
-                } else if (results.dataErrors.duplicateData) {
-                  this.importedLines = results.dataErrors.nbLinesImported;
-                  this.duplicateData = true;
-                  this.duplicatedData = results.dataErrors.duplicatedData;
+            }else{
+              this.checkCSVValidation(data);
+              if (this.isValid) {
+                let results = data.result;
+
+                if ("message" in results) {
+                  this.insertionDataError = results;
                   this.isImported = false;
                   this.insertionError = true;
                   this.$opensilex.disableLoader();
                   resolve(false);
                 } else {
-                  this.importedLines = results.dataErrors.nbLinesImported;
-                  this.isImported = true;
-                  this.insertionError = false;
-                  this.$opensilex.disableLoader();
-                  resolve({ validation: results, form: this.form });
+                  if (results.dataErrors.tooLargeDataset) {
+                    this.tooLargeDataset = true;
+                    this.isImported = false;
+                    this.insertionError = true;
+                    this.$opensilex.disableLoader();
+                  } else if (results.dataErrors.duplicateData) {
+                    this.importedLines = results.dataErrors.nbLinesImported;
+                    this.duplicateData = true;
+                    this.duplicatedData = results.dataErrors.duplicatedData;
+                    this.isImported = false;
+                    this.insertionError = true;
+                    this.$opensilex.disableLoader();
+                    resolve(false);
+                  } else {
+                    this.importedLines = results.dataErrors.nbLinesImported;
+                    this.isImported = true;
+                    this.insertionError = false;
+                    this.$opensilex.disableLoader();
+                    resolve({ validation: results, form: this.form });
+                  }
                 }
               }
             }
           }).catch((e) => {
-            if(this.standardProvURI === undefined) {  
+            if(this.standardProvURI === undefined) {
               let message =
                 this.$t("DataImportForm.errorStandardProvenance") +
                 " : '" +

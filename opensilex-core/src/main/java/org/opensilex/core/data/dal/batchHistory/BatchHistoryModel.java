@@ -11,26 +11,16 @@ import java.util.UUID;
  * @author MKOURDI
  */
 public class BatchHistoryModel extends MongoModel {
-    public static final String USERNAME = "username";
     public static final String PUBLICATION_DATE_FIELD = "publicationDate";
 
-    private String username;
-    private URI setDocumentUri;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    private URI documentUri;
 
     public void setDocumentUri(URI uri) {
-        this.setDocumentUri = uri;
+        this.documentUri = uri;
     }
 
     public URI getDocumentUri() {
-        return setDocumentUri;
+        return documentUri;
     }
     @Override
     public String[] getInstancePathSegments(MongoModel instance) {

@@ -13,7 +13,6 @@ import com.mongodb.client.model.CountOptions;
 import com.opencsv.CSVWriter;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.json.JsonParseException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -179,7 +178,6 @@ public class DataAPI {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT", errorMsg).getResponse();
             }
             List<DataModel> dataList = new ArrayList<>(dtoList.size());
-            Instant currentTime = Instant.now();
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
                 dataList.add(model);
@@ -503,7 +501,8 @@ public class DataAPI {
         return new PaginatedListResponse<>(results).getResponse();
     }
 
-    private DataSearchFilter getSearchFilter(URI batchUri, String startDate,
+    private DataSearchFilter getSearchFilter(URI batchUri,
+                                             String startDate,
                                              String endDate,
                                              String timezone,
                                              List<URI> experiments,
@@ -1437,7 +1436,7 @@ public class DataAPI {
             @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
     public Response getBatchHistory(
             @ApiParam(value = "Batch URI", required = true) @PathParam("uri") @NotNull URI uri) {
-        BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+        BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
 
         try {
             BatchHistoryModel model = batchHistoryLogic.get(uri);
@@ -1466,7 +1465,7 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
-        this.batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+        this.batchHistoryLogic = new BatchHistoryLogic(nosql);
         ListWithPagination<BatchHistoryGetDTO> results = batchHistoryLogic.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
         return new PaginatedListResponse<>(results).getResponse();
     }
@@ -1485,7 +1484,7 @@ public class DataAPI {
     public Response deleteBatchHistoryByURI(
             @ApiParam(value = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws NoSQLInvalidURIException {
-        this.batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+        this.batchHistoryLogic = new BatchHistoryLogic(nosql);
         return new SingleObjectResponse<>(batchHistoryLogic.deleteBatchHistoryByURI(uri)).getResponse();
     }
 

@@ -43,7 +43,7 @@
                 <b-button-group size="sm">
                     <opensilex-DetailButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-                        @click="showDataProvenanceDetailsModal(data.item)"
+                        @click="showDataDetailsModal(data.item)"
                         label="DataView.list.details"
                         :small="true"
                     ></opensilex-DetailButton>
@@ -69,6 +69,7 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
 import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
+import DataProvenanceModalView from "./DataProvenanceModalView.vue"
 
 @Component
 export default class DataList extends Vue {
@@ -119,7 +120,7 @@ export default class DataList extends Vue {
 
     @Ref("templateForm") readonly templateForm!: any;
     @Ref("tableRef") readonly tableRef!: any;
-    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: DataProvenanceModalView;
     @Ref("exportModal") readonly exportModal!: any;
 
     get fields() {
@@ -182,51 +183,25 @@ export default class DataList extends Vue {
         }
     }
 
-    getProvenance(uri) {
-        if (uri != undefined) {
-            return this.dataService
-                .getProvenance(uri)
-                .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-                    return http.response.result;
-                });
-        }
-    }
-
-
-    /**
-     * Gets the batch history dto, containing a link to csv document
-     *
-     * @param uri
-     */
-    getBatch(uri):Promise<BatchHistoryGetDTO> {
-        if (uri != undefined) {
-          return this.dataService
-            .getBatchHistory(uri)
-            .then((http: HttpResponse<OpenSilexResponse<BatchHistoryGetDTO>>) => {
-              return http.response.result;
-            });
-        }
-  }
-
     loadProvenance(selectedValue) {
         if (selectedValue != undefined) {
-            this.getProvenance(selectedValue.id).then((prov) => {
+            this.$opensilex.getProvenance(selectedValue.id, this.dataService).then((prov) => {
                 this.selectedProvenance = prov;
             });
         }
     }
 
-    async showDataProvenanceDetailsModal(item: DataGetSearchDTO) {
+    async showDataDetailsModal(item: DataGetSearchDTO) {
         this.$opensilex.enableLoader();
         try {
-            const provenanceSearchResult = await this.getProvenance(item.provenance.uri);
-            const batchSearchResult = await this.getBatch(item.batchUri)
+            const provenanceSearchResult = await this.$opensilex.getProvenance(item.provenance.uri, this.dataService);
+            const batchSearchResult = await this.$opensilex.getBatch(item.batchUri, this.dataService);
             const value = {
                 provenance: provenanceSearchResult,
                 data: item,
                 batch: batchSearchResult
             };
-            this.dataProvenanceModalView.setProvenance(value);
+            this.dataProvenanceModalView.setProvenanceAndBatch(value);
             this.dataProvenanceModalView.show();
         } catch (error) {
             console.error("Failed to fetch provenance or Batch:", error);
@@ -284,7 +259,6 @@ export default class DataList extends Vue {
 
         return new Promise((resolve, reject) => {
             this.dataService.searchDataListByTargets(
-                this.filter.batch_uri,
                 this.$opensilex.prepareGetParameter(this.filter.start_date),
                 this.$opensilex.prepareGetParameter(this.filter.end_date),
                 undefined,
@@ -298,6 +272,7 @@ export default class DataList extends Vue {
                 this.filter.germplasm_group,
                 this.$opensilex.prepareGetParameter(this.filter.operators),
                 this.filter.germplasm,
+                this.filter.batch_uri,
                 options.orderBy,
                 options.currentPage,
                 options.pageSize,

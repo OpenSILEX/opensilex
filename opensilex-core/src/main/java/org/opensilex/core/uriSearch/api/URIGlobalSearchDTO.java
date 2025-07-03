@@ -64,6 +64,11 @@ public class URIGlobalSearchDTO {
     @JsonProperty("datafile_dto")
     private DataFileGetDTO datafileDto;
 
+    //Simple boolean for now for identification of a BatchHistory. As there is no rdfType for this
+    //Replace with a dto if we ever want a show details button for BatchHistory
+    @JsonProperty("is_batch_history")
+    private boolean isBatchHistory = false;
+
     //This is used to identify which page we need to navigate to if the uri was a type or a property
     @JsonProperty("root_class")
     private URI rootClass;
@@ -278,6 +283,18 @@ public class URIGlobalSearchDTO {
 
     public void setFactorUri(URI factorUri) {
         this.factorUri = factorUri;
+    }
+
+    public boolean isBatchHistory() {
+        return isBatchHistory;
+    }
+
+    public void setBatchHistory(boolean batchHistory) {
+        isBatchHistory = batchHistory;
+    }
+
+    public void setProperty(boolean property) {
+        isProperty = property;
     }
 
     //#endregion

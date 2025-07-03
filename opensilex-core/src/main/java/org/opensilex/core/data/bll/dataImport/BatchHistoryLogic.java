@@ -18,11 +18,10 @@ import java.time.Instant;
 import java.util.List;
 
 public class BatchHistoryLogic {
-    private final AccountModel user;
+
     private final MongoDBService nosql;
 
-    public BatchHistoryLogic(AccountModel user, MongoDBService nosql) {
-        this.user = user;
+    public BatchHistoryLogic(MongoDBService nosql) {
         this.nosql = nosql;
     }
 
@@ -54,7 +53,6 @@ public class BatchHistoryLogic {
         Instant endInstant = StringUtils.isNotBlank(endDate) ? Instant.parse(endDate) : Instant.now();
 
         BatchHistorySearchFilter filter = (BatchHistorySearchFilter) new BatchHistorySearchFilter()
-                .setUserName(user.getName())
                 .setStartDate(startInstant)
                 .setEndDate(endInstant)
                 .setPage(page)

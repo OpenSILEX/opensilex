@@ -42,7 +42,19 @@ public class ValidationContext {
     private int annotationIndex = 0;
 
 
-    public ValidationContext(ProvenanceModel provenance, String[] values, int rowIndex, Map<Integer, String> headerByIndex, ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext, DAOContext daoContext, DataCSVValidationModel localCsvValidation, DataCSVValidationModel csvValidation, boolean sensingDeviceFoundFromProvenance) {
+    public ValidationContext(
+            ProvenanceModel provenance,
+            String[] values,
+            int rowIndex,
+            Map<Integer, String> headerByIndex,
+            ExperimentContext experimentContext,
+            TargetContext targetContext,
+            DeviceContext deviceContext,
+            DAOContext daoContext,
+            DataCSVValidationModel localCsvValidation,
+            DataCSVValidationModel csvValidation,
+            boolean sensingDeviceFoundFromProvenance
+    ) {
         this.provenance = provenance;
         this.values = values;
         this.rowIndex = rowIndex;
@@ -53,6 +65,7 @@ public class ValidationContext {
         this.daoContext = daoContext;
         this.localCsvValidation = localCsvValidation;
         this.csvValidation = csvValidation;
+        this.sensingDeviceFoundFromProvenance = sensingDeviceFoundFromProvenance;
     }
 
     public ProvenanceModel getProvenance() {

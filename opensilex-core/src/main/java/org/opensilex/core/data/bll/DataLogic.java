@@ -71,7 +71,7 @@ public class DataLogic {
     private final MongoDBService nosql;
     private final FileStorageService fs;
     //If client session is null then we know we need to handle transactions
-    private final ClientSession clientSession;
+    private ClientSession clientSession;
 
     //TODO these daos are the ones that will need to be deleted in the class when logic classes are done.
     //VariableDAO
@@ -302,15 +302,28 @@ public class DataLogic {
         validation.validate();
         dao.update(model);
     }
+
+    /**
+     * Deletes the found data, then, if a batch uri was passed in the filter,
+     * handles deleting batch and the setting of imported dataset to deprecated.
+     * Does this in a TRANSACTION.
+     *
+     * @param filter to search by
+     * @return The DeleteResult if the delete was successful
+     * @throws Exception
+     */
     public DeleteResult deleteManyByFilter(DataSearchFilter filter) throws Exception {
-        DeleteResult deleteResult = dao.deleteMany(filter);
-        //If no batch was passed or if nothing was deleted we do not need to handle deletion of the batch.
-        if(filter.getBatchUri() == null || deleteResult.getDeletedCount() == 0){
+        return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+            DeleteResult deleteResult = dao.deleteMany(filter);
+            //If no batch was passed or if nothing was deleted we do not need to handle deletion of the batch.
+            if(filter.getBatchUri() == null || deleteResult.getDeletedCount() == 0){
+                return deleteResult;
+            }
+            //If we deleted via batch uri then perform some other operations
+            handleBatchAndDocumentAfterDeleteByBatch(filter);
             return deleteResult;
-        }
-        //If we deleted via batch uri then perform some other operations
-        handleBatchAndDocumentAfterDeleteByBatch(filter);
-        return deleteResult;
+        });
+
     }
 
     public List<URI> createMany(List<DataModel> modelList) throws Exception {
@@ -526,6 +539,10 @@ public class DataLogic {
             dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
         }
         return dto;
+    }
+
+    public void setClientSession(ClientSession clientSession) {
+        this.clientSession = clientSession;
     }
 
     //#endregion
@@ -781,17 +798,17 @@ public class DataLogic {
         }
         //If required delete batch and set document status to outdated
         if(doDeleteBatch){
-            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(user, nosql);
+            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
             URI documentUri = batchHistoryLogic.get(filter.getBatchUri()).getDocumentUri();
             DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
             DocumentModel oldDoc = documentDAO.getMetadata(documentUri, user);
-            oldDoc.setDeprecated("true");
-            new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+            //The document could have been deleted since so handle that
+            if(oldDoc != null){
+                oldDoc.setDeprecated("true");
                 documentDAO.update(oldDoc, user);
-                batchHistoryLogic.deleteBatchHistoryByURI(filter.getBatchUri());
-                return 0;
-            });
+            }
 
+            batchHistoryLogic.deleteBatchHistoryByURI(filter.getBatchUri());
         }
     }
 

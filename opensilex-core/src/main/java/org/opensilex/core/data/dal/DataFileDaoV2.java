@@ -15,6 +15,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.opensilex.core.data.dal.DataProvenanceModel.*;
 
@@ -134,13 +135,17 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
 
         if (!CollectionUtils.isEmpty(filter.getExperiments())) {
 
+            //Make sure we are using same format to compare the two collections of uris, retainAll doesn't seem to work otherwise
+            List<String> filterExperimentsShorts = new ArrayList<>(filter.getExperiments().stream().map(SPARQLDeserializers::getShortURI).toList());
+            List<String> userExperimentsShorts = userExperiments.stream().map(SPARQLDeserializers::getShortURI).toList();
+
             // Keep only the provided experiment which belongs to the allowed user experiment set
-            filter.getExperiments().retainAll(userExperiments);
-            if (filter.getExperiments().isEmpty()) {
-                throw new IllegalArgumentException("You can't access to the given experiments");
+            filterExperimentsShorts.retainAll(userExperimentsShorts);
+            if (filterExperimentsShorts.isEmpty()) {
+                throw new IllegalArgumentException("You can't access the given experiments");
             }
 
-            bsonFilters.add(Filters.in(PROVENANCE_EXPERIMENT_FIELD, filter.getExperiments()));
+            bsonFilters.add(Filters.in(PROVENANCE_EXPERIMENT_FIELD, filterExperimentsShorts.stream().map(URI::create).toList()));
             return;
         }
 

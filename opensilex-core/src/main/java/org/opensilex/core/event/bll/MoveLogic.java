@@ -19,7 +19,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.move.*;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.core.utils.ApiUtils;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
@@ -34,7 +34,6 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -74,16 +73,21 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     public void updateModel(MoveModel model) throws Exception{
         check(Collections.singletonList(model), false);
 
-        wrapWithTransaction(session -> updateMoveNoTransaction(model, session));
+        ApiUtils.wrapWithTransaction(session -> updateMoveNoTransaction(model, session), this.clientSession, sparql, mongodb);
     }
 
     @Override
     public void delete(URI uri) throws Exception{
 
-        wrapWithTransaction(session ->{
-            deleteNoTransaction(uri, session);
-            return 0;
-        });
+        ApiUtils.wrapWithTransaction(
+                session ->{
+                    deleteNoTransaction(uri, session);
+                    return 0;
+                },
+                this.clientSession,
+                sparql,
+                mongodb
+        );
 
     }
 
@@ -120,8 +124,12 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public MoveModel create(MoveModel model) throws Exception {
-        return wrapWithTransaction(session -> createNoTransaction(model, session));
-
+        return ApiUtils.wrapWithTransaction(
+                session ->createNoTransaction(model, session),
+                this.clientSession,
+                sparql,
+                mongodb
+        );
     }
 
     @Override
@@ -160,7 +168,12 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         }
 
-        return wrapWithTransaction(session -> createMultipleNoTransaction(models, noSqlModels, session));
+        return ApiUtils.wrapWithTransaction(
+                session -> createMultipleNoTransaction(models, noSqlModels, session),
+                this.clientSession,
+                sparql,
+                mongodb
+        );
     }
 
     public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
@@ -337,21 +350,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     //#region PRIVATE METHODS
 
-    /**
-     * Runs function either in a transaction or nay
-     *
-     * @param function to be run
-     * @return the result of function
-     * @param <R> return type of function
-     * @param <E> Some Exception type
-     * @throws Exception
-     */
-    private <R, E extends Exception> R wrapWithTransaction(ThrowingFunction<ClientSession, R, E> function) throws Exception {
-        if(this.clientSession == null){
-            return new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(function);
-        }
-        return function.apply(clientSession);
-    }
 
     /**
      * @param concernedItemUri the URI of the item concerned by a move event.

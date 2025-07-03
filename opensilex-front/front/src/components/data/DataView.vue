@@ -1,6 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageActions>
+      <!-- Create Button -->
       <opensilex-CreateButton
           v-if="user.hasCredential(
               credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
@@ -9,12 +10,22 @@
           class="createButton greenThemeColor"
       >
       </opensilex-CreateButton>
+      <!-- Export button-->
       <b-button
           @click="exportModal.show()"
           class="exportButton greenThemeColor createButton"
       >
         export
       </b-button>
+      <!-- Delete by batch button -->
+      <opensilex-Button
+        @click="deleteByBatchModal.show()"
+        class="createButton greenThemeColor"
+        icon="fa#trash-alt"
+        :small="false"
+        label="DataView.buttons.delete-by-batch"
+        :disabled="false"
+      ></opensilex-Button>
     </opensilex-PageActions>
 
 
@@ -22,6 +33,11 @@
         ref="exportModal"
         :filter="filter"
     ></opensilex-DataExportModal>
+
+    <opensilex-DeleteByBatchModal
+      ref="deleteByBatchModal"
+      @deleted="refresh"
+    ></opensilex-DeleteByBatchModal>
 
       <!-- Toggle Sidebar-->
 
@@ -246,6 +262,19 @@
                     ></opensilex-TagInputForm>
                   </opensilex-FilterField>
                 </div>
+                <!-- Batch URI -->
+                <div>
+                  <opensilex-FilterField>
+                    <label>{{ $t('DataView.filter.batch-uri') }}</label>
+                    <opensilex-StringFilter
+                      :filter.sync="filter.batch_uri"
+                      placeholder="DataView.filter.uri-placeholder"
+                      class="searchFilter"
+                      @handlingEnterKey="refresh()"
+                    ></opensilex-StringFilter>
+                  </opensilex-FilterField>
+                  <br>
+                </div>
               </template>
             </opensilex-SearchFilterField>
           </div>
@@ -272,9 +301,9 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ProvenanceGetDTO} from "opensilex-core/index";
-import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
+import DeleteByBatchModal from "./DeleteByBatchModal.vue";
 
 @Component
 export default class DataView extends Vue {
@@ -312,6 +341,7 @@ export default class DataView extends Vue {
   @Ref("exportModal") readonly exportModal!: any;
   @Ref("deviceSelector") readonly deviceSelector!: any;
   @Ref("facilitySelector") readonly facilitySelector!: any;
+  @Ref("deleteByBatchModal") readonly deleteByBatchModal!: DeleteByBatchModal;
 
   filter = {
     germplasm_group: undefined,
@@ -325,7 +355,8 @@ export default class DataView extends Vue {
     devices: [],
     facilities: [],
     operators: [],
-    germplasm: []
+    germplasm: [],
+    batch_uri: undefined
   };
 
   soFilter = {
@@ -380,7 +411,8 @@ export default class DataView extends Vue {
       devices: [],
       facilities: [],
       operators: [],
-      germplasm: []
+      germplasm: [],
+      batch_uri: undefined
     };
 
     this.soSelector.refreshModalSearch();
@@ -433,23 +465,24 @@ export default class DataView extends Vue {
   }
 
   afterCreateData(results) {
-    if (results instanceof Promise) {
-      results.then((res) => {
-        this.resultModal.setNbLinesImported(
-            res.validation.dataErrors.nbLinesImported
-        );
-        let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
-        if(annotationsOnObjects){
-            this.resultModal.setNbAnnotationsImported(
-                annotationsOnObjects.length
-            );
-        }
-        this.resultModal.setProvenance(res.form.provenance);
-        this.resultModal.show();
-        this.refreshKey += 1;
-        this.clear();
-        this.filter.provenance = res.form.provenance.uri;
-      });
+      if (results instanceof Promise) {
+        results.then((res) => {
+          this.resultModal.setNbLinesImported(
+              res.validation.dataErrors.nbLinesImported
+          );
+          let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
+          if(annotationsOnObjects){
+              this.resultModal.setNbAnnotationsImported(
+                  annotationsOnObjects.length
+              );
+          }
+          this.resultModal.setProvenance(res.form.provenance);
+          this.resultModal.setBatch(res.validation.dataErrors.batchHistoryUri);
+          this.resultModal.show();
+          this.refreshKey += 1;
+          this.clear();
+          this.filter.provenance = res.form.provenance.uri;
+        });
     } else {
       this.resultModal.setNbLinesImported(
           results.validation.dataErrors.nbLinesImported
@@ -460,6 +493,7 @@ export default class DataView extends Vue {
               annotationsOnObjects.length
           );
       }
+      this.resultModal.setBatch(results.validation.dataErrors.batchHistoryUri);
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.refreshKey += 1;
@@ -525,6 +559,7 @@ en:
     buttons:
       create-data: Add data
       generate-template: Generate template
+      delete-by-batch: Delete by Batch
     description: View and export data
     list:
       date: Date
@@ -545,12 +580,15 @@ en:
       targets: Target(s)
       targets-help: Copy target's URI here
       operator: Operators
+      batch-uri : Batch URI
+      uri-placeholder: Enter a part of an uri
 
 fr:
   DataView:
     buttons:
       create-data: Ajouter un jeu de données
       generate-template: Générer un gabarit
+      delete-by-batch: Supprimer par Batch
     description: Visualiser et exporter des données
     list:
       date: Date
@@ -571,5 +609,7 @@ fr:
       targets: Cible(s)
       targets-help: Copier les URI des cibles ici
       operator: Opérateurs
+      batch-uri : URI de Batch
+      uri-placeholder: Entrer une partie d'une uri
 
 </i18n>

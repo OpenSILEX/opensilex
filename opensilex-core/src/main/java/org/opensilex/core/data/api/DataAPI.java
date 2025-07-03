@@ -9,9 +9,7 @@ package org.opensilex.core.data.api;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
-import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.CountOptions;
-import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,11 +21,19 @@ import org.opensilex.core.data.bll.DataExportInformation;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.bll.DataLongExportInformation;
 import org.opensilex.core.data.bll.DataWideExportInformation;
-import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.DataCSVValidationModel;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataSearchFilter;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.data.bll.dataImport.BatchHistoryLogic;
+import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.exception.*;
+import org.opensilex.core.exception.DataTypeException;
+import org.opensilex.core.exception.DateMappingExceptionResponse;
+import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -51,13 +57,12 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -87,6 +92,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opensilex.core.data.bll.dataImport.DataImportLogic.CSV_EXTENSION;
+
 
 /**
  * @author sammy
@@ -106,6 +113,7 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_GROUP_ID = "Data";
     public static final String CREDENTIAL_DATA_GROUP_LABEL_KEY = "credential-groups.data";
 
+    public static final String DATA_EXAMPLE_BATCH_URI = "http://opensilex.test/id/batchHistory/594818cf-808d-4b68-ae0f-906717918804";
     public static final String DATA_EXAMPLE_URI = "http://opensilex.dev/id/data/1598857852858";
     public static final String DATA_EXAMPLE_OBJECTURI = "http://opensilex.dev/opensilex/2020/o20000345";
     public static final String DATA_EXAMPLE_VARIABLEURI = "http://opensilex.dev/variable#variable.2020-08-21_11-21-23entity6_method6_quality6_unit6";
@@ -126,6 +134,13 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
     public static final int SIZE_MAX = 10000;
+    public static final String JSON = "json";
+    public static final String DATA_ALREADY_EXISTS = "Data already exists";
+    public static final String DUPLICATED_DATA_FOUND = "Duplicated data found ";
+    public static final String CREDENTIAL_BATCH_HISTORY_DELETE_ID = "data-delete";
+    public static final String CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY = "credential.default.delete";
+    public static final String BATCH_HISTORY_URI = "Batch history URI";
+    public static final String BATCH_HISTORY_EXAMPLE_URI = "http://opensilex.dev/id/batchHistory/cd3dde33d6f5dc2";
 
     @Inject
     private MongoDBService nosql;
@@ -138,6 +153,9 @@ public class DataAPI {
 
     @CurrentUser
     AccountModel user;
+
+    DataImportLogic dataImportLogic;
+    BatchHistoryLogic batchHistoryLogic;
 
     @POST
     @ApiProtected
@@ -294,11 +312,13 @@ public class DataAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
         return getDataList(
+                batchUri,
                 startDate,
                 endDate,
                 timezone,
@@ -355,6 +375,7 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
         return getDataList(
+                null,
                 startDate,
                 endDate,
                 timezone,
@@ -408,6 +429,7 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         return getDataList(
+                null,
                 startDate,
                 endDate,
                 timezone,
@@ -430,6 +452,7 @@ public class DataAPI {
     }
 
     private Response getDataList(
+            URI batchUri,
             String startDate,
             String endDate,
             String timezone,
@@ -452,7 +475,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
+            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
             if(filter == null){
                 return new PaginatedListResponse<>(new ListWithPagination<>(page, pageSize)).getResponse();
             }
@@ -478,7 +501,8 @@ public class DataAPI {
         return new PaginatedListResponse<>(results).getResponse();
     }
 
-    private DataSearchFilter getSearchFilter(String startDate,
+    private DataSearchFilter getSearchFilter(URI batchUri,
+                                             String startDate,
                                              String endDate,
                                              String timezone,
                                              List<URI> experiments,
@@ -512,6 +536,9 @@ public class DataAPI {
         }
 
         DataSearchFilter filter = new DataSearchFilter();
+        if(batchUri != null){
+            filter.setBatchUri(batchUri);
+        }
         filter.setUser(user);
         filter.setExperiments(experiments);
         filter.setVariables(variables);
@@ -544,8 +571,6 @@ public class DataAPI {
         return filter;
     }
 
-
-
     @POST
     @Path("/count")
     @ApiOperation("Count data")
@@ -570,13 +595,14 @@ public class DataAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
             @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
+            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
     ) throws Exception {
 
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
+            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
             if(filter == null){
                 return new SingleObjectResponse<>(0).getResponse();
             }
@@ -688,7 +714,9 @@ public class DataAPI {
             @ApiParam(value = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
             @ApiParam(value = "Search by target uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("target") URI objectUri,
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @ApiParam(value = "Search by batch id for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
+
     ) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         DataSearchFilter filter = new DataSearchFilter();
@@ -705,9 +733,11 @@ public class DataAPI {
         if (variableUri != null) {
             filter.setVariables(Collections.singletonList(variableUri));
         }
+        if (batchUri != null) {
+            filter.setBatchUri(batchUri);
+        }
 
-        DeleteResult result = dataLogic.deleteManyByFilter(filter);
-        return new SingleObjectResponse<>(result).getResponse();
+        return new SingleObjectResponse<>(dataLogic.deleteManyByFilter(filter)).getResponse();
     }
 
     /**
@@ -849,7 +879,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(startDate, endDate, timezone, experiments, objects, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, null, null, orderByList, page, pageSize);
+            filter = getSearchFilter(null, startDate, endDate, timezone, experiments, objects, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, null, null, orderByList, page, pageSize);
             if(filter == null){
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "EMPTY_SEARCH_FILTER", "The filter used to export was null").getResponse();
             }
@@ -1311,59 +1341,33 @@ public class DataAPI {
     @Path("import")
     @ApiOperation(value = "Import a CSV file for the given provenanceURI")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class)})
+            @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class),
+            @ApiResponse(code = 409, message = "A Data already exists", response = ErrorResponse.class)})
     @ApiProtected
     @ApiCredential(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
-        credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
-        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
-
-        DataCSVValidationModel validation = dataLogic.validateWholeCSV(true, provenance, experiment, file, LOGGER);
-
-        if (validation.isValidCSV()) {
-            Instant start = Instant.now();
-            List<DataModel> data = new ArrayList<>(validation.getData().keySet());
-            try {
-                dataLogic.createManyFromImport(data, validation);
-
-            } catch (NoSQLTooLargeSetException ex) {
-                validation.setTooLargeDataset(true);
-            } catch (MongoBulkWriteException duplicateError) {
-                List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
-                for (int i = 0; i < bulkErrors.size(); i++) {
-                    int index = bulkErrors.get(i).getIndex();
-                    DataModel dataModel = data.get(index);
-                    int variableIndex = validation.getHeaders().indexOf(dataModel.getVariable().toString());
-                    String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
-                    validation.addDuplicatedDataError(csvCell);
-                }
-            } catch (MongoCommandException e) {
-                CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
-                validation.addDuplicatedDataError(csvCell);
-            } catch (DataTypeException e) {
-                int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
-                String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
-                validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
-            }
-            Instant finish = Instant.now();
-            long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-
-            validation.setValidCSV(!validation.hasErrors());
+            @FormDataParam("file") FormDataContentDisposition fileDisposition,
+            @ApiParam(value = "The key for file that have already been validated by the API (/core/data/import_validation)",
+                    example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
+        String fileName = getFileName(fileDisposition);
+        this.dataImportLogic = new DataImportLogic(nosql, sparql, fs, user);
+        DataCSVValidationDTO csvValidation;
+        try {
+            csvValidation = dataImportLogic.importCSVData(provenance, experiment, file, fileName, validationKey);
+        } catch (MongoDbUniqueIndexConstraintViolation e) {
+            return new ErrorResponse(Response.Status.CONFLICT, DATA_ALREADY_EXISTS,
+                    DUPLICATED_DATA_FOUND + e.getMessage()).getResponse();
         }
-        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
-        csvValidation.setDataErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1371,7 +1375,7 @@ public class DataAPI {
     @Path("import_validation")
     @ApiOperation(value = "Import a CSV file for the given provenanceURI.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data are validated", response = DataCSVValidationDTO.class)})
+            @ApiResponse(code = 201, message = "Data are validated", response = DataCSVValidationDTO.class)})
     @ApiProtected
     @ApiCredential(
             groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -1383,16 +1387,13 @@ public class DataAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
-
-        DataCSVValidationModel validation = dataLogic.validateWholeCSV(false, provenance, experiment, file, LOGGER);
-
-        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
-        csvValidation.setDataErrors(validation);
-
+            @FormDataParam("file") FormDataContentDisposition fileDisposition) throws Exception {
+        this.dataImportLogic = new DataImportLogic(nosql, sparql, fs, user);
+        String fileName = getFileName(fileDisposition);
+        DataCSVValidationModel csvValidationModel = dataImportLogic.validateWholeCsv(provenance, experiment, file, fileName);
+        DataCSVValidationDTO csvValidation = dataImportLogic.buildDataCSVValidationDTO(csvValidationModel);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1422,6 +1423,73 @@ public class DataAPI {
                         calculatedOnly,
                         LOGGER)
         ).getResponse();
+    }
+
+    @GET
+    @Path("batch_history/{uri}")
+    @ApiOperation("Get batch")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Batch retrieved", response = BatchHistoryGetDTO.class),
+            @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
+    public Response getBatchHistory(
+            @ApiParam(value = "Batch URI", required = true) @PathParam("uri") @NotNull URI uri) {
+        BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
+
+        try {
+            BatchHistoryModel model = batchHistoryLogic.get(uri);
+            BatchHistoryGetDTO dto = BatchHistoryGetDTO.fromModel(model);
+
+            return new SingleObjectResponse<>(dto).getResponse();
+
+        } catch (NoSQLInvalidURIException e) {
+            throw new NotFoundURIException("Invalid or unknown batch URI ", uri);
+        }
+    }
+
+    @GET
+    @Path("batch_history")
+    @ApiOperation("Search data batch history")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return batch history list", response = BatchHistoryGetDTO.class, responseContainer = "List")
+    })
+    public Response searchBatchHistory(
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) {
+        this.batchHistoryLogic = new BatchHistoryLogic(nosql);
+        ListWithPagination<BatchHistoryGetDTO> results = batchHistoryLogic.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
+        return new PaginatedListResponse<>(results).getResponse();
+    }
+
+    @DELETE
+    @Path("batch_history/{uri}")
+    @ApiOperation("Delete batch history by URI")
+    @ApiProtected
+    @ApiCredential(credentialId = CREDENTIAL_BATCH_HISTORY_DELETE_ID, credentialLabelKey = CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response deleteBatchHistoryByURI(
+            @ApiParam(value = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+    ) throws NoSQLInvalidURIException {
+        this.batchHistoryLogic = new BatchHistoryLogic(nosql);
+        return new SingleObjectResponse<>(batchHistoryLogic.deleteBatchHistoryByURI(uri)).getResponse();
+    }
+
+    private String getFileName(FormDataContentDisposition fileDisposition) {
+        return fileDisposition.getFileName().split(CSV_EXTENSION)[0];
     }
 
 }

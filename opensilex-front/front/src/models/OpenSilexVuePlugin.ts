@@ -33,6 +33,10 @@ import NumberFormatter from "./NumberFormatter";
 import {BvToastOptions} from "bootstrap-vue/src/components/toast";
 import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
+import {DataService} from "opensilex-core/api/data.service";
+import {ProvenanceGetDTO} from "opensilex-core/model/provenanceGetDTO";
+import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
 
 declare var $cookies: VueCookies;
 
@@ -877,6 +881,33 @@ export default class OpenSilexVuePlugin {
             return this.flatOntologies[uri].name;
         } else {
             return uri;
+        }
+    }
+
+    public getProvenance(uri: string, dataServiceToUse: DataService) {
+        if (uri != undefined) {
+            return dataServiceToUse
+                .getProvenance(uri)
+                .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+                    return http.response.result;
+                });
+        }
+    }
+
+
+    /**
+     * Gets the batch history dto, containing a link to csv document
+     *
+     * @param uri
+     * @param dataServiceToUse
+     */
+    public getBatch(uri: string, dataServiceToUse: DataService):Promise<BatchHistoryGetDTO> {
+        if (uri != undefined) {
+            return dataServiceToUse
+                .getBatchHistory(uri)
+                .then((http: HttpResponse<OpenSilexResponse<BatchHistoryGetDTO>>) => {
+                    return http.response.result;
+                });
         }
     }
 

@@ -2011,6 +2011,11 @@ OESO</rdfs:label>
     </owl:Class>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ImportedDataset -->
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ImportedDataset">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Dataset"/>
+    </owl:Class>
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
 
@@ -4045,6 +4050,11 @@ If values are not provided for the following Observation properties, they may be
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Dataset"/>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ImportedDataset -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ImportedDataset"/>
+
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
 
@@ -5057,6 +5067,10 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="fr">Jeu de données</rdfs:label>
         <rdfs:label xml:lang="en">Dataset</rdfs:label>
         <dc:source>http://purl.org/dc/dcmitype/Dataset</dc:source>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ImportedDataset">
+        <rdfs:label xml:lang="fr">Jeu de données importer</rdfs:label>
+        <rdfs:label xml:lang="en">imported dataset</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
         <rdfs:label xml:lang="fr">Appareil</rdfs:label>

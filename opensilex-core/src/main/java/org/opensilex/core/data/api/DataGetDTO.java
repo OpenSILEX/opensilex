@@ -34,14 +34,17 @@ public class DataGetDTO extends DataCreationDTO {
     @JsonProperty("modified")
     private OffsetDateTime lastUpdatedDate;
 
+    @JsonProperty("batchUri")
+    private URI batchUri;
+
     @NotNull
     @ValidURI
     @ApiModelProperty(value = "data URI", example = DataAPI.DATA_EXAMPLE_URI)    
     @Override
     public URI getUri() {
         return uri;
-    }        
-    
+    }
+
     @JsonIgnore
     @Override
     public String getTimezone() {
@@ -76,6 +79,14 @@ public class DataGetDTO extends DataCreationDTO {
         }        
     }
 
+    public URI getBatchUri() {
+        return batchUri;
+    }
+
+    public void setBatchUri(URI batchUri) {
+        this.batchUri = batchUri;
+    }
+
     /**
      * <p>
      *     Sets the fields of the DataGetDTO according to the passed {@link DataModel}.
@@ -99,6 +110,7 @@ public class DataGetDTO extends DataCreationDTO {
         setVariable(model.getVariable());      
         setDate(model.getDate(), model.getOffset(), model.getIsDateTime());          
         setConfidence(model.getConfidence());
+        setBatchUri(model.getBatchUri());
 
         if (Objects.nonNull(dateVariables) && dateVariables.contains(getVariable())) {
             setValue(toLocalDate(model.getValue()));
@@ -148,4 +160,5 @@ public class DataGetDTO extends DataCreationDTO {
         }
         return modelValue;
     }
+
 }

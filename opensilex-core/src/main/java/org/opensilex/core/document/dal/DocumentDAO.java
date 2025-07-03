@@ -20,6 +20,7 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -31,6 +32,7 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -76,7 +78,7 @@ public class DocumentDAO {
         if (file == null) {
             return createWithSource(instance);
         }
-        return createWithFile(instance, file);
+        return createWithFile(instance, file, true);
     }
 
     /**
@@ -84,21 +86,29 @@ public class DocumentDAO {
      *
      * @param instance
      * @param file
+     * @param withTransaction in case a transaction was already started by the caller. Set to true if we need to launch a transaction.
      * @return
      * @throws Exception If the file is empty.
      */
-    public DocumentModel createWithFile(DocumentModel instance, File file) throws Exception {
+    public DocumentModel createWithFile(DocumentModel instance, File file, boolean withTransaction) throws Exception {
         if (file.length() == 0) {
             throw new IOException(instance.getUri()+ " : empty document "+file.getPath());
         }
 
-        sparql.startTransaction();
+        if(withTransaction){
+            sparql.startTransaction();
+        }
+
         sparql.create(instance);
         try{
             fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
-            sparql.commitTransaction();
+            if(withTransaction){
+                sparql.commitTransaction();
+            }
         }catch (IOException e){
-            sparql.rollbackTransaction(e);
+            if(withTransaction){
+                sparql.rollbackTransaction(e);
+            }
         }
 
         return instance;
@@ -178,7 +188,20 @@ public class DocumentDAO {
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(
+            AccountModel user,
+            URI type,
+            String title,
+            String date,
+            URI targets,
+            String authors,
+            String subject,
+            String multiple,
+            String deprecated,
+            List<OrderBy> orderByList,
+            int page,
+            int pageSize
+    ) throws Exception {
         
         return sparql.searchWithPagination(
             DocumentModel.class,
@@ -187,7 +210,7 @@ public class DocumentDAO {
                 Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
                 ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                 ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
-               
+                appendUserRightsFilter(select, user);
                 appendTypeFilter(select, type);
                 appendTitleFilter(select, title);
                 appendDateFilter(select, date);
@@ -265,6 +288,15 @@ public class DocumentDAO {
         if (!StringUtils.isEmpty(date)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.DATE_FIELD, date));
         }
+    }
+
+    private void appendUserRightsFilter(SelectBuilder select, AccountModel user) {
+        select.addFilter(
+                SPARQLQueryHelper.or(
+                        SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.eq(DocumentModel.TYPE_FIELD, NodeFactory.createURI(DataImportLogic.VOCABULARY_OESO_IMPORTED_DATASET))),
+                        SPARQLQueryHelper.eq(SPARQLResourceModel.PUBLISHER_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(user.getUri())))
+                )
+        );
     }
 
     private void appendTypeFilter(SelectBuilder select, URI type) throws Exception {

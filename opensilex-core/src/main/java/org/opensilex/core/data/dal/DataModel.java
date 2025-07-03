@@ -55,6 +55,22 @@ public class DataModel extends MongoModel {
 
     public static final String METADATA_FIELD = "metadata";
 
+    /**
+     * batchUri : used to trace the insertion batches of data in the database
+     * (e.g : for deleting or modifying a batch inserted from a csv file)
+     */
+    private URI batchUri;
+
+    public static final String BATCH_URI_FIELD = "batchUri";
+
+    public URI getBatchUri() {
+        return batchUri;
+    }
+
+    public void setBatchUri(URI batchUri) {
+        this.batchUri = batchUri;
+    }
+
     public URI getTarget() {
         return target;
     }

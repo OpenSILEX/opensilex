@@ -28,20 +28,72 @@
         </slot>
       </b-input-group>
 
-      <div v-if="showCount">
+      <!-- Count display, if we have no count method
+      (count is performed at same time as search in back-end) ,
+      then we have a different display with no count button-->
+      <div v-if="!countMethod">
+        <div v-if="showCount">
           <div v-if="totalRow > 0">
-          <strong>
+            <strong>
             <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : getCurrentItemLimit() ,offset : getCurrentItemOffset(), totalRow : this.$i18n.n(  this.totalRow  )})}}
               </span>
-          </strong>
-        </div>
-        <div v-else>
-          <strong>
+            </strong>
+          </div>
+          <div v-else>
+            <strong>
             <span class="ml-1"> {{$t('component.common.list.pagination.noEntries')}}
               </span>
-          </strong>
+            </strong>
+          </div>
         </div>
       </div>
+
+      <!-- Count display if we have a count button: "show from 0 to 10 of ..." -->
+      <div v-else>
+        <span>
+        <strong>
+          <span class="ml-1" v-if="hasResults"> {{
+              $t('component.common.list.pagination.nbEntriesNoTotal', {
+                limit: getCurrentItemLimit(),
+                offset: getCurrentItemOffset()
+              })
+            }}
+          </span>
+
+          <span class="ml-1" v-else> {{
+              $t('component.common.list.pagination.noEntries')}}
+          </span>
+        </strong>
+
+
+          <!-- ... X  results -->
+      <span v-if="showCount">
+          <span v-if="calculatedTotalCount > 0">
+          <strong>
+            <span
+              class="ml-1"> {{ $t('component.common.list.pagination.totalEntries', {totalRow: this.$i18n.n(this.calculatedTotalCount)}) }}
+              </span>
+          </strong>
+        </span>
+      </span>
+
+      <span v-if="!showCount && hasResults">
+        <strong> ... </strong>
+
+        <opensilex-Button
+          :small="true"
+          @click="countAll"
+          label="component.common.list.pagination.showTotalCount"
+          class="totalCountDetailButton"
+        >
+          <template v-slot:icon>
+            <opensilex-Icon icon="fa#eye" />
+          </template>
+        </opensilex-Button>
+      </span>
+    </span>
+      </div>
+
        <b-table
         ref="tableRef"
         :class="{
@@ -90,14 +142,35 @@
           <slot name="row-details" v-bind:data="data"></slot>
         </template>
       </b-table>
+
+      <!-- Pagination controls, display is different if we have a count button -->
+      <div v-if="!countMethod">
         <b-pagination
-          v-if="totalRow>0" 
+          v-if="totalRow>0"
           v-model="currentPage"
           :total-rows="totalRow"
           :per-page="pageSize"
           :page="currentPage"
           @change="pageChange"
         ></b-pagination>
+      </div>
+      <div class="controls" v-else>
+        <b-pagination
+          v-if="totalRow>0"
+          v-model="currentPage"
+          :total-rows="totalRow"
+          :per-page="pageSize"
+          :page="currentPage"
+          @change="pageChange"
+          :first-text="$t('component.common.list.pagination.first')"
+          :prev-text="$t('component.common.list.pagination.prev')"
+          :next-text="$t('component.common.list.pagination.next')"
+          limit="1"
+          last-class="last-el"
+        >
+        </b-pagination>
+      </div>
+
     </div>
   </opensilex-Overlay>
 </template>
@@ -111,6 +184,9 @@ import { Watch } from "vue-property-decorator";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {BTable} from "bootstrap-vue";
+import {Route} from "vue-router";
+import {OpenSilexStore} from "../../../models/Store";
+import VueI18n from "vue-i18n";
 
 export interface SlotDetails<T extends NamedResourceDTO> {
   item: T,
@@ -120,13 +196,10 @@ export interface SlotDetails<T extends NamedResourceDTO> {
 
 @Component
 export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
-  $opensilex: OpenSilexVuePlugin;
-  $route: any;
-  $store: any;
-  $i18n: any;
-  $t : any;
 
   @Ref("tableRef") readonly tableRef: BTable;
+
+  //#region: Props
 
   @Prop()
   fields;
@@ -179,17 +252,55 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   })
   showCount: boolean;
 
-  numberOfSelectedRows = 0;
-  selectedRowIndex;
+  @Prop({
+    default: 10000
+  })
+  selectAllLimit;
+
+  /**
+   * If count method is null then it means the search query performs count as well,
+   * therefore no need for a count button in the front-end.
+   */
+  @Prop()
+  countMethod;
 
   @Prop()
   maximumSelectedRows; // if you need a limit of selected items
 
+  //#endregion
+  //#region: Data
 
+  $opensilex: OpenSilexVuePlugin;
+  $route;
+  $store: OpenSilexStore;
+  $i18n: VueI18n;
+  $t : typeof VueI18n.prototype.t;
+
+  numberOfSelectedRows = 0;
+  selectedRowIndex;
   badgeHelpMessage : string = "component.common.search.badgeHelpMessage";
 
   selectedItems: Array<T> = [];
   selectedItem;
+
+  currentPage: number = 1;
+  tabPage: number = 1;
+  currentStartPath: string = "";
+  currentTabPath: string ="";
+  routeArr : string[] = this.$route.path.split('/');
+  pageSize: number;
+  totalRow = 0;
+  sortBy;
+  sortDesc = false;
+  isSearching = false;
+  selectAll = false;
+  onlySelected: boolean = false; // false if you display all the elements, true if you display only the selected elements
+
+  calculatedTotalCount: any = 0;
+  hasResults: boolean = true;
+  nbOfResultsOnCurrentPage: number;
+
+  //#endregion
 
   @Watch("currentPage")
   definePath(){
@@ -224,24 +335,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       this.tableRef.refresh();
     }
   }
-
-  currentPage: number = 1;
-  tabPage: number = 1;
-  currentStartPath: string = "";
-  currentTabPath: string ="";
-  routeArr : string = this.$route.path.split('/');
-  pageSize: number;
-  totalRow = 0;
-  sortBy;
-  sortDesc = false;
-  isSearching = false;
-  selectAll = false;
-  onlySelected: boolean = false; // false if you display all the elements, true if you display only the selected elements
-
-  @Prop({
-    default: 10000
-  })
-  selectAllLimit; 
 
   created() {
 
@@ -508,7 +601,33 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
         pageSize: this.$route.query.pageSize ? parseInt(this.$route.query.pageSize) : this.defaultPageSize
       })
         .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-          this.totalRow = http.response.metadata.pagination.totalCount;
+          if(this.countMethod){
+            //Stuff to set if we have a count button
+            if(http.response.metadata.pagination.hasNextPage){
+              this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)+1
+            }else{
+              this.totalRow = (http.response.metadata.pagination.pageSize)*(this.currentPage)
+            }
+
+            // totalCount = le total de datas
+            // totalPages = le total de pages
+            if (http.response.result[0]) {
+              this.hasResults = true
+            } else {
+              this.hasResults = false
+            }
+
+            this.nbOfResultsOnCurrentPage = http.response.result.length;
+
+            if( this.showCount == true ){
+              this.showCount = false
+            }
+          }
+          else{
+            //Stuff to set if we do not have a count button
+            this.totalRow = http.response.metadata.pagination.totalCount;
+          }
+          //Stuff to do in all cases
           this.pageSize = http.response.metadata.pagination.pageSize;
           this.isSearching = false;
           this.$opensilex.enableLoader();
@@ -521,12 +640,42 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     }
   }
 
-  getCurrentItemLimit() : number {
-    return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) )
+  countAll(){
+    return this.countMethod({
+    })
+      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+        this.calculatedTotalCount = http.response.result;
+        this.isSearching = false;
+        this.$opensilex.enableLoader();
+        this.showCount = !this.showCount;
+        return http.response.result;
+      })
   }
 
-  getCurrentItemOffset() : number {
-    return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
+  getCurrentItemLimit() : string {
+    if(!this.countMethod){
+      return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) );
+    }else{
+      return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 || !this.hasResults ? 0  :  (this.pageSize * (this.currentPage -1))+1 );
+    }
+  }
+
+  getCurrentItemOffset() : string{
+    if(!this.countMethod){
+      return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow );
+    }else{
+      // results but less than pageSize: display calculated total count
+      if(this.hasResults && this.nbOfResultsOnCurrentPage < this.pageSize){
+        return this.$i18n.n(this.calculatedTotalCount);
+      }
+      // results but count is equal or bigger than pageSize: display number equal to pagesize
+      if(this.hasResults && ((this.nbOfResultsOnCurrentPage >= this.pageSize) || (this.nbOfResultsOnCurrentPage === undefined))){
+        return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
+      } else {
+        // has no results : counts are not rendered, replaced by a message on the template
+        return undefined
+      }
+    }
   }
 
   getTotalRow(): number {
@@ -583,9 +732,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   }
 
   OnNbElementPerPageChange(itemPerPage: string) {
-    this.pageSize = parseInt(itemPerPage)
-    this.defaultPageSize = this.pageSize
-    this.changeCurrentPage(1)
+    this.pageSize = parseInt(itemPerPage);
+    this.defaultPageSize = this.pageSize;
+    this.changeCurrentPage(1);
     this.refresh();
   }
 
@@ -715,9 +864,26 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
   color: #fff;
 }
 
+//Component with count button classes
+
 .numberOfElementsSelectorListsWthCheckbox{
   display: flex;
   margin-top: 10px
+}
+
+.controls::v-deep > .pagination > .page-item.last-el > .page-link {
+  display: none;
+}
+
+.totalCountDetailButton {
+  background: none;
+  border: none;
+  color: #00A38D;
+}
+
+.totalCountDetailButton:hover {
+  // font-size: 1.1em;
+  color: #02c5ab
 }
 
 </style>

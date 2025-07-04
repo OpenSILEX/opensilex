@@ -1,6 +1,6 @@
 <template>
     <div>
-        <opensilex-DataTableAsyncView
+        <opensilex-TableAsyncView
             ref="tableRef"
             :searchMethod="searchDataList"
             :countMethod="countDataList"
@@ -50,7 +50,7 @@
                 </b-button-group>
             </template>
 
-        </opensilex-DataTableAsyncView>
+        </opensilex-TableAsyncView>
 
         <opensilex-DataProvenanceModalView
             ref="dataProvenanceModalView"

@@ -79,8 +79,8 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>                     | 1.0.0        | 613f6d59  |
 | 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                                | 1.2.3        |           |
 | 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                                 | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
-| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b>      | 1.3.0 |   |
-| 2024/11/04 | <b> org.opensilex.migration.UpdateFacilitiesWithLocationObservationCollectionModel </b> | 1.3.0 |   |
+| 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b>      | 1.4.0        | d7ea8504  |
+| 2024/11/04 | <b> org.opensilex.migration.UpdateFacilitiesWithLocationObservationCollectionModel </b> | 1.5.0        |   |
 
 # Descriptions
 

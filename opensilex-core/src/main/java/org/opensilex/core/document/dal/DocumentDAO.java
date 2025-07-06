@@ -37,13 +37,37 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_OneOf;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
+
+
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
+
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -182,7 +206,11 @@ public class DocumentDAO {
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         ExperimentDAO exp = new ExperimentDAO(sparql, nosql);
         Set<URI> userExperiments = exp.getUserExperiments(user);
-
+        List<URI> documentURIs = new ArrayList<>();
+        System.out.println("*** userExperiments 2 *** : " + userExperiments);
+        documentURIs = getExperimentDocuments(userExperiments, user);
+        System.out.println("*** documentURIs 2 *** : " + documentURIs);
+        
         return sparql.searchWithPagination(
             DocumentModel.class,
             user.getLanguage(),
@@ -347,8 +375,53 @@ public class DocumentDAO {
         }
     }
 
+    private void appendExcludeUris() {
+        
+    }
+
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+    }
+
+    public List<URI> getExperimentDocuments(Set<URI> userExperiments, AccountModel user) throws Exception {
+        System.out.println("*** getExperimentDocuments ***");
+        List<URI> documentURIs = new ArrayList<>();
+
+        // Construction de la requête
+        SelectBuilder select = new SelectBuilder();
+
+        Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);       // ex: ?uri
+        Var targetVar = SPARQLQueryHelper.makeVar(DocumentModel.TARGET_FIELD); // ex: ?target
+
+        // Graph où chercher les documents
+        select.addGraph(sparql.getDefaultGraph(DocumentModel.class), uriVar, OA.hasTarget.asNode(), targetVar);
+        if(!user.isAdmin()){
+            if (userExperiments == null || userExperiments.isEmpty()) {
+                return documentURIs;
+            }
+            // Construction du filtre FILTER (?target IN (...))
+            ExprVar exprTarget = new ExprVar(targetVar);
+            ExprList uriExprList = new ExprList();
+
+            for (URI experimentURI : userExperiments) {
+                uriExprList.add(NodeValue.makeNode(NodeFactory.createURI(experimentURI.toString())));
+            }
+
+            //Expr inFilter = new E_OneOf(exprTarget, uriExprList);
+            Expr inFilter = new E_OneOf(exprTarget, uriExprList);
+            select.addFilter(inFilter);
+        }
+
+        // Execute Query
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+
+        System.out.println("*** LA REQUETE : ***");
+        System.out.println(select);
+        for (SPARQLResult result : results) {
+            documentURIs.add(new URI(result.getStringValue(DocumentModel.URI_FIELD)));
+        }
+
+        return documentURIs;
     }
 
     //J.D.

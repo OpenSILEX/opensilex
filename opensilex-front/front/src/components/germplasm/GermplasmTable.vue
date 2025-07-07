@@ -145,12 +145,8 @@
 
 <script lang="ts">
 import {Component, Vue, Watch, Ref} from "vue-property-decorator";
-// @ts-ignore
 import {GermplasmCreationDTO, GermplasmService} from "opensilex-core/index";
-import JsonCSV from "vue-json-csv";
 
-Vue.component("downloadCsv", JsonCSV);
-// @ts-ignore
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
@@ -712,7 +708,6 @@ export default class GermplasmTable extends Vue {
     );
     //this.jsonForTemplate[0][columnID] = null;
     this.jsonForTemplate.push(columnLabel);
-    this.$attrs.downloadCsv;
   }
 
   private insertData() {

@@ -5,6 +5,13 @@
 //******************************************************************************
 package org.opensilex.sparql.model;
 
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.sparql.annotations.*;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.utils.Ontology;
+
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -12,17 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.apache.jena.rdf.model.Property;
-
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
-import org.opensilex.sparql.annotations.SPARQLTypeRDF;
-import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.utils.Ontology;
 
 /**
  *

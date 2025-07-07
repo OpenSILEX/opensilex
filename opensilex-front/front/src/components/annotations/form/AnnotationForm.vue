@@ -39,7 +39,7 @@
             v-model="form.description"
             :required="true"
             label="Annotation.description"
-            @keydown.enter.stop="handleEnter"
+            @keydown.enter.native.stop
         />
 
       </div>
@@ -144,9 +144,6 @@ export default class AnnotationForm extends Vue {
 
   validate() {
     return this.validatorRef.validate();
-  }
-  handleEnter(event: KeyboardEvent) {
-    event.stopPropagation();
   }
 
 }

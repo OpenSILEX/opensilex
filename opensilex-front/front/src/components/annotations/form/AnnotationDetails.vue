@@ -7,6 +7,7 @@
       no-close-on-esc
       centered
       @close="close()"
+      @keydown.enter.native.stop="close"
   >
     <div class="details-container">
       <p><strong>URI :</strong>
@@ -15,10 +16,10 @@
             :value="annotationDetails.uri"
         />
       </p>
-      <p><strong>{{ $t('Annotation.motivation') }}  :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name ? annotationDetails.motivation.name : "Non spécifié" }}</p>
-      <p><strong>{{ $t('Annotation.publisher') }}  :</strong> {{ annotationDetails.publisher || "Non spécifié" }}</p>
+      <p><strong>{{ $t('Annotation.motivation') }}  :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name || $t('component.common.not-specified') }}</p>
+      <p><strong>{{ $t('Annotation.publisher') }}  :</strong> {{ annotationDetails.publisher || $t('component.common.not-specified') }}</p>
       <p><strong>{{ $t('Annotation.published') }}  :</strong> {{ formatDate(annotationDetails.published) }}</p>
-      <p><strong>{{ $t('Annotation.description') }}  :</strong> {{ annotationDetails.description || "Non spécifiée" }}</p>
+      <p><strong>{{ $t('Annotation.description') }}  :</strong> {{ annotationDetails.description || $t('component.common.not-specified') }}</p>
     </div>
     <div class="text-right">
       <b-button variant="primary" class="helpButton" @click="close">OK</b-button>
@@ -39,20 +40,6 @@ export default class AnnotationDetails extends Vue {
     description?:string
   };
   @PropSync("value",{ default: false }) isVisible!: boolean;
-
-  mounted() {
-    window.addEventListener('keydown', this.onKeyDown);
-  }
-
-  beforeDestroy() {
-    window.removeEventListener('keydown', this.onKeyDown);
-  }
-
-  onKeyDown(event: KeyboardEvent) {
-    if (this.isVisible && event.key === 'Enter') {
-      this.close();
-    }
-  }
 
   close() {
     this.$emit("input", false);

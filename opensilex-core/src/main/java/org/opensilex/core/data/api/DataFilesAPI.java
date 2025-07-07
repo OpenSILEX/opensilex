@@ -11,7 +11,9 @@ import com.google.common.io.Files;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -56,6 +58,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
@@ -88,6 +91,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -290,10 +294,46 @@ public class DataFilesAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response countDatafiles(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") List<URI> target,
-        @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
+            @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+    ) throws  Exception {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
-        DataFileSearchFilter filter = new DataFileSearchFilter().setDevices(device).setTargets(target).setUser(user);
+
+        DataFileSearchFilter filter = null;
+
+        try{
+            filter = this.createDataFileSearchFilter(
+                    name,
+                    rdfType,
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    target,
+                    device,
+                    provenances,
+                    metadata,
+                    null,
+                    null,
+                    null
+            );
+        }
+        catch(DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }
+        catch(IllegalArgumentException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
+                    .getResponse();
+        }
+
         long countResult = dao.count(filter);
 
         return new SingleObjectResponse<>(countResult).getResponse();
@@ -536,7 +576,21 @@ public class DataFilesAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return  searchDataFiles(name, rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+        return  searchDataFiles(
+                name,
+                rdfType,
+                startDate,
+                endDate,
+                timezone,
+                experiments,
+                targets,
+                devices,
+                provenances,
+                metadata,
+                orderByList,
+                page,
+                pageSize
+        );
     }
 
     private Response searchDataFiles(
@@ -557,77 +611,49 @@ public class DataFilesAPI {
     ) throws Exception {
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
+        DataFileSearchFilter filter = null;
 
-        if (startDate != null) {
-            try  {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+        try{
+            filter = this.createDataFileSearchFilter(
+                    name,
+                    rdfType,
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    targets,
+                    devices,
+                    provenances,
+                    metadata,
+                    orderByList,
+                    page,
+                    pageSize
+            );
         }
-
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+        catch(DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
         }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
+        catch(IllegalArgumentException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
+                    .getResponse();
         }
-
-        Set<URI> rdfTypes = new HashSet<>();
-
-        if (rdfType != null) {
-            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
-            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
-            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
-            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType)));
-        }
-
-        DataFileSearchFilter filter = new DataFileSearchFilter()
-                .setName(name)
-                .setUser(user)
-                .setExperiments(experiments)
-                .setTargets(targets)
-                .setProvenances(provenances)
-                .setDevices(devices)
-                .setStartDate(startInstant)
-                .setEndDate(endInstant)
-                .setMetadata(metadataFilter);
-
-        filter.setRdfTypes(rdfTypes);
-        filter.setOrderByList(orderByList);
-        filter.setPage(page);
-        filter.setPageSize(pageSize);
 
         //Map of publisher uris to lists of DataFileGetDTOs to optimize setting of publisher information
         Map<URI, List<DataFileGetDTO>> publishersToDataFiles = new HashMap<>();
-        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
-                new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
-                        .setFilter(filter)
-                        .setConvertFunction(model -> {
-                            DataFileGetDTO next = DataFileGetDTO.fromModel(model);
-                            if (Objects.nonNull(model.getPublisher())) {
-                                List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
-                                publishersDataFiles.add(next);
-                                publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
-                            }
-                            return next;
-                        })
-                        .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
-        );
+        MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO> query = new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
+                .setFilter(filter)
+                .setConvertFunction(model -> {
+                    DataFileGetDTO nextDto = DataFileGetDTO.fromModel(model);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
+                        publishersDataFiles.add(nextDto);
+                        publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
+                    }
+                    return nextDto;
+                })
+                .setPaginationStrategy(PaginatedSearchStrategy.HAS_NEXT_PAGE);
+
+        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(query);
         //Fetch all the publishers in one call
         new AccountDAO(sparql).getList(new ArrayList<>(publishersToDataFiles.keySet())).forEach(
                 accountModel -> publishersToDataFiles.get(accountModel.getUri()).forEach(
@@ -773,5 +799,80 @@ public class DataFilesAPI {
             });
         }
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    /**
+     * this function creates a DataFileSearchFilter that is used by the search and count services.
+     */
+    private DataFileSearchFilter createDataFileSearchFilter(
+            String name,
+            URI rdfType,
+            String startDate,
+            String endDate,
+            String timezone,
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> devices,
+            List<URI> provenances,
+            String metadata,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws DateValidationException, IllegalArgumentException, SPARQLException {
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+        }
+
+        if (endDate != null) {
+            endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("METADATA_PARAM_ERROR");
+            }
+        }
+
+        Set<URI> rdfTypes = new HashSet<>();
+
+        if (rdfType != null) {
+            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
+            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
+            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
+            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType)));
+        }
+
+        DataFileSearchFilter filter = new DataFileSearchFilter()
+                .setName(name)
+                .setUser(user)
+                .setExperiments(experiments)
+                .setTargets(targets)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setMetadata(metadataFilter);
+
+        if(!CollectionUtils.isEmpty(rdfTypes)){
+            filter.setRdfTypes(rdfTypes);
+        }
+        if(!CollectionUtils.isEmpty(orderByList)){
+            filter.setOrderByList(orderByList);
+        }
+        if(Objects.nonNull(page)){
+            filter.setPage(page);
+        }
+        if(Objects.nonNull(pageSize)){
+            filter.setPageSize(pageSize);
+        }
+
+        return filter;
     }
 }

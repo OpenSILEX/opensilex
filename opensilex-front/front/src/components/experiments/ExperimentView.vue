@@ -287,7 +287,7 @@
 
         return this.$DataService
             .countData(
-                undefined,
+              undefined,
                 undefined,
                 undefined,
                 [this.uri],
@@ -301,7 +301,8 @@
                 undefined,
                 undefined,
                 1000,
-                undefined
+                undefined,
+              undefined,
             ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
               if (http && http.response) {
                 this.dataCount = http.response.result as number;

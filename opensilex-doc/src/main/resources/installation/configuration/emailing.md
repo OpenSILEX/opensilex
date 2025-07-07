@@ -1,4 +1,4 @@
-# Configuration : [emailing] GDPR
+# Configuration : [emailing]
 
 **Document history (please add a line when you edit the document)**
 

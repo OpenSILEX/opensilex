@@ -166,6 +166,7 @@ public class GermplasmLogic {
     }
 
     /**
+     * See germplasm_import.md for more information about buisiness rules applied before creating or updating germplasms.
      * @return A map of errors with the key being the germplasm URI (as a string) and the value being the error message
      */
     public MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {

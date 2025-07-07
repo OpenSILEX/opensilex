@@ -9,12 +9,13 @@ package org.opensilex.core.document.dal;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.*;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
@@ -31,6 +32,7 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -43,9 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -54,18 +54,13 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.E_OneOf;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprList;
-import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 
 
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Set;
 
 
@@ -204,12 +199,15 @@ public class DocumentDAO {
      * @throws Exception
      */
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        ExperimentDAO exp = new ExperimentDAO(sparql, nosql);
+        /*ExperimentDAO exp = new ExperimentDAO(sparql, nosql);
         Set<URI> userExperiments = exp.getUserExperiments(user);
         List<URI> documentURIs = new ArrayList<>();
         System.out.println("*** userExperiments 2 *** : " + userExperiments);
         documentURIs = getExperimentDocuments(userExperiments, user);
-        System.out.println("*** documentURIs 2 *** : " + documentURIs);
+        System.out.println("*** documentURIs 2 *** : " + documentURIs);*/
+
+        //Uris to exclude from the document search
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
         
         return sparql.searchWithPagination(
             DocumentModel.class,
@@ -381,6 +379,57 @@ public class DocumentDAO {
 
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+    }
+
+    /**
+     *
+     * @param user who is performing request
+     * @return a list of distinct document uris that this user does not have access to.
+     * He does not have access if he is not admin, if at least one target is an experiment,
+     * and if the user does not have access to any of the experiment targets.
+     * @throws Exception
+     */
+    private List<URI> getRestrictedDocumentUris(AccountModel user) throws Exception {
+        //Return empty list if the user is admin
+        if(user.isAdmin()){
+            return Collections.emptyList();
+        }
+
+        //Initialisation of some things we will need
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
+        Node experimentTypeNode = SPARQLDeserializers.nodeURI(Oeso.Experiment.getURI());
+        Node documentGraph = sparql.getDefaultGraph(DocumentModel.class);
+        SelectBuilder select = new SelectBuilder();
+
+        //Set distinct so we don't get duplicates
+        select.setDistinct(true);
+
+        //Request variables
+        Var documentVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+        Var targetVar = SPARQLQueryHelper.makeVar(DocumentModel.TARGET_FIELD);
+        select.addVar(documentVar);
+
+        //Core of the request, get all document uris where there is at least one target that is an experiment
+        select.addGraph(documentGraph, documentVar, OA.hasTarget.asNode(), targetVar);
+        select.addWhere(targetVar, RDF.type, experimentTypeNode);
+
+        //Add filter to exclude any documents that have at least 1 target that is included in userExperiments
+        WhereBuilder filterWhereBuilder = new WhereBuilder();
+        Var excludedTarget = SPARQLQueryHelper.makeVar("excludedTarget");
+        filterWhereBuilder.addGraph(documentGraph, documentVar, OA.hasTarget.asNode(), excludedTarget);
+        filterWhereBuilder.addWhere(excludedTarget, RDF.type, experimentTypeNode);
+        filterWhereBuilder.addFilter(SPARQLQueryHelper.inURIFilter(excludedTarget, userExperiments));
+        select.addFilter(
+                SPARQLQueryHelper.getExprFactory().notexists(
+                        filterWhereBuilder
+                )
+        );
+
+        //Execute and return result
+        return sparql.executeSelectQueryAsStream(select).map(
+                sparqlResult -> URI.create(sparqlResult.getStringValue(DocumentModel.URI_FIELD))
+        ).toList();
     }
 
     public List<URI> getExperimentDocuments(Set<URI> userExperiments, AccountModel user) throws Exception {

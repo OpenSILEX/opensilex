@@ -527,11 +527,8 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
             return countOptions.limit(mongoDBConfig.maxCountLimit());
         }
 
-        // case 1 : Need to display several pages
-        // case 2 : Query asked for explicit large page : allow it. Ideally, should be only allowed for internal query (not from user directly)
-        return filter.getPageSize() < mongoDBConfig.maxCountLimit() ?
-                countOptions.limit(filter.getPageSize() * mongoDBConfig.maxPageCountLimit()) :
-                countOptions.limit(filter.getPageSize());
+        // By default, no count limit
+        return countOptions.limit(0);
     }
 
     /**

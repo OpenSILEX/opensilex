@@ -1,5 +1,6 @@
 package org.opensilex.core.data.dal;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -22,7 +23,7 @@ public class DataFilterBuilder {
         if (!user.isAdmin()) {
             Set<URI> userExperiments = new ExperimentDAO(sparql, mongoDBService).getUserExperiments(user);
 
-            if (experiments != null && !experiments.isEmpty()) {
+            if (!CollectionUtils.isEmpty(experiments)) {
 
                 //Transform experiments and userExperiments in long format to compare the two lists
                 Set<URI> longUserExp = new HashSet<>();
@@ -36,7 +37,7 @@ public class DataFilterBuilder {
                 longExpURIs.retainAll(longUserExp); //keep in the list only the experiments the user has access to
 
                 if (longExpURIs.isEmpty()) {
-                    throw new Exception("you can't access to the given experiments");
+                    throw new Exception("you can't access the given experiments");
                 } else {
                     Document inFilter = new Document();
                     inFilter.put("$in", longExpURIs);

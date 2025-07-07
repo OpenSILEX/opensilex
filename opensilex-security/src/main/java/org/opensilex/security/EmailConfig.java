@@ -28,8 +28,8 @@ public interface EmailConfig extends ServiceConfig {
     public Boolean simulateSending();
     
     @ConfigDescription(
-            value = "Email sender (Not working)",
-            defaultString = "team@opensilex.org"
+            value = "Email sender",
+            defaultString = "mtp-opensilex@inrae.fr"
     )
     public String sender();
     

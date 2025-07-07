@@ -196,7 +196,7 @@ public class AuthenticationAPI {
     public Response forgotPassword(
             @ApiParam(value = "User e-mail or uri", required = true) @QueryParam("identifier")  @NotNull String identifier
     ) throws Exception {
-        if(emailService.isEnable()){
+        if(!emailService.isEnable()){
             return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionality not available", "Email service must be started").getResponse();
         }
         

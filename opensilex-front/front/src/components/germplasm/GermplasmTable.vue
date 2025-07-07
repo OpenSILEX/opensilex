@@ -180,7 +180,6 @@ export default class GermplasmTable extends Vue {
   $store: OpenSilexStore;
   $router: VueRouter;
   $t: typeof VueI18n.prototype.t;
-  $i18n: VueI18n;
   service: GermplasmService;
   //#endregion
 
@@ -657,7 +656,7 @@ export default class GermplasmTable extends Vue {
 
     this.jsonForTemplate = [];
     //let jsonHeader = {};
-    for (var i = 1; i < this.tableColumns.length; i++) {
+    for (let i = 1; i < this.tableColumns.length; i++) {
       if (this.tableColumns[i].visible == true) {
         this.jsonForTemplate.push(this.tableColumns[i].field);
       }
@@ -740,7 +739,7 @@ export default class GermplasmTable extends Vue {
 
   private async callUpsertService(creationDtos: Array<GermplasmCreationDTO>) {
     return this.service.upsertGermplasms(this.onlyChecking, creationDtos)
-        .then( response => {
+        .then( () => {
           let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
           this.$opensilex.showSuccessToast(successMessage);
 
@@ -993,7 +992,7 @@ export default class GermplasmTable extends Vue {
       alert(this.$t("GermplasmTable.alertFileSize"));
     } else {
       this.newColumns = [];
-      var uniqueURIs = [];
+      let uniqueURIs = [];
       let insertionOK = true;
 
       let uriColIndex = (data[0] as Array<string>).indexOf("uri");

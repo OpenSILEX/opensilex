@@ -16,18 +16,20 @@
   * [Solution](#solution)
     * [Business logic](#business-logic)
   * [Technical specifications](#technical-specifications)
-    * [Technical definitions](#technical-definitions)
-    * [Detailed explanations](#detailed-explanations)
+    * [Upsert Service](#upsert-service)
+    * [Multiple errors return](#multiple-errors-return)
     * [Tests](#tests)
-    * [Environment](#environment)
   * [Limitations and improvements](#limitations-and-improvements)
-  * [Documentation](#documentation)
 <!-- TOC -->
 
 ## Definitions
 
 - **germplasm** : genetic material of plant cells.
 - **data import** : in this case we talk about importing hundreds of germplasms from a CSV file.
+
+### fonctional requirements
+
+- **Importation of germplasms** : it should be possible to import many germplasms at once from a CSV file with an upsert operation.
 
 ### Non-functional requirements
 
@@ -36,6 +38,10 @@
 ## Solution
 
 To improve performance, the importation of germplasms was reworked. We now use a web service to import many germplasms at once, with a minimal number of database calls.
+
+Moreover, the importation is an upsert operation, meaning that if a germplasm already exists in the database, it will be updated with the new information from the CSV file. If it does not exist, it will be created.
+
+One of the requirements of the importation is to have a very detail error return, containing each error for each germplasm.
 
 ### Business logic
 
@@ -51,31 +57,33 @@ The business logic is the same as the creation web service, any germplasm presen
 - coherency between the species, variety and accession (if they exist) should validate the following rules :
   - if germplasm 'A' has a variety and a species, the variety should have the same species as germplasm 'A'
   - if germplasm 'A' has an accession and a species, the accession should have the same species as germplasm 'A'
-  - if germplasm 'A' has an accession and a variety, the accession should have the same variety as germplasm 'A' 
+  - if germplasm 'A' has an accession and a variety, the accession should have the same variety as germplasm 'A'
 
 ## Technical specifications
 
-### Detailed explanations
+Germplasms are send as a list of `GermplasmDTO` objects, which are created from the CSV fil by the web interface with JS.
 
-{Describe the files, classes, methods, algorithms and architectural choices that are essential to the
-solution. You can divide this section in subsections to keep it organized. For example, you can have
-an API and Front-end subsections, but that is not mandatory.}
+### Upsert Service
+
+Classic service creation with Swagger path = `/core/germplasm/import`
+
+All the business logic is done in the `GermplasmLogic.java` class, which is called by the service. Check the `GermplasmLogic::checkBeforeCreateOrUpdate` method to see how the business logic is implemented.
+
+Checking the business logic does not throw an exception. The aim is to be able to continue the check right to the end.
+This is done to collect and return all the errors contained in the germplasms.
+
+### Multiple errors return
+
+`MultipleErrorException` is used to return multiple errors in a single response. It extends `WebApplicationException` so it is automatically handled by the OpenSILEX system through the `ExceptionJsonMapper`.
+
+During checking for buisiness logic errors, use `MultipleErrorObjectList` to easily collect all the errors. Use `MultipleErrorObjectList::ToDTO` to convert it to DTO and pass it to the `MultipleErrorException` constructor.
+
 
 ### Tests
 
-{Describe the automatic tests related to this feature, where they are located and what they are supposed
-to check.}
+Most of the tests are in `core/germplasm/api/GermplasmAPITest.java`. They test only one germplasm at a time, but it is still enough to ensure that the business logic is respected.
 
-### Environment
-
-{Describe the packages and libraries required for the solution, and the specific version if needed.}
 
 ## Limitations and improvements
 
-{Describe the known limits of the solution. If you have potential solutions to suggest, you
-can specify them here.}
-
-## Documentation
-
-{List internal and external documentations relevant to the feature. For example, configuration
-instructions or an external library documentation website}.
+Despite the improvements, the importation of germplasms is still not as fast as we would like, especially for the update part. The main bottleneck is the `SPARQLService::update(Node graph, List<T> instances)` method.

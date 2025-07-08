@@ -45,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
@@ -264,7 +265,7 @@ public class AuthenticationAPI {
         // get address
         String redirectUrl = emailService.getOpenSilex().getModuleByClass(ServerModule.class).getBaseURL();
         
-        redirectUrl = redirectUrl + "app/" + EMAIL_RESET_PASSWORD_APP_PATH + "/" + URLEncoder.encode(userForgottenToken.toString(), StandardCharsets.UTF_8);
+        redirectUrl = Paths.get(redirectUrl , "app" , EMAIL_RESET_PASSWORD_APP_PATH , URLEncoder.encode(userForgottenToken.toString(), StandardCharsets.UTF_8)).toString();
         return redirectUrl;
     }
     

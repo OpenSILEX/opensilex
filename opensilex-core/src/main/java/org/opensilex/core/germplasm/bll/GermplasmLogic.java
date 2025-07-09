@@ -171,7 +171,7 @@ public class GermplasmLogic {
     public MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> checkBeforeCreateOrUpdate(
             List<GermplasmModel> germplasmModels,
             boolean update
-    ) throws SPARQLException {
+    ) throws Exception {
         MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors = new MultipleErrorObjectList<>("germplasms errors", germplasmModels, MultipleCreateUpdateErrorObject::new);
 
         if (!update) {

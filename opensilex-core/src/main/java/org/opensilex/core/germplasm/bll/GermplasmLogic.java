@@ -198,17 +198,32 @@ public class GermplasmLogic {
                     List<GermplasmModel> germplasmModels,
                     MultipleErrorObjectList<MultipleCreateUpdateErrorObject,
                     GermplasmModel> errors) {
+
+        Map<URI, Boolean> uriValidationMap = new HashMap<>();
+
         germplasmModels.forEach(germplasmModel -> {
             if (germplasmModel.getUri() != null && !URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
                 errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());
             }
-            if (germplasmModel.getType() == null || !URIDeserializer.validateURI(germplasmModel.getType().toString())) {
+            if (validateUriUsingMap(germplasmModel.getType(), uriValidationMap) ) {
                 errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getType().toString());
             }
             if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
                 errors.addError(germplasmModel, "Germplasm name is mandatory");
             }
         });
+    }
+
+    private boolean validateUriUsingMap(URI uri, Map<URI, Boolean> uriValidationMap) {
+        if (uri == null) {
+            return false;
+        }
+        Boolean isValid = uriValidationMap.get(uri);
+        if (isValid == null) {
+            isValid = URIDeserializer.validateURI(uri.toString());
+            uriValidationMap.put(uri, isValid);
+        }
+        return isValid;
     }
 
     /**

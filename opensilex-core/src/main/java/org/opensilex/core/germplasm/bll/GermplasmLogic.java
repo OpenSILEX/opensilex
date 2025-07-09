@@ -215,12 +215,24 @@ public class GermplasmLogic {
      * @param germplasmModels to check if they are not already in the database
      * @param errors map in which to put the errors
      */
-    private void lookForAlreadyExistantUri(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws SPARQLException {
-        for (GermplasmModel gerplasm : germplasmModels) {
-            if (sparql.uriExists(GermplasmModel.class, gerplasm.getUri())) {
-                errors.addError(gerplasm, "Germplasm URI already exists, it cannot be created again.");
-            }
+    private void lookForAlreadyExistantUri(
+                    List<GermplasmModel> germplasmModels,
+                    MultipleErrorObjectList<MultipleCreateUpdateErrorObject,
+                    GermplasmModel> errors) throws Exception {
+
+        Collection<URI> existingUris = checkExistence(germplasmModels.stream()
+                .map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toList()));
+
+        if (existingUris.isEmpty()) {
+            return;
         }
+
+        germplasmModels.forEach(germplasmModel -> {
+            if (SPARQLDeserializers.containsURI(existingUris, germplasmModel.getUri())) {
+                errors.addError(germplasmModel, "Germplasm URI already exists, it cannot be created again.");
+            }
+        });
     }
 
     /**

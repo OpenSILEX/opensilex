@@ -168,7 +168,10 @@ public class GermplasmLogic {
      * See germplasm_import.md for more information about buisiness rules applied before creating or updating germplasms.
      * @return A map of errors with the key being the germplasm URI (as a string) and the value being the error message
      */
-    public MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> checkBeforeCreateOrUpdate(List<GermplasmModel> germplasmModels, boolean update) throws SPARQLException {
+    public MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> checkBeforeCreateOrUpdate(
+            List<GermplasmModel> germplasmModels,
+            boolean update
+    ) throws SPARQLException {
         MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors = new MultipleErrorObjectList<>("germplasms errors", germplasmModels, MultipleCreateUpdateErrorObject::new);
 
         if (!update) {
@@ -191,7 +194,10 @@ public class GermplasmLogic {
     /**
      * check the uri format of the germplasm and its type, check also the germplasm has a name
      */
-    private void globalFormatValidation(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) {
+    private void globalFormatValidation(
+                    List<GermplasmModel> germplasmModels,
+                    MultipleErrorObjectList<MultipleCreateUpdateErrorObject,
+                    GermplasmModel> errors) {
         germplasmModels.forEach(germplasmModel -> {
             if (germplasmModel.getUri() != null && !URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
                 errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());

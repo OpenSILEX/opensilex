@@ -49,16 +49,16 @@ public class MultipleErrorObjectList<T extends MultipleErrorObject, M> {
 
     /**
      * @param title of the error that will be raised if there is an error in the list.
-     * @param modelsToMapInWrightOrder the list of models to map in the right order,
-     * this is used to ensure that the errors are added to the wright model, using their index in the list.
+     * @param modelsToMapInRightOrder the list of models to map in the right order,
+     * this is used to ensure that the errors are added to the right model, using their index in the list.
      * @param multipleErrorObjectConstructor a supplier to create a new instance of the MultipleErrorObject. If you don't use personalized implementation, simply use MultipleErrorObject::new.
      */
-    public MultipleErrorObjectList(String title, List<M> modelsToMapInWrightOrder,Supplier<T> multipleErrorObjectConstructor) {
+    public MultipleErrorObjectList(String title, List<M> modelsToMapInRightOrder,Supplier<T> multipleErrorObjectConstructor) {
         this.errors = new HashMap<>();
         this.title = title;
         this.multipleErrorObjectConstructor = multipleErrorObjectConstructor;
-        for (int i = 0; i < modelsToMapInWrightOrder.size(); i++) {
-            M model = modelsToMapInWrightOrder.get(i);
+        for (int i = 0; i < modelsToMapInRightOrder.size(); i++) {
+            M model = modelsToMapInRightOrder.get(i);
             indexMap.put(model, i);
         }
     }

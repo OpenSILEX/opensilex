@@ -41,14 +41,14 @@ To improve performance, the importation of germplasms was reworked. We now use a
 
 Moreover, the importation is an upsert operation, meaning that if a germplasm already exists in the database, it will be updated with the new information from the CSV file. If it does not exist, it will be created.
 
-One of the requirements of the importation is to have a very detail error return, containing each error for each germplasm.
+One of the requirements of the importation is to have a very detailed error return, containing each error for each germplasm.
 
 ### Business logic
 
 The business logic is the same as the creation web service, any germplasm present in the CSV file should :
-- has a unique URI (unique in the database and in the CSV file)
-- has a valid RDF type (a type that exist in ontology and is a subclass of `OESO:Germplasm`)
-- sometimes has a species, variety or accession, according to the following rules :
+- have a unique URI (unique in the database and in the CSV file)
+- have a valid RDF type (a type that exists in ontology and is a subclass of `OESO:Germplasm`)
+- sometimes have a species, variety or accession, according to the following rules :
   - if it is a species, no other information is needed
   - if it is a variety, it should have a species
   - if it is an accession, it should have a variety or a species
@@ -61,7 +61,7 @@ The business logic is the same as the creation web service, any germplasm presen
 
 ## Technical specifications
 
-Germplasms are send as a list of `GermplasmDTO` objects, which are created from the CSV fil by the web interface with JS.
+Germplasms are sent as a list of `GermplasmDTO` objects, which are created from the CSV file by the web interface with JS.
 
 ### Upsert Service
 

@@ -1422,7 +1422,7 @@ export default class OpenSilexVuePlugin {
      * > This function checks if two URIs are the same
      * @param uri1 - The first URI to compare.
      * @param uri2 - The URI to check against.
-     * @returns The long URI of the first URI is being compared to the long URI of the second URI.
+     * @returns true if the two URIs are the same, comparison is done on their long uri.
      */
     public compareUris(uri1, uri2) {
         return this.getLongUri(uri1) === this.getLongUri(uri2);

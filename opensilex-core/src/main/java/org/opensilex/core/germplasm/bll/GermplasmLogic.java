@@ -205,8 +205,8 @@ public class GermplasmLogic {
             if (germplasmModel.getUri() != null && !URIDeserializer.validateURI(germplasmModel.getUri().toString())) {
                 errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getUri().toString());
             }
-            if (validateUriUsingMap(germplasmModel.getType(), uriValidationMap) ) {
-                errors.addError(germplasmModel, "Invalid URI format for URI: " + germplasmModel.getType().toString());
+            if (!validateUriUsingMap(germplasmModel.getType(), uriValidationMap) ) {
+                errors.addError(germplasmModel, getInvalidUriFormatOrNullErrorMessage(germplasmModel.getType(), "Germplasm type"));
             }
             if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
                 errors.addError(germplasmModel, "Germplasm name is mandatory");
@@ -214,6 +214,9 @@ public class GermplasmLogic {
         });
     }
 
+    /**
+     * @return false if the URI is null or not valid, true otherwise.
+     */
     private boolean validateUriUsingMap(URI uri, Map<URI, Boolean> uriValidationMap) {
         if (uri == null) {
             return false;
@@ -287,24 +290,29 @@ public class GermplasmLogic {
 
         //list every URI by type, type being species, variety or accession only if uri is valid
         Map<Resource, Set<URI>> urisByType = Map.of(Oeso.Species, new HashSet<>(), Oeso.Variety, new HashSet<>(), Oeso.Accession, new HashSet<>());
+        Map<Resource, Map<URI, Boolean>> uriValidationMap = Map.of(Oeso.Species, new HashMap<>(), Oeso.Variety, new HashMap<>(), Oeso.Accession, new HashMap<>());
+
         germplasmModels.forEach(germplasmModel -> {
             if (germplasmModel.getSpecies() != null) {
-                if (URIDeserializer.validateURI(germplasmModel.getSpecies().getUri().toString())) {
+                if (validateUriUsingMap(germplasmModel.getSpecies().getUri(), uriValidationMap.get(Oeso.Species))) {
                     urisByType.get(Oeso.Species).add(germplasmModel.getSpecies().getUri());
                 }
-                else errors.addError(germplasmModel, "Invalid species URI format for URI: " + germplasmModel.getUri().toString());
+                else errors.addError(germplasmModel,
+                        getInvalidUriFormatOrNullErrorMessage(germplasmModel.getSpecies().getUri(), "Species"));
             }
             if (germplasmModel.getVariety() != null) {
-                if (URIDeserializer.validateURI(germplasmModel.getVariety().getUri().toString())) {
+                if (validateUriUsingMap(germplasmModel.getVariety().getUri(), uriValidationMap.get(Oeso.Variety))) {
                     urisByType.get(Oeso.Variety).add(germplasmModel.getVariety().getUri());
                 }
-                else errors.addError(germplasmModel, "Invalid variety URI format for URI: " + germplasmModel.getUri().toString());
+                else errors.addError(germplasmModel,
+                        getInvalidUriFormatOrNullErrorMessage(germplasmModel.getVariety().getUri(), "Variety"));
             }
             if (germplasmModel.getAccession() != null) {
-                if (URIDeserializer.validateURI(germplasmModel.getAccession().getUri().toString())) {
+                if (validateUriUsingMap(germplasmModel.getAccession().getUri(), uriValidationMap.get(Oeso.Accession))) {
                     urisByType.get(Oeso.Accession).add(germplasmModel.getAccession().getUri());
                 }
-                else errors.addError(germplasmModel, "Invalid accession URI format for URI: " + germplasmModel.getUri().toString());
+                else errors.addError(germplasmModel,
+                        getInvalidUriFormatOrNullErrorMessage(germplasmModel.getAccession().getUri(), "Accession"));
             }
         });
 
@@ -337,6 +345,13 @@ public class GermplasmLogic {
                 }
             });
         }
+    }
+
+    private String getInvalidUriFormatOrNullErrorMessage(URI uri, String typeName) {
+        if (uri == null) {
+            return typeName + " URI cannot be null.";
+        }
+        return "Invalid " + typeName + " URI format: " + uri;
     }
 
     private void addErrorIfUriDoesntExistForDependency(GermplasmModel germplasm, Resource type, URI dependencyUri, List<URI>notExistingURI, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) {

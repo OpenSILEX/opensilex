@@ -1,12 +1,11 @@
 /*
- * ******************************************************************************
- *  *                         StapleApiUtils.java
- *  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
- *  * Copyright © INRAE 2023.
- *  * Last Modification: 27/09/2023
- *  * Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
- *  *
- *  *****************************************************************************
+ * *****************************************************************************
+ *                         GermplasmLogic.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2025.
+ * Last Modification: 07/07/2025 13:21
+ * Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr,
+ * *****************************************************************************
  */
 
 package org.opensilex.core.germplasm.bll;

@@ -31,12 +31,20 @@
             : $t("ResultModalView.annotation-imported")
         }}
       </p>
-      <opensilex-ProvenanceDetails
-        label="ResultModalView.provenanceLabel"
-        v-if="provenance"
-        :provenance="provenance"
-        :dataImportResult="true"
-      ></opensilex-ProvenanceDetails>
+      <div class="details-container">
+        <opensilex-ProvenanceDetails
+          label="ResultModalView.provenanceLabel"
+          v-if="provenance"
+          :provenance="provenance"
+          :dataImportResult="true"
+        />
+
+        <opensilex-BatchDetails
+          label="ResultModalView.batchLabel"
+          v-if="batch"
+          :batchUri="batch"
+        />
+      </div>
     </template>
 
     <template v-slot:modal-footer> 
@@ -64,6 +72,7 @@ export default class ResultModalView extends Vue {
   nbAnnotationsImported: number = null;
 
   provenance: any = null;
+  batch: string = null;
 
   setNbLinesImported(value: number) {
     this.nbLinesImported = value;
@@ -75,6 +84,10 @@ export default class ResultModalView extends Vue {
 
   setProvenance(value) {
     this.provenance = value;
+  }
+
+  setBatch(value) {
+    this.batch = value;
   }
 
   show() {
@@ -99,6 +112,12 @@ export default class ResultModalView extends Vue {
   color: rgb(40, 167, 69);
   font-weight: bold;
 }
+
+.details-container {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 </style>
 <i18n>
   fr: 
@@ -109,6 +128,7 @@ export default class ResultModalView extends Vue {
       provenanceLabel : Provenance
       annotations-imported: annotations ont été importées avec succès
       annotation-imported: Annotation importée avec succès
+      batchLabel : Batch
 
   en: 
     ResultModalView:
@@ -118,4 +138,5 @@ export default class ResultModalView extends Vue {
       provenanceLabel : Provenance
       annotations-imported: annotations have been imported successfully
       annotation-imported: Annotation imported successfully
+      batchLabel : Batch
 </i18n>

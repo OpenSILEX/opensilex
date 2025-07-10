@@ -41,6 +41,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -269,6 +270,9 @@ public class DeviceDAO {
         Node measuresNode = Oeso.measures.asNode();
         boolean runUpdate = false;
 
+        //An index to append to the rdfType var for each device so that it still works when they don't
+        //have the same type
+        int deviceIndex = 0;
         for(var entry : deviceToVariables.entrySet()){
             Set<URI> variables = entry.getValue();
             if(variables.isEmpty()){
@@ -286,8 +290,10 @@ public class DeviceDAO {
             });
 
             // Add where clause in order to match the existing device
-            update.addWhere(TYPE_VAR, Ontology.subClassAny, Oeso.Device.asNode())
-                    .addGraph(graph, new WhereBuilder().addWhere(deviceNode, RDF.type, TYPE_VAR));
+            Var deviceTypeVar = makeVar(SPARQLResourceModel.TYPE_FIELD + deviceIndex);
+            update.addWhere(deviceTypeVar, Ontology.subClassAny, Oeso.Device.asNode())
+                    .addGraph(graph, new WhereBuilder().addWhere(deviceNode, RDF.type, deviceTypeVar));
+            ++deviceIndex;
         }
 
         if(runUpdate){

@@ -140,7 +140,7 @@ export default class ProvenanceDetails extends Vue {
 .dataImportProvenanceDetails{
   width: auto;
   min-width: auto;
-  max-width: 340px;
+  max-width: 500px;
 }
 
 @media screen and (min-width: 1200px) {
@@ -152,7 +152,7 @@ export default class ProvenanceDetails extends Vue {
   }
   .dataImportProvenanceDetails{
     min-width: 340px;
-    max-width: 340px;
+    max-width: 500px;
     margin-left: 0;
     overflow: hidden;
   }

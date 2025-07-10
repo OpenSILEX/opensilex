@@ -36,7 +36,7 @@
       <div class="col">
         <!-- bodyValue -->
         <opensilex-TextAreaForm
-            v-model="form.description"
+            v-model="descriptionTrimmed"
             :required="true"
             label="Annotation.description"
             @keydown.enter.native.stop
@@ -86,6 +86,13 @@ export default class AnnotationForm extends Vue {
         }
     );
 
+  }
+
+  get descriptionTrimmed(): string {
+    return this.form.description;
+  }
+  set descriptionTrimmed(value: string) {
+    this.form.description = value.trim();
   }
 
   beforeDestroy() {

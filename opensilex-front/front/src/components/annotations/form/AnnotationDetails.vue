@@ -86,7 +86,7 @@ en:
   Annotation:
     details: Details annotation
     motivation: Motivation
-    publisher: Published
+    publisher: Publisher
     published: Date
     description: Description
 fr:

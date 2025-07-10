@@ -147,6 +147,8 @@ public class AnnotationDAO {
         // sorting by publication date
         specificExprMapping.put("published", publishedField -> Stream.of(new ExprVar(AnnotationModel.PUBLICATION_DATE_FIELD)));
 
+        specificExprMapping.put("description", descriptionField -> Stream.of(new E_StrLowerCase(new ExprVar(AnnotationModel.DESCRIPTION_FIELD))));
+
         // Default sort is in reverse chronological order (from latest to oldest)
         defaultOrderByList.add(new OrderBy(AnnotationModel.PUBLICATION_DATE_FIELD, Order.DESCENDING));
 

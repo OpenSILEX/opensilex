@@ -7,13 +7,14 @@
   >
     <template v-slot:field="field">
       <b-form-textarea
+        v-bind="$attrs"
+        v-on="$listeners"
         :id="field.id"
         v-model="stringValue"
         :disabled="disabled"
         :required="required"
         :placeholder="$t(placeholder)"
         :autocomplete="autocomplete"
-        rows="3"
       ></b-form-textarea>
     </template>
   </opensilex-FormField>
@@ -29,7 +30,9 @@ import {
 } from "vue-property-decorator";
 import Vue from "vue";
 
-@Component
+@Component({
+  inheritAttrs: false
+})
 export default class TextAreaForm extends Vue {
   $opensilex: any;
 

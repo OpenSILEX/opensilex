@@ -7,6 +7,7 @@
       no-close-on-esc
       centered
       @close="close()"
+      @keydown.enter.native.stop="close"
   >
     <div class="details-container">
       <p><strong>URI :</strong>
@@ -15,7 +16,10 @@
             :value="annotationDetails.uri"
         />
       </p>
-      <p><strong>Motivation :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name ? annotationDetails.motivation.name : "Non spécifié" }}</p>
+      <p><strong>{{ $t('Annotation.motivation') }}  :</strong> {{ annotationDetails.motivation && annotationDetails.motivation.name || $t('component.common.not-specified') }}</p>
+      <p><strong>{{ $t('Annotation.publisher') }}  :</strong> {{ annotationDetails.publisher || $t('component.common.not-specified') }}</p>
+      <p><strong>{{ $t('Annotation.published') }}  :</strong> {{ formatDate(annotationDetails.published) }}</p>
+      <p><strong>{{ $t('Annotation.description') }}  :</strong> {{ annotationDetails.description || $t('component.common.not-specified') }}</p>
     </div>
     <div class="text-right">
       <b-button variant="primary" class="helpButton" @click="close">OK</b-button>
@@ -28,13 +32,26 @@ import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
 
 @Component
 export default class AnnotationDetails extends Vue {
-  @Prop({ default: () => ({}) }) annotationDetails!: { uri?: string; motivation?: { name?: string } };
+  @Prop({ default: () => ({}) }) annotationDetails!: {
+    uri?: string;
+    motivation?: { name?: string };
+    publisher?:string;
+    published?:string;
+    description?:string
+  };
   @PropSync("value",{ default: false }) isVisible!: boolean;
 
   close() {
-    this.$emit("input", false); // Ferme la modale correctement
-    this.$emit("close"); // Envoie un événement "close" au parent si besoin
+    this.$emit("input", false);
+    this.$emit("close");
   }
+
+  formatDate(dateStr: string): string {
+    const localeString = new Date(dateStr).toLocaleString();
+
+    return localeString.replace(/\//g, '-');
+  }
+
 }
 </script>
 
@@ -68,8 +85,16 @@ export default class AnnotationDetails extends Vue {
 en:
   Annotation:
     details: Details annotation
+    motivation: Motivation
+    publisher: Publisher
+    published: Date
+    description: Description
 fr:
   Annotation:
     details: Détails de l'annotation
+    motivation: Motivation
+    publisher: Publieur
+    published: Date
+    description: Description
 </i18n>
 

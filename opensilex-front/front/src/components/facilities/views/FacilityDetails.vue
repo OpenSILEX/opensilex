@@ -8,6 +8,11 @@
               @onUpdate="refresh"
             >
             </opensilex-FacilityDescription>
+            <opensilex-AssociatedVariableList
+                :variableList="selected.variables"
+                :deviceList="selected.devices"
+                :facilityUri="selected.uri"
+            ></opensilex-AssociatedVariableList>
         </div>
       </div>
 
@@ -17,14 +22,6 @@
             :nameFilter.sync="experimentName"
             ref="experimentsView"
         ></opensilex-AssociatedExperimentsList>
-      </div>
-
-      <div class="col-md-6">
-        <opensilex-AssociatedVariableList
-            :variableList="selected.variables"
-            :deviceList="selected.devices"
-            :facilityUri="selected.uri"
-        ></opensilex-AssociatedVariableList>
       </div>
     </div>
 </template>
@@ -41,7 +38,6 @@ import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AssociatedExperimentsList from "../../experiments/AssociatedExperimentsList.vue";
-import AssociatedVariablesList from "../../variables/AssociatedVariableList.vue";
 
 @Component
 export default class FacilityDetails extends Vue {

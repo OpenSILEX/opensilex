@@ -6,8 +6,9 @@
           :globalFilterField="true"
           :items="variableAndDeviceListData"
           :fields="fields"
-          :defaultStortBy="variableName"
+          sortBy="variableName"
           :defaultPageSize="5"
+          :customFilter="customFilter"
       >
         <template v-slot:cell(variableName)="{data}">
           <opensilex-UriLink
@@ -66,11 +67,13 @@ export default class AssociatedVariablesList extends Vue {
   fields = [
     {
       key: "variableName",
-      label: "AssociatedVariablesList.variables"
+      label: "AssociatedVariablesList.variables",
+      sortable: true
     },
     {
       key: "devices",
-      label: "AssociatedVariablesList.devices"
+      label: "AssociatedVariablesList.devices",
+      sortable: false
     }
   ];
 
@@ -106,6 +109,32 @@ export default class AssociatedVariablesList extends Vue {
     const measures_prop = this.$opensilex.Oeso.MEASURES_PROP_URI;
     return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
   }
+
+  customFilter(item, filter) {
+    try {
+      const regex = new RegExp(filter, "i");
+
+      // Safely join all device names into one string
+      const deviceString = (item.devices || [])
+          .map(device => device.name || "")
+          .join(" ");
+
+
+      return regex.test(item.variableName) || regex.test(deviceString);
+    } catch (e) {
+      // Fallback to simple substring match
+      const deviceString = (item.devices || [])
+          .map(device => device.name || "")
+          .join(" ")
+          .toLowerCase();
+
+      return (
+          (item.variableName || "").toLowerCase().includes(filter.toLowerCase()) ||
+          deviceString.includes(filter.toLowerCase())
+      );
+    }
+  }
+
 }
 </script>
 
@@ -123,14 +152,14 @@ export default class AssociatedVariablesList extends Vue {
 en:
   AssociatedVariablesList:
     variablesNameFilter: Search by variable name
-    relatedVariables: Related Variables
+    relatedVariables: Related Variables and Devices
     devices: Devices
     variables: Variables
 
 fr:
   AssociatedVariablesList:
     variablesNameFilter: Rechercher par nom de variable
-    relatedVariables: Variables liées
+    relatedVariables: Variables et appareils liés
     devices: Appareils
     variables: Variables
 </i18n>

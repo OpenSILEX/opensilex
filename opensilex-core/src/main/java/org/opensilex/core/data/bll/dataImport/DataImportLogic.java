@@ -62,6 +62,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -269,7 +270,7 @@ public class DataImportLogic {
         }
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
-        documentModel.setTitle(validationModel.getBatchHistoryUri() == null ? DEFAULT_DOCUMENT_NAME : validationModel.getBatchHistoryUri().toString());
+        documentModel.setTitle(DEFAULT_DOCUMENT_NAME + SPARQLDeserializers.getUriSuffix(validationModel.getBatchHistoryUri()));
         documentModel.setFormat(ZIP);
         documentModel.setPublisher(user.getUri());
         documentModel.setDeprecated("false");

@@ -229,6 +229,25 @@ public class SPARQLDeserializers {
         }
     }
 
+    public static String getUriSuffix(URI uri) throws Exception{
+        if (uri == null) {
+            return null;
+        }
+        String uriString = getShortURI(uri);
+        int seperatorIndex = uriString.lastIndexOf('/');
+        if (seperatorIndex == -1) {
+            // No '/' found
+            seperatorIndex = uriString.lastIndexOf(':');
+            if (seperatorIndex == -1) {
+                throw new Exception("The uri" + uriString + "has no : or / characters.");
+            }
+        }
+        if(seperatorIndex == uriString.length() - 1){
+            return "";
+        }
+        return uriString.substring(seperatorIndex + 1);
+    }
+
     public static Node[] nodeListURIAsArray(Collection<URI> uris) throws Exception {
         SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
 

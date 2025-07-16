@@ -47,23 +47,10 @@ import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLResult;
 
-
-import java.net.URI;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -200,16 +187,9 @@ public class DocumentDAO {
      * @throws Exception
      */
     public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        /*ExperimentDAO exp = new ExperimentDAO(sparql, nosql);
-        Set<URI> userExperiments = exp.getUserExperiments(user);
-        List<URI> documentURIs = new ArrayList<>();
-        System.out.println("*** userExperiments 2 *** : " + userExperiments);
-        documentURIs = getExperimentDocuments(userExperiments, user);
-        System.out.println("*** documentURIs 2 *** : " + documentURIs);*/
 
         //Uris to exclude from the document search
         List<URI> excludedUris = getRestrictedDocumentUris(user);
-        System.out.println("*** excludedUris *** : " + excludedUris);
 
         return sparql.searchWithPagination(
             DocumentModel.class,
@@ -224,9 +204,7 @@ public class DocumentDAO {
                 appendDateFilter(select, date);
                 appendTargetsFilter(multipleGraphGroupElem, targets);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);
-                System.out.println("*** before appendExcludedURIsFilter ***");
                 appendExcludedURIsFilter(select, excludedUris);
-                System.out.println("*** after appendExcludedURIsFilter ***");
                 // If either the subject or the "multiple" (ie. title or subject) fields is present, then the "subject"
                 // clause must be added in the query (because it is not present by default)
                 if (StringUtils.isNotEmpty(subject) || StringUtils.isNotEmpty(multiple)) {
@@ -323,18 +301,10 @@ public class DocumentDAO {
     }
 
     private void appendExcludedURIsFilter(SelectBuilder select, List<URI> excludedUris) throws Exception {
-        System.out.println("*** appendExcludedURIsFilter ***");
         if (excludedUris != null && !excludedUris.isEmpty()) {
-            //Expr excludeFilter = SPARQLQueryHelper.notInURIFilter(DocumentModel.SUBJECT_FIELD, convertURIsToStrings(excludedUris));
-            Expr excludeFilter = SPARQLQueryHelper.inURIFilter(DocumentModel.SUBJECT_FIELD, excludedUris);
+            Expr excludeFilter = SPARQLQueryHelper.notInURIFilter("uri", excludedUris);
             select.addFilter(excludeFilter);
         }
-    }
-
-    public static List<String> convertURIsToStrings(List<URI> uris) {
-        return uris.stream()
-                .map(URI::toString)
-                .collect(Collectors.toList());
     }
 
     /**

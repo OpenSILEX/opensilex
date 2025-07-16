@@ -62,6 +62,7 @@ import org.opensilex.sparql.service.SPARQLResult;
 
 import java.net.URI;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -208,7 +209,8 @@ public class DocumentDAO {
 
         //Uris to exclude from the document search
         List<URI> excludedUris = getRestrictedDocumentUris(user);
-        
+        System.out.println("*** excludedUris *** : " + excludedUris);
+
         return sparql.searchWithPagination(
             DocumentModel.class,
             user.getLanguage(),
@@ -222,6 +224,9 @@ public class DocumentDAO {
                 appendDateFilter(select, date);
                 appendTargetsFilter(multipleGraphGroupElem, targets);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);
+                System.out.println("*** before appendExcludedURIsFilter ***");
+                appendExcludedURIsFilter(select, excludedUris);
+                System.out.println("*** after appendExcludedURIsFilter ***");
                 // If either the subject or the "multiple" (ie. title or subject) fields is present, then the "subject"
                 // clause must be added in the query (because it is not present by default)
                 if (StringUtils.isNotEmpty(subject) || StringUtils.isNotEmpty(multiple)) {
@@ -317,6 +322,21 @@ public class DocumentDAO {
         }
     }
 
+    private void appendExcludedURIsFilter(SelectBuilder select, List<URI> excludedUris) throws Exception {
+        System.out.println("*** appendExcludedURIsFilter ***");
+        if (excludedUris != null && !excludedUris.isEmpty()) {
+            //Expr excludeFilter = SPARQLQueryHelper.notInURIFilter(DocumentModel.SUBJECT_FIELD, convertURIsToStrings(excludedUris));
+            Expr excludeFilter = SPARQLQueryHelper.inURIFilter(DocumentModel.SUBJECT_FIELD, excludedUris);
+            select.addFilter(excludeFilter);
+        }
+    }
+
+    public static List<String> convertURIsToStrings(List<URI> uris) {
+        return uris.stream()
+                .map(URI::toString)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Appends the following clause to the elementGroup :
      *
@@ -373,10 +393,6 @@ public class DocumentDAO {
         }
     }
 
-    private void appendExcludeUris() {
-        
-    }
-
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
@@ -431,50 +447,4 @@ public class DocumentDAO {
                 sparqlResult -> URI.create(sparqlResult.getStringValue(DocumentModel.URI_FIELD))
         ).toList();
     }
-
-    public List<URI> getExperimentDocuments(Set<URI> userExperiments, AccountModel user) throws Exception {
-        System.out.println("*** getExperimentDocuments ***");
-        List<URI> documentURIs = new ArrayList<>();
-
-        // Construction de la requête
-        SelectBuilder select = new SelectBuilder();
-
-        Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);       // ex: ?uri
-        Var targetVar = SPARQLQueryHelper.makeVar(DocumentModel.TARGET_FIELD); // ex: ?target
-
-        // Graph où chercher les documents
-        select.addGraph(sparql.getDefaultGraph(DocumentModel.class), uriVar, OA.hasTarget.asNode(), targetVar);
-        if(!user.isAdmin()){
-            if (userExperiments == null || userExperiments.isEmpty()) {
-                return documentURIs;
-            }
-            // Construction du filtre FILTER (?target IN (...))
-            ExprVar exprTarget = new ExprVar(targetVar);
-            ExprList uriExprList = new ExprList();
-
-            for (URI experimentURI : userExperiments) {
-                uriExprList.add(NodeValue.makeNode(NodeFactory.createURI(experimentURI.toString())));
-            }
-
-            //Expr inFilter = new E_OneOf(exprTarget, uriExprList);
-            Expr inFilter = new E_OneOf(exprTarget, uriExprList);
-            select.addFilter(inFilter);
-        }
-
-        // Execute Query
-        List<SPARQLResult> results = sparql.executeSelectQuery(select);
-
-        System.out.println("*** LA REQUETE : ***");
-        System.out.println(select);
-        for (SPARQLResult result : results) {
-            documentURIs.add(new URI(result.getStringValue(DocumentModel.URI_FIELD)));
-        }
-
-        return documentURIs;
-    }
-
-    //J.D.
-    //List<URI> calculateRestrictedDocumentUris(URI uri){
-    //    return none;
-    //}
 }

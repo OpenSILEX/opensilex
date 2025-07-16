@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
 import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -258,6 +260,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             CsvCellValidationContext cell = new CsvCellValidationContext(totalRowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, model.getName(), rdfsLabel);
             cell.setMessage(errorMsg);
             validator.addMissingRequiredValue(cell);
+            return;
         }
 
         // inside an XP
@@ -267,7 +270,13 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             if (model.getUri() != null) {
                 // query used to check existence of a URI (return false/true) in XP
                 SelectBuilder checkUriQuery = checkUriExistInXP(model.getUri());
-                List<SPARQLResult> result = sparql.executeSelectQuery(checkUriQuery);
+                List<SPARQLResult> result;
+                try {
+                    result = sparql.executeSelectQuery(checkUriQuery);
+                } catch (HTTPQueryEvaluationException | MalformedQueryException e) {
+                    validator.addInvalidURIError(new CsvCellValidationContext(totalRowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+                    return;
+                }
                 String isURIExistInXP = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
 
                 // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO

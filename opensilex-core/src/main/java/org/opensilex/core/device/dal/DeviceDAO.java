@@ -199,17 +199,10 @@ public class DeviceDAO {
             appendTypeFilter(customHandlerByFields, rdfType);
         }
 
-        SparqlSchemaNode<PersonModel> personInChargeNode = new SparqlSchemaNode<>(
-                PersonModel.class,
-                DeviceModel.PERSON_IN_CHARGE_FIELD,
-                new ArrayList<>(),
-                false,
-                false
-        );
-
         SparqlSchemaRootNode<DeviceModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
                 DeviceModel.class,
-                Collections.singletonList(personInChargeNode),
+                Collections.singletonList(DeviceModel.PERSON_IN_CHARGE_FIELD),
                 true
         );
 

@@ -138,41 +138,10 @@ public class ProjectDAO {
             endDate=null;
         }
 
-        SparqlSchemaNode<PersonModel> adminContactsNode = new SparqlSchemaNode<>(
-                PersonModel.class,
-                ProjectModel.ADMINISTRATIVE_CONTACTS_FIELD,
-                new ArrayList<>(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<PersonModel> sciContactsNode = new SparqlSchemaNode<>(
-                PersonModel.class,
-                ProjectModel.SCIENTIFIC_CONTACTS_FIELD,
-                new ArrayList<>(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<PersonModel> coordinatorsNode = new SparqlSchemaNode<>(
-                PersonModel.class,
-                ProjectModel.COORDINATORS_FIELD,
-                new ArrayList<>(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<ProjectModel> relatedProjectsNode = new SparqlSchemaNode<>(
-                ProjectModel.class,
-                ProjectModel.RELATED_PROJECTS_FIELD,
-                new ArrayList<>(),
-                true,
-                false
-        );
-
         SparqlSchemaRootNode<ProjectModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
                 ProjectModel.class,
-                List.of(adminContactsNode, sciContactsNode, coordinatorsNode, relatedProjectsNode),
+                List.of(ProjectModel.ADMINISTRATIVE_CONTACTS_FIELD, ProjectModel.SCIENTIFIC_CONTACTS_FIELD, ProjectModel.COORDINATORS_FIELD, ProjectModel.RELATED_PROJECTS_FIELD),
                 false
         );
 

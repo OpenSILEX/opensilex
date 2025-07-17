@@ -20,6 +20,7 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.jetbrains.annotations.NotNull;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
@@ -38,7 +39,9 @@ import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -190,7 +193,6 @@ public class ExperimentDAO {
         LocalDate startDate;
         LocalDate endDate;
         if (filter.getYear() != null) {
-            String yearString = Integer.toString(filter.getYear());
             startDate = LocalDate.of(filter.getYear(), 1, 1);
             endDate = LocalDate.of(filter.getYear(), 12, 31);
         } else {
@@ -198,64 +200,7 @@ public class ExperimentDAO {
             endDate = null;
         }
 
-        SparqlSchemaNode<ProjectModel> projectsNode = new SparqlSchemaNode<>(
-                ProjectModel.class,
-                ExperimentModel.PROJECT_URI_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<PersonModel> scientificSupervisorsNode = new SparqlSchemaNode<>(
-                PersonModel.class,
-                ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<PersonModel> technicalSupervisorsNode = new SparqlSchemaNode<>(
-                PersonModel.class,
-                ExperimentModel.TECHNICAL_SUPERVISOR_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<FacilityModel> facilityNode = new SparqlSchemaNode<>(
-                FacilityModel.class,
-                ExperimentModel.FACILITY_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<SpeciesModel> speciesNode = new SparqlSchemaNode<>(
-                SpeciesModel.class,
-                ExperimentModel.SPECIES_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        ArrayList<SparqlSchemaNode<?>> childrenOfRoot = new ArrayList<>(List.of(facilityNode, speciesNode));
-        if(fetchProjects){
-            childrenOfRoot.add(projectsNode);
-        }
-        if(fetchScientificSupervisors){
-            childrenOfRoot.add(scientificSupervisorsNode);
-        }
-        if(fetchTechnicalSupervisors){
-            childrenOfRoot.add(technicalSupervisorsNode);
-        }
-
-        SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(
-                ExperimentModel.class,
-                childrenOfRoot,
-                false
-        );
-
-        SparqlSchema<ExperimentModel> schema = new SparqlSchema<>(rootNode);
+        SparqlSchema<ExperimentModel> schema = getSparqlSchema(fetchProjects, fetchScientificSupervisors, fetchTechnicalSupervisors);
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPaginationUsingSchema(
                 ExperimentModel.class,
@@ -279,6 +224,29 @@ public class ExperimentDAO {
 
         return xps;
 
+    }
+
+    private SparqlSchema<ExperimentModel> getSparqlSchema(boolean fetchProjects, boolean fetchScientificSupervisors, boolean fetchTechnicalSupervisors) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        ArrayList<String> childrenOfRoot = new ArrayList<>(List.of(ExperimentModel.FACILITY_FIELD, ExperimentModel.SPECIES_FIELD));
+        if(fetchProjects){
+            childrenOfRoot.add(ExperimentModel.PROJECT_URI_FIELD);
+        }
+        if(fetchScientificSupervisors){
+            childrenOfRoot.add(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
+        }
+        if(fetchTechnicalSupervisors){
+            childrenOfRoot.add(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
+        }
+
+        SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
+                ExperimentModel.class,
+                childrenOfRoot,
+                false
+        );
+
+        SparqlSchema<ExperimentModel> schema = new SparqlSchema<>(rootNode);
+        return schema;
     }
 
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {

@@ -1,3 +1,11 @@
+/*
+ * *****************************************************************************
+ *                         SparqlSchema.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2024.
+ * Contact: maximilian.hart@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ * *****************************************************************************
+ */
 package org.opensilex.sparql.service.schemaQuery;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -6,7 +14,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

@@ -216,25 +216,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return executeDescribeQuery(describe);
     }
 
-    /**
-     * Runs a SPARQL describe query on a set of URI (fetch all triplets they are mentioned in)
-     *
-     * @param graph to search in to make the request run faster
-     * @param uris of the elements we want to describe
-     * @return a list of SPARQLStatements (triplets)
-     * @throws SPARQLException
-     */
-    public List<SPARQLStatement> describeMany(Node graph, Set<URI> uris) throws SPARQLException {
-        DescribeBuilder describe = new DescribeBuilder();
-        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-        describe.addVar(uriVar);
-        if (graph != null) {
-            describe.from(graph.getURI());
-        }
-        SPARQLQueryHelper.addWhereUriValues(describe, uriVar.getVarName(), uris);
-        return executeDescribeQuery(describe);
-    }
-
     @Override
     public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException {
         LOGGER.debug("SPARQL GET GRAPH STATEMENTS FOR: " + graph);

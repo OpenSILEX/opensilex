@@ -75,41 +75,10 @@ public class FacilityDAO {
     public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, FacilityLogic.FacilitySearchRights organizationsAndSites) throws Exception {
         filter.validate();
 
-        SparqlSchemaNode<OrganizationModel> orgaNode = new SparqlSchemaNode<>(
-                OrganizationModel.class,
-                FacilityModel.ORGANIZATION_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<SiteModel> siteNode = new SparqlSchemaNode<>(
-                SiteModel.class,
-                FacilityModel.SITE_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<VariablesGroupModel> variablesNode = new SparqlSchemaNode<>(
-                VariablesGroupModel.class,
-                FacilityModel.VARIABLE_GROUPS_FIELD,
-                Collections.emptyList(),
-                true,
-                false
-        );
-
-        SparqlSchemaNode<FacilityAddressModel> addressNode = new SparqlSchemaNode<>(
-                FacilityAddressModel.class,
-                FacilityModel.ADDRESS_FIELD,
-                Collections.emptyList(),
-                false,
-                false
-        );
-
         SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
                 FacilityModel.class,
-                List.of(orgaNode, siteNode, variablesNode, addressNode),
+                List.of(FacilityModel.ORGANIZATION_FIELD, FacilityModel.SITE_FIELD, FacilityModel.VARIABLE_GROUPS_FIELD, FacilityModel.ADDRESS_FIELD),
                 true
         );
 

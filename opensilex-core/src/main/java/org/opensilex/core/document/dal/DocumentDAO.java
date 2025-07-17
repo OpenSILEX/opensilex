@@ -30,6 +30,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -130,6 +131,8 @@ public class DocumentDAO {
     }
 
     public byte[] getFile(URI uri) throws Exception {
+        //List<URI> excludedUris = getRestrictedDocumentUris(user);
+
         try {
             return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
         }catch (NoSuchFileException | FileNotFoundException ex){
@@ -138,6 +141,11 @@ public class DocumentDAO {
     }
 
     public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
+        URI extendedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
+        if (excludedUris != null && excludedUris.contains(extendedURI)) {
+            return null;
+        }
         return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());   
     }
 

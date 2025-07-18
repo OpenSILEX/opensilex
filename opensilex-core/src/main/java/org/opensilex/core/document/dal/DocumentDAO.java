@@ -149,7 +149,6 @@ public class DocumentDAO {
             } else {
                 return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
             }
-
         } catch (NoSuchFileException | FileNotFoundException ex){
             throw new NotFoundURIException(ex.getMessage(),uri);
         }

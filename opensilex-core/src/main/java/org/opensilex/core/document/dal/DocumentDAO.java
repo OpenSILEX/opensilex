@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.document.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -15,7 +16,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.*;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
@@ -23,18 +23,14 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -141,11 +137,10 @@ public class DocumentDAO {
     }
 
     public byte[] getFile(URI uri, AccountModel user) throws Exception {
-        URI extendedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
         List<URI> excludedUris = getRestrictedDocumentUris(user);
         try {
-            if(excludedUris != null && excludedUris.contains(extendedURI)) {
-                throw new NotFoundURIException(uri);
+            if(!CollectionUtils.isEmpty(excludedUris) && excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))){
+                throw new Exception("User does not have access to this file");
             } else {
                 return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
             }
@@ -155,9 +150,8 @@ public class DocumentDAO {
     }
 
     public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
-        URI extendedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
         List<URI> excludedUris = getRestrictedDocumentUris(user);
-        if(excludedUris != null && excludedUris.contains(extendedURI)) {
+        if(!CollectionUtils.isEmpty(excludedUris) && excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))){
             return null;
         }
         return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());   
@@ -343,10 +337,12 @@ public class DocumentDAO {
         }
     }
 
-    private void appendExcludedURIsFilter(SelectBuilder select, List<URI> excludedUris) throws Exception {
-        if (excludedUris != null && !excludedUris.isEmpty()) {
-            Expr excludeFilter = SPARQLQueryHelper.notInURIFilter("uri", excludedUris);
-            select.addFilter(excludeFilter);
+    private void appendExcludedURIsFilter(SelectBuilder select, List<URI> excludedUris) {
+        if (!CollectionUtils.isEmpty(excludedUris)) {
+            Expr excludeFilter = SPARQLQueryHelper.notInURIFilter(DocumentModel.URI_FIELD, excludedUris);
+            if (excludeFilter != null){
+                select.addFilter(excludeFilter);
+            }
         }
     }
 

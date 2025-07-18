@@ -28,6 +28,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
+import org.opensilex.core.exception.DuplicateURIListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -89,6 +90,7 @@ public class ScientificObjectDAO {
 
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
+    public static final String NON_UNIQUE_URI_ERROR_MSG = "Object URI <%s> must be unique. %s has the same URI";
     public static final String NO_NAME_ERROR_MSG = "Object name must be present which is %s";
 
 
@@ -729,6 +731,23 @@ public class ScientificObjectDAO {
 
         if(!localDuplicatesByUri.isEmpty()){
             throw new DuplicateNameListException(localDuplicatesByUri);
+        }
+    }
+
+    public void checkLocalURIDuplicates(List<ScientificObjectModel> models) throws DuplicateURIListException {
+
+        Set<URI> uniqueURIs = new HashSet<>();
+
+        Map<URI,String> localDuplicatesByNames = new HashMap<>();
+        models.forEach(model -> {
+            // if URI already exist, then register it as a duplicate URI
+            if(! uniqueURIs.add(model.getUri())){
+                localDuplicatesByNames.put(model.getUri(), model.getName());
+            }
+        });
+
+        if(!localDuplicatesByNames.isEmpty()){
+            throw new DuplicateURIListException(localDuplicatesByNames);
         }
     }
 

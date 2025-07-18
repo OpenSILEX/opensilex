@@ -13,6 +13,7 @@ import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameListException;
+import org.opensilex.core.exception.DuplicateURIListException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
@@ -386,14 +387,29 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         return super.getCheckUrisUniquenessQuery(urisToCheck, streamSize);
     }
 
-    // to remove this method after validating
     @Override
     protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
-            try {
-                scientificObjectDAO.checkLocalDuplicates(modelChunk);
-            } catch (DuplicateNameListException e) {
-                addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(),offset);
-            }
+        if (experiment != null) {
+            // check if there are any duplicate names within CSV
+            checkLocalDuplicateNames(restrictionValidator, modelChunk, offset);
+            // check if there are any duplicate URIs within CSV
+            checkLocalDuplicateURIs(restrictionValidator, modelChunk, offset);
+        }
+    }
+
+    private void checkLocalDuplicateNames(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
+        try {
+            scientificObjectDAO.checkLocalDuplicates(modelChunk);
+        } catch (DuplicateNameListException e) {
+            addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(), offset);
+        }
+    }
+    private void checkLocalDuplicateURIs(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
+        try {
+            scientificObjectDAO.checkLocalURIDuplicates(modelChunk);
+        } catch (DuplicateURIListException e) {
+            addDuplicateURIErrors(modelChunk, restrictionValidator, e.getExistingNameByURI(), offset);
+        }
     }
 
     private void addDuplicateNameErrors(List<ScientificObjectModel> objects, CsvOwlRestrictionValidator validator, Map<String, URI> existingUriByName, int offset) {
@@ -413,6 +429,32 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                 String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name, duplicateObjectURI == null ? "A new object " : duplicateObjectURI.toString());
 
                 CsvCellValidationContext cell = new CsvCellValidationContext(i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, object.getName(), rdfsLabel);
+                cell.setMessage(errorMsg);
+                validator.addInvalidValueError(cell);
+
+                if(validator.getNbError() >= errorNbLimit){
+                    break;
+                }
+            }
+            i++;
+        }
+    }
+
+    private void addDuplicateURIErrors(List<ScientificObjectModel> objects, CsvOwlRestrictionValidator validator, Map<URI, String> existingNameByURI, int offset) {
+
+        int i = offset;
+
+        // iterate object, check if a conflict was found (by URI), if so, append an error into validation
+        for (ScientificObjectModel object : objects) {
+            URI soURI = object.getUri();
+
+            if (existingNameByURI.containsKey(soURI)) {
+                String duplicateObjectName = existingNameByURI.get(soURI);
+
+                // handle case where name is null (in case of local duplicate with a non set name)
+                String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_URI_ERROR_MSG, soURI, duplicateObjectName == null ? "A new object " : duplicateObjectName);
+
+                CsvCellValidationContext cell = new CsvCellValidationContext(i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_URI_INDEX, object.getUri().toString(), CSV_URI_KEY);
                 cell.setMessage(errorMsg);
                 validator.addInvalidValueError(cell);
 

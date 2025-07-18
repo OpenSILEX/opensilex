@@ -6,30 +6,26 @@
 package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 
+import java.net.URI;
+import java.util.*;
+
 /**
- *
  * @author vmigot
  */
 public class DataCSVValidationModel extends CSVValidationModel {
 
     @JsonIgnore()
     private HashMap<DataModel, Integer> data = new HashMap<>();
-    
+
     @JsonIgnore()
     private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
-    
+
     private Map<Integer, List<CSVCell>> invalidObjectErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidAnnotationErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidTargetErrors = new HashMap<>();
@@ -37,9 +33,9 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private Map<Integer, List<CSVCell>> invalidDataTypeErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidExperimentErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidDeviceErrors = new HashMap<>();
-    
+
     private Map<Integer, List<CSVCell>> deviceChoiceAmbiguityErrors = new HashMap<>();
-    
+
     private Map<Integer, List<CSVCell>> duplicatedDataErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> duplicatedObjectErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> duplicatedTargetErrors = new HashMap<>();
@@ -47,7 +43,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private Map<Integer, List<CSVCell>> duplicatedDeviceErrors = new HashMap<>();
 
     private List<String> headers = new ArrayList<>();
-       
+
     private List<String> headersLabels = new ArrayList<>();
 
     private List<AnnotationModel> annotationsOnObjects = new ArrayList<>();
@@ -63,8 +59,73 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private boolean validCSV = false;
 
     private boolean tooLargeDataset = false;
-    
+
     private String errorMessage;
+    private String validationKey;
+    private String fileName;
+    private URI batchHistoryUri;
+
+
+    /**
+     * Merges the content and validation errors from another {@code DataCSVValidationModel} instance
+     * into the current instance.
+     *
+     * @param other the instance whose data and errors are to be merged.
+     */
+    public synchronized void merge(DataCSVValidationModel other) {
+        // Combiner les données
+        this.data.putAll(other.data);
+        this.invalidDataTypeErrors.putAll(other.getInvalidDataTypeErrors());
+        this.tooLargeDataset = other.tooLargeDataset;
+        this.duplicatedExperimentErrors.putAll(other.getDuplicatedExperimentErrors());
+        this.invalidExperimentErrors.putAll(other.getInvalidExperimentErrors());
+        this.duplicatedTargetErrors.putAll(other.getDuplicatedTargetErrors());
+        this.invalidTargetErrors.putAll(other.getInvalidTargetErrors());
+        this.invalidDateErrors.putAll(other.getInvalidDateErrors());
+        this.duplicatedDeviceErrors.putAll(other.getDuplicatedDeviceErrors());
+        this.invalidDeviceErrors.putAll(other.getInvalidDeviceErrors());
+        this.variablesToDevices.putAll(other.getVariablesToDevices());
+        this.deviceChoiceAmbiguityErrors.putAll(other.getDeviceChoiceAmbiguityErrors());
+        this.duplicatedDataErrors.putAll(other.getDuplicatedDataErrors());
+        this.invalidAnnotationErrors.putAll(other.getInvalidAnnotationErrors());
+        this.invalidObjectErrors.putAll(other.getInvalidObjectErrors());
+        this.duplicatedObjectErrors.putAll(other.getDuplicatedObjectErrors());
+        this.headers.addAll(other.getHeaders());
+        this.headersLabels.addAll(other.getHeadersLabels());
+        this.annotationsOnObjects.addAll(other.getAnnotationsOnObjects());
+        if (other.validationStep) {
+            this.validationStep = true;
+        }
+        if (other.insertionStep) {
+            this.insertionStep = true;
+        }
+        if (other.validCSV) {
+            this.validCSV = true;
+        }
+        if (other.tooLargeDataset) {
+            this.tooLargeDataset = true;
+        }
+        this.getInvalidValueErrors().putAll(other.getInvalidValueErrors());
+        this.getMissingRequiredValueErrors().putAll(other.getMissingRequiredValueErrors());
+        this.getObjects().addAll(other.getObjects());
+        this.getMissingHeaders().addAll(other.getMissingHeaders());
+        this.getEmptyHeaders().addAll(other.getEmptyHeaders());
+        this.getInvalidHeaderURIs().putAll(other.getInvalidHeaderURIs());
+        this.getDatatypeErrors().putAll(other.getDatatypeErrors());
+        this.getUriNotFoundErrors().putAll(other.getUriNotFoundErrors());
+        this.getInvalidURIErrors().putAll(other.getInvalidURIErrors());
+        this.getAlreadyExistingURIErrors().putAll(other.getAlreadyExistingURIErrors());
+        this.getDuplicateURIErrors().putAll(other.getDuplicateURIErrors());
+        this.getInvalidRowSizeErrors().putAll(other.getInvalidRowSizeErrors());
+    }
+
+    public String getValidationKey() {
+        return validationKey;
+    }
+
+    public void setValidationKey(String validationKey) {
+        this.validationKey = validationKey;
+    }
 
     public List<String> getHeaders() {
         return headers;
@@ -74,14 +135,14 @@ public class DataCSVValidationModel extends CSVValidationModel {
         this.headers = headers;
     }
 
-   
-     public void setHeadersFromArray(String[] headers) {
-        if(headers != null ){
-            this.headers =  Arrays.asList(headers);
+
+    public void setHeadersFromArray(String[] headers) {
+        if (headers != null) {
+            this.headers = Arrays.asList(headers);
         }
     }
-    
-     public List<String> getHeadersLabels() {
+
+    public List<String> getHeadersLabels() {
         return headersLabels;
     }
 
@@ -89,13 +150,13 @@ public class DataCSVValidationModel extends CSVValidationModel {
         this.headersLabels = headers;
     }
 
-   
-     public void setHeadersLabelsFromArray(String[] headers) {
-        if(headers != null ){
-            this.headersLabels =  Arrays.asList(headers);
+
+    public void setHeadersLabelsFromArray(String[] headers) {
+        if (headers != null) {
+            this.headersLabels = Arrays.asList(headers);
         }
     }
-    
+
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -111,19 +172,19 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setData(HashMap<DataModel, Integer> data) {
         this.data = data;
     }
-    
-    public void addData(DataModel data, Integer rowNumber){
+
+    public void addData(DataModel data, Integer rowNumber) {
         this.data.put(data, rowNumber);
     }
-    
+
     public Map<DeviceModel, List<URI>> getVariablesToDevices() {
         return variablesToDevices;
     }
 
-    public void setVariablesToDevices(Map<DeviceModel,  List<URI>> variablesToDevices) {
+    public void setVariablesToDevices(Map<DeviceModel, List<URI>> variablesToDevices) {
         this.variablesToDevices = variablesToDevices;
     }
-    
+
     public void addVariableToDevice(DeviceModel device, URI variable) {
         addVariableToDeviceMap(device, variable, variablesToDevices);
     }
@@ -155,8 +216,8 @@ public class DataCSVValidationModel extends CSVValidationModel {
         }
         duplicatedDataErrors.get(rowIndex).add(cell);
     }
-    
-   
+
+
     public Map<Integer, List<CSVCell>> getDuplicatedDataErrors() {
         return duplicatedDataErrors;
     }
@@ -164,8 +225,8 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setDuplicatedDataErrors(Map<Integer, List<CSVCell>> duplicatedDataErrors) {
         this.duplicatedDataErrors = duplicatedDataErrors;
     }
-    
-    
+
+
     public Integer getNbLinesImported() {
         return nbLinesImported;
     }
@@ -205,7 +266,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setValidCSV(boolean validCSV) {
         this.validCSV = validCSV;
     }
- 
+
     public boolean isTooLargeDataset() {
         return tooLargeDataset;
     }
@@ -213,10 +274,10 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setTooLargeDataset(boolean tooLargeDataset) {
         this.tooLargeDataset = tooLargeDataset;
     }
- 
+
     @Override
     public boolean hasErrors() {
-        return super.hasErrors() 
+        return super.hasErrors()
                 || tooLargeDataset
                 || duplicatedDataErrors.size() > 0
                 || duplicatedExperimentErrors.size() > 0
@@ -231,25 +292,27 @@ public class DataCSVValidationModel extends CSVValidationModel {
                 || invalidDateErrors.size() > 0
                 || invalidDataTypeErrors.size() > 0
                 || deviceChoiceAmbiguityErrors.size() > 0
+                || StringUtils.isNotBlank(errorMessage)
                 ;
     }
 
     public Map<Integer, List<CSVCell>> getInvalidTargetErrors() {
         return invalidTargetErrors;
     }
+
     public Map<Integer, List<CSVCell>> getInvalidObjectErrors() {
         return invalidObjectErrors;
     }
 
-    
-     public void addInvalidObjectError(CSVCell cell) {
+
+    public void addInvalidObjectError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!invalidObjectErrors.containsKey(rowIndex)) {
             invalidObjectErrors.put(rowIndex, new ArrayList<>());
         }
         invalidObjectErrors.get(rowIndex).add(cell);
     }
-    
+
     public void setInvalidObjectErrors(Map<Integer, List<CSVCell>> invalidObjectErrors) {
         this.invalidObjectErrors = invalidObjectErrors;
     }
@@ -278,7 +341,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setInvalidDateErrors(Map<Integer, List<CSVCell>> invalidDateErrors) {
         this.invalidDateErrors = invalidDateErrors;
     }
-    
+
     public void addInvalidDateError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!invalidDateErrors.containsKey(rowIndex)) {
@@ -286,7 +349,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
         }
         invalidDateErrors.get(rowIndex).add(cell);
     }
-    
+
     public void addInvalidDataTypeError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!invalidDataTypeErrors.containsKey(rowIndex)) {
@@ -302,41 +365,41 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setInvalidDataTypeErrors(Map<Integer, List<CSVCell>> invalidDataTypeErrors) {
         this.invalidDataTypeErrors = invalidDataTypeErrors;
     }
-    
-     public Map<Integer, List<CSVCell>> getInvalidExperimentErrors() {
+
+    public Map<Integer, List<CSVCell>> getInvalidExperimentErrors() {
         return invalidExperimentErrors;
     }
 
-    
-     public void addInvalidExperimentError(CSVCell cell) {
+
+    public void addInvalidExperimentError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!invalidExperimentErrors.containsKey(rowIndex)) {
             invalidExperimentErrors.put(rowIndex, new ArrayList<>());
         }
         invalidExperimentErrors.get(rowIndex).add(cell);
     }
-    
+
     public void setInvalidExperimentErrors(Map<Integer, List<CSVCell>> invalidExperimentErrors) {
         this.invalidExperimentErrors = invalidExperimentErrors;
     }
-    
-     public Map<Integer, List<CSVCell>> getInvalidDeviceErrors() {
+
+    public Map<Integer, List<CSVCell>> getInvalidDeviceErrors() {
         return invalidDeviceErrors;
     }
 
-    
-     public void addInvalidDeviceError(CSVCell cell) {
+
+    public void addInvalidDeviceError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!invalidDeviceErrors.containsKey(rowIndex)) {
             invalidDeviceErrors.put(rowIndex, new ArrayList<>());
         }
         invalidDeviceErrors.get(rowIndex).add(cell);
     }
-    
+
     public void setInvalidDeviceErrors(Map<Integer, List<CSVCell>> invalidDeviceErrors) {
         this.invalidDeviceErrors = invalidDeviceErrors;
     }
-    
+
     public void addDuplicateObjectError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!duplicatedObjectErrors.containsKey(rowIndex)) {
@@ -399,8 +462,8 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setDuplicatedDeviceErrors(Map<Integer, List<CSVCell>> duplicatedDeviceErrors) {
         this.duplicatedDeviceErrors = duplicatedDeviceErrors;
     }
-    
-    
+
+
     public void addDuplicateDeviceError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!duplicatedDeviceErrors.containsKey(rowIndex)) {
@@ -409,7 +472,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
         duplicatedDeviceErrors.get(rowIndex).add(cell);
     }
 
-    public void addInvalidAnnotationError(CSVCell cell){
+    public void addInvalidAnnotationError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         invalidAnnotationErrors.computeIfAbsent(rowIndex, key -> new ArrayList<>()).add(cell);
     }
@@ -421,7 +484,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setDeviceChoiceAmbiguityErrors(Map<Integer, List<CSVCell>> deviceChoiceAmbiguityErrors) {
         this.deviceChoiceAmbiguityErrors = deviceChoiceAmbiguityErrors;
     }
-    
+
     public void addDeviceChoiceAmbiguityError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!deviceChoiceAmbiguityErrors.containsKey(rowIndex)) {
@@ -430,11 +493,27 @@ public class DataCSVValidationModel extends CSVValidationModel {
         deviceChoiceAmbiguityErrors.get(rowIndex).add(cell);
     }
 
-    public void addToAnnotationsOnObjects(AnnotationModel annotationModel){
+    public void addToAnnotationsOnObjects(AnnotationModel annotationModel) {
         this.annotationsOnObjects.add(annotationModel);
     }
-    public List<AnnotationModel> getAnnotationsOnObjects(){
+
+    public List<AnnotationModel> getAnnotationsOnObjects() {
         return this.annotationsOnObjects;
     }
-    
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public void setBatchHistoryUri(URI uri) {
+        this.batchHistoryUri = uri;
+    }
+
+    public URI getBatchHistoryUri() {
+        return batchHistoryUri;
+    }
 }

@@ -619,11 +619,13 @@ public class DataLogic {
      * Looks at each of the data targets to see if they are facilities,
      * if so we might need to update their variables and devices if they were not already present
      *
+     * Note method is public as it is also used in FacilitiesLinkToVariablesAndDevicesMigration
+     *
      * @param dataModels to look in
      * @return a list of facilities that we will need to update with the added variables and devices
      * @throws Exception
      */
-    private List<FacilityModel> handleExtractionOfFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
+    public List<FacilityModel> handleExtractionOfFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         //Maps to remember which facilities have which variables and devices
         //, we will update the facilities all together at the end

@@ -75,14 +75,16 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
             //List<ProvenanceModel> provenances = dataLogic.searchUsedProvenances(null, allFacilityUris, null, null);
             //dataLogic.getUsedVariables(null, allFacilityUris, null, null);
             DataSearchFilter dataSearchFilter = new DataSearchFilter();
+            dataSearchFilter.setUser(AccountModel.getSystemUser());
             dataSearchFilter.setTargets(allFacilityUris);
-            dataSearchFilter.setPageSize(0);
+            dataSearchFilter.setPageSize(20);
             dataSearchFilter.setPage(0);
             /*var query = new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
                     .setFilter(dataSearchFilter)
                     .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
             dataLogic.searchWithPagination(new MongoSearchQuery<>())*/
             List<DataModel> datas = dataDaoV2.searchWithPagination(dataSearchFilter).getList();
+            List<FacilityModel> facilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(datas);
             System.out.println("chahahaha");
 
 
@@ -100,4 +102,5 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
             }
         }
     }
+
 }

@@ -140,12 +140,17 @@ public class DocumentDAO {
         return instance;
     }
 
-    public byte[] getFile(URI uri) throws Exception {
-        //List<URI> excludedUris = getRestrictedDocumentUris(user);
-
+    public byte[] getFile(URI uri, AccountModel user) throws Exception {
+        URI extendedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
         try {
-            return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
-        }catch (NoSuchFileException | FileNotFoundException ex){
+            if(excludedUris != null && excludedUris.contains(extendedURI)) {
+                throw new NotFoundURIException(uri);
+            } else {
+                return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
+            }
+
+        } catch (NoSuchFileException | FileNotFoundException ex){
             throw new NotFoundURIException(ex.getMessage(),uri);
         }
     }
@@ -153,7 +158,7 @@ public class DocumentDAO {
     public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
         URI extendedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
         List<URI> excludedUris = getRestrictedDocumentUris(user);
-        if (excludedUris != null && excludedUris.contains(extendedURI)) {
+        if(excludedUris != null && excludedUris.contains(extendedURI)) {
             return null;
         }
         return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());   

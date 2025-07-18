@@ -35,6 +35,7 @@ import org.opensilex.fs.FileStorageModule;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.utils.ListWithPagination;
 
@@ -49,6 +50,9 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
     public static final String EXPORT_DOCUMENT_DIRNAME = "exportOpenSILEXDocuments";
 
     private OpenSilex opensilex;
+
+    @CurrentUser
+    AccountModel currentUser;
 
     @Override
     public OffsetDateTime getDate() {
@@ -164,7 +168,7 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
                 
                 if(documentModel.getSource() == null){
                     try{
-                        byte[] file = documentDAO.getFile(documentUri);
+                        byte[] file = documentDAO.getFile(documentUri, currentUser);
                         // if file has not been found in file system
                         if(file != null ){
                             File theFile = new File(documentPaths.toFile(), encodeHexString); 

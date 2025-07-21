@@ -164,6 +164,7 @@ import {User} from "../../models/User";
 import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
 import {MultipleErrorDTO} from "opensilex-core/model/multipleErrorDTO";
 import {URIsListPostDTO} from "opensilex-core/model/uRIsListPostDTO";
+import GermplasmTableDataRow from "./GermplasmTableDataRow";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -226,14 +227,16 @@ export default class GermplasmTable extends Vue {
 
   private tabulator: Tabulator = null;
 
-  private tableData = [];
+  private tableData :Array<GermplasmTableDataRow> = [];
 
   @Watch("tableData", {deep: true})
-  newData(value: string, oldValue: string) {
-    this.tabulator.replaceData(value);
+  newData(value: Array<GermplasmTableDataRow>) {
+    this.tabulator.replaceData(value.map(row => {
+      return row.getData();
+    }));
     this.getExistingGermplasmsUri()
         .then(uris => {
-          this.updateStatus(uris, "UPDATE");
+          this.setUpdateStatusForEachGermplasm(uris);
         });
   }
 
@@ -289,8 +292,7 @@ export default class GermplasmTable extends Vue {
   }
 
   private onAddRowBtnClick() {
-    let size = this.tabulator.getData().length;
-    this.tabulator.addRow({rowNumber: size + 1});
+    this.tableData.push(new GermplasmTableDataRow({}));
   }
 
   private onCheckBtnClick() {
@@ -321,7 +323,9 @@ export default class GermplasmTable extends Vue {
 
   private onNewColsModalHidden() {
     this.filter = "all";
-    this.tableData = this.csvUploadedData;
+    this.tableData = this.csvUploadedData.map( row => {
+      return new GermplasmTableDataRow(row);
+    });
   }
 
   private onSelectAllColumnSwitchChange(checked) {
@@ -614,7 +618,7 @@ export default class GermplasmTable extends Vue {
     this.addInitialXRows(5);
 
     this.tabulator = new Tabulator(this.table, {
-      data: this.tableData, //link data to table
+      data: this.tableData.map(row => row.getData()), //link data to table
       reactiveData: true, //enable data reactivity
       columns: this.tableColumns, //define table columns
       layout: "fitData",
@@ -640,17 +644,13 @@ export default class GermplasmTable extends Vue {
 
     //after edited a cell, check if the uri is already in the database and update the status
     this.tabulator.on("cellEdited", (cell) => {
+      const editedRow = this.tableData[cell.getRow().getIndex()];
+
       this.getExistingGermplasmsUri()
           .then(uris => {
-            let status = "";
-            if (this.$opensilex.includesUri(uris, cell.getRow().getData().uri)) {
-              status = "UPDATE"
+            if (this.$opensilex.includesUri(uris, editedRow.getData().uri)) {
+              editedRow.setIsUpdate(true);
             }
-
-            this.tabulator.updateData([{
-              rowNumber: cell.getRow().getIndex(),
-              status: status,
-            }]);
           });
     });
 
@@ -676,7 +676,7 @@ export default class GermplasmTable extends Vue {
 
   private addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
-      this.tableData.push({rowNumber: i});
+      this.tableData.push(new GermplasmTableDataRow({}));
     }
   }
 
@@ -742,7 +742,7 @@ export default class GermplasmTable extends Vue {
           let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
           this.$opensilex.showSuccessToast(successMessage);
 
-          this.updateStatusOfEachRows("OK", "creation or update ok");
+          this.setOkStatusForEachGermplasm();
         })
         .catch( error => {
           if (error.response.status < 400 || error.response.status >= 500) {
@@ -750,7 +750,7 @@ export default class GermplasmTable extends Vue {
             return;
           }
 
-          this.updateStatusOfEachRows("OK", "creation or update ok");
+          this.setOkStatusForEachGermplasm();
           let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorUpsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
 
@@ -761,17 +761,15 @@ export default class GermplasmTable extends Vue {
           errors.forEach(errorDto => {
 
             let errorMessage = errorDto.errors.length > 1 ?
-                this.$t("GermplasmTable.multipleErrorMessage", {count: errorDto.errors.length}) :
+                this.$t("GermplasmTable.multipleErrorMessage", {count: errorDto.errors.length}).toString() :
                 errorDto.errors[0];
 
-            let rowIndex = errorDto.index + 1;
+            let rowIndex = errorDto.index;
             if (rowIndex != null) {
-              this.tabulator.updateData([{
-                rowNumber: rowIndex,
-                insertionStatus: errorMessage,
-                checkingStatus: errorMessage,
-                status: "NOK",
-              }]);
+              const row = this.tableData[rowIndex]
+              row.setHasError();
+              row.setCheckingStatus(errorMessage);
+              row.setInsertionStatus(errorMessage);
             }
 
             this.errorsByIndex.set(rowIndex, errorDto.errors);
@@ -782,40 +780,34 @@ export default class GermplasmTable extends Vue {
   }
 
   /**
-   * update the status of each row with the uri in the uris array, and set the status.
+   * set the update status for each germplasm
    * This will trigger the rowFormatter to change the color of the row.
    */
-  private updateStatus(uris: string[], status: string){
-    this.tabulator.getData().forEach((data, index) => {
-      if (this.$opensilex.includesUri(uris, data.uri)) {
-        this.tabulator.updateData([{
-          rowNumber: index+1,
-          checkingStatus: this.$t(
-              "GermplasmTable.checkingStatusMessage"
-          ),
-          status: status,
-        }]);
-      }
+  private setUpdateStatusForEachGermplasm(existingUris: string[]){
+    this.tableData.forEach((data) => {
+      if (this.$opensilex.includesUri(existingUris, data.getData().uri)) {
+         data.setIsUpdate(true);
+        } else {
+          data.setIsUpdate(false);
+        }
     });
   }
 
   /**
    * reset the status of each row to status value. Default is empty string.
+   * This will trigger the rowFormatter to change the color of the row.
    */
-  private updateStatusOfEachRows(status: string, insertionStatus: string): void {
-    this.tabulator.getData().forEach((data, index) => {
-      this.tabulator.updateData([{
-        rowNumber: index+1,
-        insertionStatus: insertionStatus,
-        status: status,
-      }]);
+  private setOkStatusForEachGermplasm(): void {
+    this.tableData.forEach((data) => {
+      data.setInsertionStatus(this.$t("successUpsertRowMessage").toString());
+      data.setisValidated();
     });
   }
 
   private async getExistingGermplasmsUri(): Promise<Array<string>>{
     let uris: URIsListPostDTO = {
-      uris: this.tabulator.getData().map((row) => {
-        return row.uri as string;
+      uris: this.tableData.map((row) => {
+        return row.getData().uri as string;
       })
     }
     return ( await this.service.checkGermplasmsExist(uris) ).response.result
@@ -1102,7 +1094,7 @@ export default class GermplasmTable extends Vue {
           this.tableData = [];
           this.showSelectNewColumnsPopUp();
         } else {
-          this.tableData = dataInJsonFormat;
+          this.tableData = dataInJsonFormat.map( row =>  new GermplasmTableDataRow(row));
         }
       }
     }
@@ -1114,7 +1106,7 @@ export default class GermplasmTable extends Vue {
       const button = cell.getElement().querySelector(".error-log");
       if (button) {
         button.addEventListener("click", () => {
-          this.indexRowOfErrorsToShowInModal = cell.getRow().getIndex();
+          this.indexRowOfErrorsToShowInModal = cell.getRow().getIndex() -1;
           this.errorDetailsModal.show();
         });
       }
@@ -1199,6 +1191,7 @@ en:
     insert: Insert
     errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
+    successUpsertRowMessage : Germplasm inserted/updated
     errorModalTitle: Germplasm contain following errors
     multipleErrorMessage: click here to see {count} errors for this germplasm
     addRow: Add Row
@@ -1237,6 +1230,7 @@ fr:
     insert: Insérer
     errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
+    successUpsertRowMessage: création / modification réussie
     errorModalTitle: Erreurs concernant les ressources génétiques
     multipleErrorMessage: Cliquez ici pour voir {count} erreurs pour cette ressource génétique
     addRow: Ajouter ligne

@@ -147,6 +147,10 @@
 import {Component, Vue, Watch, Ref} from "vue-property-decorator";
 import {GermplasmCreationDTO, GermplasmService} from "opensilex-core/index";
 
+//@ts-ignore
+import JsonCSV from "vue-json-csv";
+Vue.component("downloadCsv", JsonCSV);
+
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";

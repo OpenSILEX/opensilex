@@ -7,6 +7,7 @@
 
 package org.opensilex.core.annotation.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -131,6 +132,15 @@ public class AnnotationDAO {
 
     }
 
+    private void appendExcludedURIsFilter(SelectBuilder select, List<URI> excludedUris) {
+        if (!CollectionUtils.isEmpty(excludedUris)) {
+            Expr excludeFilter = SPARQLQueryHelper.notInURIFilter(AnnotationModel.URI_FIELD, excludedUris);
+            if (excludeFilter != null){
+                select.addFilter(excludeFilter);
+            }
+        }
+    }
+
     public ListWithPagination<AnnotationModel> search(String bodyValuePattern,
                                                       URI target,
                                                       URI motivation,
@@ -183,7 +193,7 @@ public class AnnotationDAO {
                     appendTargetFilter(annotationGraphGroupElem, target);
                     appendBodyValueFilter(annotationGraphGroupElem, bodyValuePattern);
                     appendMotivationFilter(annotationGraphGroupElem, motivation);
-                    appendPublisherFilter(annotationGraphGroupElem, publisher);
+                    appendExcludedURIsFilter(selectBuilder, excludedUris);
 
                     // add specific ORDER BY directly to the select builder
                     specificOrderMap.forEach(selectBuilder::addOrderBy);

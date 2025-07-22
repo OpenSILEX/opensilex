@@ -21,7 +21,9 @@ import java.util.stream.Collectors;
 
 /**
  * <pre>
- * Class to manage multiple errors, it aims to be used in multiple error response. The purpose is to list all errors, for each object(represented by their uri as the key).
+ * Class to manage multiple errors, it aims to be used in multiple error response. The purpose is to list all errors, for each object.
+ *
+ * Errors will be returned mapped by their index in the list passed in constructor, allowing to easily retrieve the errors related to a specific model.
  *
  * T is the type of the MultipleErrorObject that will be used to store the errors, it should extend {@link MultipleErrorObject}. If you have no personalized implementation, simply use {@link MultipleErrorObject}.
  *

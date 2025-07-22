@@ -27,7 +27,7 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
     private static AccountModel user;
     private static AnnotationModel a1, a2, a3;
     private static AnnotationDAO dao;
-    private MongoDBService nosql;
+    private static MongoDBService nosql;
 
 
     @BeforeClass

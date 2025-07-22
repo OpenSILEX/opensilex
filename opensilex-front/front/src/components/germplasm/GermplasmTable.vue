@@ -324,9 +324,7 @@ export default class GermplasmTable extends Vue {
 
   private onNewColsModalHidden() {
     this.filter = "all";
-    this.tableData = this.csvUploadedData.map( (row, index) => {
-      return new GermplasmTableDataRow(index, row);
-    });
+    this.tableData = this.csvUploadedData.map( (row, index) => new GermplasmTableDataRow(index, row) );
   }
 
   private onSelectAllColumnSwitchChange(checked) {
@@ -627,6 +625,7 @@ export default class GermplasmTable extends Vue {
       index: "rowNumber",
       height: "70vh",
       rowFormatter: function (row) {
+        console.log(row.getData().status)
         if (row.getData().status == "OK") {
           row.getElement().style.backgroundColor = "#a5e051";
         } else if (row.getData().status == "NOK") {
@@ -1080,12 +1079,16 @@ export default class GermplasmTable extends Vue {
           this.tableData = [];
           this.showSelectNewColumnsPopUp();
         } else {
-          this.tableData = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(index, row));
+          const datas = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(index, row));
+          this.tableData = datas;
         }
       }
     }
   }
 
+  /**
+   * function triggered by the tabulator cell formatter. Allow to open error modal when clicking on the errors cell
+   */
   private errorFormaterFunction(cell, formatterParams, onRendered) {
     // Use onRendered to attach the click event listener
     onRendered(() => {

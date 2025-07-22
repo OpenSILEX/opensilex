@@ -19,6 +19,7 @@ export default class GermplasmTableDataRow {
 
   public constructor(index: number, data: any = getEmptyData() ) {
     this.data = data;
+    this.data.status = this.data.status || '';
     this.data.index = index;
   }
 

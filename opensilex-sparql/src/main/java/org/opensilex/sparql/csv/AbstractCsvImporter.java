@@ -269,13 +269,10 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             checkUrisUniqueness(validator, filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk, modelChunkToCreate);
 
-            // allObjsCreateAndUpdate - list contains all objects to be created and updated
-            ArrayList<T> allObjsCreateAndUpdate = new ArrayList<>(modelChunkToCreate);
-            allObjsCreateAndUpdate.addAll(modelChunkToUpdate);
-
             // batch validation and custom consumer use
             if(validator.isValid()){
-                batchValidation(validator, allObjsCreateAndUpdate,totalRowIdx-chunkRowIdx);
+                batchValidation(validator, modelChunkToCreate,totalRowIdx-chunkRowIdx);
+                batchValidation(validator, modelChunkToUpdate,totalRowIdx-chunkRowIdx);
 
                 if(modelsConsumer != null){
                     modelsConsumer.accept(validator.getValidationModel(), modelChunkToCreate.stream());

@@ -8,6 +8,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.nosql.mongodb.MongoDBService;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -26,6 +27,7 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
     private static AccountModel user;
     private static AnnotationModel a1, a2, a3;
     private static AnnotationDAO dao;
+    private MongoDBService nosql;
 
 
     @BeforeClass
@@ -46,7 +48,7 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
         user.setLanguage("en");
         user.setAdmin(true);
 
-        dao = new AnnotationDAO(sparql);
+        dao = new AnnotationDAO(sparql, nosql);
     }
 
     private static AnnotationModel getAnnotationModel(int i) {
@@ -111,7 +113,8 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
                         user.getLanguage(),
                         new ArrayList<OrderBy>(),
                         0,
-                        20).getList();
+                        20,
+                         user).getList();
 
         assertNotNull(objects);
         assertEquals(3, objects.size());

@@ -254,15 +254,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     @Override
     protected void handleURIMapping(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, List<ScientificObjectModel> modelChunkToCreate, List<ScientificObjectModel> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
-        if(model.getName() == null) {
-            String rdfsLabel = URIDeserializer.getShortURI(RDFS.LABEL.stringValue());
-            String errorMsg = String.format(ScientificObjectDAO.NO_NAME_ERROR_MSG, model.getUri() == null ? "A new object " : model.getUri().toString());
-
-            CsvCellValidationContext cell = new CsvCellValidationContext(totalRowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, model.getName(), rdfsLabel);
-            cell.setMessage(errorMsg);
-            validator.addMissingRequiredValue(cell);
-            return;
-        }
+        if (checkIfSONameIsNull(validator, model, totalRowIdx)) return;
 
         // inside an XP
         if (withinExperiment()) {
@@ -317,6 +309,21 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         else {
             super.handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
         }
+    }
+
+    private static boolean checkIfSONameIsNull(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx) {
+        // As OS name is mandatory, we are checking if the OS name is empty
+        // if it's empty we are showing the 'Missing Required Value' error type
+        if(model.getName() == null) {
+            String rdfsLabel = URIDeserializer.getShortURI(RDFS.LABEL.stringValue());
+            String errorMsg = String.format(ScientificObjectDAO.NO_NAME_ERROR_MSG, model.getUri() == null ? "A new object " : model.getUri().toString());
+
+            CsvCellValidationContext cell = new CsvCellValidationContext(totalRowIdx +CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, model.getName(), rdfsLabel);
+            cell.setMessage(errorMsg);
+            validator.addMissingRequiredValue(cell);
+            return true;
+        }
+        return false;
     }
 
     private SelectBuilder checkUriExistInXP(URI uri) {

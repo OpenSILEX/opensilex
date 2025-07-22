@@ -17,7 +17,7 @@ export default class GermplasmTableDataRow {
   private errors: Array<string> = null;
   private isValidated: boolean = false;
 
-  public constructor(data: any = {}, index: number) {
+  public constructor(index: number, data: any = getEmptyData() ) {
     this.data = data;
     this.data.index = index;
   }
@@ -63,4 +63,17 @@ export default class GermplasmTableDataRow {
     this.data.status = 'OK';
   }
 
+}
+
+function getEmptyData(): any {
+  return {
+    uri: '',
+    name: '',
+    accessionNumber: '',
+    taxon: '',
+    status: '',
+    checkingStatus: '',
+    insertionStatus: '',
+    index: 0
+  };
 }

@@ -234,6 +234,8 @@ export default class GermplasmTable extends Vue {
     this.tabulator.replaceData(value.map(row => {
       return row.getData();
     }));
+
+    //each time a row is added or a cell is edited, we check for all germplasms
     this.getExistingGermplasmsUri()
         .then(uris => {
           this.setUpdateStatusForEachGermplasm(uris);
@@ -291,7 +293,7 @@ export default class GermplasmTable extends Vue {
   }
 
   private onAddRowBtnClick() {
-    this.tableData.push(new GermplasmTableDataRow({}, this.tableData.length),);
+    this.tableData.push(new GermplasmTableDataRow(this.tableData.length),);
   }
 
   private onCheckBtnClick() {
@@ -323,7 +325,7 @@ export default class GermplasmTable extends Vue {
   private onNewColsModalHidden() {
     this.filter = "all";
     this.tableData = this.csvUploadedData.map( (row, index) => {
-      return new GermplasmTableDataRow(row, index);
+      return new GermplasmTableDataRow(index, row);
     });
   }
 
@@ -641,18 +643,6 @@ export default class GermplasmTable extends Vue {
       this.$opensilex.hideLoader();
     });
 
-    //after edited a cell, check if the uri is already in the database and update the status
-    this.tabulator.on("cellEdited", (cell) => {
-      const editedRow = this.tableData[cell.getRow().getIndex()];
-
-      this.getExistingGermplasmsUri()
-          .then(uris => {
-            if (this.$opensilex.includesUri(uris, editedRow.getData().uri)) {
-              editedRow.setIsUpdate(true);
-            }
-          });
-    });
-
     this.jsonForTemplate = [];
     //let jsonHeader = {};
     for (let i = 1; i < this.tableColumns.length; i++) {
@@ -675,7 +665,7 @@ export default class GermplasmTable extends Vue {
 
   private addInitialXRows(X) {
     for (let i = 0; i < X; i++) {
-      this.tableData.push(new GermplasmTableDataRow({}, i));
+      this.tableData.push(new GermplasmTableDataRow(i));
     }
   }
 
@@ -1090,7 +1080,7 @@ export default class GermplasmTable extends Vue {
           this.tableData = [];
           this.showSelectNewColumnsPopUp();
         } else {
-          this.tableData = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(row, index));
+          this.tableData = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(index, row));
         }
       }
     }

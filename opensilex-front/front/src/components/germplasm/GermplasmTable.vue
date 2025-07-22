@@ -625,7 +625,6 @@ export default class GermplasmTable extends Vue {
       index: "rowNumber",
       height: "70vh",
       rowFormatter: function (row) {
-        console.log(row.getData().status)
         if (row.getData().status == "OK") {
           row.getElement().style.backgroundColor = "#a5e051";
         } else if (row.getData().status == "NOK") {
@@ -738,13 +737,13 @@ export default class GermplasmTable extends Vue {
             return;
           }
 
-          this.setOkStatusForEachGermplasm();
           let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorUpsertMessage").toString();
           this.$opensilex.showErrorToast(errorMessage);
-
           let errors: Array<MultipleErrorDTO> = error.response.result.errors;
-          if (errors == null) return;
 
+          if (errors == null) return; //if it's not a MultipleErrorResponse (should not happen)
+
+          this.setOkStatusForEachGermplasm();
           errors.forEach(errorDto => {
 
             let errorMessage = errorDto.errors.length > 1 ?
@@ -1079,8 +1078,7 @@ export default class GermplasmTable extends Vue {
           this.tableData = [];
           this.showSelectNewColumnsPopUp();
         } else {
-          const datas = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(index, row));
-          this.tableData = datas;
+          this.tableData = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(index, row));
         }
       }
     }

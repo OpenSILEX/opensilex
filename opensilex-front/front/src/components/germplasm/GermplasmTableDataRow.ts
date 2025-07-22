@@ -14,15 +14,24 @@ export default class GermplasmTableDataRow {
   /**
    * Flag to indicate if the line is for an update operation, i.e if the uri of the germplasm already exists.
    */
-  private hasError: boolean = false;
+  private errors: Array<string> = null;
   private isValidated: boolean = false;
 
-  public constructor(data: any = {}) {
+  public constructor(data: any = {}, index: number) {
     this.data = data;
+    this.data.index = index;
   }
 
   public getData(): any {
     return this.data;
+  }
+
+  public hasError(): boolean {
+    return this.errors && this.errors.length > 0;
+  }
+
+  public getErrors(): Array<string> {
+    return this.errors;
   }
 
   public setCheckingStatus(checkingStatus: string): void {
@@ -34,20 +43,23 @@ export default class GermplasmTableDataRow {
   }
 
   public setIsUpdate(isUpdate: boolean): void {
-    if ( !this.hasError && !this.isValidated ) {
+    if ( !this.hasError() && !this.isValidated ) {
       this.data.status = isUpdate ? 'UPDATE' : '';
     }
   }
 
-  public setHasError(): void {
-    this.hasError = true
+  public setErrors(errors: Array<string>): void {
+    this.errors = errors
     this.isValidated = false;
     this.data.status = 'NOK';
   }
 
-  public setisValidated(): void {
+  /**
+   * call this method when the row has been validated by the API, after being checked or upserted.
+   */
+  public setIsValidated(): void {
     this.isValidated = true;
-    this.hasError = false;
+    this.errors = null;
     this.data.status = 'OK';
   }
 

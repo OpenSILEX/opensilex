@@ -135,7 +135,7 @@
         :title="$t('GermplasmTable.errorModalTitle')"
     >
       <ul>
-        <li v-for="error in errorsByIndex.get(indexRowOfErrorsToShowInModal)" :key="error.length">
+        <li v-for="error in errorsToShowInModal" :key="error.length">
           {{ error }}
         </li>
       </ul>
@@ -261,8 +261,7 @@ export default class GermplasmTable extends Vue {
 
   private langUnwatcher;
 
-  private errorsByIndex: Map<number, Array<string>> = new Map<number, Array<string>>();
-  private indexRowOfErrorsToShowInModal: number = null;
+  private errorsToShowInModal: Array<string> = [];
   //endregion
 
   //#region Computed
@@ -292,7 +291,7 @@ export default class GermplasmTable extends Vue {
   }
 
   private onAddRowBtnClick() {
-    this.tableData.push(new GermplasmTableDataRow({}));
+    this.tableData.push(new GermplasmTableDataRow({}, this.tableData.length),);
   }
 
   private onCheckBtnClick() {
@@ -323,8 +322,8 @@ export default class GermplasmTable extends Vue {
 
   private onNewColsModalHidden() {
     this.filter = "all";
-    this.tableData = this.csvUploadedData.map( row => {
-      return new GermplasmTableDataRow(row);
+    this.tableData = this.csvUploadedData.map( (row, index) => {
+      return new GermplasmTableDataRow(row, index);
     });
   }
 
@@ -675,8 +674,8 @@ export default class GermplasmTable extends Vue {
   }
 
   private addInitialXRows(X) {
-    for (let i = 1; i < X + 1; i++) {
-      this.tableData.push(new GermplasmTableDataRow({}));
+    for (let i = 0; i < X; i++) {
+      this.tableData.push(new GermplasmTableDataRow({}, i));
     }
   }
 
@@ -757,7 +756,6 @@ export default class GermplasmTable extends Vue {
           let errors: Array<MultipleErrorDTO> = error.response.result.errors;
           if (errors == null) return;
 
-          this.errorsByIndex = new Map<number, Array<string>>();
           errors.forEach(errorDto => {
 
             let errorMessage = errorDto.errors.length > 1 ?
@@ -767,12 +765,10 @@ export default class GermplasmTable extends Vue {
             let rowIndex = errorDto.index;
             if (rowIndex != null) {
               const row = this.tableData[rowIndex]
-              row.setHasError();
+              row.setErrors(errorDto.errors);
               row.setCheckingStatus(errorMessage);
               row.setInsertionStatus(errorMessage);
             }
-
-            this.errorsByIndex.set(rowIndex, errorDto.errors);
           });
 
           this.filter = "NOK";
@@ -800,7 +796,7 @@ export default class GermplasmTable extends Vue {
   private setOkStatusForEachGermplasm(): void {
     this.tableData.forEach((data) => {
       data.setInsertionStatus(this.$t("successUpsertRowMessage").toString());
-      data.setisValidated();
+      data.setIsValidated();
     });
   }
 
@@ -1094,7 +1090,7 @@ export default class GermplasmTable extends Vue {
           this.tableData = [];
           this.showSelectNewColumnsPopUp();
         } else {
-          this.tableData = dataInJsonFormat.map( row =>  new GermplasmTableDataRow(row));
+          this.tableData = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(row, index));
         }
       }
     }
@@ -1103,10 +1099,16 @@ export default class GermplasmTable extends Vue {
   private errorFormaterFunction(cell, formatterParams, onRendered) {
     // Use onRendered to attach the click event listener
     onRendered(() => {
+      const rowData = this.tableData[cell.getRow().getData().index];
+
+      if ( ! rowData.hasError()){
+        return;
+      }
+
       const button = cell.getElement().querySelector(".error-log");
       if (button) {
         button.addEventListener("click", () => {
-          this.indexRowOfErrorsToShowInModal = cell.getRow().getIndex() -1;
+          this.errorsToShowInModal = rowData.getErrors();
           this.errorDetailsModal.show();
         });
       }

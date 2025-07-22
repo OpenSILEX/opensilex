@@ -211,7 +211,9 @@ public class AnnotationDAO {
      * @param target the URI on which find associated annotations
      * @return the number of annotations associated to a target
      */
-    public int countAnnotations(URI target) throws Exception {
+    public int countAnnotations(URI target, AccountModel user) throws Exception {
+        //Uris to exclude from the document search
+        List<URI> excludedUris = getRestrictedAnnotationUris(user);
 
         return sparql.count(annotationGraph,AnnotationModel.class,null,countBuilder -> {
 
@@ -219,6 +221,8 @@ public class AnnotationDAO {
             ElementGroup annotationGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,annotationGraph);
 
             appendTargetFilter(annotationGraphGroupElem, target);
+            appendExcludedURIsFilter(countBuilder, excludedUris);
+
         },null);
     }
 

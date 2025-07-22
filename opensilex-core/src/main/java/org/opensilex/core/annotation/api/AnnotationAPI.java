@@ -244,7 +244,7 @@ public class AnnotationAPI {
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
-        int annotationCount = dao.countAnnotations(target);
+        int annotationCount = dao.countAnnotations(target, currentUser);
 
         return new SingleObjectResponse<>(annotationCount).getResponse();
     }

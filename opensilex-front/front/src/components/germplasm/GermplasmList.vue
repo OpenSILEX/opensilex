@@ -183,7 +183,7 @@
                 @select="$emit('select', $event)"
                 @unselect="$emit('unselect', $event)"
                 @selectall="$emit('selectall', $event)"
-                defaultSortBy="name"
+                defaultSortBy="label"
                 labelNumberOfSelectedRow="GermplasmList.selected"
                 iconNumberOfSelectedRow="fa#seedling"
             >

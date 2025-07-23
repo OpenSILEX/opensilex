@@ -629,8 +629,9 @@ public class GermplasmSparqlDAO {
         Triple groupTriple = new Triple(makeVar(GermplasmModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
 
         if (CollectionUtils.isEmpty(groupsUsers) || (isPublic != null && isPublic)) {
-            // get experiment without any group
+            // get germplasm without any group
             select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
+
         } else {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 

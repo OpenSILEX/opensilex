@@ -151,7 +151,7 @@ public class AnnotationDAO {
                                                       Integer pageSize,
                                                       AccountModel user) throws Exception {
 
-        //Uris to exclude from the document search
+        //Uris to exclude from the annotations search
         List<URI> excludedUris = getRestrictedAnnotationUris(user);
 
         // use a specific ordering for motivation : use the motivation name instead of the motivation URI which is used by default
@@ -212,7 +212,7 @@ public class AnnotationDAO {
      * @return the number of annotations associated to a target
      */
     public int countAnnotations(URI target, AccountModel user) throws Exception {
-        //Uris to exclude from the document search
+        //Uris to exclude from the annotations search
         List<URI> excludedUris = getRestrictedAnnotationUris(user);
 
         return sparql.count(annotationGraph,AnnotationModel.class,null,countBuilder -> {
@@ -274,7 +274,6 @@ public class AnnotationDAO {
         if(user.isAdmin()){
             return Collections.emptyList();
         }
-        //Initialisation of some things we will need
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
         Node experimentTypeNode = SPARQLDeserializers.nodeURI(Oeso.Experiment.getURI());

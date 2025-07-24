@@ -353,7 +353,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_m") List<URI> parentGermplasmsM,
             @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_f") List<URI> parentGermplasmsF,
             @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search private(false) or public strain (true)") @QueryParam("is_public") @DefaultValue("True") Boolean isPublic,
+            @ApiParam(value = "Search private(false) or public germplasm (true)") @QueryParam("is_public") Boolean isPublic,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -382,8 +382,10 @@ public class GermplasmAPI {
                  .setPageSize(pageSize)
                  .setLang(currentUser.getLanguage());
 
+        boolean isAdmin = currentUser.isAdmin();
+
         ListWithPagination<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,false,true,false, false);
+                .search(searchFilter,false,isPublic,isAdmin, false);
 
         // Convert paginated list to DTO
         ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(

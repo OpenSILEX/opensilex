@@ -46,7 +46,7 @@ public class GermplasmSearchFilter extends SearchFilter {
 
     private List<URI> parentFGermplasms;
 
-    private boolean isPublic;
+    private Boolean isPublic;
     private AccountModel user;
 
     private List<URI> groupsUsers;
@@ -213,7 +213,7 @@ public class GermplasmSearchFilter extends SearchFilter {
     public Boolean isPublic() {
         return isPublic;
     }
-    public GermplasmSearchFilter setPublic(boolean isPublic) {
+    public GermplasmSearchFilter setPublic(Boolean isPublic) {
         this.isPublic = isPublic;
         return this;
     }

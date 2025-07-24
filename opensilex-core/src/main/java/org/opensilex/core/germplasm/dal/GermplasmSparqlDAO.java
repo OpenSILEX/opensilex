@@ -228,7 +228,7 @@ public class GermplasmSparqlDAO {
                     appendUserGermplasmFilter(select, searchFilter.getUser());
                     appendParentMFilter(select, searchFilter.getParentMGermplasms());
                     appendParentFFilter(select, searchFilter.getParentFGermplasms());
-                    //appendPublicFilter(select, isPublic);
+                    appendPublicFilter(select, isPublic);
                     //appendgroupsListFilters(select, admin, isPublic, groupsUsers);
                     appendExperimentFilter(select, finalExperiment);
 
@@ -635,7 +635,7 @@ public class GermplasmSparqlDAO {
         } else {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
-            // get experiment with no group specified or in the given list
+            // get germplasm with no group specified or in the given list
             ElementGroup rootFilteringElem = new ElementGroup();
             ElementGroup optionals = new ElementGroup();
             optionals.addTriplePattern(groupTriple);

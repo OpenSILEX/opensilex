@@ -137,7 +137,6 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     @Test
     public void testUpdateSOInBulkInExp() throws Exception {
-
         // test by importing a CSV to create a few Scientific Objects
         CSVValidationModel validation = testImport("os_import_create.csv", experiment.getUri(), user);
         Assert.assertFalse(validation.hasErrors());
@@ -152,7 +151,6 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     @Test
     public void testUpdateSOInBulkGlobal() throws Exception {
-
         // test by importing a CSV to create a few Scientific Objects
         CSVValidationModel validation = testImport("os_import_create.csv", null, user);
         Assert.assertFalse(validation.hasErrors());

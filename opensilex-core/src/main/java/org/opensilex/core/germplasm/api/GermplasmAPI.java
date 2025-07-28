@@ -276,7 +276,7 @@ public class GermplasmAPI {
             } catch (InvalidValueException e){
                 model = germplasmDTO.newModelWithoutRelations();
                 errors.addModel(model);
-                errors.addError(model, e.getMessage());
+                errors.addError(model, e.getErrorMessage());
             } finally {
                 models.add(model);
             }

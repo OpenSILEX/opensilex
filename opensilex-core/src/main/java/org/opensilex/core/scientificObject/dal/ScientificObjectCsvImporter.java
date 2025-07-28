@@ -529,6 +529,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     @Override
     public void upsert(CSVValidationModel validation, List<ScientificObjectModel> modelsToCreate, List<ScientificObjectModel> modelsToUpdate) throws Exception {
+        // prepare the geometryMetadatas object to be used later to separate the objects to be created and updated        
         Object geometryMetadatas = validation.getObjectsMetadata().get(Oeso.hasGeometry.getURI());
         List<GeospatialModel> geospatialModelsToCreate = new ArrayList<>();
         List<GeospatialModel> geospatialModelsToUpdate = new ArrayList<>();
@@ -598,6 +599,8 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             if (!soToCreateUriSet.isEmpty()) {
                 scientificObjectDAO.copyIntoGlobalGraph(models.stream().filter(model -> {
                     try {
+                        // verify if the soToCreateUriSet contains the expanded URI of model
+                        // fetching the expandedURI of model here to create the SO with short URI in global graph also
                         return soToCreateUriSet.contains(new URI(SPARQLDeserializers.getExpandedURI(model.getUri())));
                     } catch (URISyntaxException e) {
                         throw new RuntimeException(e);

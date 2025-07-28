@@ -58,6 +58,7 @@ The business logic is the same as the creation web service, any germplasm presen
   - if germplasm 'A' has a variety and a species, the variety should have the same species as germplasm 'A'
   - if germplasm 'A' has an accession and a species, the accession should have the same species as germplasm 'A'
   - if germplasm 'A' has an accession and a variety, the accession should have the same variety as germplasm 'A'
+- Coherency of relations *** ⚠️ _WARNING_ : this part is not actually very clear (see GermplasmAPI::getGermplasmModelsAndValidateRelations ) *** 
 
 ## Technical specifications
 

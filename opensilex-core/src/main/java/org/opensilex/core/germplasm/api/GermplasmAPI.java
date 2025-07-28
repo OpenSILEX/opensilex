@@ -33,8 +33,11 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
+import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorObject;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorListException;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorObjectList;
 import org.opensilex.server.response.*;
 import org.opensilex.server.response.multipleError.MultipleErrorResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -178,7 +181,15 @@ public class GermplasmAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
-        List<GermplasmModel> models = getGermplasmModels(germplasmDTOs);
+        List<GermplasmModel> models;
+        MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> relationsErrors = null;
+
+        try {
+            models = getGermplasmModelsAndValidateRelations(germplasmDTOs);
+        } catch (InvalidValueException e) {
+            relationsErrors = new MultipleErrorObjectList<>("germplasms errors", new ArrayList<>(), MultipleCreateUpdateErrorObject::new);
+            models = getGermplasmModelWithoutRelationsAndCollectErrors(germplasmDTOs, relationsErrors);
+        }
 
         if (!checkOnly) {
 
@@ -186,7 +197,10 @@ public class GermplasmAPI {
                 List<GermplasmModel> germplasms = germplasmBusiness.upsert(models);
                 List<URI> uris = germplasms.stream().map(GermplasmModel::getUri).toList();
                 return new CreatedUriResponse(uris).getResponse();
-            } catch (MultipleErrorException exception){
+            } catch (MultipleErrorListException exception){
+                if (relationsErrors != null && relationsErrors.hasErrors()) {
+                    exception.getMultipleErrorObjectList().mergeErrors(relationsErrors);
+                }
                 return exception.getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
@@ -194,6 +208,11 @@ public class GermplasmAPI {
 
         } else {
             var multipleErrorObjectList = germplasmBusiness.checkBeforeCreateOrUpdate(models, true);
+
+            if (relationsErrors != null && relationsErrors.hasErrors()) {
+                multipleErrorObjectList.mergeErrors(relationsErrors);
+            }
+
             if (multipleErrorObjectList.hasErrors()) {
                 return new MultipleErrorResponse(multipleErrorObjectList.toDTO()).getResponse();
             }
@@ -203,9 +222,11 @@ public class GermplasmAPI {
     }
 
     /**
-     *  get models from DTOs. Create each needed classModel only one time.
+     *  get models from DTOs and validate relations.
+     *  This method validates relations of each germplasmDTO. It would be better to validate relations in the business layer, but this would require refactoring.
+     * @throws MultipleErrorListException
      */
-    private List<GermplasmModel> getGermplasmModels(List<GermplasmCreationDTO> germplasmDTOs) throws URISyntaxException, SPARQLException {
+    private List<GermplasmModel> getGermplasmModelsAndValidateRelations(List<GermplasmCreationDTO> germplasmDTOs) throws URISyntaxException, SPARQLException {
         List<GermplasmModel> models = new ArrayList<>();
         if (CollectionUtils.isEmpty(germplasmDTOs)) {
             return models;
@@ -225,6 +246,47 @@ public class GermplasmAPI {
 
         return models;
     }
+
+    /**
+     * This method is used to handle germplasms errors on relations. It would be better to handle relations in the business layer, but this would require refactoring.
+     * return germplasms. For germplasms with relations errors, we return the germplasm model without relations and collect errors in the errors list.
+     * This method fill the errors list with germplasm models and errors.
+     * @param errors should be initialized with an empty list of models. Models will be added to the list by this method.
+     * @return a list of germplasm models without relations.
+     */
+    private List<GermplasmModel> getGermplasmModelWithoutRelationsAndCollectErrors(List<GermplasmCreationDTO> germplasmDTOs, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws URISyntaxException, SPARQLException {
+        List<GermplasmModel> models = new ArrayList<>();
+        if (CollectionUtils.isEmpty(germplasmDTOs)) {
+            return models;
+        }
+
+        Map<URI, ClassModel> classModels = new HashMap<>();
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        //get every different types from DTOs
+        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getType).distinct().toList();
+        for (URI type : germplasmsTypes) {
+            classModels.put(type, ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
+        }
+
+        for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
+            GermplasmModel model = null;
+            try {
+                model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getType()));
+                errors.addModel(model);
+            } catch (InvalidValueException e){
+                model = germplasmDTO.newModelWithoutRelations();
+                errors.addModel(model);
+                errors.addError(model, e.getMessage());
+            } finally {
+                models.add(model);
+            }
+        }
+
+        return models;
+
+    }
+
+
 
     /**
      *

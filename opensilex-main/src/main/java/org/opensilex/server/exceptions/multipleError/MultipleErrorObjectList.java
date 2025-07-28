@@ -52,7 +52,7 @@ public class MultipleErrorObjectList<T extends MultipleErrorObject, M> {
     /**
      * @param title of the error that will be raised if there is an error in the list.
      * @param modelsToMapInRightOrder the list of models to map in the right order,
-     * this is used to ensure that the errors are added to the right model, using their index in the list.
+     * this is used to easily add errors and to keep track of the index of each model, allowing to return a map of errors by index.
      * @param multipleErrorObjectConstructor a supplier to create a new instance of the MultipleErrorObject. If you don't use personalized implementation, simply use MultipleErrorObject::new.
      */
     public MultipleErrorObjectList(String title, List<M> modelsToMapInRightOrder,Supplier<T> multipleErrorObjectConstructor) {
@@ -63,6 +63,21 @@ public class MultipleErrorObjectList<T extends MultipleErrorObject, M> {
             M model = modelsToMapInRightOrder.get(i);
             indexMap.put(model, i);
         }
+    }
+
+
+    /**
+     * Add a model at the end of the list of models, allowing to add errors to this model later.
+     * @param model to add to the list of models. It will be mapped to the last index of the current list.
+     * @return true if the model was added, false if the model already exists in the list.
+     */
+    public boolean addModel(M model) {
+        if (indexMap.containsKey(model)) {
+            return false;
+        }
+        int index = indexMap.size();
+        indexMap.put(model, index);
+        return true;
     }
 
     public MultipleErrorListDTO toDTO() {
@@ -77,6 +92,7 @@ public class MultipleErrorObjectList<T extends MultipleErrorObject, M> {
      * Add an error to the model, using the model as a key to retrieve the index of the model in the list passed in constructor.
      * @param model the model to which the error is related, WARNING it should be one of the models passed in the constructor.
      * @param error the error to add to the model, it should be a string describing the error.
+     * @throws NullPointerException if the model is not mapped, meaning that it was not passed in the constructor or added with {@link #addModel(M)}.
      */
     public void addError(M model, String error) {
         Integer key = indexMap.get(model);
@@ -105,5 +121,30 @@ public class MultipleErrorObjectList<T extends MultipleErrorObject, M> {
                         Map.Entry::getKey,
                         entry -> errors.get(entry.getValue()
                 )));
+    }
+
+    /**
+     * Merge the errors from another MultipleErrorObjectList into this one. Index map of the current list will not be modified.
+     * @param errorsToAdd, the list of errors to add to this list, it should contain models that are already mapped in this error list.
+     * @Throws NullPointerException if one of the models in errorsToAdd contain an error and is not mapped in this error list.
+     */
+    public void mergeErrors(MultipleErrorObjectList<T, M> errorsToAdd) {
+        if (errorsToAdd == null || ! errorsToAdd.hasErrors()) {
+            return; // Nothing to merge
+        }
+
+        for (Map.Entry<Integer, T> entry : errorsToAdd.errors.entrySet()) {
+            Integer index = entry.getKey();
+            T errorObject = entry.getValue();
+            M model = errorsToAdd.indexMap.entrySet().stream()
+                    .filter(e -> e.getValue().equals(index))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElseThrow(() -> new NullPointerException("Model not found in errors to add for index: " + index));
+
+            for (String error : errorObject.getErrors()) {
+                addError(model, error); // raise NullPointerException if model is not mapped
+            }
+        }
     }
 }

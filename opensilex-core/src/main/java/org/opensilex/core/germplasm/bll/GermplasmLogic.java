@@ -24,7 +24,7 @@ import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorObject;
-import org.opensilex.server.exceptions.multipleError.MultipleErrorException;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorListException;
 import org.opensilex.server.exceptions.multipleError.MultipleErrorObjectList;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -86,7 +86,7 @@ public class GermplasmLogic {
         var multipleErrorObject = checkBeforeCreateOrUpdate(germplasmModels, true);
         if (multipleErrorObject.hasErrors()){
             setIsUpdateForRelevantModels(germplasmModels, existingUris, multipleErrorObject);
-            throw new MultipleErrorException("getting errors while upserting germplasms", multipleErrorObject);
+            throw new MultipleErrorListException("getting errors while upserting germplasms", multipleErrorObject);
         }
 
         germplasmModels.forEach(this::retrieveLinkedSpeciesAndVariety);
@@ -106,7 +106,7 @@ public class GermplasmLogic {
     public GermplasmModel create(GermplasmModel germplasmModel) throws Exception {
         var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
         if (multipleErrorObjectList.hasErrors()){
-            throw new MultipleErrorException("getting errors while creating germplasm", multipleErrorObjectList);
+            throw new MultipleErrorListException("getting errors while creating germplasm", multipleErrorObjectList);
         }
         retrieveLinkedSpeciesAndVariety(germplasmModel);
         GermplasmModel model = germplasmModel;
@@ -118,7 +118,7 @@ public class GermplasmLogic {
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {
         var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
         if (multipleErrorObjectList.hasErrors()){
-            throw new MultipleErrorException("getting errors while updating germplasm", multipleErrorObjectList);
+            throw new MultipleErrorListException("getting errors while updating germplasm", multipleErrorObjectList);
         }
         retrieveLinkedSpeciesAndVariety(germplasmModel);
         return dao.update(germplasmModel);

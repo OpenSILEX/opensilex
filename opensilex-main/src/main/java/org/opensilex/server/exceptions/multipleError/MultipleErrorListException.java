@@ -9,23 +9,27 @@
  */
 package org.opensilex.server.exceptions.multipleError;
 
+import org.opensilex.server.response.multipleError.MultipleErrorListDTO;
 import org.opensilex.server.response.multipleError.MultipleErrorResponse;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 /**
- * Exception representing a bad request
- *
- * @author Valentin RIGOLLE
+ * Exception to handle multiple errors for many objects.
+ * @see MultipleErrorListDTO to a better understanding of the structure and the usage.
  */
-public class MultipleErrorException extends WebApplicationException {
+public class MultipleErrorListException extends WebApplicationException {
     MultipleErrorObjectList errors;
     String title;
 
-    public MultipleErrorException(String title, MultipleErrorObjectList errors) {
+    public MultipleErrorListException(String title, MultipleErrorObjectList errors) {
         this.title = title;
         this.errors = errors;
+    }
+
+    public MultipleErrorObjectList getMultipleErrorObjectList() {
+        return errors;
     }
 
     public Response getResponse(){

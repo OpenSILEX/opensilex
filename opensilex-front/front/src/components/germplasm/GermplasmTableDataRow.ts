@@ -62,8 +62,9 @@ export default class GermplasmTableDataRow {
     this.isValidated = true;
     this.errors = null;
     this.data.status = 'OK';
+    this.setInsertionStatus("");
+    this.setCheckingStatus("");
   }
-
 }
 
 function getEmptyData(): any {

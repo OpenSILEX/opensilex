@@ -255,6 +255,11 @@ export default class GermplasmTable extends Vue {
     {text: "See lines with errors", value: "NOK"},
   ];
 
+  /**
+   * Filter which lines are shown in the table.
+   * "all" shows all lines
+   * "NOK" shows only lines with errors.
+   */
   private filter = "all";
 
   private disableInsert: boolean = false;
@@ -730,6 +735,7 @@ export default class GermplasmTable extends Vue {
           this.$opensilex.showSuccessToast(successMessage);
 
           this.setOkStatusForEachGermplasm();
+          this.filter = "all";
         })
         .catch( error => {
           if (error.response.status < 400 || error.response.status >= 500) {
@@ -783,8 +789,8 @@ export default class GermplasmTable extends Vue {
    */
   private setOkStatusForEachGermplasm(): void {
     this.tableData.forEach((data) => {
-      data.setInsertionStatus(this.$t("GermplasmTable.successUpsertRowMessage").toString());
       data.setIsValidated();
+      data.setInsertionStatus(this.$t("GermplasmTable.successUpsertRowMessage").toString());
     });
   }
 

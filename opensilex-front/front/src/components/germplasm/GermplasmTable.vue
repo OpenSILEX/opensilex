@@ -783,7 +783,7 @@ export default class GermplasmTable extends Vue {
    */
   private setOkStatusForEachGermplasm(): void {
     this.tableData.forEach((data) => {
-      data.setInsertionStatus(this.$t("successUpsertRowMessage").toString());
+      data.setInsertionStatus(this.$t("GermplasmTable.successUpsertRowMessage").toString());
       data.setIsValidated();
     });
   }

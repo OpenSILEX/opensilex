@@ -76,7 +76,7 @@ public class GermplasmLogic {
         List<GermplasmModel> germplasmModelsToUpdate = new ArrayList<>();
         List<GermplasmModel> germplasmModelsToCreate = new ArrayList<>();
         germplasmModels.forEach(germplasmModel -> {
-            if (SPARQLDeserializers.containsURI(existingUris, germplasmModel.getUri())) {
+            if ( germplasmModel.getUri() != null && SPARQLDeserializers.containsURI(existingUris, germplasmModel.getUri())) {
                 germplasmModelsToUpdate.add(germplasmModel);
             } else {
                 germplasmModelsToCreate.add(germplasmModel);

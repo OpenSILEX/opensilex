@@ -55,8 +55,8 @@
         <maven.minimal.version>3.6.0</maven.minimal.version>
 
         <!-- dependencies version -->
-        <jersey.version>2.37</jersey.version>
-        <tomcat.version>9.0.99</tomcat.version>
+        <jersey.version>2.47</jersey.version>
+        <tomcat.version>9.0.107</tomcat.version>
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
         <jackson.version>2.17.2</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
@@ -111,7 +111,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <maven.failsafe.plugin.version>3.1.2</maven.failsafe.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
-        <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
+        <maven.site.plugin.version>4.0.0-M16</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.1</maven.assembly.plugin.version>
         <maven.archetype.plugin.version>3.1.2</maven.archetype.plugin.version>
         <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
@@ -120,17 +120,17 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <flatten.maven.plugin.version>1.1.0</flatten.maven.plugin.version>
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
-        <owasp.dependency.check.maven.plugin.version>5.3.2</owasp.dependency.check.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
+        <owasp.dependency.check.maven.plugin.version>12.1.0</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.12.1</frontend.maven.plugin.version>
-        <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
-        <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
+        <maven.project.info.reports.plugin.version>3.4.5</maven.project.info.reports.plugin.version>
+        <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
         <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
-        <maven.pmd.plugin.version>3.13.0</maven.pmd.plugin.version>
-        <maven.surefire.report.plugin.version>3.0.0-M3</maven.surefire.report.plugin.version>
+        <maven.pmd.plugin.version>3.25.0</maven.pmd.plugin.version>
+        <maven.surefire.report.plugin.version>3.2.5</maven.surefire.report.plugin.version>
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
-        <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
+        <spotbugs.maven.plugin.version>4.7.3.6</spotbugs.maven.plugin.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <csv.parser.version>2.9.1</csv.parser.version>
         <email.simple.java.mail>6.7.6</email.simple.java.mail>
@@ -140,6 +140,28 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.8</caffeine.version>
         <geotools.version>29.6</geotools.version>
+        <maven.fluido.skin.version>2.1.0</maven.fluido.skin.version>
+
+<!--        sonar-->
+        <sonar.plugin.version>3.10.0.2594</sonar.plugin.version>
+        <sonar.dependencyCheck.basePath>
+            ${project.basedir}/owasp-dependency-check-logs
+        </sonar.dependencyCheck.basePath>
+        <sonar.dependencyCheck.htmlReportPath>
+            ${sonar.dependencyCheck.basePath}/dependency-check-report.html
+        </sonar.dependencyCheck.htmlReportPath>
+        <sonar.dependencyCheck.jsonReportPath>
+            ${sonar.dependencyCheck.basePath}/dependency-check-report.json
+        </sonar.dependencyCheck.jsonReportPath>
+        <sonar.dependencyCheck.summarize>true</sonar.dependencyCheck.summarize>
+
+        <sonar.coverage.exclusions>**/controller/debug/**/*</sonar.coverage.exclusions>
+
+        <sonar.exclusions>src/test/**/*</sonar.exclusions>
+        <sonar.sources>src,pom.xml</sonar.sources>
+        <sonar.test.inclusions>src/test/**/*</sonar.test.inclusions>
+        <sonar.tests>src</sonar.tests>
+
     </properties>
 
     <dependencyManagement>
@@ -658,7 +680,6 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
             <artifactId>caffeine</artifactId>
             <version>${caffeine.version}</version>
         </dependency>
-
     </dependencies>
 
     <!--  Configuration repositories  -->
@@ -879,6 +900,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <artifactId>maven-site-plugin</artifactId>
                     <version>${maven.site.plugin.version}</version>
                 </plugin>
+              
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven.resources.plugin.version}</version>
@@ -887,7 +909,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.6.0</version>
                     <configuration>
                         <outputFile>../${generated.doc.site.directory}/${project.name}/checkstyle-result.xml</outputFile>
                         <outputDirectory>../${generated.doc.site.directory}/${project.name}/checkstyle/</outputDirectory>
@@ -1227,12 +1249,20 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
+                  <dependencies>
+          <dependency>
+          <groupId>org.apache.maven.skins</groupId>
+          <artifactId>maven-fluido-skin</artifactId>
+          <version>${maven.fluido.skin.version}</version>
+        </dependency>
+        </dependencies>
                 <configuration>
                     <locales>en</locales>
                     <!-- see below to enable multilang doc -->
                     <!--<locales>en,fr</locales>-->
                     <generateReports>true</generateReports>
                     <outputDirectory>../${generated.doc.site.directory}/${project.name}/</outputDirectory>
+                 
                 </configuration>
             </plugin>
 
@@ -1285,7 +1315,9 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
-                    <source>8</source>
+                    <source>${java.compiler.version}</source>
+                    <target>${java.compiler.version}</target>
+                    <release>${java.compiler.version}</release>
                     <quiet>true</quiet>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                     <failOnError>false</failOnError>
@@ -1300,6 +1332,11 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>${maven.jxr.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar.plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -1341,7 +1378,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     </reportSet>
                 </reportSets>
             </plugin>
-        </plugins>
+        </plugins> 
     </reporting>
 
     <!--  Configuration profiles  -->
@@ -1355,7 +1392,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${maven.surefire.plugin.version}</version>
                         <configuration>
-                            <argLine>${surefireArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                            <argLine>${surefireArgLine} -XX:+EnableDynamicAgentLoading -Xshare:off -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                             <trimStackTrace>false</trimStackTrace>
                             <useFile>false</useFile>
                             <reuseForks>true</reuseForks>
@@ -1643,7 +1680,43 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 </plugins>
             </reporting>
         </profile>
+<!-- sonar report-->
+        <profile>
+            <id>sonarReports</id>
 
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+
+                        <configuration>
+                            <mavenSettingsProxyId>https-p</mavenSettingsProxyId>
+                            <outputDirectory>${sonar.dependencyCheck.basePath}</outputDirectory>
+
+                            <formats>
+                                <format>html</format>
+                                <format>json</format>
+                            </formats>
+                        </configuration>
+
+                        <executions>
+                            <execution>
+                                <id>generate-dependency-check-report</id>
+
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Profile to enable in eclipse to avoid build errors -->
         <profile>
             <id>for-eclipse</id>

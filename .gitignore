@@ -13,3 +13,4 @@ opensilex-doc/src/main/resources/generated/
 **/inrae-bigdatagrapes
 **/*.iml
 opensilex-front/front/src/opensilex.dev.ts
+owasp-dependency-check-logs

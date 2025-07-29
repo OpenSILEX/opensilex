@@ -439,7 +439,9 @@ public class GermplasmLogic {
      */
     private static void setIsUpdateForRelevantModels(List<GermplasmModel> germplasmModels, Collection<URI> existingUris, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> multipleErrorObject) {
         Collection<GermplasmModel> modelsWithExistingUris = germplasmModels.stream()
-                .filter(germplasmModel -> existingUris.stream().anyMatch(existingUri -> SPARQLDeserializers.compareURIs(germplasmModel.getUri(), existingUri)))
+                .filter(germplasmModel
+                        -> existingUris.stream().anyMatch(existingUri
+                            -> germplasmModel.getUri() != null && SPARQLDeserializers.compareURIs(germplasmModel.getUri(), existingUri)))
                 .toList();
         multipleErrorObject.getModelsWithErrorsAsObjects()
                 .forEach((modelAsObject, error) -> {

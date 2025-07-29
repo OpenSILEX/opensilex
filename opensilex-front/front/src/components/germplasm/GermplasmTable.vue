@@ -234,12 +234,6 @@ export default class GermplasmTable extends Vue {
     this.tabulator.replaceData(value.map(row => {
       return row.getData();
     }));
-
-    //each time a row is added or a cell is edited, we check for all germplasms
-    this.getExistingGermplasmsUri()
-        .then(uris => {
-          this.setUpdateStatusForEachGermplasm(uris);
-        });
   }
 
   private csvUploadedData = [];
@@ -298,7 +292,9 @@ export default class GermplasmTable extends Vue {
   }
 
   private onAddRowBtnClick() {
-    this.tableData.push(new GermplasmTableDataRow(this.tableData.length),);
+    const newGermplasm = new GermplasmTableDataRow(this.tableData.length);
+    this.tableData.push(newGermplasm,);
+    this.tabulator.addRow(newGermplasm.getData());
   }
 
   private onCheckBtnClick() {
@@ -329,7 +325,16 @@ export default class GermplasmTable extends Vue {
 
   private onNewColsModalHidden() {
     this.filter = "all";
-    this.tableData = this.csvUploadedData.map( (row, index) => new GermplasmTableDataRow(index, row) );
+    this.tabulator.clearData()
+    this.tableData = []
+    this.csvUploadedData.forEach( (row, index) => {
+      const germplasm = new GermplasmTableDataRow(index, row)
+      this.tableData.push(germplasm);
+      this.tabulator.addRow(germplasm.getData());
+      return germplasm;
+    } );
+
+    this.SetUpdateStatusForEachGermplasm();
   }
 
   private onSelectAllColumnSwitchChange(checked) {
@@ -646,6 +651,20 @@ export default class GermplasmTable extends Vue {
       this.$opensilex.hideLoader();
     });
 
+    this.tabulator.on("cellEdited", (cell) => {
+      // check if this is the uri column, if so, throw an error if the uri is not unique
+      if (cell.getField() === "uri") {
+        const uri = cell.getValue();
+        const germplasm: GermplasmTableDataRow = this.tableData[cell.getRow().getData().index];
+        if (uri == null || uri === "") {
+          germplasm.setIsUpdate(false);
+          return;
+        } else {
+          this.SetUpdateStatusForEachGermplasm();
+        }
+      }
+    });
+
     this.jsonForTemplate = [];
     //let jsonHeader = {};
     for (let i = 1; i < this.tableColumns.length; i++) {
@@ -775,7 +794,7 @@ export default class GermplasmTable extends Vue {
    */
   private setUpdateStatusForEachGermplasm(existingUris: string[]){
     this.tableData.forEach((data) => {
-      if (this.$opensilex.includesUri(existingUris, data.getData().uri)) {
+      if (data.getData().uri != null && this.$opensilex.includesUri(existingUris, data.getData().uri)) {
          data.setIsUpdate(true);
         } else {
           data.setIsUpdate(false);
@@ -801,6 +820,16 @@ export default class GermplasmTable extends Vue {
       })
     }
     return ( await this.service.checkGermplasmsExist(uris) ).response.result
+  }
+
+  /**
+   * After an API call, this function sets the update status for each germplasm (true or false).
+   */
+  private SetUpdateStatusForEachGermplasm(){
+    this.getExistingGermplasmsUri()
+        .then(uris => {
+          this.setUpdateStatusForEachGermplasm(uris);
+        });
   }
 
   private async getDtosFromTableData(): Promise<Array<GermplasmCreationDTO>> {

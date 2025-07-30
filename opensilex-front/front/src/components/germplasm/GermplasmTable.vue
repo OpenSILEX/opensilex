@@ -327,12 +327,10 @@ export default class GermplasmTable extends Vue {
     this.filter = "all";
     this.tabulator.clearData()
     this.tableData = []
-    this.csvUploadedData.forEach( (row, index) => {
-      const germplasm = new GermplasmTableDataRow(index, row)
-      this.tableData.push(germplasm);
-      this.tabulator.addRow(germplasm.getData());
+    this.tableData = this.csvUploadedData.map((row, index) => {
+      const germplasm = new GermplasmTableDataRow(index, row);
       return germplasm;
-    } );
+    });
 
     this.SetUpdateStatusForEachGermplasm();
   }

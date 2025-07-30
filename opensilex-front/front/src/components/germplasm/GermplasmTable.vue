@@ -756,7 +756,7 @@ export default class GermplasmTable extends Vue {
           let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
           this.$opensilex.showSuccessToast(successMessage);
 
-          this.setOkStatusForEachGermplasm();
+          this.setGermplasmsValidationStatus(false);
           this.filter = "all";
         })
         .catch( error => {
@@ -771,7 +771,7 @@ export default class GermplasmTable extends Vue {
 
           if (errors == null) return; //if it's not a MultipleErrorResponse (should not happen)
 
-          this.setOkStatusForEachGermplasm();
+          this.setGermplasmsValidationStatus(true);
           errors.forEach(errorDto => {
 
             let errorMessage = errorDto.errors.length > 1 ?
@@ -808,11 +808,15 @@ export default class GermplasmTable extends Vue {
   /**
    * reset the status of each row to status value. Default is empty string.
    * This will trigger the rowFormatter to change the color of the row.
+   * @param upsertWasCancelled if true, the insertion status will not be set to success.
    */
-  private setOkStatusForEachGermplasm(): void {
+  private setGermplasmsValidationStatus(upsertWasCancelled: boolean): void {
     this.tableData.forEach((data) => {
       data.setIsValidated();
-      data.setInsertionStatus(this.$t("GermplasmTable.successUpsertRowMessage").toString());
+      data.setInsertionStatus(this.$t(
+          upsertWasCancelled ? "GermplasmTable.cancelledUpsertRowMessage" : "GermplasmTable.successUpsertRowMessage"
+      ).toString());
+      data.setCheckingStatus(this.$t("GermplasmTable.successCheckRowMessage").toString());
     });
   }
 
@@ -1189,10 +1193,6 @@ export default class GermplasmTable extends Vue {
   float: right;
   margin-right: 10px;
 }
-
-//tabulator-cell:has(.error-log) {
-//  background-color: #f8d7da;
-//}
 </style>
 
 <style lang="scss">
@@ -1218,11 +1218,13 @@ en:
     resetTable: Reset table
     check: Check
     errorCheckMessage: checking shows some errors, see the table for more details
-    successCheckMessage: germplasms are ready to be inserted
+    successCheckMessage: germplasms are ready to be inserted and/or updated
+    successCheckRowMessage: ready to be inserted/updated
     insert: Insert
     errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
-    successUpsertRowMessage : Germplasm inserted/updated
+    successUpsertRowMessage : inserted/updated
+    cancelledUpsertRowMessage : insertion/update cancelled
     errorModalTitle: Germplasm contain following errors
     multipleErrorMessage: click here to see {count} errors for this germplasm
     addRow: Add Row
@@ -1258,10 +1260,12 @@ fr:
     check: Valider
     errorCheckMessage: Des erreurs sont apparues lors de la validation, voir le tableau pour plus de détails
     successCheckMessage: Les ressources génétiques sont prêts à être insérées
+    successCheckRowMessage: prête à être insérée/modifiée
     insert: Insérer
     errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
-    successUpsertRowMessage: création / modification réussie
+    successUpsertRowMessage: insertion / modification réussie
+    cancelledUpsertRowMessage: insertion / modification annulée
     errorModalTitle: Erreurs concernant les ressources génétiques
     multipleErrorMessage: Cliquez ici pour voir {count} erreurs pour cette ressource génétique
     addRow: Ajouter ligne

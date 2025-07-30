@@ -10,12 +10,14 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
@@ -76,6 +78,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
     private final MoveEventDAO moveDAO;
     private final ScientificObjectDAO scientificObjectDAO;
     private final ExperimentDAO experimentDAO;
+    private ExperimentModel experimentModel;
 
     /**
      * @param sparql     SPARQL service
@@ -103,9 +106,12 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
         if (experiment != null) {
             // ensure that the user has the right to access experiment
-            experimentDAO.validateExperimentAccess(experiment, user);
+            // if user has access fetch the experiment
+            experimentModel = experimentDAO.get(experiment, user);
+            if(experimentModel == null){
+                throw new NotFoundURIException("Unknown experiment",experiment);
+            }
         }
-
         addGeometryValidation();
         addIsHostedValidation();
         addFactorLevelValidation();
@@ -325,10 +331,14 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     @Override
     public void create(CSVValidationModel validation, List<ScientificObjectModel> models) throws Exception {
-        if (Objects.nonNull(this.publisher)) {
+        if (Objects.nonNull(this.publisher) || experimentModel != null) {
             for (ScientificObjectModel model : models) {
-                if (Objects.isNull(model.getPublisher())) {
+                if (this.publisher != null && Objects.isNull(model.getPublisher())) {
                     model.setPublisher(this.publisher);
+                }
+                // setting experiment in SO model if we try creating a SO from an XP
+                if(experimentModel != null) {
+                   model.setExperiment(experimentModel);
                 }
             }
         }

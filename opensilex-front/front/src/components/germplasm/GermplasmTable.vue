@@ -623,9 +623,6 @@ export default class GermplasmTable extends Vue {
       this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + tableStartingHeaderTitlesFields;
     }
 
-    this.tableData = [];
-    this.addInitialXRows(5);
-
     this.tabulator = new Tabulator(this.table, {
       data: this.tableData.map(row => row.getData()), //link data to table
       reactiveData: true, //enable data reactivity
@@ -663,6 +660,12 @@ export default class GermplasmTable extends Vue {
           this.SetUpdateStatusForEachGermplasm();
         }
       }
+    });
+
+    // tabulator initialisation with empty lines when the table is built
+    this.tabulator.on("tableBuilt", () => {
+      this.tableData = [];
+      this.addInitialXRows(5);
     });
 
     this.jsonForTemplate = [];

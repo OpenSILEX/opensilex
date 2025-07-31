@@ -55,7 +55,7 @@
         <maven.minimal.version>3.6.0</maven.minimal.version>
 
         <!-- dependencies version -->
-        <jersey.version>2.47</jersey.version>
+        <jersey.version>2.37</jersey.version>
         <tomcat.version>9.0.107</tomcat.version>
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
         <jackson.version>2.17.2</jackson.version>
@@ -107,8 +107,8 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <maven.enforcer.plugin.version>3.3.0</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.1.2</maven.failsafe.plugin.version>
+        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.site.plugin.version>4.0.0-M16</maven.site.plugin.version>

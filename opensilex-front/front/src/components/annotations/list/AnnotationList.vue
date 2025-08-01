@@ -101,7 +101,6 @@ import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
-import dayjs from 'dayjs';
 
 @Component
 export default class AnnotationList extends Vue {
@@ -143,17 +142,7 @@ export default class AnnotationList extends Vue {
   @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
   formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    return this.$opensilex.$dateTimeFormatter.formatLocalFixedDateTime(dateStr);
   }
 
   static getDefaultColumns() {

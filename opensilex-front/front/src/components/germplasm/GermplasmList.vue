@@ -147,6 +147,8 @@
                         </template>
 
                         <template v-slot:advancedSearch>
+
+                          <!-- Germplasm Attributes -->
                             <div>
                                 <opensilex-FilterField>
                                     <opensilex-GermplasmAttributesSelector
@@ -169,6 +171,26 @@
                                     ></opensilex-GermplasmAttributesValueSelector>
                                 </opensilex-FilterField>
                             </div>
+
+                          <!-- Germplasm Visibility -->
+                            <div>
+                              <opensilex-FilterField :fullWidth="true">
+                                <opensilex-FormSelector
+                                    :label="$t('GermplasmList.filter.is_public')"
+                                    :options="[
+                                                { id: true, label: $t('GermplasmList.filter.is_public_true') },
+                                                { id: false, label: $t('GermplasmList.filter.is_public_false') }
+                                              ]"
+                                    :selected.sync="filter.is_public"
+                                    :async="false"
+                                    :multiple="false"
+                                    :showCount="false"
+                                    :placeholder="$t('GermplasmList.filter.is_public-placeholder')"
+                                />
+                              </opensilex-FilterField>
+
+                            </div>
+
 
                         </template>
                     </opensilex-SearchFilterField>
@@ -236,12 +258,28 @@
                     ></opensilex-UriLink>
                 </template>
 
-                <template v-slot:cell(microorganism_is_public)="{data}">{{ data.item.is_public }}</template>
-                
+<!--                <template v-slot:cell(microorganism_is_public)="{data}">-->
+<!--                  <span v-if="data.item.is_public === true">-->
+<!--                    {{ $t('GermplasmList.filter.is_public_true') }}-->
+<!--                  </span>-->
+<!--                                <span v-else-if="data.item.is_public === false">-->
+<!--                    {{ $t('GermplasmList.filter.is_public_false') }}-->
+<!--                  </span>-->
+<!--                  &lt;!&ndash; sinon rien, laisse vide &ndash;&gt;-->
+<!--                </template>-->
+              <template v-slot:cell(microorganism_is_public)="{ data }">
+                <opensilex-Icon
+                    v-if="data.item.is_public === false"
+                    icon="ik#ik-lock"
+                    class="text-secondary"
+                    style="font-size: 1.2em"
+                    :title="$t('GermplasmList.filter.is_public_false')"
+                />
+              </template>
 
-                <template v-slot:cell(actions)="{data}">
+              <template v-slot:cell(actions)="{data}">
                     <b-button-group size="sm">
-                        <opensilex-EditButton
+                      <opensilex-EditButton
                             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
                             @click="$emit('onEdit', data.item.uri)"
                             label="GermplasmList.update"
@@ -645,7 +683,7 @@ en:
         selected: Selected Germplasm
         export: Export Germplasm list
         selected-all: All Germplasm
-        is_public: Public
+        is_public: Visibility
 
         filter:
           description: Germplasm Search
@@ -669,6 +707,10 @@ en:
           metadataValue: Attribute value
           germplasm-group: Germplasm Group
           parents: Parents
+          is_public: Visibility
+          is_public_true: Public
+          is_public_false: Private
+          is_public-placeholder : Select germplasm visibility
 
 fr:
     GermplasmList:
@@ -683,7 +725,7 @@ fr:
         selected: Ressource(s) Génétique(s) Sélectionnée(s)
         export: Exporter la liste
         selected-all: Toutes les ressources génétiques
-        is_public: Public
+        is_public: Visibilité
 
 
         filter:
@@ -708,5 +750,9 @@ fr:
           metadataValue: Valeur de l'attribut
           germplasm-group: Groupe de ressources génétiques
           parents: Parents
+          is_public: Visibilité
+          is_public_true: Publique
+          is_public_false: Privé
+          is_public-placeholder : Sélectionner la visibilité du germplasm
 
 </i18n>

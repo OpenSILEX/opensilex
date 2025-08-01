@@ -542,14 +542,17 @@ export default class GermplasmTable extends Vue {
       editor: true,
     };
     let isPublicCol = {
-      title: this.$t("GermplasmTable.is_public") + '<span class="required">*</span>',
+      // title: this.$t("GermplasmTable.is_public") + '<span class="required">*</span>',
+      title:"Privé" + '<span class="required">*</span>',
       field: "is_public",
       visible: true,
       editor: "list",
       editorParams:{
         values: {
-          true: this.$t("GermplasmTable.public"),
-          false: this.$t("GermplasmTable.private"),
+          // true: this.$t("GermplasmTable.public"),
+          // false: this.$t("GermplasmTable.private"),
+          true: "true",
+          false: "false",
         }
       }
     };
@@ -625,6 +628,7 @@ export default class GermplasmTable extends Vue {
         instituteCol,
         websiteCol,
         commentCol,
+        isPublicCol,
         checkingStatusCol,
         insertionStatusCol,
       ];
@@ -649,6 +653,7 @@ export default class GermplasmTable extends Vue {
         websiteCol,
         productionYearCol,
         commentCol,
+        isPublicCol,
         checkingStatusCol,
         insertionStatusCol,
       ];
@@ -1344,6 +1349,7 @@ en:
     resetTable : Reset table
     rdfType: Type
     varietyCode: Variety Code
+    accessionNumber: Accession Code
     subtaxa: Subtaxa
     synonyms: Synonyms
     toggleAll: Select all / Unselect all

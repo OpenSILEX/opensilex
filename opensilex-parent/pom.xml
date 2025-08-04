@@ -120,7 +120,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <flatten.maven.plugin.version>1.1.0</flatten.maven.plugin.version>
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
         <owasp.dependency.check.maven.plugin.version>12.1.0</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.12.1</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.4.5</maven.project.info.reports.plugin.version>
@@ -142,27 +142,31 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <geotools.version>29.6</geotools.version>
         <maven.fluido.skin.version>2.1.0</maven.fluido.skin.version>
 
-<!--        sonar-->
-        <sonar.plugin.version>3.10.0.2594</sonar.plugin.version>
+        <!-- sonarqube -->
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.language>java</sonar.language>
+
+        <sonar.plugin.version>5.1.0.4751</sonar.plugin.version>
+       <sonar.projectBaseDir>${maven.multiModuleProjectDirectory}</sonar.projectBaseDir>
         <sonar.dependencyCheck.basePath>
-            ${project.basedir}/owasp-dependency-check-logs
+            ${maven.multiModuleProjectDirectory}/${generated.doc.site.directory}/${project.name}/dependency-check/
         </sonar.dependencyCheck.basePath>
         <sonar.dependencyCheck.htmlReportPath>
             ${sonar.dependencyCheck.basePath}/dependency-check-report.html
         </sonar.dependencyCheck.htmlReportPath>
         <sonar.dependencyCheck.jsonReportPath>
             ${sonar.dependencyCheck.basePath}/dependency-check-report.json
-        </sonar.dependencyCheck.jsonReportPath>
-        <sonar.dependencyCheck.summarize>true</sonar.dependencyCheck.summarize>
+        </sonar.dependencyCheck.jsonReportPath> 
+        <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/${project.name}/target/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.exclusions>**/node_modules/**,**/target/**,**/build/**,opensilex-parent/pom.xml</sonar.exclusions>
 
-        <sonar.coverage.exclusions>**/controller/debug/**/*</sonar.coverage.exclusions>
-
-        <sonar.exclusions>src/test/**/*</sonar.exclusions>
-        <sonar.sources>src,pom.xml</sonar.sources>
-        <sonar.test.inclusions>src/test/**/*</sonar.test.inclusions>
-        <sonar.tests>src</sonar.tests>
-
-    </properties>
+        <sonar.projectKey>OpenSILEX_opensilex-dev_0dacca26-4b1a-4abd-af9f-55bc20e5c504</sonar.projectKey>
+        <sonar.projectName>opensilex-dev</sonar.projectName>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+        <sonar.filesize.limit>30</sonar.filesize.limit>
+     </properties>
 
     <dependencyManagement>
         <!--Jersey dependency management-->
@@ -1346,6 +1350,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <reportSet>
                         <reports>
                             <report>report</report>
+                            <report>report-aggregate</report>
                         </reports>
                     </reportSet>
                 </reportSets>
@@ -1404,7 +1409,6 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>${jacoco.maven.plugin.version}</version>
                         <configuration>
-                            <outputDirectory>../${generated.doc.site.directory}/${project.name}/jacoco/</outputDirectory>
                             <excludes>
                                 <exclude>**/*.war</exclude>
                             </excludes>
@@ -1463,6 +1467,18 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                         <include>**/*.class</include>
                                     </includes>
                                 </configuration>
+                            </execution>
+                            <execution>
+                                <id>report-aggregate</id>
+                                <phase>verify</phase>
+                                <goals>
+                                <goal>report-aggregate</goal>
+                                </goals> 
+                            <configuration>
+                                <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                            <!-- Sets the output directory for the code coverage report. -->
+                                <outputDirectory>${maven.multiModuleProjectDirectory}/${project.name}/target/jacoco</outputDirectory>
+                            </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -1653,6 +1669,14 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
+                        <version>${owasp.dependency.check.maven.plugin.version}</version>
+                         <configuration>
+                                <outputDirectory>../${generated.doc.site.directory}/${project.name}/dependency-check/</outputDirectory>
+                            <formats>
+                                <format>html</format>
+                                <format>json</format>
+                            </formats>
+                        </configuration>
                         <executions>
                             <execution>
                                 <phase>pre-site</phase>
@@ -1680,43 +1704,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 </plugins>
             </reporting>
         </profile>
-<!-- sonar report-->
-        <profile>
-            <id>sonarReports</id>
 
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-
-                        <configuration>
-                            <mavenSettingsProxyId>https-p</mavenSettingsProxyId>
-                            <outputDirectory>${sonar.dependencyCheck.basePath}</outputDirectory>
-
-                            <formats>
-                                <format>html</format>
-                                <format>json</format>
-                            </formats>
-                        </configuration>
-
-                        <executions>
-                            <execution>
-                                <id>generate-dependency-check-report</id>
-
-                                <goals>
-                                    <goal>aggregate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <!-- Profile to enable in eclipse to avoid build errors -->
         <profile>
             <id>for-eclipse</id>

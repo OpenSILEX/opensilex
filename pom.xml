@@ -259,8 +259,7 @@
                                 <exclude>**/*.war</exclude>
                             </excludes>
                             <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
-                        </configuration>
-                                    
+                        </configuration> 
                         <executions>
                             <execution>
                                 <goals>
@@ -300,7 +299,7 @@
                                         <!--Analyze class files only to exclude shaded agent JAR from report--> 
                                         <include>**/*.class</include>
                                     </includes>
-                                    <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
+                                    <outputDirectory>${maven.multiModuleProjectDirectory}/${project.name}/target/jacoco</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
@@ -327,7 +326,7 @@
                 </plugins>
             </reporting>
         </profile>
-        
+         
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>

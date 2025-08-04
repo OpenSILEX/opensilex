@@ -10,6 +10,7 @@ stages:
   - test
   - deploy
   - release
+  - build-sonar
 
 ########################
 ##GLOBAL VARIABLES
@@ -63,7 +64,30 @@ variables:
   #EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
   GITLAB_HTTPS: "false"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache 
 
+build-sonar:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task  
+  stage: build-sonar 
+  cache:
+    policy: pull-push
+    key: "sonar-cache-$CI_COMMIT_REF_SLUG"
+    paths:
+      - "${SONAR_USER_HOME}/cache"
+      - sonar-scanner/ 
+  script:
+    - mvn $MAVEN_CLI_OPTS clean install -Pwith-security-check
+    - mvn $MAVEN_CLI_OPTS verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
+  
 ########################
 ##  CACHE TEMPLATE
 ########################

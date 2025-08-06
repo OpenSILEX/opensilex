@@ -591,7 +591,7 @@ public class DataLogic {
                 (session) -> {
                     //Update the facilities
                     if(!CollectionUtils.isEmpty(facilitiesToUpdate)){
-                        new FacilityLogic(sparql, nosql.getServiceV2()).updateMany(facilitiesToUpdate);
+                        //TODO UNCOMMENT! new FacilityLogic(sparql, nosql.getServiceV2()).updateMany(facilitiesToUpdate);
                     }
                     return createManyNoTransaction(
                             session,

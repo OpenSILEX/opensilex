@@ -17,17 +17,21 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
+import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexModuleUpdate {
 
@@ -74,17 +78,30 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
             // 2 Get all provenances and variables used in data that has for target these facilities
             //List<ProvenanceModel> provenances = dataLogic.searchUsedProvenances(null, allFacilityUris, null, null);
             //dataLogic.getUsedVariables(null, allFacilityUris, null, null);
+
+            List<DataModel> dataWithFacilitiesAsTargets = new ArrayList<>();
+
             DataSearchFilter dataSearchFilter = new DataSearchFilter();
             dataSearchFilter.setUser(AccountModel.getSystemUser());
             dataSearchFilter.setTargets(allFacilityUris);
-            dataSearchFilter.setPageSize(20);
-            dataSearchFilter.setPage(0);
-            /*var query = new MongoSearchQuery<DataModel, DataSearchFilter, DataGetSearchDTO>()
-                    .setFilter(dataSearchFilter)
-                    .setConvertFunction(model -> DataGetSearchDTO.getDtoFromModel(model, dateVariables))
-            dataLogic.searchWithPagination(new MongoSearchQuery<>())*/
-            List<DataModel> datas = dataDaoV2.searchWithPagination(dataSearchFilter).getList();
-            List<FacilityModel> facilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(datas);
+            dataSearchFilter.setPageSize(50);
+
+            boolean done = false;
+            int page = 0;
+            while(!done){
+                dataSearchFilter.setPage(page);
+                ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
+                if(nextPage.getTotal() < 50){
+                    done = true;
+                }
+                dataWithFacilitiesAsTargets.addAll(nextPage.getList());
+
+                page++;
+            }
+            List<FacilityModel> facilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(dataWithFacilitiesAsTargets);
+
+
+            List<String> toDebug = facilitiesToUpdate.stream().map(f -> SPARQLDeserializers.getShortURI(f.getUri())).collect(Collectors.toList());
             System.out.println("chahahaha");
 
 

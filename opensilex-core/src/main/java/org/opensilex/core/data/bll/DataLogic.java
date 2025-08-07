@@ -591,7 +591,7 @@ public class DataLogic {
                 (session) -> {
                     //Update the facilities
                     if(!CollectionUtils.isEmpty(facilitiesToUpdate)){
-                        //TODO UNCOMMENT! new FacilityLogic(sparql, nosql.getServiceV2()).updateMany(facilitiesToUpdate);
+                        new FacilityLogic(sparql, nosql.getServiceV2()).updateMany(facilitiesToUpdate);
                     }
                     return createManyNoTransaction(
                             session,
@@ -633,6 +633,8 @@ public class DataLogic {
         Map<String, Set<String>> devicesPerFacility = new HashMap<>();
         //Map to remember facility uris that have already come up
         Map<String, FacilityModel> facilityPerUri =  new HashMap<>();
+        //Set of device type uris encountered (fast faster access after 1 check)
+        Set<String> encounteredDeviceTypes = new HashSet<>();
 
         //Iterate over data models to save variables and devices if the target is a facility
         for (DataModel model : dataModels) {
@@ -672,8 +674,12 @@ public class DataLogic {
                     if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
                         provWasAssociatedWith.stream().forEach(provEntityModel -> {
                             try {
-                                if(provEntityModel.getType() != null && deviceDAO.isDeviceType(provEntityModel.getType())){
-                                    devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
+                                if(provEntityModel.getType() != null){
+                                    String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
+                                    if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
+                                        encounteredDeviceTypes.add(deviceUriString);
+                                        devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
+                                    }
                                 }
                             } catch (SPARQLException ignore) {}
                         });

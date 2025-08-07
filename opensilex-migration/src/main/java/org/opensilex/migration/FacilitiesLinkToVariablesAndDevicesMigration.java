@@ -65,45 +65,40 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
         FacilityDAO facilityDAO = new FacilityDAO(sparql);
         DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
         DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, mongodb, null);
-        String dataCollectionName = DataDaoV2.COLLECTION_NAME;
-        MongoDatabase db = mongodb.getDatabase();
-        MongoCollection<DataModel> collection = db.getCollection(dataCollectionName, DataModel.class);
 
         try {
             sparql.startTransaction();
             mongodb.startTransaction();
 
             // 1 Get all facilities
+
             List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
-            // 2 Get all provenances and variables used in data that has for target these facilities
-            //List<ProvenanceModel> provenances = dataLogic.searchUsedProvenances(null, allFacilityUris, null, null);
-            //dataLogic.getUsedVariables(null, allFacilityUris, null, null);
+
+            // 2 Get all data that has for target these facilities
 
             List<DataModel> dataWithFacilitiesAsTargets = new ArrayList<>();
 
             DataSearchFilter dataSearchFilter = new DataSearchFilter();
             dataSearchFilter.setUser(AccountModel.getSystemUser());
             dataSearchFilter.setTargets(allFacilityUris);
-            dataSearchFilter.setPageSize(50);
+            dataSearchFilter.setPageSize(5000);
 
             boolean done = false;
             int page = 0;
             while(!done){
                 dataSearchFilter.setPage(page);
                 ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
-                if(nextPage.getTotal() < 50){
+                if(nextPage.getTotal() < 5000 || nextPage.getTotal() == 0) {
                     done = true;
                 }
                 dataWithFacilitiesAsTargets.addAll(nextPage.getList());
 
                 page++;
             }
+
+            //3 Extract facilities that need updating witht he same function that's used during data import, then update the facilities
             List<FacilityModel> facilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(dataWithFacilitiesAsTargets);
-
-
-            List<String> toDebug = facilitiesToUpdate.stream().map(f -> SPARQLDeserializers.getShortURI(f.getUri())).collect(Collectors.toList());
-            System.out.println("chahahaha");
-
+            facilityDAO.updateMany(facilitiesToUpdate);
 
             sparql.commitTransaction();
             mongodb.commitTransaction();

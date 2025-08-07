@@ -33,6 +33,7 @@ variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
+  SONAR_OPTIONS: "Dsonar.projectKey=$SONARQUBE_OPENSILEX_PROJECT_KEY  -Dsonar.projectName='opensilex' -Dsonar.host.url=$SONARQUBE_URL -Dsonar.token=$SONARQUBE_TOKEN -Dhttp.keepAlive=true -Dhttp.connection.timeout=600000 -Dhttp.socket.timeout=600000 "
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.9.9
   # DEFAULT SERVER JAVA VERSION
@@ -78,8 +79,10 @@ build-sonar:
       - "${SONAR_USER_HOME}/cache"
       - sonar-scanner/ 
   script:
-    - mvn $MAVEN_CLI_OPTS clean install -Pwith-security-check
-    - mvn $MAVEN_CLI_OPTS verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+    - mvn $MAVEN_CLI_OPTS clean install
+    - mvn verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
+    - mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+   
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -599,20 +602,10 @@ update:nightly:builds:branch:
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
  
-
-.with_java11: &java11
-  variables:
-    JAVA_VERSION: 11
-    MVN_PROFILE: "for-java-11" 
-    
+ 
 .with_java21: &java21
   variables:
     JAVA_VERSION: 21  
-
-test:build:java11: 
-  <<: *java11
-  <<: *test_build_on_schedules
-
 
 test:build:java21:
   <<: *java21

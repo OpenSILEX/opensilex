@@ -14,3 +14,6 @@ opensilex-doc/src/main/resources/generated/
 **/*.iml
 opensilex-front/front/src/opensilex.dev.ts
 owasp-dependency-check-logs
+site
+kotlin.log
+opensilex-main/dependency-reduced-pom.xml

@@ -154,7 +154,9 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
             dto.setCategory(model.getCategory());
         }
         dto.setDescription(model.getDescription());
-        dto.setExperiment(model.getExperiment().getUri());
+        if(Objects.nonNull(model.getExperiment())){
+            dto.setExperiment(model.getExperiment().getUri());
+        }
         List<FactorLevelGetDTO> factorLevels = new ArrayList<>();
         model.getFactorLevels().forEach(factorLevelModel -> {
             FactorLevelGetDTO newFactorLevelDTO = FactorLevelGetDTO.fromModel(factorLevelModel);

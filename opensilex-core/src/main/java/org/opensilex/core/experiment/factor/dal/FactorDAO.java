@@ -16,11 +16,16 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -64,12 +69,46 @@ public class FactorDAO {
         return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<FactorModel> search( String name, String factorLevelName, URI category, List<URI> experiments,
-            List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
-            return sparql.searchWithPagination(FactorModel.class, lang, (SelectBuilder select) -> {
-                // TODO implements filters
-                appendFilters( name, factorLevelName, category, experiments, select);
-            }, orderByList, page, pageSize);
+    public ListWithPagination<FactorModel> search(
+            String name,
+            String factorLevelName,
+            URI category,
+            List<URI> experiments,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize,
+            String lang,
+            boolean withFactorLevels
+    ) throws Exception {
+
+        SparqlSchemaNode<FactorLevelModel> factorLevsNode = new SparqlSchemaNode<>(
+                FactorLevelModel.class,
+                FactorModel.FACTORLEVELS_SPARQL_VAR,
+                Collections.emptyList(),
+                true,
+                false
+        );
+
+        SparqlSchemaRootNode<FactorModel> rootNode = new SparqlSchemaRootNode<>(
+                FactorModel.class,
+                (withFactorLevels ? Collections.singletonList(factorLevsNode) : Collections.emptyList()),
+                false
+        );
+
+        SparqlSchema<FactorModel> schema = new SparqlSchema<>(rootNode);
+
+        return sparql.searchWithPaginationUsingSchema(
+                FactorModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    // TODO implements filters
+                    appendFilters( name, factorLevelName, category, experiments, select);
+                },
+                schema,
+                orderByList,
+                page,
+                pageSize
+        );
     }
 
     public List<FactorModel> getAll(String lang) throws Exception {

@@ -521,7 +521,7 @@ public final class SPARQLClassAnalyzer {
         return fieldsByName.get(fieldsBySetter.get(method));
     }
 
-    private Method getGetterFromField(Field field) {
+    public Method getGetterFromField(Field field) {
         return fieldsByGetter.inverse().get(field.getName());
     }
 

@@ -46,15 +46,13 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
-import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
-import org.opensilex.sparql.mapping.SPARQLListFetcher;
+import org.opensilex.sparql.mapping.*;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.*;
@@ -73,6 +71,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -198,6 +197,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return connection.executeDescribeQuery(describe);
     }
 
+    /**
+     * Runs a SPARQL describe query on a URI (fetch all triplets it's mentioned in)
+     *
+     * @param graph to search in to make the request run faster
+     * @param uri of the element we want to describe
+     * @return a list of SPARQLStatements (triplets)
+     * @throws SPARQLException
+     */
     public List<SPARQLStatement> describe(Node graph, URI uri) throws SPARQLException {
         DescribeBuilder describe = new DescribeBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -857,11 +864,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @return a list of T
      * @throws Exception
      */
-    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang,
-                                                          ThrowingConsumer<SelectBuilder, Exception> filterHandler,
-                                                          Map<String, WhereHandler> customHandlerByFields,
-                                                          ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                          Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+            Collection<OrderBy> orderByList,
+            Integer offset,
+            Integer limit) throws Exception {
 
         Stream<T> stream = searchAsStream(graph, objectClass, lang, filterHandler, customHandlerByFields, resultHandler, orderByList, offset, limit);
 
@@ -872,6 +884,137 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return stream.collect(Collectors.toList());
         }
 
+    }
+
+    private static class SearchWithPaginationProps{
+        String lang;
+        Integer offset;
+        Integer limit;
+
+        public SearchWithPaginationProps(String lang, Integer offset, Integer limit) {
+            this.lang = lang;
+            this.offset = offset;
+            this.limit = limit;
+        }
+    }
+
+    /**
+     * Private function to hold the code that is in common of the search with pagination functions
+     * @param innerSearchFunction the inner search function to get list from a SearchWithPaginationProps
+     */
+    private <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationInnerCode(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            Integer page,
+            Integer pageSize,
+            Function<SearchWithPaginationProps, List<T>> innerSearchFunction
+    ) throws Exception {
+        if (lang == null) {
+            lang = getDefaultLang();
+        }
+        int total = count(graph, objectClass, lang, filterHandler, customHandlerByFields);
+
+        List<T> list;
+        if (pageSize == null || pageSize == 0) {
+            list = innerSearchFunction.apply(new SearchWithPaginationProps(lang, null, null));
+        } else if (total > 0 && (page * pageSize) < total) {
+            Integer offset = null;
+            Integer limit = null;
+            if (page < 0) {
+                page = 0;
+            }
+            if (pageSize > 0) {
+                offset = page * pageSize;
+                limit = pageSize;
+            }
+            list = innerSearchFunction.apply(new SearchWithPaginationProps(lang, offset, limit));
+        } else {
+            list = new ArrayList<>();
+        }
+
+        return new ListWithPagination<>(list, page, pageSize, total);
+    }
+
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationUsingSchema(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            SparqlSchema<T> modelBuilderSchema,
+            Collection<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws Exception {
+        Function<SearchWithPaginationProps, List<T>> innerSearchFunction = (props) -> {
+            try {
+                return searchUsingSchema(graph, objectClass, props.lang, filterHandler, customHandlerByFields, modelBuilderSchema, orderByList, props.offset, props.limit);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+        return searchWithPaginationInnerCode(
+                graph,
+                objectClass,
+                lang,
+                filterHandler,
+                customHandlerByFields,
+                page,
+                pageSize,
+                innerSearchFunction
+        );
+    }
+
+    /**
+     *
+     * @param graph to perform the top layer search in
+     * @param objectClass generic type of results
+     * @param lang
+     * @param filterHandler
+     * @param customHandlerByFields
+     * @param modelBuilderSchema the schema used to tell the system what else needs to be fetched and loaded into the results
+     * @param orderByList
+     * @param offset
+     * @param limit
+     * @return a list of T, with basic data fields filled and any object fields filled in function of passed schema
+     * @param <T>
+     * @throws Exception
+     */
+    public <T extends SPARQLResourceModel> List<T> searchUsingSchema(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            SparqlSchema<T> modelBuilderSchema,
+            Collection<OrderBy> orderByList,
+            Integer offset,
+            Integer limit
+    ) throws Exception {
+
+        SparqlNoProxyFetcher<T> customFetcher = new SparqlNoProxyFetcher<>(objectClass, this);
+
+        //Call normal search function
+        List<T> basicSearchResult = search(
+                graph,
+                objectClass,
+                lang,
+                filterHandler,
+                customHandlerByFields,
+                (SPARQLResult result) -> {
+                    T nextRes = customFetcher.getInstance(result, lang);
+                    nextRes.setUri(URI.create(SPARQLDeserializers.getShortURI(nextRes.getUri())));
+                    return nextRes;
+                },
+                orderByList,
+                offset,
+                limit
+        );
+
+        return modelBuilderSchema.resolveSchema(this, basicSearchResult, lang);
     }
 
     public <T extends SPARQLResourceModel> Stream<T> searchAsStream(Node graph, Class<T> objectClass, String lang,
@@ -891,11 +1034,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SelectBuilder select = getSelectBuilder(mapper, graph, language, filterHandler, customHandlerByFields, orderByList, offset, limit);
 
         Stream<SPARQLResult> resultStream = executeSelectQueryAsStream(select);
-        boolean hasResultHandler = resultHandler == null;
+        boolean hasNoResultHandler = resultHandler == null;
 
         return resultStream.map(result -> {
             try {
-                if (hasResultHandler) {
+                if (hasNoResultHandler) {
                     return mapper.createInstance(graph, result, language, this);
                 } else {
                     return resultHandler.apply(result);
@@ -957,37 +1100,39 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return searchWithPagination(getDefaultGraph(objectClass), objectClass, lang, filterHandler, null, null, orderByList, page, pageSize);
     }
 
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Node graph,
-                                                                                      Class<T> objectClass,
-                                                                                      String lang,
-                                                                                      ThrowingConsumer<SelectBuilder, Exception> filterHandler,
-                                                                                      Map<String, WhereHandler> customHandlerByFields,
-                                                                                      ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                                      Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
-        if (lang == null) {
-            lang = getDefaultLang();
-        }
-        int total = count(graph, objectClass, lang, filterHandler, customHandlerByFields);
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPaginationUsingSchema(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, SparqlSchema<T> schema, Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        return searchWithPaginationUsingSchema(getDefaultGraph(objectClass), objectClass, lang, filterHandler, null, schema, orderByList, page, pageSize);
+    }
 
-        List<T> list;
-        if (pageSize == null || pageSize == 0) {
-            list = search(graph, objectClass, lang, filterHandler, customHandlerByFields, resultHandler, orderByList, null, null);
-        } else if (total > 0 && (page * pageSize) < total) {
-            Integer offset = null;
-            Integer limit = null;
-            if (page < 0) {
-                page = 0;
-            }
-            if (pageSize > 0) {
-                offset = page * pageSize;
-                limit = pageSize;
-            }
-            list = search(graph, objectClass, lang, filterHandler, customHandlerByFields, resultHandler, orderByList, offset, limit);
-        } else {
-            list = new ArrayList<>();
-        }
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(
+            Node graph,
+            Class<T> objectClass,
+            String lang,
+            ThrowingConsumer<SelectBuilder, Exception> filterHandler,
+            Map<String, WhereHandler> customHandlerByFields,
+            ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+            Collection<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws Exception {
 
-        return new ListWithPagination<>(list, page, pageSize, total);
+        Function<SearchWithPaginationProps, List<T>> innerSearchFunction = (props) -> {
+            try {
+                return search(graph, objectClass, props.lang, filterHandler, customHandlerByFields, resultHandler, orderByList, props.offset, props.limit);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+        return searchWithPaginationInnerCode(
+                graph,
+                objectClass,
+                lang,
+                filterHandler,
+                customHandlerByFields,
+                page,
+                pageSize,
+                innerSearchFunction
+        );
 
     }
 

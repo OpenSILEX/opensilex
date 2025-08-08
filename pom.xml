@@ -328,11 +328,13 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
+                        <configuration>
+                        <failOnError>false</failOnError>
+                        </configuration>
                         <executions>
                             <execution>
-                                <phase>pre-site</phase>
                                 <goals>
-                                    <goal>aggregate</goal>
+                                    <goal>check</goal>
                                 </goals>
                             </execution>
                         </executions>

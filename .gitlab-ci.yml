@@ -80,8 +80,8 @@ build-sonar:
       - sonar-scanner/ 
   script:
     - mvn $MAVEN_CLI_OPTS clean install
-    - mvn verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
-    - mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+    - mvn $MAVEN_CLI_OPTS verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
+    - mvn $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
    
   allow_failure: true
   rules:

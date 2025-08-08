@@ -1449,15 +1449,6 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>${spotbugs.maven.plugin.version}</version>
-                <reportSets>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <inherited>false</inherited>                        <!-- don't run aggregate in child modules -->
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -2027,16 +2018,16 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                             <scanSet>
                                 <fileSet>
                                     <directory>${project.basedir}</directory>
-                                    <excludes>
-                                        <!-- Exclure le dossier problématique -->
-                                        <exclude>**/template_config/**</exclude>
-                                        <exclude>**/module_skeleton/**</exclude>
-                                        <!-- Autres exclusions courantes -->
-                                        <exclude>**/target/**</exclude>
-                                        <exclude>**/node_modules/**</exclude>
-                                        <exclude>**/.git/**</exclude>
-                                    </excludes>
                                 </fileSet>
+                                <excludes>
+                                    <!-- Exclure le dossier problématique -->
+                                    <exclude>**/template_config/**</exclude>
+                                    <exclude>**/module_skeleton/**</exclude>
+                                    <!-- Autres exclusions courantes -->
+                                    <exclude>**/target/**</exclude>
+                                    <exclude>**/node_modules/**</exclude>
+                                    <exclude>**/.git/**</exclude>
+                                </excludes>
                             </scanSet>
                             <outputDirectory>
                                 ${generated.doc.site.directory}/${project.name}</outputDirectory>
@@ -2064,11 +2055,6 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                             <reportSet>
                                 <reports>
                                     <report>check</report>
-                                </reports>
-                            </reportSet>
-                            <reportSet>
-                                <reports>
-                                    <report>aggregate</report>
                                 </reports>
                             </reportSet>
                         </reportSets>

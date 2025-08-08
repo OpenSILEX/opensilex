@@ -15,7 +15,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
@@ -34,8 +33,6 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
@@ -43,7 +40,6 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -53,8 +49,8 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
-import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
@@ -66,7 +62,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import static org.opensilex.sparql.service.SPARQLService.TYPE_VAR;
 
 /**
  *
@@ -202,7 +197,7 @@ public class DeviceDAO {
         SparqlSchemaRootNode<DeviceModel> rootNode = new SparqlSchemaRootNode<>(
                 sparql,
                 DeviceModel.class,
-                Collections.singletonList(DeviceModel.PERSON_IN_CHARGE_FIELD),
+                Collections.singletonList(new SparqlSchemaSimpleNode<>(PersonModel.class, DeviceModel.PERSON_IN_CHARGE_FIELD)),
                 true
         );
 

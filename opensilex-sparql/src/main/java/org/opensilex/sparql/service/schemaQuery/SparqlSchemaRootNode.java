@@ -17,6 +17,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A class for readability enhancing purposes only, calls SparqlSchemaNode's constructor with some values set to null,
@@ -45,53 +46,53 @@ public class SparqlSchemaRootNode<T extends SPARQLResourceModel> extends SparqlS
     }
 
     /**
-     * Constructor for when there is only one layer below the root node (no children of children). You just have to pass the string list of fields to fetch.
+     * Constructor for when there is only one layer below the root node (no children of children).
+     * You just have to pass a list of SparqlSchemaSimpleNode.
      * The isListField attribute is calculated automatically.
      * WARNING : Using this constructor will set the 'fetchDynamicRelations' attribute to false in all child nodes.
      */
     public SparqlSchemaRootNode(
             SPARQLService sparql,
             Class<T> objectClass,
-            List<String> fields,
+            List<SparqlSchemaSimpleNode<?>> uncompletedChildNodes,
             boolean fetchDynamicRelations
     ) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         super(
                 objectClass,
                 null,
-                getChildNodes(sparql.getMapperIndex().getForClass(objectClass).getClassAnalyzer(), fields, objectClass),
+                getChildNodes(sparql.getMapperIndex().getForClass(objectClass).getClassAnalyzer(), uncompletedChildNodes),
                 false,
                 fetchDynamicRelations
         );
     }
 
     /**
-     * A function to translate a list of field names into a list of SparqlSchemaNodes
+     * A function to translate a list of SparqlSchemaSimpleNode into a list of completed SparqlSchemaNodes
      *
      */
     private static <T extends SPARQLResourceModel> List<SparqlSchemaNode<?>> getChildNodes(
             SPARQLClassAnalyzer analyzer,
-            List<String> fieldNames,
-            Class<T> objectClass
+            List<SparqlSchemaSimpleNode<?>> uncompletedChildNodes
     ) {
         List<SparqlSchemaNode<?>> childNodes = new ArrayList<>();
 
-        for (String fieldName : fieldNames) {
-            Field field = analyzer.getFieldFromName(fieldName);
+        for (SparqlSchemaSimpleNode<?> uncompletedNode : uncompletedChildNodes) {
+            Field field = analyzer.getFieldFromName(uncompletedNode.getFieldName());
 
             // field
             if (analyzer.isObjectListField(field)) {
                 childNodes.add(
-                        new SparqlSchemaNode<T>(
-                                objectClass,
-                                fieldName,
+                        new SparqlSchemaNode<>(
+                                uncompletedNode.getObjectClass(),
+                                uncompletedNode.getFieldName(),
                                 new ArrayList<>(),
                                 true,
                                 false
                         ));
             }else if(analyzer.isObjectPropertyField(field)){
-                childNodes.add(new SparqlSchemaNode<T>(
-                        objectClass,
-                        fieldName,
+                childNodes.add(new SparqlSchemaNode<>(
+                        uncompletedNode.getObjectClass(),
+                        uncompletedNode.getFieldName(),
                         new ArrayList<>(),
                         false,
                         false

@@ -19,23 +19,16 @@ import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
-import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
-import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.group.dal.GroupUserProfileModel;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
-import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
@@ -78,7 +71,12 @@ public class FacilityDAO {
         SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
                 sparql,
                 FacilityModel.class,
-                List.of(FacilityModel.ORGANIZATION_FIELD, FacilityModel.SITE_FIELD, FacilityModel.VARIABLE_GROUPS_FIELD, FacilityModel.ADDRESS_FIELD),
+                List.of(
+                        new SparqlSchemaSimpleNode<>(OrganizationModel.class, FacilityModel.ORGANIZATION_FIELD),
+                        new SparqlSchemaSimpleNode<>(SiteModel.class, FacilityModel.SITE_FIELD),
+                        new SparqlSchemaSimpleNode<>(VariablesGroupModel.class, FacilityModel.VARIABLE_GROUPS_FIELD),
+                        new SparqlSchemaSimpleNode<>(FacilityAddressModel.class, FacilityModel.ADDRESS_FIELD)
+                ),
                 true
         );
 

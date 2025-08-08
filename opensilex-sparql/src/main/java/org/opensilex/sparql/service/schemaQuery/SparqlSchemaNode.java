@@ -41,11 +41,9 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 /**
  * @author mhart
  */
-public class SparqlSchemaNode<T extends SPARQLResourceModel>{
+public class SparqlSchemaNode<T extends SPARQLResourceModel> extends SparqlSchemaSimpleNode<T>{
 
     //Final attributes
-    private final Class<T> objectClass;
-    private final String fieldName;
     private final boolean isListField;
     private final List<SparqlSchemaNode<?>> childNodes;
     private final boolean fetchDynamicRelations;
@@ -64,8 +62,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             boolean isListField,
             boolean fetchDynamicRelations
     ) {
-        this.objectClass = objectClass;
-        this.fieldName = fieldName;
+        super(objectClass, fieldName);
         this.childNodes = childNodes;
         this.isListField = isListField;
         this.fetchDynamicRelations = fetchDynamicRelations;
@@ -80,8 +77,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             boolean isListField,
             boolean fetchDynamicRelations
     ) {
-        this.objectClass = objectClass;
-        this.fieldName = fieldName;
+        super(objectClass, fieldName);
         this.graph = graph;
         this.childNodes = childNodes;
         this.isListField = isListField;
@@ -112,7 +108,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         if(!CollectionUtils.isEmpty(listFieldNames)){
             SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
                     sparql,
-                    objectClass,
+                    super.getObjectClass(),
                     getPassedOrDefaultGraph(sparql),
                     listFieldNames,
                     nodeModels
@@ -121,7 +117,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
         }
 
         //Create mapper so we can work out how to get and set fields from field name
-        SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
+        SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(super.getObjectClass());
 
         //Calculate the data we need for faster access later
         RecursiveIterationData recursiveIterationData = calculateIterationData(mapper, nodeModels);
@@ -562,14 +558,14 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             String lang
     ) throws Exception {
         SparqlNoProxyFetcher<T> customFetcher = new SparqlNoProxyFetcher<>(
-                objectClass,
+                super.getObjectClass(),
                 sparql
         );
 
         //Call normal search function
         return sparql.search(
                 getPassedOrDefaultGraph(sparql),
-                objectClass,
+                super.getObjectClass(),
                 lang,
                 (SelectBuilder select) -> {
                     select.addFilter(SPARQLQueryHelper.inURIFilter(
@@ -611,7 +607,7 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
             SPARQLService sparql,
             boolean urisAreSubjects
     ) throws Exception {
-        List<String> propertiesToIgnore = sparql.getMapperIndex().getForClass(objectClass).getClassAnalyzer().getManagedProperties()
+        List<String> propertiesToIgnore = sparql.getMapperIndex().getForClass(super.getObjectClass()).getClassAnalyzer().getManagedProperties()
                 .stream().map(Property::getURI).toList();
 
         ConstructBuilder constructBuilder = new ConstructBuilder();
@@ -640,13 +636,9 @@ public class SparqlSchemaNode<T extends SPARQLResourceModel>{
 
     private Node getPassedOrDefaultGraph(SPARQLService sparql) throws SPARQLException {
         if(this.graph==null){
-            this.graph = sparql.getDefaultGraph(objectClass);
+            this.graph = sparql.getDefaultGraph(super.getObjectClass());
         }
         return graph;
-    }
-
-    public String getFieldName() {
-        return fieldName;
     }
 
     public boolean isListField() {

@@ -20,7 +20,6 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.jetbrains.annotations.NotNull;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
@@ -32,9 +31,7 @@ import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.person.dal.PersonModel;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -46,8 +43,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
-import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -227,15 +224,18 @@ public class ExperimentDAO {
     }
 
     private SparqlSchema<ExperimentModel> getSparqlSchema(boolean fetchProjects, boolean fetchScientificSupervisors, boolean fetchTechnicalSupervisors) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
-        ArrayList<String> childrenOfRoot = new ArrayList<>(List.of(ExperimentModel.FACILITY_FIELD, ExperimentModel.SPECIES_FIELD));
+        List<SparqlSchemaSimpleNode<?>> childrenOfRoot = new ArrayList<>(List.of(
+                new SparqlSchemaSimpleNode<>(FacilityModel.class, ExperimentModel.FACILITY_FIELD),
+                new SparqlSchemaSimpleNode<>(SpeciesModel.class, ExperimentModel.SPECIES_FIELD)
+        ));
         if(fetchProjects){
-            childrenOfRoot.add(ExperimentModel.PROJECT_URI_FIELD);
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(ProjectModel.class, ExperimentModel.PROJECT_URI_FIELD));
         }
         if(fetchScientificSupervisors){
-            childrenOfRoot.add(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(PersonModel.class, ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD));
         }
         if(fetchTechnicalSupervisors){
-            childrenOfRoot.add(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(PersonModel.class, ExperimentModel.TECHNICAL_SUPERVISOR_FIELD));
         }
 
         SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(

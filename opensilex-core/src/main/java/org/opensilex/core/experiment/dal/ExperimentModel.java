@@ -43,7 +43,7 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             property = "hasProject"
     )
     List<ProjectModel> projects;
-    public static final String PROJECT_URI_FIELD = "project";
+    public static final String PROJECT_URI_FIELD = "projects";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -65,14 +65,14 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             property = "hasScientificSupervisor"
     )
     List<PersonModel> scientificSupervisors;
-    public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisor";
+    public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisors";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
     List<PersonModel> technicalSupervisors;
-    public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisor";
+    public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisors";
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,

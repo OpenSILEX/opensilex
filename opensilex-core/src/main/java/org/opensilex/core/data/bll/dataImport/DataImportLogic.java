@@ -267,9 +267,13 @@ public class DataImportLogic {
             LOGGER.error("[saveDocumentWithFile] File cannot be null.");
             return null;
         }
+        if (Objects.isNull(validationModel.getBatchHistoryUri())) {
+            LOGGER.error("validationModel.getBatchHistoryUri is null. Abandoning document creation.");
+            return null;
+        }
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = new DocumentModel();
-        documentModel.setTitle(validationModel.getBatchHistoryUri() == null ? DEFAULT_DOCUMENT_NAME : validationModel.getBatchHistoryUri().toString());
+        documentModel.setTitle(DEFAULT_DOCUMENT_NAME + "_" + validationModel.getBatchHistoryUri().getSchemeSpecificPart());
         documentModel.setFormat(ZIP);
         documentModel.setPublisher(user.getUri());
         documentModel.setDeprecated("false");

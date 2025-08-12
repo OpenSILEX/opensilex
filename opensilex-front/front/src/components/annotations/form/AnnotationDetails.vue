@@ -29,17 +29,19 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class AnnotationDetails extends Vue {
+  $opensilex: OpenSilexVuePlugin;
   @Prop({ default: () => ({}) }) annotationDetails!: {
     uri?: string;
     motivation?: { name?: string };
-    publisher?:string;
-    published?:string;
-    description?:string
+    publisher?: string;
+    published?: string;
+    description?: string;
   };
-  @PropSync("value",{ default: false }) isVisible!: boolean;
+  @PropSync("value", { default: false }) isVisible!: boolean;
 
   close() {
     this.$emit("input", false);
@@ -47,9 +49,7 @@ export default class AnnotationDetails extends Vue {
   }
 
   formatDate(dateStr: string): string {
-    const localeString = new Date(dateStr).toLocaleString();
-
-    return localeString.replace(/\//g, '-');
+    return this.$opensilex.$dateTimeFormatter.formatLocalFixedDateTime(dateStr);
   }
 
 }

@@ -1,0 +1,8 @@
+uri,type,rdfs:label
+column_description,column_description,column_description
+test:id/csv_import_os_duplicate_names_1,vocabulary:Sample,SO1
+test:id/csv_import_os_duplicate_names_2,vocabulary:Sample,SO1
+test:id/csv_import_os_duplicate_names_3,vocabulary:Sample,SO1
+test:id/csv_import_os_duplicate_names_4,vocabulary:Sample,SO1
+test:id/csv_import_os_duplicate_names_5,vocabulary:Sample,SO1
+test:id/csv_import_os_duplicate_names_6,vocabulary:Sample,SO1

@@ -13,6 +13,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
 import org.opensilex.service.Service;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
@@ -36,9 +38,9 @@ public interface SPARQLConnection extends Service {
 
     List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException;
 
-    List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException;
+    List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException, MalformedQueryException, HTTPQueryEvaluationException;
 
-    default List<SPARQLResult> executeSelectQuery(SelectBuilder select) throws SPARQLException {
+    default List<SPARQLResult> executeSelectQuery(SelectBuilder select) throws SPARQLException, MalformedQueryException, HTTPQueryEvaluationException {
         return executeSelectQuery(select, null);
     }
 

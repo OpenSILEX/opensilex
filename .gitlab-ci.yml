@@ -143,7 +143,7 @@ variables:
     ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
     ##
     - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
-    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts || (echo "[ERROR] Can't connect to $REMOTE_SERVER_IP on port 22 with SSH;" ; exit 1)
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
     - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
     - chmod 600 ${HOME}/.ssh/id_rsa

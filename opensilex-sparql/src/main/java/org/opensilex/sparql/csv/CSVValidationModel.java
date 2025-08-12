@@ -34,6 +34,9 @@ public class CSVValidationModel {
     private List<SPARQLResourceModel> objects = new ArrayList<>();
 
     @JsonIgnore()
+    private List<SPARQLResourceModel> objectsToUpdate = new ArrayList<>();
+
+    @JsonIgnore()
     private Map<String, Object> objectsMetadata = new HashMap<>();
 
     @JsonIgnore()
@@ -124,6 +127,13 @@ public class CSVValidationModel {
 
     public void setObjects(List<SPARQLResourceModel> objects) {
         this.objects = objects;
+    }
+
+    public List<SPARQLResourceModel> getObjectsToUpdate() {
+        if (hasErrors()) {
+            return new ArrayList<>();
+        }
+        return objectsToUpdate;
     }
 
     public Map<String, Object> getObjectsMetadata() {

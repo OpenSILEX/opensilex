@@ -240,11 +240,15 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
         while (rowIterator.hasNext() && allOk) {
 
-            // read csv file by batch : perform validation and insertion by batch (by using transaction)
-            List<T> modelChunk = new ArrayList<>(batchSize);
+            // read csv file by batch :
+            // perform validation and insertion by batch (by using transaction)
+            List<T> modelChunkToCreate = new ArrayList<>(batchSize);
+            // perform validation and modification by batch (by using transaction)
+            List<T> modelChunkToUpdate = new ArrayList<>(batchSize);
+
             Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
             Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
-
+            Map<String, Integer> filledUrisToUpdateIndexesInChunk = new PatriciaTrie<>();
             int chunkRowIdx = 0;
 
             // continue while batch size or max error limit is not reached
@@ -256,41 +260,73 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
                     // read model and performs local validation
                     T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
-                    modelChunk.add(model);
-
-                    // generate new URI and register it to set of URI to check
-                    if (model.getUri() == null) {
-                        generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
-                    } else {
-                        // register URI to the set of URI to check
-                        filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
-                    }
+                    // handle URI generation or map filled URIs to the model object
+                    // add model in modelChunk List
+                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
                 }
                 totalRowIdx++;
             }
 
-            // check generated and filled URI uniqueness in batch way
-            if(validator.isValid()){
-                checkUrisUniqueness(filledUrisToIndexesInChunk, validator);
-                checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk, modelChunk, validator);
-            }
+            checkUrisUniqueness(validator, filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk, modelChunkToCreate);
 
             // batch validation and custom consumer use
             if(validator.isValid()){
-                batchValidation(validator, modelChunk,totalRowIdx-chunkRowIdx);
+                batchValidation(validator, modelChunkToCreate,totalRowIdx-chunkRowIdx);
+                batchValidation(validator, modelChunkToUpdate,totalRowIdx-chunkRowIdx);
+
                 if(modelsConsumer != null){
-                    modelsConsumer.accept(validator.getValidationModel(), modelChunk.stream());
+                    modelsConsumer.accept(validator.getValidationModel(), modelChunkToCreate.stream());
                 }
+                // map modelChunkToUpdate list in validator
+                mapObjectsToUpdate(validator, modelChunkToUpdate);
             }
 
             // write chunk
             allOk = validator.isValid();
             if (allOk && !validOnly) {
-                create(validator.getValidationModel(), modelChunk);
+                upsert(validator.getValidationModel(), modelChunkToCreate, modelChunkToUpdate);
             }
         }
         if (allOk) {
             validator.getValidationModel().setNbObjectImported(totalRowIdx);
+        }
+    }
+
+    protected <T extends SPARQLResourceModel & ClassURIGenerator> void mapObjectsToUpdate(CsvOwlRestrictionValidator validator, List<T> modelChunkToUpdate) {
+        // no need of mapping objects to update here
+    }
+
+    /**
+     * Adds the model objects in the List modelChunkToCreate
+     * Handles the URI generation and mapping them into the model object
+     *
+     * @param modelChunkToCreate the list of models to be created
+     * @param modelChunkToUpdate the list of models to be updated
+     *
+     * <b>override this method</b> to add the models to be updated in the List modelChunkToUpdate and
+     * <b>override this method</b> {@link #upsert(CSVValidationModel, List, List)} also for the models in modelChunkToUpdate to be updated
+     *
+     */
+    protected void handleURIMapping(CsvOwlRestrictionValidator validator, T model, int totalRowIdx, List<T> modelChunkToCreate, List<T> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+        addModelInModelChunk(model, modelChunkToCreate);
+        // generate new URI and register it to set of URI to check
+        if (model.getUri() == null) {
+            generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+        } else {
+            // register URI to the set of URI to check
+            filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+        }
+    }
+
+    protected static <T extends SPARQLResourceModel & ClassURIGenerator> void addModelInModelChunk(T model, List<T> modelChunk) {
+        modelChunk.add(model);
+    }
+
+    protected void checkUrisUniqueness(CsvOwlRestrictionValidator validator, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, List<T> modelChunk) throws SPARQLException {
+        // check generated and filled URI uniqueness in batch way
+        if(validator.isValid()){
+            checkUrisUniqueness(filledUrisToIndexesInChunk, validator);
+            checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk, modelChunk, validator);
         }
     }
 
@@ -353,7 +389,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * if error occurs during URI parsing, then {@link CSVValidationModel#addInvalidURIError(CSVCell)} is called for error registration
      *
      */
-    private void checkGeneratedUrisUniqueness(final Map<String, Integer> generatedUrisToIndexes, List<T> models, CsvOwlRestrictionValidator validator) throws SPARQLException, IllegalArgumentException {
+    protected void checkGeneratedUrisUniqueness(final Map<String, Integer> generatedUrisToIndexes, List<T> models, CsvOwlRestrictionValidator validator) throws SPARQLException, IllegalArgumentException {
 
         if (generatedUrisToIndexes.isEmpty()) {
             return;
@@ -490,7 +526,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * @param validation CSV validation
      * @param generatedUrisToIndexes index between URI (string representation) and corresponding row index in CSV file
      */
-    private void generateLocallyUniqueUri(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> generatedUrisToIndexes) {
+    protected void generateLocallyUniqueUri(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> generatedUrisToIndexes) {
 
         // generate URI after relations building
         try {
@@ -684,17 +720,26 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         customValidationByProperty.put(property, customValidator);
     }
 
+    /**
+     * Calls the create method to create the models 'modelsToCreate' to be created
+     *
+     * @param modelsToCreate the list of models to be created
+     * @param modelChunkToUpdate the list of models to be updated
+     *
+     * <b>override this method</b> by adding the update logic to handle both creation and modification for the models in modelChunkToUpdate to be updated
+     *
+     */
     @Override
-    public void create(CSVValidationModel validation, List<T> models) throws Exception {
+    public void upsert(CSVValidationModel validation, List<T> modelsToCreate, List<T> modelChunkToUpdate) throws Exception {
         if (!validation.hasErrors()) {
             if (Objects.nonNull(this.publisher)) {
-                for (T model : models) {
+                for (T model : modelsToCreate) {
                     if (Objects.isNull(model.getPublisher())) {
                         model.setPublisher(this.publisher);
                     }
                 }
             }
-            sparql.create(NodeFactory.createURI(graph.toString()), models, models.size(), false, true);
+            sparql.create(NodeFactory.createURI(graph.toString()), modelsToCreate, modelsToCreate.size(), false, true);
         }
     }
 }

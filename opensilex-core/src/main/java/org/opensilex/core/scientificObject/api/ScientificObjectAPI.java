@@ -637,17 +637,7 @@ public class ScientificObjectAPI {
             }
             checkFactorLevelsBelongsToExperiment(descriptionDto, experiment);
 
-            if (descriptionDto.getGeometry() != null) {
-                GeospatialModel geospatialModel = new GeospatialModel();
-                geospatialModel.setUri(soURI);
-                geospatialModel.setName(descriptionDto.getName());
-                geospatialModel.setRdfType(soType);
-                geospatialModel.setGraph(contextURI);
-                geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
-                geoDAO.update(geospatialModel, soURI, contextURI);
-            } else {
-                geoDAO.delete(soURI, contextURI);
-            }
+            dao.updateGeoSpatialModel(descriptionDto.getGeometry(), descriptionDto.getName(), soURI, soType, contextURI, geoDAO);
 
             sparql.commitTransaction();
             nosql.commitTransaction();

@@ -1,0 +1,6 @@
+uri,type,rdfs:label,vocabulary:hasGeometry,vocabulary:isPartOf
+column_description,column_description,column_description,column_description,column_description
+,vocabulary:Sample,Ear4,POINT (0 0),test:id/csv_import_os_sample2
+,vocabulary:Sample,PlantUnderStudy,,
+test:id/csv_import_os_sample1,vocabulary:Sample,Sample1_updated,,
+test:id/csv_import_os_sample3,vocabulary:Sample,Sample3_updated,,

@@ -1,0 +1,4 @@
+uri,type,rdfs:label
+column_description,column_description,column_description
+csv_import_os_uri_incorrect1,vocabulary:Sample,os_import_uri_incorrect_1
+csv_import_os_uri_incorrect2,vocabulary:Sample,os_import_uri_incorrect_2

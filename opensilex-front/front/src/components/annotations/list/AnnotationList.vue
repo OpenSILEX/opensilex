@@ -142,9 +142,7 @@ export default class AnnotationList extends Vue {
   @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
   formatDate(dateStr: string): string {
-    const localeString = new Date(dateStr).toLocaleString();
-
-    return localeString.replace(/\//g, '-');
+    return this.$opensilex.$dateTimeFormatter.formatLocalFixedDateTime(dateStr);
   }
 
   static getDefaultColumns() {

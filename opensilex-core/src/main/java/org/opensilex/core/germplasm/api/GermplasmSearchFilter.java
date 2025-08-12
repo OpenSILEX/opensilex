@@ -226,7 +226,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    public List<URI> setGroupsUsers() {
+    public List<URI> getGroupsUsers() {
         return groupsUsers;
     }
 

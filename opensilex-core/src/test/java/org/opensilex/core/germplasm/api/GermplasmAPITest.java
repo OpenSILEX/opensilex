@@ -513,7 +513,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         dao.create(model2);
 
         // search models and ensure that metadata are OK for each model
-        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true,true,false, false);
+        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),false,false);
 
         GermplasmModel model1FromDb = models.getList().stream()
                 .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model1.getUri()))

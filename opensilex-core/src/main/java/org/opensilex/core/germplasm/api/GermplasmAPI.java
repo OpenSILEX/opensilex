@@ -31,6 +31,8 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
@@ -59,6 +61,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -200,6 +203,31 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
+//    public Response getGermplasmsByURI(
+//            @ApiParam(value = "Germplasms URIs") List<URI> uris
+//    ) throws Exception {
+//
+//        GermplasmSearchFilter filter = new GermplasmSearchFilter();
+//        filter.setLang(currentUser.getLanguage());
+//        filter.setUris(uris);
+//
+//        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false,true,false, false).getList();
+//
+//    if (!models.isEmpty()) {
+//            List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
+//            models.forEach(result -> resultDTOList.add(GermplasmGetAllDTO.fromModel(result)));
+//
+//            return new PaginatedListResponse<>(resultDTOList).getResponse();
+//        } else {
+//            // Otherwise return a 404 - NOT_FOUND error response
+//            return new ErrorResponse(
+//                    Response.Status.NOT_FOUND,
+//                    "Germplasm not found",
+//                    "Unknown germplasm URIs"
+//            ).getResponse();
+//        }
+//    }
+
     public Response getGermplasmsByURI(
             @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
@@ -208,9 +236,13 @@ public class GermplasmAPI {
         filter.setLang(currentUser.getLanguage());
         filter.setUris(uris);
 
-        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false,true,false, false).getList();
+        boolean isAdmin = currentUser.isAdmin();
 
-    if (!models.isEmpty()) {
+        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser)
+                .search(filter, false, false)
+                .getList();
+
+        if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
             models.forEach(result -> resultDTOList.add(GermplasmGetAllDTO.fromModel(result)));
 
@@ -224,6 +256,7 @@ public class GermplasmAPI {
             ).getResponse();
         }
     }
+
 
     /**
      *
@@ -359,35 +392,48 @@ public class GermplasmAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-         GermplasmSearchFilter searchFilter = new GermplasmSearchFilter()
-                 .setUri(uri)
-                 .setType(type)
-                 .setName(name)
-                 .setSpecies(species)
-                 .setVariety(variety)
-                 .setAccession(accession)
-                 .setPublic(isPublic)
-                 .setInstitute(institute)
-                 .setProductionYear(productionYear)
-                 .setExperiment(experiment)
-                 .setMetadata(metadata)
-                 .setGroup(group)
-                 .setParentGermplasms(parentGermplasms)
-                 .setParentMGermplasms(parentGermplasmsM)
-                 .setParentFGermplasms(parentGermplasmsF)
-                 .setUser(currentUser);
+        GermplasmSearchFilter searchFilter = new GermplasmSearchFilter()
+                .setUri(uri)
+                .setType(type)
+                .setName(name)
+                .setSpecies(species)
+                .setVariety(variety)
+                .setAccession(accession)
+                .setPublic(isPublic)
+                .setInstitute(institute)
+                .setProductionYear(productionYear)
+                .setExperiment(experiment)
+                .setMetadata(metadata)
+                .setGroup(group)
+                .setParentGermplasms(parentGermplasms)
+                .setParentMGermplasms(parentGermplasmsM)
+                .setParentFGermplasms(parentGermplasmsF)
+                .setUser(currentUser);
 
-         searchFilter.setOrderByList(orderByList)
-                 .setPage(page)
-                 .setPageSize(pageSize)
-                 .setLang(currentUser.getLanguage());
+        // récupération des groupes de l'utilisateur
+        URI userURI = currentUser.getUri();
+        GroupDAO dao = new GroupDAO(sparql);
+        List<GroupModel> userGroups = dao.getUserGroups(userURI);
 
-        boolean isAdmin = currentUser.isAdmin();
+        // extraction des URIs
+                List<URI> groupURIs = userGroups.stream()
+                        .map(GroupModel::getUri)
+                        .collect(Collectors.toList());
+
+        // injection dans le filtre
+                searchFilter.setGroupsUsers(groupURIs);
+
+
+        searchFilter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage());
 
         ListWithPagination<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,false,isPublic,isAdmin, false);
+                .search(searchFilter, false, false);
 
-        // Convert paginated list to DTO
+
+        // Conversion DTO
         ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
                 GermplasmGetAllDTO.class,
                 GermplasmGetAllDTO::fromModel
@@ -395,6 +441,7 @@ public class GermplasmAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
 
     @POST
     @Path("export")
@@ -410,11 +457,11 @@ public class GermplasmAPI {
             @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
         List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,true,true, false, true).getList();
+                .search(searchFilter,false,false).getList();
 
         return buildCSV(resultList);
     }
-    
+
     private Response buildCSV(List<GermplasmModel> germplasmList) throws Exception {
         // Convert list to DTO
         //During this operation count the maximum number of occurrences of each duplicatable column

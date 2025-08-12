@@ -30,10 +30,7 @@ import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class GermplasmLogic {
@@ -108,30 +105,76 @@ public class GermplasmLogic {
         return dao.get(instanceURI, currentUser, withNested);
     }
 
-    /**
-     * @param searchFilter  search filter
-     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
-     */
-    public ListWithPagination<GermplasmModel> search(
-            GermplasmSearchFilter searchFilter,
-            boolean fetchMetadata,
-            Boolean isPublic,
-            //List<URI> groupsUsers,
-            boolean admin,
-            boolean fetchNestedObjects) throws Exception {
-        return dao.search(searchFilter, fetchMetadata,isPublic,admin, fetchNestedObjects);
-    }
+//    public ListWithPagination<GermplasmModel> search(
+//            GermplasmSearchFilter searchFilter,
+//            boolean fetchMetadata,
+//            Boolean isPublic,
+//            List<URI> groupsUsers,
+//            boolean admin,
+//            boolean fetchNestedObjects,
+//            boolean useGroupsUsers
+//    ) throws Exception {
+//        return dao.internalSearch(searchFilter, fetchMetadata, isPublic, useGroupsUsers ? groupsUsers : Collections.emptyList(), admin, fetchNestedObjects);
+//    }
+//
+//    @Deprecated
+//    public ListWithPagination<GermplasmModel> search(
+//            GermplasmSearchFilter searchFilter,
+//            boolean fetchMetadata,
+//            Boolean isPublic,
+//            boolean admin,
+//            boolean fetchNestedObjects
+//    ) throws Exception {
+//        return this.search(searchFilter, fetchMetadata, isPublic, Collections.emptyList(), admin, fetchNestedObjects, false);
+//    }
+//
+//    @Deprecated
+//    public ListWithPagination<GermplasmModel> search(
+//            GermplasmSearchFilter searchFilter,
+//            boolean fetchMetadata,
+//            Boolean isPublic,
+//            List<URI> groupsUsers,
+//            boolean admin,
+//            boolean fetchNestedObjects
+//    ) throws Exception {
+//        return this.search(searchFilter, fetchMetadata, isPublic, groupsUsers, admin, fetchNestedObjects, true);
+//    }
 
+
+//    /**
+//     * @param searchFilter  search filter
+//     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
+//     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
+//     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+//     */
+//    public ListWithPagination<GermplasmModel> search(
+//            GermplasmSearchFilter searchFilter,
+//            boolean fetchMetadata,
+//            Boolean isPublic,
+//            //List<URI> groupsUsers,
+//            boolean admin,
+//            boolean fetchNestedObjects) throws Exception {
+//        return dao.search(searchFilter, fetchMetadata,isPublic,admin, fetchNestedObjects);
+//    }
+
+    // ****************************méthode gardée en refacto
+//    public ListWithPagination<GermplasmModel> search(
+//            GermplasmSearchFilter searchFilter,
+//            boolean fetchMetadata,
+//            Boolean isPublic,
+//            List<URI> groupsUsers,
+//            boolean admin,
+//            boolean fetchNestedObjects) throws Exception {
+//        return dao.search(searchFilter, fetchMetadata,isPublic,groupsUsers,admin, fetchNestedObjects);
+//    }
+
+    // ################################## méthode maj avec searchfilter
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
-            Boolean isPublic,
-            List<URI> groupsUsers,
-            boolean admin,
-            boolean fetchNestedObjects) throws Exception {
-        return dao.search(searchFilter, fetchMetadata,isPublic,groupsUsers,admin, fetchNestedObjects);
+            boolean fetchNestedObjects
+    ) throws Exception {
+        return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
     }
 
     public void checkBeforeCreateOrUpdate(GermplasmModel germplasmModel, boolean update) throws

@@ -12,6 +12,7 @@
           v-if="tutorial && !editMode"
           label="component.tutorial.name"
           @click="getFormRef()?.tutorial?.()"
+          :small="true"
         />
       </div>
     </template>

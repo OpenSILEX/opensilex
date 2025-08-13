@@ -2,23 +2,21 @@
   <div class="card" @click="emit('click')">
     <div v-if="!noHeader" class="card-header">
 
-      <!-- si le parent passe une propriété "title" -->
       <h3 class="capitalize-first-letter">
+      <!-- si le parent passe une propriété "title" -->
         <slot name="title">
-          <opensilex-Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" class="icon-title" />
-          <i v-else-if="icon && icon.startsWith('bi-')" :class="['icon-title', icon]"></i>
+          <opensilex-Icon
+            v-if="icon && icon.startsWith('fa#')"
+            :icon="icon"
+            class="icon-title"
+          />
+          <i
+            v-else-if="icon && icon.startsWith('bi-')"
+            :class="['icon-title', icon]"
+          ></i>
           {{ t(label || '') }}
         </slot>
       </h3>
-
-      <!-- si le parent passe une propriété "label" -->
-      <h3 class="capitalize-first-letter">
-        <opensilex-Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" class="icon-title" />
-        <i v-else-if="icon && icon.startsWith('bi-')" :class="['icon-title', icon]"></i>
-        <!-- {{ $t(label) }} -->
-         {{ t(label || '') }} 
-      </h3>
-
       <slot name="header"></slot>
 
       <div class="card-header-right">

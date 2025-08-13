@@ -311,28 +311,28 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       }
     },
     {
-      title: t('component.variable.entity'),
+      title: t('component.variable.entity.entity'),
       key: 'item.entity.name',
       sortable: true,
       sorter: (a, b) => (a.item.entity?.name || '').localeCompare(b.item.entity?.name || ''),
       render: row => row.item.entity?.name
     },
     {
-      title: t('component.variable.characteristic'),
+      title: t('component.variable.characteristic.characteristic'),
       key: 'item.characteristic.name',
       sortable: true,
       sorter: (a, b) => (a.item.characteristic?.name || '').localeCompare(b.item.characteristic?.name || ''),
       render: row => row.item.characteristic?.name
     },
     {
-      title: t('component.variable.method'),
+      title: t('component.variable.method.method'),
       key: 'item.method.name',
       sortable: true,
       sorter: (a, b) => (a.item.method?.name || '').localeCompare(b.item.method?.name || ''),
       render: row => row.item.method?.name
     },
     {
-      title: t('component.variable.unit'),
+      title: t('component.variable.unit.unit'),
       key: 'item.unit.name',
       sortable: true,
       sorter: (a, b) => (a.item.unit?.name || '').localeCompare(b.item.unit?.name || ''),

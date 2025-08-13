@@ -20,7 +20,8 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import ToastContainer from './components/common/toastContainer.vue';
 import { create, NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace } from 'naive-ui';
-
+import vue3Tour from 'vue3-tour';
+import 'vue3-tour/dist/vue3-tour.css';
 
 // Ajoute toutes les icônes solides à la bibliothèque
 library.add(fas);
@@ -186,6 +187,7 @@ app.use($opensilex);
 app.use(store);
 app.use(naive);
 app.use(HighchartsVue);
+app.use(vue3Tour);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
 

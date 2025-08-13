@@ -26,7 +26,7 @@
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-secondary btn-sm"
+              class="btn btn-secondary"
               data-bs-dismiss="modal"
               @click="closeModal"
             >
@@ -34,7 +34,7 @@
             </button>
             <button
               type="button"
-              class="btn btn-danger btn-sm"
+              class="btn btn-danger"
               @click="confirmDelete"
             >
               {{ t('component.common.delete') }}

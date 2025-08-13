@@ -370,11 +370,124 @@
             }
         },
         "variable" : {
+            "entity" : {
+                "entity" : "Entité",
+                "add-entity": "Ajouter une entité",
+                "entity-placeholder": "Sélectionner une entité",
+                "entity-help": "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
+            },
+            "entityOfInterest" : {
+                "entityOfInterest": "Entité d'intérêt",
+                "add-entityOfInterest": "Ajouter un niveau d'observation",
+                "entityOfInterest-placeholder": "Sélectionner une entité d'intérêt",
+                "interestEntity-help": "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype..."
+            },
+            "characteristic" : {
+                "characteristic" : "Caractéristique",
+                "add-characteristic": "Ajouter une caractéristique",
+                "characteristic-placeholder": "Sélectionner une caractéristique",
+                "characteristic-help": "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
+            },
+            "species" : {
+                "species": "Espèces",
+                "species-placeholder": "Sélectionner une espèce",
+                "select-multiple-placeholder": "Sélectionner des espèces"
+            },
+            "method" : {
+                "method" : "Méthode",
+                "add-method": "Ajouter une méthode",
+                "method-placeholder": "Sélectionner une méthode",
+                "method-help": "Définir comment la mesure/l'observation a été effectuée. Si vous ne voulez pas spécifier de méthode, veuillez sélectionner la méthode standard."
+            },
+            "unit" : {
+                "unit" : "Unité/Echelle",
+                "add-unit": "Ajouter une unité",
+                "unit-placeholder": "Sélectionner une unité",
+                "unit-help": "Echelle de la variable ordinale (tel que bon, moyen, mauvais...). ex: kg/m2"
+            },
+            "groupVariable" : {           
+                "groupVariable": "Groupe de variables",
+                "groupVariableAssociated": "Groupe de variables associées",
+                "add-groupVariable": "Ajouter un groupe de variables"
+            },
+            "timeInterval" : {
+                "time-interval":"Intervalle de temps",
+                "time-interval-placeholder": "Sélectionner un intervalle"
+            },
+            "samplingInterval" : {
+                "sampling-interval": "Échantillonnage",
+                "sampling-interval-placeholder": "Sélectionner un intervalle",
+                "sampling-interval-help": "Granularité de l'échantillonage" 
+            },
+            "dataType" : {
+                "data-type": "Type de donnée", 
+                "datatype-placeholder": "Sélectionner un type de donnée",
+                "datatype-help": "Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable)."
+            },
+            "name": "La variable",
+            "altName": "Nom alternatif",
+            "title": "Variables",
+            "type": "Variable",
+            "description" : "Gérer et configurer les variables, entités, charactéristiques, méthodes et unités",
             "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}",
-            "entity" : "Entité",
-            "characteristic" : "Caractéristique",
-            "method" : "Méthode",
-            "unit" : "Unité/Echelle"
+            "time-interval":"Intervalle de temps",
+            "add": "Ajouter une variable",
+            "edit": "Éditer une variable",
+            "no-var-provided": "Aucune variable associée",
+            "associated-data-error": "Données sont associées à cette variable",
+            "datatype-placeholder": "Sélectionner un type de donnée",
+            "trait-button": "Trait existant déjà dans une ontologie",
+            "trait-button-help": "Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie",
+            "data-type": "Type de donnée",
+            "dimension-values" : {
+                "unique": "Enregistrement unique",
+                "millisecond" : "Milliseconde",
+                "second": "Seconde",
+                "minute": "Minute",
+                "hour": "Heure",
+                "day": "Jour",
+                "week": "Semaine",
+                "month": "Mois",
+                "year": "Année",
+                "mm": "Millimètre",
+                "cm": "Centimètre",
+                "m": "Mètre",
+                "km": "Kilomètre",
+                "field": "Champ",
+                "region": "Région"
+            },
+            "tutorial": {
+                "global": "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'.",
+                "entity": "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'.",
+                "entity-check": "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives - seed, crop, etc.",
+                "entityOfInterest": "Sélectionner l'entité d'intérêt sur laquelle la variable est mesurée/observée.",
+                "entityOfInterest-check": "Si l'entité d'intérêt n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives.",
+                "characteristic": "Sélectionner la caractéristique mesurée. Ici 'rendement'.",
+                "characteristic-check": "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifier encore une fois que la caractéristique n'est pas présente sous un autre nom.",
+                "method": " Sélectionner la méthode qui vous a permis de réaliser cette variable. Dans notre cas, un capteur embarqué à bord de la moissoneuse-batteuse.",
+                "method-check": "Si la méthode n'est pas présente, vous pouvez l'ajouter. Ne pas oublier de bien renseigner la description, c'est particulièrement important pour la méthode.",
+                "unit": "Sélectionner l'unité dans laquelle est exprimée la variable. Que faire si l'unité proposée ne correspond pas à ma mesure ? On me propose kg/ha, mais j'ai des mesures en t/ha ? 1 - Je convertie ma variable dans la bonne unité. 2 - Je crée une nouvelle unité. Il vaut mieux limiter la création de multiples unités, privilégier la conversion.",
+                "name": "Renseigner le nom de cette variable. Par défault ce champ est rempli automatiquement en fonction de l'entité et de la caractéristique, mais il peut être rempli manuellement.",
+                "altName": "Renseigner le nom alternatif de cette variable si il existe. Par défault ce champ est rempli automatiquement en fonction de l'entité, de la caractéristique, de la méthode et de l'unité, mais il peut être rempli manuellement.",
+                "time-interval": "Renseigner le pas-de-temps qui a permis d'obtenir cette variable. Ici le rendement est mesuré chaque mois.",
+                "sampling-interval": "Renseigner l'échantillonnage qui a permis d'obtenir cette variable. Ici on a obtenu le rendement sur une microparcelle expérimentale de taille standard (2.5m*10m).",
+                "datatype": "Renseigner le type de données. Ici nous avons des nombre décimaux.",
+                "description": "Finaliser la variable avec une description textuelle de la variable.",
+                "species": "Sélectionner l'espèce associée à la variable variable. Ici le 'riz'."
+            },
+            "example": {
+                "entity": "Grain",
+                "characteristic": "Rendement",
+                "method": "Capteur de rendement de la moissoneuse-batteuse",
+                "unit": "Kilogramme par hectare",
+                "name": "rendement_grain",
+                "altName": "rendement_grain_capteur_rendement_moissoneuse_batteuse_kilogramme_par_hectare",
+                "time-interval": "Mois",
+                "sampling-interval": "Mètre",
+                "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+                "description": "Rendement du grain obtenu après récolte d'une microparcelle expérimentale.",
+                "species": "Riz"
+            }
         },
         "profile": {
             "description": "Gérer et configurer les profils",
@@ -762,6 +875,14 @@
                     }
                 }
             }
+        },
+        "tutorial": {
+            "next" : "Suivant",
+            "skip-tour" : "Passer tutoriel",
+            "previous" : "Précédent",
+            "finish" : "Fin",
+            "label": "Expliquez moi avec un exemple",
+            "name": "Tutoriel du formulaire"    
         }
     },
     "credential-groups": {

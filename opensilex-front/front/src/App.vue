@@ -234,6 +234,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use "./styles/common.scss" as *;
 @import "./../theme/opensilex/main.css";
 
 // header {

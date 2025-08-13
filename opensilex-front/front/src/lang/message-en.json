@@ -371,11 +371,122 @@
             }
         },
         "variable" : {
+            "entity" : {
+                "entity" : "Entity",
+                "add-entity": "Add entity",
+                "entity-placeholder": "Select one entity",
+                "entity-help": "Observed entity or event. e.g : Leaf, canopy, wind"
+            },
+            "entityOfInterest" : {
+                "entityOfInterest": "Entity of interest",
+                "add-entityOfInterest": "Add observation level",
+                "entityOfInterest-placeholder": "Select one entity of interest",
+                "interestEntity-help": "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype..."
+            },
+            "characteristic" : {
+                "characteristic" : "Characteristic",
+                "add-characteristic": "Add characteristic",
+                "characteristic-placeholder": "Select one characteristic",
+                "characteristic-help": "Define what is measured/observed. e.g: temperature, infection level, weight, area"
+            },
+            "species" : {
+                "species": "Species",
+                "species-placeholder": "Select a species",
+                "select-multiple-placeholder": "Select species"
+
+            },
+            "method" : {
+                "method" : "Method",
+                "add-method": "Add method",
+                "method-placeholder": "Select one method",
+                "method-help" : "How it was measured. If you don't want to specify a method, select the standard method."
+            },
+            "unit" : {
+                "unit" : "Unit/Scale",
+                "add-unit": "Add unit",
+                "unit-placeholder": "Select one unit",
+                "unit-help": "Scale for ordinal variable (such as good, medium, bad...). e.g : kg/m2"
+            },
+            "groupVariable" : {
+                "groupVariable": "Group of variables",
+                "groupVariableAssociated": "Group of associated variables",
+                "add-groupVariable": "Add a group of variables"              
+            },
+            "timeInterval" : {
+                "time-interval":"Time interval",
+                "time-interval-placeholder": "Select an interval"
+            },
+            "samplingInterval" : {
+                "sampling-interval": "Sample interval",
+                "sampling-interval-placeholder": "Select an interval",
+                "sampling-interval-help": "Granularity of sampling"       
+            },
+            "dataType" : {
+                "data-type": "Data type", 
+                "datatype-placeholder": "Select a datatype",
+                "datatype-help": "Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable)."
+            },
+            "name": "The variable",
+            "altName": "Alternative name",
+            "title": "Variables",
+            "type": "Variable",
+            "description" : "Manage and configure variables, entities, characteristics, methods and units",    
             "linked-object-error" : "{uri} can't be deleted : used by variables {variable}",
-            "entity" : "Entity",
-            "characteristic" : "Characteristic",
-            "method" : "Method",
-            "unit" : "Unit/Scale"
+            "add": "Add variable",
+            "edit": "Edit variable",
+            "no-var-provided": "No variable provided",
+            "associated-data-error": "Data are associated with this variable",
+            "trait-button": "Trait already existing in an ontology",
+            "trait-button-help": "Add a trait (entity and characteristic) already existing in an ontology", 
+            "dimensionValues" : {
+                "unique": "Unique measurement",
+                "millisecond" : "Millisecond",
+                "second": "Second",
+                "minute": "Minutes",
+                "hour": "Hour",
+                "day": "Day",
+                "week": "Week",
+                "month": "Month",
+                "year": "Year",
+                "mm": "Millimeter",
+                "cm": "Centimeter",
+                "m": "Meter",
+                "km": "Kilometer",
+                "field": "Field",
+                "region": "Region"
+            },
+            "tutorial" : {
+                "global": "Create a variable : Before creating a new variable, make sur you check the existing ones in order to avoid duplicates. For example 'grain yield at harvest'.",
+                "entity": "Select the entity that is the object of the observation/measurement. Here 'Grain'.",
+                "entity-check": "If the entity is not already present in the list you can add it. Double check if there is no other spelling - seed, crop, etc.",
+                "entityOfInterest": "Select the entity of interest that is the object of the observation/measurement.",
+                "entityOfInterest-check": "If the entity of interest is not already present in the list you can add it. Double check if there is no other spelling.",
+                "characteristic": "Select the measured characteristic. Here 'Yield' ",
+                "characteristic-check": "If the characteristic is not in the list you can add it. Double check if it is not already present under another name.",
+                "method": "Select the method that is associated with this variable. In our case this is a yield sensor onboard the harvester.",
+                "method-check": "If the method is not present you can add it. Don't neglect the description as it is especially important for methods.",
+                "unit": "Select the unit in which the variable is measured. What should I do if the unit is different from what I have measured ? I can select kg/ha, but my measurements are in t/ha. 1 - I convert the measurements I have into the appropriate unit. 2 - I declare a new Unit. This is highly advised to not create too many units and prefer convert into the existing units.",
+                "name": "Precise the variable name. By default this field is auto filled according the entity and characteristic name, but it can be filled manually.",
+                "altName": "Precise the alternative variable name if it exist. By default this field is auto filled according the entity, characteristic, method and unit names, but this field can be filled manually.",
+                "time-interval": "Precise the time interval which associated with this variable. Here we obtained the grain yield each month.",
+                "sampling-interval": "Precise the sample interval which is associated with this variable. Here we obtained the grain yield by harvesting experimental microplot (10m * 2.5m).",
+                "datatype": "Precise the data type. Here we are using decimal numbers.",
+                "description": "Finalize the variable with some text description of it.",
+                "species": "Select the species that is associated with this variable. Here rice."
+            },
+            "example" : {
+                "entity": "Seed",
+                "characteristic": "Yield",
+                "method": "Harvest yield sensor",
+                "unit": "Kilogram per hectare",
+                "name": "grain_yield",
+                "altName": "grain_yield_harvest_yield_sensor_kilogram_per_hectare",
+                "time-interval": "Month",
+                "sampling-interval": "Meter",
+                "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+                "description": "Grain yield obtained after harvesting an experimental microplot",
+                "species": "Rice"
+            }
         },
         "profile": {
             "description": "Manage and configure profiles",
@@ -710,6 +821,14 @@
                     }
                 }
             }
+        },
+        "tutorial": {
+            "next" : "Next",
+            "skip-tour" : "Skip Tutorial",
+            "previous" : "Previous",
+            "finish" : "Finish",
+            "label": "Explain me by example",
+            "name": "Form Tutorial"    
         }
     },
     "credential-groups": {

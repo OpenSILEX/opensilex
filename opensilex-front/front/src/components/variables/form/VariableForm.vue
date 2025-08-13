@@ -1,259 +1,649 @@
 <template>
-  <div class="p-4">
-    <!-- <h2 class="text-lg font-bold mb-4">{{ props.editMode ? 'Edit Variable' : 'Create Variable' }}</h2> -->
-     <h2 class="text-lg font-bold mb-4">{{ props.editMode ? t('VariableForm.edit') : t('VariableForm.add') }}</h2>
-    <n-input v-model:value="form.name" placeholder="Variable name" />
+  <div id="v-step-global">
+    <opensilex-Tutorial
+      ref="variableTutorial"
+      :steps="tutorialSteps"
+      @onSkip="continueFormEditing"
+      @onFinish="continueFormEditing"
+      :editMode="editMode"
+    />
+
+    <opensilex-UriForm
+      v-model:uri="form.uri"
+      :generated="uriGenerated"
+      @update:generated="val => uriGenerated = val"
+      :editMode="editMode"
+      label="component.common.uri"
+    />
+
+    <div class="row">
+      <!-- ENTITY -->
+      <div class="col-lg-6 variableFormSelectors" id="v-step-entity">
+        <opensilex-EntitySelector
+          ref="entitySelector"
+          label="component.variable.entity.entity"
+          :placeholder="$t('component.variable.entity.entity-placeholder')"
+          :helpMessage="$t('component.variable.entity.entity-help')"
+          noResultsText="VariableForm.no-entity"
+          v-model:selected="form.entity"
+          :multiple="false"
+          :required="true"
+          :actionHandler="editMode ? undefined : showEntityCreateForm"
+          :searchMethod="searchEntities"
+          @select="updateEntity"
+          :itemLoadingMethod="loadEntity"
+          :conversionMethod="objectToSelectNode"
+          :disabled="false"
+          @loadMoreItems="loadMoreItems(entitySelector)"
+        />
+        <!-- <opensilex-AgroportalEntityForm ref="entityForm" @onCreate="setLoadedEntity" /> -->
+      </div>
+
+      <!-- INTEREST ENTITY -->
+      <div class="col-lg-6 variableFormSelectors" id="v-step-interestEntity">
+        <opensilex-InterestEntitySelector
+          ref="interestEntitySelector"
+          label="component.variable.entityOfInterest.entityOfInterest"
+          :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
+          v-model:selected="form.entity_of_interest"
+          :multiple="false"
+          :required="false"
+          :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
+          :helpMessage="$t('component.variable.entityOfInterest.interestEntity-help')"
+          :searchMethod="searchInterestEntities"
+          :itemLoadingMethod="loadInterestEntity"
+          :conversionMethod="objectToSelectNode"
+          noResultsText="VariableForm.no-interestEntity"
+          :disabled="false"
+          @loadMoreItems="loadMoreItems(interestEntitySelector)"
+        />
+        <!-- <opensilex-AgroportalEntityOfInterestForm ref="interestEntityForm" @onCreate="setLoadedInterestEntity" /> -->
+      </div>
+
+      <!-- CHARACTERISTIC -->
+      <div class="col-lg-6 variableFormSelectors" id="v-step-characteristic">
+        <opensilex-CharacteristicSelector
+          ref="characteristicSelector"
+          label="component.variable.characteristic.characteristic"
+          :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
+          v-model:selected="form.characteristic"
+          :multiple="false"
+          :required="true"
+          @select="updateCharacteristic"
+          :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
+          :helpMessage="$t('component.variable.characteristic.characteristic-help')"
+          :searchMethod="searchCharacteristics"
+          :itemLoadingMethod="loadCharacteristic"
+          :conversionMethod="objectToSelectNode"
+          noResultsText="VariableForm.no-characteristic"
+          :disabled="false"
+          @loadMoreItems="loadMoreItems(characteristicSelector)"
+        />
+        <!-- <opensilex-AgroportalCharacteristicForm ref="characteristicForm" @onCreate="setLoadedCharacteristic" /> -->
+      </div>
+
+      <!-- SPECIES -->
+      <div class="col-lg-6 variableFormSelectors" id="v-step-species">
+        <opensilex-SpeciesSelector
+          v-if="!isGermplasmMenuExcluded"
+          label="component.variable.species.species"
+          :placeholder="$t('component.variable.species.select-multiple-placeholder')"
+          :multiple="true"
+          :checkable="true"
+          v-model:selected="form.species"
+        />
+      </div>
+
+      <!-- METHOD -->
+      <div class="col-lg-6 variableFormSelectors" id="v-step-method">
+        <opensilex-MethodSelector
+          ref="methodSelector"
+          label="component.variable.method.method"
+          :placeholder="$t('component.variable.method.method-placeholder')"
+          :multiple="false"
+          :required="true"
+          v-model:selected="form.method"
+          :helpMessage="$t('component.variable.method.method-help')"
+          noResultsText="VariableForm.no-method"
+          :actionHandler="editMode ? undefined : showMethodCreateForm"
+          @select="updateMethod"
+          :searchMethod="searchMethods"
+          :itemLoadingMethod="loadMethod"
+          :conversionMethod="objectToSelectNode"
+          :disabled="false"
+          @loadMoreItems="loadMoreItems(methodSelector)"
+        />
+        <!-- <opensilex-AgroportalMethodForm ref="methodForm" @onCreate="setLoadedMethod" /> -->
+      </div>
+
+      <!-- TRAIT BUTTON -->
+      <div class="col-lg-6 variableFormSelectors" id="traitButton">
+        <opensilex-Button
+          label="component.variable.trait-button"
+          helpMessage="component.variable.trait-button-help"
+          @click="showTraitForm"
+          :small="false"
+          icon="fa#globe-americas"
+          class="greenThemeColor"
+        />
+      </div>
+
+      <opensilex-WizardForm
+        ref="traitForm"
+        :steps="traitSteps"
+        createTitle="VariableForm.trait-form-create-title"
+        editTitle="VariableForm.trait-form-edit-title"
+        modalSize="full"
+        :static="false"
+        :initForm="getEmptyTraitForm"
+        :createAction="updateVariableTrait"
+        :updateAction="updateVariableTrait"
+      />
+
+      <!-- UNIT -->
+      <div class="col-lg-6 variableFormSelectors" id="v-step-unit">
+        <opensilex-UnitSelector
+          ref="unitSelector"
+          label="component.variable.unit.unit"
+          :placeholder="$t('component.variable.unit.unit-placeholder')"
+          :multiple="false"
+          :required="true"
+          v-model:selected="form.unit"
+          @select="updateUnit"
+          :helpMessage="$t('component.variable.unit.unit-help')"
+          :actionHandler="editMode ? undefined : showUnitCreateForm"
+          :searchMethod="searchUnits"
+          :itemLoadingMethod="loadUnit"
+          :conversionMethod="objectToSelectNode"
+          noResultsText="VariableForm.no-unit"
+          :disabled="false"
+          @loadMoreItems="loadMoreItems(unitSelector)"
+        />
+        <!-- <opensilex-AgroportalUnitForm ref="unitForm" @onCreate="setLoadedUnit" /> -->
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+      <div class="col-lg-6 variableFormSelectors" id="v-step-name">
+        <opensilex-InputForm
+          v-model:value="form.name"
+          label="component.common.name"
+          type="text"
+          :required="true"
+        />
+      </div>
+
+      <div class="col-lg-6 variableFormSelectors" id="v-step-alt">
+        <opensilex-InputForm
+          v-model:value="form.alternative_name"
+          label="component.variable.altName"
+          type="text"
+        />
+      </div>
+
+      <div class="col-lg-6 variableFormSelectors" id="v-step-datatype">
+        <opensilex-VariableDataTypeSelector
+          label="component.variable.dataType.data-type"
+          :placeholder="$t('component.variable.dataType.datatype-placeholder')"
+          :required="true"
+          v-model:selected="form.datatype"
+          :helpMessage="$t('component.variable.dataType.datatype-help')"
+          :itemLoadingMethod="loadDataType"
+          :disabled="hasLinkedData"
+          :options="datatypesNodes"
+        />
+      </div>
+
+      <div class="col-lg-6 variableFormSelectors" id="v-step-time-interval">
+        <opensilex-VariableTimeIntervalSelector
+          label="component.variable.timeInterval.time-interval"
+          v-model:timeinterval="form.time_interval"
+          :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
+        />
+      </div>
+
+      <!-- <div class="col-lg-6"></div> -->
+
+      <div class="col-lg-6 variableFormSelectors" id="v-step-sampling-interval">
+        <opensilex-FormSelector
+          label="component.variable.samplingInterval.sampling-interval"
+          v-model:selected="form.sampling_interval"
+          :multiple="false"
+          :options="sampleList"
+          :placeholder="$t('component.variable.samplingInterval.sampling-interval-placeholder')"
+          :helpMessage="$t('component.variable.samplingInterval.sampling-interval-help')"
+        />
+      </div>
+
+      <div class="col-xl-12" id="v-step-description">
+        <opensilex-TextAreaForm
+          v-model:value="form.description"
+          label="component.common.description"
+          @keydown.enter.stop
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { NInput } from 'naive-ui'
-import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted, onBeforeUnmount, watch, inject } from 'vue';
+import { useI18n } from 'vue-i18n';
+import {
+  CharacteristicCreationDTO,
+  EntityCreationDTO,
+  InterestEntityCreationDTO,
+  MethodCreationDTO,
+  NamedResourceDTO,
+  UnitCreationDTO,
+  VariableDatatypeDTO,
+  VariablesService
+} from 'opensilex-core';
+import { DataService } from 'opensilex-core/api/data.service';
+import { VariableCreationDTO } from 'opensilex-core/model/variableCreationDTO';
+import type { ValidationObserverInstance } from '@vee-validate/components';
+import type { HttpResponse, OpenSilexResponse } from 'opensilex-core/HttpResponse';
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin"
 
-const { t } = useI18n()
+// Props
+const props = defineProps({
+  editMode: Boolean,
+  uriGenerated: {
+    type: Boolean,
+    default: true
+  },
+  form: {
+    type: Object as () => VariableCreationDTO,
+    default: () => ({
+      uri: undefined,
+      alternative_name: undefined,
+      name: undefined,
+      entity: undefined,
+      entity_of_interest: undefined,
+      characteristic: undefined,
+      description: undefined,
+      time_interval: undefined,
+      sampling_interval: undefined,
+      datatype: undefined,
+      trait: undefined,
+      trait_name: undefined,
+      method: undefined,
+      unit: undefined,
+      exact_match: [],
+      close_match: [],
+      broad_match: [],
+      narrow_match: [],
+      species: undefined,
+      linked_data_nb: 0
+    })
+  }
+});
 
-interface VariableFormModel {
-  uri?: string
-  name?: string
+
+const emit = defineEmits(["onCreate", "onUpdate"]);
+
+// Services
+const $opensilex = inject<OpenSilexVuePlugin>('opensilex');
+const $store = inject<any>('$store')!;
+const { t, locale } = useI18n();
+const service = $opensilex.getService<VariablesService>('opensilex.VariablesService');
+const dataService = $opensilex.getService<DataService>('opensilex-core.DataService');
+
+// Form refs
+const validatorRef = ref<InstanceType<typeof ValidationObserverInstance>>();
+const variableTutorial = ref();
+
+// UI Selectors
+const entitySelector = ref();
+const interestEntitySelector = ref();
+const characteristicSelector = ref();
+const methodSelector = ref();
+const unitSelector = ref();
+const traitForm = ref();
+
+// External Forms
+const entityForm = ref();
+const interestEntityForm = ref();
+const characteristicForm = ref();
+const methodForm = ref();
+const unitForm = ref();
+
+// Tutorial State
+const savedVariable = ref<VariableCreationDTO>();
+
+const traitSteps = [{ component: 'opensilex-TraitForm' }];
+
+// Datatypes and Options
+const datatypes = ref<VariableDatatypeDTO[]>([]);
+const datatypesNodes = ref<any[]>([]);
+
+const periodList = ref([
+  "millisecond", "second", "minute", "hour", "day", "week", "month", "year", "unique"
+].map(p => ({
+  id: t(`component.variable.dimensionValues.${p}`),
+  label: t(`component.variable.dimensionValues.${p}`)
+})));
+
+const sampleList = ref([
+  "mm", "cm", "m", "km", "field", "region"
+].map(s => ({
+  id: t(`component.variable.dimensionValues.${s}`),
+  label: t(`component.variable.dimensionValues.${s}`)
+})));
+
+// Autogenerated name logic
+const selectedEntityName = ref();
+const selectedCharacteristicName = ref();
+const selectedMethodName = ref();
+const selectedUnitName = ref();
+
+function updateEntity(val: any) {
+  selectedEntityName.value = val.label;
+  updateName();
+}
+function updateCharacteristic(val: any) {
+  selectedCharacteristicName.value = val.label;
+  updateName();
+}
+function updateMethod(val: any) {
+  selectedMethodName.value = val.label;
+  updateName();
+}
+function updateUnit(val: any) {
+  selectedUnitName.value = val.label;
+  updateName();
 }
 
-// Déclaration de la prop `editMode` reçue de ModalForm
-const props = defineProps<{
-  editMode: boolean
-}>()
+function updateName() {
+  if (!props.editMode) {
+    const form = props.form;
+    const parts: string[] = [];
 
-const form = ref<VariableFormModel>({})
+    if (selectedEntityName.value) parts.push(selectedEntityName.value.split(' ')[0]);
+    if (selectedCharacteristicName.value) parts.push(selectedCharacteristicName.value);
+    if (selectedMethodName.value) parts.push(selectedMethodName.value);
+    if (selectedUnitName.value) parts.push(selectedUnitName.value);
 
-// Méthodes internes pour le formulaire
-function getEmptyForm(): VariableFormModel {
-  return {
-    name: '',
+    if (parts.length) {
+      form.name = parts.join('_');
+      form.alternative_name = parts.slice(0, 2).join('_');
+    }
   }
 }
 
-function showCreateForm() {
-  console.log("showCreate")
-  form.value = getEmptyForm()
+// Wizard steps
+function getEmptyTraitForm() {
+  return {
+    trait: props.form.trait,
+    trait_name: props.form.trait_name
+  };
 }
 
-function showEditForm(dto: VariableFormModel) {
-  console.log("showEdit")
-  form.value = { ...dto }
+function updateVariableTrait(form) {
+  const bothFilled = !!form.trait && !!form.trait_name;
+  if (bothFilled || (!form.trait && !form.trait_name)) {
+    props.form.trait = form.trait;
+    props.form.trait_name = form.trait_name;
+  }
 }
 
-function create(): VariableFormModel {
-  return form.value
+// DataType methods
+function loadDatatypes() {
+  console.log("loadDatatype")
+  if (!datatypes.value.length) {
+      console.log("loadDatatype if")
+    service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
+      console.log("res.response.result ", res.response.result)
+      datatypes.value = res.response.result;
+      updateDatatypeNodes();
+    });
+  } else {
+    updateDatatypeNodes();
+  }
+}
+function updateDatatypeNodes() {
+  datatypesNodes.value = datatypes.value.map(dto => ({
+    id: dto.uri,
+    label: capitalize(t(dto.name))
+  }));
 }
 
-function update(): VariableFormModel {
-  return form.value
+function loadDataType(uris: Array<string | { uri: string }>) {
+  const ids = uris.map(elementUri => (typeof elementUri === 'string' ? elementUri : elementUri.uri))
+  // on réutilise le tableau 'datatypes' (DTOs) reçu de l'API
+  return Promise.resolve(
+    ids.map(id => {
+      const dto = datatypes.value.find(datatype => datatype.uri === id)
+      return { uri: id, name: dto?.name ?? id }  // format DTO
+    })
+  )
 }
+
+
+// Common helpers
+function objectToSelectNode(dto: any) {
+  return dto ? { id: dto.uri, label: dto.name } : null;
+}
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Lang watcher
+const langUnwatch = watch(() => locale.value, loadDatatypes);
+
+onMounted(() => {
+  loadDatatypes();
+});
+onBeforeUnmount(() => {
+  langUnwatch();
+});
 
 function reset() {
-  form.value = getEmptyForm()
+  validatorRef.value?.reset();
+  if (variableTutorial.value && !props.editMode) {
+    variableTutorial.value.stop();
+  }
+}
+function validate() {
+  return validatorRef.value?.validate();
 }
 
-function handleSubmitError(err: any) {
-  console.error("Erreur lors de la soumission :", err)
+function tutorial() {
+  savedVariable.value = JSON.parse(JSON.stringify(props.form));
+  variableTutorial.value?.start();
+}
+function continueFormEditing() {
+  if (savedVariable.value) {
+    Object.assign(props.form, savedVariable.value);
+  }
 }
 
-// Expose des méthodes pour être utilisées dans ModalForm
-defineExpose({
-  getEmptyForm,
-  showCreateForm,
-  showEditForm,
-  create,
-  update,
-  reset,
-  handleSubmitError,
-  t,
-})
+const isGermplasmMenuExcluded = computed(() => {
+  return $opensilex.getConfig().menuExclusions.includes("germplasm");
+});
+
+const hasLinkedData = computed(() => {
+  return props.form?.linked_data_nb > 0;
+});
+
+
+
+function isUriObject(item: any): item is { uri: string } {
+  return typeof item === 'object' && item !== null && 'uri' in item;
+}
+
+
+
+// Search & Load Entity
+function searchEntities(name: string, page: number, pageSize: number) {
+  return service.searchEntities(name, ["name=asc"], page, pageSize);
+}
+function loadEntity(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined;
+
+  const item = uris[0];
+
+  if (typeof item === 'object' && 'uri' in item) {
+    return [props.form.entity];
+  }
+
+  return service.getEntity(item).then(res => [res.response.result]);
+}
+
+function setLoadedEntity(created: EntityCreationDTO) {
+  props.form.entity = created.uri;
+  entitySelector.value.select({ id: created.uri, label: created.name });
+}
+
+// Search & Load InterestEntity
+function searchInterestEntities(name: string, page: number, pageSize: number) {
+  return service.searchInterestEntity(name, ["name=asc"], page, pageSize);
+}
+function loadInterestEntity(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined;
+
+  const item = uris[0];
+
+  if (typeof item === 'object' && 'uri' in item) {
+    return [props.form.entity_of_interest];
+  }
+
+  return service.getInterestEntity(item).then(res => [res.response.result]);
+}
+
+
+function setLoadedInterestEntity(created: InterestEntityCreationDTO) {
+  props.form.entity_of_interest = created.uri;
+  interestEntitySelector.value.select({ id: created.uri, label: created.name });
+}
+
+// Search & Load Characteristic
+function searchCharacteristics(name: string, page: number, pageSize: number) {
+  return service.searchCharacteristics(name, ["name=asc"], page, pageSize)
+    .then((res) => {
+      return res;
+    })
+    .catch((err) => {
+      throw err;
+    });
+}
+
+function loadCharacteristic(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined;
+
+  const item = uris[0];
+
+  if (typeof item === 'object' && 'uri' in item) {
+    return [props.form.characteristic];
+  }
+
+  return service.getCharacteristic(item).then(res => [res.response.result]);
+}
+
+function setLoadedCharacteristic(created: CharacteristicCreationDTO) {
+  props.form.characteristic = created.uri;
+  characteristicSelector.value.select({ id: created.uri, label: created.name });
+}
+
+// Search & Load Method
+function searchMethods(name: string, page: number, pageSize: number) {
+  return service.searchMethods(name, ["name=asc"], page, pageSize);
+}
+function loadMethod(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined;
+
+  const item = uris[0];
+
+  if (typeof item === 'object' && 'uri' in item) {
+    return [props.form.method];
+  }
+
+  return service.getMethod(item).then(res => [res.response.result]);
+}
+function setLoadedMethod(created: MethodCreationDTO) {
+  props.form.method = created.uri;
+  methodSelector.value.select({ id: created.uri, label: created.name });
+}
+
+// Search & Load Unit
+function searchUnits(name: string, page: number, pageSize: number) {
+  return service.searchUnits(name, ["name=asc"], page, pageSize);
+}
+function loadUnit(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined;
+
+  const item = uris[0];
+
+  if (typeof item === 'object' && 'uri' in item) {
+    return [props.form.unit];
+  }
+
+  return service.getUnit(item).then(res => [res.response.result]);
+}
+function setLoadedUnit(created: UnitCreationDTO) {
+  props.form.unit = created.uri;
+  unitSelector.value.select({ id: created.uri, label: created.name });
+}
+
+// Empty form factory
+function getEmptyForm(): VariableCreationDTO {
+  return {
+    uri: undefined,
+    alternative_name: undefined,
+    name: undefined,
+    entity: undefined,
+    entity_of_interest: undefined,
+    characteristic: undefined,
+    description: undefined,
+    time_interval: undefined,
+    sampling_interval: undefined,
+    datatype: undefined,
+    trait: undefined,
+    trait_name: undefined,
+    method: undefined,
+    unit: undefined,
+    exact_match: [],
+    close_match: [],
+    broad_match: [],
+    narrow_match: [],
+    species: undefined,
+    linked_data_nb: 0
+  };
+}
+
+// Form creation modals
+function showEntityCreateForm() {
+  entityForm.value?.showCreateForm();
+}
+function showInterestEntityCreateForm() {
+  interestEntityForm.value?.showCreateForm();
+}
+function showCharacteristicCreateForm() {
+  characteristicForm.value?.showCreateForm();
+}
+function showMethodCreateForm() {
+  methodForm.value?.showCreateForm();
+}
+function showUnitCreateForm() {
+  unitForm.value?.showCreateForm();
+}
+function showTraitForm() {
+  if (props.editMode) {
+    traitForm.value?.showEditForm(getEmptyTraitForm());
+  } else {
+    traitForm.value?.showCreateForm();
+  }
+}
 </script>
 
-<i18n>
-en:
-    VariableForm:
-        variable: The variable
-        add: Add variable
-        edit: Edit variable
-        altName: Alternative name
-        entity-help: "Observed entity or event. e.g : Leaf, canopy, wind"
-        entity-placeholder: Search and select an entity
-        interestEntity-label: Entity of interest
-        interestEntity-help: "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype..."
-        interestEntity-placeholder: Search and select an observation level
-        characteristic-help: "Define what is measured/observed. e.g: temperature, infection level, weight, area"
-        characteristic-placeholder: Search and select a characteristic
-        method-placeholder: Search and select a method
-        method-help : How it was measured. If you don't want to specify a method, select the standard method.
-        unit-help: "Scale for ordinal variable (such as good, medium, bad...). e.g : kg/m2"
-        unit-placeholder: Search and select an unit
-        time-interval: Time interval
-        time-interval-placeholder: Select an interval
-        time-interval-help: Define the time between two data recording
-        sampling-interval: Sample interval
-        sampling-interval-placeholder: Select an interval
-        sampling-interval-help: Granularity of sampling
-        synonym: Synonym
-        trait-name: Trait name
-        trait-name-help: Variable trait name (Describe the trait name if a trait uri has been specified)
-        trait-name-placeholder:  Number of grains per square meter
-        trait-uri: trait uri
-        trait-uri-help: Variable trait unique identifier (Can be used to link to an existing trait for interoperability)
-        trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
-        class-placeholder: Select a type
-        no-entity: Unknown entity. Add one with the + button.
-        no-interestEntity: Unknown entity of interest. Add one with the + button.
-        no-characteristic: Unknown characteristic. Add one with the + button.
-        no-method: Unknown method. Add one with the + button.
-        no-unit: Unknown unit. Add one with the + button.
-        trait-form-create-title: Add trait
-        trait-form-edit-title: Edit trait
-        trait-button: Trait already existing in an ontology
-        trait-button-help: Add a trait (entity and characteristic) already existing in an ontology
-        datatype-help: Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable).
-        datatype-placeholder: Select a datatype
-        dimension-values:
-            unique: Unique measurement
-            millisecond : Millisecond
-            second: Second
-            minute: Minutes
-            hour: Hour
-            day: Day
-            week: Week
-            month: Month
-            year: Year
-            mm: Millimeter
-            cm: Centimeter
-            m: Meter
-            km: Kilometer
-            field: Field
-            region: Region
-        already-exist: the variable already exist
-        tutorial:
-            global: "Create a variable : Before creating a new variable, make sur you check the existing ones in order to avoid duplicates. For example 'grain yield at harvest'."
-            entity: "Select the entity that is the object of the observation/measurement. Here 'Grain'."
-            entity-check: "If the entity is not already present in the list you can add it. Double check if there is no other spelling - seed, crop, etc."
-            entityOfInterest: "Select the entity of interest that is the object of the observation/measurement."
-            entityOfInterest-check: "If the entity of interest is not already present in the list you can add it. Double check if there is no other spelling."
-            characteristic: "Select the measured characteristic. Here 'Yield' "
-            characteristic-check: "If the characteristic is not in the list you can add it. Double check if it is not already present under another name."
-            method: "Select the method that is associated with this variable. In our case this is a yield sensor onboard the harvester."
-            method-check: "If the method is not present you can add it. Don't neglect the description as it is especially important for methods."
-            unit: "Select the unit in which the variable is measured. What should I do if the unit is different from what I have measured ? I can select kg/ha, but my measurements are in t/ha.
-                1 - I convert the measurements I have into the appropriate unit.
-                2 - I declare a new Unit. This is highly advised to not create too many units and prefer convert into the existing units."
-            name: "Precise the variable name. By default this field is auto filled according the entity and characteristic name, but it can be filled manually."
-            altName: "Precise the alternative variable name if it exist. By default this field is auto filled according the entity, characteristic, method and unit names, but this field can be filled manually."
-            time-interval: "Precise the time interval which associated with this variable. Here we obtained the grain yield each month."
-            sampling-interval: "Precise the sample interval which is associated with this variable. Here we obtained the grain yield by harvesting experimental microplot (10m * 2.5m)."
-            datatype: "Precise the data type. Here we are using decimal numbers."
-            description: "Finalize the variable with some text description of it."
-            species: "Select the species that is associated with this variable. Here rice."
-        example:
-            entity: "Seed"
-            characteristic: "Yield"
-            method: "Harvest yield sensor"
-            unit: "Kilogram per hectare"
-            name: "grain_yield"
-            altName: "grain_yield_harvest_yield_sensor_kilogram_per_hectare"
-            time-interval: "Month"
-            sampling-interval: "Meter"
-            datatype: "http://www.w3.org/2001/XMLSchema#decimal"
-            description: "Grain yield obtained after harvesting an experimental microplot"
-            species: "Rice"
-fr:
-    VariableForm:
-        variable: La variable
-        add: Ajouter une variable
-        edit: Éditer une variable
-        altName: Nom alternatif
-        entity-help: "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
-        entity-placeholder: Rechercher et sélectionner une entité
-        interestEntity-label: Entité d'intérêt
-        interestEntity-help: "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype..."
-        interestEntity-placeholder: Rechercher et sélectionner un niveau d'observation
-        characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
-        characteristic-placeholder: Rechercher et sélectionner une caractéristique
-        method-help: Définir comment la mesure/l'observation a été effectuée. Si vous ne voulez pas spécifier de méthode, veuillez sélectionner la méthode standard.
-        method-placeholder: Rechercher et sélectionner une méthode
-        unit-help: "Echelle de la variable ordinale (tel que bon, moyen, mauvais...). ex: kg/m2"
-        unit-placeholder: Rechercher et sélectionner une unité
-        time-interval: Intervalle de temps
-        time-interval-placeholder: Sélectionner un intervalle
-        time-interval-help: Durée entre deux enregistrements de données
-        sampling-interval: Échantillonnage
-        sampling-interval-placeholder: Sélectionner un intervalle
-        sampling-interval-help: Granularité de l'échantillonage
-        synonym : Synonyme
-        trait-name: Nom du trait
-        trait-name-help: Nom du trait (si une URI décrivant un trait a été saisie)
-        trait-name-placeholder:  Nombre de grains par mètre carré
-        trait-uri: URI du trait
-        trait-uri-help: Identifiant unique d'un trait (Peut être utilisé pour lier cette variable avec l'URI d'un trait existant)
-        trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
-        class-placeholder: Sélectionner un type
-        no-entity: Entité inconnue. L'ajouter avec le bouton +.
-        no-interestEntity: Entité d'intérêt inconnue. L'ajouter avec le bouton +.
-        no-characteristic: Caractéristique inconnue. L'ajouter avec le bouton +.
-        no-method: Méthode inconnue. L'ajouter avec le bouton +.
-        no-unit: Unité inconnue. L'ajouter avec le bouton +.
-        trait-form-create-title: Ajouter un trait
-        trait-form-edit-title: Éditer un trait
-        trait-button: Trait existant déjà dans une ontologie
-        trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
-        datatype-help: Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable).
-        datatype-placeholder: Sélectionner un type de donnée
-        dimension-values:
-            unique: Enregistrement unique
-            millisecond : Milliseconde
-            second: Seconde
-            minute: Minute
-            hour: Heure
-            day: Jour
-            week: Semaine
-            month: Mois
-            year: Année
-            mm: Millimètre
-            cm: Centimètre
-            m: Mètre
-            km: Kilomètre
-            field: Champ
-            region: Région
-        already-exist: la variable existe déjà
-        tutorial:
-            global: "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'."
-            entity: "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'."
-            entity-check: "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives - seed, crop, etc."
-            entityOfInterest: "Sélectionner l'entité d'intérêt sur laquelle la variable est mesurée/observée."
-            entityOfInterest-check: "Si l'entité d'intérêt n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives."
-            characteristic: "Sélectionner la caractéristique mesurée. Ici 'rendement'."
-            characteristic-check: "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifier encore une fois que la caractéristique n'est pas présente sous un autre nom."
-            method: " Sélectionner la méthode qui vous a permis de réaliser cette variable. Dans notre cas, un capteur embarqué à bord de la moissoneuse-batteuse."
-            method-check: "Si la méthode n'est pas présente, vous pouvez l'ajouter. Ne pas oublier de bien renseigner la description, c'est particulièrement important pour la méthode."
-            unit: "Sélectionner l'unité dans laquelle est exprimée la variable. Que faire si l'unité proposée ne correspond pas à ma mesure ? On me propose kg/ha, mais j'ai des mesures en t/ha ?
-                1 - Je convertie ma variable dans la bonne unité.
-                2 - Je crée une nouvelle unité. Il vaut mieux limiter la création de multiples unités, privilégier la conversion."
+<style scoped>
+#traitButton {
+  padding-top: 23px;
+}
 
-            name: "Renseigner le nom de cette variable. Par défault ce champ est rempli automatiquement en fonction de l'entité et de la caractéristique, mais il peut être rempli manuellement."
-            altName: "Renseigner le nom alternatif de cette variable si il existe. Par défault ce champ est rempli automatiquement en fonction de l'entité, de la caractéristique, de la méthode et de l'unité, mais il peut être rempli manuellement."
-            time-interval: "Renseigner le pas-de-temps qui a permis d'obtenir cette variable. Ici le rendement est mesuré chaque mois."
-            sampling-interval: "Renseigner l'échantillonnage qui a permis d'obtenir cette variable. Ici on a obtenu le rendement sur une microparcelle expérimentale de taille standard (2.5m*10m)."
-            datatype: "Renseigner le type de données. Ici nous avons des nombre décimaux."
-            description: "Finaliser la variable avec une description textuelle de la variable."
-            species: "Sélectionner l'espèce associée à la variable variable. Ici le 'riz'."
-        example:
-            entity: "Grain"
-            characteristic: "Rendement"
-            method: "Capteur de rendement de la moissoneuse-batteuse"
-            unit: "Kilogramme par hectare"
-            name: "rendement_grain"
-            altName: "rendement_grain_capteur_rendement_moissoneuse_batteuse_kilogramme_par_hectare"
-            time-interval: "Mois"
-            sampling-interval: "Mètre"
-            datatype: "http://www.w3.org/2001/XMLSchema#decimal"
-            description: "Rendement du grain obtenu après récolte d'une microparcelle expérimentale."
-            species: "Riz"
-</i18n>
-
+.variableFormSelectors {
+  margin-bottom: 15px;
+}
+</style>

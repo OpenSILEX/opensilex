@@ -43,32 +43,18 @@
         @update:checked-row-keys="onRowSelected"
         @update:sorter="handleSort"
       >
-
-      
         <template #header="{ column }">
           <template v-if="!column.isSelect">
             {{ $t(column.title) }}
           </template>
         </template>
 
-        <template #body-cell="{ column, row }">
-          <template v-if="!column.isSelect">
-            <template v-if="$slots[`cell(${column.key})`]">
-                <component
-                :is="$slots[`cell(${column.key})`]"
-                :data='{ item: row }'
-                />
-            </template>
-        <template v-else>
-            {{ row[column.key] }}
-        </template>
-          </template>
-          <template v-else>
-            <span class="checkbox" />
-          </template>
-        </template>
-
       </n-data-table>
+
+<!-- <pre style="font-size: 10px; color: red">
+  Slots disponibles : {{ Object.keys($slots) }}
+</pre> -->
+
 
       <!-- Pagination -->
       <div class="pagination-wrapper mt-3">
@@ -90,6 +76,14 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { NDataTable, NPagination } from 'naive-ui';
+import { onMounted, useSlots } from 'vue';
+
+const slots = useSlots();
+
+onMounted(() => {
+  console.log('🧪 Slots disponibles dans TableView:', Object.keys(slots));
+});
+
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -101,15 +95,18 @@ const props = defineProps({
   withPagination: { type: Boolean, default: true },
   sortBy: String,
   sortDesc: { type: Boolean, default: false },
-  selectable: { type: Boolean, default: false }
+  selectable: { type: Boolean, default: false },
+  customRenderers: { type: Object, default: () => ({}) }
 });
+
+
 
 const emit = defineEmits(['row-selected']);
 const { t } = useI18n();
 
 const currentPage = ref(1);
 const filter = ref<string | null>(null);
-const pageSize = ref(20);
+const pageSize = ref(10);
 
 const pageSizeOptions = [
   { label: '10 / page', value: 10 },
@@ -192,8 +189,10 @@ const normalizedFields = computed(() =>
     title: field.label,
     isSelect: field.isSelect,
     sorter: field.sortable || false,
+    render: props.customRenderers[field.key] || undefined,
   }))
 );
+
 
 watch(() => props.items, () => {
   currentPage.value = 1;

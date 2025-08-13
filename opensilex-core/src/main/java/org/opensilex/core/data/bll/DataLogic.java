@@ -643,47 +643,48 @@ public class DataLogic {
                 FacilityModel matchedFacility = facilityPerUri.get(facilityUriString);
                 if(matchedFacility == null){
                     matchedFacility = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
+                    if(matchedFacility == null){
+                        continue;
+                    }
                     facilityPerUri.put(facilityUriString, matchedFacility);
                 }
-                if(matchedFacility != null){
-                    // Add variable to this facility
-                    Set<String> variablesForFacility = variablesPerFacility.getOrDefault(
-                            facilityUriString,
-                            (!CollectionUtils.isEmpty(matchedFacility.getVariables()) ?
-                                    matchedFacility.getVariables().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
-                                            .collect(Collectors.toSet())
-                                    : new HashSet<>()
-                            )
-                    );
-                    boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(model.getVariable()));
-                    if(addedVar){
-                        variablesPerFacility.put(facilityUriString, variablesForFacility);
-                    }
-                    //Add devices to this facility
-                    DataProvenanceModel dataProvenanceModel = model.getProvenance();
-                    Set<String> devicesForFacility = devicesPerFacility.getOrDefault(
-                            facilityUriString,
-                            (!CollectionUtils.isEmpty(matchedFacility.getDevices()) ?
-                                    matchedFacility.getDevices().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
-                                            .collect(Collectors.toSet())
-                                    : new HashSet<>()
-                            )
-                    );
-                    List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
-                    if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
-                        provWasAssociatedWith.stream().forEach(provEntityModel -> {
-                            try {
-                                if(provEntityModel.getType() != null){
-                                    String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
-                                    if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
-                                        encounteredDeviceTypes.add(deviceUriString);
-                                        devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
-                                    }
+                // Add variable to this facility
+                Set<String> variablesForFacility = variablesPerFacility.getOrDefault(
+                        facilityUriString,
+                        (!CollectionUtils.isEmpty(matchedFacility.getVariables()) ?
+                                matchedFacility.getVariables().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
+                                        .collect(Collectors.toSet())
+                                : new HashSet<>()
+                        )
+                );
+                boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(model.getVariable()));
+                if(addedVar){
+                    variablesPerFacility.put(facilityUriString, variablesForFacility);
+                }
+                //Add devices to this facility
+                DataProvenanceModel dataProvenanceModel = model.getProvenance();
+                Set<String> devicesForFacility = devicesPerFacility.getOrDefault(
+                        facilityUriString,
+                        (!CollectionUtils.isEmpty(matchedFacility.getDevices()) ?
+                                matchedFacility.getDevices().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
+                                        .collect(Collectors.toSet())
+                                : new HashSet<>()
+                        )
+                );
+                List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
+                if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
+                    provWasAssociatedWith.stream().forEach(provEntityModel -> {
+                        try {
+                            if(provEntityModel.getType() != null){
+                                String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
+                                if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
+                                    encounteredDeviceTypes.add(deviceUriString);
+                                    devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
                                 }
-                            } catch (SPARQLException ignore) {}
-                        });
-                        devicesPerFacility.put(facilityUriString, devicesForFacility);
-                    }
+                            }
+                        } catch (SPARQLException ignore) {}
+                    });
+                    devicesPerFacility.put(facilityUriString, devicesForFacility);
                 }
             }
         }

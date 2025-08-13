@@ -2,8 +2,8 @@
 <template>
   <div class="variablesGroupContainer">
 
-    <!-- Liste des groupes -->
     <div class="variablesGroupList">
+      <!-- Recherche de groupe -->
       <n-input
         v-model:value="search"
         :placeholder="t('GroupVariablesView.filter-placeholder')"
@@ -11,9 +11,10 @@
         class="mb-4"
       />
 
+      <!-- Liste des groupes -->
       <n-list bordered hoverable class="rounded-lg shadow">
         <n-list-item
-          v-for="group in filteredGroups"
+          v-for="group in groups"
           :key="group.uri"
           :class="{ 'bg-gray-100': selected?.uri === group.uri }"
           @click="updateSelected(group)"
@@ -45,44 +46,46 @@
       </n-list>
     </div>
 
-    <!-- Détails et variables -->
+    <!-- Détails du groupe selectionné -->
     <div v-if="selected" class="variablesGroupDetails">
-      <!-- Carte détails -->
-      <opensilex-Card>
+        <opensilex-VariableStructureDetails 
+            :selected="selected"
+        ></opensilex-VariableStructureDetails>
+
+      <!-- Carte Variables du groupe selectionné -->
+      <opensilex-Card v-if="selected.variables?.length" :noFooter="true">
         <template #title>
-          {{ t("component.common.details-label") }}
+            <opensilex-Icon icon="fa#vials"></opensilex-Icon>
+            {{ t("component.menu.variables") }}
         </template>
         <template #body>
-          <opensilex-ExternalReferencesDetails :skosReferences="selected" />
+          <!-- Recherche de variable dans le groupe -->
+          <n-input
+            v-model:value="variableSearch"
+            :placeholder="t('GroupVariablesView.variable-filter-placeholder')"
+            clearable
+            class="mb-4"
+          />
+          
+          <!-- Liste des variables du groupe -->
+          <opensilex-TableView
+          :items="filteredVariables"
+          :fields="fields"
+          :customRenderers="renderers"
+          ></opensilex-TableView>
         </template>
       </opensilex-Card>
-
-      <!-- Carte variables -->
-<opensilex-Card v-if="selected.variables?.length">
-  <template #title>
-    {{ t("component.menu.variables") }}
-  </template>
-  <template #body>
-    <opensilex-TableView
-      :items="selected.variables"
-      :fields="fields"
-    >
-      <template #cell(name)="{ data }">
-    {{selected.variables}}
-        
-        <opensilex-UriLink
-          :uri="data.item.uri"
-          :value="data.item.name"
-          :to="{ path: '/variable/details/' + encodeURIComponent(data.item.uri) }"
-        />
-      </template>
-    </opensilex-TableView>
-  </template>
-</opensilex-Card>
-
+      
+    <opensilex-DocumentTabList
+      v-if="selected && selected.uri"
+      :selected="selected"
+      :uri="[selected.uri]"
+      :search=false
+    ></opensilex-DocumentTabList>
     </div>
 
-    <!-- Formulaire création/édition -->
+
+    <!-- Formulaire création/édition groupe -->
     <opensilex-ModalForm
       v-if="showForm"
       ref="groupFormRef"
@@ -97,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeMount, onMounted, inject, defineExpose, nextTick, watch } from 'vue';
+import { ref, computed, onBeforeMount, resolveComponent, onMounted, inject, defineExpose, nextTick, watch, h} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { VariablesService, NamedResourceDTO } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from '../../../lib/HttpResponse';
@@ -117,7 +120,9 @@ const groupFormRef = ref(null);
 
 const groups = ref<any[]>([]);
 const search = ref('');
+const variableSearch = ref('');
 let service: VariablesService;
+const UriLink = resolveComponent('opensilex-UriLink');
 
 const fields = computed(() => [
     { 
@@ -140,33 +145,54 @@ async function fetchGroups() {
       variables: g.variables || []
     }));
   } catch (e) {
-    console.error('Erreur lors de la récupération des groupes :', e);
+    opensilex.errorHandler(e);
   }
 }
 
 onMounted(fetchGroups);
 
-const filteredGroups = computed(() =>
-  groups.value.filter(group =>
-    group.title?.toLowerCase().includes(search.value.toLowerCase())
-  )
-);
 
 // Affiche les détails
-function updateSelected(group: any) {
+async function updateSelected(group: any) {
+    // réponse du searchElements, récupere tout les groupes mais pas de publisher.
+    // -> swagger : on vois que c'est pas un pb de front, le service searchVariablesGroups renvoi bien des publishers nulls
+
+    // donc ici faire un appel avec l'autre service (getVariablesGroup) sur la base group.uri ?
+    console.log("le grp : ", group)
+
+      const selectedGroupDetails = await fetchGroupDetails(group.uri);
+  if (!selectedGroupDetails) return;
+
+
   selected.value = {
-    uri: group.uri,
-    name: group.name || group.label || '',
-    comment: group.description || '',
-    type: group.type || '',
-    typeLabel: group.typeLabel || '',
-    exact_match: group.exact_match ?? [],
-    close_match: group.close_match ?? [],
-    broad_match: group.broad_match ?? [],
-    narrow_match: group.narrow_match ?? [],
-    variables: group.variables ?? []
+    uri: selectedGroupDetails.uri,
+    name: selectedGroupDetails.name || selectedGroupDetails.label || '',
+    comment: selectedGroupDetails.description || '',
+    publisher: selectedGroupDetails.publisher || '',
+    description: selectedGroupDetails.description || '',
+    publication_date: selectedGroupDetails.publication_date || '',
+    last_update_date: selectedGroupDetails.last_update_date || '',
+    type: selectedGroupDetails.type || '',
+    typeLabel: selectedGroupDetails.typeLabel || '',
+    variables: selectedGroupDetails.variables ?? []
+    // est ce que les groupes ont ça ? 
+    // exact_match: group.exact_match ?? [],
+    // close_match: group.close_match ?? [],
+    // broad_match: group.broad_match ?? [],
+    // narrow_match: group.narrow_match ?? [],
   };
 }
+
+async function fetchGroupDetails(uri: string) {
+  try {
+    const response = await service.getVariablesGroup(uri);
+    return response.response.result;
+  } catch (error) {
+    opensilex.errorHandler(error);
+    return null;
+  }
+}
+
 
 // Supprime un groupe
 function onDeleteGroup(group: any) {
@@ -196,6 +222,7 @@ function onFormSuccess() {
   selected.value = null;
   fetchGroups();
 }
+
 
 function closeForm() {
   showForm.value = false;
@@ -230,7 +257,7 @@ const searchElements = async (filter = ''): Promise<NamedResourceDTO[]> => {
       response = await service.searchEntities(filter, orderBy);
       break;
   }
-
+console.log("responsey ", response)
   return response.response.result;
 };
 
@@ -246,6 +273,29 @@ watch(search, async (val) => {
     title: group.name,
     variables: group.variables || []
   }));
+});
+
+const renderers = {
+  name: (row: any) => {
+    return h('div', [
+      h(UriLink, {
+        uri: row.uri,
+        value: row.name,
+        to: {
+          path: '/variable/details/' + encodeURIComponent(row.uri)
+        }
+      })
+    ]);
+  }
+};
+
+// filtre des var issues d'un groupe selectionné
+const filteredVariables = computed(() => {
+  const query = variableSearch.value?.toLowerCase().trim();
+  if (!query) return selected.value?.variables || [];
+  return (selected.value?.variables || []).filter(variable =>
+    variable.name?.toLowerCase().includes(query)
+  );
 });
 
 defineExpose({ showCreateForm });
@@ -267,9 +317,11 @@ defineExpose({ showCreateForm });
 en:
     GroupVariablesView:
         filter-placeholder: Search groups by name
+        variable-filter-placeholder: Search variables by name
 
 fr:
     GroupVariablesView:
         filter-placeholder: Rechercher des groupes par nom
+        variable-filter-placeholder: Rechercher des variables par nom
 </i18n>
 

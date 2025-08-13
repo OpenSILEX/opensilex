@@ -450,7 +450,7 @@ fr:
       6month: "6 dernier mois"
       year: "Derniere année"
     settings: "Choix de la période et des appareils"
-    noDataFound: "Pas de données pour la période choisie"
+    noDataFound: "Pas de données pour la période choisie pour : "
     limitSizeMessageA : "Il y a "
     limitSizeMessageB : "données pour "
     limitSizeMessageC : ".Seules les 50 000 premières valeurs sont affichées. "

@@ -542,17 +542,14 @@ export default class GermplasmTable extends Vue {
       editor: true,
     };
     let isPublicCol = {
-      // title: this.$t("GermplasmTable.is_public") + '<span class="required">*</span>',
       title:"Privé" + '<span class="required">*</span>',
       field: "is_public",
       visible: true,
       editor: "list",
       editorParams:{
         values: {
-          // true: this.$t("GermplasmTable.public"),
-          // false: this.$t("GermplasmTable.private"),
-          true: "true",
-          false: "false",
+          true: "false",
+          false: "true",
         }
       }
     };

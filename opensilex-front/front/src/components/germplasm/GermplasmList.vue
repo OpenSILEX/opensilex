@@ -511,29 +511,30 @@ export default class GermplasmList extends Vue {
   searchGermplasm(options) {
     // this.updateExportFilters();
     return this.service.searchGermplasm(
-      this.filter.uri,
-      this.filter.rdf_type,
-      this.filter.name,
-      undefined,
-      this.filter.production_year,
-      this.filter.species,
-      undefined,
-      undefined,
-      this.filter.germplasm_group,
-      this.filter.institute,
-      this.experimentUri || this.filter.experiment,
-      this.filter.parent_germplasms,
-      this.filter.parent_germplasms_m,
-      this.filter.parent_germplasms_f,
-      this.addMetadataFilter(),
-      this.filter.is_public,
-      options.orderBy,
-      options.currentPage,
-      options.pageSize
+        this.filter.uri,
+        this.filter.rdf_type,
+        this.filter.name,
+        undefined,
+        this.filter.production_year,
+        this.filter.species,
+        undefined,
+        undefined,
+        this.filter.germplasm_group,
+        this.filter.institute,
+        this.experimentUri || this.filter.experiment,
+        this.filter.parent_germplasms,
+        this.filter.parent_germplasms_m,
+        this.filter.parent_germplasms_f,
+        this.addMetadataFilter(),
+        this.filter.is_public,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
     );
   }
 
-    exportCSV(exportAll: boolean) {
+
+  exportCSV(exportAll: boolean) {
         let path = "/core/germplasm/export";
         let today = new Date();
         let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');

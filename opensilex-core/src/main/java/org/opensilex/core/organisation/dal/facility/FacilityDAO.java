@@ -17,15 +17,20 @@ import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
@@ -54,6 +59,7 @@ public class FacilityDAO {
     //#region public
     public FacilityModel create(FacilityModel instance) throws Exception {
         sparql.create(instance);
+
         return instance;
     }
 
@@ -62,10 +68,27 @@ public class FacilityDAO {
     }
 
     public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, FacilityLogic.FacilitySearchRights organizationsAndSites) throws Exception {
-        return sparql.searchWithPagination(
+        filter.validate();
+
+        SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
+                FacilityModel.class,
+                List.of(
+                        new SparqlSchemaSimpleNode<>(OrganizationModel.class, FacilityModel.ORGANIZATION_FIELD),
+                        new SparqlSchemaSimpleNode<>(SiteModel.class, FacilityModel.SITE_FIELD),
+                        new SparqlSchemaSimpleNode<>(VariablesGroupModel.class, FacilityModel.VARIABLE_GROUPS_FIELD),
+                        new SparqlSchemaSimpleNode<>(FacilityAddressModel.class, FacilityModel.ADDRESS_FIELD)
+                ),
+                true
+        );
+
+        SparqlSchema<FacilityModel> schema = new SparqlSchema<>(rootNode);
+
+        return sparql.searchWithPaginationUsingSchema(
                 FacilityModel.class,
                 filter.getUser().getLanguage(),
                 (select -> filterHandler(select, organizationsAndSites, filter)),
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
@@ -142,8 +165,6 @@ public class FacilityDAO {
 
         return sparql.executeAskQuery(ask);
     }
-
-
 
     //endregion
 

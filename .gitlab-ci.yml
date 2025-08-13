@@ -143,7 +143,7 @@ variables:
     ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
     ##
     - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
-    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts || (echo "[ERROR] Can't connect to $REMOTE_SERVER_IP on port 22 with SSH;" ; exit 1)
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
     - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
     - chmod 600 ${HOME}/.ssh/id_rsa
@@ -772,8 +772,8 @@ test:dhruthi:deploy:
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
     INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4091
-    OPENSILEX_JAR_PORT: 8091
+    OPENSILEX_JAR_ADMIN_PORT: 4098
+    OPENSILEX_JAR_PORT: 8098
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"

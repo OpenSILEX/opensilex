@@ -15,7 +15,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
@@ -34,14 +33,15 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -49,6 +49,9 @@ import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
@@ -60,7 +63,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import static org.opensilex.sparql.service.SPARQLService.TYPE_VAR;
 
 /**
  *
@@ -186,8 +188,6 @@ public class DeviceDAO {
         Boolean includeSubTypes = filter.getIncludeSubTypes();
         URI rdfType = filter.getRdfType();
 
-        ListWithPagination<DeviceModel> returnList = null;
-
         // set the custom filter on type
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
 
@@ -195,21 +195,29 @@ public class DeviceDAO {
             appendTypeFilter(customHandlerByFields, rdfType);
         }
 
-        returnList = sparql.searchWithPagination(
+        SparqlSchemaRootNode<DeviceModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
+                DeviceModel.class,
+                Collections.singletonList(new SparqlSchemaSimpleNode<>(PersonModel.class, DeviceModel.PERSON_IN_CHARGE_FIELD)),
+                true
+        );
+
+        SparqlSchema<DeviceModel> schema = new SparqlSchema<>(rootNode);
+
+        return sparql.searchWithPaginationUsingSchema(
                 sparql.getDefaultGraph(DeviceModel.class),
                 DeviceModel.class,
                 currentUser.getLanguage(),
                 (SelectBuilder select) -> {
                     this.addFiltersForSomeSearch(select, filter, false);
                 },
-                customHandlerByFields,
-                null,
+                Collections.emptyMap(),
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
-                filter.getPageSize());
+                filter.getPageSize()
+        );
 
-
-        return returnList;
     }
 
     public List<DeviceModel> searchForExport(DeviceSearchFilter filter) throws Exception {
@@ -319,9 +327,6 @@ public class DeviceDAO {
 
     public List<DeviceModel> getDevicesByURI(List<URI> devicesURI, AccountModel currentUser) throws Exception {
         List<DeviceModel> devices = null;
-
-        // true or false first element
-        // filter device element by move
         if (sparql.uriListExists(DeviceModel.class, devicesURI)) {
             devices = sparql.getListByURIs(DeviceModel.class, devicesURI, currentUser.getLanguage());
         }

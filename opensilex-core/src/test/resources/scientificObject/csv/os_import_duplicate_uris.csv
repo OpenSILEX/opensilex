@@ -1,0 +1,8 @@
+uri,type,rdfs:label
+column_description,column_description,column_description
+test:id/csv_import_os_duplicate_uris,vocabulary:Sample,SO1
+test:id/csv_import_os_duplicate_uris,vocabulary:Sample,SO2
+test:id/csv_import_os_duplicate_uris,vocabulary:Sample,SO3
+test:id/csv_import_os_duplicate_uris,vocabulary:Sample,SO4
+test:id/csv_import_os_duplicate_uris,vocabulary:Sample,SO5
+test:id/csv_import_os_duplicate_uris,vocabulary:Sample,SO6

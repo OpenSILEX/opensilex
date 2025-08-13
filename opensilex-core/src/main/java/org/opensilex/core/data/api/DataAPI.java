@@ -273,7 +273,7 @@ public class DataAPI {
             xpFilter.setPage(0);
             xpFilter.setPageSize(xpQuantity);
 
-            xpForTargetSearch = experimentDAO.search(xpFilter)
+            xpForTargetSearch = experimentDAO.search(xpFilter, false, false, false)
                     .getList()
                     .stream()
                     .map(SPARQLResourceModel::getUri)

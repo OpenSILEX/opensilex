@@ -23,7 +23,7 @@
 
               <template v-slot:cell(published)="{data}">
                 <opensilex-TextView
-                    :value="new Date(data.item.published).toLocaleString()">
+                    :value="formatDate(data.item.published)">
                 </opensilex-TextView>
               </template>
 
@@ -141,6 +141,9 @@ export default class AnnotationList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
+  formatDate(dateStr: string): string {
+    return this.$opensilex.$dateTimeFormatter.formatLocalFixedDateTime(dateStr);
+  }
 
   static getDefaultColumns() {
     return new Set(["published", "description", "publisher"]);
@@ -275,7 +278,10 @@ export default class AnnotationList extends Vue {
   showDetails(annotation: any) {
     this.selectedAnnotation = {
       uri: annotation.uri,
-      motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined
+      motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined,
+      published: annotation.published,
+      publisher: this.getAccountNames(annotation.publisher),
+      description: annotation.description
     };
     this.isModalVisible = true;
   }

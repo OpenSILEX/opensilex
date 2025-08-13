@@ -19,6 +19,8 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.document.dal.DocumentDAO;
+import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
@@ -42,14 +44,12 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
-
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -195,7 +195,7 @@ public class DataLogic {
         Instant data = Instant.now();
 
         Instant dataTransform = Instant.now();
-        logger.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
+        logger.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
 
         //Get other stuff we have to get (variables, objects, etc...)
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
@@ -204,7 +204,7 @@ public class DataLogic {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
         Instant variableTime = Instant.now();
-        logger.debug("Get " + variables.size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
+        logger.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
 
         // Provide the experiment as context if there is only one, and only in wide format.
         URI context = null;
@@ -216,14 +216,14 @@ public class DataLogic {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        logger.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
+        logger.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
         List<ProvenanceModel> provenanceModels = new ProvenanceDaoV2(nosql.getServiceV2()).findByUris(provenances.keySet().parallelStream(), provenances.size());
         for (ProvenanceModel prov : provenanceModels) {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        logger.debug("Get " + provenanceModels.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
+        logger.debug("Get " + provenanceModels.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -231,7 +231,7 @@ public class DataLogic {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        logger.debug("Get " + listExp.size() + " experiment(s) " + Duration.between(variableTime, expTime).toMillis() + " milliseconds elapsed");
+        logger.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
 
 
         //Handle return
@@ -466,7 +466,7 @@ public class DataLogic {
                 startInstant,
                 endInstant);
         end = Instant.now();
-        logger.debug(dataModels.size() + " data retrieved from mongo : " + Duration.between(start, end).toMillis() + " milliseconds elapsed");
+        logger.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
 
         Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
 

@@ -35,6 +35,7 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -826,7 +827,7 @@ public class ScientificObjectAPI {
             nosql.startTransaction();
 
             CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                    new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                     descriptionDto.getValidationToken()
             );
 
@@ -964,7 +965,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()
         );
 

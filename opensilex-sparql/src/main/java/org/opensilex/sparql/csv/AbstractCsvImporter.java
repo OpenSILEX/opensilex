@@ -63,7 +63,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
     protected final SPARQLService sparql;
     protected final OntologyStore ontologyStore;
 
-    protected final URI rootClassURI;
+    public final URI rootClassURI;
     protected final Class<T> objectClass;
     protected final ClassModel rootClassModel;
 

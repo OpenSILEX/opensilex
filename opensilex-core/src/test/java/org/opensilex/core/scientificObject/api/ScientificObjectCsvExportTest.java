@@ -5,7 +5,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.univocity.parsers.csv.CsvParser;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.*;
@@ -20,6 +19,7 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -153,7 +153,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 OpenSilex.getResourceAsStream(EXPORT_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
         // load object with CSV import for testing purpose
-        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(sparql, getMongoDBService(), experiment.getUri(), user);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(sparql, getMongoDBService(), experiment.getUri(), user);
         File csvFile = CSV_FILES_DIR.resolve("os_export_test_file.csv").toFile();
 
         CSVValidationModel validation = importer.importCSV(csvFile, false);

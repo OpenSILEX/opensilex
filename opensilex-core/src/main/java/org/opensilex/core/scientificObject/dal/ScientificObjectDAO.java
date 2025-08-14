@@ -19,6 +19,8 @@ import org.apache.jena.sparql.path.*;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.bll.MoveLogic;
@@ -44,6 +46,8 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
+import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -74,6 +78,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.opensilex.sparql.csv.AbstractCsvImporter.*;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -684,6 +689,33 @@ public class ScientificObjectDAO {
         }
 
         return existingOs.isEmpty() ? null : existingOs.get(0);
+    }
+
+    public List<SPARQLResult> checkUriExistInXP(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, URI rootClassURI, Node graphNode) throws SPARQLException {
+        // query used to check existence of a URI (return false/true) in XP
+        SelectBuilder checkUriQuery = sparql.getCheckUriListExistQuery(Stream.of(String.valueOf(model.getUri())), 1, rootClassURI.toString(), graphNode);
+        List<SPARQLResult> result;
+        try {
+            result = sparql.executeSelectQuery(checkUriQuery);
+        } catch (HTTPQueryEvaluationException | MalformedQueryException e) {
+            validator.addInvalidURIError(new CsvCellValidationContext(totalRowIdx +CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+            return Collections.emptyList();
+        }
+        return result;
+    }
+
+    public Set<URI> getExistingUrisToCreate(List<ScientificObjectModel> models) throws Exception {
+        return sparql.getExistingUriStream(
+                ScientificObjectModel.class,
+                models.stream().map(SPARQLResourceModel::getUri),
+                models.size(),
+                false,
+                sparql.getDefaultGraph(ScientificObjectModel.class));
+    }
+
+
+    public SelectBuilder getCheckUriListExist(Stream<String> urisToCheck, int streamSize, URI rootClassURI) {
+        return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), getDefaultGraphNode());
     }
 
     /**

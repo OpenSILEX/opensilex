@@ -1,4 +1,4 @@
-package org.opensilex.core.scientificObject.dal;
+package org.opensilex.core.scientificObject.bll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
@@ -6,8 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.query.MalformedQueryException;
-import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
 import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -21,6 +19,8 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
@@ -81,7 +81,7 @@ import java.util.stream.Stream;
  *
  * @author rcolin
  */
-public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificObjectModel> {
+public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<ScientificObjectModel> {
 
     private final URI experiment;
     private final GeospatialDAO geoDAO;
@@ -97,7 +97,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
      * @param experiment URI of the experiment
      * @param user       {@link org.opensilex.security.account.dal.AccountModel} used to determine if user has the right to access the experiment {@link ExperimentDAO#validateExperimentAccess(URI, org.opensilex.security.account.dal.AccountModel) }
      */
-    public ScientificObjectCsvImporter(SPARQLService sparql, MongoDBService mongoDB, URI experiment, AccountModel user) throws Exception {
+    public ScientificObjectCsvImporterLogic(SPARQLService sparql, MongoDBService mongoDB, URI experiment, AccountModel user) throws Exception {
         super(
                 sparql,
                 ScientificObjectModel.class,
@@ -262,15 +262,9 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
             // query used to check if a SO with a name already exists in XP
             SPARQLNamedResourceModel alreadyExistingOsWithName = scientificObjectDAO.getUriByNameAndGraph(SPARQLDeserializers.nodeURI(experiment),model.getName());
             if (model.getUri() != null) {
-                // query used to check existence of a URI (return false/true) in XP
-                SelectBuilder checkUriQuery = checkUriExistInXP(model.getUri());
-                List<SPARQLResult> result;
-                try {
-                    result = sparql.executeSelectQuery(checkUriQuery);
-                } catch (HTTPQueryEvaluationException | MalformedQueryException e) {
-                    validator.addInvalidURIError(new CsvCellValidationContext(totalRowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
-                    return;
-                }
+                // check existence of a URI (return false/true) in XP
+                List<SPARQLResult> result = scientificObjectDAO.checkUriExistInXP(validator, model, totalRowIdx, rootClassURI, graphNode);
+                if (result == null) return;
                 String isURIExistInXP = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
 
                 // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO
@@ -327,10 +321,6 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         return false;
     }
 
-    private SelectBuilder checkUriExistInXP(URI uri) {
-        return sparql.getCheckUriListExistQuery(Stream.of(String.valueOf(uri)), 1, rootClassURI.toString(), graphNode);
-    }
-
     @Override
     protected void checkUrisUniqueness(CsvOwlRestrictionValidator validator, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, List<ScientificObjectModel> modelChunk) throws SPARQLException {
         if(withinExperiment()) {
@@ -364,7 +354,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
      * Here, since we are outside experimental context, then the provided graph was the default OS graph
      * So, the default behaviour, which use the default OS graph is OK
      * </pre>
-     * @see ScientificObjectCsvImporter#getCheckUrisUniquenessQuery(Stream, int)
+     * @see ScientificObjectCsvImporterLogic#getCheckUrisUniquenessQuery(Stream, int)
      */
     @Override
     protected SelectBuilder getCheckGeneratedUrisUniquenessQuery(Stream<String> urisToCheck, int streamSize) {
@@ -372,7 +362,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         if (withinExperiment()) {
             // in case of URI generation in experimental context we want to ensure that
             // generated URI are globally unique. So we need to use the global OS graph, since it's contains declaration of any OS
-            return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), scientificObjectDAO.getDefaultGraphNode());
+            return scientificObjectDAO.getCheckUriListExist(urisToCheck, streamSize, rootClassURI);
         } else {
             // use default implementation which use the provided graph.
             // Here, since we are outside experimental context, then the provided graph was the default OS graph
@@ -388,7 +378,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
      * Here, since we are outside experimental context, then the provided graph was the default OS graph
      * So, the default behaviour, which use the default OS graph is OK
      * </pre>
-     * @see ScientificObjectCsvImporter#getCheckGeneratedUrisUniquenessQuery(Stream, int)
+     * @see ScientificObjectCsvImporterLogic#getCheckGeneratedUrisUniquenessQuery(Stream, int)
      */
     @Override
     protected SelectBuilder getCheckUrisUniquenessQuery(Stream<String> urisToCheck, int streamSize) {
@@ -591,12 +581,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
         // Global OS copy and species update inside xp
         if (withinExperiment()) {
-            var soToCreateUriSet = sparql.getExistingUriStream(
-                    ScientificObjectModel.class,
-                    models.stream().map(SPARQLResourceModel::getUri),
-                    models.size(),
-                    false,
-                    sparql.getDefaultGraph(ScientificObjectModel.class));
+            var soToCreateUriSet = scientificObjectDAO.getExistingUrisToCreate(models);
             if (!soToCreateUriSet.isEmpty()) {
                 scientificObjectDAO.copyIntoGlobalGraph(models.stream().filter(model -> {
                     try {

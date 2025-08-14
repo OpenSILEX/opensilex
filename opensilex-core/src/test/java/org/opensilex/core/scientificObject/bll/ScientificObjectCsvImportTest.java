@@ -1,4 +1,4 @@
-package org.opensilex.core.scientificObject.api;
+package org.opensilex.core.scientificObject.bll;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.riot.Lang;
@@ -14,7 +14,6 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -60,7 +59,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
 
-        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(getSparqlService(),getMongoDBService(),experiment,user);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user);
         File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
         return importer.importCSV(csvFile,false);
     }

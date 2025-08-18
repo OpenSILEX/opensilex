@@ -1,4 +1,4 @@
-package org.opensilex.core.scientificObject.api;
+package org.opensilex.core.scientificObject.bll;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.riot.Lang;
@@ -14,7 +14,6 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -60,7 +59,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
 
-        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(getSparqlService(),getMongoDBService(),experiment,user);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user);
         File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
         return importer.importCSV(csvFile,false);
     }
@@ -91,8 +90,75 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         validation = testImport("os_import_basic_fail_with_bad_type.csv", experiment.getUri(), user);
         Assert.assertTrue(validation.hasErrors());
 
-        // test with already existing uri -> reuse previously imported file
+        // test with already existing uri -> reuse previously imported file to update OS in bulk
         validation = testImport("os_import_basic_with_fixed_uri_and_type.csv", experiment.getUri(), user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(2, validation.getNbObjectImported());
+    }
+
+    @Test
+    public void testBasicCsvEmptyName() throws Exception {
+        // test with fixed uri and empty name
+        CSVValidationModel validation = testImport("os_import_basic_empty_name_with_uri.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+
+        // test with empty uri and empty name
+        validation = testImport("os_import_basic_empty_name_empty_uri.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertFalse(validation.getMissingRequiredValueErrors().isEmpty());
+    }
+
+    @Test
+    public void testBasicCsvIncorrectURI() throws Exception {
+        // test with an incorrect uri
+        CSVValidationModel validation = testImport("os_import_basic_with_incorrect_uri.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertFalse(validation.getInvalidURIErrors().isEmpty());
+    }
+
+    @Test
+    public void testBasicCsvDuplicates() throws Exception {
+        // test with duplicate URIs
+        CSVValidationModel validation = testImport("os_import_duplicate_uris.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
+
+        // test with duplicate names
+        validation = testImport("os_import_duplicate_names.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
+
+        // test with duplicate URIs and duplicate names
+        validation = testImport("os_import_dup_uris_dup_names.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
+    }
+
+    @Test
+    public void testUpdateSOInBulkInExp() throws Exception {
+        // test by importing a CSV to create a few Scientific Objects
+        CSVValidationModel validation = testImport("os_import_create.csv", experiment.getUri(), user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(4, validation.getNbObjectImported());
+
+        // in an Experiment
+        // test by importing a CSV to create a few Scientific Objects and to update a few existing Scientific Objects
+        validation = testImport("os_reimport.csv", experiment.getUri(), user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(4, validation.getNbObjectImported());
+    }
+
+    @Test
+    public void testUpdateSOInBulkGlobal() throws Exception {
+        // test by importing a CSV to create a few Scientific Objects
+        CSVValidationModel validation = testImport("os_import_create.csv", null, user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(4, validation.getNbObjectImported());
+
+        // globally - not inside an experiment
+        // test by importing a CSV to create a few Scientific Objects and to update a few Scientific Objects
+        // it shouldn't allow updating existing Scientific objects when we import globally
+        validation = testImport("os_reimport.csv", null, user);
         Assert.assertTrue(validation.hasErrors());
         Assert.assertFalse(validation.getAlreadyExistingURIErrors().isEmpty());
     }

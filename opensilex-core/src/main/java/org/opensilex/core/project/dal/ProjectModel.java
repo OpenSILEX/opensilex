@@ -108,6 +108,7 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
             property = "hasRelatedProject"
     )
     private List<ProjectModel> relatedProjects;
+    public static final String  RELATED_PROJECTS_FIELD = "relatedProjects";
 
     public String getShortname() {
         return shortname;

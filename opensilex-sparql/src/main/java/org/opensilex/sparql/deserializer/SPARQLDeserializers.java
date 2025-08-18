@@ -223,6 +223,7 @@ public class SPARQLDeserializers {
         }
     }
 
+
     public static Node[] nodeListURIAsArray(Collection<URI> uris) throws Exception {
         SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
 

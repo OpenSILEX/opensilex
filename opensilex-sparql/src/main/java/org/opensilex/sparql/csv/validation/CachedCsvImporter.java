@@ -124,15 +124,16 @@ public class CachedCsvImporter<T extends SPARQLResourceModel> implements CsvImpo
             validationCache.invalidate(checksum);
 
             // performs import by bypassing validation, use previously collected objects
-            fallback.create(validationModel, (List<T>) validationModel.getObjects());
+            fallback.upsert(validationModel, (List<T>) validationModel.getObjects(), (List<T>) validationModel.getObjectsToUpdate());
             validationModel.getObjects().clear();
+            validationModel.getObjectsToUpdate().clear();
         }
         return validationModel;
     }
 
     @Override
-    public void create(CSVValidationModel validation, List<T> models) throws Exception {
-        fallback.create(validation, models);
+    public void upsert(CSVValidationModel validation, List<T> models, List<T> modelChunkToUpdate) throws Exception {
+        fallback.upsert(validation, models, modelChunkToUpdate);
     }
 }
 

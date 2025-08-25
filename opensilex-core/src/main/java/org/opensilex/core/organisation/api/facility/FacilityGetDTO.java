@@ -168,4 +168,7 @@ public class FacilityGetDTO extends FacilityDTO {
         this.devices = devices;
     }
 
+    public List<DeviceGetDTO> getDevices() {
+        return devices;
+    }
 }

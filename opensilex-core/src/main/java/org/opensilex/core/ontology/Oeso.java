@@ -187,8 +187,4 @@ public class Oeso {
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
     public static final Property measures = Ontology.property(NS, "measures");
-
-   // measures.setInverseOf(measuredBy);
-
-
 }

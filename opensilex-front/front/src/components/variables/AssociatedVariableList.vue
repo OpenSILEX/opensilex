@@ -45,12 +45,15 @@ import Vue from 'vue';
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
+import VueI18n from "vue-i18n";
+import {OpenSilexStore} from "../../models/Store"
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component({})
 export default class AssociatedVariablesList extends Vue {
-  $opensilex: any;
-  $i18n: any;
-  $store: any;
+  $opensilex: OpenSilexVuePlugin;
+  $i18n: VueI18n;
+  $store: OpenSilexStore;
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop()
@@ -67,12 +70,12 @@ export default class AssociatedVariablesList extends Vue {
   fields = [
     {
       key: "variableName",
-      label: "AssociatedVariablesList.variables",
+      label: "component.menu.variables",
       sortable: true
     },
     {
       key: "devices",
-      label: "AssociatedVariablesList.devices",
+      label: "component.menu.devices",
       sortable: false
     }
   ];
@@ -81,6 +84,9 @@ export default class AssociatedVariablesList extends Vue {
     this.loadVariableAndDeviceList();
   }
 
+  /**
+   * Creates the table data by placing devices with correct variables. Does this by checking if each device measures each variable.
+   */
   loadVariableAndDeviceList() {
 
     this.variableAndDeviceListData = this.variableList.map(variable => {
@@ -106,10 +112,12 @@ export default class AssociatedVariablesList extends Vue {
   }
 
   private isVariableRelation(relation: RDFObjectRelationDTO): boolean {
-    const measures_prop = this.$opensilex.Oeso.MEASURES_PROP_URI;
-    return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
+    return this.$opensilex.checkURIs(this.$opensilex.Oeso.MEASURES_PROP_URI, relation.property)
   }
 
+  /**
+   * Custom filter for the table. Filters each line by the name of variable OR by the name of one of its devices.
+   */
   customFilter(item, filter) {
     try {
       const regex = new RegExp(filter, "i");
@@ -153,13 +161,9 @@ en:
   AssociatedVariablesList:
     variablesNameFilter: Search by variable name
     relatedVariables: Related Variables and Devices
-    devices: Devices
-    variables: Variables
 
 fr:
   AssociatedVariablesList:
     variablesNameFilter: Rechercher par nom de variable
     relatedVariables: Variables et appareils liés
-    devices: Appareils
-    variables: Variables
 </i18n>

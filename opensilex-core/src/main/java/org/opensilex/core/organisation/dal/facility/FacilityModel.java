@@ -21,9 +21,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @SPARQLResource(
@@ -84,7 +82,9 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDevice"
+            property = "hasDevice",
+            ignoreUpdateIfNull = true
+
     )
     private List<DeviceModel> devices;
 

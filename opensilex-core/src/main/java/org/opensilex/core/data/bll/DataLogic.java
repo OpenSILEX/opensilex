@@ -673,23 +673,22 @@ public class DataLogic {
                 );
                 List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
                 if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
-                    provWasAssociatedWith.stream().forEach(provEntityModel -> {
-                        try {
-                            if(provEntityModel.getType() != null){
-                                String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
-                                if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
-                                    encounteredDeviceTypes.add(deviceUriString);
-                                    devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
-                                }
+                    for(ProvEntityModel provEntityModel : provWasAssociatedWith){
+                        if(provEntityModel.getType() != null){
+                            String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
+                            if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
+                                encounteredDeviceTypes.add(deviceUriString);
+                                devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
                             }
-                        } catch (SPARQLException ignore) {}
-                    });
+                        }
+                    }
+
                     devicesPerFacility.put(facilityUriString, devicesForFacility);
                 }
             }
         }
         //Iterate over the encountered facilities to prepare update of their variables and devices
-        List<FacilityModel> result = new ArrayList<>();
+        List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
         for(String facilityUri : facilityPerUri.keySet()){
             FacilityModel nextFacility = facilityPerUri.get(facilityUri);
             //Only add this facility to the update list if the number of variables or devices has changed
@@ -701,9 +700,9 @@ public class DataLogic {
             }
             if(!CollectionUtils.isEmpty(variablesPerFacility.get(facilityUri))){
                 nextFacility.setVariables(variablesPerFacility.get(facilityUri).stream()
-                        .map(e -> {
+                        .map(variableUri -> {
                             VariableModel variable = new VariableModel();
-                            variable.setUri(URI.create(e));
+                            variable.setUri(URI.create(variableUri));
                             return variable;
                         })
                         .collect(Collectors.toList())
@@ -711,17 +710,17 @@ public class DataLogic {
             }
             if(!CollectionUtils.isEmpty(devicesPerFacility.get(facilityUri))){
                 nextFacility.setDevices(devicesPerFacility.get(facilityUri).stream()
-                        .map(e -> {
+                        .map(deviceUri -> {
                             DeviceModel device = new DeviceModel();
-                            device.setUri(URI.create(e));
+                            device.setUri(URI.create(deviceUri));
                             return device;
                         })
                         .collect(Collectors.toList())
                 );
             }
-            result.add(nextFacility);
+            facilitiesToUpdate.add(nextFacility);
         }
-        return result;
+        return facilitiesToUpdate;
     }
 
     private <T extends SPARQLResourceModel> boolean  collectionsAreBothNullOrSameSize(List<T> models, Set<String> uris){

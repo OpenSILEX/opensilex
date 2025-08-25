@@ -16,15 +16,11 @@
 package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.device.dal.DeviceDAO;
-import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;

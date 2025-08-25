@@ -370,7 +370,7 @@ public class GermplasmLogic {
             if (!sparql.uriExists(typeURI, uri)) {
                 var uriList = uriThatDoesntExistWithThisType.get(type);
                 if (uriList == null) {
-                    uriList = List.of(uri);
+                    uriList = new ArrayList<>(List.of(uri));
                     uriThatDoesntExistWithThisType.put(type, uriList);
                 } else {
                     uriList.add(uri);

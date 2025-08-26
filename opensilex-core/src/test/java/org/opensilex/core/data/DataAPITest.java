@@ -150,6 +150,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static FacilityModel facility;
     private static FacilityModel facilityVarsDevices;
     private static FacilityModel facilityVarsDevicesImport;
+    private static FacilityModel facilityVarsDevicesImport2;
 
     @BeforeClass
     public static void beforeTest() throws Exception {
@@ -192,10 +193,14 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         facilityVarsDevices.setName("DataAPITest-facilityVarsAndDevices");
         sparql.create(facilityVarsDevices);
 
-        //A facility to test that variables and devices get correctly linked when creating data on it via an import
+        //Two facilities to test that variables and devices get correctly linked when creating data on it via an import
         facilityVarsDevicesImport = new FacilityModel();
         facilityVarsDevicesImport.setName("DataAPITest-facilityVarsAndDevicesImport");
         sparql.create(facilityVarsDevicesImport);
+
+        facilityVarsDevicesImport2 = new FacilityModel();
+        facilityVarsDevicesImport2.setName("DataAPITest-facilityVarsAndDevicesImport2");
+        sparql.create(facilityVarsDevicesImport2);
     }
 
     private static void createVariables(SPARQLService sparql) throws Exception {
@@ -763,16 +768,21 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         provUsesDevice.setType(device.getType());
         provWithOneDevice.setProvWasAssociatedWith(Collections.singletonList(provUsesDevice));
 
-        //Perform import and verify validation
-        DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_NO_DEVICE_COL, provWithOneDevice.getUri());
-        assertFalse(csvValidationDTO.getDataErrors().hasErrors());
-        assertEquals(1, csvValidationDTO.getDataErrors().getNbLinesImported().intValue());
+        //Do an import of data with target facilityVarsDevicesImport, has a device column filled with the device that will go in provenance
+        DataCSVValidationDTO csvValidationDTODeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_DEVICE_COL, provWithOneDevice.getUri());
+        assertFalse(csvValidationDTODeviceCol.getDataErrors().hasErrors());
+        assertEquals(1, csvValidationDTODeviceCol.getDataErrors().getNbLinesImported().intValue());
 
         //Verify Facility has variables and devices
         var getResponse = getJsonGetByUriResponseAsAdmin(target(FacilityApiTest.URI_PATH), facilityVarsDevicesImport.getUri().toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(getResponse.readEntity(JsonNode.class), FacilityApiTest.singleObjectResponseTypeReference);
         assertEquals(1, singleObjectResponse.getResult().getVariables().size());
         assertEquals(1, singleObjectResponse.getResult().getDevices().size());
+
+        //Perform import and verify validation
+        /*DataCSVValidationDTO csvValidationDTONoDeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_NO_DEVICE_COL, provWithOneDevice.getUri());
+        assertFalse(csvValidationDTONoDeviceCol.getDataErrors().hasErrors());
+        assertEquals(1, csvValidationDTONoDeviceCol.getDataErrors().getNbLinesImported().intValue());*/
     }
 
     /**

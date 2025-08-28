@@ -19,6 +19,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -409,6 +410,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     public void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
         classQueryBuilder.addDeleteBuilder(graph, instance, delete);
+    }
+
+    public UpdateRequest getDeleteBuilder(List<URI> urisToDelete) throws Exception {
+        return classQueryBuilder.getDeleteBuilder(urisToDelete);
     }
 
     public URI getURI(Object instance) {

@@ -25,6 +25,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
@@ -55,7 +56,10 @@ import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.URIGenerator;
-import org.opensilex.utils.*;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.ThrowingConsumer;
+import org.opensilex.utils.ThrowingFunction;
 import org.opensilex.utils.functionnal.ThrowingSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +75,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -218,7 +221,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public List<SPARQLStatement> getGraphStatement(URI graph) throws SPARQLException {
-        LOGGER.debug("SPARQL GET GRAPH STATEMENTS FOR: " + graph);
+        LOGGER.debug(String.format("SPARQL GET GRAPH STATEMENTS FOR: %s", graph));
         return connection.getGraphStatement(graph);
     }
 
@@ -226,7 +229,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException {
         addPrefixes(construct);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL CONSTRUCT\n" + construct.buildString());
+            LOGGER.debug(String.format("SPARQL CONSTRUCT%n%s", construct.buildString()));
         }
         return connection.executeConstructQuery(construct);
     }
@@ -235,7 +238,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
         addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
+            LOGGER.debug(String.format("SPARQL SELECT%n%s", select.buildString()));
         }
         return connection.executeSelectQuery(select, resultHandler);
     }
@@ -244,7 +247,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
         addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
+            LOGGER.debug(String.format("SPARQL SELECT%n%s", select.buildString()));
         }
         return connection.executeSelectQueryAsStream(select);
     }
@@ -253,13 +256,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL UPDATE\n" + update.buildRequest().toString());
+            LOGGER.debug(String.format("SPARQL UPDATE%n%s", update.buildRequest()));
         }
         connection.executeUpdateQuery(update);
     }
 
     @Override
     public void executeUpdateQuery(String update) throws SPARQLException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("SPARQL UPDATE%n%s", update));
+        }
         connection.executeUpdateQuery(update);
     }
 
@@ -267,7 +273,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
+            LOGGER.debug(String.format("SPARQL DELETE%n%s", delete.buildRequest()));
+        }
+        connection.executeDeleteQuery(delete);
+    }
+
+    @Override
+    public void executeDeleteQuery(String delete) throws SPARQLException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("SPARQL DELETE%n%s", delete));
         }
         connection.executeDeleteQuery(delete);
     }
@@ -1526,7 +1540,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    private  <T extends SPARQLResourceModel> void update(Node graph, T instance, T oldInstance) throws Exception {
+    private  <T extends SPARQLResourceModel> void updateFieldsAndCreateInstance(Node graph, T instance, T oldInstance) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
 
         @SuppressWarnings("unchecked")
@@ -1543,9 +1557,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             deleteCustomRelations(graph,mapper,instance);
 
-            // delete and create new instance
-            UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance);
-            executeDeleteQuery(delete);
             create(graph, instance, false, false);
 
     }
@@ -1555,31 +1566,39 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void update(Node graph, List<T> instances) throws Exception {
+        if (instances.isEmpty()) return;
+
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+        @SuppressWarnings("unchecked")
+        Class<T> objectClass = (Class<T>) instances.get(0).getClass();
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+
+        mapper.getDeleteBuilder(instances.stream().map(SPARQLResourceModel::getUri).toList());
+
         try {
             // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
+
+            if (instances.isEmpty()) return;
+
             startTransaction();
 
-            if (instances.size() > 0) {
+            validate(instances, null);
 
-                validate(instances, null);
+            List<T> oldInstances = loadListByURIs(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList(), getDefaultLang());
 
-                @SuppressWarnings("unchecked")
-                Class<T> objectClass = (Class<T>) instances.get(0).getClass();
-                List<T> oldInstances = loadListByURIs(objectClass, instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()), getDefaultLang());
+            deleteWithoutCascade(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList());
 
+            for (T instance : instances) {
+                T oldInstance = oldInstances.stream()
+                        .filter(old -> SPARQLDeserializers.compareURIs(old.getUri(), instance.getUri()))
+                        .findFirst()
+                        .orElse(null);
 
-                for (T instance : instances) {
-                    T oldInstance = oldInstances.stream()
-                            .filter(old -> SPARQLDeserializers.compareURIs(old.getUri(), instance.getUri()))
-                            .findFirst()
-                            .orElse(null);
-
-                    Node instanceGraph = graph;
-                    if (graph == null) {
-                        instanceGraph = getDefaultGraph(instance.getClass());
-                    }
-                    update(instanceGraph, instance, oldInstance);
+                Node instanceGraph = graph;
+                if (graph == null) {
+                    instanceGraph = getDefaultGraph(instance.getClass());
                 }
+                updateFieldsAndCreateInstance(instanceGraph, instance, oldInstance);
             }
             commitTransaction();
         } catch (Exception ex) {
@@ -1596,10 +1615,24 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    private  <T extends SPARQLResourceModel> void deleteWithoutCascade(Class<T> objectClass, List<URI> uris) throws Exception {
+        SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
+        UpdateRequest query = mapper.getDeleteBuilder(uris);
+        executeDeleteQuery(query.toString());
+    }
+
+    @Deprecated
+    /**
+     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
+     */
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uri);
     }
 
+    @Deprecated
+    /**
+     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
+     */
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, URI uri) throws Exception {
 
         // load object by uri in order to directly check if the object exist or not
@@ -1676,10 +1709,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    @Deprecated
+    /**
+     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
+     */
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uris);
     }
 
+    @Deprecated
+    /**
+     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
+     */
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, List<URI> uris) throws Exception {
         if (uris.size() > 0) {
             try {
@@ -2286,11 +2327,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         connection.enableSHACL();
     }
 
+
     @Override
     public boolean isShaclEnabled() {
         return connection.isShaclEnabled();
     }
 
+    /**
+     * @deprecated
+     */
     @Deprecated
     public RepositoryConnection getRepositoryConnection() {
         RDF4JConnection cnt = (RDF4JConnection) this.connection;
@@ -2568,20 +2613,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 varCount++;
             }
             executeUpdateQuery(copy);
-        }
-    }
-
-    public void deleteAll(Node graph, List<URI> objectList) throws SPARQLException {
-        if (objectList.size() > 0) {
-            UpdateBuilder delete = new UpdateBuilder();
-            int varCount = 0;
-            for (URI objectURI : objectList) {
-                Node objectURINode = SPARQLDeserializers.nodeURI(objectURI);
-                delete.addDelete(graph, objectURINode, "?p" + varCount, "?o" + varCount);
-                delete.addWhere(new WhereBuilder().addGraph(graph, objectURINode, "?p" + varCount, "?o" + varCount));
-                varCount++;
-            }
-            executeUpdateQuery(delete);
         }
     }
 

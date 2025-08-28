@@ -5,58 +5,51 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.io.StringWriter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.ExprAggregator;
-import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
-import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
-import org.apache.jena.vocabulary.*;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.OWL2;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.sparql.utils.SHACL;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
-
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Seq;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.OWL2;
-import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
+import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-
-import org.opensilex.sparql.utils.SHACL;
 
 /**
  * @author vincent
@@ -367,6 +360,10 @@ class SPARQLClassQueryBuilder {
         return uriNode;
     }
 
+    @Deprecated
+    /**
+     * @deprecated the use of executeOnInstanceTriples seems uselessly complex and forces to load the whole object to delete (inefficient)
+     */
     public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         addDeleteBuilder(graph, instance, delete);
@@ -374,6 +371,10 @@ class SPARQLClassQueryBuilder {
         return delete;
     }
 
+    @Deprecated
+    /**
+     * @deprecated the use of executeOnInstanceTriples seems uselessly complex and forces to load the whole object to delete (inefficient)
+     */
     public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
         executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
@@ -386,6 +387,68 @@ class SPARQLClassQueryBuilder {
         }, false);
 
     }
+
+    /**
+     * build one query which delete all triples related to the given urisToDelete, whatever the graph they are stored in.
+     * Values clause is manually added due to a Jena bug which prevent using VALUES clause with UpdateBuilder.
+     * Generated query example :
+     * <pre>
+     * DELETE {
+     *   GRAPH ?g { ?uriToDelete ?p ?o . }
+     *   GRAPH ?g { ?s ?p ?uriToDelete . }
+     * }
+     * WHERE {
+     *   VALUES ?uriToDelete {
+     * <FirstURIToDelete>
+     * <SecondURIToDelete>
+     * }
+     *   { GRAPH ?g { ?uriToDelete ?p ?o . } }
+     *   UNION
+     *   { GRAPH ?g { ?s ?p ?uriToDelete . } }
+     * }
+     * </pre>
+     */
+    public UpdateRequest getDeleteBuilder(List<URI> urisToDelete) throws Exception {
+        UpdateBuilder delete = new UpdateBuilder();
+        if (urisToDelete == null || urisToDelete.isEmpty()) {
+            return delete.buildRequest();
+        }
+
+        Var uriVar = makeVar("uriToDelete");
+        Var subjectVar = makeVar("s");
+        Var predicateVar = makeVar("p");
+        Var objectVar = makeVar("o");
+        Var graphVar = makeVar("g");
+
+        Triple relation = new  Triple(uriVar, predicateVar, objectVar);
+        Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
+
+        delete.addDelete(relation);
+        delete.addDelete(inverseRelation);
+
+        WhereBuilder where = new WhereBuilder();
+        SPARQLQueryHelper.addWhereValues(where, uriVar.getVarName(), urisToDelete);
+        where.addGraph(graphVar, relation);
+        where.addUnion(new WhereBuilder().addGraph(graphVar, inverseRelation));
+
+        delete.addWhere(where);
+
+
+        //manually add VALUES clause due to Jena bug which prevent using VALUES clause
+        String query = delete.buildRequest().toString();
+        List<String> longUrisToDelete = urisToDelete.stream().map(SPARQLDeserializers::getExpandedURI).toList();
+        String valuesClause = "VALUES ?" + uriVar.getVarName() + " { " +
+                longUrisToDelete.stream()
+                        .map(uri -> "<" + uri + ">")
+                        .collect(Collectors.joining(" ")) +
+                " }";
+
+        String queryWithValues = query.replaceFirst("(?s)WHERE\\s*\\{", "WHERE {\n  " + valuesClause + "\n");
+
+
+        return UpdateFactory.create(queryWithValues);
+    }
+
 
     /**
      * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}

@@ -123,7 +123,6 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static final Path FILE_PATH_IMPORT_DATE_DATATYPE_ERROR = Paths.get("data", "importDateDatatypeError.csv");
     private static final Path FILE_PATH_IMPORT_DATETIME_DATATYPE_ERROR = Paths.get("data", "importDatetimeDatatypeError.csv");
     private static final Path FILE_PATH_IMPORT_DATA_ON_FACILITY_DEVICE_COL = Paths.get("data", "importDataFacilityDeviceCol.csv");
-    private static final Path FILE_PATH_IMPORT_DATA_ON_FACILITY_NO_DEVICE_COL = Paths.get("data", "importDataFacility.csv");
 
     // Service parameter names
     private static final String IMPORT_FILE_MULTIPART_PARAMETER_NAME = "file";
@@ -143,14 +142,13 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static URI provenanceImportAnnotation;
 
     private static URI globalProvenanceURI;
-    private static DataProvenanceModel provenanceWithXP,  provenanceWithoutXP, provWithOneDevice;
+    private static DataProvenanceModel provenanceWithXP,  provenanceWithoutXP, provWithOneDevice, provNoDevice;
     private static ScientificObjectModel os, osWithXp;
     private static DeviceModel device;
     private static AccountModel account;
     private static FacilityModel facility;
     private static FacilityModel facilityVarsDevices;
     private static FacilityModel facilityVarsDevicesImport;
-    private static FacilityModel facilityVarsDevicesImport2;
 
     @BeforeClass
     public static void beforeTest() throws Exception {
@@ -197,10 +195,6 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         facilityVarsDevicesImport = new FacilityModel();
         facilityVarsDevicesImport.setName("DataAPITest-facilityVarsAndDevicesImport");
         sparql.create(facilityVarsDevicesImport);
-
-        facilityVarsDevicesImport2 = new FacilityModel();
-        facilityVarsDevicesImport2.setName("DataAPITest-facilityVarsAndDevicesImport2");
-        sparql.create(facilityVarsDevicesImport2);
     }
 
     private static void createVariables(SPARQLService sparql) throws Exception {
@@ -250,9 +244,11 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         provenanceWithoutXP = new DataProvenanceModel();
         provenanceWithoutXP.setUri(globalProvenanceURI);
 
-        //Provenance for facilities hasDevice property tests
+        //Provenances for facilities hasDevice property tests
         provWithOneDevice = new DataProvenanceModel();
         provWithOneDevice.setUri(createOneProvenance("hasDeviceTests"));
+        provNoDevice = new DataProvenanceModel();
+        provNoDevice.setUri(createOneProvenance("noDeviceTests"));
 
         // Provenances for import tests
         provenanceImportInteger = createOneProvenance("Import test : integer");
@@ -323,7 +319,14 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     private FileDataBodyPart getImportFileBodyPart(Path filePath) throws IOException {
-        File file = tmpFolder.newFile("import.csv");
+        return getImportFileBodyPart(filePath, null);
+    }
+
+   private FileDataBodyPart getImportFileBodyPart(Path filePath, String fileNameSuffix) throws IOException {
+        if(fileNameSuffix==null){
+            fileNameSuffix = "";
+        }
+        File file = tmpFolder.newFile("import" + fileNameSuffix + ".csv");
         InputStream sourceFileStream = OpenSilex.getResourceAsStream(filePath.toString());
 
         String fileContent = IOUtils.toString(sourceFileStream, StandardCharsets.UTF_8);
@@ -343,7 +346,11 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     private DataCSVValidationDTO getImportResponseAsDTO(Path fileToImport, URI provenanceUri) throws Exception {
-        FileDataBodyPart bodyPart = getImportFileBodyPart(fileToImport);
+        return getImportResponseAsDTO(fileToImport, provenanceUri, null);
+    }
+
+    private DataCSVValidationDTO getImportResponseAsDTO(Path fileToImport, URI provenanceUri, String fileNameSuffix) throws Exception {
+        FileDataBodyPart bodyPart = getImportFileBodyPart(fileToImport, fileNameSuffix);
         try(MultiPart multiPart = new FormDataMultiPart().bodyPart(bodyPart)){
             final Response postResult = getJsonPostResponseMultipart(
                     target(IMPORT_PATH).queryParam(IMPORT_PROVENANCE_QUERY_PARAMETER_NAME, provenanceUri.toString()),
@@ -762,27 +769,18 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testImportWithFacilitiesAsTargets() throws Exception {
-        //Provenance stuff
-        ProvEntityModel provUsesDevice = new ProvEntityModel();
-        provUsesDevice.setUri(device.getUri());
-        provUsesDevice.setType(device.getType());
-        provWithOneDevice.setProvWasAssociatedWith(Collections.singletonList(provUsesDevice));
 
         //Do an import of data with target facilityVarsDevicesImport, has a device column filled with the device that will go in provenance
-        DataCSVValidationDTO csvValidationDTODeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_DEVICE_COL, provWithOneDevice.getUri());
+        DataCSVValidationDTO csvValidationDTODeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_DEVICE_COL, provNoDevice.getUri());
         assertFalse(csvValidationDTODeviceCol.getDataErrors().hasErrors());
         assertEquals(1, csvValidationDTODeviceCol.getDataErrors().getNbLinesImported().intValue());
 
-        //Verify Facility has variables and devices
+        //Verify Facility has correct number variables and devices
         var getResponse = getJsonGetByUriResponseAsAdmin(target(FacilityApiTest.URI_PATH), facilityVarsDevicesImport.getUri().toString());
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(getResponse.readEntity(JsonNode.class), FacilityApiTest.singleObjectResponseTypeReference);
         assertEquals(1, singleObjectResponse.getResult().getVariables().size());
         assertEquals(1, singleObjectResponse.getResult().getDevices().size());
 
-        //Perform import and verify validation
-        /*DataCSVValidationDTO csvValidationDTONoDeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_NO_DEVICE_COL, provWithOneDevice.getUri());
-        assertFalse(csvValidationDTONoDeviceCol.getDataErrors().hasErrors());
-        assertEquals(1, csvValidationDTONoDeviceCol.getDataErrors().getNbLinesImported().intValue());*/
     }
 
     /**

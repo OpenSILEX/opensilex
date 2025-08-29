@@ -71,7 +71,7 @@ public class GermplasmLogic {
     public List<GermplasmModel> upsert(List<GermplasmModel> germplasmModels) throws Exception {
         Collection<URI> existingUris = checkExistence(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toList()));
+                .toList());
 
         List<GermplasmModel> germplasmModelsToUpdate = new ArrayList<>();
         List<GermplasmModel> germplasmModelsToCreate = new ArrayList<>();
@@ -192,7 +192,7 @@ public class GermplasmLogic {
     }
 
     /**
-     * check the uri format of the germplasm and its type, check also the germplasm has a name
+     * check the uri format of the germplasm, of its type and of the website. Check also the germplasm has a name
      */
     private void globalFormatValidation(
                     List<GermplasmModel> germplasmModels,
@@ -210,6 +210,9 @@ public class GermplasmLogic {
             }
             if (germplasmModel.getLabel() == null || germplasmModel.getName().isBlank()) {
                 errors.addError(germplasmModel, "Germplasm name is mandatory");
+            }
+            if (germplasmModel.getWebsite() != null && !URIDeserializer.validateURI(germplasmModel.getWebsite().toString())) {
+                errors.addError(germplasmModel, "Invalid URI format for website: " + germplasmModel.getWebsite().toString());
             }
         });
     }
@@ -240,7 +243,7 @@ public class GermplasmLogic {
 
         Collection<URI> existingUris = checkExistence(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toList()));
+                .toList());
 
         if (existingUris.isEmpty()) {
             return;

@@ -173,20 +173,36 @@ public class DocumentAPI {
             @ApiParam(value = "Document URI", example = "http://opensilex.dev/set/documents/ZA17", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
-        DocumentModel documentModel = documentDAO.getMetadata(uri, currentUser);
-
-        if (documentModel != null) {
-            DocumentGetDTO dto = DocumentGetDTO.fromModel(documentModel);
-            if (Objects.nonNull(documentModel.getPublisher())) {
-                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(documentModel.getPublisher())));
-            }
-            return new SingleObjectResponse<>(dto).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Document not found",
-                    "Unknown Document URI: " + uri.toString()
-            ).getResponse();
+        switch (documentDAO.checkAccess(uri, currentUser)) {
+            case UNAUTHORIZED:
+                return new ErrorResponse(
+                        Response.Status.UNAUTHORIZED,
+                        "Unauthorized",
+                        "You must be authenticated to access this resource"
+                ).getResponse();
+            case FORBIDDEN:
+                return new ErrorResponse(
+                        Response.Status.FORBIDDEN,
+                        "Forbidden",
+                        "You do not have permission to access this document"
+                ).getResponse();
+            case NOT_FOUND:
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Document not found",
+                        "Unknown Document URI: " + uri
+                ).getResponse();
+            case OK:
+                DocumentModel documentModel = documentDAO.getMetadata(uri, currentUser);
+                DocumentGetDTO dto = DocumentGetDTO.fromModel(documentModel);
+                if (Objects.nonNull(documentModel.getPublisher())) {
+                    dto.setPublisher(UserGetDTO.fromModel(
+                            new AccountDAO(sparql).get(documentModel.getPublisher())
+                    ));
+                }
+                return new SingleObjectResponse<>(dto).getResponse();
+            default:
+                throw new IllegalStateException("Unexpected access state");
         }
     }
 

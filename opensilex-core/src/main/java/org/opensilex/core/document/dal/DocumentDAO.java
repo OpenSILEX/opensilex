@@ -456,4 +456,30 @@ public class DocumentDAO {
                 sparqlResult -> URI.create(sparqlResult.getStringValue(DocumentModel.URI_FIELD))
         ).toList();
     }
+
+    /**
+     * Checks if the given user has access to the specified document URI.
+     * @param uri  the URI of the document to check
+     * @param user the user who is performing the request
+     * @return the {@link AccessStatus} indicating whether the user has access to the document
+     * @throws Exception if an error occurs while querying the database
+     */
+    public AccessStatus checkAccess(URI uri, AccountModel user) throws Exception {
+        if (user == null) {
+            return AccessStatus.UNAUTHORIZED; // Not authenticated
+        }
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
+        if (excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))) {
+            return AccessStatus.FORBIDDEN; // Authenticated but not authorized
+        }
+        boolean exists = sparql.uriExists(DocumentModel.class, uri);
+        if (!exists) {
+            return AccessStatus.NOT_FOUND; // Document that does not exist
+        }
+        return AccessStatus.OK; // Everything is fine
+    }
+
+    public enum AccessStatus {
+        OK, UNAUTHORIZED, FORBIDDEN, NOT_FOUND
+    }
 }

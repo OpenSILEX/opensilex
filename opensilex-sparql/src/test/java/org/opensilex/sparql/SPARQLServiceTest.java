@@ -218,7 +218,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         UriGeneratedTestModel model = new UriGeneratedTestModel();
         model.setString("testCreateWithGeneratedURI");
 
-        sparql.generateUniqueURI(null,model,model,false);
+        sparql.generateUniqueURI(null,model,model);
         URI expectedURI = new URI(model.getUri().toString());
         model.setUri(null);
 
@@ -229,7 +229,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         UriGeneratedTestModel model2 = new UriGeneratedTestModel();
         model2.setString("testCreateWithGeneratedURI2");
-        sparql.generateUniqueURI(null,model2,model,false);
+        sparql.generateUniqueURI(null,model2,model);
         URI expectedURI2 = new URI(model2.getUri().toString());
         model2.setUri(null);
 
@@ -245,7 +245,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         UriGeneratedTestModel model = new UriGeneratedTestModel();
         model.setString("testCreateWithFixedURI");
 
-        sparql.generateUniqueURI(null,model,model,false);
+        sparql.generateUniqueURI(null,model,model);
         URI expectedURI = new URI(model.getUri().toString());
 
         // insert out-going relation and check that generated model URI will be different
@@ -259,7 +259,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         UriGeneratedTestModel model2 = new UriGeneratedTestModel();
         model2.setString("testCreateWithFixedURI2");
-        sparql.generateUniqueURI(null,model2,model,false);
+        sparql.generateUniqueURI(null,model2,model);
         URI expectedURI2 = new URI(model2.getUri().toString());
 
         // insert in-coming relation and check that generated model URI is the same

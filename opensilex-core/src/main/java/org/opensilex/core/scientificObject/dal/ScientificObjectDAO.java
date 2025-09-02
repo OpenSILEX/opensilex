@@ -818,7 +818,7 @@ public class ScientificObjectDAO {
 
                 // generate a globally unique URI
                 // (by taking account of all OS into global graph, which also includes OS from any xp)
-                sparql.generateUniqueURI(defaultGraphNode, object, object, true);
+                sparql.generateUniqueURI(defaultGraphNode, object, object);
             }
 
             // if URI is already set, the service will check that URI is unique inside the provided graph

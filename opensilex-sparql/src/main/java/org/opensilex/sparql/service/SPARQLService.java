@@ -22,8 +22,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.Path;
-import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
@@ -71,7 +69,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -634,18 +631,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }).collect(Collectors.toList());
     }
 
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, null, false, filterHandler, null);
-    }
-
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, excludeRoot, filterHandler, null);
-    }
-
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, excludeRoot, null, null);
-    }
-
     public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Node graph, Class<T> objectClass, String lang,
                                                                                     URI root, boolean excludeRoot,
                                                                                     ThrowingConsumer<SelectBuilder, Exception> filterHandler,
@@ -659,116 +644,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         for (T item : list) {
             tree.addTree(item);
-        }
-
-        return tree;
-    }
-
-    public <T extends SPARQLTreeModel<T>> SPARQLPartialTreeListModel<T> searchPartialResourceTree(Node graph, Class<T> objectClass, String lang, String parentField, Property parentProperty, URI parentURI, int maxChild, int maxDepth, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        if (maxDepth < 0) {
-            return null;
-        }
-
-        final String language;
-        if (lang == null) {
-            language = getDefaultLang();
-        } else {
-            language = lang;
-        }
-
-        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        Var uriVar = makeVar("uri");
-
-        List<T> rootList = search(graph, objectClass, language, (select) -> {
-            if (parentURI == null) {
-                Triple noParentTriple = new Triple(uriVar, parentProperty.asNode(), makeVar(parentField));
-                select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(noParentTriple)));
-            } else {
-                select.addWhere(uriVar, parentProperty, SPARQLDeserializers.nodeURI(parentURI));
-            }
-            if (filterHandler != null) {
-                filterHandler.accept(select);
-            }
-        });
-
-        List<URI> rootURIs = new ArrayList<>(rootList.size());
-        for (T i : rootList) {
-            rootURIs.add(i.getUri());
-        }
-
-        Map<String, List<T>> objectMapByParent = new HashMap<>();
-        SelectBuilder objectListQuery = mapper.getSelectBuilder(graph, language, filterHandler, null);
-
-        if (maxDepth == 2 && parentURI == null) {
-            objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter(parentField, rootURIs));
-        } else {
-            Path propertyPath = PathFactory.pathOneOrMore1(
-                    PathFactory.pathLink(parentProperty.asNode())
-            );
-            if (parentURI == null) {
-                Var rootParentVar = makeVar("__rootParent");
-                objectListQuery.addWhere(uriVar, propertyPath, rootParentVar);
-                objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter("__rootParent", rootURIs));
-            } else {
-                objectListQuery.addWhere(uriVar,
-                        propertyPath,
-                        SPARQLDeserializers.nodeURI(parentURI)
-                );
-            }
-        }
-
-        executeSelectQuery(objectListQuery, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            T instance = mapper.createInstance(graph, result, language, this);
-            String instanceParentURI = SPARQLDeserializers.getExpandedURI(instance.getParent().getUri().toString());
-            if (!objectMapByParent.containsKey(instanceParentURI)) {
-                objectMapByParent.put(instanceParentURI, new ArrayList<>());
-            }
-            objectMapByParent.get(instanceParentURI).add(instance);
-        }, Exception.class));
-
-        Function<URI, List<T>> searchHandler = (parentSearchURI) -> {
-            String expandURI = SPARQLDeserializers.getExpandedURI(parentSearchURI);
-            if (objectMapByParent.containsKey(expandURI)) {
-                return objectMapByParent.get(expandURI);
-            } else {
-                return new ArrayList<>();
-            }
-        };
-
-        SelectBuilder objectCountQuery = mapper.getSelectBuilder(graph, language);
-        Var objectCountUriVar = mapper.getURIFieldVar();
-        objectCountQuery.getVars().clear();
-        objectCountQuery.addVar(objectCountUriVar);
-        Var childVar = makeVar("__child");
-        objectCountQuery.addVar("COUNT(?__child)", "?__childCount");
-        objectCountQuery.addWhere(childVar, parentProperty.asNode(), objectCountUriVar);
-        if (filterHandler != null) {
-            filterHandler.accept(objectCountQuery);
-        }
-        objectCountQuery.addGroupBy(objectCountUriVar);
-
-        Map<String, Integer> countMap = new HashMap<>();
-        executeSelectQuery(objectCountQuery, (result) -> {
-            countMap.put(
-                    result.getStringValue(mapper.getURIFieldName()),
-                    Integer.valueOf(result.getStringValue("__childCount"))
-            );
-        });
-
-        Function<URI, Integer> countHandler = (parentCountURI) -> {
-            String expandURI = SPARQLDeserializers.getExpandedURI(parentCountURI);
-            if (countMap.containsKey(expandURI)) {
-                return countMap.get(expandURI);
-            } else {
-                return 0;
-            }
-        };
-
-        SPARQLPartialTreeListModel<T> tree = new SPARQLPartialTreeListModel<T>(parentURI, searchHandler, countHandler);
-
-        for (T item : rootList) {
-            tree.loadChildren(item, null, maxDepth);
         }
 
         return tree;
@@ -1220,31 +1095,57 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             boolean checkUriExist,
             boolean blankNode) throws Exception {
 
-        URI rdfType = instance.getType();
-        if (rdfType == null) {
-            instance.setType(new URI(mapper.getRDFType().getURI()));
-        } else {
-            instance.setType(rdfType);
+        prepareInstancesCreation(graph, List.of(instance), parent, mapper, subInstanceUpdateBuilder, checkUriExist, blankNode);
+    }
+
+    /**
+     * @param graph                    the graph onto instance are created
+     * @param instances                instances to create
+     * @param mapper                   the SPARQL mapper used in order to generate query according instance fields
+     * @param subInstanceUpdateBuilder an UpdateBuilder which can be updated by adding new statements if not null
+     * @param checkUriExist            indicate if the service must check if instances already exist
+     * @param blankNode                indicate if the instance URI must be a blank node
+     * @param <T>                      the SPARQLResourceModel type
+     */
+    protected <T extends SPARQLResourceModel> void prepareInstancesCreation(
+            Node graph,
+            List<T> instances,
+            SPARQLResourceModel parent,
+            SPARQLClassObjectMapper<T> mapper,
+            UpdateBuilder subInstanceUpdateBuilder,
+            boolean checkUriExist,
+            boolean blankNode) throws Exception{
+
+        for (T instance : instances) {
+            URI rdfType = instance.getType();
+            if (rdfType == null) {
+                instance.setType(new URI(mapper.getRDFType().getURI()));
+            } else {
+                instance.setType(rdfType);
+            }
         }
 
         if (!blankNode) {
-            generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
+            generateUniqueUrisIfNullOrValidateCurrent(graph, mapper, instances, checkUriExist);
         }
 
-        validate(instance, parent);
+        for (T instance : instances) {
+            validate(instance, parent);
 
-        URI subjectGraph = graph != null ? URI.create(graph.toString()) : null;
+            URI subjectGraph = graph != null ? URI.create(graph.toString()) : null;
 
-        Map<URI, List<SPARQLResourceModel>> nestedResources = mapper.getNestedInstancesByGraph(subjectGraph, instance);
-        for(Map.Entry<URI,List<SPARQLResourceModel>> entry : nestedResources.entrySet()){
+            Map<URI, List<SPARQLResourceModel>> nestedResources = mapper.getNestedInstancesByGraph(subjectGraph, instance);
+            for(Map.Entry<URI,List<SPARQLResourceModel>> entry : nestedResources.entrySet()){
 
-            URI subGraph = entry.getKey();
-            Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
+                URI subGraph = entry.getKey();
+                Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
 
-            for (SPARQLResourceModel subInstance :  entry.getValue()) {
-                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
+                for (SPARQLResourceModel subInstance :  entry.getValue()) {
+                    create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
+                }
             }
         }
+
     }
 
     public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {
@@ -1278,6 +1179,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    //@Todo use the list version of prepareInstanceCreation + WARNING : this method is without transaction but may send multiple queries (depending on maxInstancePerQuery value and number of instances)
     public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
@@ -1347,27 +1249,37 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * Generate a unique URI if instance URI is not set.
-     * if checkUriExist is true, then the function re-generate a new URI while the URI is not unique inside graph
      * @param graph graph in which we check if the generated URI exists or not
      * @param instance model for which we generate a new URI
      * @param uriGenerator generation of new URI
-     * @param checkUriExist indicate if we must check the existence of the generated URI
      * @param <T> type of SPARQLResourceModel
      */
-    public <T extends SPARQLResourceModel> void generateUniqueURI(Node graph, T instance, URIGenerator<T> uriGenerator, boolean checkUriExist) throws SPARQLException, URISyntaxException {
-        URI uri = instance.getUri();
-        if (uri == null) {
+    public <T extends SPARQLResourceModel> void generateUniqueURI(Node graph, T instance, URIGenerator<T> uriGenerator) throws SPARQLException, URISyntaxException {
+        generateUniqueURIs(graph, List.of(instance), uriGenerator);
+    }
 
-            int retry = 0;
-            String prefix = getDefaultGenerationURI(instance.getClass()).toString();
-            uri = uriGenerator.generateURI(prefix, instance, retry);
-
-            if (checkUriExist) {
-                while (uriExists(graph, uri)) {
-                    uri = uriGenerator.generateURI(prefix, instance, ++retry);
-                }
+    /**
+     * Generate unique URIs and set it to instances which URI is null, if an instance an instance already has a URI, nothing happen.
+     * Unicity is ensured in database and in the provided list of instances.
+     * @param graph graph in which we check if the generated URI exists or not
+     * @param instances models for which we generate new URIs
+     * @param uriGenerator generation of new URI
+     * @param <T> type of SPARQLResourceModel
+     */
+    public <T extends SPARQLResourceModel> void generateUniqueURIs(Node graph, List<T> instances, URIGenerator<T> uriGenerator) throws SPARQLException, URISyntaxException {
+        List<URI> existingURIs = new ArrayList<>();
+        for(T instance : instances){
+            URI uri = instance.getUri();
+            if(uri == null) {
+                int retry = 0;
+                String prefix = getDefaultGenerationURI(instance.getClass()).toString();
+                do {
+                    uri = uriGenerator.generateURI(prefix, instance, retry);
+                    retry++;
+                } while (existingURIs.contains(uri) || uriExists(graph, uri));
             }
             instance.setUri(uri);
+            existingURIs.add(uri);
         }
     }
 
@@ -1375,12 +1287,33 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URIGenerator<T> uriGenerator = mapper.getUriGenerator(instance);
         URI uri = instance.getUri();
         if (uri == null) {
-            generateUniqueURI(graph,instance,uriGenerator,checkUriExist);
+            generateUniqueURI(graph,instance,uriGenerator);
 
             // only ensure that the URI hasn't some outgoing relation
             // the URI can have some in relations without problem (ex : skos or other in-coming relation)
         } else if (checkUriExist && uriExists(graph, uri,true,false)) {
             throw new SPARQLAlreadyExistingUriException(uri);
+        }
+    }
+
+    /**
+     * Generate unique uris for instances which URI is null, and check that the current URI of instances is not already used in database if checkUriExist is true.
+     * Also check unicity between instances in the provided list.
+     * @param checkUriExist if true, check that the current URI of instances is not already used in database
+     */
+    public  <T extends SPARQLResourceModel> void generateUniqueUrisIfNullOrValidateCurrent(Node graph, SPARQLClassObjectMapper<T> mapper, List<T> instances, boolean checkUriExist) throws Exception {
+        if (instances.isEmpty()) return;
+
+        URIGenerator<T> uriGenerator = mapper.getUriGenerator(instances.get(0));
+        generateUniqueURIs(graph, instances, uriGenerator);
+        if (checkUriExist) {
+                List<URI> instancesUris = instances.stream().map(SPARQLResourceModel::getUri).toList();
+            Set<URI> existingUris = getExistingUris(mapper.getObjectClass(), instancesUris, true);
+            Set<URI> duplicatedUrisInInstanceList = new HashSet<>(instancesUris);
+            existingUris.addAll(duplicatedUrisInInstanceList);
+            if ( ! existingUris.isEmpty()) {
+                throw new SPARQLAlreadyExistingUriListException("Some URIs already exist : ", existingUris);
+            }
         }
     }
 

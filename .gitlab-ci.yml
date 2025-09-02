@@ -727,64 +727,6 @@ test:yvan:deploy:
     - test:yvan:build
 
 ###################################
-##  VALENTIN-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:valentin:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/valentin"
-
-test:valentin:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/valentin"
-    INSTANCE_CONFIGURATION_FILE_NAME: "valentin.opensilex.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4096
-    OPENSILEX_JAR_PORT: 8096
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/valentin"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/valentin"
-      when: on_success
-  needs:
-    - test:valentin:build
-
-###################################
-##  DHRUTHI-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:dhruthi:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
-
-test:dhruthi:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
-    INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4098
-    OPENSILEX_JAR_PORT: 8098
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
-      when: on_success
-  needs:
-    - test:dhruthi:build
-
-###################################
 ##  JONATHAN-TEST-BUILD-DEPLOYMENT-FROM-SIDURI-TEAM
 ###################################
 
@@ -872,35 +814,6 @@ test:sebastien:deploy:
     - test:sebastien:build
 
 ###################################
-##  TEMP2-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:temporary2:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary2"
-
-test:temporary2:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary2"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4100
-    OPENSILEX_JAR_PORT: 8100
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary2"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary2"
-      when: on_success
-  needs:
-    - test:temporary2:build
-
-###################################
 ##  LYDIA-TEST-BUILD-DEPLOYMENT
 ###################################
 
@@ -963,35 +876,6 @@ test:renaud:deploy:
     - test:renaud:build
 
 ###################################
-## TEMPORARY-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:temporary1:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary1"
-
-test:temporary1:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary1"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4092
-    OPENSILEX_JAR_PORT: 8092
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary1"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary1"
-      when: on_success
-  needs:
-    - test:temporary1:build
-
-###################################
 ##  EMILIE-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
@@ -1020,12 +904,38 @@ test:emilie:deploy:
   needs:
     - test:emilie:build
 
-# ##########################################
-# ##  BUILD & DEPLOY FOR PARTNERS TEAMS
-# ##########################################
+###################################
+##  temporary4-TEST-BUILD-DEPLOYMENT
+###################################
+
+test:temporary4:build:
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary4"
+
+test:temporary4:deploy:
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary4"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4098
+        OPENSILEX_JAR_PORT: 8098
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary4"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary4"
+          when: on_success
+    needs:
+        - test:temporary4:build
 
 ###################################
-##  BRICE-TEST-BUILD-DEPLOYMENT
+##  temporary3-TEST-BUILD-DEPLOYMENT
+
 ###################################
 
 test:temporary3:build:
@@ -1034,18 +944,17 @@ test:temporary3:build:
     MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "test/temporary3"
-
 test:temporary3:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/brice"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary3"
+    INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4090
     OPENSILEX_JAR_PORT: 8090
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/brice"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary3"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "test/temporary3"
@@ -1053,34 +962,64 @@ test:temporary3:deploy:
   needs:
     - test:temporary3:build
 
-#######################################
-##  TEMPORARY4-TEST-SNAPSHOT-DEPLOYMENT
-#######################################
+###################################
+##  temporary2-TEST-BUILD-DEPLOYMENT
 
-test:temporary4:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary4"
+###################################
 
-test:temporary4:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary4"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4098
-    OPENSILEX_JAR_PORT: 8098
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary4"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary4"
-      when: on_success
-  needs:
-    - test:temporary4:build
+test:temporary2:build:
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary2"
+
+test:temporary2:deploy:
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary2"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4096
+        OPENSILEX_JAR_PORT: 8096
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary2"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary2"
+          when: on_success
+    needs:
+        - test:temporary2:build
+
+###################################
+## temporary1-TEST-BUILD-DEPLOYMENT
+###################################
+
+test:temporary1:build:
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary1"
+
+test:temporary1:deploy:
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary1"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4092
+        OPENSILEX_JAR_PORT: 8092
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary1"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary1"
+          when: on_success
+    needs:
+        - test:temporary1:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

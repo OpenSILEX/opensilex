@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.vocabulary.XSD;
+import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
@@ -37,6 +38,11 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.FacilityApiTest;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.provenance.api.ActivityCreationDTO;
+import org.opensilex.core.provenance.api.ProvenanceAPITest;
+import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
+import org.opensilex.core.provenance.dal.ActivityModel;
+import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -123,6 +129,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static final Path FILE_PATH_IMPORT_DATE_DATATYPE_ERROR = Paths.get("data", "importDateDatatypeError.csv");
     private static final Path FILE_PATH_IMPORT_DATETIME_DATATYPE_ERROR = Paths.get("data", "importDatetimeDatatypeError.csv");
     private static final Path FILE_PATH_IMPORT_DATA_ON_FACILITY_DEVICE_COL = Paths.get("data", "importDataFacilityDeviceCol.csv");
+    private static final Path FILE_PATH_IMPORT_DATA_ON_FACILITY_NO_DEVICE_COL = Paths.get("data", "importDataFacility.csv");
 
     // Service parameter names
     private static final String IMPORT_FILE_MULTIPART_PARAMETER_NAME = "file";
@@ -145,10 +152,12 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static DataProvenanceModel provenanceWithXP,  provenanceWithoutXP, provWithOneDevice, provNoDevice;
     private static ScientificObjectModel os, osWithXp;
     private static DeviceModel device;
+    private static DeviceModel device2;
     private static AccountModel account;
     private static FacilityModel facility;
     private static FacilityModel facilityVarsDevices;
     private static FacilityModel facilityVarsDevicesImport;
+    private static FacilityModel facilityVarsDevicesImport2;
 
     @BeforeClass
     public static void beforeTest() throws Exception {
@@ -160,6 +169,11 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         ExperimentModel xp =  ExperimentAPITest.getCreationDTO().newModel();
         experimentDAO.create(xp);
         List<URI> experiments = Collections.singletonList(xp.getUri());
+
+        device2 = new DeviceModel();
+        device2.setName("device2DataTests");
+        device2.setType(URI.create(Oeso.SensingDevice.getURI()));
+        sparql.create(device2);
 
         createProvenances(experiments);
         createVariables(sparql);
@@ -195,6 +209,10 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         facilityVarsDevicesImport = new FacilityModel();
         facilityVarsDevicesImport.setName("DataAPITest-facilityVarsAndDevicesImport");
         sparql.create(facilityVarsDevicesImport);
+
+        facilityVarsDevicesImport2 = new FacilityModel();
+        facilityVarsDevicesImport2.setName("DataAPITest-facilityVarsAndDevicesImport2");
+        sparql.create(facilityVarsDevicesImport2);
     }
 
     private static void createVariables(SPARQLService sparql) throws Exception {
@@ -233,6 +251,41 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         return model.getUri();
     }
 
+    /**
+     * Function to create a provenance that has a single device agent, the device is device2
+     */
+    private static URI createOneProvenanceWithAgent(String name) throws Exception {
+        ProvenanceDaoV2 provenanceDaoV2 = new ProvenanceDaoV2(getMongoDBService().getServiceV2());
+
+        //Create provenance DTO
+        ProvenanceCreationDTO provDTO = new ProvenanceCreationDTO();
+        provDTO.setName(name);
+        provDTO.setDescription("comment");
+
+        ActivityCreationDTO activity = new ActivityCreationDTO();
+        activity.setRdfType(ProvenanceAPITest.activityType);
+        ArrayList<ActivityCreationDTO> activities = new ArrayList<>();
+        activities.add(activity);
+        provDTO.setActivity(activities);
+
+        AgentModel agent = new AgentModel();
+        agent.setRdfType(URI.create(Oeso.SensingDevice.getURI()));
+        agent.setUri(device2.getUri());
+
+        Document settings = new Document();
+        settings.put("param", "value");
+        agent.setSettings(settings);
+
+        ArrayList<AgentModel> agents = new ArrayList<>();
+        agents.add(agent);
+        provDTO.setAgents(agents);
+
+        //Convert DTO to model and insert
+        ProvenanceModel model = provDTO.newModel();
+        provenanceDaoV2.create(model);
+        return model.getUri();
+    }
+
     private static void createProvenances(List<URI> experiments) throws Exception {
 
         // Provenance for JSON CRUD tests
@@ -246,7 +299,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
         //Provenances for facilities hasDevice property tests
         provWithOneDevice = new DataProvenanceModel();
-        provWithOneDevice.setUri(createOneProvenance("hasDeviceTests"));
+        provWithOneDevice.setUri(createOneProvenanceWithAgent("hasDeviceTests"));
         provNoDevice = new DataProvenanceModel();
         provNoDevice.setUri(createOneProvenance("noDeviceTests"));
 
@@ -769,8 +822,13 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
      */
     @Test
     public void testImportWithFacilitiesAsTargets() throws Exception {
+        //Provenance stuff
+        ProvEntityModel provUsesDevice = new ProvEntityModel();
+        provUsesDevice.setUri(device2.getUri());
+        provUsesDevice.setType(device2.getType());
+        provWithOneDevice.setProvUsed(Collections.singletonList(provUsesDevice));
 
-        //Do an import of data with target facilityVarsDevicesImport, has a device column filled with the device that will go in provenance
+        //Do an import of data with target facilityVarsDevicesImport, has a device column
         DataCSVValidationDTO csvValidationDTODeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_DEVICE_COL, provNoDevice.getUri());
         assertFalse(csvValidationDTODeviceCol.getDataErrors().hasErrors());
         assertEquals(1, csvValidationDTODeviceCol.getDataErrors().getNbLinesImported().intValue());
@@ -781,6 +839,22 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         assertEquals(1, singleObjectResponse.getResult().getVariables().size());
         assertEquals(1, singleObjectResponse.getResult().getDevices().size());
 
+        //Perform an import with no device column, two targets, one new one facilityVarsDevicesImport2, and the one from last import facilityVarsDevicesImport.
+        DataCSVValidationDTO csvValidationDTONoDeviceCol = getImportResponseAsDTO(FILE_PATH_IMPORT_DATA_ON_FACILITY_NO_DEVICE_COL, provWithOneDevice.getUri(), "2");
+        assertFalse(csvValidationDTONoDeviceCol.getDataErrors().hasErrors());
+        assertEquals(2, csvValidationDTONoDeviceCol.getDataErrors().getNbLinesImported().intValue());
+
+        //Verify both Facilities still have correct number variables and devices
+        var getResponse2 = getJsonGetByUriResponseAsAdmin(target(FacilityApiTest.URI_PATH), facilityVarsDevicesImport2.getUri().toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse2 = mapper.convertValue(getResponse2.readEntity(JsonNode.class), FacilityApiTest.singleObjectResponseTypeReference);
+        assertEquals(1, singleObjectResponse2.getResult().getVariables().size());
+        assertEquals(1, singleObjectResponse2.getResult().getDevices().size());
+
+        //We used same variablme but a new device from provenance so expect 2 devices
+        var getResponse3 = getJsonGetByUriResponseAsAdmin(target(FacilityApiTest.URI_PATH), facilityVarsDevicesImport.getUri().toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse3 = mapper.convertValue(getResponse3.readEntity(JsonNode.class), FacilityApiTest.singleObjectResponseTypeReference);
+        assertEquals(1, singleObjectResponse3.getResult().getVariables().size());
+        assertEquals(2, singleObjectResponse3.getResult().getDevices().size());
     }
 
     /**

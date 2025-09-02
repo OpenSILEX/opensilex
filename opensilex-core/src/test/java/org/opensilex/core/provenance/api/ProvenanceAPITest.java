@@ -49,7 +49,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public String devicePath = "/core/devices";
     private static URI deviceURI;
     private static final URI sensingDeviceType = URI.create(Oeso.SensingDevice.toString());
-    private static final URI activityType = URI.create(Oeso.ImageAnalysis.toString());
+    public static final URI activityType = URI.create(Oeso.ImageAnalysis.toString());
 
     public DeviceCreationDTO getCreationDeviceDTO() {
         DeviceCreationDTO device = new DeviceCreationDTO();

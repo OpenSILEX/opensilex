@@ -21,7 +21,7 @@
         <template v-slot:cell(devices)="{ data }">
           <div class="variables-list">
             <template v-if="data.item.devices && data.item.devices.length">
-              <div v-for="(device, index) in data.item.devices" :key="index">
+              <div v-for="device in data.item.devices" :key="device.uri || device.name">
                 <opensilex-UriLink
                   :uri="device.uri"
                   :value="device.name"

@@ -555,6 +555,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalyzer.getAutoUpdateListFields();
     }
 
+    public List<Field> getIgnorUpdateIfNullFields() {
+        return classAnalyzer.getIgnorUpdateIfNullFields();
+    }
+
     /**
      *
      * @param subjectGraph graph used to store instance (could be null, the default graph or a given graph)
@@ -733,6 +737,13 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return statementCount > 0;
     }
 
+    /**
+     * Check for IgnoreUpdateIfNull sparql annotation in model class. If One field of the new instance has this annotation and is null, then
+     * this method will get the old value of this field and set it to the new instance.
+     * @param oldInstance
+     * @param newInstance
+     * @throws Exception
+     */
     public void updateInstanceFromOldValues(T oldInstance, T newInstance) throws Exception {
         if (newInstance.getType() == null) {
             newInstance.setType(oldInstance.getType());
@@ -792,6 +803,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
             }
         }
+    }
+
+    public Object getFieldValue(T instance, Field field) {
+        return classAnalyzer.getFieldValue(field, instance);
     }
 
     public SPARQLClassAnalyzer getClassAnalyzer() {

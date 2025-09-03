@@ -1402,6 +1402,39 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         update(getDefaultGraph(instance.getClass()), instance);
     }
 
+    /**
+     * load only needed old instances for an update operation.
+     * needed instances are :
+     * - any instancies with autoUpdate fields
+     * - any instancies with a field that is both null and is a IgnoreUpdateIfNull
+     * - any instancies with custom properties
+     */
+    private <T extends SPARQLResourceModel> List<T> loadOnlyOldNeededInstances(List<T> instances, SPARQLClassObjectMapper<T> mapper) throws Exception {
+
+        List<Field> autoupdateFields = mapper.getAutoUpdateFields();
+        if ( ! autoupdateFields.isEmpty()){ // we have some autoupdate fields, so we load old instances
+            return loadListByURIs(mapper.getObjectClass(), instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toCollection(ArrayList::new)), getDefaultLang());
+        }
+
+
+        HashSet<URI> neededInstances = new HashSet<>();
+        List<Field> ignorUpdateIfNullFields = mapper.getIgnorUpdateIfNullFields();
+        for (T instance : instances) {
+            for (Field field : ignorUpdateIfNullFields) {
+                Object fieldValue = mapper.getFieldValue(instance, field);
+                if (fieldValue == null) {
+                    neededInstances.add(instance.getUri());
+                    break;
+                }
+            }
+
+            if (mapper.getClassAnalyzer().isHandleCustomProperties()) {
+                neededInstances.add(instance.getUri());
+            }
+        }
+
+        return loadListByURIs(mapper.getObjectClass(), neededInstances, getDefaultLang());
+    }
 
     private <T extends SPARQLResourceModel> void updateAutoUpdateFields(SPARQLClassObjectMapper<T> mapper, T oldInstance, T instance) throws Exception {
 
@@ -1540,7 +1573,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    private  <T extends SPARQLResourceModel> void updateFieldsAndCreateInstance(Node graph, T instance, T oldInstance) throws Exception {
+    private  <T extends SPARQLResourceModel> void updateFields(Node graph, T instance, T oldInstance) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
 
         @SuppressWarnings("unchecked")
@@ -1551,14 +1584,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
             mapper.updateInstanceFromOldValues(oldInstance, instance);
-
             // update dependants fields
             updateAutoUpdateFields(mapper, oldInstance, instance);
-
-            deleteCustomRelations(graph,mapper,instance);
-
-            create(graph, instance, false, false);
-
     }
 
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
@@ -1584,13 +1611,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             validate(instances, null);
 
-            List<T> oldInstances = loadListByURIs(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList(), getDefaultLang());
+            List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper);
 
             deleteWithoutCascade(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList());
 
-            for (T instance : instances) {
-                T oldInstance = oldInstances.stream()
-                        .filter(old -> SPARQLDeserializers.compareURIs(old.getUri(), instance.getUri()))
+            for (T oldInstance : oldInstances) {
+                T instance = instances.stream()
+                        .filter(old -> SPARQLDeserializers.compareURIs(old.getUri(), oldInstance.getUri()))
                         .findFirst()
                         .orElse(null);
 
@@ -1598,8 +1625,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 if (graph == null) {
                     instanceGraph = getDefaultGraph(instance.getClass());
                 }
-                updateFieldsAndCreateInstance(instanceGraph, instance, oldInstance);
+                updateFields(instanceGraph, instance, oldInstance);
             }
+            create(instances);
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);
@@ -1607,14 +1635,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    public <T extends SPARQLResourceModel> void deleteIfExists(Class<T> objectClass, URI uri) throws Exception {
-        try {
-            delete(objectClass, uri);
-        } catch (Exception ex) {
-
-        }
-    }
-
+    /**
+     * WARNING : this deletes method does not use the deleteCascade Sparql annotation.
+     * Usefull for updates, dangerous for simple delete.
+     */
     private  <T extends SPARQLResourceModel> void deleteWithoutCascade(Class<T> objectClass, List<URI> uris) throws Exception {
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
         UpdateRequest query = mapper.getDeleteBuilder(uris);

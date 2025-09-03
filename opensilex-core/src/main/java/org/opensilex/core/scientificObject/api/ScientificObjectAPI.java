@@ -35,6 +35,7 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -637,17 +638,7 @@ public class ScientificObjectAPI {
             }
             checkFactorLevelsBelongsToExperiment(descriptionDto, experiment);
 
-            if (descriptionDto.getGeometry() != null) {
-                GeospatialModel geospatialModel = new GeospatialModel();
-                geospatialModel.setUri(soURI);
-                geospatialModel.setName(descriptionDto.getName());
-                geospatialModel.setRdfType(soType);
-                geospatialModel.setGraph(contextURI);
-                geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
-                geoDAO.update(geospatialModel, soURI, contextURI);
-            } else {
-                geoDAO.delete(soURI, contextURI);
-            }
+            dao.updateGeoSpatialModel(descriptionDto.getGeometry(), descriptionDto.getName(), soURI, soType, contextURI, geoDAO);
 
             sparql.commitTransaction();
             nosql.commitTransaction();
@@ -836,7 +827,7 @@ public class ScientificObjectAPI {
             nosql.startTransaction();
 
             CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                    new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                     descriptionDto.getValidationToken()
             );
 
@@ -974,7 +965,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()
         );
 

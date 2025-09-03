@@ -31,7 +31,6 @@ import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -119,6 +118,10 @@ public class FacilityDAO {
         return instance;
     }
 
+    public void updateMany(List<FacilityModel> facilities) throws Exception {
+        sparql.update(facilities);
+    }
+
     public boolean exists(URI facilityUri) throws SPARQLException {
         return sparql.uriExists(FacilityModel.class, facilityUri);
     }
@@ -159,6 +162,7 @@ public class FacilityDAO {
 
         return sparql.executeAskQuery(ask);
     }
+
     //endregion
 
     //#region private

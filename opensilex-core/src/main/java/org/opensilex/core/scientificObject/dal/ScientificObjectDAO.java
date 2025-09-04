@@ -889,7 +889,16 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(
+            URI contextURI,
+            URI soType,
+            URI objectURI,
+            String name,
+            List<RDFObjectRelationDTO> relations,
+            UserGetDTO publisher,
+            OffsetDateTime publicationDate,
+            AccountModel currentUser
+    ) throws Exception {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
@@ -1016,14 +1025,6 @@ public class ScientificObjectDAO {
         object.setName(name);
         // Add XP in SO while creating an obj of SO model
         object.setExperiment(xp);
-        /*if (relations != null) {
-            for (RDFObjectRelationDTO relation : relations) {
-                URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
-                if (!ontologyDAO.validateObjectValue(contextURI, model, propertyShortURI, relation.getValue(), object)) {
-                    throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
-                }
-            }
-        }*/
         if(relations != null){
             RDFObjectDTO.validatePropertiesAndAddToObject(contextURI, model, object, relations, ontologyDAO);
         }

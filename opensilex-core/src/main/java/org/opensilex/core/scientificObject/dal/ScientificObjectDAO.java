@@ -1310,6 +1310,8 @@ public class ScientificObjectDAO {
         try{
             // use serializer in order to ensure that name is well serialized as a String
             SPARQLDeserializer<String> stringDeserializer = SPARQLDeserializers.getForClass(String.class);
+            SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+            SPARQLDeserializer<OffsetDateTime> dateDeserializer = SPARQLDeserializers.getForClass(OffsetDateTime.class);
 
             models.forEach(object -> {
                 Node uriNode = SPARQLDeserializers.nodeURI(object.getUri());
@@ -1320,13 +1322,13 @@ public class ScientificObjectDAO {
                             .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
 
                     if (Objects.nonNull(object.getPublisher())) {
-                        update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, uriDeserializer.getNode(object.getPublisher()));
                     }
                     if (Objects.nonNull(object.getPublicationDate())) {
-                        update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, dateDeserializer.getNode(object.getPublicationDate()));
                     }
                     if (Objects.nonNull(object.getLastUpdateDate())) {
-                        update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
+                        update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, dateDeserializer.getNode(object.getLastUpdateDate()));
                     }
 
                     sparql.executeUpdateQuery(update);

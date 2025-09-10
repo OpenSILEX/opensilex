@@ -76,29 +76,51 @@ function refresh() {
   key.value++;
 }
 
-function create(variable: VariableCreationDTO) {
-  return service?.createVariable(variable)
-    .then((http) => {
-      const message = t('VariableForm.variable') + ' ' + variable.name + ' ' + t('component.common.success.creation-success-message');
-      $opensilex?.showSuccessToast(message);
-      variable.uri = http.response.result.toString();
-      emit('onCreate', variable);
-      return variable;
-    })
-    .catch((error) => {
-      if (error.status === 409) {
-        $opensilex?.errorHandler(error, `Variable ${variable.uri} : ${t('VariableForm.already-exist')}`);
-      } else {
-        $opensilex?.errorHandler(error, error.response?.result?.message);
-      }
-      return false;
-    });
+async function create(variable: VariableCreationDTO) {
+  try {
+    console.log('[VariableCreate] payload envoyé à createVariable:', JSON.parse(JSON.stringify(variable)))
+
+    if (!service) {
+      throw new Error('VariablesService indisponible (service == undefined)')
+    }
+
+    const http = await service.createVariable(variable)
+    console.log('[VariableCreate] réponse createVariable:', http)
+
+    const createdUri = (http as any)?.response?.result?.toString?.() ?? (http as any)?.response?.result
+    if (!createdUri) {
+      throw new Error('Réponse sans URI créée (response.result manquant)')
+    }
+
+
+    try {
+      const check = await service.getVariable(createdUri)
+      console.log('[VariableCreate] vérification getVariable:', check)
+    } catch (e) {
+      console.warn('[VariableCreate] getVariable a raté  ', e)
+    }
+
+    // on met à jour l’URI + message succès
+    variable.uri = createdUri
+    const message = t('component.variable.name') + ' ' + variable.name + ' ' + t('component.common.success.creation-success-message')
+    $opensilex?.showSuccessToast(message)
+
+    emit('onCreate', variable)
+    return variable
+  } 
+catch (error: any) {
+  if (error?.status === 409) {
+    $opensilex?.errorHandler(error, `Variable ${variable.uri} : ${t('VariableForm.already-exist')}`)
+  } else {
+    $opensilex?.errorHandler(error)
+  }
+  return false
 }
 
 function update(variable: VariableUpdateDTO) {
   return service?.updateVariable(variable)
     .then(() => {
-      const message = t('VariableForm.variable') + ' ' + variable.name + ' ' + t('component.common.success.update-success-message');
+      const message = t('component.variable.name') + ' ' + variable.name + ' ' + t('component.common.success.update-success-message');
       $opensilex?.showSuccessToast(message);
       emit('onUpdate', variable);
       return variable;

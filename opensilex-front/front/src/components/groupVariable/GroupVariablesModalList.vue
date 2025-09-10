@@ -46,9 +46,10 @@
 <script setup lang="ts">
 import { ref, defineExpose, nextTick } from 'vue';
 
-defineProps<{
-  maximumSelectedRows?: number;
-}>();
+const emit = defineEmits<{
+  (e: 'onValidate', value: any): void
+  (e: 'onValidateEmpty'): void
+}>()
 
 const isVisible = ref(false);
 const loadList = ref(false);
@@ -63,13 +64,27 @@ function show() {
 }
 
 function hide(validate: boolean) {
-  isVisible.value = false;
-  if (validate && groupVariableSelection.value?.getSelected) {
-    emit('onValidate', groupVariableSelection.value.getSelected());
+  if (!validate) {
+    // Cas bouton "Fermer" -> fermer directement
+    isVisible.value = false;
+    return;
   }
+  // Cas bouton "Valider" -> passe par validateAndSubmit
+  validateAndSubmit();
 }
 
-// Appelés depuis l'extérieur
+function validateAndSubmit() {
+  const selected = groupVariableSelection.value?.getSelected?.() ?? [];
+  if (!selected.length) {
+    // Pas de sélection -> ne pas fermer, juste prévenir le parent
+    emit('onValidateEmpty');
+    return;
+  }
+  emit('onValidate', selected);
+  isVisible.value = false;
+}
+
+// Appelés depuis l’extérieur
 function selectItem(row: any) {
   groupVariableSelection.value?.onItemSelected(row);
 }
@@ -86,6 +101,7 @@ defineExpose({
   unSelect,
 });
 </script>
+
 
 <style scoped>
 .modal-xl {

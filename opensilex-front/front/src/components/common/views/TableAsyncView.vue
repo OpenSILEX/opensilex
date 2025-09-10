@@ -22,7 +22,7 @@
 
       <!-- Header si non sélectionnable -->
       <div v-if="!isSelectable && tableRef" class="d-flex justify-content-end">
-        <!-- <opensilex-NbêtreElementPerPageSelector @change="onNbElementPerPageChange" /> -->
+        <!-- <opensilex-NbElementPerPageSelector @change="onNbElementPerPageChange" /> -->
       </div>
 
       <!-- Export slot -->

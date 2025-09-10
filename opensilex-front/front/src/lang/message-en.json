@@ -52,6 +52,7 @@
             "type": "Type",
             "select-lang": "Choose a language",
             "select-date": "Choose a date",
+            "select": "Select",
             "next": "Next",
             "previous": "Previous",
             "colon": ":",
@@ -410,7 +411,8 @@
             "groupVariable" : {
                 "groupVariable": "Group of variables",
                 "groupVariableAssociated": "Group of associated variables",
-                "add-groupVariable": "Add a group of variables"              
+                "add-groupVariable": "Add a group of variables",
+                "edit": "Edit a group of variables"            
             },
             "timeInterval" : {
                 "time-interval":"Time interval",
@@ -430,7 +432,8 @@
             "altName": "Alternative name",
             "title": "Variables",
             "type": "Variable",
-            "description" : "Manage and configure variables, entities, characteristics, methods and units",    
+            "description" : "Manage and configure variables, entities, characteristics, methods and units",   
+            "placeholder-multiple": "Select one or more variables", 
             "linked-object-error" : "{uri} can't be deleted : used by variables {variable}",
             "add": "Add variable",
             "edit": "Edit variable",
@@ -521,6 +524,8 @@
             "user-profiles": "Users and profiles",
             "group-added": "The group has been created",
             "group-updated": "The group has been updated",
+            "group-deleted": "The group has been deleted",
+            "no-group-selected": "Please select one or more groups",
             "errors": {
                 "group-already-exists": "Group already exists with this URI or this name"
             }

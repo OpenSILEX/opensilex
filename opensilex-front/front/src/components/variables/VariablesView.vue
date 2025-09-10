@@ -58,12 +58,19 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
     />
 
-<opensilex-ExternalReferencesModalForm
-  ref="skosReferences"
-  v-model:references="selected"
-  :includeAgroportalSearch="true"
-  @onUpdate="updateReferences"
-/>
+    <opensilex-ExternalReferencesModalForm
+      ref="skosReferences"
+      v-model:references="selected"
+      :includeAgroportalSearch="true"
+      @onUpdate="updateReferences"
+    />
+
+    <!-- Modale de création/édition d’un groupe de variables -->
+    <opensilex-VariableGroupCreate
+    ref="variableGroupCreate"
+    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+
+    />
 
 
     <!-- Modale d'aide -->
@@ -88,6 +95,8 @@ import { VariablesService, DataService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { useStore } from "vuex";
 import VariableCreate from './form/VariableCreate.vue';
+import VariableGroupCreate from './form/VariableGroupCreate.vue';
+
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const variablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
@@ -123,12 +132,14 @@ const tabComponents = Object.fromEntries(
 // ajout de toutes les refs, y compris celle pour VariableCreate
 const formRefs = {
   variableCreate: ref(null),
+  variableGroupCreate: ref(null),
   ...Object.fromEntries(
     tabDefinitions.map(tab => [tab.refKey, ref()])
   )
 };
 
 const variableCreate = formRefs.variableCreate; // pour lier dans le template
+const variableGroupCreate = formRefs.variableGroupCreate;
 
 const currentTabComponent = computed(() => tabComponents[currentTab.value]);
 
@@ -181,7 +192,7 @@ const tabRefMap = {
   characteristics: formRefs.characteristicForm,
   methods: formRefs.methodForm,
   units: formRefs.unitForm,
-  groups: formRefs.groupVariablesForm
+  groups: formRefs.variableGroupCreate
 };
 
 const tabToElementType = {
@@ -232,6 +243,7 @@ async function onEditVariable(uri: string) {
     currentEditRequest = null;
   }
 }
+
 const selected = ref(null);
 const skosReferences = ref(null); // accès à la modale
 

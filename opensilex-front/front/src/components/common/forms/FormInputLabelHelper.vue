@@ -9,7 +9,7 @@
         tabindex="0"
         role="button"
         :data-bs-toggle="'tooltip'"
-        :data-bs-placement="'top'"
+        :data-bs-placement="'auto'"
         :title="t(helpMessage)"
         ref="tooltipIcon"
       />

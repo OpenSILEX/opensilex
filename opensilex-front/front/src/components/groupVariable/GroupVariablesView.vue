@@ -90,8 +90,8 @@
       v-if="showForm"
       ref="groupFormRef"
       component="GroupVariablesForm"
-      createTitle="GroupVariablesForm.add"
-      editTitle="GroupVariablesForm.edit"
+      :createTitle="'component.variable.groupVariable.add-groupVariable'"
+      :editTitle="'component.variable.groupVariable.edit'"
       :editData="editData"
       @onSuccess="onFormSuccess"
       @onClose="closeForm"
@@ -200,6 +200,9 @@ function onDeleteGroup(group: any) {
   if (selected.value?.uri === group.uri) {
     selected.value = null;
   }
+  opensilex.showSuccessToast(
+    t("component.group.group-deleted")
+  );
 }
 
 // Formulaire crea

@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import FormSelector from '../../common/forms/FormSelector.vue'
 import type { EntityGetDTO } from 'opensilex-core/index'
 import type OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
@@ -42,18 +42,21 @@ const props = defineProps<{
 
 // Emits
 const emit = defineEmits<{
+  (e: 'update:selected', value: any): void
   (e: 'select', value: any): void
   (e: 'deselect', value: any): void
   (e: 'clear'): void
   (e: 'handlingEnterKey'): void
 }>()
 
-const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
-const entityURI = ref(props.selected)
+const $opensilex = inject<OpenSilexVuePlugin>('opensilex')!
+
+const entityURI = computed({
+  get: () => props.selected,
+  set: (v) => emit('update:selected', v)
+})
 
 const formSelector = ref<InstanceType<typeof FormSelector>>()
-
-const pageSize = 10
 
 watch(() => props.sharedResourceInstance, () => {
   formSelector.value?.refresh()
@@ -66,29 +69,25 @@ const placeholder = computed(() =>
 )
 
 const loadEntities = (entities: string[]): Promise<EntityGetDTO[]> => {
-  return $opensilex!.getService<VariablesService>('opensilex.VariablesService')
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
     .getEntitiesByURIs(entities, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<EntityGetDTO[]>>) => http.response.result)
-    .catch($opensilex!.errorHandler)
+    .catch($opensilex.errorHandler)
 }
 
-const searchEntities = (name: string, page: number, pageSize: number): Promise<HttpResponse<OpenSilexResponse<EntityGetDTO[]>>> => {
-  return $opensilex!.getService<VariablesService>('opensilex.VariablesService')
+const searchEntities = (
+  name: string,
+  page: number,
+  pageSize: number
+): Promise<HttpResponse<OpenSilexResponse<EntityGetDTO[]>>> => {
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
     .searchEntities(name, ['name=asc'], page, pageSize, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<EntityGetDTO[]>>) => http)
 }
 
-const select = (value: any) => {
-  emit('select', value)
-}
-
-const deselect = (value: any) => {
-  emit('deselect', value)
-}
-
-const onEnter = () => {
-  emit('handlingEnterKey')
-}
+const select = (value: any) => emit('select', value)
+const deselect = (value: any) => emit('deselect', value)
+const onEnter = () => emit('handlingEnterKey')
 </script>
 
 <style scoped lang="scss">

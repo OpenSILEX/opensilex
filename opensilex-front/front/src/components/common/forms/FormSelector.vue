@@ -1,92 +1,91 @@
 <template>
   <opensilex-FormField
-    :rules="rules"
     :required="required"
     :requiredBlue="requiredBlue"
     :label="label"
     :helpMessage="helpMessage"
   >
-    <template #field="{ id, validator }">
-      <!-- Hidden input for form validation -->
-      <input :id="id" type="hidden" :value="selectedProxy" />
-
-      <div class="select-button-container input-group">
-        <opensilex-CustomTreeselect
-          ref="customTreeselect"
-          v-bind="$attrs"
-          v-model:selected="selectedProxy"
-          :searchMethod="searchMethod"
-          :resultLimit="resultLimit"
-          :multiple="multiple"
-          :checkable="checkable"
-          :placeholder="placeholder"
-          :disabled="disabled"
-          :optionsLoadingMethod="optionsLoadingMethod"
-          :options="options"
-          :viewHandler="viewHandler"
-          :itemLoadingMethod="itemLoadingMethod"
-          :conversionMethod="conversionMethod"
-          :defaultSelectedValue="defaultSelectedValue"
-          :showCount="showCount"
-          :actionHandler="actionHandler"
-          :disableBranchNodes="disableBranchNodes"
-          @close="() => close(validator)"
-          @totalCount="updateTotalCount"
-          @resultCount="updateResultCount"
-          @select="emitSelect"
-          @deselect="emitDeselect"
-          class="flex-fill"
-        >
-          <!-- Bouton "afficher plus" rendu après la liste -->
-          <template #after-list>
-                <n-button
-                    v-if="resultCount < totalCount && !showAllResults"
-                    text
-                    size="small"
-                    class="refineSearchMessage"
-                    @mousedown.prevent.stop 
-                    @click="loadMoreItems"
-                >
-                    {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
-                </n-button>
+    <template #field="{ id }">
+      <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
+      <n-form-item :path="path" :show-label="false">
+        <div class="select-button-container input-group">
+          <opensilex-CustomTreeselect
+            ref="customTreeselect"
+            v-bind="$attrs"
+            v-model:selected="selectedProxy"
+            :searchMethod="searchMethod"
+            :resultLimit="resultLimit"
+            :multiple="multiple"
+            :checkable="checkable"
+            :placeholder="placeholder"
+            :disabled="disabled"
+            :optionsLoadingMethod="optionsLoadingMethod"
+            :options="options"
+            :viewHandler="viewHandler"
+            :itemLoadingMethod="itemLoadingMethod"
+            :conversionMethod="conversionMethod"
+            :defaultSelectedValue="defaultSelectedValue"
+            :showCount="showCount"
+            :actionHandler="actionHandler"
+            :disableBranchNodes="disableBranchNodes"
+            class="flex-fill"
+            @totalCount="updateTotalCount"
+            @resultCount="updateResultCount"
+            @close="onBlur"                   
+            @select="(v) => emit('select', v)"
+            @deselect="(v) => emit('deselect', v)"
+          >
+            <template #after-list>
+              <n-button
+                v-if="resultCount < totalCount && !showAllResults"
+                text
+                size="small"
+                class="refineSearchMessage"
+                @mousedown.prevent.stop
+                @click="loadMoreItems"
+              >
+                {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
+              </n-button>
             </template>
-        </opensilex-CustomTreeselect>
+          </opensilex-CustomTreeselect>
 
-        <!-- Detail View -->
-        <div v-if="!actionHandler && viewHandler" class="input-group-append">
-          <opensilex-DetailButton
-            @click="viewHandler"
-            :label="viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails'"
-            :small="true"
-            class="greenThemeColor"
-          />
+          <!-- Boutons annexes -->
+          <div v-if="!actionHandler && viewHandler" class="input-group-append">
+            <opensilex-DetailButton
+              @click="viewHandler"
+              :label="viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails'"
+              :small="true"
+              class="greenThemeColor"
+            />
+          </div>
+          <div v-else-if="actionHandler" class="input-group-append">
+            <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
+            <opensilex-DetailButton
+              v-if="viewHandler"
+              @click="viewHandler"
+              :label="viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails'"
+              :small="true"
+            />
+          </div>
         </div>
-
-        <!-- Create Entity And Show Details -->
-        <div v-else-if="actionHandler" class="input-group-append">
-          <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
-          <opensilex-DetailButton
-            v-if="viewHandler"
-            @click="viewHandler"
-            :label="viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails'"
-            :small="true"
-          />
-        </div>
-      </div>
+      </n-form-item>
     </template>
   </opensilex-FormField>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { NButton, NFormItem } from 'naive-ui'
 import CustomTreeselect from './CustomTreeselect.vue'
-import { NButton } from 'naive-ui'
+
+// API interne Naive UI pour accéder au NForm parent
+import { formInjectionKey } from 'naive-ui/es/form/src/context'
 
 const { t } = useI18n()
 
-// Props
 const props = defineProps<{
+  path: string
   selected: string | string[] | undefined
   searchMethod?: Function
   multiple?: boolean
@@ -103,7 +102,6 @@ const props = defineProps<{
   required?: boolean
   requiredBlue?: boolean
   disabled?: boolean
-  rules?: string | Function
   actionHandler?: Function
   viewHandler?: Function
   viewHandlerDetailsVisible?: boolean
@@ -111,67 +109,75 @@ const props = defineProps<{
   disableBranchNodes?: boolean
 }>()
 
-// Emits
 const emit = defineEmits<{
   (e: 'update:selected', value: string | string[] | undefined): void
   (e: 'select', value: any): void
   (e: 'deselect', value: any): void
 }>()
 
-// Proxy v-model:selected (lecture/écriture)
+// v-model proxy
 const selectedProxy = computed({
   get: () => props.selected,
   set: (v) => emit('update:selected', v)
 })
 
-// Local state
+// Récupère le NForm parent pour valider explicitement le champ
+const nForm = inject(formInjectionKey, null)
+
+// Valide le champ après propagation du v-model dans le `form`
+watch(
+  () => selectedProxy.value,
+  async () => {
+    await nextTick()
+    // force la validation de ce field (règles & messages du NForm parent)
+    nForm?.validateField?.(props.path)
+  }
+)
+
+// Valide aussi au blur (si on veut trigger cet evenement)
+function onBlur () {
+  nextTick(() => {
+    nForm?.validateField?.(props.path)
+  })
+}
+
 const showAllResults = ref(false)
 const totalCount = ref(0)
 const resultCount = ref(0)
 const resultLimit = ref(10)
 
-// Refs
 const customTreeselect = ref<InstanceType<typeof CustomTreeselect> | null>(null)
-
-// Methods
 const refresh = () => customTreeselect.value?.refresh()
 const openTreeselect = () => customTreeselect.value?.openTreeselect()
 
-const loadMoreItems = () => {
+function loadMoreItems () {
   resultLimit.value = 0
   showAllResults.value = true
-  customTreeselect.value.refresh(resultLimit.value)   // ← passe le nouveau limit à CustomTreeselect
+  customTreeselect.value?.refresh(resultLimit.value)
   nextTick(() => openTreeselect())
 }
 
-
-
-const close = (validator: any) => {
-  if (validator) nextTick(() => validator.validate())
-}
-
-const emitSelect = (value: any) => emit('select', value)
-const emitDeselect = (value: any) => emit('deselect', value)
-
-const updateTotalCount = (newTotal: number) => (totalCount.value = newTotal)
-const updateResultCount = (newResult: number) => (resultCount.value = newResult)
+function updateTotalCount (n: number) { totalCount.value = n }
+function updateResultCount (n: number) { resultCount.value = n }
 
 onMounted(() => {
   console.log('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
 })
 </script>
 
+
+
 <style scoped lang="scss">
 .select-button-container {
-  margin-bottom: 0;
+   margin-bottom: 0; width: 100%; 
 }
 
-.input-group-append > button {
-  height: 100%;
+.input-group-append > button { 
+  height: 100%; 
 }
 
-.greenThemeColor {
-  color: #fff;
+.greenThemeColor { 
+  color: #fff; 
 }
 
 .refineSearchMessage {
@@ -179,17 +185,16 @@ onMounted(() => {
   background-color: #00A28C;
   color: #FFFFFF;
   cursor: pointer;
-  white-space: normal; /* retour à la ligne pour ne pas couper le message */
+  white-space: normal;
 }
 
-.select-button-container {
-    margin-bottom: 0; /* toujours necessaire ?*/
-    width: 100%; 
+.flex-fill { 
+  flex: 1 1 auto; 
+  min-width: 0; 
 }
 
- /* s’assure que le group lui-même prend toute la ligne */
-.flex-fill { flex: 1 1 auto; min-width: 0; }   /* classe officielle bootstrap qui fait prendre toute la place disponible dans la ligne à un element dans un conteneur display:flex */
-
+/* assure que le sélecteur occupe toute la largeur */
+:deep(.n-base-selection) { width: 100%; }
 </style>
 
 <i18n>

@@ -1,20 +1,150 @@
 <template>
-  <div>
-    <h5>GroupVariablesForm </h5>
-  </div>
+  <n-form
+    ref="formRef"
+    :model="form"
+    :rules="rules"
+    label-placement="top"
+    :show-require-mark="true"
+  >
+    <!-- URI -->
+    <opensilex-UriForm
+      v-model:uri="form.uri"
+      :generated="localUriGenerated"
+      @update:generated="val => (localUriGenerated = val)"
+      :editMode="editMode"
+      :helpMessage="$t('component.common.uri-help-message')"
+      label="component.group.group-uri"
+    />
+
+    <!-- Name -->
+    <n-form-item :label="$t('component.common.name')" path="name">
+      <opensilex-InputForm
+        v-model:value="form.name"
+        type="text"
+        :required="true"
+        :placeholder="$t('component.group.form-name-placeholder')"
+      />
+    </n-form-item>
+
+    <!-- Description -->
+    <opensilex-TextAreaForm
+      v-model:value="form.description"
+      label="component.common.description"
+      :placeholder="$t('component.group.form-description-placeholder')"
+      @keydown.enter.stop
+    />
+
+    <br/>
+    <!-- Variables -->
+    <opensilex-VariableSelectorWithFilter
+      ref="variablesSelectorRef"
+      v-model:variables="form.variables"
+      :variables-with-labels="variablesWithLabels"
+      :editMode="editMode"
+      :label="$t('component.variable.title')"
+      :placeholder="$t('component.variable.placeholder-multiple')"
+      @hideSelector="$emit('hideSelector')"
+      @shownSelector="$emit('shownSelector')"
+    />
+  </n-form>
 </template>
 
-<script setup lang="ts"> 
-import { useStore } from 'vuex';
-import { useI18n } from 'vue-i18n';
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { FormInst } from 'naive-ui'
+import { NForm, NFormItem } from 'naive-ui'
 
+import { requiredTrimmed } from  "../../models/FormFieldsFormatter"
+
+// ---- Props / Emits ----
 const props = defineProps<{
-}>();
+  editMode?: boolean
+  uriGenerated?: boolean
+  form: {
+    uri?: string | null
+    name?: string | null
+    description?: string | null
+    variables: string[]
+  }
+}>()
 
-const store = useStore();
-const { t } = useI18n();
+const emit = defineEmits<{
+  (e: 'hideSelector'): void
+  (e: 'shownSelector'): void
+}>()
 
+const { t } = useI18n()
+
+// ---- Form / Refs ----
+const formRef = ref<FormInst | null>(null)
+const variablesSelectorRef = ref<any>()
+const localUriGenerated = ref(props.uriGenerated ?? true)
+
+// Liste de labels passée au sélecteur
+const variablesWithLabels = ref<Array<{ uri: string; name?: string }>>([])
+
+// ---- Règles Naive UI ----
+const rules = computed(() => ({
+  name: requiredTrimmed('component.common.name')
+  // autres règles si nécessaire, ex :
+  // variables: { type: 'array', required: true, message: t('...'), trigger: 'change' }
+}))
+
+// ---- API attendue par ModalForm.vue ----
+// - getEmptyForm() : utilisé par showCreateForm()
+// - reset() : si on veut remettre à zéro l'état du form
+function getEmptyForm () {
+  return {
+    uri: null,
+    name: null,
+    description: null,
+    variables: [] as string[]
+  }
+}
+
+function reset () {
+  // Remettre à zéro le sélecteur si nécessaire
+  variablesWithLabels.value = []
+  // Si le composant enfant expose une API de reset :
+  variablesSelectorRef.value?.setVariableSelectorToFirstTimeOpen?.()
+}
+
+// Compat utilitaire : positionner “à la première ouverture” + labels sélectionnés
+function setSelectorsToFirstTimeOpenAndSetLabels (list: Array<{ uri: string; name?: string }>) {
+  variablesSelectorRef.value?.setVariableSelectorToFirstTimeOpen?.()
+  variablesWithLabels.value = list ?? []
+}
+
+// Optionnel : méthode de validation utilisée en amont si besoin
+async function validate () {
+  try {
+    await formRef.value?.validate()
+    return true
+  } catch {
+    return false
+  }
+}
+
+// Expose pour le parent (ModalForm l’appelle)
+defineExpose({
+  getEmptyForm,
+  reset,
+  setSelectorsToFirstTimeOpenAndSetLabels,
+  validate
+})
 </script>
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  GroupVariablesForm:
+    add: Add variable group
+    edit: Edit variable group
+fr:
+  GroupVariablesForm:
+    add: Ajouter un groupe de variables
+    edit: Éditer un groupe de variables
+</i18n>

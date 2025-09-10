@@ -49,6 +49,7 @@
             "logout": "Déconnexion",
             "parent": "parent",
             "type": "Type",
+            "select": "Sélectionner",
             "select-lang": "Choisissez une langue",
             "select-date": "Choisissez une date",
             "next": "Suivant",
@@ -408,7 +409,8 @@
             "groupVariable" : {           
                 "groupVariable": "Groupe de variables",
                 "groupVariableAssociated": "Groupe de variables associées",
-                "add-groupVariable": "Ajouter un groupe de variables"
+                "add-groupVariable": "Ajouter un groupe de variables",
+                "edit": "Éditer un groupe de variables"
             },
             "timeInterval" : {
                 "time-interval":"Intervalle de temps",
@@ -429,6 +431,7 @@
             "title": "Variables",
             "type": "Variable",
             "description" : "Gérer et configurer les variables, entités, charactéristiques, méthodes et unités",
+            "placeholder-multiple": "Sélectionner une ou plusieurs variables",
             "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}",
             "time-interval":"Intervalle de temps",
             "add": "Ajouter une variable",
@@ -521,7 +524,9 @@
             "filter-placeholder": "Rechercher des groupes...",
             "group-added": "Le groupe a été crée",
             "group-updated": "Le groupe a été mis à jour",
+            "group-deleted": "Le groupe a été supprimé",
             "user-profiles": "Utilisateurs et profils",
+            "no-group-selected": "Veuillez sélectionner un ou plusieurs groupes",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
             }

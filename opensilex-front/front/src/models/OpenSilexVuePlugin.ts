@@ -35,6 +35,7 @@ import NumberFormatter from "./NumberFormatter";
 import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
+import { useI18n } from 'vue-i18n'
 
 const { cookies: $cookies } = useCookies();
 
@@ -734,11 +735,11 @@ export default class OpenSilexVuePlugin {
       }
     
       public showSuccessToast(message: string) {
-        this.showToast(message, { variant: "success", autoHideDelay: 2500 });
+        this.showToast(message, { variant: "success", autoHideDelay: 4500 });
       }
     
       public showErrorToast(message: string) {
-        this.showToast(message, { variant: "danger", autoHideDelay: 4000 });
+        this.showToast(message, { variant: "danger", autoHideDelay: 5000 });
       }
     
       public showInfoToast(message: string) {
@@ -986,8 +987,10 @@ export default class OpenSilexVuePlugin {
             })
             return this.credentials;
         } else if (this.credentials instanceof Promise) {
+            console.log("credentials2 list ", this.credentials)
             return this.credentials;
         } else {
+            console.log("credentials3 ", this.credentials)
             return Promise.resolve(this.credentials);
         }
     }

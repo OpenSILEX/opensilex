@@ -1,90 +1,70 @@
 <template>
-  <div class="form-field">
+  <div class="form-field" :class="{ required }">
     <div class="helperAndBlueStar">
       <opensilex-FormInputLabelHelper
         v-if="label"
         :label="label"
         :helpMessage="helpMessage"
         :labelFor="id"
+        class="form-label"
       />
       <span v-if="requiredBlue" class="blueStar">*</span>
     </div>
 
-    <div v-if="required || rules">
-      <div :class="{ errors: hasErrors }">
-        <slot name="field" :id="id" :validator="validateField"></slot>
-      </div>
-      <div v-if="firstError" class="error-message alert alert-danger">{{ firstError }}</div>
-    </div>
-    <template v-else>
-      <slot name="field" :id="id"></slot>
-    </template>
+    <!-- Le champ est rendu par le slot.
+         Les composants enfants (ou NFormItem) gèrent la validation/feedback. -->
+    <slot name="field" :id="id"></slot>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, getCurrentInstance, onBeforeMount, inject } from 'vue'
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin"
+import { ref, onBeforeMount, inject } from 'vue'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 
-
-// Props
 const props = defineProps<{
   label?: string
   helpMessage?: string
+  /** Affiche l’astérisque rouge via CSS, ne déclenche pas de validation ici */
   required?: boolean
+  /** Étoile bleue (comportement existant) */
   requiredBlue?: boolean
+  /** Conservé pour compat, non utilisé ici (validation déplacée dans les enfants / NFormItem) */
   rules?: string | (() => string)
   vid?: string
 }>()
 
-const $opensilex = inject<OpenSilexVuePlugin>('opensilex');
-
-// ID generated via opensilexVuePlugin method
-const id = ref<string>('')
+const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
+const id = ref('')
 
 onBeforeMount(() => {
-  if ($opensilex && typeof $opensilex.generateID === 'function') {
-    id.value = $opensilex.generateID()
-  } else {
-    console.error('opensilex.generateID() is not available')
-  }
+  id.value = $opensilex?.generateID?.() ?? Math.random().toString(36).slice(2)
 })
-
-// Validation logic
-const errors = ref<string[]>([])
-
-const getRules = () => {
-  let rules = ''
-  if (props.rules) {
-    const rulesValue = typeof props.rules === 'function' ? props.rules() : props.rules
-    rules = props.required ? `required|${rulesValue}` : `${rulesValue}`
-  } else if (props.required) {
-    rules = 'required'
-  }
-  return rules
-}
-
-const validateField = () => {
-  errors.value = []
-  const inputElement = document.getElementById(id.value) as HTMLInputElement
-  if (props.required && inputElement && !inputElement.value) {
-    errors.value.push('This field is required')
-  }
-}
-
 </script>
 
-
 <style scoped lang="scss">
+.form-field {
+  display: block;
+}
+
 .helperAndBlueStar {
   display: flex;
   align-items: center;
 }
+
 .blueStar {
-  color: #007bff;
+  color: #007bff; /* bootstrap primary */
   margin-left: 4px;
 }
-.error-message {
-  margin-top: 0.5rem;
+
+/* On ne colore que l’astérisque */
+:deep(label.form-label) {
+  color: black;
+}
+
+/* Asterisk rouge quand prop `required` = true */
+.form-field.required :deep(label.form-label)::after {
+  content: ' *';
+  color: #dc3545; /* bootstrap danger */
+  margin-left: .25rem;
 }
 </style>

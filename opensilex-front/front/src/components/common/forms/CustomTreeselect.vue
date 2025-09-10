@@ -69,25 +69,23 @@ const emit = defineEmits<{
 
 // state
 const treeref = ref<InstanceType<typeof NTreeSelect> | null>(null)
-const options = ref<TreeOpt[]>([])          // ← options NaiveUI {label,key}
-const value = ref<string | string[] | null>(null) //  keys
+const options = ref<TreeOpt[]>([])                 // options Naive {key,label}
+const value = ref<string | string[] | null>(null)  // keys
 const totalCount = ref(-1)
 const resultCount = ref(0)
 
 // expose pour FormSelector
 function refresh(newLimit?: number) {
-  // relance la recherche courante (ou initiale)
   if (lastQuery.value == null) {
     runSearch('.*', newLimit)
   } else {
     runSearch(lastQuery.value, newLimit)
   }
 }
-
 function openTreeselect() {
   nextTick(() => {
-    (treeref.value as any)?.focus?.()
-    ;(treeref.value as any)?.open?.() // au cas où l’API existe
+    (treeref.value as any)?.focus?.();
+    (treeref.value as any)?.open?.()
   })
 }
 defineExpose({ refresh, openTreeselect })
@@ -119,7 +117,27 @@ function fromDTO(dto: NamedResourceDTO): { id: string; label: string; isDisabled
   return { id: dto.uri, label: dto.name, isDisabled: dto.isDisabled }
 }
 
-// selection initiale
+// retrouver un TreeOpt par key
+function findOptionByKey(key: string): TreeOpt | undefined {
+  // options plates (si besoin, étendre à la recherche récursive)
+  return options.value.find(object => object.key === key)
+}
+
+// conversion key(s) -> objet(s) { id, label }
+function keysToObjects(keys: string | string[] | null): any {
+  if (keys == null) return null
+  if (Array.isArray(keys)) {
+    return keys.map(key => {
+      const object = findOptionByKey(key)
+      return object ? { id: object.key, label: object.label } : { id: key, label: String(key) }
+    })
+  } else {
+    const object = findOptionByKey(keys)
+    return object ? { id: object.key, label: object.label } : { id: keys, label: String(keys) }
+  }
+}
+
+// sélection initiale
 async function loadSelectedValues() {
   const sel = props.selected
   if (!sel) {
@@ -127,27 +145,29 @@ async function loadSelectedValues() {
     return
   }
   const ids = Array.isArray(sel) ? sel : [sel]
-  // s’assurer que les options contiennent les sélectionnés pour affichage label
   if (props.itemLoadingMethod) {
     const dtos = await props.itemLoadingMethod(ids)
-    const opts = dtos.map(fromDTO).map(toTreeOpt)
-    // merge sans doublons
-    const keys = new Set(options.value.map(o => o.key))
-    opts.forEach(o => { if (!keys.has(o.key)) options.value.push(o) })
+   const opts = dtos
+     .map(fromDTO)
+     .filter((object): object is { id: string; label: string; isDisabled?: boolean } => !!object)
+     .map(toTreeOpt)
+
+    const keys = new Set(options.value.map(object => object.key))
+    opts.forEach(object => {
+      if (!keys.has(object.key)) options.value.push(object)
+    })
   }
   value.value = Array.isArray(sel) ? sel : sel
 }
 
 watch(() => props.selected, loadSelectedValues, { immediate: true })
 
+// sync options depuis props.options (ex: datatypesNodes déjà prêtes)
 watch(
   () => props.options,
-  (opts) => {
-    options.value = (opts ?? []).map(toTreeOpt)   // { id,label } -> { key,label }
-  },
-  { immediate: true } // si datatypesNode est déjà rempli au mount, synchronise, sinon se met à jour dèq que le tableau change via API
+  (opts) => { options.value = (opts ?? []).map(toTreeOpt) },
+  { immediate: true }
 )
-
 
 // recherche
 const lastQuery = ref<string | null>(null)
@@ -165,41 +185,53 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   emit('totalCount', totalCount.value)
   emit('resultCount', resultCount.value)
 }
-
-
 const debounceSearch = debounce(runSearch, 250)
-function onSearchChange(q: string) {
-  debounceSearch(q)
-}
+function onSearchChange(q: string) { debounceSearch(q) }
 
 function handleFocus() {
-  // charger au focus si pas d’options
   if (!options.value.length) runSearch('.*')
 }
 
-function emitEnter(e: KeyboardEvent) {
-  emit('enterKey', e)
-}
+function emitEnter(e: KeyboardEvent) { emit('enterKey', e) }
 
-// mise à jour de la valeur (keys)
+// mise à jour de la valeur (keys) -> émettre objets cohérents pour select/deselect
 function handleUpdateValue(v: string | string[] | null) {
   value.value = v
-  emit('update:selected', v ?? (props.multiple ? [] : undefined))
-  // event “select” conservé pour compat
-  emit('select', v)
+
+  // 1) Mettre à jour le v-model du parent avec les ids
+  if (props.multiple) {
+    const ids = Array.isArray(v) ? v : []
+    emit('update:selected', ids)
+  } else {
+    const id = typeof v === 'string' ? v : undefined
+    emit('update:selected', id)
+  }
+
+  // 2) Émettre des objets { id, label } pour les handlers
+  if (props.multiple) {
+    const objects = Array.isArray(v) ? keysToObjects(v) : []
+    emit('select', objects)
+  } else {
+    if (v == null) {
+      emit('deselect', null)
+    } else {
+      const obj = keysToObjects(v)      // { id, label }
+      emit('select', obj)
+    }
+  }
 }
 
+function emitClose() { emit('close') }
+
 onMounted(async () => {
-  // options côté props.options (compat)
   if (props.options?.length) {
     options.value = props.options.map(toTreeOpt)
   }
-  // options via optionsLoadingMethod (static/initiale)
   if (props.optionsLoadingMethod && !props.searchMethod) {
     const dtos = await props.optionsLoadingMethod()
     options.value = dtos.map(fromDTO).map(toTreeOpt)
     if (props.defaultSelectedValue) {
-      emit('select', options.value.map(o => o.key))
+      emit('select', options.value.map(object => ({ id: object.key, label: object.label })))
     }
   }
 })

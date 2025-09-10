@@ -1,0 +1,17 @@
+import { useI18n } from 'vue-i18n';
+
+// génère une règle "obligatoire" qui ignore les chaînes d'espaces, typiquement pour un champ "Name" par exemple
+export function requiredTrimmed(fieldLabelKey: string) {
+    const { t } = useI18n()
+    return {
+      validator: (_rule: any, value: string) => {
+        if (typeof value === 'string' && value.trim().length > 0) {
+          return true
+        }
+        return new Error(
+          t('validations.required_if', { _field_: t(fieldLabelKey) })
+        )
+      },
+      trigger: ['input', 'blur']
+    }
+  }

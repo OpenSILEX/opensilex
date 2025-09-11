@@ -92,15 +92,14 @@ async function create(variable: VariableCreationDTO) {
       throw new Error('Réponse sans URI créée (response.result manquant)')
     }
 
-
     try {
       const check = await service.getVariable(createdUri)
       console.log('[VariableCreate] vérification getVariable:', check)
     } catch (e) {
-      console.warn('[VariableCreate] getVariable a raté  ', e)
+      console.warn('[VariableCreate] getVariable a échoué', e)
     }
 
-    // on met à jour l’URI + message succès
+    // met à jour l’URI + message succès
     variable.uri = createdUri
     const message = t('component.variable.name') + ' ' + variable.name + ' ' + t('component.common.success.creation-success-message')
     $opensilex?.showSuccessToast(message)
@@ -108,13 +107,14 @@ async function create(variable: VariableCreationDTO) {
     emit('onCreate', variable)
     return variable
   } 
-catch (error: any) {
-  if (error?.status === 409) {
-    $opensilex?.errorHandler(error, `Variable ${variable.uri} : ${t('VariableForm.already-exist')}`)
-  } else {
-    $opensilex?.errorHandler(error)
+  catch (error: any) {
+    if (error?.status === 409) {
+      $opensilex?.errorHandler(error, `Variable ${variable.uri} : ${t('VariableForm.already-exist')}`)
+    } else {
+      $opensilex?.errorHandler(error)
+    }
+    return false
   }
-  return false
 }
 
 function update(variable: VariableUpdateDTO) {

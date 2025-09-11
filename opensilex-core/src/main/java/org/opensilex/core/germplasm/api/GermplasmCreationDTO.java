@@ -14,6 +14,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -213,24 +214,40 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         this.website = website;
     }
 
-    public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
+    /**
+     * WARNING: this method validate the properties of the GermplasmCreationDTO, that should be done in the business layer, but this would require refactoring.
+     */
+    public GermplasmModel newModel(SPARQLService sparql, String lang, ClassModel classModel) throws SPARQLException, URISyntaxException, InvalidValueException {
+        GermplasmModel model = newModelWithoutRelations();
+
+        if(relations != null){
+            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+            if (classModel == null) {
+                classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            }
+            RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
+        }
+
+        return model;
+    }
+
+    /**
+     * Create a new GermplasmModel and ignore relations (like germplasm parents)
+     */
+    public GermplasmModel newModelWithoutRelations(){
         GermplasmModel model = new GermplasmModel();
-        
+
         if (uri != null) {
             model.setUri(uri);
         }
-        if(relations != null){
-            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
-            RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
-        }
+
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
         if (type != null) {
             model.setType(type);
         }
-        
+
         if (species != null) {
             GermplasmModel speciesModel = new GermplasmModel();
             speciesModel.setUri(this.species);
@@ -246,36 +263,36 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
             accessionModel.setUri(this.accession);
             model.setAccession(accessionModel);
         }
-        
+
         if (institute != null) {
             model.setInstitute(institute);
         }
-        
+
         if (productionYear != null) {
             model.setProductionYear(productionYear);
         }
-        
+
         if (description != null) {
             model.setComment(description);
-        }        
-        
+        }
+
         if (metadata != null ) {
-           model.setMetadata(new MetaDataModel());
-           model.getMetadata().setAttributes(metadata);
+            model.setMetadata(new MetaDataModel());
+            model.getMetadata().setAttributes(metadata);
         }
 
         if (synonyms != null) {
             List<String> synonymsList = new ArrayList<>(synonyms.size());
             synonymsList.addAll(synonyms);
             model.setSynonyms(synonymsList);
-        }        
-        
+        }
+
         if (code != null) {
             model.setCode(code);
         }
-        
+
         if (website != null) {
-            model.setWebsite(website);                    
+            model.setWebsite(website);
         }
 
         return model;

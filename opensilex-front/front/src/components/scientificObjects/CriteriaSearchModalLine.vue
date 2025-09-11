@@ -17,7 +17,7 @@
     ></opensilex-CriteriaOperatorSelector>
     <div class="col-md-5">
       <opensilex-InputForm
-          v-if="$opensilex.checkURIs(lineData.datatype, Xsd.INTEGER)"
+          v-if="$opensilex.compareUris(lineData.datatype, Xsd.INTEGER)"
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
           type="number"
@@ -27,7 +27,7 @@
           placeholder="XSDIntegerInput.placeholder"
       ></opensilex-InputForm>
       <opensilex-InputForm
-          v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.DECIMAL)"
+          v-else-if="$opensilex.compareUris(lineData.datatype, Xsd.DECIMAL)"
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
           type="number"
@@ -37,7 +37,7 @@
           placeholder="XSDDecimalInput.placeholder"
       ></opensilex-InputForm>
       <opensilex-DateForm
-          v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.DATE)"
+          v-else-if="$opensilex.compareUris(lineData.datatype, Xsd.DATE)"
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
           :required="false"
@@ -45,14 +45,14 @@
           class="searchFilter"
       ></opensilex-DateForm>
       <opensilex-DateTimeForm
-          v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.DATETIME)"
+          v-else-if="$opensilex.compareUris(lineData.datatype, Xsd.DATETIME)"
           label="CriteriaSearchModalLine.value"
           :value.sync="lineData.value"
           :disabled="criteriaOperatorIsNotMeasured()"
           :required="false"
       ></opensilex-DateTimeForm>
       <opensilex-FormSelector
-          v-else-if="$opensilex.checkURIs(lineData.datatype, Xsd.BOOLEAN)"
+          v-else-if="$opensilex.compareUris(lineData.datatype, Xsd.BOOLEAN)"
           label="CriteriaSearchModalLine.value"
           :selected.sync="lineData.value"
           :multiple="false"
@@ -138,7 +138,7 @@ export default class CriteriaSearchModalLine extends Vue {
       lineFieldsToChange['datatype'] = allreadyFetchedType;
     }
     lineFieldsToChange['criteria_rules']="";
-    if(this.$opensilex.checkURIs(lineFieldsToChange['datatype'], Xsd.BOOLEAN)){
+    if(this.$opensilex.compareUris(lineFieldsToChange['datatype'], Xsd.BOOLEAN)){
       lineFieldsToChange['criteria_rules'] ="refuseOperators:vocabulary:LessThan,vocabulary:MoreThan,vocabulary:MoreOrEqualThan,vocabulary:LessOrEqualThan"
     }
     this.$emit("updateLine", lineFieldsToChange, this.lineIndex);

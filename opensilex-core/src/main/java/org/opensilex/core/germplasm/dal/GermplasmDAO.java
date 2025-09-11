@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -79,6 +80,40 @@ public class GermplasmDAO {
         return model;
     }
 
+    public List<GermplasmModel> updateList(List<GermplasmModel> models) throws Exception {
+        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+            sparql.update(sparql.getDefaultGraph(GermplasmModel.class), models);
+            this.upsertMetaData(models, session);
+            return null;
+        });
+        return models;
+    }
+
+    /**
+     * upsert metadata attributes for a list of germplasms. Should be called in a transaction.
+     * @param instanceList list of germplasm models
+     * @param session MongoDB client session
+     */
+    private void upsertMetaData(List<GermplasmModel> instanceList, ClientSession session) throws Exception {
+        if (instanceList.isEmpty()) {
+            return;
+        }
+        for (GermplasmModel model : instanceList) {
+            MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
+            MetaDataModel metadata = model.getMetadata();
+
+            if (((metadata == null || MapUtils.isEmpty(metadata.getAttributes())) && storedAttributes == null)) {
+                return;
+            }
+            if (metadata != null && !MapUtils.isEmpty(metadata.getAttributes())) {
+                model.getMetadata().setUri(model.getUri());
+                metaDataDao.upsert(session, model.getMetadata());
+            } else {
+                metaDataDao.delete(session, model.getUri());
+            }
+        }
+    }
+
     public GermplasmModel create(GermplasmModel model) throws Exception {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
             sparqlDAO.create(model);
@@ -91,6 +126,36 @@ public class GermplasmDAO {
             return null;
         });
         return model;
+    }
+
+    /**
+     * WARNING, you should check that each germplasm of the list has a URI that does'nt exists in the database BEFORE calling this method.
+     * This method create many germplasms at a time without checking that their URI does'nt already exists to optimise database call.
+     * @param instanceList with every model you need to create
+     * @throws Exception
+     */
+    public List<GermplasmModel> createListWithoutUriExistsCheck(List<GermplasmModel> instanceList) throws Exception {
+        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+            sparql.create(sparql.getDefaultGraph(GermplasmModel.class), instanceList, null, false, true);
+            this.createMetaData(instanceList, session);
+            return null;
+        });
+        return instanceList;
+    }
+
+    /**
+     * create metadata attributes for a list of germplasms. Should be called in a transaction.
+     */
+    private void createMetaData(List<GermplasmModel> instanceList, ClientSession session) throws Exception {
+        if (instanceList.isEmpty()) {
+            return;
+        }
+        for (GermplasmModel model : instanceList) {
+            if (model.getMetadata() != null) {
+                model.getMetadata().setUri(model.getUri());
+                metaDataDao.create(session, model.getMetadata());
+            }
+        }
     }
 
     /**
@@ -223,5 +288,10 @@ public class GermplasmDAO {
         return sparqlDAO.brapiSearch(user, germplasmDbId, germplasmName, germplasmSpecies, page, pageSize);
     }
 
-
+    /**
+     * @return the list of existing URIs in germplasm graph among the given list of URIs
+     */
+    public Collection<URI> checkExistence(List<URI> uris) throws Exception {
+        return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, uris, true);
+    }
 }

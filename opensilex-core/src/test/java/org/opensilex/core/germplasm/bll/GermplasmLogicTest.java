@@ -14,7 +14,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
@@ -171,6 +170,37 @@ public class GermplasmLogicTest extends TestSuite {
         String errorMessage = String.format("this simple germplasm with an other type should not raise any error. %s errors was found", multipleErrorObject.toDTO().errors.size());
         TestCase.assertFalse(errorMessage, multipleErrorObject.hasErrors());
     }
+
+    @Test
+    public void otherTypeCreateWithCoherentAccessionAndVarietySuccess() throws Exception {
+        URI speciesUri = new URI("http://example.org/species/1");
+        URI varietyUri = new URI("http://example.org/variety/1");
+        URI accessionUri = new URI("http://example.org/accession/1");
+        URI germplasmUri = new URI("http://example.org/otherType/1");
+        URI otherType = new URI("http://example.org/ontology/OtherType");
+
+        //Mocking new type existence
+        when(daoMocked.isGermplasmType(otherType)).thenReturn(true);
+        // Mocking species existence with the right type
+        when(daoMocked.checkExistence(List.of(speciesUri))).thenReturn(List.of(speciesUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Species.getURI()), speciesUri)).thenReturn(true);
+        // Mocking variety existence with the right type
+        when(daoMocked.checkExistence(List.of(varietyUri))).thenReturn(List.of(varietyUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Variety.getURI()), varietyUri)).thenReturn(true);
+        // Mocking accession existence with the right type
+        when(daoMocked.checkExistence(List.of(accessionUri))).thenReturn(List.of(accessionUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Accession.getURI()), accessionUri)).thenReturn(true);
+
+        GermplasmLogic logic = new GermplasmLogic(daoMocked, sparqlMocked, null);
+        GermplasmModel species = getCorrectGermplasmSpecies(speciesUri);
+        GermplasmModel variety = getCorrectVariety(varietyUri, species);
+        GermplasmModel accession = getCorrectGermplasmAccession(accessionUri, species, variety);
+        GermplasmModel otherTypeGermplasm = getCorrectGermplasmOtherType(germplasmUri, otherType, null, variety, accession);
+        var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
+        String errorMessage = String.format("this simple germplasm with an other type should not raise any error. %s errors was found", multipleErrorObject.toDTO().errors.size());
+        TestCase.assertFalse(errorMessage, multipleErrorObject.hasErrors());
+    }
+
     //#endregion
 
     //#region error tests
@@ -343,9 +373,103 @@ public class GermplasmLogicTest extends TestSuite {
         TestCase.assertTrue(errorMessage, errorString.toLowerCase().contains("species doesn't match with the given variety") && errorString.contains(species2Uri.toString()));
     }
 
+    /**
+     * coherency test : if a germplasm with other type 'G' has an accession and a species, the accession should have the same species as germplasm 'G'
+     */
+    @Test
+    public void otherTypeCreateWithIncoherentAccessionSpeciesError() throws Exception {
+        URI species1Uri = new URI("http://example.org/species/1");
+        URI species2Uri = new URI("http://example.org/species/2");
+        URI varietyUri = new URI("http://example.org/variety/1");
+        URI accessionUri = new URI("http://example.org/accession/1");
+        URI germplasmUri = new URI("http://example.org/otherType/1");
+        URI otherType = new URI("http://example.org/ontology/OtherType");
+
+        //Mocking new type existence
+        when(daoMocked.isGermplasmType(otherType)).thenReturn(true);
+        // Mocking species1 existence with the right type
+        when(daoMocked.checkExistence(List.of(species1Uri))).thenReturn(List.of(species1Uri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Species.getURI()), species1Uri)).thenReturn(true);
+        // Mocking species2 existence with the right type
+        when(daoMocked.checkExistence(List.of(species2Uri))).thenReturn(List.of(species2Uri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Species.getURI()), species2Uri)).thenReturn(true);
+        // Mocking variety existence with the right type
+        when(daoMocked.checkExistence(List.of(varietyUri))).thenReturn(List.of(varietyUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Variety.getURI()), varietyUri)).thenReturn(true);
+        // Mocking accession existence with the right type
+        when(daoMocked.checkExistence(List.of(accessionUri))).thenReturn(List.of(accessionUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Accession.getURI()), accessionUri)).thenReturn(true);
+
+        GermplasmLogic logic = new GermplasmLogic(daoMocked, sparqlMocked, null);
+        GermplasmModel species1 = getCorrectGermplasmSpecies(species1Uri);
+        GermplasmModel species2 = getCorrectGermplasmSpecies(species2Uri);
+        GermplasmModel variety = getCorrectVariety(varietyUri, species1);
+        GermplasmModel accession = getCorrectGermplasmAccession(accessionUri, species2, variety); //not the same species than variety and otherTypeGermplasm
+        GermplasmModel otherTypeGermplasm = getCorrectGermplasmOtherType(germplasmUri, otherType, species1, variety, accession);
+
+        //when checking for coherency, we get the accession from the dao to get its species. DAO is mocked to return the accession we created and passed to the germplasm
+        when(daoMocked.get(eq(accessionUri), any(), anyBoolean())).thenReturn(accession);
+
+        var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
+        String errorMessage = "this germplasm should raise an error because its accession and itself have different species";
+        TestCase.assertTrue(errorMessage, multipleErrorObject.hasErrors());
+        errorMessage = "this germplasm with an other type should raise only one error. Instead " + multipleErrorObject.toDTO().errors.get(0).errors.size() + " were found";
+        TestCase.assertEquals(errorMessage, 1, multipleErrorObject.toDTO().errors.get(0).errors.size());
+        String errorString = multipleErrorObject.toDTO().errors.get(0).errors.get(0);
+        errorMessage = String.format("the error message should contains the message 'species doesn't match with the given accession' annd the wrong species uri '%s' . But we instead it was : %s", species2Uri, errorString);
+        TestCase.assertTrue(errorMessage, errorString.toLowerCase().contains("species doesn't match with the given accession") && errorString.contains(species2Uri.toString()));
+    }
+
+    /**
+     * coherency test : if a germplasm with other type 'G' has an accession and a variety, the accession should have the same variety as germplasm 'G'
+     */
+    @Test
+    public void otherTypeCreateWithIncoherentAccessionVarietyError() throws Exception {
+        URI speciesUri = new URI("http://example.org/species/1");
+        URI variety1Uri = new URI("http://example.org/variety/1");
+        URI variety2Uri = new URI("http://example.org/variety/2");
+        URI accessionUri = new URI("http://example.org/accession/1");
+        URI germplasmUri = new URI("http://example.org/otherType/1");
+        URI otherType = new URI("http://example.org/ontology/OtherType");
+
+        //Mocking new type existence
+        when(daoMocked.isGermplasmType(otherType)).thenReturn(true);
+        // Mocking species existence with the right type
+        when(daoMocked.checkExistence(List.of(speciesUri))).thenReturn(List.of(speciesUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Species.getURI()), speciesUri)).thenReturn(true);
+        // Mocking variety1 existence with the right type
+        when(daoMocked.checkExistence(List.of(variety1Uri))).thenReturn(List.of(variety1Uri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Variety.getURI()), variety1Uri)).thenReturn(true);
+        // Mocking variety2 existence with the right type
+        when(daoMocked.checkExistence(List.of(variety2Uri))).thenReturn(List.of(variety2Uri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Variety.getURI()), variety2Uri)).thenReturn(true);
+        // Mocking accession existence with the right type
+        when(daoMocked.checkExistence(List.of(accessionUri))).thenReturn(List.of(accessionUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Accession.getURI()), accessionUri)).thenReturn(true);
+
+        GermplasmLogic logic = new GermplasmLogic(daoMocked, sparqlMocked, null);
+        GermplasmModel species = getCorrectGermplasmSpecies(speciesUri);
+        GermplasmModel variety1 = getCorrectVariety(variety1Uri, species);
+        GermplasmModel variety2 = getCorrectVariety(variety2Uri, species);
+        GermplasmModel accession = getCorrectGermplasmAccession(accessionUri, species, variety1); //not the same variety than otherTypeGermplasm
+        GermplasmModel otherTypeGermplasm = getCorrectGermplasmOtherType(germplasmUri, otherType, species, variety2, accession);
+
+        //when checking for coherency, we get the accession from the dao to get its variety. DAO is mocked to return the accession we created and passed to the germplasm
+        when(daoMocked.get(eq(accessionUri), any(), anyBoolean())).thenReturn(accession);
+
+        var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
+        String errorMessage = "this germplasm should raise an error because its accession and itself have different variety";
+        TestCase.assertTrue(errorMessage, multipleErrorObject.hasErrors());
+        errorMessage = "this germplasm with an other type should raise only one error. Instead " + multipleErrorObject.toDTO().errors.get(0).errors.size() + " were found";
+        TestCase.assertEquals(errorMessage, 1, multipleErrorObject.toDTO().errors.get(0).errors.size());
+        String errorString = multipleErrorObject.toDTO().errors.get(0).errors.get(0);
+        errorMessage = String.format("the error message should contains the message 'variety doesn't match with the given accession' annd the wrong variety uri '%s' . But we instead it was : %s", variety1Uri, errorString);
+        TestCase.assertTrue(errorMessage, errorString.toLowerCase().contains("variety doesn't match with the given accession") && errorString.contains(variety1Uri.toString()));
+    }
+
     //#endregion
 
-
+    //#region useful methods
     @Before
     public void initBeforeTest() throws URISyntaxException, SPARQLException {
         sparqlMocked = mock(SPARQLService.class);
@@ -400,4 +524,5 @@ public class GermplasmLogicTest extends TestSuite {
         germplasm.setWebsite(new URI("http://example.otherType.com"));
         return germplasm;
     }
+    //#endregion
 }

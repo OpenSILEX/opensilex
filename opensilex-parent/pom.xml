@@ -728,6 +728,20 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
         <repository>
+            <id>kotlin-dev</id>
+            <url>https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+                <repository>
+            <id>kotlin-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>osgeo</id>
             <name>OSGeo Release Repository</name>
             <url>https://repo.osgeo.org/repository/release/</url>
@@ -1316,7 +1330,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <!--<locales>en,fr</locales>-->
                     <generateReports>true</generateReports>
                     <outputDirectory>${generated.doc.site.directory}/${project.name}</outputDirectory>
-
+                    <stagingDirectory>${project.build.directory}/staging</stagingDirectory>
                 </configuration>
             </plugin>
 
@@ -2121,4 +2135,11 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         </profile>
 
     </profiles>
+
+    <distributionManagement>
+        <site>
+            <id>website</id>
+            <url>file://${generated.doc.site.directory}/completesite</url>
+        </site>
+    </distributionManagement> 
 </project>

@@ -79,8 +79,8 @@ build-sonar:
       - "${SONAR_USER_HOME}/cache"
       - sonar-scanner/ 
   script:
-    - mvn $MAVEN_CLI_OPTS clean install -DskipFrontBuild
-    - mvn $MAVEN_CLI_OPTS verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
+    # - mvn $MAVEN_CLI_OPTS  -DskipFrontBuild
+    - mvn $MAVEN_CLI_OPTS clean install verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
     - mvn $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
    
   allow_failure: true

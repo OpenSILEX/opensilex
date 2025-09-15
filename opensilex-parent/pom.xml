@@ -2065,6 +2065,10 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
+                        <configuration>
+                            <!-- Skip in parent -->
+                            <skip>true</skip>
+                        </configuration>
                         <reportSets>
                             <reportSet>
                                 <reports>

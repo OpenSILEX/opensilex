@@ -1613,7 +1613,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper);
 
-            deleteWithoutCascade(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList());
+            deleteForUpdate(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList());
 
             for (T oldInstance : oldInstances) {
                 T instance = instances.stream()
@@ -1636,12 +1636,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * WARNING : this deletes method does not use the deleteCascade Sparql annotation.
-     * Usefull for updates, dangerous for simple delete.
+     * WARNING : this deletes method does not use the deleteCascade Sparql annotation AND does not delete dc:publisher and dc:issued relations.
+     * Usefully for updates, dangerous for simple delete.
      */
-    private  <T extends SPARQLResourceModel> void deleteWithoutCascade(Class<T> objectClass, List<URI> uris) throws Exception {
+    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<URI> uris) throws Exception {
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateRequest query = mapper.getDeleteBuilder(uris);
+        UpdateRequest query = mapper.getDeleteBuilderForUpdate(uris);
         executeDeleteQuery(query.toString());
     }
 

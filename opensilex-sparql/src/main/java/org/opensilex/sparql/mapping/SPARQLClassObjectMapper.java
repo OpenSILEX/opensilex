@@ -416,6 +416,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getDeleteBuilder(urisToDelete);
     }
 
+    public UpdateRequest getDeleteBuilderForUpdate(List<URI> urisToDelete) throws Exception {
+        return classQueryBuilder.getDeleteBuilderForUpdateCases(urisToDelete);
+    }
+
     public URI getURI(Object instance) {
         return classAnalyzer.getURI(instance);
     }

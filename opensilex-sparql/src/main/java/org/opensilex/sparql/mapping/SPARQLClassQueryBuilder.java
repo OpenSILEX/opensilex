@@ -6,6 +6,7 @@
 package org.opensilex.sparql.mapping;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.analysis.function.Exp;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -17,6 +18,7 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
@@ -26,6 +28,7 @@ import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.lucene.util.QueryBuilder;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -49,6 +52,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import static org.opensilex.sparql.service.SPARQLQueryHelper.getExprFactory;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -389,26 +393,71 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * build one query which delete all triples related to the given urisToDelete, whatever the graph they are stored in.
+     * build a query which delete all triples related to the given urisToDelete, whatever the graph they are stored in.
      * Values clause is manually added due to a Jena bug which prevent using VALUES clause with UpdateBuilder.
+     * Generated query example : @see {@link #getDeleteBuilder(List, List)}
+     */
+    public UpdateRequest getDeleteBuilder(List<URI> urisToDelete) throws Exception {
+        return getDeleteBuilder(urisToDelete, null);
+    }
+
+    /**
+     * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued once, whatever the graph they are stored in.
+     * Useful for update operations where dc:publisher and dc:issued should not be updated.
      * Generated query example :
-     * <pre>
      * DELETE {
      *   GRAPH ?g { ?uriToDelete ?p ?o . }
      *   GRAPH ?g { ?s ?p ?uriToDelete . }
      * }
      * WHERE {
      *   VALUES ?uriToDelete {
-     * <FirstURIToDelete>
-     * <SecondURIToDelete>
-     * }
-     *   { GRAPH ?g { ?uriToDelete ?p ?o . } }
+     *     <uriToDelete1>
+     *     <uriToDelete2>
+     *   }
+     *
+     *   { GRAPH ?g {
+     *       ?uriToDelete ?p ?o .
+     *       FILTER (?p NOT IN (dc:publisher, dc:issued))
+     *     }
+     *   }
      *   UNION
-     *   { GRAPH ?g { ?s ?p ?uriToDelete . } }
+     *   { GRAPH ?g { ?s ?p ?uriToDelete . }
+     *   }
      * }
-     * </pre>
      */
-    public UpdateRequest getDeleteBuilder(List<URI> urisToDelete) throws Exception {
+    public UpdateRequest getDeleteBuilderForUpdateCases(List<URI> urisToDelete) throws Exception {
+        List<URI> excludedPredicates = List.of(
+                URI.create("http://purl.org/dc/terms/publisher"),
+                URI.create("http://purl.org/dc/terms/issued")
+        );
+        return getDeleteBuilder(urisToDelete, excludedPredicates);
+    }
+
+    /**
+     *Delete all triples related to the given urisToDelete, except those with a predicate included in 'exludedPredicates' ,whatever the graph they are stored in.
+     * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject.
+     * generated query example : (the filter clause appears only if excludedPredicates is not empty)
+     * DELETE {
+     *   GRAPH ?g { ?uriToDelete ?p ?o . }
+     *   GRAPH ?g { ?s ?p ?uriToDelete . }
+     * }
+     * WHERE {
+     *   VALUES ?uriToDelete {
+     *     <uriToDelete1>
+     *     <uriToDelete2>
+     *   }
+     *
+     *   { GRAPH ?g {
+     *       ?uriToDelete ?p ?o .
+     *       FILTER (?p NOT IN (<excludedPredicates1>, <excludedPredicates1>))
+     *     }
+     *   }
+     *   UNION
+     *   { GRAPH ?g { ?s ?p ?uriToDelete . }
+     *   }
+     * }
+     */
+    private UpdateRequest getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         if (urisToDelete == null || urisToDelete.isEmpty()) {
             return delete.buildRequest();
@@ -428,7 +477,16 @@ class SPARQLClassQueryBuilder {
 
         WhereBuilder where = new WhereBuilder();
         SPARQLQueryHelper.addWhereValues(where, uriVar.getVarName(), urisToDelete);
-        where.addGraph(graphVar, relation);
+        WhereBuilder graphSubquerry = new WhereBuilder();
+        graphSubquerry.addWhere(relation);
+        if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
+            List<String> excludedPredicatesStr = excludedPredicates.stream().map(SPARQLDeserializers::getExpandedURI).toList();
+            List<Expr> excludedPredicatesExpr = excludedPredicatesStr.stream().map(getExprFactory()::asExpr).toList();
+            ExprList excludedPredicatesExprList = new ExprList(excludedPredicatesExpr);
+            Expr predicateFilter = getExprFactory().notin(predicateVar, excludedPredicatesExprList);
+            graphSubquerry.addFilter(predicateFilter);
+        }
+        where.addGraph(graphVar, graphSubquerry);
         where.addUnion(new WhereBuilder().addGraph(graphVar, inverseRelation));
 
         delete.addWhere(where);

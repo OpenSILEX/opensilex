@@ -46,6 +46,7 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -59,7 +60,11 @@ import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -75,6 +80,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -980,6 +986,33 @@ public class ScientificObjectDAO {
     }
 
     private void updateSOAndChildren(URI objectURI, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs) throws Exception {
+        ScientificObjectModel oldObject = sparql.getByURI(graphNode, ScientificObjectModel.class, objectURI, null);
+        //If there is a type change then we need to check the relations to see if any are no longer compatible
+        if(!SPARQLDeserializers.compareURIs(oldObject.getType(), object.getType())) {
+            //Get the old property tree to compare with new property tree to retrieve differences
+
+            //TODO MAX if and when this works we will need to optimize otherwise we will be fetching a bunch of stuff if there are lots of type updates
+
+            BiPredicate<DatatypePropertyModel, ClassModel> dataPropFilter = ((property, classModel) -> property.getRangeURI() != null);
+            BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = ((property, classModel) -> property.getRangeURI() != null);
+
+            OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+
+            List<ResourceTreeDTO> oldProperties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
+                    ontologyStore.searchDataProperties(oldObject.getType(), null, null, true, dataPropFilter),
+                    ontologyStore.searchObjectProperties(oldObject.getType(), null, null, true, objectPropFilter)
+            ));
+
+            List<ResourceTreeDTO> newProperties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
+                    ontologyStore.searchDataProperties(object.getType(), null, null, true, dataPropFilter),
+                    ontologyStore.searchObjectProperties(object.getType(), null, null, true, objectPropFilter)
+            ));
+
+            //Remove any relations present that belong to old type but not the new
+            //relationsToPreserve = ...
+            //oldObject.getRelations().stream().filter(relation -> relation.getProperty().)
+        }
+
         sparql.update(graphNode, object);
         if (!childrenURIs.isEmpty()) {
             sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);

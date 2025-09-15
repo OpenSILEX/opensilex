@@ -1452,6 +1452,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param instance
      * @param <T>
      * @throws SPARQLException
+     *
+     * TODO MAX verify if ive understood this correctly before pusing this extra doc
+     *
+     * Delete any custom relations that do not apply to the current type of instance. Here a custom relation means a relation
+     * that is defined in the ontology, but is not handled in the model class of instance.
      */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 

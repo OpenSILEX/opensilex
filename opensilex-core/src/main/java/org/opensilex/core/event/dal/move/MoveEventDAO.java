@@ -66,7 +66,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
     @Override
     public List<MoveModel> create(List<MoveModel> models) throws Exception {
 
-        sparql.createWithoutTransaction(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+        sparql.createWithoutTransaction(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true, null);
         return models;
     }
 

@@ -1208,7 +1208,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         boolean useNewBuilder = updateBuilder == null;
         UpdateBuilder create = useNewBuilder ? new UpdateBuilder() : updateBuilder;
         prepareInstanceCreation(graph, instance, parent, mapper, create, checkUriExist, blankNode);
-        mapper.addCreateBuilder(graph, instance, create, blankNode, createExtension);
+        mapper.addCreateBuilder(graph, instance, create, blankNode, createExtension, null);
 
         if (useNewBuilder) {
             executeUpdateQuery(create);
@@ -1261,6 +1261,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    /**
+     * create instances without publication date and publisher (for update use case).
+     */
+    public <T extends SPARQLResourceModel> void createForUpdate(Node graph, Collection<T> instances) throws Exception {
+        if (instances.isEmpty()) { return; }
+
+        List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
+        create(graph, instances, null, true, false, fieldsToExclude);
+    }
+
     public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {
         Optional<T> anyElement = instances.stream().findAny();
         if (!anyElement.isPresent()) {
@@ -1274,7 +1284,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true, true);
+        create(graph, instances, null, true, true, null);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -1292,7 +1302,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+    /**
+     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     */
+    public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate, List<String> fieldsToExclude) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
         if (reuseSameQuery && maxInstancePerQuery <= 0) {
@@ -1322,7 +1335,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
             prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
-            mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);
+            mapper.addCreateBuilder(graph, instance, updateBuilder, false, null, fieldsToExclude);
 
             // if query limit is reached, then insert query and reset builder
             if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
@@ -1346,15 +1359,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
+     * @param <T>                 the SPARQLResourceModel type
      * @param graph               the graph onto instance are created
      * @param instances           the list of instance to create
      * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used
      * @param checkUriExist       indicate if the service must check if instances already exist
-     * @param <T>                 the SPARQLResourceModel type
+     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
      */
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate, List<String> fieldsToExclude) throws Exception {
         withTransaction(() -> {
-            createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate);
+            createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, fieldsToExclude);
             return null;
         });
     }
@@ -1627,7 +1641,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }
                 updateFields(instanceGraph, instance, oldInstance);
             }
-            create(instances);
+            createForUpdate(graph, instances);
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);

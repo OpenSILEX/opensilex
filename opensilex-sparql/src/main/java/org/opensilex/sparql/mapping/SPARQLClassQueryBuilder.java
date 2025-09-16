@@ -6,7 +6,6 @@
 package org.opensilex.sparql.mapping;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.analysis.function.Exp;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -25,10 +24,7 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.OWL2;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
-import org.apache.lucene.util.QueryBuilder;
+import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -339,12 +335,18 @@ class SPARQLClassQueryBuilder {
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        addCreateBuilder(graph, instance, create, blankNode,createExtension);
+        addCreateBuilder(graph, instance, create, blankNode,createExtension, null);
         return create;
     }
 
-    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+    /**
+     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     */
+    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension, List<String> fieldsToExclude) throws Exception {
         Node uriNode = executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
+            if (fieldsToExclude != null && fieldsToExclude.contains(field.getName())) {
+                return;
+            }
 
             if (graph == null) {
                 create.addInsert(quad.asTriple());

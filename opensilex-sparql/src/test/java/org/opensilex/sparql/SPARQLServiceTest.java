@@ -282,7 +282,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
             aList.add(a);
         }
 
-        sparql.create(null, aList, null, false, false);
+        sparql.create(null, aList, null, false, false, null);
 
         for (int i = 0; i < n; i++) {
             A createdA = aList.get(i);
@@ -305,7 +305,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
             aList.add(a);
         }
 
-        sparql.create(null, aList, n, false, false);
+        sparql.create(null, aList, n, false, false, null);
 
         for (int i = 0; i < n; i++) {
             A createdA = aList.get(i);

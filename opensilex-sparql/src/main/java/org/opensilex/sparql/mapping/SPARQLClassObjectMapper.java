@@ -388,12 +388,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getCreateBuilder(graph, instance, blankNode, createExtension);
     }
 
-    public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
-        addCreateBuilder(getDefaultGraph(), instance, create, false,null);
-    }
-
-    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode,BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
-        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode,createExtension);
+    /**
+     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     */
+    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension, List<String> fieldsToExclude) throws Exception {
+        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode,createExtension, fieldsToExclude);
     }
 
     public UpdateBuilder getDeleteBuilder(T instance) throws Exception {

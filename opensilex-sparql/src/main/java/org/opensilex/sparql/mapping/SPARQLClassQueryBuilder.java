@@ -437,7 +437,7 @@ class SPARQLClassQueryBuilder {
 
     /**
      *Delete all triples related to the given urisToDelete, except those with a predicate included in 'exludedPredicates' ,whatever the graph they are stored in.
-     * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject.
+     * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handle short and long uris.
      * generated query example : (the filter clause appears only if excludedPredicates is not empty)
      * DELETE {
      *   GRAPH ?g { ?uriToDelete ?p ?o . }
@@ -482,10 +482,7 @@ class SPARQLClassQueryBuilder {
         WhereBuilder graphSubquerry = new WhereBuilder();
         graphSubquerry.addWhere(relation);
         if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
-            List<String> excludedPredicatesStr = excludedPredicates.stream().map(SPARQLDeserializers::getExpandedURI).toList();
-            List<Expr> excludedPredicatesExpr = excludedPredicatesStr.stream().map(getExprFactory()::asExpr).toList();
-            ExprList excludedPredicatesExprList = new ExprList(excludedPredicatesExpr);
-            Expr predicateFilter = getExprFactory().notin(predicateVar, excludedPredicatesExprList);
+            Expr predicateFilter = getNotInUrisFilter(excludedPredicates, predicateVar);
             graphSubquerry.addFilter(predicateFilter);
         }
         where.addGraph(graphVar, graphSubquerry);
@@ -507,6 +504,21 @@ class SPARQLClassQueryBuilder {
 
 
         return UpdateFactory.create(queryWithValues);
+    }
+
+    /**
+     * generate a Not in filter as follows :
+     * FILTER (?p NOT IN (<http://my.domain/excludedUri1>, <http://my.domain/excludedUri2>))
+     * @param Uris that wil be in the NOT IN filter. In the exemple it could be [http://my.domain/excludedUri1, prefix:excludedUri2]
+     * @param varToExclude in the exemple the ?p variable
+     */
+    private static Expr getNotInUrisFilter(List<URI> Uris, Var varToExclude) {
+        List<String> excludedPredicatesStr = Uris.stream().map(SPARQLDeserializers::getExpandedURI).toList();
+        List<Expr> excludedPredicatesExpr = excludedPredicatesStr.stream()
+                .map(uri -> getExprFactory().asExpr(NodeFactory.createURI(uri)))
+                .toList();
+        ExprList excludedPredicatesExprList = new ExprList(excludedPredicatesExpr);
+        return getExprFactory().notin(varToExclude, excludedPredicatesExprList);
     }
 
 

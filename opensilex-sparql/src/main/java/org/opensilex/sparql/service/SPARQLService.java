@@ -1267,8 +1267,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public <T extends SPARQLResourceModel> void createForUpdate(Node graph, Collection<T> instances) throws Exception {
         if (instances.isEmpty()) { return; }
 
+        OffsetDateTime now = OffsetDateTime.now();
+        instances.forEach(instance -> instance.setLastUpdateDate(now));
+
         List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
-        create(graph, instances, null, true, false, fieldsToExclude);
+        create(graph, instances, null, false, false, fieldsToExclude);
     }
 
     public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {

@@ -1264,13 +1264,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * create instances without publication date and publisher (for update use case).
      */
-    public <T extends SPARQLResourceModel> void createForUpdate(Node graph, Collection<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances) throws Exception {
         if (instances.isEmpty()) { return; }
 
         OffsetDateTime now = OffsetDateTime.now();
         instances.forEach(instance -> instance.setLastUpdateDate(now));
 
         List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
+        Node graph = getDefaultGraph(instances.iterator().next().getClass());
         create(graph, instances, null, false, false, fieldsToExclude);
     }
 
@@ -1644,7 +1645,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }
                 updateFields(instanceGraph, instance, oldInstance);
             }
-            createForUpdate(graph, instances);
+            createForUpdate(instances);
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);

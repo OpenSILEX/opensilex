@@ -328,19 +328,11 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <configuration>
-                            <failOnError>false</failOnError>
-                                 <!-- Ensure all required paths are properly configured -->
-                            <scanSet>
-                                <fileSet>
-                                    <directory>${project.basedir}</directory>
-                                </fileSet>
-                            </scanSet>
-                        </configuration>
                         <executions>
                             <execution>
+                                <phase>pre-site</phase>
                                 <goals>
-                                    <goal>check</goal>
+                                    <goal>aggregate</goal>
                                 </goals>
                             </execution>
                         </executions>

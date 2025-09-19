@@ -33,7 +33,7 @@ variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
-  SONAR_OPTIONS: "-Dsonar.projectKey=$SONARQUBE_OPENSILEX_PROJECT_KEY  -Dsonar.projectName='opensilex' -Dsonar.host.url=$SONARQUBE_URL -Dsonar.token=$SONARQUBE_TOKEN -Dhttp.keepAlive=true -Dhttp.connection.timeout=6000000 -Dhttp.socket.timeout=6000000"
+  SONAR_OPTIONS: "-Dsonar.projectKey=$SONARQUBE_OPENSILEX_PROJECT_KEY -Dsonar.projectName='opensilex' -Dsonar.host.url=$SONARQUBE_URL -Dsonar.token=$SONARQUBE_TOKEN -Dhttp.keepAlive=true -Dhttp.connection.timeout=6000000 -Dhttp.socket.timeout=6000000"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.9.9
   # DEFAULT SERVER JAVA VERSION
@@ -79,7 +79,8 @@ build-sonar:
       - "${SONAR_USER_HOME}/cache"
       - sonar-scanner/ 
   script:
-    - mvn $MAVEN_CLI_OPTS clean install -X -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
+    - mvn $MAVEN_CLI_OPTS clean install -DskipFrontBuild
+    - mvn $MAVEN_CLI_OPTS verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report
     - mvn $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
    
   allow_failure: true

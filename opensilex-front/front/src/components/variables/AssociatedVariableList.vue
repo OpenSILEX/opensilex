@@ -112,7 +112,7 @@ export default class AssociatedVariablesList extends Vue {
   }
 
   private isVariableRelation(relation: RDFObjectRelationDTO): boolean {
-    return this.$opensilex.checkURIs(this.$opensilex.Oeso.MEASURES_PROP_URI, relation.property)
+    return this.$opensilex.compareUris(this.$opensilex.Oeso.MEASURES_PROP_URI, relation.property)
   }
 
   /**

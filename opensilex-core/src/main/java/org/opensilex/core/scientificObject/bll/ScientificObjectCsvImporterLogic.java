@@ -254,7 +254,16 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     }
 
     @Override
-    protected void handleURIMapping(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, List<ScientificObjectModel> modelChunkToCreate, List<ScientificObjectModel> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+    protected void handleURIMapping(
+            CsvOwlRestrictionValidator validator,
+            ScientificObjectModel model,
+            int totalRowIdx,
+            List<ScientificObjectModel> modelChunkToCreate,
+            List<ScientificObjectModel> modelChunkToUpdate,
+            Map<String, Integer> generatedUrisToIndexesInChunk,
+            Map<String, Integer> filledUrisToIndexesInChunk,
+            Map<String, Integer> filledUrisToUpdateIndexesInChunk
+    ) throws SPARQLException {
         if (checkIfSONameIsNull(validator, model, totalRowIdx)) return;
 
         // inside an XP

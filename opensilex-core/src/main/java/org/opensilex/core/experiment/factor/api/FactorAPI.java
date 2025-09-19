@@ -287,7 +287,7 @@ public class FactorAPI {
             }
 
             ListWithPagination<FactorModel> resultList = dao.search(name, null, category, experiments, orderByList, page, pageSize,
-                    currentUser.getLanguage());
+                    currentUser.getLanguage(), false);
 
             List<FactorGetDTO> resultDTOList = new ArrayList<>();
 
@@ -325,7 +325,7 @@ public class FactorAPI {
             throws Exception {
 
         FactorDAO dao = new FactorDAO(sparql);
-        ListWithPagination<FactorModel> factors = dao.search(null, name, null, null, orderByList, page, pageSize, currentUser.getLanguage());
+        ListWithPagination<FactorModel> factors = dao.search(null, name, null, null, orderByList, page, pageSize, currentUser.getLanguage(), true);
         ListWithPagination<FactorDetailsGetDTO> dtoList = factors.convert(FactorDetailsGetDTO.class, FactorDetailsGetDTO::fromModel);
 
         // Return paginated list of factor DTO

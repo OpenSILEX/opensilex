@@ -21,8 +21,11 @@ import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
+import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.utils.ApiUtils;
@@ -37,7 +40,9 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -557,6 +562,7 @@ public class DataLogic {
      * Validates - throws or inserts the models
      * Handles setting of publisher
      * Handles Annotation creation in the case of import
+     * Handles updating of facilities if there are any new variables or devices
      *
      * @param models          models to insert
      * @param csvImport   so we know to run any extra code
@@ -564,6 +570,8 @@ public class DataLogic {
      * @return a list of uris if the caller wasn't the import function
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
+        //Extract facilities to update
+        List<FacilityModel> facilitiesToUpdate = handleExtractionOfFacilitiesToUpdate(models);
 
         DataPostInsert postInsert;
         if (!csvImport) {
@@ -579,13 +587,19 @@ public class DataLogic {
 
         //Transaction to add data and to add link to devices/annotations, if we were not already in a transaction
         ApiUtils.wrapWithTransaction(
-                (session) -> createManyNoTransaction(
-                        session,
-                        models,
-                        postInsert,
-                        csvImport,
-                        csvValidation
-                ),
+                (session) -> {
+                    //Update the facilities
+                    if(!CollectionUtils.isEmpty(facilitiesToUpdate)){
+                        new FacilityLogic(sparql, nosql.getServiceV2()).updateMany(facilitiesToUpdate);
+                    }
+                    return createManyNoTransaction(
+                            session,
+                            models,
+                            postInsert,
+                            csvImport,
+                            csvValidation
+                    );
+                },
                 this.clientSession,
                 sparql,
                 nosql
@@ -594,9 +608,132 @@ public class DataLogic {
         if (csvImport) {
             return Collections.emptyList();
         }
+
         return models.stream()
                 .map(MongoModel::getUri)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Looks at each of the data targets to see if they are facilities,
+     * if so we might need to update their variables and devices if they were not already present
+     *
+     * Note method is public as it is also used in FacilitiesLinkToVariablesAndDevicesMigration
+     *
+     * @param dataModels to look in
+     * @return a list of facilities that we will need to update with the added variables and devices
+     * @throws Exception
+     */
+    public List<FacilityModel> handleExtractionOfFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        //Maps to remember which facilities have which variables and devices
+        //, we will update the facilities all together at the end
+        Map<String, Set<String>> variablesPerFacility = new HashMap<>();
+        Map<String, Set<String>> devicesPerFacility = new HashMap<>();
+        //Map to remember facility uris that have already come up
+        Map<String, FacilityModel> facilityPerUri =  new HashMap<>();
+        //Set of device type uris encountered (fast faster access after 1 check)
+        Set<String> encounteredDeviceTypes = new HashSet<>();
+
+        //Iterate over data models to save variables and devices if the target is a facility
+        for (DataModel model : dataModels) {
+
+            if (model.getTarget() != null) {
+                String facilityUriString = SPARQLDeserializers.getShortURI(model.getTarget());
+                FacilityModel matchedFacility = facilityPerUri.get(facilityUriString);
+                if(matchedFacility == null){
+                    matchedFacility = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
+                    if(matchedFacility == null){
+                        continue;
+                    }
+                    facilityPerUri.put(facilityUriString, matchedFacility);
+                }
+                // Add variable to this facility
+                Set<String> variablesForFacility = variablesPerFacility.getOrDefault(
+                        facilityUriString,
+                        (!CollectionUtils.isEmpty(matchedFacility.getVariables()) ?
+                                matchedFacility.getVariables().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
+                                        .collect(Collectors.toSet())
+                                : new HashSet<>()
+                        )
+                );
+                boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(model.getVariable()));
+                if(addedVar){
+                    variablesPerFacility.put(facilityUriString, variablesForFacility);
+                }
+                //Add devices to this facility
+                DataProvenanceModel dataProvenanceModel = model.getProvenance();
+                Set<String> devicesForFacility = devicesPerFacility.getOrDefault(
+                        facilityUriString,
+                        (!CollectionUtils.isEmpty(matchedFacility.getDevices()) ?
+                                matchedFacility.getDevices().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
+                                        .collect(Collectors.toSet())
+                                : new HashSet<>()
+                        )
+                );
+                List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
+                if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
+                    for(ProvEntityModel provEntityModel : provWasAssociatedWith){
+                        if(provEntityModel.getType() != null){
+                            String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
+                            if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
+                                encounteredDeviceTypes.add(deviceUriString);
+                                devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
+                            }
+                        }
+                    }
+
+                    devicesPerFacility.put(facilityUriString, devicesForFacility);
+                }
+            }
+        }
+        //Iterate over the encountered facilities to prepare update of their variables and devices
+        List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
+        for(String facilityUri : facilityPerUri.keySet()){
+            FacilityModel nextFacility = facilityPerUri.get(facilityUri);
+            //Only add this facility to the update list if the number of variables or devices has changed
+            if(collectionsAreBothNullOrSameSize(nextFacility.getVariables(), variablesPerFacility.get(facilityUri))
+                    &&
+                collectionsAreBothNullOrSameSize(nextFacility.getDevices(), devicesPerFacility.get(facilityUri))
+            ){
+                continue;
+            }
+            if(!CollectionUtils.isEmpty(variablesPerFacility.get(facilityUri))){
+                nextFacility.setVariables(variablesPerFacility.get(facilityUri).stream()
+                        .map(variableUri -> {
+                            VariableModel variable = new VariableModel();
+                            variable.setUri(URI.create(variableUri));
+                            return variable;
+                        })
+                        .collect(Collectors.toList())
+                );
+            }
+            if(!CollectionUtils.isEmpty(devicesPerFacility.get(facilityUri))){
+                nextFacility.setDevices(devicesPerFacility.get(facilityUri).stream()
+                        .map(deviceUri -> {
+                            DeviceModel device = new DeviceModel();
+                            device.setUri(URI.create(deviceUri));
+                            return device;
+                        })
+                        .collect(Collectors.toList())
+                );
+            }
+            facilitiesToUpdate.add(nextFacility);
+        }
+        return facilitiesToUpdate;
+    }
+
+    private <T extends SPARQLResourceModel> boolean  collectionsAreBothNullOrSameSize(List<T> models, Set<String> uris){
+        boolean modelsEmpty = CollectionUtils.isEmpty(models);
+        boolean urisEmpty = CollectionUtils.isEmpty(uris);
+        if(modelsEmpty && urisEmpty){
+            return true;
+        }
+        if(modelsEmpty != urisEmpty){
+            return false;
+        }
+        //else we know they both aren't empty
+        return models.size() == uris.size();
     }
 
     private int createManyNoTransaction(

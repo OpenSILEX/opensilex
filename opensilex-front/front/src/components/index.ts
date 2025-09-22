@@ -71,11 +71,12 @@ for (const path in modules) {
   const component = (modules[path] as { default : any}).default;
 //   console.log("index.ts  - component : ", component)
 //   console.log("---------------")
-  const componentName = path
+  const componentName : string | undefined = path
   .split("/").pop()
     // .replace(/^\.\/components\//, '')
     .replace(/\.vue$/, '')
     // .replace(/\//g, '-');
+  
   components[`opensilex-${componentName}`] = component;
 }
 console.log("index.ts - components : ", components)

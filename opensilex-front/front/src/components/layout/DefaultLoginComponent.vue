@@ -67,7 +67,7 @@
                   v-bind:src="
                     $opensilex.getResourceURI('images/logo-opensilex.png')
                   "
-                  alt
+                  alt="loginLogo"
                 />
               </slot>
             </div>
@@ -186,7 +186,8 @@ import { User } from "../../models/User";
 // import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
 // import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import type { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
-import type { HttpResponse, OpenSilexResponse } from "opensilex-security/HttpResponse";
+import type { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import HttpResponse from "opensilex-security/HttpResponse";
 
 import { FrontConfigDTO } from "../../lib";
 import { SystemService, VersionInfoDTO } from "opensilex-core/index";
@@ -195,11 +196,13 @@ import { useI18n } from "vue-i18n";
 import { Carousel, Dropdown} from "bootstrap";
 import { connect } from "http2";
 import { useStore } from "vuex";
-
+import { useRoute } from 'vue-router'
 
 export default defineComponent({
     name: 'defaultLoginComponent',
-
+  props: {
+    $opensilex: OpenSilexVuePlugin
+  },
   setup() {
     console.log("setup() exécuté !");
     // injection des dépendances
@@ -207,10 +210,9 @@ export default defineComponent({
     const store = useStore();
     const user = computed(() => store.state.user);
     const isLoggedIn = computed(() => store.state.user.loggedIn);
+    const route = useRoute();
+    console.log("route.matched",route.matched) // ✅ works (reactive object, not a ref)    // définition du formulaire
 
-  
-
-    // définition du formulaire
     const form = ref({
       email: "",
       password: ""

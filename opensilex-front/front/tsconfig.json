@@ -15,13 +15,11 @@
         "resolveJsonModule": true,
         "baseUrl": ".",
         "skipLibCheck": true,
-        "types": ["node", "opensilex-security", "opensilex-core", "opensilex-phis", "vite/client", "vuex/types"],
+        "types": ["node", "vite/client", "vuex/types"],
         "paths": {
-            "@/*": [
-            "src/*"
-        ],
-            "opensilex-security": ["../../opensilex-security/front/src"],
-            "opensilex-core": ["../../opensilex-core/front/src"]
+            "@/*": [  "src/*" ],
+            "opensilex-security": ["../../opensilex-security/front/src/*"],
+            "opensilex-core": ["../../opensilex-core/front/src/*"]
         },
         "lib": [
             "esnext",
@@ -29,14 +27,17 @@
             "dom.iterable",
             "scripthost"
         ]
-    }, 
+    },
+      "vueCompilerOptions": {
+    "nativeTags": ["block", "component", "template", "slot"]
+  },
     "include": [
         "src/**/*.ts",
         "src/**/*.tsx",
         "src/**/*.vue",
         "tests/**/*.ts",
         "tests/**/*.tsx",
-        "src/shims-vue.d.ts"
+        "src/**/*.d.ts"
     ],
     "exclude": [
         "node_modules"

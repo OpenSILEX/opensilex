@@ -87,8 +87,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, inject, getCurrentInstance } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, onMounted, watch, inject, getCurrentInstance } from 'vue';
+import { useRoute , useRouter} from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { Carousel, Dropdown} from "bootstrap";
@@ -111,6 +111,7 @@ const props = defineProps({
 
 // Setup composition API variables
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
 const { t, locale } = useI18n();
 
@@ -180,7 +181,22 @@ const toggleUriSearchBox = (visible) => {
 };
 
 // Lifecycle hooks
-onMounted(() => {
+ 
+
+onMounted(async () => {
+  console.log('Before Router Preparation', router);
+  console.log('Current URL:', window.location.href);
+  console.log('Router options:', router.options);
+  
+  await router.isReady();
+  
+  console.log('After Route Preparation', route.name);
+  console.log('Route object:', route);
+  console.log('Current route value:', router.currentRoute.value);
+  console.log('Route path:', route.path);
+  console.log('Route params:', route.params);
+  console.log('All routes:', router.getRoutes());
+
   console.log("route publique ?  ", route.meta.public)
   console.log("route : ", route)
   console.log("user 👨: ", user)

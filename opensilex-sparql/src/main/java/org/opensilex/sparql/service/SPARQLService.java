@@ -1610,11 +1610,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             updateAutoUpdateFields(mapper, oldInstance, instance);
     }
 
+    /**
+     * Update instances by deleting and re-creating them.
+     * This method handle autoUpdate and IgnoreUpdateIfNull annotations on fields.
+     * For @IgnoreUpdateIfNull, see SPARQLService#updateFields
+     * This method does not delete and recreate dc:publisher and dc:issued relations, in order to keep metadata information.
+     * for mor details see :
+     * @see SPARQLService#createForUpdate(Collection)
+     * @see SPARQLService#deleteForUpdate(Class, List)
+     * @see SPARQLService#updateFields(Node, SPARQLResourceModel, SPARQLResourceModel)
+     */
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
-        update(null, instances);
-    }
-
-    public <T extends SPARQLResourceModel> void update(Node graph, List<T> instances) throws Exception {
         if (instances.isEmpty()) return;
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
@@ -1643,10 +1649,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         .findFirst()
                         .orElse(null);
 
-                Node instanceGraph = graph;
-                if (graph == null) {
-                    instanceGraph = getDefaultGraph(instance.getClass());
-                }
+                Node instanceGraph = getDefaultGraph(instance.getClass());
                 updateFields(instanceGraph, instance, oldInstance);
             }
             createForUpdate(instances);
@@ -1677,7 +1680,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Deprecated
     /**
-     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
+     * @deprecated for inefficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
      */
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, URI uri) throws Exception {
 

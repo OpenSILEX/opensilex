@@ -271,8 +271,8 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             // batch validation and custom consumer use
             if(validator.isValid()){
-                batchValidation(validator, modelChunkToCreate,totalRowIdx-chunkRowIdx);
-                batchValidation(validator, modelChunkToUpdate,totalRowIdx-chunkRowIdx);
+                batchValidation(validator, modelChunkToCreate,totalRowIdx-chunkRowIdx, false);
+                batchValidation(validator, modelChunkToUpdate,totalRowIdx-chunkRowIdx, true);
 
                 if(modelsConsumer != null){
                     modelsConsumer.accept(validator.getValidationModel(), modelChunkToCreate.stream());
@@ -337,23 +337,36 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      *
      * @param restrictionValidator OWL validator
      * @param models chunk of models
+     * @param offset current index in CSV file
+     * @param forUpdate if true, then the batch contains objects with uri's already present in the system, the batch therefor concerns an update
      *
      * @throws IOException if some error occurs during custom validation
      */
-    protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<T> models, int offset) throws IOException {
+    protected void customBatchValidation(
+            CsvOwlRestrictionValidator restrictionValidator,
+            List<T> models,
+            int offset,
+            boolean forUpdate
+    ) throws IOException {
         // no custom batch validation
     }
 
     /**
-     * Performs batch validation by applying {@link CsvOwlRestrictionValidator#batchValidation()} and {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int)}
+     * Performs batch validation by applying {@link CsvOwlRestrictionValidator#batchValidation()} and {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int, boolean)}
      * @param restrictionValidator OWL validator
      * @param models chunk of models
      * @param offset current index in CSV file
+     * @param forUpdate if true, then the batch contains objects with uri's already present in the system, the batch therefor concerns an update
      * @throws IOException if some error occurs during custom validation
      */
-    private void batchValidation(CsvOwlRestrictionValidator restrictionValidator, List<T> models, int offset) throws IOException {
+    private void batchValidation(
+                CsvOwlRestrictionValidator restrictionValidator,
+                List<T> models,
+                int offset,
+                boolean forUpdate
+            ) throws IOException {
         restrictionValidator.batchValidation();
-        customBatchValidation(restrictionValidator,models,offset);
+        customBatchValidation(restrictionValidator,models,offset, forUpdate);
     }
 
     /**

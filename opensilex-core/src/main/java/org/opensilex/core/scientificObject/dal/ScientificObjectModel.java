@@ -40,6 +40,8 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     )
     protected ExperimentModel experiment;
 
+    public static String PARTICIPATES_IN_FIELD = "experiment";
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf",

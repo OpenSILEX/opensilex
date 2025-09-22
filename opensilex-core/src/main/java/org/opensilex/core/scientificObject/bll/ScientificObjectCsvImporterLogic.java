@@ -5,6 +5,8 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
@@ -19,8 +21,10 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
@@ -35,15 +39,21 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * Specialization of {@link AbstractCsvImporter} for {@link Oeso#ScientificObject}. <br>
@@ -395,13 +405,63 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     }
 
     @Override
-    protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
+    protected void customBatchValidation(
+                CsvOwlRestrictionValidator restrictionValidator,
+                List<ScientificObjectModel> modelChunk,
+                int offset,
+                boolean forUpdate
+            ) throws IOException{
+        //If inside experiment validations
         if (experiment != null) {
             // check if there are any duplicate names within CSV
             checkLocalDuplicateNames(restrictionValidator, modelChunk, offset);
             // check if there are any duplicate URIs within CSV
             checkLocalDuplicateURIs(restrictionValidator, modelChunk, offset);
         }
+        //Validations to perform if batch concerns an update
+        if(forUpdate){
+            //TODO MAX delete this is doing it with perso request works out
+            //Fetch old types of the uris to test if they are being updated.
+            /*OntologyDAO dao = new OntologyDAO(sparql);
+            try{
+                List<URITypesDTO> types = dao.getSuperClassesByURI(modelChunk.stream().map(SPARQLResourceModel::getUri).toList())
+                        .stream().map(URITypesDTO::fromModel)
+                        .collect(Collectors.toList());
+            }catch(Exception e){
+                throw new IOException("Some problem occurred while fetching types.");
+            }*/
+            try{
+                SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(
+                        modelChunk.stream().map(SPARQLResourceModel::getUri).toList()
+                );
+                sparql.search()
+            }catch(Exception e){
+                throw new IOException("Some problem occurred while fetching types.");
+            }
+
+        }
+    }
+
+    private SelectBuilder createTypeTestRequest(List<URI> osUrisToUpdate) throws Exception{
+        SelectBuilder select = new SelectBuilder();
+        //We're only searching in the global graph as the participatesIn property will suffice
+        final Node contextNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var experimentVar = makeVar(ScientificObjectModel.PARTICIPATES_IN_FIELD);
+
+        select.addVar(uriVar);
+        select.addVar(typeVar);
+        select.addVar(experimentVar);
+
+        select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
+        select.addWhere(uriVar, RDF.type, typeVar);
+        select.addWhere(uriVar, Oeso.participatesIn, experimentVar);
+
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate);
+
+        return select;
     }
 
     private void checkLocalDuplicateNames(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {

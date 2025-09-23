@@ -26,5 +26,7 @@ fonts:
 iconClassesRDF:
     "org:Site": "fa#map-marker-alt"
     "http://www.w3.org/ns/org#Site": "fa#map-marker-alt"
+    "vocabulary:Facility": "ik#ik-globe"
+    "http://www.opensilex.org/vocabulary/oeso#Facility": "ik#ik-globe"
     
 

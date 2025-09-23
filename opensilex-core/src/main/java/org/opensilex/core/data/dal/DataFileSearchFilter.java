@@ -10,6 +10,7 @@ import java.util.Collection;
 
 public class DataFileSearchFilter extends MongoSearchFilter {
 
+    String name;
     AccountModel user;
     Collection<URI> experiments;
     Collection<URI> targets;
@@ -21,6 +22,7 @@ public class DataFileSearchFilter extends MongoSearchFilter {
     Float confidenceMax;
     Document metadata;
     Collection<URI> operators;
+    URI batchUri;
 
     public AccountModel getUser() {
         return user;
@@ -118,6 +120,24 @@ public class DataFileSearchFilter extends MongoSearchFilter {
 
     public DataFileSearchFilter setOperators(Collection<URI> operators) {
         this.operators = operators;
+        return this;
+    }
+
+    public URI getBatchUri() {
+        return batchUri;
+    }
+
+    public DataFileSearchFilter setBatchUri(URI batchUri) {
+        this.batchUri = batchUri;
+        return this;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public DataFileSearchFilter setName(String name) {
+        this.name = name;
         return this;
     }
 }

@@ -48,14 +48,14 @@
           <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
               @click="emitOnEdit(data.item)"
-              label="component.common.update"
+              label="component.site.update"
               :small="true"
           ></opensilex-EditButton>
 
           <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
               @click="onDeleteClick(data.item)"
-              label="component.common.delete"
+              label="component.site.delete"
               :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>

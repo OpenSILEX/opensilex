@@ -105,7 +105,6 @@
     <opensilex-TableView
         :items="organizations"
         :fields="fields"
-        pageSize="20"
         sortBy="name"
     >
       <template v-slot:cell(name)="{data}">
@@ -133,14 +132,14 @@
           <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
               @click="emitOnEdit(data.item)"
-              label="component.common.update"
+              label="component.organization.update"
               :small="true"
           ></opensilex-EditButton>
 
           <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
               @click="onDeleteClick(data.item)"
-              label="component.common.delete"
+              label="component.organization.delete"
               :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>
@@ -256,7 +255,7 @@ export default class OrganizationList extends Vue {
         .deleteOrganization(dto.uri)
         .then(() => {
           this.refresh();
-          this.$opensilex.showSuccessToast("component.common.delete.success")
+          this.$opensilex.showSuccessToast(dto.name+" "+this.$i18n.t("component.common.success.delete-success-message"))
         })
         .catch(this.$opensilex.errorHandler);
   }

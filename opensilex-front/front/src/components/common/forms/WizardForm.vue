@@ -49,6 +49,8 @@
             @clear="clearForm"
             @agroportalTermSelected="agroportalTermSelected"
             @agroportalTermUnselected="agroportalTermUnselected"
+            @geometryIsNotSaved="geometryIsNotSaved"
+            @positionIsValid="positionIsValid"
           >
             <template v-for="slot of step.slots" v-slot:[slot]="scope">
               <slot :name="slot" v-bind="scope"></slot>
@@ -102,6 +104,8 @@
 <script lang="ts">
 import {Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import VueI18n from "vue-i18n";
 
 export interface WizardFormStep {
   component: string,
@@ -117,6 +121,7 @@ export interface WizardFormStep {
 @Component
 export default class WizardForm extends Vue {
   $opensilex: any;
+  $i18n: VueI18n;
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("wizardRef") readonly wizardRef!: any;
@@ -163,6 +168,15 @@ export default class WizardForm extends Vue {
   @Prop()
   nextStepAction: Function;
 
+  private geometryNotSaved: boolean = false;
+
+  private geometryIsNotSaved() {
+    this.geometryNotSaved = true;
+  }
+
+  private positionIsValid() {
+    this.geometryNotSaved = false;
+  }
 
   agroportalTermSelected(){
     this.$emit("agroportalTermSelected")
@@ -306,6 +320,13 @@ export default class WizardForm extends Vue {
   validate(props) {
     this.validateStep(props).then(isValid => {
       if (isValid) {
+
+        if(this.geometryNotSaved){
+          this.$opensilex.showInfoToast(
+            this.$i18n.t("OrganizationFacilityForm.geometryIsNotSaved")
+          );
+          return; // stop the validation if a geometry is completed but not saved
+        } 
 
         if (this.validateAction) {
           if (!this.validateAction(this.form)) {

@@ -14,6 +14,7 @@ package org.opensilex.core.location.bll;
 import org.opensilex.core.location.dal.LocationObservationCollectionDAO;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -45,6 +46,14 @@ public class LocationObservationCollectionLogic {
         return locationObservationCollectionDAO.create(locationObservationCollectionModel);
     }
 
+    public URI getLocationObservationCollectionURI(URI featureOfInterest) {
+        try {
+            return locationObservationCollectionDAO.getCollectionURI(featureOfInterest);
+        } catch (Exception e) {
+            throw new NotFoundURIException("No location collection found for this URI", featureOfInterest);
+        }
+    }
+
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {
         locationObservationCollectionDAO.delete(collectionURI);
     }
@@ -59,7 +68,7 @@ public class LocationObservationCollectionLogic {
                 throw new BadRequestException("Invalid observation collection model : observation collection must be unique for each feature of interest");
             }
         } catch (SPARQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unexpected error when checking location collection", e);
         }
     }
     //#endregion

@@ -28,7 +28,7 @@
 
 # Using the ready to use Docker
 
-Before reading this document, you can check the [docker container for OpenSILEX ](https://forgemia.inra.fr/OpenSILEX/opensilex-docker-compose)
+Before reading this document, you can check the [docker container for OpenSILEX ](https://forge.inrae.fr/OpenSILEX/opensilex-docker-compose)
 This docker container allows you to install and configure OpenSILEX and all required databases (RDF4J and MongoDB) within only a few steps.
 
 If you prefer a fine tuned control on the installed databases or if you prefer a custom installation, you are at the right place !
@@ -260,7 +260,7 @@ big-data:
       database: opensilex
 ```
 
-**N.B.** The ontologies OESO and OEEV are stored in [opensilex-core/src/main/resources/ontologies](https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-/tree/master/opensilex-core/src/main/resources/ontologies). Other specific ontologies can be stored in each module.
+**N.B.** The ontologies OESO and OEEV are stored in [opensilex-core/src/main/resources/ontologies](https://forge.inrae.fr/OpenSILEX/opensilex-dev/-/tree/master/opensilex-core/src/main/resources/ontologies). Other specific ontologies can be stored in each module.
 
 ### Configure logging
 

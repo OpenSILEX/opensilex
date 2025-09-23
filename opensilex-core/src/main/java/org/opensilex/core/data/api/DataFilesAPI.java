@@ -7,18 +7,22 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Files;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
-import com.mongodb.MongoWriteException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.data.dal.*;
+import org.opensilex.core.data.dal.DataFileDaoV2;
+import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.data.dal.DataFileSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
@@ -26,36 +30,37 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
-import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
-import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
-import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -64,6 +69,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.pagination.PaginatedSearchStrategy;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +81,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -82,8 +91,9 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
-import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
 import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
@@ -103,7 +113,11 @@ public class DataFilesAPI {
     
     public static final String DATAFILE_EXAMPLE_URI = "http://opensilex.dev/id/file/1598857852858";
     public static final String DATAFILE_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Image";
-    
+
+    private static final Set<String> THUMBNAIL_EXTENSIONS = Set.of("png", "jpg", "gif", "bmp", "jpeg", "PNG", "JPG", "GIF", "BMP");
+    private static final Set<String> TIFF_EXTENSIONS = Set.of("tiff", "tif");
+
+
     @Inject
     private MongoDBService nosql;
     
@@ -280,10 +294,46 @@ public class DataFilesAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response countDatafiles(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") List<URI> target,
-        @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
+            @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+    ) throws  Exception {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
-        DataFileSearchFilter filter = new DataFileSearchFilter().setDevices(device).setTargets(target).setUser(user);
+
+        DataFileSearchFilter filter = null;
+
+        try{
+            filter = this.createDataFileSearchFilter(
+                    name,
+                    rdfType,
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    target,
+                    device,
+                    provenances,
+                    metadata,
+                    null,
+                    null,
+                    null
+            );
+        }
+        catch(DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }
+        catch(IllegalArgumentException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
+                    .getResponse();
+        }
+
         long countResult = dao.count(filter);
 
         return new SingleObjectResponse<>(countResult).getResponse();
@@ -406,30 +456,51 @@ public class DataFilesAPI {
         try {
             DataFileModel description = dao.get(uri);
 
-            Pattern pattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
-            if( pattern.matcher(description.getFilename()).matches()) {
-                byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+            // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
+            String fileExt = Files.getFileExtension(description.getFilename());
 
-                byte[] imageData = ImageResizer.getInstance().resize(
-                        image,
-                        scaledWidth,
-                        scaledHeight
-                );
-
-                return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                        .build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            // Non handled file type
+            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
+                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
+                return new BadRequestException("the file is not an image with a valid extension in the following list: " + everyExtensions).getResponse();
             }
 
+            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
 
+            // Handle tiff : convert to PNG
+            if(TIFF_EXTENSIONS.contains(fileExt)){
+                image = convertTIFFToPNG(image);
+            }
 
+            return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
 
         } catch (NoSQLInvalidURIException e) {
-            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            return new NotFoundException(String.format("image with uri : %s was not found in the file system", uri), "image not found").getResponse();
         } catch (java.io.IOException e) {
-            return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+            return new UnexpectedErrorException(e).getResponse();
+        }
+    }
+
+    private Response resizeImageAndGetResponse(byte[] convertedImage, String fileName, Integer scaledWidth, Integer scaledHeight) throws IOException {
+        byte[] resizedImage = ImageResizer.getInstance().resize(
+                convertedImage,
+                scaledWidth,
+                scaledHeight
+        );
+
+        return Response.ok(resizedImage, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"") //optional
+                .build();
+    }
+
+    private static byte[] convertTIFFToPNG(byte[] tiffBytes) throws IOException {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(tiffBytes);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            BufferedImage tiffImage = ImageIO.read(inputStream);
+            ImageIO.write(tiffImage, "png", outputStream);
+
+            return outputStream.toByteArray();
         }
     }
     
@@ -459,6 +530,7 @@ public class DataFilesAPI {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescriptionsBySearch(
+            @ApiParam(value = "Regex pattern for filtering by filename", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
             @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
@@ -473,7 +545,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
 
     ) throws Exception {
-        return  searchDataFiles(rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+        return  searchDataFiles(name, rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
     }
 
     @POST
@@ -486,6 +558,7 @@ public class DataFilesAPI {
             @ApiResponse(code = 200, message = "Return data file list", response = DataFileGetDTO.class, responseContainer = "List")
     })
     public Response getDataFileDescriptionsByTargets(
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
             @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
@@ -503,10 +576,25 @@ public class DataFilesAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return  searchDataFiles(rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+        return  searchDataFiles(
+                name,
+                rdfType,
+                startDate,
+                endDate,
+                timezone,
+                experiments,
+                targets,
+                devices,
+                provenances,
+                metadata,
+                orderByList,
+                page,
+                pageSize
+        );
     }
 
     private Response searchDataFiles(
+            String name,
             URI rdfType,
             String startDate,
             String endDate,
@@ -523,76 +611,49 @@ public class DataFilesAPI {
     ) throws Exception {
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
+        DataFileSearchFilter filter = null;
 
-        if (startDate != null) {
-            try  {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+        try{
+            filter = this.createDataFileSearchFilter(
+                    name,
+                    rdfType,
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    targets,
+                    devices,
+                    provenances,
+                    metadata,
+                    orderByList,
+                    page,
+                    pageSize
+            );
         }
-
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+        catch(DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
         }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
+        catch(IllegalArgumentException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
+                    .getResponse();
         }
-
-        Set<URI> rdfTypes = new HashSet<>();
-
-        if (rdfType != null) {
-            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
-            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
-            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
-            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType)));
-        }
-
-        DataFileSearchFilter filter = new DataFileSearchFilter()
-                .setUser(user)
-                .setExperiments(experiments)
-                .setTargets(targets)
-                .setProvenances(provenances)
-                .setDevices(devices)
-                .setStartDate(startInstant)
-                .setEndDate(endInstant)
-                .setMetadata(metadataFilter);
-
-        filter.setRdfTypes(rdfTypes);
-        filter.setOrderByList(orderByList);
-        filter.setPage(page);
-        filter.setPageSize(pageSize);
 
         //Map of publisher uris to lists of DataFileGetDTOs to optimize setting of publisher information
         Map<URI, List<DataFileGetDTO>> publishersToDataFiles = new HashMap<>();
-        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
-                new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
-                        .setFilter(filter)
-                        .setConvertFunction(model -> {
-                            DataFileGetDTO next = DataFileGetDTO.fromModel(model);
-                            if (Objects.nonNull(model.getPublisher())) {
-                                List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
-                                publishersDataFiles.add(next);
-                                publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
-                            }
-                            return next;
-                        })
-                        .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
-        );
+        MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO> query = new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
+                .setFilter(filter)
+                .setConvertFunction(model -> {
+                    DataFileGetDTO nextDto = DataFileGetDTO.fromModel(model);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
+                        publishersDataFiles.add(nextDto);
+                        publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
+                    }
+                    return nextDto;
+                })
+                .setPaginationStrategy(PaginatedSearchStrategy.HAS_NEXT_PAGE);
+
+        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(query);
         //Fetch all the publishers in one call
         new AccountDAO(sparql).getList(new ArrayList<>(publishersToDataFiles.keySet())).forEach(
                 accountModel -> publishersToDataFiles.get(accountModel.getUri()).forEach(
@@ -738,5 +799,80 @@ public class DataFilesAPI {
             });
         }
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    /**
+     * this function creates a DataFileSearchFilter that is used by the search and count services.
+     */
+    private DataFileSearchFilter createDataFileSearchFilter(
+            String name,
+            URI rdfType,
+            String startDate,
+            String endDate,
+            String timezone,
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> devices,
+            List<URI> provenances,
+            String metadata,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws DateValidationException, IllegalArgumentException, SPARQLException {
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+        }
+
+        if (endDate != null) {
+            endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("METADATA_PARAM_ERROR");
+            }
+        }
+
+        Set<URI> rdfTypes = new HashSet<>();
+
+        if (rdfType != null) {
+            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
+            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
+            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
+            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType)));
+        }
+
+        DataFileSearchFilter filter = new DataFileSearchFilter()
+                .setName(name)
+                .setUser(user)
+                .setExperiments(experiments)
+                .setTargets(targets)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setMetadata(metadataFilter);
+
+        if(!CollectionUtils.isEmpty(rdfTypes)){
+            filter.setRdfTypes(rdfTypes);
+        }
+        if(!CollectionUtils.isEmpty(orderByList)){
+            filter.setOrderByList(orderByList);
+        }
+        if(Objects.nonNull(page)){
+            filter.setPage(page);
+        }
+        if(Objects.nonNull(pageSize)){
+            filter.setPageSize(pageSize);
+        }
+
+        return filter;
     }
 }

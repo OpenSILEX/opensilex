@@ -24,6 +24,7 @@ import org.opensilex.core.annotation.api.AnnotationGetDTO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataCreationDTO;
+import org.opensilex.core.data.api.DataFileCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
@@ -32,6 +33,7 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -49,10 +51,9 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -239,6 +240,37 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         provenanceImportIntegerDatatypeError = createOneProvenance("Import test : integer with datatype errors");
         provenanceImportDateDatatypeError = createOneProvenance("Import test : date with datatype errors");
         provenanceImportDatetimeDatatypeError = createOneProvenance("Import test : date with datatype errors");
+    }
+
+    public DataFileCreationDTO getCreationFileDTO() throws URISyntaxException, Exception {
+        DataFileCreationDTO dataDTO = new DataFileCreationDTO();
+
+        dataDTO.setProvenance(new DataProvenanceModel());
+        dataDTO.getProvenance().setUri(globalProvenanceURI);
+
+        dataDTO.setRdfType(new URI(Oeso.Image.toString()));
+        dataDTO.setDate("2025-03-06");
+
+        return dataDTO;
+    }
+
+    protected DataFileCreationDTO createDatafile() throws Exception{
+        File file = tmpFolder.newFile("testFile.txt");
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write("test".getBytes());
+        }
+
+        final FormDataMultiPart mp = new FormDataMultiPart();
+        DataFileCreationDTO dto = getCreationFileDTO();
+
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+        MultiPart multipart = new FormDataMultiPart().field("description", dto, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+
+
+        final Response postResult = getJsonPostResponseMultipart(target(DataFileAPITest.createPath), multipart);
+
+        dto.setUri(extractUriFromResponse(postResult));
+        return dto;
     }
 
     public DataCreationDTO getCreationDataDTO(String date) {
@@ -536,6 +568,72 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         creationDTO.setProvenance(provenanceModel);
         final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+    }
+
+    @Test
+    public void testCreateWithWrongDatafileAsProvActivityShouldFail() throws Exception {
+        var datafile = createDatafile();
+
+        var provActivityDevice = new ProvEntityModel();
+        provActivityDevice.setUri(device.getUri());
+        provActivityDevice.setType(device.getType());
+        var provActivityDatafile = new ProvEntityModel();
+        provActivityDatafile.setUri(URI.create("http://opensilex.org/wrong/datafile"));
+        provActivityDatafile.setType(datafile.getRdfType());
+
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        provenanceModel.setExperiments(provenanceWithXP.getExperiments());
+        provenanceModel.setProvUsed(List.of(provActivityDevice, provActivityDatafile));
+
+        DataCreationDTO creationDTO = getCreationDataDTO("2025-03-06");
+        creationDTO.setProvenance(provenanceModel);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+    }
+
+    @Test
+    public void testCreateWithWrongDeviceAsProvActivityShouldFail() throws Exception {
+        var datafile = createDatafile();
+
+        var provActivityDevice = new ProvEntityModel();
+        provActivityDevice.setUri(URI.create("http://opensilex.org/wrong/device"));
+        provActivityDevice.setType(device.getType());
+        var provActivityDatafile = new ProvEntityModel();
+        provActivityDatafile.setUri(datafile.getUri());
+        provActivityDatafile.setType(datafile.getRdfType());
+
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        provenanceModel.setExperiments(provenanceWithXP.getExperiments());
+        provenanceModel.setProvUsed(List.of(provActivityDevice, provActivityDatafile));
+
+        DataCreationDTO creationDTO = getCreationDataDTO("2025-03-06");
+        creationDTO.setProvenance(provenanceModel);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResultData.getStatus());
+    }
+
+    @Test
+    public void testCreateWithDatafileAndDeviceAsProvActivityOK() throws Exception {
+        var datafile = createDatafile();
+
+        var provActivityDevice = new ProvEntityModel();
+        provActivityDevice.setUri(device.getUri());
+        provActivityDevice.setType(device.getType());
+        var provActivityDatafile = new ProvEntityModel();
+        provActivityDatafile.setUri(datafile.getUri());
+        provActivityDatafile.setType(datafile.getRdfType());
+
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceWithXP.getUri());
+        provenanceModel.setExperiments(provenanceWithXP.getExperiments());
+        provenanceModel.setProvUsed(List.of(provActivityDevice, provActivityDatafile));
+
+        DataCreationDTO creationDTO = getCreationDataDTO("2025-03-06");
+        creationDTO.setProvenance(provenanceModel);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
     }
 
     @Test

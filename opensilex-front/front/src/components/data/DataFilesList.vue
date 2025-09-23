@@ -3,6 +3,7 @@
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="searchDatafiles"
+      :countMethod="countDatafiles"
       :fields="fields"
       defaultSortBy="name"
     >
@@ -78,12 +79,13 @@ import Vue from "vue";
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import {DataService} from "opensilex-core/api/data.service";
 
 @Component
 export default class DataFilesList extends Vue {
   $opensilex: any;
   $store: any;
-  service: any;
+  service: DataService;
   ontologyService: OntologyService;
   routeArr : string[] = this.$route.path.split('/');
 
@@ -93,6 +95,7 @@ export default class DataFilesList extends Vue {
   @Prop({
     default: () => {
       return {
+        name: null,
         start_date: null,
         end_date: null,
         rdf_type: null,
@@ -240,6 +243,26 @@ export default class DataFilesList extends Vue {
   provenances = {};
   objectsPath = {};
 
+  countDatafiles() {
+    let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+    if (provUris != undefined) {
+      provUris = [provUris];
+    }
+
+    return this.service.countDatafiles(
+      this.filter.scientificObjects,
+      this.filter.devices,
+      this.$opensilex.prepareGetParameter(this.filter.name),
+      this.$opensilex.prepareGetParameter(this.filter.rdf_type),
+      this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
+      this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
+      undefined, // timezone,
+      this.filter.experiments, // experiments
+      provUris, // provenances
+      undefined // metadata
+    );
+  }
+
   searchDatafiles(options) {
     let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
     if (provUris != undefined) {
@@ -248,6 +271,7 @@ export default class DataFilesList extends Vue {
 
     return new Promise((resolve, reject) => {
         this.service.getDataFileDescriptionsByTargets(
+          this.$opensilex.prepareGetParameter(this.filter.name),
           this.$opensilex.prepareGetParameter(this.filter.rdf_type),
           this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
           this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date

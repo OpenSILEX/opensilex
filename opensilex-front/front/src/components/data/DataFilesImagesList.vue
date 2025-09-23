@@ -223,6 +223,7 @@ export default class DataFilesImagesList extends Vue {
     return new Promise((resolve, reject) => {
       this.service
           .getDataFileDescriptionsByTargets(
+              this.filter.name,
               this.filter.rdf_type
                   ? this.filter.rdf_type
                   : this.$opensilex.Oeso.IMAGE_TYPE_URI,

@@ -225,6 +225,8 @@ components["opensilex-AddressForm"] = AddressForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
+import DateTimeRangeForm from './common/forms/DateTimeRangeForm.vue'
+components["opensilex-DateTimeRangeForm"] = DateTimeRangeForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -280,8 +282,8 @@ import TableView from './common/views/TableView.vue'
 components["opensilex-TableView"] = TableView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
-import DataTableAsyncView from './common/views/DataTableAsyncView.vue'
-components["opensilex-DataTableAsyncView"] = DataTableAsyncView;
+import NbElementPerPageSelector from "./common/views/NbElementPerPageSelector.vue";
+components["opensilex-NbElementPerPageSelector"] = NbElementPerPageSelector;
 import Card from './common/views/Card.vue'
 components["opensilex-Card"] = Card;
 import ModalListBuilder from './common/views/ModalListBuilder.vue'
@@ -705,6 +707,8 @@ import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
 components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
+import BatchDetails from './data/BatchDetails.vue';
+components["opensilex-BatchDetails"] = BatchDetails;
 import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';
@@ -740,6 +744,8 @@ import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
 import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
+import DeleteByBatchModal from './data/DeleteByBatchModal.vue';
+components["opensilex-DeleteByBatchModal"] = DeleteByBatchModal;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';
@@ -773,6 +779,16 @@ components["opensilex-GlobalMapView"] = GlobalMapView;
 import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
 components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
 
+//LOCATION
+import LocationModalForm from "./location/form/LocationModalForm.vue";
+components["opensilex-LocationModalForm"] = LocationModalForm;
+import LocationForm from "./location/form/LocationForm.vue";
+components["opensilex-LocationForm"] = LocationForm;
+import LocationsForm from "./location/form/LocationsForm.vue";
+components["opensilex-LocationsForm"] = LocationsForm;
+import LocationList from "./location/list/LocationList.vue";
+components["opensilex-LocationList"] = LocationList;
+
 // VISUALIZATION
 
 import ImageGrid from './visualization/ImageGrid.vue';
@@ -802,6 +818,8 @@ import AnnotationForm from './annotations/form/AnnotationForm.vue';
 components["opensilex-AnnotationForm"] = AnnotationForm;
 import AnnotationList from './annotations/list/AnnotationList.vue';
 components["opensilex-AnnotationList"] = AnnotationList;
+import AnnotationDetails from './annotations/form/AnnotationDetails.vue';
+components["opensilex-AnnotationDetails"] = AnnotationDetails;
 
 // DEVICES
 import DeviceView from './devices/DeviceView.vue';

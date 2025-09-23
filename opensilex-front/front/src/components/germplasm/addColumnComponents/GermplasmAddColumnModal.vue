@@ -76,7 +76,7 @@ export default class GermplasmAddColumnModal extends Vue {
    * @Pre The uri choice and labels were previously got together so we can assume that the filtered list will always have size 1
    */
   getColumnNameForExistingPropertyUri(): string{
-    let filteredByUri: Array<SelectableItem> = this.existingRdfAttributesObjects.filter(selectableItem => this.$opensilex.checkURIs(selectableItem.id, this.chosenPropertyUri));
+    let filteredByUri: Array<SelectableItem> = this.existingRdfAttributesObjects.filter(selectableItem => this.$opensilex.compareUris(selectableItem.id, this.chosenPropertyUri));
     return filteredByUri[0].label;
   }
 

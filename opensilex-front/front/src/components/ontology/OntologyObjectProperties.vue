@@ -163,14 +163,14 @@ export default class OntologyObjectProperties extends Vue {
         let map = new Map<string, PropertyDetail>();
         relations
             .filter(relation => relation.inverse === incoming)
-            .filter(relation => !ignore.some(excludedUri => this.$opensilex.checkURIs(excludedUri, relation.property)))
+            .filter(relation => !ignore.some(excludedUri => this.$opensilex.compareUris(excludedUri, relation.property)))
           //For now filter out unknown properties (can only happen on incoming properties)
           //@todo make the service getRDFTypeProperties also return the incoming properties
-            .filter(relation => propertyDefinitions.some(definition => this.$opensilex.checkURIs(definition.uri, relation.property)))
+            .filter(relation => propertyDefinitions.some(definition => this.$opensilex.compareUris(definition.uri, relation.property)))
             .forEach(relation => {
                 if (!map.has(relation.property)) {
                     map.set(relation.property, {
-                        detail: propertyDefinitions.find(definition => this.$opensilex.checkURIs(definition.uri, relation.property)),
+                        detail: propertyDefinitions.find(definition => this.$opensilex.compareUris(definition.uri, relation.property)),
                         values: []
                     });
                 }

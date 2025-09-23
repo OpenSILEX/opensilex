@@ -128,10 +128,7 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     protected Boolean isPublic;
     public static final String IS_PUBLIC_FIELD = "isPublic";
 
-//    @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "measures"
-//    )
+
     List<URI> variables;
     public static final String VARIABLES_FIELD = "variables";
 

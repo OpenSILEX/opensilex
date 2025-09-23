@@ -66,6 +66,27 @@ $ sudo sysctl fs.inotify.max_user_watches=524288
 $ sudo sysctl -p
 ```
 
+## Surfire error (mvn clean install get an error on NoSQL test module)
+
+If you are on Ubuntu 22 or more, you may need to install an old version of libssl, the libssl1.1.1
+
+Check if you have it installed with this command:
+```sh
+dpkg -l | grep libssl
+```
+
+If you have it installed, you should see something like this:
+```
+ii  libssl1.1:amd64                            1.1.1f-1ubuntu2.20                                amd64        Secure Sockets Layer toolkit - shared libraries
+```
+make sure it is version 1.1.1 and not 1.1.0 or else.
+
+If you don't have it installed, you can install it with the following commands:
+```sh
+wget https://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1n-0+deb10u6_amd64.deb
+sudo dpkg -i libssl1.1_1.1.1n-0+deb10u6_amd64.deb
+```
+
 # Run issues
 
 ## Authentication

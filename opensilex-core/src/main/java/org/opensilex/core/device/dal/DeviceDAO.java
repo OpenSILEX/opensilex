@@ -455,7 +455,7 @@ public class DeviceDAO {
     // Map which associates each type with its root type
     public Map<URI, URI> getRootDeviceTypes(AccountModel user) throws Exception {
 
-        SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
+        SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), false);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
 
         Map<URI, URI> map = new HashMap<>();

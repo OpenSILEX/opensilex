@@ -10,12 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.experiment.api.ExperimentDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -240,30 +240,44 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         this.groupsUsers = groups;
     }
 
-
-
-    public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
-        GermplasmModel model = new GermplasmModel();
+    /**
+     * WARNING: this method validate the properties of the GermplasmCreationDTO, that should be done in the business layer, but this would require refactoring.
+     */
+    public GermplasmModel newModel(SPARQLService sparql, String lang, ClassModel classModel) throws SPARQLException, URISyntaxException, InvalidValueException {
+        GermplasmModel model = newModelWithoutRelations();
 
         if (isPublic != null) {
-            model.setIsPublic(Boolean.valueOf(isPublic));
+            model.setIsPublic(isPublic);
         }
+
+        if(relations != null){
+            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+            if (classModel == null) {
+                classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            }
+            RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
+        }
+
+        return model;
+    }
+
+    /**
+     * Create a new GermplasmModel and ignore relations (like germplasm parents)
+     */
+    public GermplasmModel newModelWithoutRelations(){
+        GermplasmModel model = new GermplasmModel();
 
         if (uri != null) {
             model.setUri(uri);
         }
-        if(relations != null){
-            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
-            RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
-        }
+
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
         if (type != null) {
             model.setType(type);
         }
-        
+
         if (species != null) {
             GermplasmModel speciesModel = new GermplasmModel();
             speciesModel.setUri(this.species);
@@ -283,32 +297,32 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         if (institute != null) {
             model.setInstitute(institute);
         }
-        
+
         if (productionYear != null) {
             model.setProductionYear(productionYear);
         }
-        
+
         if (description != null) {
             model.setComment(description);
-        }        
-        
+        }
+
         if (metadata != null ) {
-           model.setMetadata(new MetaDataModel());
-           model.getMetadata().setAttributes(metadata);
+            model.setMetadata(new MetaDataModel());
+            model.getMetadata().setAttributes(metadata);
         }
 
         if (synonyms != null) {
             List<String> synonymsList = new ArrayList<>(synonyms.size());
             synonymsList.addAll(synonyms);
             model.setSynonyms(synonymsList);
-        }        
-        
+        }
+
         if (code != null) {
             model.setCode(code);
         }
-        
+
         if (website != null) {
-            model.setWebsite(website);                    
+            model.setWebsite(website);
         }
         List<GroupModel> groupList = new ArrayList<>(groupsUsers.size());
         groupsUsers.forEach((URI u) -> {

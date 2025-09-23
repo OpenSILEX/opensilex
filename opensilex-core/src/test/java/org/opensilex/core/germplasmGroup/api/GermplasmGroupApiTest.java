@@ -11,13 +11,9 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
@@ -25,7 +21,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertEquals;
@@ -69,9 +67,9 @@ public class GermplasmGroupApiTest extends AbstractMongoIntegrationTest {
         germplasmDAO = new GermplasmDAO(sparqlService, mongoDBService);
         GermplasmCreationDTO testSpecies1Dto = getCreationSpeciesDTO("1");
         GermplasmCreationDTO testSpecies2Dto = getCreationSpeciesDTO("2");
-        GermplasmModel testSpecies1model = testSpecies1Dto.newModel(null, null);
+        GermplasmModel testSpecies1model = testSpecies1Dto.newModel(null, null, null);
         testSpecies1CreatedModel = germplasmDAO.create(testSpecies1model);
-        GermplasmModel testSpecies2model = testSpecies2Dto.newModel(null, null);
+        GermplasmModel testSpecies2model = testSpecies2Dto.newModel(null, null, null);
         testSpecies2CreatedModel = germplasmDAO.create(testSpecies2model);
 
         //a pre created group to test stuff on

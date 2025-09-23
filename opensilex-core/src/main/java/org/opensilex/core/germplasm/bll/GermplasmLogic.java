@@ -105,7 +105,16 @@ public class GermplasmLogic {
         return dao.get(instanceURI, currentUser, withNested);
     }
 
-    // ################################## méthode maj avec searchfilter
+    /**
+     * Recherche paginée de {@link GermplasmModel} via le DAO selon les critères fournis.
+     *
+     * @param searchFilter       critères de recherche (filtres, pagination, tri, droits d’accès)
+     * @param fetchMetadata      {@code true} pour charger aussi les métadonnées associées
+     * @param fetchNestedObjects {@code true} pour charger aussi les objets liés (parents, relations, etc.)
+     * @return liste paginée de {@link GermplasmModel} correspondant aux critères
+     * @throws Exception si une erreur survient lors de la recherche
+     */
+
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,

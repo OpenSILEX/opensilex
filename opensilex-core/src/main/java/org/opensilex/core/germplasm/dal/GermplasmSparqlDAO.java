@@ -103,11 +103,20 @@ public class GermplasmSparqlDAO {
     }
 
     /**
-     * @param searchFilter search filter
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+     * Recherche paginée de {@link GermplasmModel} selon les critères d’un {@link GermplasmSearchFilter}.
+     * <p>
+     * Applique des filtres SPARQL (nom, espèce, variété, accession, institut, visibilité, groupes, etc.)
+     * et gère la pagination ainsi que le tri. Si {@code fetchNestedObjects} est activé, les relations
+     * parentes (maternelles, paternelles, générales) sont également chargées. Les synonymes sont enrichis
+     * via un {@link SPARQLListFetcher}.
+     * </p>
+     *
+     * @param searchFilter critères de recherche (filtres, pagination, tri, droits d’accès)
+     * @param fetchNestedObjects {@code true} pour charger aussi les relations parentes
+     * @return liste paginée de {@link GermplasmModel} correspondant aux critères
+     * @throws Exception en cas d’erreur lors de l’exécution de la requête SPARQL
      */
-    //##############################" méthode utilisant les champs de SearchFilter
+
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchNestedObjects) throws Exception {
@@ -327,6 +336,25 @@ public class GermplasmSparqlDAO {
         );
     }
 
+    /**
+     * Vérifie qu’un utilisateur a accès à un germplasm donné.
+     * <p>
+     * - Si l’URI n’existe pas, une {@link NotFoundURIException} est levée. <br>
+     * - Si l’utilisateur est administrateur, l’accès est toujours autorisé. <br>
+     * - Sinon, l’accès est accordé uniquement si le germplasm est :
+     *   <ul>
+     *     <li>public,</li>
+     *     <li>lié à un groupe auquel appartient l’utilisateur,</li>
+     *     <li>ou publié par cet utilisateur.</li>
+     *   </ul>
+     * </p>
+     *
+     * @param germplasmURI URI du germplasm à valider
+     * @param user         utilisateur demandant l’accès
+     * @throws NotFoundURIException si le germplasm n’existe pas
+     * @throws Exception            si une erreur survient lors de la construction ou exécution de la requête SPARQL
+     */
+
     public void validateGermplasmAccess(URI germplasmURI, AccountModel user) throws Exception {
 
         if (!sparql.uriExists(GermplasmModel.class, germplasmURI)) {
@@ -401,6 +429,22 @@ public class GermplasmSparqlDAO {
         }
     }
 
+    /**
+     * Ajoute au {@link SelectBuilder} les filtres SPARQL liés aux droits d’accès d’un utilisateur.
+     * <p>
+     * Si l’utilisateur est {@code null} ou administrateur, aucun filtre n’est ajouté.
+     * Sinon, le germplasm est accessible si :
+     * <ul>
+     *   <li>l’utilisateur appartient à un groupe lié au germplasm,</li>
+     *   <li>le germplasm est marqué comme public,</li>
+     *   <li>ou l’utilisateur est le publisher du germplasm.</li>
+     * </ul>
+     * </p>
+     *
+     * @param select requête SPARQL en construction
+     * @param user   utilisateur courant (ou {@code null})
+     * @throws Exception en cas d’erreur de construction du filtre
+     */
 
     public static void appendUserGermplasmFilter(SelectBuilder select, AccountModel user) throws Exception {
         if (user == null || user.isAdmin()) {
@@ -537,7 +581,19 @@ public class GermplasmSparqlDAO {
         }
     }
 
-    // ####### adaptation de la nouvelle signature
+    /**
+     * Ajoute au {@link SelectBuilder} les filtres SPARQL liés aux groupes de l’utilisateur.
+     * <p>
+     * - Si {@code admin} est vrai : aucun filtre n’est appliqué (accès complet). <br>
+     * - Si l’utilisateur n’a aucun groupe : seuls les germplasms sans groupe (publics) sont visibles. <br>
+     * - Sinon : les germplasms visibles sont ceux publics ou liés à l’un des groupes de l’utilisateur.
+     * </p>
+     *
+     * @param select      requête SPARQL en construction
+     * @param admin       indique si l’utilisateur est administrateur
+     * @param groupsUsers liste des groupes auxquels appartient l’utilisateur (peut être vide)
+     */
+
     private void appendgroupsListFilters(SelectBuilder select, boolean admin, List<URI> groupsUsers) {
 
         if (admin) {
@@ -570,7 +626,7 @@ public class GermplasmSparqlDAO {
         }
     }
 
-
+    // ancienne signature
     private void appendgroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groupsUsers) {
 
         if (admin) {

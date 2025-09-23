@@ -343,23 +343,36 @@ public class GermplasmAPI {
     }
 
     /**
+     * Recherche et retourne une liste paginée de germplasms selon différents critères.
+     * <p>
+     * Les filtres disponibles incluent : URI, type RDF, nom/synonymes, code, espèce,
+     * variété, accession, institut, expérience associée, parents (A, B ou les deux),
+     * année de production, groupe, métadonnées et visibilité (public/privé).
+     * <br>
+     * Les résultats peuvent être triés, paginés et adaptés à la langue de l’utilisateur courant.
+     * </p>
      *
-     * @param uri
-     * @param type
-     * @param name
-     * @param code
-     * @param productionYear
-     * @param species
-     * @param variety
-     * @param accession
-     * @param institute
-     * @param experiment
-     * @param metadata
-     * @param orderByList
-     * @param page
-     * @param pageSize
-     * @return
-     * @throws Exception
+     * @param uri              filtre regex sur l’URI du germplasm
+     * @param type             type RDF du germplasm
+     * @param name             regex sur le nom ou les synonymes
+     * @param code             regex sur le code interne
+     * @param productionYear   année de production
+     * @param species          espèce du germplasm
+     * @param variety          variété du germplasm
+     * @param accession        accession du germplasm
+     * @param group            groupe lié au germplasm
+     * @param institute        institut ou organisme associé
+     * @param experiment       expérience liée
+     * @param parentGermplasms liste des germplasms parents (A ou B)
+     * @param parentGermplasmsM parents du type A (maternel)
+     * @param parentGermplasmsF parents du type B (paternel)
+     * @param metadata         métadonnées associées
+     * @param isPublic         visibilité : public ({@code true}) ou privé ({@code false})
+     * @param orderByList      critères de tri (ex : "uri=asc", "name=desc")
+     * @param page             numéro de page (≥ 0)
+     * @param pageSize         taille de la page (≥ 0)
+     * @return une réponse HTTP contenant une liste paginée de {@link GermplasmGetAllDTO}
+     * @throws Exception en cas d’erreur lors de la recherche ou de l’accès aux données
      */
     @GET
     @ApiOperation("Search germplasm")

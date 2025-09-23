@@ -114,13 +114,21 @@ public class GermplasmDAO {
     }
 
     /**
-     * @param searchFilter  search filter
-     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+     * Recherche paginée de {@link GermplasmModel} selon les critères fournis, avec option
+     * de filtrage par métadonnées et possibilité de charger des objets imbriqués.
+     * <p>
+     * Si un filtre de métadonnées est fourni, les URIs correspondantes sont extraites
+     * et croisées avec les URIs sélectionnées. Si aucun résultat ne correspond, une
+     * liste vide est retournée.
+     * </p>
+     *
+     * @param searchFilter       critères de recherche (filtres, pagination, tri, droits d’accès)
+     * @param fetchMetadata      {@code true} pour récupérer et associer les métadonnées aux résultats
+     * @param fetchNestedObjects {@code true} pour charger les relations imbriquées (ex. parents)
+     * @return liste paginée de {@link GermplasmModel} correspondant aux critères
+     * @throws Exception en cas d’erreur de recherche SPARQL ou de récupération des métadonnées
      */
 
-    // méthode après pris en compte des champs de searchfilter
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,

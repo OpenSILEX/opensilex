@@ -228,6 +228,21 @@ public class SPARQLQueryHelper {
         return exprFactory.eq(NodeFactory.createVariable(varName), node);
     }
 
+    /**
+     * generate a Not in filter as follows :
+     * FILTER (?p NOT IN (<http://my.domain/excludedUri1>, <http://my.domain/excludedUri2>))
+     * @param Uris that wil be in the NOT IN filter. In the exemple it could be [http://my.domain/excludedUri1, prefix:excludedUri2]
+     * @param varToExclude in the exemple the ?p variable
+     */
+    public static Expr notInUrisFilter(List<URI> Uris, Var varToExclude) {
+        List<String> excludedPredicatesStr = Uris.stream().map(SPARQLDeserializers::getExpandedURI).toList();
+        List<Expr> excludedPredicatesExpr = excludedPredicatesStr.stream()
+                .map(uri -> getExprFactory().asExpr(NodeFactory.createURI(uri)))
+                .toList();
+        ExprList excludedPredicatesExprList = new ExprList(excludedPredicatesExpr);
+        return getExprFactory().notin(varToExclude, excludedPredicatesExprList);
+    }
+
     public static Expr inURIFilter(String uriField, Collection<URI> uris) {
         return inURIFilter(makeVar(uriField), uris);
     }

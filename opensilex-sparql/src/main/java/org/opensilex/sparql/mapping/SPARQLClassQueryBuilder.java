@@ -17,13 +17,10 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
-import org.apache.jena.update.UpdateFactory;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -46,9 +43,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
-import static org.opensilex.sparql.service.SPARQLQueryHelper.getExprFactory;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -399,35 +394,18 @@ class SPARQLClassQueryBuilder {
      * Values clause is manually added due to a Jena bug which prevent using VALUES clause with UpdateBuilder.
      * Generated query example : @see {@link #getDeleteBuilder(List, List)}
      */
-    public UpdateRequest getDeleteBuilder(List<URI> urisToDelete) throws Exception {
+    public UpdateBuilder getDeleteBuilder(List<URI> urisToDelete) throws Exception {
         return getDeleteBuilder(urisToDelete, null);
     }
 
     /**
      * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued once, whatever the graph they are stored in.
      * Useful for update operations where dc:publisher and dc:issued should not be updated.
-     * Generated query example :
-     * DELETE {
-     *   GRAPH ?g { ?uriToDelete ?p ?o . }
-     *   GRAPH ?g { ?s ?p ?uriToDelete . }
-     * }
-     * WHERE {
-     *   VALUES ?uriToDelete {
-     *     <uriToDelete1>
-     *     <uriToDelete2>
-     *   }
-     *
-     *   { GRAPH ?g {
-     *       ?uriToDelete ?p ?o .
-     *       FILTER (?p NOT IN (dc:publisher, dc:issued))
-     *     }
-     *   }
-     *   UNION
-     *   { GRAPH ?g { ?s ?p ?uriToDelete . }
-     *   }
-     * }
+     * Generated query same as getDeleteBuilder(List, List) with excludedPredicates = [dc:publisher, dc:issued]
+     * Filter will be : FILTER (?p NOT IN (dc:publisher, dc:issued))
+     * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, List) to see the generated query example
      */
-    public UpdateRequest getDeleteBuilderForUpdateCases(List<URI> urisToDelete) throws Exception {
+    public UpdateBuilder getDeleteBuilderForUpdateCases(List<URI> urisToDelete) throws Exception {
         List<URI> excludedPredicates = List.of(
                 URI.create("http://purl.org/dc/terms/publisher"),
                 URI.create("http://purl.org/dc/terms/issued")
@@ -455,10 +433,10 @@ class SPARQLClassQueryBuilder {
      *       }
      * }
      */
-    private UpdateRequest getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) throws Exception {
+    private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         if (urisToDelete == null || urisToDelete.isEmpty()) {
-            return delete.buildRequest();
+            return delete;
         }
 
         Var uriVar = makeVar("uriToDelete");
@@ -490,22 +468,7 @@ class SPARQLClassQueryBuilder {
         globalWhere.addWhere(graphsBlock);
         delete.addWhere(globalWhere);
 
-        return delete.buildRequest();
-    }
-
-    /**
-     * generate a Not in filter as follows :
-     * FILTER (?p NOT IN (<http://my.domain/excludedUri1>, <http://my.domain/excludedUri2>))
-     * @param Uris that wil be in the NOT IN filter. In the exemple it could be [http://my.domain/excludedUri1, prefix:excludedUri2]
-     * @param varToExclude in the exemple the ?p variable
-     */
-    private static Expr getNotInUrisFilter(List<URI> Uris, Var varToExclude) {
-        List<String> excludedPredicatesStr = Uris.stream().map(SPARQLDeserializers::getExpandedURI).toList();
-        List<Expr> excludedPredicatesExpr = excludedPredicatesStr.stream()
-                .map(uri -> getExprFactory().asExpr(NodeFactory.createURI(uri)))
-                .toList();
-        ExprList excludedPredicatesExprList = new ExprList(excludedPredicatesExpr);
-        return getExprFactory().notin(varToExclude, excludedPredicatesExprList);
+        return delete;
     }
 
 

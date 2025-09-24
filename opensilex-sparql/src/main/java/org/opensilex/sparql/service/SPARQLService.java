@@ -1628,8 +1628,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         Class<T> objectClass = (Class<T>) instances.get(0).getClass();
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
 
-        mapper.getDeleteBuilder(instances.stream().map(SPARQLResourceModel::getUri).toList());
-
         try {
             // @TODO : like for create/createWithException, allow to run this method without direct transaction handling and add another method
 
@@ -1666,8 +1664,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<URI> uris) throws Exception {
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateRequest query = mapper.getDeleteBuilderForUpdate(uris);
-        executeDeleteQuery(query.toString());
+        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(uris);
+        executeDeleteQuery(query);
     }
 
     @Deprecated
@@ -2463,6 +2461,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
 
             if (!urisToCheck.isEmpty()) {
+                String longUri = SPARQLDeserializers.getExpandedURI(urisToCheck.stream().iterator().next());
+                urisToCheck.add(URI.create(longUri));
                 Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(), urisToCheck, false);
                 if (!unknownUris.isEmpty()) {
                     // #TODO append property for which URI are unknown

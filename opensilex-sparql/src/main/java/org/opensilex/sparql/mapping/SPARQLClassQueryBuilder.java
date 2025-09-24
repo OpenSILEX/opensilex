@@ -444,19 +444,15 @@ class SPARQLClassQueryBuilder {
      *   GRAPH ?g { ?s ?p ?uriToDelete . }
      * }
      * WHERE {
-     *   VALUES ?uriToDelete {
-     *     <uriToDelete1>
-     *     <uriToDelete2>
+     *    FILTER ( ?uri IN ( <uriToDelete1>, <uriToDelete2>) )
+     *   {
+     *     	GRAPH ?g
+     *           { ?uriToDelete  ?p  ?o}
      *   }
-     *
-     *   { GRAPH ?g {
-     *       ?uriToDelete ?p ?o .
-     *       FILTER (?p NOT IN (<excludedPredicates1>, <excludedPredicates1>))
-     *     }
-     *   }
-     *   UNION
-     *   { GRAPH ?g { ?s ?p ?uriToDelete . }
-     *   }
+     *     UNION
+     *       { GRAPH ?g
+     *           { ?s  ?p  ?uriToDelete}
+     *       }
      * }
      */
     private UpdateRequest getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) throws Exception {
@@ -477,33 +473,24 @@ class SPARQLClassQueryBuilder {
         delete.addDelete(relation);
         delete.addDelete(inverseRelation);
 
-        WhereBuilder where = new WhereBuilder();
-        SPARQLQueryHelper.addWhereValues(where, uriVar.getVarName(), urisToDelete);
-        WhereBuilder graphSubquerry = new WhereBuilder();
-        graphSubquerry.addWhere(relation);
-        if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
-            Expr predicateFilter = getNotInUrisFilter(excludedPredicates, predicateVar);
-            graphSubquerry.addFilter(predicateFilter);
-        }
-        where.addGraph(graphVar, graphSubquerry);
-        where.addUnion(new WhereBuilder().addGraph(graphVar, inverseRelation));
+        WhereBuilder globalWhere = new WhereBuilder();
 
-        delete.addWhere(where);
+        globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, urisToDelete));
 
+        WhereBuilder graphsBlock = new WhereBuilder();
 
-        //manually add VALUES clause due to Jena bug which prevent using VALUES clause
-        String query = delete.buildRequest().toString();
-        List<String> longUrisToDelete = urisToDelete.stream().map(SPARQLDeserializers::getExpandedURI).toList();
-        String valuesClause = "VALUES ?" + uriVar.getVarName() + " { " +
-                longUrisToDelete.stream()
-                        .map(uri -> "<" + uri + ">")
-                        .collect(Collectors.joining(" ")) +
-                " }";
+        //graph to delete relations
+        WhereBuilder graphSubquery = new WhereBuilder();
+        graphSubquery.addWhere(relation);
+        graphsBlock.addGraph(graphVar, graphSubquery);
 
-        String queryWithValues = query.replaceFirst("(?s)WHERE\\s*\\{", "WHERE {\n  " + valuesClause + "\n");
+        //graph to delete inverse relations
+        graphsBlock.addUnion(new WhereBuilder().addGraph(graphVar, inverseRelation));
 
+        globalWhere.addWhere(graphsBlock);
+        delete.addWhere(globalWhere);
 
-        return UpdateFactory.create(queryWithValues);
+        return delete.buildRequest();
     }
 
     /**

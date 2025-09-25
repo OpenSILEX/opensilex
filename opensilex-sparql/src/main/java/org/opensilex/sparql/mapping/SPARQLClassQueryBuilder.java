@@ -424,8 +424,10 @@ class SPARQLClassQueryBuilder {
      * WHERE {
      *    FILTER ( ?uri IN ( <uriToDelete1>, <uriToDelete2>) )
      *   {
-     *     	GRAPH ?g
-     *           { ?uriToDelete  ?p  ?o}
+     *     	GRAPH ?g {
+     *                  ?uriToDelete  ?p  ?o
+     *                  FILTER (?p NOT IN (<excludedPredicates1>, <excludedPredicates1>))
+     *               }
      *   }
      *     UNION
      *       { GRAPH ?g
@@ -460,6 +462,13 @@ class SPARQLClassQueryBuilder {
         //graph to delete relations
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
+
+        //not delete excluded predicates
+        if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
+            Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
+            graphSubquery.addFilter(predicateFilter);
+        }
+
         graphsBlock.addGraph(graphVar, graphSubquery);
 
         //graph to delete inverse relations

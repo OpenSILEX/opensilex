@@ -1288,7 +1288,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true, true, null);
+        create(graph, instances, null, true, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -1363,13 +1363,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * @param <T>                 the SPARQLResourceModel type
-     * @param graph               the graph onto instance are created
-     * @param instances           the list of instance to create
-     * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used
-     * @param checkUriExist       indicate if the service must check if instances already exist
-     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     * call create without excluding any field from creation query.
+     * @see #create(Node, Collection, Integer, boolean, boolean, List) for more details
      */
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+        create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, null);
+    }
+
+
+        /**
+         * @param <T>                 the SPARQLResourceModel type
+         * @param graph               the graph onto instance are created
+         * @param instances           the list of instance to create
+         * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used
+         * @param checkUriExist       indicate if the service must check if instances already exist
+         * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+         */
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate, List<String> fieldsToExclude) throws Exception {
         withTransaction(() -> {
             createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, fieldsToExclude);

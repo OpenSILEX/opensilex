@@ -136,7 +136,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
     }
 
     public List<T> create(List<T> models) throws Exception {
-        sparql.create(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true, null);
+        sparql.create(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
         return models;
     }
 

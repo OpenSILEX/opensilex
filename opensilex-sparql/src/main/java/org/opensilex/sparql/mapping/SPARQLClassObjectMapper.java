@@ -19,7 +19,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -220,7 +219,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     if (!StringUtils.isEmpty(name)) {
                         proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, false, service);
                     } else {
-                        // try to build a proxy object including name with an another SPARQL builder variable binding name
+                        // try to build a proxy object including name with another SPARQL builder variable binding name
                         name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
 
                         if (!StringUtils.isEmpty(name)) {
@@ -282,11 +281,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      * Set an {@link InstantModel} (by using result) as field of the given instance instead of Using {@link SPARQLProxy}
      * @param instance the {@link SPARQLResourceModel} to update
-     * @param field the instance {@link Class} field, which is a sub-type of {@link InstantModel}
+     * @param field the instance {@link Class} field, which is a subtype of {@link InstantModel}
      * @param result the {@link SPARQLResult} which contains value associated to {@link InstantModel#getUri()} and {@link InstantModel#getDateTimeStamp()}
      * @param objURI URI of the {@link InstantModel}
      * @param setter setter from instance {@link Class}, used to set value for field
-     * @throws Exception
      */
     private void buildInstantModelWithoutProxy(T instance, Field field, SPARQLResult result, URI objURI, Method setter) throws Exception {
 
@@ -351,10 +349,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     public AskBuilder getAskBuilder(Node graph, String lang) throws Exception {
         return classQueryBuilder.getAskBuilder(graph, lang);
-    }
-
-    public AskBuilder getAskBuilder(Node graph, String lang, ThrowingConsumer<AskBuilder,Exception> filterHandler, Map<String, WhereHandler> customHandlerByFields) throws Exception {
-        return classQueryBuilder.getAskBuilder(graph, lang,filterHandler,customHandlerByFields);
     }
 
 
@@ -448,7 +442,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         try {
             return getFieldExprVar(getURIFieldName());
         } catch (SPARQLUnknownFieldException ex) {
-            LOGGER.error("Unknown URI field for a resource, should never happend", ex);
+            LOGGER.error("Unknown URI field for a resource, should never happened", ex);
             return null;
         }
     }
@@ -542,7 +536,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalyzer.getAutoUpdateListFields();
     }
 
-    public List<Field> getIgnorUpdateIfNullFields() {
+    public List<Field> getIgnoreUpdateIfNullFields() {
         return classAnalyzer.getIgnorUpdateIfNullFields();
     }
 
@@ -610,7 +604,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return getRelationsUrisByMapper(instance, new HashMap<>());
     }
 
-    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) {
         return getRelationsUrisByMapper(instance, existingMap, false);
     }
 
@@ -619,7 +613,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     }
 
-    public  Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public  Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) {
         return getRelationsUrisByMapper(instance, existingMap, true);
     }
 
@@ -727,9 +721,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      * Check for IgnoreUpdateIfNull sparql annotation in model class. If One field of the new instance has this annotation and is null, then
      * this method will get the old value of this field and set it to the new instance.
-     * @param oldInstance
-     * @param newInstance
-     * @throws Exception
      */
     public void updateInstanceFromOldValues(T oldInstance, T newInstance) throws Exception {
         if (newInstance.getType() == null) {

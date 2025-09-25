@@ -21,7 +21,9 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
-import org.apache.jena.vocabulary.*;
+import org.apache.jena.vocabulary.OWL2;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -361,10 +363,7 @@ class SPARQLClassQueryBuilder {
         return uriNode;
     }
 
-    @Deprecated
-    /**
-     * @deprecated the use of executeOnInstanceTriples seems uselessly complex and forces to load the whole object to delete (inefficient)
-     */
+
     public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         addDeleteBuilder(graph, instance, delete);
@@ -372,10 +371,6 @@ class SPARQLClassQueryBuilder {
         return delete;
     }
 
-    @Deprecated
-    /**
-     * @deprecated the use of executeOnInstanceTriples seems uselessly complex and forces to load the whole object to delete (inefficient)
-     */
     public <T extends SPARQLResourceModel> void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
         executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
@@ -405,7 +400,7 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     *Delete all triples related to the given urisToDelete, except those with a predicate included in 'exludedPredicates' ,whatever the graph they are stored in.
+     * Delete all triples related to the given urisToDelete, except those with a predicate included in 'excludedPredicates' ,whatever the graph they are stored in.
      * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handle short and long uris.
      * generated query example : (the filter clause appears only if excludedPredicates is not empty)
      * DELETE {
@@ -426,7 +421,7 @@ class SPARQLClassQueryBuilder {
      *       }
      * }
      */
-    private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) throws Exception {
+    private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) {
         UpdateBuilder delete = new UpdateBuilder();
         if (urisToDelete == null || urisToDelete.isEmpty()) {
             return delete;
@@ -473,7 +468,7 @@ class SPARQLClassQueryBuilder {
 
 
     /**
-     * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}
+     * Add the WHERE clause into handler, depending on if the given field is optional or not, according {@link #analyzer}
      *
      * @param select the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
@@ -506,17 +501,6 @@ class SPARQLClassQueryBuilder {
 
     /**
      * Add a WHERE clause into the handler, with the specified language filter.
-     *
-     * @param select
-     * @param graph
-     * @param uriFieldName
-     * @param property
-     * @param field
-     * @param requiredHandlersByGraph
-     * @param optionalHandlersByGraph
-     * @param customHandlerByFields
-     * @param lang
-     * @param isObject
      * @param filterLangWithDefault If true, the lang filter will have two options : the specified language and the
      *                              default language. If false, only the specified language will be filtered.
      */
@@ -670,10 +654,6 @@ class SPARQLClassQueryBuilder {
     /**
      * Add a lang filter which also takes the default language, if it exists. That means that this filter can return
      * at most 2 values. Do not use this method if you want only one value.
-     *
-     * @param fieldName
-     * @param lang
-     * @param handler
      */
     private void addLangFilterWithDefault(String fieldName, String lang,
                                           WhereHandler handler) {
@@ -703,12 +683,6 @@ class SPARQLClassQueryBuilder {
      * </pre>
      *
      * The method can also be used to filter on the default language with an empty string as the language parameter.
-     *
-     * @param where
-     * @param fieldVar
-     * @param property
-     * @param fieldNameVar
-     * @param lang
      */
     private void addOptionalLangClause(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
         WhereBuilder optionalLang = new WhereBuilder();
@@ -725,7 +699,7 @@ class SPARQLClassQueryBuilder {
      *     It is guaranteed that at most one value will be returned.
      * </p>
      * <p>
-     *     For example, it can be used to retrieve the label of a RDF type :
+     *     For example, it can be used to retrieve the label of an RDF type :
      * </p>
      * <pre>
      *     OPTIONAL {
@@ -736,12 +710,6 @@ class SPARQLClassQueryBuilder {
      *         FILTER (langMatches(lang(?rdfTypeName), "")
      *     }
      * </pre>
-     *
-     * @param where
-     * @param fieldVar
-     * @param property
-     * @param fieldNameVar
-     * @param lang
      */
     private void addOptionalLangClauseOrDefault(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
         addOptionalLangClause(where, fieldVar, property, fieldNameVar, lang);

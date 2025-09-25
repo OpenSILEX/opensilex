@@ -25,7 +25,6 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
@@ -206,7 +205,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param graph to search in to make the request run faster
      * @param uri of the element we want to describe
      * @return a list of SPARQLStatements (triplets)
-     * @throws SPARQLException
      */
     public List<SPARQLStatement> describe(Node graph, URI uri) throws SPARQLException {
         DescribeBuilder describe = new DescribeBuilder();
@@ -411,7 +409,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param graph object location
      * @param objectClass object class
      * @param uris object URIs
-     * @param lang
      * @param resultHandler function used to convert SPARQL results in a custom way (can be null)
      * @param listFieldsToFetch Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
      *                          By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
@@ -648,18 +645,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }).collect(Collectors.toList());
     }
 
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, null, false, filterHandler, null);
-    }
-
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, excludeRoot, filterHandler, null);
-    }
-
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, URI root, boolean excludeRoot) throws Exception {
-        return searchResourceTree(getDefaultGraph(objectClass), objectClass, lang, root, excludeRoot, null, null);
-    }
-
     public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Node graph, Class<T> objectClass, String lang,
                                                                                     URI root, boolean excludeRoot,
                                                                                     ThrowingConsumer<SelectBuilder, Exception> filterHandler,
@@ -849,18 +834,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return select;
     }
 
-    /**
-     *
-     * @param uris the list of URI to load
-     * @param lang lang
-     * @param listFieldsToFetch . Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
-     * By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
-     * The listFieldsToFetch associate to each field name, a boolean flag to tell if the corresponding triple
-     * must be added into the query which getch these fields data.
-     *
-     * @throws Exception
-     */
-
 
     /**
      * @param graph                 graph to query
@@ -870,10 +843,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param customHandlerByFields map between {@link SPARQLResourceModel} field and a custom {@link WhereHandler}.
      *                              By default, all fields are automatically handled, but in some case you may want to specify
      *                              a custom way to handle this field into the query. Can be null
-     * @param resultHandler         function which define a custom transformation of {@link SPARQLResult} into a instance of T. Can be null
-     * @param orderByList
-     * @param offset
-     * @param limit
+     * @param resultHandler         function which define a custom transformation of {@link SPARQLResult} into an instance of T. Can be null
      * @param <T>                   type of {@link SPARQLResourceModel}
      * @return a list of T
      * @throws Exception
@@ -986,16 +956,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *
      * @param graph to perform the top layer search in
      * @param objectClass generic type of results
-     * @param lang
-     * @param filterHandler
-     * @param customHandlerByFields
      * @param modelBuilderSchema the schema used to tell the system what else needs to be fetched and loaded into the results
-     * @param orderByList
-     * @param offset
-     * @param limit
      * @return a list of T, with basic data fields filled and any object fields filled in function of passed schema
-     * @param <T>
-     * @throws Exception
      */
     public <T extends SPARQLResourceModel> List<T> searchUsingSchema(
             Node graph,
@@ -1164,10 +1126,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist, boolean setPublicationDate) throws Exception {
         create(getDefaultGraph(instance.getClass()), instance, checkUriExist, setPublicationDate);
-    }
-
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
-        create(graph, instance, null, null, checkUriExist, true, false, null);
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean setPublicationDate) throws Exception {
@@ -1462,9 +1420,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
 
         HashSet<URI> neededInstances = new HashSet<>();
-        List<Field> ignorUpdateIfNullFields = mapper.getIgnorUpdateIfNullFields();
+        List<Field> ignoreUpdateIfNullFields = mapper.getIgnoreUpdateIfNullFields();
         for (T instance : instances) {
-            for (Field field : ignorUpdateIfNullFields) {
+            for (Field field : ignoreUpdateIfNullFields) {
                 Object fieldValue = mapper.getFieldValue(instance, field);
                 if (fieldValue == null) {
                     neededInstances.add(instance.getUri());
@@ -1536,19 +1494,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     private static final  String NO_CLASS_MODEL_ERROR_MSG = "[%s] No ClassModel associated to type %s ." +
             " Add the corresponding ClassModel definition into your triplestore or remove the handleCustomProperties annotation on your model";
 
-    /**
-     *
-     * @param graph
-     * @param mapper
-     * @param instance
-     * @param <T>
-     * @throws SPARQLException
-     */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 
         SPARQLClassAnalyzer analyzer = mapper.getClassAnalyzer();
 
-        // dont handle model with no custom properties or model with default type
+        // don't handle model with no custom properties or model with default type
         if (!analyzer.isHandleCustomProperties() || instance.getType() == null) {
             return;
         }
@@ -1621,7 +1571,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * handle @IgnoreUpdateIfNull and autoUpdate annotations on fields.
      * For @IgnoreUpdateIfNull, @See SPARQLClassObjectMapper.updateInstanceFromOldValues
      */
-    private  <T extends SPARQLResourceModel> void updateFields(Node graph, T instance, T oldInstance) throws Exception {
+    private  <T extends SPARQLResourceModel> void updateFields(T instance, T oldInstance) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
 
         @SuppressWarnings("unchecked")
@@ -1644,7 +1594,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * for mor details see :
      * @see SPARQLService#createForUpdate(Collection)
      * @see SPARQLService#deleteForUpdate(Class, List)
-     * @see SPARQLService#updateFields(Node, SPARQLResourceModel, SPARQLResourceModel)
+     * @see #updateFields(SPARQLResourceModel, SPARQLResourceModel)
      */
     public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
         if (instances.isEmpty()) return;
@@ -1673,8 +1623,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         .findFirst()
                         .orElse(null);
 
-                Node instanceGraph = getDefaultGraph(instance.getClass());
-                updateFields(instanceGraph, instance, oldInstance);
+                updateFields(instance, oldInstance);
             }
             createForUpdate(instances);
             commitTransaction();
@@ -2008,24 +1957,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return uriExists((Node) null, uri);
     }
 
-    public <T extends SPARQLResourceModel> boolean anyUriExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
-        if (CollectionUtils.isEmpty(uris)) {
-            return false;
-        }
-        if (uris.size() == 1) {
-            return uriExists(objectClass, uris.iterator().next());
-        }
-
-        SelectBuilder selectQuery = getUriListExistQuery(objectClass, uris);
-        for (SPARQLResult result : executeSelectQuery(selectQuery)) {
-            boolean value = Boolean.parseBoolean(result.getStringValue(EXISTING_VAR));
-            if (value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * @param objectClass The model class to check
      * @param uris The collection of URIs to check
@@ -2055,7 +1986,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Checks the existence or absence of a collection of URIs in any graph. Short-hand for
+     * Checks the existence or absence of a collection of URIs in any graph. Shorthand for
      * {@link SPARQLService#getExistingUriStream(Class, Stream, int, boolean, Node)}, using the `stream` method of the
      * collection and passing `null` as the graph parameter.
      *
@@ -2125,7 +2056,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @return a {@link SelectBuilder} which when executed, indicate for each element of uris, if the element exist (TRUE/FALSE)
      * as an instance of the type (or as any rdf:type if no type is provided)
      *
-     * @apiNote The produced SPARQL query look likes
+     * @apiNote The produced SPARQL query looks likes
      * <pre>
      * {@code
      * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -2348,7 +2279,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeUpdateQuery(updateBuilder);
     }
 
-    public Map<String, String> getTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
+    public Map<String, String> getTranslations(URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
         Map<String, String> translations = new HashMap<>();
 
         SelectBuilder select = new SelectBuilder();
@@ -2548,36 +2479,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         clearGraph(getMapperIndex().getForClass(resourceClass).getDefaultGraphURI());
     }
 
-    public <T> void insertPrimitives(Node graph, URI uri, Property property, List<T> values, Class<T> valuesType) throws Exception {
-        if (values.size() > 0) {
-
-            UpdateBuilder update = new UpdateBuilder();
-            Node nodeUri = SPARQLDeserializers.nodeURI(uri);
-            SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(valuesType);
-
-            for (T value : values) {
-
-                update.addInsert(new Quad(graph, nodeUri, property.asNode(), deserializer.getNode(value)));
-            }
-
-            executeUpdateQuery(update);
-        }
-    }
-
     public void deletePrimitives(Node graph, URI uri, Property property) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
         delete.addDelete(graph, nodeUri, property, "?value");
         delete.addWhere(nodeUri, property, "?value");
-        executeDeleteQuery(delete);
-    }
-
-    public void deletePrimitive(Node graph, URI uri, Property property, Object value) throws Exception {
-        UpdateBuilder delete = new UpdateBuilder();
-        Node nodeUri = SPARQLDeserializers.nodeURI(uri);
-        delete.addDelete(graph, nodeUri, property, "?value");
-        delete.addWhere(nodeUri, property, "?value");
-        delete.addFilter(SPARQLQueryHelper.eq("?value", value));
         executeDeleteQuery(delete);
     }
 
@@ -2657,26 +2563,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return list;
     }
 
-    public void copy(Node originGraph, URI objectURI, Node destinationGraph) throws SPARQLException {
-        List<URI> uriList = new ArrayList<>();
-        uriList.add(objectURI);
-        copyAll(originGraph, uriList, destinationGraph);
-    }
-
-    public void copyAll(Node originGraph, List<URI> objectList, Node destinationGraph) throws SPARQLException {
-        if (objectList.size() > 0) {
-            UpdateBuilder copy = new UpdateBuilder();
-            int varCount = 0;
-            for (URI objectURI : objectList) {
-                Node objectURINode = SPARQLDeserializers.nodeURI(objectURI);
-                copy.addInsert(destinationGraph, objectURINode, "?p" + varCount, "?o" + varCount);
-                copy.addWhere(new WhereBuilder().addGraph(originGraph, objectURINode, "?p" + varCount, "?o" + varCount));
-                varCount++;
-            }
-            executeUpdateQuery(copy);
-        }
-    }
-
     public void deleteByURI(Node graph, URI uri) throws SPARQLException {
         UpdateBuilder delete = new UpdateBuilder();
 
@@ -2707,7 +2593,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *
      * @param uri The URI to check
      * @return whether the given URI matches any triple
-     * @throws Exception
      */
     public boolean checkTripleURIExists(URI uri) throws Exception {
         try {
@@ -2730,7 +2615,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *
      * @param oldUri The URI to replace
      * @param newUri The new URI
-     * @throws SPARQLException
      */
     public void renameTripleURI(URI oldUri, URI newUri) throws Exception {
         try {
@@ -2750,19 +2634,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Updates an URI based on its position in triples and whether it is located in a named graph.
+     * Updates a URI based on its position in triples and whether it is located in a named graph.
      *
      * @param oldUri The URI to replace
      * @param newUri The new URI
      * @param tupleSlot The position in triples
      * @param inNamedGraph Whether the URI should be replaced in named graphs or in default graphs
-     * @throws Exception
      */
     public void renameTripleURI(URI oldUri, URI newUri, TupleSlot tupleSlot, boolean inNamedGraph) throws Exception {
         UpdateBuilder update = new UpdateBuilder();
 
-        Node oldUriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(oldUri));
-        Node newUriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(newUri));
+        Objects.requireNonNull(SPARQLDeserializers.nodeURI(oldUri));
+        Objects.requireNonNull(SPARQLDeserializers.nodeURI(newUri));
         Var s = makeVar("s");
         Var p = makeVar("p");
         Var o = makeVar("o");
@@ -2908,10 +2791,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *     filter (?allowedGraphs = __graph__)
      * }
      * </code> </pre>
-     *
-     * @param uri
-     * @param allowedTypes
-     * @return
      */
     public Map<URI, SPARQLNamedResourceModel<?>> getNamedResourceModelContextMap(URI uri, Collection<URI> allowedTypes) throws Exception {
         SelectBuilder select = new SelectBuilder();
@@ -2948,8 +2827,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * @throws ConflictException if the instanceURI is linked with other ressources in the RDF database
-     * Using the following sparkl ASK request :
+     * @throws ConflictException if the instanceURI is linked with other resources in the RDF database
+     * Using the following sparql ASK request :
      * <pre>
      * ASK
      * WHERE
@@ -2959,7 +2838,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * </pre>
      *
      * </br>
-     * Exemple of request with the predicate "foaf:account" excluded
+     * Example of request with the predicate "foaf:account" excluded
      * <pre>
      * ASK
      * WHERE
@@ -2968,7 +2847,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *   }
      * </pre>
      */
-    public void requireUriIsNotLinkedWithOtherRessourcesInRDF(URI instanceURI, List<String> predicateUrisToExclude) throws ConflictException, SPARQLException {
+    public void requireUriIsNotLinkedWithOtherResourcesInRDF(URI instanceURI, List<String> predicateUrisToExclude) throws ConflictException, SPARQLException {
         Node uriNode = SPARQLDeserializers.nodeURI(instanceURI);
         String pVar = "?p";
 
@@ -2983,7 +2862,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         if ( executeAskQuery(isLinked) ){
-            throw new ConflictException("URI <"+instanceURI+"> is linked with other ressources");
+            throw new ConflictException("URI <"+instanceURI+"> is linked with other resources");
         }
     }
 }

@@ -129,10 +129,9 @@ public class GermplasmDAO {
     }
 
     /**
-     * WARNING, you should check that each germplasm of the list has a URI that does'nt exists in the database BEFORE calling this method.
-     * This method create many germplasms at a time without checking that their URI does'nt already exists to optimise database call.
+     * WARNING, you should check that each germplasm of the list has a URI that doesn't exist in the database BEFORE calling this method.
+     * This method create many germplasms at a time without checking that their URI doesn't already exist to optimise database call.
      * @param instanceList with every model you need to create
-     * @throws Exception
      */
     public List<GermplasmModel> createListWithoutUriExistsCheck(List<GermplasmModel> instanceList) throws Exception {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {

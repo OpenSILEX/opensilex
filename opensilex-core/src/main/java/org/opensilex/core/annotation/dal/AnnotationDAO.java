@@ -309,4 +309,24 @@ public class AnnotationDAO {
                 sparqlResult -> URI.create(sparqlResult.getStringValue(AnnotationModel.URI_FIELD))
         ).toList();
     }
+
+    public AccessStatus checkAccess(URI uri, AccountModel user) throws Exception {
+        if (user == null) {
+            return AccessStatus.UNAUTHORIZED; // Not authenticated
+        }
+        List<URI> excludedUris = getRestrictedAnnotationUris(user);
+        if (excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))) {
+            return AccessStatus.FORBIDDEN; // Authenticated but not authorized
+        }
+        boolean exists = sparql.uriExists(AnnotationModel.class, uri);
+        if (!exists) {
+            return AccessStatus.NOT_FOUND; // Annotation that does not exist
+        }
+        return AccessStatus.OK; // Everything is fine
+    }
+
+    public enum AccessStatus {
+        OK, UNAUTHORIZED, FORBIDDEN, NOT_FOUND
+    }
+
 }

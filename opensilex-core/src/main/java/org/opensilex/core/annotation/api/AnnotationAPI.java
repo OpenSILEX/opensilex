@@ -140,23 +140,37 @@ public class AnnotationAPI {
     @ApiOperation("Get an annotation")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
-            @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
+        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
+        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this annotation", response = ErrorResponse.class),
+        @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAnnotation(
-            @ApiParam(value = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
-    ) throws Exception {
+        public Response getAnnotation(
+                @ApiParam(value = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
+        
+        // Check user access rights
+        switch (dao.checkAccess(uri, currentUser)) {
+                case UNAUTHORIZED:
+                return new ErrorResponse(Response.Status.UNAUTHORIZED, "Unauthorized", "User is not authenticated").getResponse();
+                case FORBIDDEN:
+                return new ErrorResponse(Response.Status.FORBIDDEN, "Forbidden", "User does not have access to this annotation").getResponse();
+                case NOT_FOUND:
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Annotation not found", "Unknown annotation URI: " + uri).getResponse();
+        }
+        
         AnnotationModel model = dao.get(uri, currentUser);
+        
         if (model == null) {
-            throw new NotFoundURIException(uri);
+                throw new NotFoundURIException(uri);
         }
 
         AnnotationGetDTO dto = new AnnotationGetDTO(model);
         return new SingleObjectResponse<>(dto).getResponse();
-    }
+        }
 
     @GET
     @Path("/motivations")

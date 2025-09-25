@@ -201,20 +201,12 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     @Override
     public void executeDeleteQuery(UpdateBuilder update) throws SPARQLException {
-        try {
-            Update updateQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, update.buildRequest().toString());
-            if (getTimeout() > 0) {
-                updateQuery.setMaxExecutionTime(getTimeout());
-            }
-            updateQuery.execute();
-        } catch (RepositoryException ex) {
-            Throwable cause = ex.getCause();
-            if (cause instanceof ShaclSailValidationException) {
-                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
-            } else {
-                throw new SPARQLException(ex.getMessage());
-            }
-        }
+        executeUpdateQuery(update.buildRequest().toString());
+    }
+
+    @Override
+    public void executeDeleteQuery(String update) throws SPARQLException {
+        executeUpdateQuery(update);
     }
 
     @Override

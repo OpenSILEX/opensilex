@@ -390,15 +390,6 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * build a query which delete all triples related to the given urisToDelete, whatever the graph they are stored in.
-     * Values clause is manually added due to a Jena bug which prevent using VALUES clause with UpdateBuilder.
-     * Generated query example : @see {@link #getDeleteBuilder(List, List)}
-     */
-    public UpdateBuilder getDeleteBuilder(List<URI> urisToDelete) throws Exception {
-        return getDeleteBuilder(urisToDelete, null);
-    }
-
-    /**
      * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued once, whatever the graph they are stored in.
      * Useful for update operations where dc:publisher and dc:issued should not be updated.
      * Generated query same as getDeleteBuilder(List, List) with excludedPredicates = [dc:publisher, dc:issued]

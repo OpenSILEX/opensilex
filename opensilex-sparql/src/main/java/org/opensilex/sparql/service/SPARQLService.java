@@ -1677,18 +1677,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(query);
     }
 
-    @Deprecated
-    /**
-     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
-     */
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uri);
     }
 
-    @Deprecated
-    /**
-     * @deprecated for inefficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
-     */
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, URI uri) throws Exception {
 
         // load object by uri in order to directly check if the object exist or not
@@ -1765,18 +1757,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    @Deprecated
-    /**
-     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
-     */
+
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, List<URI> uris) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uris);
     }
 
-    @Deprecated
-    /**
-     * @deprecated for inneficiency reason, no better alternative for now because deleteWithoutCascade do not handle delete cascade (but is way more efficient)
-     */
+
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, List<URI> uris) throws Exception {
         if (uris.size() > 0) {
             try {

@@ -310,6 +310,18 @@ public class AnnotationDAO {
         ).toList();
     }
 
+    /**
+     * Checks whether a user has access rights to a given annotation URI.
+     *
+     * @param uri   The target annotation URI to check access for.
+     * @param user  The account of the user requesting access.
+     * @return      An AccessStatus indicating the result of the access check:
+     *              - UNAUTHORIZED if the user is not logged in.
+     *              - FORBIDDEN if the user is authenticated but does not have permission.
+     *              - NOT_FOUND if the requested annotation does not exist.
+     *              - OK if the user is authenticated, authorized, and the resource exists.
+     * @throws Exception if an error occurs while querying the underlying data source.
+     */
     public AccessStatus checkAccess(URI uri, AccountModel user) throws Exception {
         if (user == null) {
             return AccessStatus.UNAUTHORIZED; // Not authenticated

@@ -1174,7 +1174,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         create(graph, instance, null, null, checkUriExist, setPublicationDate, false, null);
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean setPublicationDate, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+    public <T extends SPARQLResourceModel> void create(
+                                                        Node graph,
+                                                        T instance,
+                                                        boolean checkUriExist,
+                                                        boolean setPublicationDate,
+                                                        boolean blankNode,
+                                                        BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         create(graph, instance, null, null, checkUriExist, setPublicationDate, blankNode, createExtension);
     }
 
@@ -1309,7 +1315,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
      */
-    public <T extends SPARQLResourceModel> void createWithoutTransaction(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate, List<String> fieldsToExclude) throws Exception {
+    public <T extends SPARQLResourceModel> void createWithoutTransaction(
+                                                            Node graph, Collection<T> instances,
+                                                            Integer maxInstancePerQuery,
+                                                            boolean checkUriExist,
+                                                            boolean setPublicationDate,
+                                                            List<String> fieldsToExclude) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
         if (reuseSameQuery && maxInstancePerQuery <= 0) {
@@ -1379,7 +1390,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
          * @param checkUriExist       indicate if the service must check if instances already exist
          * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
          */
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate, List<String> fieldsToExclude) throws Exception {
+    public <T extends SPARQLResourceModel> void create(
+                                                        Node graph,
+                                                        Collection<T> instances,
+                                                        Integer maxInstancePerQuery,
+                                                        boolean checkUriExist,
+                                                        boolean setPublicationDate,
+                                                        List<String> fieldsToExclude) throws Exception {
         withTransaction(() -> {
             createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, fieldsToExclude);
             return null;
@@ -1652,7 +1669,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             for (T oldInstance : oldInstances) {
                 T instance = instances.stream()
-                        .filter(old -> SPARQLDeserializers.compareURIs(old.getUri(), oldInstance.getUri()))
+                        .filter(newModel -> SPARQLDeserializers.compareURIs(newModel.getUri(), oldInstance.getUri()))
                         .findFirst()
                         .orElse(null);
 

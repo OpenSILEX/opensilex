@@ -262,6 +262,23 @@ public class SPARQLQueryHelper {
         return null;
     }
 
+    public static Expr notInURIFilter(String uriField, Collection<URI> uris) {
+        return notInURIFilter(makeVar(uriField), uris);
+    }
+
+    public static Expr notInURIFilter(Var var, Collection<URI> uris) {
+        if (uris != null && !uris.isEmpty()) {
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+            // get ressource with relation specified in the given list
+            return exprFactory.notin(var, uris.stream()
+                    .map(uri -> {
+                        return NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
+                    })
+                    .toArray());
+        }
+        return null;
+    }
+
     public static void inURI(AbstractQueryBuilder<?> select, String uriField, Collection<URI> uris) {
         Expr filter = inURIFilter(uriField, uris);
         if (filter != null) {

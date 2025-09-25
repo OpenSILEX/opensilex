@@ -10,7 +10,7 @@
     <opensilex-PageActions :returnButton="true" >   
     </opensilex-PageActions>
 
-    <opensilex-PageContent>
+    <opensilex-PageContent v-if="canDisplayDocument">
       <b-row>
         <b-col sm="5">
           <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">            
@@ -155,6 +155,8 @@ export default class DocumentDetails extends Vue {
   service: DocumentsService;
   uri: string = null;
 
+  canDisplayDocument: boolean = true; // true by default for publics documents
+  
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("preview") readonly preview!: any;
 
@@ -208,12 +210,15 @@ export default class DocumentDetails extends Vue {
     this.service
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
-        this.document = http.response.result;        
+        this.document = http.response.result;
         if (this.document.targets.length>0) {
           this.loadTargetsTypes();
         }  
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch((error) => {
+        this.canDisplayDocument = false;
+        this.$opensilex.errorHandler(error);
+      });
   }
 
   loadFile(uri: string, title: string, format: string) {

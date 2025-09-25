@@ -6,15 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.document.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
@@ -22,9 +23,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.data.bll.dataImport.DataImportLogic;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -39,12 +38,18 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.NoSuchFileException;
-import java.util.List;
+import java.util.*;
+
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.RDF;
+
+import java.util.Set;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -131,15 +136,24 @@ public class DocumentDAO {
         return instance;
     }
 
-    public byte[] getFile(URI uri) throws Exception {
+    public byte[] getFile(URI uri, AccountModel user) throws Exception {
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
         try {
-            return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
-        }catch (NoSuchFileException | FileNotFoundException ex){
+            if(!CollectionUtils.isEmpty(excludedUris) && excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))){
+                throw new Exception("User does not have access to this file");
+            } else {
+                return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
+            }
+        } catch (NoSuchFileException | FileNotFoundException ex){
             throw new NotFoundURIException(ex.getMessage(),uri);
         }
     }
 
     public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
+        if(!CollectionUtils.isEmpty(excludedUris) && excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))){
+            return null;
+        }
         return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());   
     }
 
@@ -203,6 +217,8 @@ public class DocumentDAO {
             int pageSize
     ) throws Exception {
         
+        //Uris to exclude from the document search
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
         return sparql.searchWithPagination(
             DocumentModel.class,
             user.getLanguage(),
@@ -216,6 +232,7 @@ public class DocumentDAO {
                 appendDateFilter(select, date);
                 appendTargetsFilter(multipleGraphGroupElem, targets);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);
+                appendExcludedURIsFilter(select, excludedUris);
                 // If either the subject or the "multiple" (ie. title or subject) fields is present, then the "subject"
                 // clause must be added in the query (because it is not present by default)
                 if (StringUtils.isNotEmpty(subject) || StringUtils.isNotEmpty(multiple)) {
@@ -320,6 +337,15 @@ public class DocumentDAO {
         }
     }
 
+    private void appendExcludedURIsFilter(SelectBuilder select, List<URI> excludedUris) {
+        if (!CollectionUtils.isEmpty(excludedUris)) {
+            Expr excludeFilter = SPARQLQueryHelper.notInURIFilter(DocumentModel.URI_FIELD, excludedUris);
+            if (excludeFilter != null){
+                select.addFilter(excludeFilter);
+            }
+        }
+    }
+
     /**
      * Appends the following clause to the elementGroup :
      *
@@ -380,51 +406,80 @@ public class DocumentDAO {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
-    public void validateDocumentAccess(URI documentURI, AccountModel user) throws Exception {
-        if (!sparql.uriExists(DocumentModel.class, documentURI)) {
-            throw new NotFoundURIException("Document URI not found: ", documentURI);
+    /**
+     *
+     * @param user who is performing request
+     * @return a list of distinct document uris that this user does not have access to.
+     * He does not have access if he is not admin, if at least one target is an experiment,
+     * and if the user does not have access to any of the experiment targets.
+     * @throws Exception
+     */
+    private List<URI> getRestrictedDocumentUris(AccountModel user) throws Exception {
+        //Return empty list if the user is admin
+        if(user.isAdmin()){
+            return Collections.emptyList();
         }
 
-        if (user.isAdmin()) {
-            return;
+        //Initialisation of some things we will need
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
+        Node experimentTypeNode = SPARQLDeserializers.nodeURI(Oeso.Experiment.getURI());
+        Node documentGraph = sparql.getDefaultGraph(DocumentModel.class);
+        SelectBuilder select = new SelectBuilder();
+
+        //Set distinct so we don't get duplicates
+        select.setDistinct(true);
+
+        //Request variables
+        Var documentVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+        Var targetVar = SPARQLQueryHelper.makeVar(DocumentModel.TARGET_FIELD);
+        select.addVar(documentVar);
+
+        //Core of the request, get all document uris where there is at least one target that is an experiment
+        select.addGraph(documentGraph, documentVar, OA.hasTarget.asNode(), targetVar);
+        select.addWhere(targetVar, RDF.type, experimentTypeNode);
+
+        //Add filter to exclude any documents that have at least 1 target that is included in userExperiments
+        WhereBuilder filterWhereBuilder = new WhereBuilder();
+        Var excludedTarget = SPARQLQueryHelper.makeVar("excludedTarget");
+        filterWhereBuilder.addGraph(documentGraph, documentVar, OA.hasTarget.asNode(), excludedTarget);
+        filterWhereBuilder.addWhere(excludedTarget, RDF.type, experimentTypeNode);
+        filterWhereBuilder.addFilter(SPARQLQueryHelper.inURIFilter(excludedTarget, userExperiments));
+        select.addFilter(
+                SPARQLQueryHelper.getExprFactory().notexists(
+                        filterWhereBuilder
+                )
+        );
+
+        //Execute and return result
+        return sparql.executeSelectQueryAsStream(select).map(
+                sparqlResult -> URI.create(sparqlResult.getStringValue(DocumentModel.URI_FIELD))
+        ).toList();
+    }
+
+    /**
+     * Checks if the given user has access to the specified document URI.
+     * @param uri  the URI of the document to check
+     * @param user the user who is performing the request
+     * @return the {@link AccessStatus} indicating whether the user has access to the document
+     * @throws Exception if an error occurs while querying the database
+     */
+    public AccessStatus checkAccess(URI uri, AccountModel user) throws Exception {
+        if (user == null) {
+            return AccessStatus.UNAUTHORIZED; // Not authenticated
         }
-
-        Node uriVar = SPARQLDeserializers.nodeURI(documentURI);
-        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-
-
-        AskBuilder ask = sparql.getUriExistsQuery(DocumentModel.class, documentURI);
-
-        if (!sparql.executeAskQuery(ask)) {
-            // check related document experiment
-            List<URI> xpUris = sparql.searchURIs(ExperimentModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ExperimentModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
-            });
-
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
-            for (URI xpUri : xpUris) {
-                try {
-                    xpDAO.validateExperimentAccess(xpUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
-
-            // check related document scientific object
-            List<URI> soUris = sparql.searchURIs(ScientificObjectModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
-            });
-
-            ExperimentDAO xpsoDAO = new ExperimentDAO(sparql, nosql);
-            for (URI soUri : soUris) {
-                try {
-                    xpsoDAO.validateExperimentAccess(soUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
+        List<URI> excludedUris = getRestrictedDocumentUris(user);
+        if (excludedUris.stream().anyMatch(e -> SPARQLDeserializers.compareURIs(e, uri))) {
+            return AccessStatus.FORBIDDEN; // Authenticated but not authorized
         }
+        boolean exists = sparql.uriExists(DocumentModel.class, uri);
+        if (!exists) {
+            return AccessStatus.NOT_FOUND; // Document that does not exist
+        }
+        return AccessStatus.OK; // Everything is fine
+    }
+
+    public enum AccessStatus {
+        OK, UNAUTHORIZED, FORBIDDEN, NOT_FOUND
     }
 }

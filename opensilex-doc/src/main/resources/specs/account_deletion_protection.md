@@ -47,7 +47,7 @@ Two strategies have been implemented to prevent the deletion of an account that 
 
 The `SPARQLService::requireUriIsNotLinkedWithOtherRessourcesInRDF(instanceURI, predicatesUrisToExclude)` method allows to verify in a single query that the specified URI is not the object of any triplet.
 
-It is possible to customize the query by excluding certain triplets for which the resource has the right to be an object. In the case of accounts, they can be deleted even if they are the object of the FOAF:account predicate.
+It is possible to customize the query by excluding certain triplets for which the resource has the right to be an object. In the case of accounts, they can be deleted even if they are the object of the FOAF:account predicate. Meaning that an account can be deleted even if it is linked to a person.
 
 ### MongoDB
 

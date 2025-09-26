@@ -41,7 +41,7 @@ coordinates, stored in the MongoDB in the "geospatial" collection".
 For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the 
 [facility specification](facilities.md).
 
-![Location_models_before](png/Location_Models_before.png)
+![Location_models_before](img/Location_Models_before.png)
 
 This dispersion of the location information, especially for scientific objects stored in the 2 MongoDB 
 collections with 2 different models, leads to difficulties to get the right location information and spatio-temporal 
@@ -79,7 +79,7 @@ a facility, X/Y/Z and/or textual position).
 
 However, this model will be adjusted according to the element type.
 
-![SOSA_OpenSilex](png/SOSA_OpenSilex.png)
+![SOSA_OpenSilex](img/SOSA_OpenSilex.png)
 
 The new model location in MongoDB (location collection) is : 
 
@@ -116,7 +116,7 @@ seems to be slightly more efficient when the number of examined documents exceed
 | 9 000 000       | 2100                      | 2100                                       |
 | 13 000 000      | 3900                      | 4500                                       |
 
-![benchmark_mongo_geometry](png/benchmark_mongo_geometry.png)
+![benchmark_mongo_geometry](img/benchmark_mongo_geometry.png)
 
 ### Business logic
 
@@ -188,7 +188,7 @@ layered architecture (BLL/DAL).
 Thus, the `LocationObservationCollectionDAO` class only queries the RDF4J database, while the `LocationObservationDAO` 
 class only queries the MongoDB database.
 
-![Diagramme_classe_models_location](png/Diagramme_classe_models_location.png)
+![Diagramme_classe_models_location](img/Diagramme_classe_models_location.png)
 
 A `LocationAPI` has been created. It will replace the `PositionAPI`. For the moment, it has only 2 services:
  - `searchLocationHistory`: gets the location history of a feature of interest. The history can be filtered by date.

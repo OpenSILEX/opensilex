@@ -6,14 +6,14 @@
 
 ## Needs
 
-Manipulate [account](./account_API_service.md) and [person](./person_API_service.md) simultaneously for a better comprehension of users.
+Manipulate [account](Accounts/account_API_service.md) and [person](Persons/person_API_service.md) simultaneously for a better comprehension of users.
 
 > Warning : the user API services is deprecated and will be deleted in a future release
 > 
 > Warning : the user concept is a representative concept only, there is no user objects in database or classes.
 >
 > A while ago, we were using user object for authentication, credentials and contact information.
-After a rework, this concept were split between [account](./account_API_service.md) and [person](./person_API_service.md).
+After a rework, this concept were split between [account](Accounts/account_API_service.md) and [person](Persons/person_API_service.md).
 
 
 ## technical specifications
@@ -25,7 +25,7 @@ After a rework, this concept were split between [account](./account_API_service.
 Credentials for Users API are still available, but every use of these credentials in the Vue client has been removed.
 
 ### migration of model during the rework
-see [account](./account_API_service.md) and [person](./person_API_service.md) documentation for further information.
+see [account](Accounts/account_API_service.md) and [person](Persons/person_API_service.md) documentation for further information.
 ![transition from user's model to account/person's model](img/migration_user_model.png)
 
 ### specifications of the service

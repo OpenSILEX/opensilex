@@ -260,7 +260,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
                     // read model and performs local validation
                     T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
-                    // handle URI generation or map filled URIs to the model object
+                    // handle URI generation or association of filled uris to their line index in a Map.
                     // add model in modelChunk List
                     handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
                 }

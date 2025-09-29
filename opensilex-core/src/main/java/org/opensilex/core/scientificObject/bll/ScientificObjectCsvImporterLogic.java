@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -282,53 +283,60 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     ) throws SPARQLException {
         if (checkIfSONameIsNull(validator, model, totalRowIdx)) return;
 
+        SPARQLNamedResourceModel alreadyExistingOsWithName = null;
+
         // inside an XP
         if (withinExperiment()) {
             // query used to check if a SO with a name already exists in XP
-            SPARQLNamedResourceModel alreadyExistingOsWithName = scientificObjectDAO.getUriByNameAndGraph(SPARQLDeserializers.nodeURI(experiment),model.getName());
-            if (model.getUri() != null) {
-                // check existence of a URI (return false/true) in XP
-                List<SPARQLResult> result = scientificObjectDAO.checkUriExistInXP(validator, model, totalRowIdx, rootClassURI, graphNode);
-                if (result == null) return;
-                String isURIExistInXP = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
+            //Only look if in experiment as duplicate names can exist globally
+            alreadyExistingOsWithName = scientificObjectDAO.getUriByNameAndGraph(
+                    SPARQLDeserializers.nodeURI(experiment),
+                    model.getName()
+            );
+        }
 
-                // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO
-                if ((isURIExistInXP.equalsIgnoreCase("") || isURIExistInXP.equalsIgnoreCase("false"))
-                        && (alreadyExistingOsWithName == null)) {
-                    addModelInModelChunk(model, modelChunkToCreate);
-                    // register URI to the set of URIs to create new SOs
-                    filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
-                }
+        if (model.getUri() != null) {
+            // check existence of a URI (return false/true) in XP
+            List<SPARQLResult> result = scientificObjectDAO.checkUriExistInXP(validator, model, totalRowIdx, rootClassURI, graphNode);
+            if (result == null) return;
+            String isURIExistInGraph = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
 
-                // Scenario 3: If the URI entered in CSV exist in XP -> update the SO
-                else if (isURIExistInXP.equalsIgnoreCase("true")) {
-                    addModelInModelChunk(model, modelChunkToUpdate);
-                    // register URI to the set of URIs to update the existing SOs
-                    filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
-                }
-
-            }
-            // Scenario 4: If the URI is empty in CSV and there's a SO with the same name in XP -> update the SO
-            else if (model.getUri() == null && alreadyExistingOsWithName != null) {
-                // fetching existing SO URI
-                URI alreadyExistingOSUri = alreadyExistingOsWithName.getUri();
-                model.setUri(alreadyExistingOSUri);
-                addModelInModelChunk(model, modelChunkToUpdate);
-                // register URI to the set of URIs to create new SOs
-                filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
-            }
-            // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
-            else if (model.getUri() == null && alreadyExistingOsWithName == null) {
-                // register URI to the set of URIs to update the existing SOs
-                generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+            // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO
+            if ((isURIExistInGraph.equalsIgnoreCase("") || isURIExistInGraph.equalsIgnoreCase("false"))
+                    && (alreadyExistingOsWithName == null)) {
                 addModelInModelChunk(model, modelChunkToCreate);
+                // register URI to the set of URIs to create new SOs
+                filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
             }
+
+            // Scenario 3: If the URI entered in CSV exist in XP -> update the SO
+            else if (isURIExistInGraph.equalsIgnoreCase("true")) {
+                addModelInModelChunk(model, modelChunkToUpdate);
+                // register URI to the set of URIs to update the existing SOs
+                filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+            }
+
+        }
+        // Scenario 4: If the URI is empty in CSV and there's a SO with the same name in XP -> update the SO
+        else if (model.getUri() == null && alreadyExistingOsWithName != null) {
+            // fetching existing SO URI
+            URI alreadyExistingOSUri = alreadyExistingOsWithName.getUri();
+            model.setUri(alreadyExistingOSUri);
+            addModelInModelChunk(model, modelChunkToUpdate);
+            // register URI to the set of URIs to create new SOs
+            filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
+        }
+        // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
+        else if (model.getUri() == null && alreadyExistingOsWithName == null) {
+            // register URI to the set of URIs to update the existing SOs
+            generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+            addModelInModelChunk(model, modelChunkToCreate);
         }
 
         // global flow (not inside an XP)
-        else {
+        /*else {
             super.handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
-        }
+        }*/
     }
 
     private static boolean checkIfSONameIsNull(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx) {
@@ -421,14 +429,16 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         if (experiment != null) {
             // check if there are any duplicate names within CSV
             checkLocalDuplicateNames(restrictionValidator, modelChunk, offset);
-            // check if there are any duplicate URIs within CSV
-            checkLocalDuplicateURIs(restrictionValidator, modelChunk, offset);
         }
+
+        // check if there are any duplicate URIs within CSV
+        checkLocalDuplicateURIs(restrictionValidator, modelChunk, offset);
+
         //Validations to perform if batch concerns an update
         if(forUpdate){
-            Map<URI, URI> newTypesPerUri = new HashMap<>();
-            modelChunk.forEach(model -> newTypesPerUri.put(model.getUri(), model.getType()));
-            try{
+            Map<String, URI> newTypesPerUri = new HashMap<>();
+            modelChunk.forEach(model -> newTypesPerUri.put(SPARQLDeserializers.getExpandedURI(model.getUri()), model.getType()));
+            /*try{
                 SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()));
                 sparql.executeSelectQueryAsStream(typesAndExperimentsRequest).forEach(sparqlResult -> {
 
@@ -448,12 +458,62 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 });
             }catch(Exception e){
                 throw new IOException("Some problem occurred while fetching types.");
-            }
+            }*/
+            verifyTypeUpdateStatus(
+                    newTypesPerUri,
+                    (TypeTestRequestResult nextParsedResult) -> {
+                        if(nextParsedResult.participatesInArray.length > 1){
+                            addForbiddenTypeChangeError(restrictionValidator, offset, nextParsedResult.expandedURI, SPARQLDeserializers.getExpandedURI(nextParsedResult.newTypeUri));
+                        }
+                    }
+            );
 
         }
     }
 
-    private SelectBuilder createTypeTestRequest(List<URI> osUrisToUpdate) throws Exception{
+    private static class TypeTestRequestResult{
+        final String expandedURI;
+        final URI newTypeUri;
+        final String[] participatesInArray;
+
+        private TypeTestRequestResult(String expandedURI, URI newTypeUri, String[] participatesInArray) {
+            this.expandedURI = expandedURI;
+            this.newTypeUri = newTypeUri;
+            this.participatesInArray = participatesInArray;
+        }
+    }
+
+    private void verifyTypeUpdateStatus(Map<String, URI> newTypesPerUri, Consumer<TypeTestRequestResult> onTypeChange) throws IOException {
+        try{
+            SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()));
+            sparql.executeSelectQueryAsStream(typesAndExperimentsRequest).forEach(sparqlResult -> {
+
+                String expandedURI = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.URI_FIELD));
+
+                String oldTypeUri = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.TYPE_FIELD));
+
+                //If type is not the same as old model then verify this action is permitted (object must be present in one or fewer experiments)
+                URI newTypeUri = newTypesPerUri.get(expandedURI);
+                if(!SPARQLDeserializers.compareURIs(oldTypeUri, newTypeUri)){
+                    String participatesInStringValue = sparqlResult.getStringValue(EXPERIMENTS_CONCAT_VAR_NAME);
+                    if(!StringUtils.isEmpty(participatesInStringValue)){
+                        onTypeChange.accept(
+                                new TypeTestRequestResult(
+                                        expandedURI,
+                                        newTypeUri,
+                                        participatesInStringValue.split(",")
+                                )
+                        );
+                    }
+                }
+
+            });
+        }catch(Exception e){
+            throw new IOException("Some problem occurred while fetching types.");
+        }
+    }
+
+    private SelectBuilder createTypeTestRequest(List<String> osUrisToUpdate) throws Exception{
         SelectBuilder select = new SelectBuilder();
         //We're only searching in the global graph as the participatesIn property will suffice
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
@@ -472,7 +532,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 .addWhere(uriVar, RDF.type, typeVar)
                 .addWhere(uriVar, Oeso.participatesIn, experimentVar);
 
-        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate);
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate.stream().map(URI::create).toList());
         select.addGroupBy(uriVar);
         select.addGroupBy(typeVar);
 
@@ -710,7 +770,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             // setting experiment in SO model if we try updating a SO from an XP
             setExperimentInSOObj(model);
             scientificObjectDAO.setLastUpdateDateInSO(model);
-            Node graphNode = SPARQLDeserializers.nodeURI(experiment);
+            //Node graphNode = SPARQLDeserializers.nodeURI(experiment);
             List<URI> childrenURIs = scientificObjectDAO.fetchChildrenURIs(model.getUri(), currentUser, graphNode);
 
             boolean hasFacilityURI = scientificObjectDAO.checkIfSOHasFacilityURIs(model);
@@ -718,11 +778,11 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
             if(experiment != null) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
+                if(model.getRelations() != null) {
+                    checkFactorLevelsInXP(model);
+                }
             }
 
-            if(model.getRelations() != null) {
-                checkFactorLevelsInXP(model);
-            }
             // geospatialModelsToUpdate - all geoSpatialModels for the SOs(which has to be updated)
             // geospatialToBeUpdated - geoSpatialModels to be updated
             geospatialToBeUpdated = geospatialModelsToUpdate.stream()

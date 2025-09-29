@@ -1,9 +1,9 @@
-| Date       | Author             | Developer(s)      | Version OpenSilex       | Comment                                                                       |
-|------------|--------------------|-------------------|-------------------------|-------------------------------------------------------------------------------|
-| 7/08/2024  | Alexia Chiavarino  | Alexia Chiavarino | 1.3.0                   | created spec - global and site case                                           |
-| 20/09/2024 | Alexia Chiavarino  | Alexia Chiavarino | 1.3.0                   | updated spec - add featureOfInterest field in Mongo + add Improvements        |
-| 04/10/2024 | Alexia Chiavarino  | Alexia Chiavarino | 1.3.0                   | updated spec - add facility case + definitions                                |
-| 39/09/2025 | yvan.roux@inrae.fr | Yvan Roux         | 1.4.9 Explosive Emerald | Split document into Buisiness logic (spec) and Technical specifications (dev) |
+| Date       | Author             | Developer(s)      | Version OpenSilex       | Comment                                                                      |
+|------------|--------------------|-------------------|-------------------------|------------------------------------------------------------------------------|
+| 7/08/2024  | Alexia Chiavarino  | Alexia Chiavarino | 1.3.0                   | created spec - global and site case                                          |
+| 20/09/2024 | Alexia Chiavarino  | Alexia Chiavarino | 1.3.0                   | updated spec - add featureOfInterest field in Mongo + add Improvements       |
+| 04/10/2024 | Alexia Chiavarino  | Alexia Chiavarino | 1.3.0                   | updated spec - add facility case + definitions                               |
+| 39/09/2025 | yvan.roux@inrae.fr | Yvan Roux         | 1.4.9 Explosive Emerald | Split document into Business logic (spec) and Technical specifications (dev) |
 
 ## Table of contents
 <!-- TOC -->

@@ -1,20 +1,21 @@
-| Date       |Author|Developer(s)| Version OpenSilex | Comment                                                                |
-|------------|------|------------|-------------------|------------------------------------------------------------------------|
-| 7/08/2024  |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | created spec - global and site case                                    |
-| 20/09/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add featureOfInterest field in Mongo + add Improvements |
-| 04/10/2024 |Alexia Chiavarino|Alexia Chiavarino| 1.3.0      | updated spec - add facility case + definitions                         |
+| Date       | Author            | Developer(s)      | Version OpenSilex | Comment                                                                |
+|------------|-------------------|-------------------|-------------------|------------------------------------------------------------------------|
+| 7/08/2024  | Alexia Chiavarino | Alexia Chiavarino | 1.3.0             | created spec - global and site case                                    |
+| 20/09/2024 | Alexia Chiavarino | Alexia Chiavarino | 1.3.0             | updated spec - add featureOfInterest field in Mongo + add Improvements |
+| 04/10/2024 | Alexia Chiavarino | Alexia Chiavarino | 1.3.0             | updated spec - add facility case + definitions                         |
 
 ## Table of contents
-* [Needs](#needs)
-* [Definitions](#definitions)
-* [Solution](#solution)
-  * [Business logic](#business-logic)
-* [Technical specifications](#technical-specifications)
-    * [Frontend](#frontend)
+<!-- TOC -->
+  * [Table of contents](#table-of-contents)
+  * [Needs](#needs)
+  * [Definitions](#definitions)
+  * [Solution](#solution)
+    * [Business logic](#business-logic)
+  * [Technical specifications](#technical-specifications)
+    * [Front-end](#front-end)
     * [API](#api)
-* [Limitations and Improvements](#limitations-and-improvements)
-    * [Limitations](#limitations)
-    * [Improvements](#possible-improvements)
+  * [Limitations and Improvements](#limitations-and-improvements)
+<!-- TOC -->
 
 ## Needs
 
@@ -25,13 +26,13 @@ or through the "move" event.
 This location information is stored in different databases and with different models, depending on the type of element. 
 See the table below: 
 
-| Element                   | MongoDB - collection "geospatial"        | MongoDB - collection "move"                                    | RDF4J                               |
-|---------------------------|------------------------------------------|----------------------------------------------------------------|-------------------------------------|
-| Scientific object         | on creation/update : spatial coordinates | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facilty |
-| Device                    |                                          | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facilty |
-| Facility                  | on creation/update : spatial coordinates |                                                                | on creation/update :  address       |
-| Site                      | on creation/update : spatial coordinates |                                                                | on creation/update :  address       |
-| Structural/ temporal area | on creation/update : spatial coordinates |                                                                |                                     |
+| Element                   | MongoDB - collection "geospatial"        | MongoDB - collection "move"                                    | RDF4J                                |
+|---------------------------|------------------------------------------|----------------------------------------------------------------|--------------------------------------|
+| Scientific object         | on creation/update : spatial coordinates | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facility |
+| Device                    |                                          | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facility |
+| Facility                  | on creation/update : spatial coordinates |                                                                | on creation/update :  address        |
+| Site                      | on creation/update : spatial coordinates |                                                                | on creation/update :  address        |
+| Structural/ temporal area | on creation/update : spatial coordinates |                                                                |                                      |
 
 In the case of a "move" event, the location is associated with a date (instant or interval).
 
@@ -39,9 +40,9 @@ When an address is associated with a site or facility, the address is stored in 
 coordinates, stored in the MongoDB in the "geospatial" collection".
 
 For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the 
-[facility specification](facilities.md).
+[facility specification](/src/main/resources/specs/facilities.md).
 
-![Location_models_before](../_imgs/Location_Models_before.png)
+![Location_models_before](/src/main/resources/opensilex-core/_imgs/Location_Models_before.png)
 
 This dispersion of the location information, especially for scientific objects stored in the 2 MongoDB 
 collections with 2 different models, leads to difficulties to get the right location information and spatio-temporal 
@@ -79,7 +80,7 @@ a facility, X/Y/Z and/or textual position).
 
 However, this model will be adjusted according to the element type.
 
-![SOSA_OpenSilex](../_imgs/SOSA_OpenSilex.png)
+![SOSA_OpenSilex](/src/main/resources/opensilex-core/_imgs/SOSA_OpenSilex.png)
 
 The new model location in MongoDB (location collection) is : 
 
@@ -116,7 +117,7 @@ seems to be slightly more efficient when the number of examined documents exceed
 | 9 000 000       | 2100                      | 2100                                       |
 | 13 000 000      | 3900                      | 4500                                       |
 
-![benchmark_mongo_geometry](../_imgs/benchmark_mongo_geometry.png)
+![benchmark_mongo_geometry](/src/main/resources/opensilex-core/_imgs/benchmark_mongo_geometry.png)
 
 ### Business logic
 
@@ -188,7 +189,7 @@ layered architecture (BLL/DAL).
 Thus, the `LocationObservationCollectionDAO` class only queries the RDF4J database, while the `LocationObservationDAO` 
 class only queries the MongoDB database.
 
-![Diagramme_classe_models_location](../_imgs/Diagramme_classe_models_location.png)
+![Diagramme_classe_models_location](/src/main/resources/opensilex-core/_imgs/Diagramme_classe_models_location.png)
 
 A `LocationAPI` has been created. It will replace the `PositionAPI`. For the moment, it has only 2 services:
  - `searchLocationHistory`: gets the location history of a feature of interest. The history can be filtered by date.

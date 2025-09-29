@@ -1228,14 +1228,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * create instances without publication date and publisher (for update use case).
      */
-    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances, Node graph) throws Exception {
         if (instances.isEmpty()) { return; }
 
         OffsetDateTime now = OffsetDateTime.now();
         instances.forEach(instance -> instance.setLastUpdateDate(now));
 
         List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
-        Node graph = getDefaultGraph(instances.iterator().next().getClass());
         create(graph, instances, null, false, false, fieldsToExclude);
     }
 
@@ -1411,7 +1410,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * - any instancies with a field that is both null and is a IgnoreUpdateIfNull
      * - any instancies with custom properties
      */
-    private <T extends SPARQLResourceModel> List<T> loadOnlyOldNeededInstances(List<T> instances, SPARQLClassObjectMapper<T> mapper) throws Exception {
+    private <T extends SPARQLResourceModel> List<T> loadOnlyOldNeededInstances(List<T> instances, SPARQLClassObjectMapper<T> mapper, Node graph) throws Exception {
 
         List<Field> autoupdateFields = mapper.getAutoUpdateFields();
         if ( ! autoupdateFields.isEmpty()){ // we have some autoupdate fields, so we load old instances
@@ -1435,7 +1434,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         }
 
-        return loadListByURIs(mapper.getObjectClass(), neededInstances, getDefaultLang());
+        return loadListByURIs(graph, mapper.getObjectClass(), neededInstances, getDefaultLang(), null, null);
     }
 
     private <T extends SPARQLResourceModel> void updateAutoUpdateFields(SPARQLClassObjectMapper<T> mapper, T oldInstance, T instance) throws Exception {
@@ -1597,11 +1596,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * For @IgnoreUpdateIfNull, see SPARQLService#updateFields
      * This method does not delete and recreate dc:publisher and dc:issued relations, in order to keep metadata information.
      * for mor details see :
-     * @see SPARQLService#createForUpdate(Collection)
+     * @see SPARQLService#createForUpdate(Collection, Node)
      * @see SPARQLService#deleteForUpdate(Class, List)
      * @see #updateFields(SPARQLResourceModel, SPARQLResourceModel)
      */
-    public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void update(List<T> instances, Node graph) throws Exception {
         if (instances.isEmpty()) return;
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
@@ -1618,7 +1617,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             validate(instances, null);
 
-            List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper);
+            if (graph == null){
+                graph = getDefaultGraph(instances.iterator().next().getClass());
+            }
+            List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper, graph);
 
             deleteForUpdate(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList());
 
@@ -1630,12 +1632,20 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
                 updateFields(instance, oldInstance);
             }
-            createForUpdate(instances);
+
+            createForUpdate(instances, graph);
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);
             throw ex;
         }
+    }
+
+    /**
+     * @see #update(List, Node)
+     */
+    public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
+        update(instances, null);
     }
 
     /**

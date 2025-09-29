@@ -710,17 +710,20 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         GeospatialModel geospatialToBeUpdated;
 
+        HashMap <Node, List<ScientificObjectModel>> OsByExpe = new HashMap<>();
         // DELETE and INSERT
         for(ScientificObjectModel model : models) {
             // setting experiment in SO model if we try updating a SO from an XP
             setExperimentInSOObj(model);
             scientificObjectDAO.setLastUpdateDateInSO(model);
             Node graphNode = SPARQLDeserializers.nodeURI(experiment);
-            List<URI> childrenURIs = scientificObjectDAO.fetchChildrenURIs(model.getUri(), currentUser, graphNode);
 
-            boolean hasFacilityURI = scientificObjectDAO.checkIfSOHasFacilityURIs(model);
-            scientificObjectDAO.updateSOAndMove(model.getUri(), currentUser, graphNode, model, childrenURIs, hasFacilityURI);
+            OsByExpe.computeIfAbsent(graphNode, k -> new ArrayList<>()).add(model);
+        }
 
+        scientificObjectDAO.updateSOAndMove(models, currentUser, OsByExpe);
+
+        for(ScientificObjectModel model : models) {
             if(experiment != null) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
             }

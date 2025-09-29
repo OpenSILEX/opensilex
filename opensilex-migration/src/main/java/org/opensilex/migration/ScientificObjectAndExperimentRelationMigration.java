@@ -74,7 +74,6 @@ public class ScientificObjectAndExperimentRelationMigration extends DatabaseMigr
 
     @Override
     protected void sparqlOperation(SPARQLService sparql, SPARQLConfig sparqlConfig) throws SPARQLException {
-//TODO MAX this looks wierd why is GRAPH VAR there twice?
         UpdateBuilder updateQuery = new UpdateBuilder()
                 .addInsert(GRAPH_VAR, SO_VAR, Oeso.participatesIn, GRAPH_VAR)
                 .addWhere(buildWhere(sparql));

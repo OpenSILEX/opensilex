@@ -105,6 +105,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private ExperimentModel experimentModel;
     private final AccountModel currentUser;
 
+    private static String EXPERIMENTS_CONCAT_VAR_NAME = "experiments";
+
     /**
      * @param sparql     SPARQL service
      * @param mongoDB    MongoDB service (used for move and geospatial handling)
@@ -437,7 +439,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                     //If type is not the same as old model then verify this action is permitted (object must be present in one or fewer experiments)
                     URI newTypeUri = newTypesPerUri.get(URI.create(expandedURI));
                     if(!SPARQLDeserializers.compareURIs(oldTypeUri, newTypeUri)){
-                        String participatesInStringValue = sparqlResult.getStringValue(ScientificObjectModel.PARTICIPATES_IN_FIELD);
+                        String participatesInStringValue = sparqlResult.getStringValue(EXPERIMENTS_CONCAT_VAR_NAME);
                         if(!StringUtils.isEmpty(participatesInStringValue) && participatesInStringValue.split(",").length > 1){
                             addForbiddenTypeChangeError(restrictionValidator, offset, expandedURI, SPARQLDeserializers.getExpandedURI(newTypeUri));
                         }
@@ -461,7 +463,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         Var experimentVar = makeVar(ScientificObjectModel.PARTICIPATES_IN_FIELD);
 
         Aggregator groupConcat = new AggGroupConcatDistinct(exprFactory.asExpr(experimentVar), ",");
-        Var experimentsConcatVar = makeVar("experiments");
+        Var experimentsConcatVar = makeVar(EXPERIMENTS_CONCAT_VAR_NAME);
 
         select.addVar(groupConcat.toString(), experimentsConcatVar);
         select.addVar(uriVar);
@@ -469,13 +471,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
                 .addWhere(uriVar, RDF.type, typeVar)
                 .addWhere(uriVar, Oeso.participatesIn, experimentVar);
-
-        /*WhereBuilder where = new WhereBuilder()
-                .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
-                .addWhere(uriVar, RDF.type, typeVar)
-                .addWhere(uriVar, Oeso.participatesIn, experimentVar);
-
-        select.addGraph(contextNode, where);*/
 
         SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate);
         select.addGroupBy(uriVar);

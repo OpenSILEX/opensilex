@@ -609,7 +609,8 @@ import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
 import VariablePropertySelector from './variables/views/VariablePropertySelector.vue';
 components["opensilex-VariablePropertySelector"] = VariablePropertySelector;
-
+import AssociatedVariablesList from "./variables/AssociatedVariableList.vue";
+components["opensilex-AssociatedVariableList"] = AssociatedVariablesList;
 import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
 components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 import VariableSelector from './variables/views/VariableSelector.vue';

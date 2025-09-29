@@ -157,6 +157,29 @@ public class DocumentAPI {
     }
 
     /**
+     * Checks a user's access to a document.
+     * @param uri Document URI
+     * @param documentDAO Document DAO
+     * @return null if access is OK, otherwise a Response object containing the error
+     * @throws Exception
+     */
+    private Response checkAccessOrError(URI uri, DocumentDAO documentDAO) throws Exception {
+        switch (documentDAO.checkAccess(uri, currentUser)) {
+            case UNAUTHORIZED:
+                return new ErrorResponse(Response.Status.UNAUTHORIZED, "Unauthorized", "User is not authenticated").getResponse();
+            case FORBIDDEN:
+                return new ErrorResponse(Response.Status.FORBIDDEN, "Forbidden", "User does not have access to this document").getResponse();
+            case NOT_FOUND:
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Document not found", "Unknown Document URI: " + uri).getResponse();
+            case OK:
+                return null;
+            default:
+                throw new IllegalStateException("Unexpected access state");
+        }
+    }
+
+
+    /**
      * @param uri Document URI
      * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link DocumentGetDTO}
      */
@@ -167,27 +190,27 @@ public class DocumentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Document retrieved", response = DocumentGetDTO.class),
+        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
+        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this document", response = ErrorResponse.class),
         @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
     })
     public Response getDocumentMetadata(
             @ApiParam(value = "Document URI", example = "http://opensilex.dev/set/documents/ZA17", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
-        DocumentModel documentModel = documentDAO.getMetadata(uri, currentUser);
-
-        if (documentModel != null) {
-            DocumentGetDTO dto = DocumentGetDTO.fromModel(documentModel);
-            if (Objects.nonNull(documentModel.getPublisher())) {
-                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(documentModel.getPublisher())));
-            }
-            return new SingleObjectResponse<>(dto).getResponse();
-        } else {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Document not found",
-                    "Unknown Document URI: " + uri.toString()
-            ).getResponse();
+        Response accessError = checkAccessOrError(uri, documentDAO);
+        if (accessError != null) {
+            return accessError;
         }
+
+        DocumentModel documentModel = documentDAO.getMetadata(uri, currentUser);
+        DocumentGetDTO dto = DocumentGetDTO.fromModel(documentModel);
+        if (Objects.nonNull(documentModel.getPublisher())) {
+            dto.setPublisher(UserGetDTO.fromModel(
+                    new AccountDAO(sparql).get(documentModel.getPublisher())
+            ));
+        }
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     /**
@@ -201,6 +224,8 @@ public class DocumentAPI {
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Document retrieved"),
+        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
+        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this document", response = ErrorResponse.class),
         @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
     })
     public Response getDocumentFile(
@@ -208,6 +233,12 @@ public class DocumentAPI {
     ) throws Exception {
         uri = new URI(URIDeserializer.getExpandedURI(uri.toString()));
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
+
+        Response accessError = checkAccessOrError(uri, documentDAO);
+        if (accessError != null) {
+            return accessError;
+        }
+
         DocumentModel metadata = documentDAO.getMetadata(uri, currentUser);
 
         if (metadata == null) {
@@ -219,7 +250,7 @@ public class DocumentAPI {
         }
 
         try {
-            byte[] file = documentDAO.getFile(uri);
+            byte[] file = documentDAO.getFile(uri, currentUser);
             return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
                             .build();  
         } 

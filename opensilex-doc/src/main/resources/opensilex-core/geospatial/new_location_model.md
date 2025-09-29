@@ -25,13 +25,13 @@ or through the "move" event.
 This location information is stored in different databases and with different models, depending on the type of element. 
 See the table below: 
 
-| Element                   | MongoDB - collection "geospatial"        | MongoDB - collection "move"                                   | RDF4J                              |
-|---------------------------|------------------------------------------|---------------------------------------------------------------|------------------------------------|
+| Element                   | MongoDB - collection "geospatial"        | MongoDB - collection "move"                                    | RDF4J                               |
+|---------------------------|------------------------------------------|----------------------------------------------------------------|-------------------------------------|
 | Scientific object         | on creation/update : spatial coordinates | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facilty |
-| Device                    |  | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facilty |
-| Facility                  | on creation/update : spatial coordinates |  | on creation/update :  address      |
-| Site                      | on creation/update : spatial coordinates |  | on creation/update :  address      |
-| Structural/ temporal area | on creation/update : spatial coordinates | | |
+| Device                    |                                          | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facilty |
+| Facility                  | on creation/update : spatial coordinates |                                                                | on creation/update :  address       |
+| Site                      | on creation/update : spatial coordinates |                                                                | on creation/update :  address       |
+| Structural/ temporal area | on creation/update : spatial coordinates |                                                                |                                     |
 
 In the case of a "move" event, the location is associated with a date (instant or interval).
 
@@ -41,7 +41,7 @@ coordinates, stored in the MongoDB in the "geospatial" collection".
 For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the 
 [facility specification](facilities.md).
 
-![Location_models_before](img/Location_Models_before.png)
+![Location_models_before](../_imgs/Location_Models_before.png)
 
 This dispersion of the location information, especially for scientific objects stored in the 2 MongoDB 
 collections with 2 different models, leads to difficulties to get the right location information and spatio-temporal 
@@ -52,12 +52,12 @@ In second stage, we would also like to store spatial dataset (e.g. drone flight 
 
 ## Definitions
 
-**Location**: The act of determining the location of a thing, phenomenon or its origin.
-**Position**: Place where a thing is positioned in relation to a whole (in a coordinate system, the orientation of an object, for example: facing east).
-**Geometry**: Science of space and the figures that can occupy it (shape and size of spatial objects).
-**Spatial coordinates**: Numerical representation of the position of an object in space, expressed in various forms according to the spatial coordinate system (sexagesimal or decimal degrees, longitude and latitude).
-**Move**: Oriented distance separating the starting point from the finishing point, in a straight line over a given time.
-**Trajectory**: The trajectory of a moving object is the set of positions it has occupied throughout its movement. A line describes the object's movement with a time dimension (x positions at x times).
+- **Location**: The act of determining the location of a thing, phenomenon or its origin.
+- **Position**: Place where a thing is positioned in relation to a whole (in a coordinate system, the orientation of an object, for example: facing east).
+- **Geometry**: Science of space and the figures that can occupy it (shape and size of spatial objects).
+- **Spatial coordinates**: Numerical representation of the position of an object in space, expressed in various forms according to the spatial coordinate system (sexagesimal or decimal degrees, longitude and latitude).
+- **Move**: Oriented distance separating the starting point from the finishing point, in a straight line over a given time.
+- **Trajectory**: The trajectory of a moving object is the set of positions it has occupied throughout its movement. A line describes the object's movement with a time dimension (x positions at x times).
 
 ## Solution
 
@@ -79,7 +79,7 @@ a facility, X/Y/Z and/or textual position).
 
 However, this model will be adjusted according to the element type.
 
-![SOSA_OpenSilex](img/SOSA_OpenSilex.png)
+![SOSA_OpenSilex](../_imgs/SOSA_OpenSilex.png)
 
 The new model location in MongoDB (location collection) is : 
 
@@ -116,7 +116,7 @@ seems to be slightly more efficient when the number of examined documents exceed
 | 9 000 000       | 2100                      | 2100                                       |
 | 13 000 000      | 3900                      | 4500                                       |
 
-![benchmark_mongo_geometry](img/benchmark_mongo_geometry.png)
+![benchmark_mongo_geometry](../_imgs/benchmark_mongo_geometry.png)
 
 ### Business logic
 
@@ -188,7 +188,7 @@ layered architecture (BLL/DAL).
 Thus, the `LocationObservationCollectionDAO` class only queries the RDF4J database, while the `LocationObservationDAO` 
 class only queries the MongoDB database.
 
-![Diagramme_classe_models_location](img/Diagramme_classe_models_location.png)
+![Diagramme_classe_models_location](../_imgs/Diagramme_classe_models_location.png)
 
 A `LocationAPI` has been created. It will replace the `PositionAPI`. For the moment, it has only 2 services:
  - `searchLocationHistory`: gets the location history of a feature of interest. The history can be filtered by date.

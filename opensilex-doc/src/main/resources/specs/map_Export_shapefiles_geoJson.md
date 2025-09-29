@@ -118,7 +118,7 @@ In this abstract class, the `exportFormat` method dispatch between two different
 
 3- Return a zipped file.
 
-![geospatialExporter_class diagram](GeospatialExporter_class_diagram.png)
+![geospatialExporter_class diagram](../opensilex-core/_imgs/GeospatialExporter_class_diagram.png)
 
 ### Environment changes
 

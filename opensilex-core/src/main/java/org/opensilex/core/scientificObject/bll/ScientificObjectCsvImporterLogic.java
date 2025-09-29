@@ -3,9 +3,13 @@ package org.opensilex.core.scientificObject.bll;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.jetbrains.annotations.NotNull;
@@ -420,21 +424,26 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
         //Validations to perform if batch concerns an update
         if(forUpdate){
-            //TODO MAX delete this is doing it with perso request works out
-            //Fetch old types of the uris to test if they are being updated.
-            /*OntologyDAO dao = new OntologyDAO(sparql);
+            Map<URI, URI> newTypesPerUri = new HashMap<>();
+            modelChunk.forEach(model -> newTypesPerUri.put(model.getUri(), model.getType()));
             try{
-                List<URITypesDTO> types = dao.getSuperClassesByURI(modelChunk.stream().map(SPARQLResourceModel::getUri).toList())
-                        .stream().map(URITypesDTO::fromModel)
-                        .collect(Collectors.toList());
-            }catch(Exception e){
-                throw new IOException("Some problem occurred while fetching types.");
-            }*/
-            try{
-                SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(
-                        modelChunk.stream().map(SPARQLResourceModel::getUri).toList()
-                );
-                sparql.search()
+                SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()));
+                sparql.executeSelectQueryAsStream(typesAndExperimentsRequest).forEach(sparqlResult -> {
+
+                    String expandedURI = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.URI_FIELD));
+
+                    String oldTypeUri = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.TYPE_FIELD));
+
+                    //If type is not the same as old model then verify this action is permitted (object must be present in one or fewer experiments)
+                    URI newTypeUri = newTypesPerUri.get(URI.create(expandedURI));
+                    if(!SPARQLDeserializers.compareURIs(oldTypeUri, newTypeUri)){
+                        String participatesInStringValue = sparqlResult.getStringValue(ScientificObjectModel.PARTICIPATES_IN_FIELD);
+                        if(!StringUtils.isEmpty(participatesInStringValue) && participatesInStringValue.split(",").length > 1){
+                            addForbiddenTypeChangeError(restrictionValidator, offset, expandedURI, SPARQLDeserializers.getExpandedURI(newTypeUri));
+                        }
+                    }
+
+                });
             }catch(Exception e){
                 throw new IOException("Some problem occurred while fetching types.");
             }
@@ -445,21 +454,32 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private SelectBuilder createTypeTestRequest(List<URI> osUrisToUpdate) throws Exception{
         SelectBuilder select = new SelectBuilder();
         //We're only searching in the global graph as the participatesIn property will suffice
-        final Node contextNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         Var experimentVar = makeVar(ScientificObjectModel.PARTICIPATES_IN_FIELD);
 
-        select.addVar(uriVar);
-        select.addVar(typeVar);
-        select.addVar(experimentVar);
+        Aggregator groupConcat = new AggGroupConcatDistinct(exprFactory.asExpr(experimentVar), ",");
+        Var experimentsConcatVar = makeVar("experiments");
 
-        select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
-        select.addWhere(uriVar, RDF.type, typeVar);
-        select.addWhere(uriVar, Oeso.participatesIn, experimentVar);
+        select.addVar(groupConcat.toString(), experimentsConcatVar);
+        select.addVar(uriVar);
+        select.addVar(typeVar)
+                .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
+                .addWhere(uriVar, RDF.type, typeVar)
+                .addWhere(uriVar, Oeso.participatesIn, experimentVar);
+
+        /*WhereBuilder where = new WhereBuilder()
+                .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
+                .addWhere(uriVar, RDF.type, typeVar)
+                .addWhere(uriVar, Oeso.participatesIn, experimentVar);
+
+        select.addGraph(contextNode, where);*/
 
         SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate);
+        select.addGroupBy(uriVar);
+        select.addGroupBy(typeVar);
 
         return select;
     }
@@ -531,6 +551,21 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             }
             i++;
         }
+    }
+
+    private void addForbiddenTypeChangeError(CsvOwlRestrictionValidator validator, int offset, String objectUri, String failedNewTypeUri) {
+        int i = offset;
+
+        String errorMsg = String.format(ScientificObjectDAO.FORBIDDEN_TYPE_CHANGE_ERROR_MESSAGE, objectUri);
+
+        CsvCellValidationContext cell = new CsvCellValidationContext(
+                i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET,
+                CSV_TYPE_INDEX,
+                failedNewTypeUri,
+                CSV_TYPE_KEY
+        );
+        cell.setMessage(errorMsg);
+        validator.addInvalidValueError(cell);
     }
 
     private static void cleanUpGeometryData(CSVValidationModel validation, Map<SPARQLNamedResourceModel, Geometry> objectsGeometry, List<GeospatialModel> geospatialModels) {

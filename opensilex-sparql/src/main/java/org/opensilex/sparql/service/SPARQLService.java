@@ -1597,7 +1597,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * This method does not delete and recreate dc:publisher and dc:issued relations, in order to keep metadata information.
      * for mor details see :
      * @see SPARQLService#createForUpdate(Collection, Node)
-     * @see SPARQLService#deleteForUpdate(Class, List)
+     * @see SPARQLService#deleteForUpdate(Class, List, URI)
      * @see #updateFields(SPARQLResourceModel, SPARQLResourceModel)
      */
     public <T extends SPARQLResourceModel> void update(List<T> instances, Node graph) throws Exception {
@@ -1622,7 +1622,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
             List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper, graph);
 
-            deleteForUpdate(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList());
+            deleteForUpdate(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList(), new URI(graph.getURI()));
 
             for (T oldInstance : oldInstances) {
                 T instance = instances.stream()
@@ -1651,10 +1651,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * WARNING : this deletes method does not use the deleteCascade Sparql annotation AND does not delete dc:publisher and dc:issued relations.
      * Usefully for updates, dangerous for simple delete.
+     * @param graph the graph onto instance are deleted, if null search in all graphs
      */
-    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<URI> uris) throws Exception {
+    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<URI> uris, URI graph) throws Exception {
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(uris);
+        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(uris, graph);
         executeDeleteQuery(query);
     }
 

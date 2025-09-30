@@ -1391,7 +1391,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URIGenerator<T> uriGenerator = mapper.getUriGenerator(instance);
         URI uri = instance.getUri();
         if (uri == null) {
-            generateUniqueURI(graph,instance,uriGenerator,checkUriExist);
+            generateUniqueURI(graph,instance,uriGenerator,true);
 
             // only ensure that the URI hasn't some outgoing relation
             // the URI can have some in relations without problem (ex : skos or other in-coming relation)

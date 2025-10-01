@@ -5,6 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -93,6 +95,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
+
+    /**
+     * cache used to avoid multiple generation of the same URI in a short time window.
+     * Duration is very short because this cache is only used to avoid multiple generation when iterating on generateUniqueURI method.
+     * @see #generateUniqueURI(Node, SPARQLResourceModel, URIGenerator, boolean)
+     */
+    private static final Cache<URI, Boolean> generatedUriCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofSeconds(30))
+            .maximumSize(10000)
+            .build();
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
@@ -1379,11 +1391,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             uri = uriGenerator.generateURI(prefix, instance, retry);
 
             if (checkUriExist) {
-                while (uriExists(graph, uri)) {
+                boolean uriALreadyExists = generatedUriCache. getIfPresent(uri) != null || uriExists(graph, uri);
+                while (uriALreadyExists) {
                     uri = uriGenerator.generateURI(prefix, instance, ++retry);
+                    uriALreadyExists = generatedUriCache.getIfPresent(uri) != null || uriExists(graph, uri);
                 }
             }
             instance.setUri(uri);
+            generatedUriCache.put(uri, Boolean.TRUE);
         }
     }
 

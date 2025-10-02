@@ -45,7 +45,7 @@ public class GermplasmLogic {
     private final SPARQLService sparql;
     private final AccountModel currentUser;
 
-    private static final Cache<GermplasmLogic.Key, Boolean> cache = Caffeine.newBuilder()
+    private static final Cache<GermplasmCoherencyCacheKey, Boolean> cache = Caffeine.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .build();
 
@@ -419,7 +419,7 @@ public class GermplasmLogic {
             boolean isRelated;
             if (germplasmModel.getSpecies() != null && germplasmModel.getVariety() != null) {
                 //check coherence between variety and species
-                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkVarietySpecies);
+                isRelated = cache.get(new GermplasmCoherencyCacheKey(germplasmModel), this::checkVarietyHasSameSpecies);
                 if (!isRelated) {
                     String species = germplasmModel.getSpecies().getUri() != null ? germplasmModel.getSpecies().getUri().toString() : "null";
                     errors.addError(germplasmModel, "The given species doesn't match with the given variety. Wrong species : "+species);
@@ -428,7 +428,7 @@ public class GermplasmLogic {
 
             if (germplasmModel.getSpecies() != null && germplasmModel.getAccession() != null) {
                 //check coherence between accession and species
-                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionSpecies);
+                isRelated = cache.get(new GermplasmCoherencyCacheKey(germplasmModel), this::checkAccessionHasSameSpecies);
                 if (!isRelated) {
                     String species = germplasmModel.getSpecies().getUri() != null ? germplasmModel.getSpecies().getUri().toString() : "null";
                     errors.addError(germplasmModel, "The given species doesn't match with the given accession. Wrong species : "+species);
@@ -437,7 +437,7 @@ public class GermplasmLogic {
 
             if (germplasmModel.getVariety() != null && germplasmModel.getAccession() != null) {
                 //check coherence between variety and accession
-                isRelated = cache.get(new GermplasmLogic.Key(germplasmModel), this::checkAccessionVariety);
+                isRelated = cache.get(new GermplasmCoherencyCacheKey(germplasmModel), this::checkAccessionHasSameVariety);
                 if (!isRelated) {
                     String variety = germplasmModel.getVariety().getUri() != null ? germplasmModel.getVariety().getUri().toString() : "null";
                     errors.addError(germplasmModel, "The given variety doesn't match with the given accession. Wrong variety : "+variety);
@@ -546,40 +546,43 @@ public class GermplasmLogic {
         }
     }
 
-    private boolean checkVarietySpecies(GermplasmLogic.Key key) {
-        return checkVarietySpecies(key.species, key.variety);
-    }
-
-    private boolean checkVarietySpecies(URI speciesURI, URI varietyURI) {
+    /**
+     * Check coherency between variety and species
+     * @param key is used to store the variety URI and the species URI
+     * @return true if the variety has the given species, false otherwise
+     */
+    private boolean checkVarietyHasSameSpecies(GermplasmCoherencyCacheKey key) {
         try {
-            GermplasmModel variety = dao.get(varietyURI, currentUser, false);
-            return SPARQLDeserializers.compareURIs(variety.getSpecies().getUri().toString(), speciesURI.toString());
+            GermplasmModel variety = dao.get(key.varietyUri, currentUser, false);
+            return SPARQLDeserializers.compareURIs(variety.getSpecies().getUri().toString(), key.speciesUri.toString());
         } catch (Exception e) {
             return true; //the variety doesn't exist in the database yet
         }
     }
 
-    private boolean checkAccessionSpecies(GermplasmLogic.Key key) {
-        return checkAccessionSpecies(key.species, key.variety);
-    }
-
-    private boolean checkAccessionSpecies(URI speciesURI, URI accessionURI) {
+    /**
+     * Check coherency between accession and species
+     * @param key is used to store the accession URI and the species URI
+     * @return true if the accession has the given species, false otherwise
+     */
+    private boolean checkAccessionHasSameSpecies(GermplasmCoherencyCacheKey key) {
         try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser, false);
-            return SPARQLDeserializers.compareURIs(accession.getSpecies().getUri().toString(), speciesURI.toString());
+            GermplasmModel accession = dao.get(key.accessionUri, currentUser, false);
+            return SPARQLDeserializers.compareURIs(accession.getSpecies().getUri().toString(), key.speciesUri.toString());
         } catch (Exception e) {
             return true; //the accession doesn't exist in the database yet
         }
     }
 
-    private boolean checkAccessionVariety(GermplasmLogic.Key key) {
-        return checkAccessionVariety(key.species, key.variety);
-    }
-
-    private boolean checkAccessionVariety(URI varietyURI, URI accessionURI) {
+    /**
+     * Check coherency between accession and variety
+     * @param key is used to store the accession URI and the variety URI
+     * @return true if the accession has the given variety, false otherwise
+     */
+    private boolean checkAccessionHasSameVariety(GermplasmCoherencyCacheKey key) {
         try {
-            GermplasmModel accession = dao.get(accessionURI, currentUser, false);
-            return SPARQLDeserializers.compareURIs(accession.getVariety().getUri().toString(), varietyURI.toString());
+            GermplasmModel accession = dao.get(key.accessionUri, currentUser, false);
+            return SPARQLDeserializers.compareURIs(accession.getVariety().getUri().toString(), key.varietyUri.toString());
         } catch (Exception e) {
             return true; //the accession doesn't exist in the database yet
         }
@@ -587,21 +590,28 @@ public class GermplasmLogic {
     //#endregion
 
     //#region internal classes
-    private static final class Key {
 
-        final URI species;
-        final URI variety;
+    /**
+     * Key for the CAFFEINE cache used to check the coherency between species, variety and accession of a germplasm
+     */
+    private static final class GermplasmCoherencyCacheKey {
 
-        private Key(GermplasmModel germplasmModel) {
-            species = germplasmModel.getSpecies().getUri();
-            variety = germplasmModel.getVariety().getUri();
+        final URI speciesUri;
+        final URI varietyUri;
+        final URI accessionUri;
+
+        private GermplasmCoherencyCacheKey(GermplasmModel germplasmModel) {
+            speciesUri = germplasmModel.getSpecies() == null ? null : germplasmModel.getSpecies().getUri();
+            varietyUri = germplasmModel.getVariety() == null ? null : germplasmModel.getVariety().getUri();
+            accessionUri = germplasmModel.getAccession() == null ? null : germplasmModel.getAccession().getUri();
         }
 
         @Override
         public int hashCode() {
             int hash = 5;
-            hash = 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(this.species));
-            hash = 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(this.variety));
+            hash = speciesUri == null ? hash : 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(speciesUri));
+            hash = varietyUri == null ? hash : 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(varietyUri));
+            hash = accessionUri == null ? hash : 97 * hash + Objects.hashCode(SPARQLDeserializers.formatURI(accessionUri));
             return hash;
         }
 
@@ -616,11 +626,25 @@ public class GermplasmLogic {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final GermplasmLogic.Key other = (GermplasmLogic.Key) obj;
-            if (!SPARQLDeserializers.compareURIs(this.species.toString(), other.species.toString())) {
+            final GermplasmCoherencyCacheKey other = (GermplasmCoherencyCacheKey) obj;
+            if ( compareURIs(speciesUri, other.speciesUri) ) {
                 return false;
             }
-            return SPARQLDeserializers.compareURIs(this.variety.toString(), other.variety.toString());
+            if ( compareURIs(varietyUri, other.varietyUri) ) {
+                return false;
+            }
+
+            return compareURIs(accessionUri, other.accessionUri);
+        }
+
+        private boolean compareURIs(URI thisUri, URI otherUri) {
+            if (thisUri == null && otherUri == null) {
+                return true;
+            }
+            if (thisUri == null || otherUri == null) {
+                return false;
+            }
+            return SPARQLDeserializers.compareURIs(thisUri.toString(), otherUri.toString());
         }
 
     }

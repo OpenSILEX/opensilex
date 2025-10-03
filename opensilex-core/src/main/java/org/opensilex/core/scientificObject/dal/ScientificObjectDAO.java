@@ -101,7 +101,8 @@ public class ScientificObjectDAO {
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
     public static final String NON_UNIQUE_URI_ERROR_MSG = "Object URI <%s> must be unique. %s has the same URI";
     public static final String NO_NAME_ERROR_MSG = "Object name must be present which is %s";
-    public static final String FORBIDDEN_TYPE_CHANGE_ERROR_MESSAGE = "Object with URI <%s>'s type cannot be changed, as it is present in more than one experiment";
+    public static final String FORBIDDEN_TYPE_CHANGE_GLOBAL_ERROR_MESSAGE = "Object with URI <%s>'s type cannot be changed, as it is present in at least one experiment";
+    public static final String FORBIDDEN_TYPE_CHANGE_XP_ERROR_MESSAGE = "Object with URI <%s>'s type cannot be changed, as it is present in other experiments";
 
     private final URI defaultGraphURI;
     private final Node defaultGraphNode;

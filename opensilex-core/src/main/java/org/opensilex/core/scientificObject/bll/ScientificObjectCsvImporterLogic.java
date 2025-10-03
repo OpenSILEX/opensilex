@@ -1,5 +1,6 @@
 package org.opensilex.core.scientificObject.bll;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +39,12 @@ import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.csv.validation.CustomCsvValidation;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -436,33 +440,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         //Validations to perform if batch concerns an update
         if(forUpdate){
-            Map<String, URI> newTypesPerUri = new HashMap<>();
-            modelChunk.forEach(model -> newTypesPerUri.put(SPARQLDeserializers.getExpandedURI(model.getUri()), model.getType()));
-            /*try{
-                SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()));
-                sparql.executeSelectQueryAsStream(typesAndExperimentsRequest).forEach(sparqlResult -> {
+            int maxNumberOfXpPermittedForTypeChange = experiment != null ? 1 : 0;
 
-                    String expandedURI = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.URI_FIELD));
-
-                    String oldTypeUri = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.TYPE_FIELD));
-
-                    //If type is not the same as old model then verify this action is permitted (object must be present in one or fewer experiments)
-                    URI newTypeUri = newTypesPerUri.get(URI.create(expandedURI));
-                    if(!SPARQLDeserializers.compareURIs(oldTypeUri, newTypeUri)){
-                        String participatesInStringValue = sparqlResult.getStringValue(EXPERIMENTS_CONCAT_VAR_NAME);
-                        if(!StringUtils.isEmpty(participatesInStringValue) && participatesInStringValue.split(",").length > 1){
-                            addForbiddenTypeChangeError(restrictionValidator, offset, expandedURI, SPARQLDeserializers.getExpandedURI(newTypeUri));
-                        }
-                    }
-
-                });
-            }catch(Exception e){
-                throw new IOException("Some problem occurred while fetching types.");
-            }*/
             verifyTypeUpdateStatus(
-                    newTypesPerUri,
+                    modelChunk,
                     (TypeTestRequestResult nextParsedResult) -> {
-                        if(nextParsedResult.participatesInArray.length > 1){
+                        if(nextParsedResult.participatesInArray.length > maxNumberOfXpPermittedForTypeChange){
                             addForbiddenTypeChangeError(restrictionValidator, offset, nextParsedResult.expandedURI, SPARQLDeserializers.getExpandedURI(nextParsedResult.newTypeUri));
                         }
                     }
@@ -483,7 +466,11 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
     }
 
-    private void verifyTypeUpdateStatus(Map<String, URI> newTypesPerUri, Consumer<TypeTestRequestResult> onTypeChange) throws IOException {
+    //TODO document and rename?
+    private void verifyTypeUpdateStatus(List<ScientificObjectModel> modelChunk, Consumer<TypeTestRequestResult> onTypeChange) throws IOException {
+        Map<String, URI> newTypesPerUri = new HashMap<>();
+        modelChunk.forEach(model -> newTypesPerUri.put(SPARQLDeserializers.getExpandedURI(model.getUri()), model.getType()));
+
         try{
             SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()));
             sparql.executeSelectQueryAsStream(typesAndExperimentsRequest).forEach(sparqlResult -> {
@@ -611,7 +598,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private void addForbiddenTypeChangeError(CsvOwlRestrictionValidator validator, int offset, String objectUri, String failedNewTypeUri) {
         int i = offset;
 
-        String errorMsg = String.format(ScientificObjectDAO.FORBIDDEN_TYPE_CHANGE_ERROR_MESSAGE, objectUri);
+        String unformattedErrorMessage = this.experiment != null ? ScientificObjectDAO.FORBIDDEN_TYPE_CHANGE_XP_ERROR_MESSAGE : ScientificObjectDAO.FORBIDDEN_TYPE_CHANGE_GLOBAL_ERROR_MESSAGE;
+        String errorMsg = String.format(unformattedErrorMessage, objectUri);
 
         CsvCellValidationContext cell = new CsvCellValidationContext(
                 i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET,
@@ -761,9 +749,97 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
     }
 
+    /**
+     * Calculates if a model needs to be updated globally, does this by comparing type to old type.
+     *
+     * @param models Initial models that are being updated
+     * @param urisToUpdateGlobally A uri list we will fill with uris of models that do need to also be updated globally.
+     * @param modelsToUpdateGlobally A list of models that do need to also be updated globally.
+     * @param modelsToUpdateGloballyByExpandedUri A map for fast retrieval of models later.
+     * @throws Exception if the requests fail
+     */
+    private void calculateModelsToUpdateGlobally(
+            List<ScientificObjectModel> models,
+            List<URI> urisToUpdateGlobally,
+            List<ScientificObjectModel> modelsToUpdateGlobally,
+            Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri
+    ) throws Exception {
+        //Don't do any of this if the update already concerned the global context
+        if(experimentModel == null) {
+            return;
+        }
+        verifyTypeUpdateStatus(
+                models,
+                (TypeTestRequestResult nextParsedResult) -> {
+                    //Less than one is impossible, more than one is normally also impossible as the validation would have failed before
+                    if(nextParsedResult.participatesInArray.length == 1){
+                        urisToUpdateGlobally.add(URI.create(nextParsedResult.expandedURI));
+                    }
+                }
+        );
+        //Get old versions of global objects we're guna have to update
+        modelsToUpdateGlobally = scientificObjectDAO.searchByURIs(
+                sparql.getDefaultGraphURI(ScientificObjectModel.class),
+                urisToUpdateGlobally,
+                currentUser
+        );
+        modelsToUpdateGlobally.forEach(e->modelsToUpdateGloballyByExpandedUri.put(SPARQLDeserializers.getExpandedURI(e.getUri()), e));
+    }
+
+    /**
+     * Changes the type and adds any custom relations, unique to the new type, to the global version of Scientific Object
+     *
+     * @param urisToUpdateGlobally uris of OS's that need to be updated globally, used to identify if this model is concerned.
+     * @param modelFromExperiment Experiment's version of the model, used to fetch the new type and unique custom relations.
+     * @param modelsToUpdateGloballyByExpandedUri A URI -> model map for fast retrieval of global models
+     * @throws Exception
+     */
+    private void makeChangesToGlobalModel(
+            List<URI> urisToUpdateGlobally,
+            ScientificObjectModel modelFromExperiment,
+            Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri
+    ) throws Exception{
+        //If this model wasn't concerned by a type change then return immediately
+        if(!urisToUpdateGlobally.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, modelFromExperiment.getUri()))) {
+            return;
+        }
+        //Create mapper so we can work out which properties are not custom
+        SPARQLClassObjectMapper<ScientificObjectModel> mapper = sparql.getMapperIndex().getForClass(ScientificObjectModel.class);
+        Set<String> managedProperties = mapper.getClassAnalyzer().getManagedPropertiesUris();
+        //Prepare copying of any relations that aren't in managedProperties, and that are not equal to rdfs:comment
+        List<SPARQLModelRelation> relationsToAddGlobally = modelFromExperiment.getRelations().stream().filter(
+                relation ->
+                        !managedProperties.stream().anyMatch(
+                                managedProperty -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), URI.create(managedProperty))
+                        ) && !SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), RDFS.COMMENT.stringValue()) ).toList();
+        //Retrieve global model and change its type
+        ScientificObjectModel globalModel =  modelsToUpdateGloballyByExpandedUri.get(SPARQLDeserializers.getExpandedURI(modelFromExperiment.getUri()));
+        globalModel.setType(modelFromExperiment.getType());
+        globalModel.setTypeLabel(modelFromExperiment.getTypeLabel());
+
+        //Add the relations
+        for(SPARQLModelRelation relation : relationsToAddGlobally) {
+            globalModel.addRelation(
+                    sparql.getDefaultGraphURI(ScientificObjectModel.class),
+                    URI.create(relation.getProperty().getURI()),
+                    relation.getType(),
+                    relation.getValue()
+            );
+        }
+    }
+
     private void update(List<ScientificObjectModel> models, List<GeospatialModel> geospatialModelsToUpdate) throws Exception {
 
         GeospatialModel geospatialToBeUpdated;
+
+        //List of models to update globally after changing type of models with same uri in the experimental context
+        List<ScientificObjectModel> modelsToUpdateGlobally = new ArrayList<>();
+        List<URI> urisToUpdateGlobally = new ArrayList<>();
+        //Map for faster retrieval of models later
+        Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri = new HashMap<>();
+
+        //Handle preparation of updating in global context after a type change
+        calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
 
         // DELETE and INSERT
         for(ScientificObjectModel model : models) {
@@ -777,8 +853,15 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             scientificObjectDAO.updateSOAndMove(model.getUri(), currentUser, graphNode, model, childrenURIs, hasFacilityURI);
 
             if(experiment != null) {
+                //Handle updating of species
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
+
+                //Handle changes to global model if required
+                makeChangesToGlobalModel(urisToUpdateGlobally, model, modelsToUpdateGloballyByExpandedUri);
+
+                //Handle anything to do with relations
                 if(model.getRelations() != null) {
+                    //Handle factor levels
                     checkFactorLevelsInXP(model);
                 }
             }
@@ -799,6 +882,9 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 geoDAO.delete(model.getUri(), experiment);
             }
         }
+
+        //TODO MAX update modelsToUpdateGlobally list here
+
     }
 
 }

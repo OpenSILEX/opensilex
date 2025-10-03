@@ -521,7 +521,7 @@ public class GermplasmLogic {
             }
 
         }
-        if (germplasmModel.getAccession() != null && germplasmModel.getVariety() == null || germplasmModel.getSpecies() == null) {
+        if (germplasmModel.getAccession() != null && ( germplasmModel.getVariety() == null || germplasmModel.getSpecies() == null) ) {
             GermplasmModel accession = cacheGermplasm.get(new GermplasmLogic.KeyGermplasm(germplasmModel.getAccession().getUri()), this::getGermplasm);
             if (accession != null) {
                 if (germplasmModel.getVariety() == null) {

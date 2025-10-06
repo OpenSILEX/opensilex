@@ -287,7 +287,7 @@ export default class OntologyCsvTemplateGenerator extends Vue {
           }
           visitedProperties.add(shortPropertUri);
           //If the property is rdfs:label , insert in third position
-          if(this.$opensilex.checkURIs(typeResultPropertyUri, Rdfs.LABEL)){
+          if(this.$opensilex.compareUris(typeResultPropertyUri, Rdfs.LABEL)){
             let copyOfEndHeaders = headers.slice(2, headers.length);
             let copyOfEndDescriptions = headersDescription.slice(2, headersDescription.length);
             headers = headers.slice(0, 2);

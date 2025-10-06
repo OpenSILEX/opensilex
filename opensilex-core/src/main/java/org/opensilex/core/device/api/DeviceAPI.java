@@ -787,7 +787,7 @@ public class DeviceAPI {
                 null,
                 variables,
                 provenances,
-                Arrays.asList(uri),
+                Collections.singletonList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -887,7 +887,7 @@ public class DeviceAPI {
                 null,
                 variables,
                 provenances,
-                Arrays.asList(uri),
+                Collections.singletonList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -1086,7 +1086,6 @@ public class DeviceAPI {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         List<DeviceModel> results = dao.getDevicesByFacility(facilityUri, currentUser);
-
         if (results == null) {
             return new PaginatedListResponse<>().getResponse();
         }

@@ -187,7 +187,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1334) [GlobalUriSearch] Blocked access to data details if the user shouldn't be able to see them.
 - (!1335) [Datafile] Added support for tiff format images
 
-## [1.4.0]
+## [1.4.0] - Explosive Emerald
 
 > Warning : upgrading to this new version requires manual operations. Please follow the
 > [versioning notes](opensilex-doc/src/main/resources/release/1.4.0.md) 

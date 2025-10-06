@@ -152,7 +152,7 @@ export default class VariableStructureList extends Vue {
                     }
                     else
                     {
-                        if(!uriFoundInSearch && this.$opensilex.checkURIs(resourceTree.uri, uri)){
+                        if(!uriFoundInSearch && this.$opensilex.compareUris(resourceTree.uri, uri)){
                             uriFoundInSearch = true;
                         }
                     }

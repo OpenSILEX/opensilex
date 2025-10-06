@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.client.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
@@ -15,7 +16,10 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.*;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_OneOrMore1;
+import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -24,8 +28,8 @@ import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
@@ -930,6 +934,34 @@ public class ScientificObjectDAO {
         return object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
     }
 
+    public void updateSOAndMove(List<ScientificObjectModel> models, AccountModel currentUser, Map <Node, List<ScientificObjectModel>> OsByExpe) throws Exception{
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+
+            Map<URI, Node> expeGraphByOsUri = new HashMap<>();
+
+            //iterate over OsByExpe and update the collection of models to update
+            for (Map.Entry<Node, List<ScientificObjectModel>> entry : OsByExpe.entrySet()) {
+                Node expeGraph = entry.getKey();
+                List<ScientificObjectModel> expeModels = entry.getValue();
+                sparql.update(expeModels, expeGraph);
+                for (ScientificObjectModel model : expeModels) {
+                    expeGraphByOsUri.put(model.getUri(), expeGraph);
+                }
+            }
+
+            for (ScientificObjectModel model : models) {
+                Node expeGraph = expeGraphByOsUri.get(model.getUri());
+                List<URI> childrenURIs = fetchChildrenURIs(model.getUri(), currentUser, expeGraph);
+                if (!childrenURIs.isEmpty()) {
+                    sparql.insertPrimitive(expeGraph, childrenURIs, Oeso.isPartOf, model.getUri());
+                }
+                updateMove(model, currentUser, expeGraph, session);
+            }
+
+            return 0;
+        });
+    }
+
     public void updateSOAndMove(URI objectURI, AccountModel currentUser, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs, boolean hasFacilityURI) throws Exception {
         new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
             updateSOAndChildren(objectURI, graphNode, object, childrenURIs);
@@ -984,6 +1016,60 @@ public class ScientificObjectDAO {
             sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
             return 0;
         });
+    }
+
+    private void updateMove(ScientificObjectModel model, AccountModel currentUser, Node graphNode, ClientSession session) throws Exception {
+
+            //TODO dont invoke MoveLogic here, put it in a ScientificObjectLogic class in future
+            MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, session);
+            MoveModel event = moveLogic.getLastMoveEvent(model.getUri());
+            if(event != null){
+                //retrieve the position to the move event to link it to the new OS for the update
+                MoveNosqlModel moveNoSql = moveLogic.getMoveEventNoSqlModel(event.getUri());
+                if(moveNoSql != null){
+                    event.setNoSqlModel(moveNoSql);
+                }
+            }
+
+            boolean hasFacilityURI = checkIfSOHasFacilityURIs(model);
+
+            if (hasFacilityURI) {
+                if (event != null) {
+                    fillFacilityMoveEvent(event, model);
+                    moveLogic.updateModel(event);
+                } else {
+                    event = new MoveModel();
+                    if (fillFacilityMoveEvent(event, model)) {
+                        moveLogic.create(event);
+                    }
+                }
+            } else {
+                if (event != null) {
+                    List<URI> newTargets = new ArrayList<>();
+                    for (URI item : event.getTargets()) {
+                        if (!SPARQLDeserializers.compareURIs(item, model.getUri())) {
+                            newTargets.add(item);
+                        }
+                    }
+                    if (newTargets.isEmpty()) {
+                        moveLogic.delete(event.getUri());
+                    } else {
+                        event.setTargets(newTargets);
+
+                        if (event.getNoSqlModel() != null) {
+                            List<TargetPositionModel> newTargetsPositions = new ArrayList<>();
+                            for (TargetPositionModel position : event.getNoSqlModel().getTargetPositions()) {
+                                if (!SPARQLDeserializers.compareURIs(position.getTarget(), model.getUri())) {
+                                    newTargetsPositions.add(position);
+                                }
+                            }
+                            event.getNoSqlModel().setTargetPositions(newTargetsPositions);
+                        }
+                        moveLogic.updateModel(event);
+                    }
+                }
+            }
+            sparql.deletePrimitives(graphNode, model.getUri(), Oeso.isHosted);
     }
 
     private void updateSOAndChildren(URI objectURI, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs) throws Exception {

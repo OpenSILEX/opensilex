@@ -385,11 +385,11 @@ export default class GenerateDataTemplateFrom extends Vue {
               }
               let variableHelp = this.$t("DataHelp.column-type-help").toString() +
                   this.$opensilex.getVariableDatatypeLabel(element.datatype);
-              if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+              if (this.$opensilex.compareUris(element.datatype, Xsd.DATE)) {
                 variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
-              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+              } else if (this.$opensilex.compareUris(element.datatype, Xsd.DATETIME)) {
                 variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
-              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
+              } else if (this.$opensilex.compareUris(element.datatype, Xsd.BOOLEAN)) {
                 variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
               }
               line3.push(variableHelp);

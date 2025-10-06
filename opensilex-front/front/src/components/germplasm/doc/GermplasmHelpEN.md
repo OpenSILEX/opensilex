@@ -18,7 +18,7 @@ Depending on the selected germplasm type, the insertion table will change.
 - If the URI is not given, then the system will automatically generate a URI. This URI is the unique identifier in the database.
 - All other columns are optional excepted Species URI,variety URI and accession URI.
 - To add several synonyms or subtaxa, use | as separator. 
-- You can add additional information by clicking on the button *Add Column*. (this new attributes are used for information but won't be used as search filter for example.)
+- You can add additional information by clicking on the button *Add Column*.
 
 **Species insertion**  
 The species defined by Agrovoc ontology have been automatically inserted inside the system database with their translations. For this reason, the species can't be updated for now because this would erase the translations. 

@@ -1,12 +1,10 @@
 package org.opensilex.core.scientificObject.bll;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
@@ -26,10 +24,8 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.api.URITypesDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
@@ -39,7 +35,6 @@ import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.csv.validation.CustomCsvValidation;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -47,7 +42,6 @@ import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -841,17 +835,20 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         //Handle preparation of updating in global context after a type change
         calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
 
+        HashMap <Node, List<ScientificObjectModel>> OsByExpe = new HashMap<>();
         // DELETE and INSERT
         for(ScientificObjectModel model : models) {
             // setting experiment in SO model if we try updating a SO from an XP
             setExperimentInSOObj(model);
             scientificObjectDAO.setLastUpdateDateInSO(model);
-            //Node graphNode = SPARQLDeserializers.nodeURI(experiment);
-            List<URI> childrenURIs = scientificObjectDAO.fetchChildrenURIs(model.getUri(), currentUser, graphNode);
+            Node graphNode = SPARQLDeserializers.nodeURI(experiment);
 
-            boolean hasFacilityURI = scientificObjectDAO.checkIfSOHasFacilityURIs(model);
-            scientificObjectDAO.updateSOAndMove(model.getUri(), currentUser, graphNode, model, childrenURIs, hasFacilityURI);
+            OsByExpe.computeIfAbsent(graphNode, k -> new ArrayList<>()).add(model);
+        }
 
+        scientificObjectDAO.updateSOAndMove(models, currentUser, OsByExpe);
+
+        for(ScientificObjectModel model : models) {
             if(experiment != null) {
                 //Handle updating of species
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);

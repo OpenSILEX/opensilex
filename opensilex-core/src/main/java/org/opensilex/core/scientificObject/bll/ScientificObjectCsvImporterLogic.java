@@ -2,6 +2,7 @@ package org.opensilex.core.scientificObject.bll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -835,20 +836,13 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         //Handle preparation of updating in global context after a type change
         calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
 
-        HashMap <Node, List<ScientificObjectModel>> OsByExpe = new HashMap<>();
+
         // DELETE and INSERT
         for(ScientificObjectModel model : models) {
             // setting experiment in SO model if we try updating a SO from an XP
             setExperimentInSOObj(model);
             scientificObjectDAO.setLastUpdateDateInSO(model);
-            Node graphNode = SPARQLDeserializers.nodeURI(experiment);
 
-            OsByExpe.computeIfAbsent(graphNode, k -> new ArrayList<>()).add(model);
-        }
-
-        scientificObjectDAO.updateSOAndMove(models, currentUser, OsByExpe);
-
-        for(ScientificObjectModel model : models) {
             if(experiment != null) {
                 //Handle updating of species
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
@@ -880,7 +874,23 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             }
         }
 
-        //TODO MAX update modelsToUpdateGlobally list here
+        //Do the standard update
+        scientificObjectDAO.updateMultipleSOAndMoves(
+                models,
+                currentUser,
+                experiment==null ? sparql.getDefaultGraph(ScientificObjectModel.class) : SPARQLDeserializers.nodeURI(experiment),
+                experiment==null
+        );
+
+        //Do the secondary update in global context (if we were updating in an XP and if at least one OS had a type change)
+        if(!CollectionUtils.isEmpty(modelsToUpdateGlobally)) {
+            scientificObjectDAO.updateMultipleSOAndMoves(
+                    modelsToUpdateGlobally,
+                    currentUser,
+                    sparql.getDefaultGraph(ScientificObjectModel.class),
+                    true
+            );
+        }
 
     }
 

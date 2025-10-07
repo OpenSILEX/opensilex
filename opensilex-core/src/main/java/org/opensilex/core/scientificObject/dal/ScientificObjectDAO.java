@@ -50,7 +50,6 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -64,11 +63,7 @@ import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
-import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.ontology.store.OntologyStore;
-import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -84,7 +79,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -934,28 +928,41 @@ public class ScientificObjectDAO {
         return object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
     }
 
-    public void updateSOAndMove(List<ScientificObjectModel> models, AccountModel currentUser, Map <Node, List<ScientificObjectModel>> OsByExpe) throws Exception{
+    /**
+     * Updates a list of scientific objects, handles updating of associated move
+     *
+     * @param models to update
+     * @param currentUser user performing the update
+     * @param context to update in (an experiment or global)
+     * @throws Exception
+     */
+    public void updateMultipleSOAndMoves(List<ScientificObjectModel> models, AccountModel currentUser, Node context, boolean isGlobalContext) throws Exception{
         new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
 
-            Map<URI, Node> expeGraphByOsUri = new HashMap<>();
+            //Fetch children so we can replace them
+            Map<URI, List<URI>> oldChildrenPerOSUri = new HashMap<>();
 
-            //iterate over OsByExpe and update the collection of models to update
-            for (Map.Entry<Node, List<ScientificObjectModel>> entry : OsByExpe.entrySet()) {
-                Node expeGraph = entry.getKey();
-                List<ScientificObjectModel> expeModels = entry.getValue();
-                sparql.update(expeModels, expeGraph);
-                for (ScientificObjectModel model : expeModels) {
-                    expeGraphByOsUri.put(model.getUri(), expeGraph);
+            //Do a loop on models to update moves and to fetch children if we are in an experiment
+            //TODO MAX updateMoveS multiple ? handle this when we change geospat csv import
+            for (ScientificObjectModel model : models) {
+                //Only fetch children if we are in an experiment
+                if(!isGlobalContext){
+                    List<URI> childrenURIs = fetchChildrenURIs(model.getUri(), currentUser, context);
+                    if (!childrenURIs.isEmpty()) {
+                        //sparql.insertPrimitive(context, childrenURIs, Oeso.isPartOf, model.getUri());
+                        oldChildrenPerOSUri.put(model.getUri(), childrenURIs);
+                    }
                 }
+                //Always update move
+                updateMove(model, currentUser, context, session);
             }
 
-            for (ScientificObjectModel model : models) {
-                Node expeGraph = expeGraphByOsUri.get(model.getUri());
-                List<URI> childrenURIs = fetchChildrenURIs(model.getUri(), currentUser, expeGraph);
-                if (!childrenURIs.isEmpty()) {
-                    sparql.insertPrimitive(expeGraph, childrenURIs, Oeso.isPartOf, model.getUri());
-                }
-                updateMove(model, currentUser, expeGraph, session);
+            //Perform the actual update of OS's
+            sparql.update(models, context);
+
+            //Replace the children
+            for(Map.Entry<URI, List<URI>> entry : oldChildrenPerOSUri.entrySet()){
+                sparql.insertPrimitive(context, entry.getValue(), Oeso.isPartOf, entry.getKey());
             }
 
             return 0;

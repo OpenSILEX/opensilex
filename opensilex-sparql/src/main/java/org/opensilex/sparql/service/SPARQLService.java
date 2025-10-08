@@ -94,6 +94,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public static final Var TYPE_VAR = makeVar(SPARQLResourceModel.TYPE_FIELD);
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
+    public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
     private final SPARQLConnection connection;
 
     /**
@@ -1288,11 +1289,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true, true);
+        create(graph, instances, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, true, true);
     }
-
-    public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
-
 
     public <R> R withTransaction(ThrowingSupplier<R,Exception> operation) throws Exception {
         try{
@@ -1381,6 +1379,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * call create without excluding any field from creation query.
      * @see #create(Node, Collection, Integer, boolean, boolean, List) for more details
+     * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used. If you don't have specific needs, use SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY.
      */
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
         create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, null);

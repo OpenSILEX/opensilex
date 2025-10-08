@@ -54,4 +54,9 @@ const emit = defineEmits<{
 </script>
 
 <style scoped lang="scss">
+
+// pour afficher les boutons en  une lignes dans la carte de détail d'une variable par exemple 
+.card-header-right {
+  display: flex !important;
+}
 </style>

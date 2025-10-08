@@ -82,19 +82,25 @@ export class User {
 
 
     public setToken(token: string) {
+        console.log("JWT brut reçu :", token);
+
         this.token = token;
         this.tokenData = jwtDecode(token);
+        console.log("le tokenData ", this.tokenData)
 
         this.firstName = this.getTokenData(User.CLAIM_FIRST_NAME);
         this.lastName = this.getTokenData(User.CLAIM_LAST_NAME);
         this.email = this.getTokenData(User.CLAIM_EMAIL);
         this.admin = this.getTokenData(User.CLAIM_IS_ADMIN);
         this.locale = this.getTokenData(User.CLAIM_LOCALE);
+        console.log("tokenData[credentials_list]:", this.tokenData[User.CLAIM_CREDENTIALS_LIST]);
+
         this.credentials = this.getTokenData(User.CLAIM_CREDENTIALS_LIST);
         console.debug("User credentials:", this.credentials);
         this.loggedIn = true;
         console.log("USER.ts  isLoggedIn ??? ", this.loggedIn)
         this.expire = parseInt(this.getTokenData(User.CLAIM_EXPIRE));
+        console.log("userTS admin ? ", this.admin )
     }
 
     public getFirstName() {
@@ -151,6 +157,7 @@ export class User {
 
     public hasAllCredentials(credentials): boolean {
         if (this.isAdmin()) {
+            console.log("user hasAll credentials")
             return true;
         }
 
@@ -180,8 +187,8 @@ export class User {
     }
 
     public getTokenData(key: string) {
-        // console.debug("Get token data", key, this.tokenData[key], this.tokenData);
-        console.debug("Get token data",  this.tokenData);
+        console.debug("Get token data", key, this.tokenData[key], this.tokenData);
+        // console.debug("Get token data",  this.tokenData);
 
         return this.tokenData[key];
     }

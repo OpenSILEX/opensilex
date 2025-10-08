@@ -6,7 +6,7 @@
       @update:value="handleUpdateValue"
       @focus="handleFocus"
       @blur="emitClose"
-      @search="onSearchChange"
+      @update:pattern="onSearchChange"
       @keydown.enter="emitEnter"
       class="naiveTreeselect"
     >
@@ -74,6 +74,8 @@ const value = ref<string | string[] | null>(null)  // keys
 const totalCount = ref(-1)
 const resultCount = ref(0)
 
+const selectedCache = new Map<string, TreeOpt>()  // key -> option (label)
+
 // expose pour FormSelector
 function refresh(newLimit?: number) {
   if (lastQuery.value == null) {
@@ -123,6 +125,17 @@ function findOptionByKey(key: string): TreeOpt | undefined {
   return options.value.find(object => object.key === key)
 }
 
+ function cacheSelectedOption(opt: TreeOpt | undefined) {
+   if (opt) selectedCache.set(opt.key, opt)
+ }
+ function cacheSelectedKeys(keys: string | string[] | null) {
+   const arr = Array.isArray(keys) ? keys : (keys ? [keys] : [])
+   for (const k of arr) {
+     const opt = findOptionByKey(k)
+     if (opt) cacheSelectedOption(opt)
+   }
+ }
+
 // conversion key(s) -> objet(s) { id, label }
 function keysToObjects(keys: string | string[] | null): any {
   if (keys == null) return null
@@ -147,14 +160,25 @@ async function loadSelectedValues() {
   const ids = Array.isArray(sel) ? sel : [sel]
   if (props.itemLoadingMethod) {
     const dtos = await props.itemLoadingMethod(ids)
-   const opts = dtos
-     .map(fromDTO)
-     .filter((object): object is { id: string; label: string; isDisabled?: boolean } => !!object)
+  //  const opts = dtos
+  //    .map(fromDTO)
+  //    .filter((object): object is { id: string; label: string; isDisabled?: boolean } => !!object)
+  //    .map(toTreeOpt)
+
+
+const opts = dtos
+     .map((dto, i) => {
+       const o = fromDTO(dto)
+       o.id = ids[i] ?? o.id
+       return o
+     })
+     .filter(Boolean)
      .map(toTreeOpt)
 
     const keys = new Set(options.value.map(object => object.key))
     opts.forEach(object => {
       if (!keys.has(object.key)) options.value.push(object)
+      cacheSelectedOption(object)
     })
   }
   value.value = Array.isArray(sel) ? sel : sel
@@ -162,7 +186,7 @@ async function loadSelectedValues() {
 
 watch(() => props.selected, loadSelectedValues, { immediate: true })
 
-// sync options depuis props.options (ex: datatypesNodes déjà prêtes)
+// sync options depuis props.options
 watch(
   () => props.options,
   (opts) => { options.value = (opts ?? []).map(toTreeOpt) },
@@ -179,24 +203,48 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   const limit = overrideLimit ?? props.resultLimit ?? 10
   const resp = await props.searchMethod(query, 0, limit)
   const list = resp.response.result as NamedResourceDTO[]
-  options.value = list.map(fromDTO).map(toTreeOpt)
+  const newOptions = list.map(fromDTO).map(toTreeOpt)
+
+  // Conserver les options actuellement sélectionnées si elles ne sont pas dans les résultats
+ const selectedKeys = new Set(
+   Array.isArray(value.value) ? value.value : (value.value ? [value.value] : [])
+ )
+ const keysInNew = new Set(newOptions.map(o => o.key))
+ for (const k of selectedKeys) {
+  if (!keysInNew.has(k)) {
+     const cached = selectedCache.get(k) || findOptionByKey(k) || { key: k, label: String(k) }
+     newOptions.push(cached)
+   }
+ }
+
+
+  // options.value = list.map(fromDTO).map(toTreeOpt)
+  options.value = newOptions
   totalCount.value = resp.response.metadata.pagination.totalCount
+
+  // await ensureSelectedVisible()
+
+
   resultCount.value = options.value.length
   emit('totalCount', totalCount.value)
   emit('resultCount', resultCount.value)
 }
 const debounceSearch = debounce(runSearch, 250)
-function onSearchChange(q: string) { debounceSearch(q) }
+function onSearchChange(q: string) { 
+  console.log('[CTS] pattern ->', q)
+  debounceSearch(q) }
 
 function handleFocus() {
-  if (!options.value.length) runSearch('.*')
+  // if (!options.value.length) runSearch('.*')
+    runSearch(lastQuery.value ?? '.*')
 }
-
 function emitEnter(e: KeyboardEvent) { emit('enterKey', e) }
 
 // mise à jour de la valeur (keys) -> émettre objets cohérents pour select/deselect
 function handleUpdateValue(v: string | string[] | null) {
   value.value = v
+  cacheSelectedKeys(v)
+  console.log('[CTS] update value ->', v)
 
   // 1) Mettre à jour le v-model du parent avec les ids
   if (props.multiple) {

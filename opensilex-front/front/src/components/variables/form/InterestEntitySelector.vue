@@ -40,6 +40,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (e: 'update:selected', value: any): void
   (e: 'select', value: any): void
   (e: 'deselect', value: any): void
   (e: 'clear'): void
@@ -48,7 +49,12 @@ const emit = defineEmits<{
 
 const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
 
-const interestEntityURI = ref(props.selected)
+// const interestEntityURI = ref(props.selected)
+const interestEntityURI = computed({
+  get: () => props.selected,
+  set: (v) => emit('update:selected', v)
+})
+
 const formSelector = ref<InstanceType<typeof FormSelector>>()
 const pageSize = ref(10)
 

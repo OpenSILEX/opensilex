@@ -631,6 +631,14 @@ body.modal-open {
     color: #018371;
 }
 
+.resetButton {
+    background-color: rgba(46, 51, 56, .05)
+}
+
+.resetButton:hover {
+    background-color: rgba(46, 51, 56, .09)
+}
+
 /********************************
 * Tabs back-button
 ********************************/

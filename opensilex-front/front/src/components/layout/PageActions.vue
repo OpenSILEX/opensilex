@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="row clearfix" :style="small ? 'padding: 8px 20px;' : ''">
-      <div class="d-inline-block w-100 float-left">
+      <div class="d-inline-block w-100 float-left tabsButtons">
         <!-- Zone des boutons -->
         <slot name="buttons"></slot>
 
@@ -33,7 +33,7 @@
           <a
             class="btn back-button mr-2 h-100"
             :href="href"
-            :title="$t(returnToTitle)"
+            :title="t('pageActions.returnToTitle')"
             @click="navigate; goBack()"
           >
             <opensilex-Icon icon="bi#bi-arrow-90deg-left" class="icon-title back-button-icon" />
@@ -43,11 +43,11 @@
         <router-link
           v-else-if="returnButton"
           to="/"
-          :title="$t(returnToTitle)"
+          :title="t('pageActions.returnToTitle')"
           @click.prevent="$router.go(-1)"
         >
           <a class="btn mr-2 h-100 back-button">
-            <opensilex-Icon class="icon-title back-button-icon" icon="bi#ibi-arrow-90deg-left" />
+            <opensilex-Icon class="icon-title back-button-icon" icon="bi#bi-arrow-90deg-left" />
           </a>
         </router-link>
 
@@ -101,6 +101,10 @@ const currentTabIndex = computed({
 .nav {
   margin-left: 14px;
 }
+
+.tabsButtons {
+  display: flex !important;
+}
 button {
   margin-left: 1%;
 }
@@ -108,3 +112,14 @@ li:first-child.nav-item {
   margin-left: 1%;
 }
 </style>
+
+<i18n>
+en:
+  pageActions: 
+    returnToTitle: Return to the previous page 
+            
+fr:
+  pageActions: 
+    returnToTitle: Retourner à la page précédente
+
+</i18n>

@@ -204,6 +204,7 @@
               :required="true"
               :helpMessage="$t('component.variable.dataType.datatype-help')"
               :itemLoadingMethod="loadDataType"
+              :conversionMethod="objectToSelectNode"
               :disabled="hasLinkedData"
               :options="datatypesNodes"
             />
@@ -215,7 +216,7 @@
         <div class="col-lg-6 variableFormSelectors" id="v-step-time-interval">
           <opensilex-VariableTimeIntervalSelector
             label="component.variable.timeInterval.time-interval"
-            v-model:timeinterval="form.time_interval"
+            v-model:selected="form.time_interval"
             :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
           />
         </div>
@@ -389,18 +390,34 @@ function updateVariableTrait(form:any){
 }
 
 /* Datatypes load */
-function loadDatatypes(){
-  if(!datatypes.value.length){
+function loadDatatypes () {
+  if (!datatypes.value.length) {
     service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
+      datatypes.value = res.response.result               // <-- DTOs
+      updateDatatypeNodes()
+    })
+  } else {
+    updateDatatypeNodes()
+  }
+}
+
+function updateDatatypeNodes () {
+  datatypesNodes.value = datatypes.value.map(dto => ({
+    id: dto.uri,
+    label: capitalize(t(dto.name))
+  }))
+}
+
+async function loadDataType (uris: string[]) {
+  if (!datatypes.value.length) {
+    await service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
       datatypes.value = res.response.result
       updateDatatypeNodes()
     })
-  } else { updateDatatypeNodes() }
+  }
+  const set = new Set(uris)
+  return datatypes.value.filter(dto => set.has(dto.uri))   // <-- DTOs back
 }
-function updateDatatypeNodes(){
-  datatypesNodes.value = datatypes.value.map(dto => ({ id: dto.uri, label: capitalize(t(dto.name)) }))
-}
-function loadDataType(uri:string){ return [datatypesNodes.value.find(d=>d.id===uri)] }
 
 /* Helpers */
 function objectToSelectNode(dto:any){ return dto ? { id: dto.uri, label: dto.name } : null }

@@ -46,7 +46,7 @@
       v-if="currentTabComponent"
       :is="currentTabComponent"
       v-on="currentTab === 'variables' ? variableListeners : {}"
-      :ref="tabDefinitions.find(tab => tab.key === currentTab)?.refKey"
+      :ref="currentTabRef"
       :elementType="elementType"
     />
       <!-- v-show="currentTab !== 'groups' || loadGroupForm" -->
@@ -56,6 +56,8 @@
     <opensilex-VariableCreate
       ref="variableCreate" 
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+      @onCreate="afterVariableSaved"
+      @onUpdate="afterVariableSaved"
     />
 
     <opensilex-ExternalReferencesModalForm
@@ -121,6 +123,11 @@ const tabs = computed(() =>
   tabDefinitions.map(({ key, labelKey }) => ({ key, label: t(labelKey) }))
 );
 
+const currentTabRef = computed(() => {
+  const def = tabDefinitions.find(t => t.key === currentTab.value);
+  return def ? formRefs[def.refKey] : undefined;
+});
+
 const currentTab = ref('variables');
 const readyTabs = new Set<string>();
 
@@ -132,6 +139,7 @@ const tabComponents = Object.fromEntries(
 // ajout de toutes les refs, y compris celle pour VariableCreate
 const formRefs = {
   variableCreate: ref(null),
+  variableList: ref(null),
   variableGroupCreate: ref(null),
   ...Object.fromEntries(
     tabDefinitions.map(tab => [tab.refKey, ref()])
@@ -244,6 +252,67 @@ async function onEditVariable(uri: string) {
   }
 }
 
+// Suppression avec vérification de données liées
+async function onDeleteVariable(item: any) {
+  const uri: string | undefined = typeof item === 'string' ? item : item?.uri;
+  if (!uri) {
+    console.warn("onDeleteVariable: aucune URI fournie");
+    return;
+  }
+
+  try {
+
+    // 1) Vérifier s'il existe des données liées
+    const http: HttpResponse<OpenSilexResponse<number>> = await datasService.countData(
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined,
+      [uri], // filtre par variable
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined, 
+      undefined,
+      undefined, 
+      undefined, 
+      1, 
+      undefined, 
+      undefined
+    );
+    const count = http?.response?.result ?? 0;
+
+    if (count > 0) {
+      opensilex.showErrorToast(`${count} ${t('VariableView.associated-data-error')}`);
+      return;
+    }
+
+    // 2) Supprimer la variable
+    const delResp: HttpResponse<OpenSilexResponse<string>> = await variablesService.deleteVariable(uri);
+
+    // 3) Rafraîchir + succès
+    formRefs.variableList.value?.refresh?.();
+    const message = `${t('VariableView.name')} ${uri} ${t('component.common.success.delete-success-message')}`;
+    opensilex.showSuccessToast(message);
+
+    return delResp;
+  } catch (error: any) {
+    // Si le backend renvoie un 409, on affiche le message i18n dédié
+    const status = error?.httpStatus || error?.response?.code || error?.status;
+    if (status === 409) {
+      opensilex.showErrorToast(t('VariableView.associated-data-error') as string);
+      return;
+    }
+    opensilex.errorHandler(error);
+  }
+}
+
+function afterVariableSaved() {
+  formRefs.variableList.value?.refresh?.();
+}
+
+
 const selected = ref(null);
 const skosReferences = ref(null); // accès à la modale
 
@@ -261,10 +330,11 @@ const showVariableReferences = async (uri: string) => {
 // Event binding conditionnel
 const variableListeners = {
   edit: onEditVariable,
-    onInteroperability: (variable: any) => {
+  onInteroperability: (variable: any) => {
     showVariableReferences(variable);
   },
-  delete: (item: any) => console.log("Delete:", item),
+  // delete: (item: any) => console.log("Delete:", item),
+  delete: onDeleteVariable,
   reset: () => console.log("Reset")
 };
 </script>
@@ -362,7 +432,7 @@ fr:
         name: La variable
         title: Variables
         type: Variable
-        description : Gérer et configurer les variables, entités, charactéristiques, méthodes et unités
+        description : Gérer et configurer les variables, entités, caractéristiques, méthodes et unités
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité

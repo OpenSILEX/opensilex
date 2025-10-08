@@ -1,30 +1,13 @@
 <template>
-  <div v-if="showCount">
-    <div v-if="hasResults">
-      <strong>
-        <span class="ml-1">
-          {{ t('component.common.list.pagination.nbEntries', {
-            limit: start,
-            offset: end,
-            totalRow: n(total)
-          }) }}
-        </span>
-      </strong>
-    </div>
-    <div v-else>
-      <strong>
-        <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-      </strong>
-    </div>
-  </div>
 
-  <n-p>
-    {{ t('VariableList.selected') }} :
-    <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-  </n-p>
 
-  <n-space class="mb-3">
-    <n-button secondary size="small" @click="toggleOnlySelected">
+
+  <!-- Boutons manipulation liste  -->
+  <!-- <n-space class="listActionButtons" :class="{ 'filtersCollapsed' : (!filtersCollapsed)}"> -->
+  <n-space class="listActionButtons" :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']">
+
+
+    <!-- <n-button secondary size="small" @click="toggleOnlySelected">
       {{ onlySelected ? t('VariableList.selected-all') : t('component.common.selected-only') }}
     </n-button>
 
@@ -34,23 +17,264 @@
 
     <n-button secondary size="small" @click="handleSelectAllClick">
       {{ t('component.common.select-all') }}
+    </n-button> -->
+
+
+    <!-- Premier dropdown (gestion sélection) -->
+    <n-dropdown
+      :options="selectionOptions"
+      trigger="hover"
+      @select="handleSelectionAction"
+    >
+      <n-button size="small" :class="'greenThemeColor'">
+        {{ t('VariableList.display') }}
+      </n-button>
+    </n-dropdown>
+
+    <!-- Deuxième dropdown (gestion actions) -->
+    <n-dropdown
+      :options="dropdownOptions"
+      trigger="hover"
+      :disabled="selectedCount === 0"
+      @select="handleDropdownAction"
+    >
+      <n-button
+        size="small"
+        :disabled="selectedCount === 0"
+        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
+      >
+        {{ t('component.common.actions') }}
+      </n-button>
+    </n-dropdown> 
+
+
+    <!-- Affichage Counts  -->
+    <div class="displayAndListSelectionCount">
+      <div v-if="showCount">
+        <div v-if="hasResults">
+          <strong>
+            <span class="ml-1">
+              {{ t('component.common.list.pagination.nbEntries', {
+                limit: start,
+                offset: end,
+                totalRow: n(total)
+              }) }}
+            </span>
+          </strong>
+        </div>
+        <div v-else>
+          <strong>
+            <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
+          </strong>
+        </div>
+      </div>
+      <span> | </span>
+      <n-p>
+        {{ t('VariableList.selected') }} :
+        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+      </n-p>
+    </div>
+    <!-- FIN affichage counts -->
+  </n-space>
+  <!-- FIN Boutons manipulation liste  -->
+
+
+<n-layout has-sider class="vars-layout">
+  <n-space class="mb-2 me-1" align="top">
+    <n-button 
+      quaternary 
+      circle 
+      @click="filtersCollapsed = !filtersCollapsed" 
+      :title="t('VariableList.label-filter')"
+      :class="{ 'greenThemeColor' : (filtersCollapsed)}"
+      class="globalFiltersSearchButton"
+    >
+      <i class="bi bi-search filtersGlobalSearchIcon"></i>
+      <!-- <div v-show="filtersCollapsed && activeFilters > 0">( {{ activeFilters }} )</div> -->
+      <!-- <span
+  v-show="filtersCollapsed && activeFilters > 0"
+  class="filters-count-badge"
+>
+  {{ activeFilters }}
+</span> -->
+
+      <div v-show="filtersCollapsed && activeFilters > 0" class="filters-count-badge"
+        >
+        ( {{ activeFilters }} )
+      </div>
+
     </n-button>
   </n-space>
-
-  <n-dropdown
-    :options="dropdownOptions"
-    trigger="hover"
-    :disabled="selectedCount === 0"
-    @select="handleDropdownAction"
+  
+  <!-- SIDEBAR / FILTRES -->
+  <n-layout-sider
+    v-model:collapsed="filtersCollapsed"
+    :collapsed-width="0"
+    :width="360"
+    collapse-mode="width"
+    show-trigger
+    bordered
+    class="vars-sider"
   >
-    <n-button
-      size="small"
-      :disabled="selectedCount === 0"
-      :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-    >
-      {{ t('component.common.actions') }}
-    </n-button>
-  </n-dropdown>
+  <!-- collapse-mode="transform" -->
+  <!-- show-trigger -->
+   <!-- collapse-mode="width" -->
+   <!-- :show-trigger="false"    hide the built-in trigger -->
+    <n-space class="p-3" vertical>
+      <!-- <div class="sider-title">
+        <i class="bi bi-search"></i>
+        {{ t('VariableList.label-filter') }}
+      </div> -->
+
+      <n-form label-placement="top" size="small" @submit.prevent="applyFilters">
+        <!-- Nom -->
+        <n-form-item :label="t('component.common.name')">
+          <n-input
+            v-model:value="filter.name"
+            :placeholder="t('VariableList.name-placeholder')"
+            @keydown.enter.prevent.stop="applyFilters"
+            clearable
+          />
+        </n-form-item>
+
+        <!-- Entité -->
+        <n-form-item :label="t('component.variable.entity.entity')" :show-feedback="false">
+          <opensilex-EntitySelector
+            v-model:selected="filter.entity"
+            @handlingEnterKey="applyFilters"
+            :placeholder="$t('component.variable.entity.entity-placeholder')"
+          />
+        </n-form-item>
+
+        <!-- Caractéristique -->
+        <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
+          <opensilex-CharacteristicSelector
+            v-model:selected="filter.characteristic"
+            @handlingEnterKey="applyFilters"
+            :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
+          />
+        </n-form-item>
+
+        
+
+        <!-- Group of variables -->
+        <n-form-item :label="t('component.variable.groupVariable.groupVariable')" :show-feedback="false">
+          <opensilex-GroupVariablesSelector
+            v-if="!withoutGroup"
+            v-model:variableGroup="filter.includedGroup"
+            :sharedResourceInstance="filter.sharedResourceInstance"
+            class="searchFilter"
+            @handlingEnterKey="applyFilters"
+          />
+          <opensilex-GroupVariablesSelector
+            v-else
+            v-model:variableGroup="filter.notIncludedGroup"
+            :sharedResourceInstance="filter.sharedResourceInstance"
+            class="searchFilter"
+            @handlingEnterKey="applyFilters"
+          />
+        </n-form-item>
+
+        <!-- <n-form-item :show-feedback="false"> -->
+          <opensilex-CheckboxForm
+            :title="t('VariableList.withoutGroup')"
+            :helpMessage="t('VariableList.withoutGroup-info')"
+            v-model:value="withoutGroup"
+            class="searchFilter"
+          />
+        <!-- </n-form-item> -->
+
+        <!-- Advanced -->
+        <n-collapse
+          v-model:expanded-names="expandedNames"
+          :accordion="false"
+          @update:expanded-names="onCollapseUpdate"
+          class="advancedFiltersSearch"
+        >
+          <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
+            <n-form-item :label="t('component.variable.entityOfInterest.entityOfInterest')" :show-feedback="false">
+              <opensilex-InterestEntitySelector
+                v-model:selected="filter.entityOfInterest"
+                @handlingEnterKey="applyFilters"
+                :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
+              />
+            </n-form-item>
+
+            <n-form-item :label="t('component.variable.method.method')" :show-feedback="false">
+              <opensilex-MethodSelector
+                v-model:selected="filter.method"
+                @handlingEnterKey="applyFilters"
+                :placeholder="$t('component.variable.method.method-placeholder')"
+              />
+            </n-form-item>
+
+            <n-form-item :label="t('component.variable.unit.unit')" :show-feedback="false">
+              <opensilex-UnitSelector
+                v-model:selected="filter.unit"
+                @handlingEnterKey="applyFilters"
+                :placeholder="$t('component.variable.unit.unit-placeholder')"
+              />
+            </n-form-item>
+
+            <n-form-item :label="t('component.variable.dataType.data-type')" :show-feedback="false">
+              <opensilex-VariableDataTypeSelector
+                v-model:selected="filter.dataType"
+                @handlingEnterKey="applyFilters"
+                :placeholder="$t('component.variable.dataType.datatype-placeholder')"
+              />
+            </n-form-item>
+
+            <n-form-item :label="t('component.variable.timeInterval.time-interval')" :show-feedback="false">
+              <opensilex-VariableTimeIntervalSelector
+                v-model:selected="filter.timeInterval"
+                @handlingEnterKey="applyFilters"
+                :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
+              />
+            </n-form-item>
+
+            <n-form-item :label="t('component.variable.species.species')">
+              <opensilex-SpeciesSelector
+                v-model:selected="filter.species"
+                :multiple="true"
+                :placeholder="$t('component.variable.species.select-multiple-placeholder')"
+              />
+            </n-form-item>
+          </n-collapse-item>
+        </n-collapse>
+
+        <n-space justify="end" class="mt-2">
+          <!-- Boutons Filtres Recherche  -->
+          <opensilex-Button
+          class="resetButton"
+            :label="t('component.common.search.clear-button')"
+            icon="bi-x-lg"
+            @click="resetFilters"
+          />
+          <opensilex-Button 
+            class="greenThemeColor"
+            :label="t('component.common.search.search-button')"
+            icon="bi-search"
+            @click="applyFilters"
+          >
+          </opensilex-Button>
+          <!-- <n-button tertiary @click="resetFilters">{{ t('component.common.search.clear-button') }}</n-button> -->
+          <!-- <n-button type="primary" icon="bi-globe" class="greenThemeColor" @click="applyFilters">
+            {{ t('component.common.search.search-button') }}
+          </n-button> -->
+        </n-space>
+      </n-form>
+    </n-space>
+  </n-layout-sider>
+
+  <!-- CONTENU : barre d’actions + table -->
+  <n-layout-content class="vars-content">
+    <!-- Bouton pour replier/ouvrir le sidebar -->
+    <!-- <n-space class="mb-2" align="center">
+      <n-button quaternary circle @click="filtersCollapsed = !filtersCollapsed" :title="t('VariableList.label-filter')">
+        <i class="bi bi-search"></i>
+      </n-button>
+    </n-space> -->
+
 
   <n-data-table
     :remote="!onlySelected"                
@@ -66,6 +290,8 @@
     v-model:sorter="sorterState"       
     @update:sorter="onSortChange"        
   />
+    </n-layout-content>
+</n-layout>
 
   <opensilex-GroupVariablesModalList
     ref="groupVariableSelection"
@@ -90,7 +316,7 @@
 <script lang="ts" setup>
 import { ref, h, inject, reactive, onMounted, resolveComponent, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui'
+import { NButton, NTag, NDataTable, DataTableRowKey, NInput, NForm, NFormItem, NSelect, NCheckbox, NCollapse, NCollapseItem, NLayout, NLayoutSider, NLayoutContent, NSpace } from 'naive-ui'
 import { VariablesService } from 'opensilex-core'
 import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
@@ -122,6 +348,9 @@ const serverTotal = ref(0)                                  // total côté API
 const allSelected = ref(false)
 const selectedSet = ref<Set<DataTableRowKey>>(new Set())
 const unselectedSet = ref<Set<DataTableRowKey>>(new Set())
+
+const filtersCollapsed = ref(false) // true = replié, false = visible
+
 
 const checkedRowKeys = ref<DataTableRowKey[]>([])
 let prevPageChecked = new Set<DataTableRowKey>()
@@ -189,27 +418,27 @@ async function fetchVariablesPage() {
   const pageSize  = pagination.value.pageSize
   const orderBy = buildOrderBy()          // on transmet le tri
 
-  const response = await $service.value.searchVariables(
-    undefined, // name
-    undefined, // entity
-    undefined, // entity_of_interest
-    undefined, // characteristic
-    undefined, // method
-    undefined, // unit
-    undefined, // group_of_variables
-    undefined, // not_included_in_group_of_variables
-    undefined, // data_type
-    undefined, // time_interval
-    undefined, // species
-    undefined, // withAssociatedData
-    undefined, // experiments
-    undefined, // scientific_objects
-    undefined, // devices
-    orderBy,   // order_by
-    pageIndex, // page (0-based)
-    pageSize,  // page_size
-    undefined  // sharedResourceInstance
-  )
+const response = await $service.value.searchVariables(
+  filter.name,              // name
+  filter.entity,            // entity
+  filter.entityOfInterest,  // entity_of_interest
+  filter.characteristic,    // characteristic
+  filter.method,            // method
+  filter.unit,              // unit
+  filter.includedGroup,     // group_of_variables
+  filter.notIncludedGroup,  // not_included_in_group_of_variables
+  filter.dataType,          // data_type
+  filter.timeInterval,      // time_interval
+  filter.species,           // species
+  undefined,                // withAssociatedData
+  filter.experiment,        // experiments
+  filter.objects,           // scientific_objects
+  filter.devices,           // devices
+  orderBy,                  // order_by
+  pageIndex,                // page (0-based)
+  pageSize,                 // page_size
+  filter.sharedResourceInstance // sharedResourceInstance
+)
 
   const result = response.response.result || []
   serverTotal.value = response.response.metadata?.pagination?.totalCount ?? result.length
@@ -408,7 +637,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       key: 'item.name',
       sortable: true,
       resizable: true,
-      sorter: (a, b) => a.item.name.localeCompare(b.item.name), // client (onlySelected)
+      sorter: (a, b) => a.item.name.localeCompare(b.item.name),
       render(row: any) {
         return h('div', {}, [
           h(
@@ -432,6 +661,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       title: t('component.variable.entity.entity'),
       key: 'item.entity.name',
       sortable: true,
+      resizable: true,
       sorter: (a, b) => (a.item.entity?.name || '').localeCompare(b.item.entity?.name || ''),
       render: row => row.item.entity?.name
     },
@@ -439,6 +669,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       title: t('component.variable.characteristic.characteristic'),
       key: 'item.characteristic.name',
       sortable: true,
+      resizable: true,
       sorter: (a, b) => (a.item.characteristic?.name || '').localeCompare(b.item.characteristic?.name || ''),
       render: row => row.item.characteristic?.name
     },
@@ -446,6 +677,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       title: t('component.variable.method.method'),
       key: 'item.method.name',
       sortable: true,
+      resizable: true,
       sorter: (a, b) => (a.item.method?.name || '').localeCompare(b.item.method?.name || ''),
       render: row => row.item.method?.name
     },
@@ -453,6 +685,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
       title: t('component.variable.unit.unit'),
       key: 'item.unit.name',
       sortable: true,
+      resizable: true,
       sorter: (a, b) => (a.item.unit?.name || '').localeCompare(b.item.unit?.name || ''),
       render: row => row.item.unit?.name
     },
@@ -494,14 +727,29 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
 
 const columns = computed(() => createColumns(t, emit, toggleExpand))
 
-/** Dropdown actions (exemple) */
 const dropdownOptions = computed(() => [
-  { label: t('VariableList.add-groupVariable'), key: 'addVariablesToGroups' },
-  { label: t('VariableList.add-newGroupVariable'), key: 'showGroupVariablesCreateForm' },
-  { label: t('VariableList.export-variables'), key: 'classicExportVariables' },
-  { label: t('VariableList.export-variables-details'), key: 'detailsExportVariables' },
-  { label: t('VariableList.import-variables-from-shared-resources'), key: 'importVariablesOnLocal' }
+  {
+    type: 'group',
+    label: t('VariableList.group-actions'),
+    key: 'actions',
+    children: [
+      { label: t('VariableList.add-groupVariable'), key: 'addVariablesToGroups' },
+      { label: t('VariableList.add-newGroupVariable'), key: 'showGroupVariablesCreateForm' }
+    ]
+  },
+  { type: 'divider' },
+  {
+    type: 'group',
+    label: t('VariableList.import-export-actions'),
+    key: 'importExport',
+    children: [
+      { label: t('VariableList.export-variables'), key: 'classicExportVariables' },
+      { label: t('VariableList.export-variables-details'), key: 'detailsExportVariables' },
+      { label: t('VariableList.import-variables-from-shared-resources'), key: 'importVariablesOnLocal' }
+    ]
+  }
 ])
+
 
 function handleDropdownAction(key: string) {
   switch (key) {
@@ -510,6 +758,28 @@ function handleDropdownAction(key: string) {
       break
     case 'showGroupVariablesCreateForm':
       showGroupVariablesCreateForm()
+      break
+  }
+}
+
+const selectionOptions = computed(() => [
+  { label: onlySelected.value ? t('VariableList.selected-all') : t('component.common.selected-only') + t(' (' + selectedCount.value + ')'), key: 'toggleOnlySelected' },
+  { type: 'divider' },
+  { label: t('component.common.resetSelected'), key: 'resetSelection' },
+  { type: 'divider' },
+  { label: t('component.common.select-all') + t(' (' + total.value + ')'), key: 'selectAll' }
+])
+
+function handleSelectionAction(key: string) {
+  switch (key) {
+    case 'toggleOnlySelected':
+      toggleOnlySelected()
+      break
+    case 'resetSelection':
+      resetSelection()
+      break
+    case 'selectAll':
+      handleSelectAllClick()
       break
   }
 }
@@ -786,6 +1056,122 @@ function applySelectionToPage () {
   prevPageChecked = new Set(checkedRowKeys.value)
 }
 
+/** ---------------- Filtres (panneau latéral) ---------------- */
+const showFilters = ref(false)
+const loadAdvancedSearchFilters = ref(false)
+
+const filter = reactive({
+  sharedResourceInstance: undefined as string | undefined,
+  name: undefined as string | undefined,
+  entity: undefined as string | undefined,
+  entityOfInterest: undefined as string | undefined,
+  characteristic: undefined as string | undefined,
+  method: undefined as string | undefined,
+  unit: undefined as string | undefined,
+  includedGroup: undefined as string | undefined,
+  notIncludedGroup: undefined as string | undefined,
+  dataType: undefined as string | undefined,
+  timeInterval: undefined as string | undefined,
+  experiment: undefined as string | undefined,
+  objects: undefined as string | undefined,
+  devices: undefined as string | undefined,
+  species: [] as string[]
+})
+
+const withoutGroup = ref(false)
+
+watch(withoutGroup, (val) => {
+  if (val) {
+    filter.notIncludedGroup = filter.includedGroup
+    filter.includedGroup = undefined
+  } else {
+    filter.includedGroup = filter.notIncludedGroup
+    filter.notIncludedGroup = undefined
+  }
+})
+
+function resetFilters () {
+  const sri = filter.sharedResourceInstance
+  Object.assign(filter, {
+    sharedResourceInstance: sri,
+    name: undefined,
+    entity: undefined,
+    entityOfInterest: undefined,
+    characteristic: undefined,
+    method: undefined,
+    unit: undefined,
+    includedGroup: undefined,
+    notIncludedGroup: undefined,
+    dataType: undefined,
+    timeInterval: undefined,
+    experiment: undefined,
+    objects: undefined,
+    devices: undefined,
+    species: []
+  })
+  withoutGroup.value = false
+  // on repart page 1
+  pagination.value.page = 1
+  fetchVariablesPage()
+}
+
+function applyFilters () {
+  console.log("APPLY FILTER")
+  pagination.value.page = 1
+  fetchVariablesPage()
+  filtersCollapsed.value = true
+}
+
+// proxy pour binder un seul v-model selon "withoutGroup"
+const variableGroupProxy = computed<string | undefined>({
+  get() {
+    return withoutGroup.value ? filter.notIncludedGroup : filter.includedGroup
+  },
+  set(v) {
+    if (withoutGroup.value) {
+      filter.notIncludedGroup = v
+    } else {
+      filter.includedGroup = v
+    }
+  }
+})
+
+const expandedNames = ref<string[]>([])
+
+function onCollapseUpdate(names: string[]) {
+  expandedNames.value = names
+  if (names.includes('adv')) {
+    loadAdvancedSearchFilters.value = true
+  }
+}
+
+function isSet(v: any): boolean {
+  if (v == null) return false
+  if (typeof v === 'string') return v.trim().length > 0
+  if (Array.isArray(v)) return v.length > 0
+  return true
+}
+
+const activeFilters = computed(() => {
+  let count = 0
+  for (const [key, val] of Object.entries(filter)) {
+    // skip sharedResourceInstance ?
+    if (key === 'sharedResourceInstance') continue
+
+    // cas spécial pour les groupes : si un des deux est rempli,
+    // on compte seulement +1
+    if (key === 'includedGroup' || key === 'notIncludedGroup') {
+      if (isSet(filter.includedGroup) || isSet(filter.notIncludedGroup)) {
+        count++
+      }
+      continue
+    }
+
+    if (isSet(val)) count++
+  }
+  return count
+})
+
 defineExpose({
   getSelected,
   onItemSelected,
@@ -806,6 +1192,76 @@ defineExpose({
   border: none !important;
   cursor: not-allowed;
 }
+
+.vars-layout {
+  background: transparent;
+}
+.vars-sider {
+  background: #fff;
+}
+.vars-content {
+  padding-left: 12px;
+}
+.sider-title {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.n-layout .n-layout-scroll-container {
+  height: auto;
+  }
+
+
+.listActionButtons{ 
+  position: relative;
+  display: flex;
+  gap: 0 !important; /* espace entre boutons */
+}
+
+.displayAndListSelectionCount{
+  position: absolute;
+  right: 0px; /* distance fixe du bord droit */
+  top: 50%;
+  transform: translateY(-50%); /* centrage vertical */
+  display: flex;
+  align-items: center;
+}
+
+.displayAndListSelectionCount *{
+  margin-left: 5px
+}
+
+.filtersNotCollapsed {
+  margin-left: 55px
+}
+
+.filtersCollapsed {
+  margin-left: 415px
+}
+
+.filtersGlobalSearchIcon {
+  font-size: 1.2em;
+}
+
+.globalFiltersSearchButton {
+  width: 40px;  
+  height: 55px;  
+}
+
+.globalFiltersSearchButton span{
+  display: block !important;
+}
+
+.globalFiltersSearchButton div {
+  margin-top: 5px; /* espace entre l’icône et le compteur */
+}
+
+.advancedFiltersSearch {
+  margin-top: 10px;
+}
+
 </style>
 
 <i18n>
@@ -827,6 +1283,8 @@ en:
     display: Display
     withoutGroup: Not in group
     withoutGroup-info: Select the checkbox to filter the variables that are not included in the selected group
+    group-actions: Groups
+    import-export-actions: Import / Export
 fr:
   VariableList:
     name-placeholder: Entrer un nom de variable
@@ -845,4 +1303,6 @@ fr:
     display: Affichage
     withoutGroup: Pas dans ce groupe
     withoutGroup-info: Cocher la case pour filtrer les variables qui n'appartiennent pas au groupe sélectionné
+    group-actions: Groupes
+    import-export-actions: Import / Export
 </i18n>

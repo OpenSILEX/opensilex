@@ -40,6 +40,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'select', value: any): void
+  (e: 'update:selected', value: any): void
   (e: 'deselect', value: any): void
   (e: 'clear'): void
   (e: 'handlingEnterKey'): void
@@ -48,7 +49,11 @@ const emit = defineEmits<{
 const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
 const store = useStore()
 
-const speciesURI = ref(props.selected)
+// const speciesURI = ref(props.selected)
+const speciesURI = computed({
+  get: () => props.selected,
+  set: (v) => emit('update:selected', v)
+})
 const refreshKey = ref(0)
 
 watch(() => props.sharedResourceInstance, () => {

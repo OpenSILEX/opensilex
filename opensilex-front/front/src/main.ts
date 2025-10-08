@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import ToastContainer from './components/common/toastContainer.vue';
-import { create, NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace } from 'naive-ui';
+import { create, NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace, NTag, DataTableRowKey, NDrawer, NDrawerContent, NForm, NFormItem, NSwitch, NCheckbox, NCollapse, NCollapseItem, NDivider  } from 'naive-ui';
 import vue3Tour from 'vue3-tour';
 import 'vue3-tour/dist/vue3-tour.css';
 

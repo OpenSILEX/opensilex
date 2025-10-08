@@ -8,6 +8,7 @@
         :url="url"
         :to="to"
         @linkClicked="$emit('linkClicked')"
+        :allowCopy="allowCopy"
       />
     </span>
   </div>
@@ -24,6 +25,7 @@ const props = defineProps<{
   to?: string;
   title?: string;
   customClass?: string;
+  allowCopy: boolean;
 }>();
 
 // default value

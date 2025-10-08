@@ -59,6 +59,7 @@
             "uri-copy": "URI copied to clipboard",
             "url-copy": "URL copied to clipboard",
             "search-prompt-text": "Type to search...",
+            "advanced-search-title": "Advanced Search",
             "not-specified": "Not specified",
             "validate": "Validate",
             "validateSelection": "Validate the selection",
@@ -441,6 +442,7 @@
             "associated-data-error": "Data are associated with this variable",
             "trait-button": "Trait already existing in an ontology",
             "trait-button-help": "Add a trait (entity and characteristic) already existing in an ontology", 
+            "visualization": "Device associated Data Visualization",
             "dimensionValues" : {
                 "unique": "Unique measurement",
                 "millisecond" : "Millisecond",

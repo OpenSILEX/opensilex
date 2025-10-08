@@ -1359,12 +1359,27 @@ export default class OpenSilexVuePlugin {
      * @returns The label of the variable datatype.
      */
     public getVariableDatatypeLabel(uri: string): string {
-        if (!uri) {
-            return undefined;
-        }
-        let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
-        return label.charAt(0).toUpperCase() + label.slice(1);
-    }
+    if (!uri) return '';
+
+    const found = this.variableDatatypes?.find((elem: any) => elem.uri === uri);
+    const key = found?.name;
+    if (!key) return uri;
+
+    // récupérer l'instance i18n
+    const i18nAny: any = (this as any).$i18n ?? (this as any).i18n?.global;
+    const translated = i18nAny ? i18nAny.t(key) : key;
+
+    const label = String(translated);
+    return label ? label.charAt(0).toUpperCase() + label.slice(1) : uri;
+}
+
+// public getVariableDatatypeLabel(uri: string): string {
+//     if (!uri) {
+//         return undefined;
+//     }
+//     let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
+//     return label.charAt(0).toUpperCase() + label.slice(1);
+// }
 
     /**
      * It loads the variable data types from the server and stores them in the variableDatatypes variable

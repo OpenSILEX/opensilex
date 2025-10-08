@@ -44,6 +44,7 @@ onBeforeMount(() => {
 <style scoped lang="scss">
 .form-field {
   display: block;
+  width: 100%;
 }
 
 .helperAndBlueStar {

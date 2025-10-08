@@ -292,8 +292,8 @@ $opensilex.loadModules([
   // "opensilex-dataverse"
 ]).then(() => {
   console.log("----------- loading")
-  
-  $opensilex.initAsyncComponents(components).then(() => {
+  // Not seems mandatory in vue 3, need to test when component are loaded from other modules
+  // $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");
 
 
@@ -398,8 +398,7 @@ $opensilex.loadModules([
                 app.use(router);
                 console.log("Registered routes:");
                 router.getRoutes().forEach(route => console.log("route.path " ,route.path));
-
-                // Initialise main layout components from configuration
+                 // Initialise main layout components from configuration
                 console.debug("Define initial modules to load...");
                 let modulesToLoad: ModuleComponentDefinition[] = [
                   ModuleComponentDefinition.fromString(config.homeComponent),
@@ -418,16 +417,18 @@ $opensilex.loadModules([
                   console.log("Application is embed");
                   console.debug("Application is embed");
                 }
-
-                Promise.all([
+                
+                 Promise.all([
                   $opensilex.loadVersionInfo(),
                   $opensilex.loadFactorCategories(),
                   $opensilex.loadDataTypes(),
                   $opensilex.loadVariableDataTypes(),
                   $opensilex.loadNameSpaces(),
                   $opensilex.loadObjectTypes(),
-                  $opensilex.loadComponentModules(modulesToLoad)
+                  $opensilex.loadComponentModules(modulesToLoad),
+                  router.isReady()
                 ]).then(() => {
+
                   // Initialize main application rendering
                   console.debug("Initialize main application rendering");
                   console.log("headerComponent dans render() :", config.headerComponent);
@@ -494,4 +495,4 @@ $opensilex.loadModules([
       }).catch(manageError);
     }).catch(manageError);
   }).catch(manageError);
-}).catch(manageError);
+// }).catch(manageError);

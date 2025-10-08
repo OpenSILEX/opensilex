@@ -3,10 +3,7 @@ import { App, defineAsyncComponent } from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
 import {useStore} from 'vuex';
-// import { createRouter, createWebHistory, Router, RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHistory, NavigationGuardNext, type Router, type RouteRecordRaw } from 'vue-router';
-
-// const { createRouter, createWebHistory, Router, RouteRecordRaw } = VueRouter;
 
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import store from './Store';
@@ -23,14 +20,11 @@ export class OpenSilexRouter {
     private app : App;
     private $opensilex: OpenSilexVuePlugin;
 
-
     constructor(pathPrefix: string, app: App) {
         this.pathPrefix = pathPrefix;
         this.app = app;
         this.$opensilex = this.app.config.globalProperties.$opensilex;
         this.router = this.createRouter(User.ANONYMOUS());
-        // const store = useStore();
-        
     }
     
     public getSectionAttributes() {
@@ -62,24 +56,13 @@ export class OpenSilexRouter {
             routes: routes,
         });
 
+        // Add this line to handle navigation errors
+        this.router.onError((handler)=>{
+            console.error('Navigation error:', handler); 
+        });
+
         console.log("Routes enregistrées - createRouter :", this.router.getRoutes());
         console.log("RETURN sectionAttributes ", this.sectionAttributes)
-        
-
-
-        // this.router.beforeResolve(async (to, from) => {
-        //     console.log ("😁 from ", from , " to : ", to)
-        //     // si ce n'est pas faux - donc vrai - donc qu'il est log ET qu'on va pas vers test
-        //     if ( store.state.user.isLoggedIn() && to.path !== '/test') {
-        //       console.log("😀 if ")
-        //       return { path: '/test' , replace : true}
-        //     } else {
-        //         console.log("😀 else ")
-        //         // return { path: '/app'}
-        //     }
-        //   })
-        //   this.refresh();
-          
 
         this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
             console.log("routerBefore from  : ", from, " / to : ", to);
@@ -91,7 +74,6 @@ export class OpenSilexRouter {
             // si pas deja log et veut aller sur autre chose que /app : renvoi sur /app
             if (!isLoggedIn && to.path !== '/') {
                 console.log ("🍫 pas deja log et veut aller sur autre chose que app -> renvoi /app")
-                // return next({ path: this.pathPrefix }); 
                 return next({ path: '/', query: { redirect: to.fullPath } });
             }
 
@@ -106,13 +88,10 @@ export class OpenSilexRouter {
                 // redirect soit sur /dash si pas d'historique, 
                 // sinon renvoi sur la derniere page consulté
                 if (isLoggedIn && to.path === '/' && redirectTo) {
-                    
-                    // to.redirectedFrom.query.redirect
                     console.log("to.redirectedFrom : ", to.redirectedFrom)
                     console.log("🍫 Redirection après login vers:", redirectTo);
                     return next({ path: redirectTo });
                 }
-                
                 
                 // Vérification pour éviter la redirection infinie
                 if (to.path === from.path) {
@@ -123,29 +102,21 @@ export class OpenSilexRouter {
                 console.log("to ", to, " from " , from)
             next(); // aucun des cas ? on laisse passer
         });
-        //   console.log(" 😶‍🌫️ Routes enregistrées :", this.router.getRoutes().map(route => route.name));
-           console.log("this.router ", this.router)
 
-           this.router.afterEach((to, from, failure) => {
+        console.log("this.router ", this.router)
+
+        this.router.afterEach((to, from, failure) => {
             if (failure) {
-                console.log(  "failure");
+                console.log("failure");
                 console.log(to, from, failure)
             }
-          })
-        return this.router;
-    }
+        })
 
-    // public resetRouter(user: User) {
-    //     const newRouter: any = this.createRouter(user);
-    //     this.router.matcher = newRouter.matcher;
-    //     return this.router;
-    // }
+        return this.router; 
+    }
     
     public resetRouter(user: User) {
         const newRouter = this.createRouter(user);
-        // this.router.getRoutes().forEach(route => this.router.removeRoute(route.name as string));
-        // this.router.getRoutes().forEach(route => console.log("routes : " , routes));
-        // newRouter.getRoutes().forEach(route => this.router.addRoute(route));  
         this.router = newRouter;
         return this.router
     }
@@ -157,16 +128,17 @@ export class OpenSilexRouter {
         const $opensilex: OpenSilexVuePlugin = this.$opensilex;
         const frontConfig = this.frontConfig;
     
+        // Updated loadComponent function using dynamic imports
         const loadComponent = (componentId: string) => {
-            return defineAsyncComponent(() => this.getAsyncComponentLoader(componentId));
+            return  () => this.getComponentImport(componentId) 
         };
     
         // 📌 Routes générales depuis frontConfig
         if (frontConfig) {
-    
             // Route par défaut
             routes.push({
                 path: "/",
+                name : "default",
                 component: loadComponent(frontConfig.loginComponent),
                 meta: { public: true }
             });
@@ -177,12 +149,11 @@ export class OpenSilexRouter {
                     path: routeConfig.path,
                     name: routeConfig.name || undefined,
                     component: loadComponent(routeConfig.component),
-                    // meta: routeConfig.meta || {}
                 });
             }
         }
     
-        // 📌 Routes dynamiques depuis le menu utilisateur à verifier si toujours necessaire (duplicata de declarations ?)
+        // 📌 Routes dynamiques depuis le menu utilisateur
         if (this.userFrontConfig) {
             console.log("👤 userFrontConfig:", this.userFrontConfig);
             this.menu = this.buildMenu(this.userFrontConfig.menu, routes, user);
@@ -205,7 +176,7 @@ export class OpenSilexRouter {
             addMenuRoutes(this.userFrontConfig.menu);
         }
     
-        // 📌 Route "catch-all" (404) - idee de créer une page "not found"
+        // 📌 Route "catch-all" (404)
         if (frontConfig?.notFoundComponent) {
             routes.push({
                 path: "/:catchAll(.*)",
@@ -218,64 +189,69 @@ export class OpenSilexRouter {
         return routes;
     }
 
-    private getAsyncComponentLoader(componentId) {
-            return new Promise((resolve, reject) => {
-                let componentDef = ModuleComponentDefinition.fromString(componentId);
-                // let override = $opensilex.themeConfig.componentOverrides[componentId];
-                // if (override) {
-                //     componentDef = ModuleComponentDefinition.fromString(override);
-                // }
-
-                this.$opensilex.loadComponentModule(componentDef)
-                    .then(() => {
-                        let component: any = this.app.component(componentDef.getId());
-                        if (component) {
-                            resolve(component)
-                        } else {
-                            let result = this.getAsyncComponentLoader( this.frontConfig.notFoundComponent);
-                            if (result instanceof Promise) {
-                                result
-                                    .then(resolve)
-                                    .catch((error) => {
-                                        console.error(error);
-                                        reject(error);
-
-                                      });
-                            } else {
-                                console.error("result",result);
-                                resolve(result);
-                            }
-                        }
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        reject(error);
-                    });
-            })
+    // New method using dynamic imports instead of the complex promise-based loader
+    private async getComponentImport(componentId: string): Promise<any> {
+        try {
+            let componentDef = ModuleComponentDefinition.fromString(componentId);
+            
+            // Load the component module using your existing method
+            await this.$opensilex.loadComponentModule(componentDef);
+            
+            // Get the component from the app
+            let component = this.app.component(componentDef.getId());
+            console.log("getComponentImport",component)
+            if (component) {
+                return component;
+            } else {
+                // Fallback to not found component
+                if (this.frontConfig?.notFoundComponent) {
+                    return this.getComponentImport(this.frontConfig.notFoundComponent);
+                }
+                throw new Error(`Component ${componentId} not found`);
+            }
+        } catch (error) {
+            console.error(`Error loading component ${componentId}:`, error);
+            
+            // Return a fallback component or rethrow
+            if (this.frontConfig?.notFoundComponent && componentId !== this.frontConfig.notFoundComponent) {
+                return this.getComponentImport(this.frontConfig.notFoundComponent);
+            }
+            
+            // Return a minimal error component as last resort
+            return {
+                template: `<div class="error-component">
+                    <h3>Component Error</h3>
+                    <p>Failed to load component: ${componentId}</p>
+                    <pre>${error.message}</pre>
+                </div>`
+            };
+        }
     }
+
+ 
 
     public refresh() {
         this.router.go(0);
-        console.log( " 💩 ", this.router.currentRoute)
-        // this.router.push(this.router.currentRoute.value.fullPath);
-
+        console.log(" 💩 ", this.router.currentRoute)
     }
 
     private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
         let $opensilex: OpenSilexVuePlugin = this.app["$opensilex"];
         let menu: Array<MenuItemDTO> = [];
+        
         for (let i in items) {
             let item: MenuItemDTO = items[i];
 
-
-            
             if (item.route) {
                 let route = item.route;
                 menu.push(item);
+                
+                // Updated to use the new import method
                 routes.push({
                     path: route.path,
-                    component: this.getAsyncComponentLoader(route.component)
+                    component:  () => this.getComponentImport(route.component)
                 });
+                
                 this.sectionAttributes[route.path] = {
                     icon: route.icon,
                     title: route.title,

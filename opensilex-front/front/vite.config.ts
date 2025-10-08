@@ -36,7 +36,7 @@ export default defineConfig({
     // },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)
-      external: ['vue'],
+      external: ['vue','vue-router'],
       output: {
         globals: {
           vue: 'Vue',

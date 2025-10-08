@@ -277,8 +277,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             List<ScientificObjectModel> modelChunkToCreate,
             List<ScientificObjectModel> modelChunkToUpdate,
             Map<String, Integer> generatedUrisToIndexesInChunk,
-            Map<String, Integer> filledUrisToIndexesInChunk,
-            Map<String, Integer> filledUrisToUpdateIndexesInChunk
+            Map<String, Integer> filledUrisToIndexesInChunk/*,
+            Map<String, Integer> filledUrisToUpdateIndexesInChunk*/
     ) throws SPARQLException {
         if (checkIfSONameIsNull(validator, model, totalRowIdx)) return;
 
@@ -312,7 +312,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             else if (isURIExistInGraph.equalsIgnoreCase("true")) {
                 addModelInModelChunk(model, modelChunkToUpdate);
                 // register URI to the set of URIs to update the existing SOs
-                filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+                //filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
             }
 
         }
@@ -323,7 +323,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             model.setUri(alreadyExistingOSUri);
             addModelInModelChunk(model, modelChunkToUpdate);
             // register URI to the set of URIs to create new SOs
-            filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
+            //filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
         }
         // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
         else if (model.getUri() == null && alreadyExistingOsWithName == null) {
@@ -333,9 +333,9 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
 
         // global flow (not inside an XP)
-        /*else {
-            super.handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
-        }*/
+        else {
+            super.handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk/*, filledUrisToUpdateIndexesInChunk*/);
+        }
     }
 
     private static boolean checkIfSONameIsNull(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx) {
@@ -424,6 +424,10 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 int offset,
                 boolean forUpdate
             ) throws IOException{
+        if(CollectionUtils.isEmpty(modelChunk)){
+            return;
+        }
+
         //If inside experiment validations
         if (experiment != null) {
             // check if there are any duplicate names within CSV
@@ -749,14 +753,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
      *
      * @param models Initial models that are being updated
      * @param urisToUpdateGlobally A uri list we will fill with uris of models that do need to also be updated globally.
-     * @param modelsToUpdateGlobally A list of models that do need to also be updated globally.
      * @param modelsToUpdateGloballyByExpandedUri A map for fast retrieval of models later.
      * @throws Exception if the requests fail
      */
     private void calculateModelsToUpdateGlobally(
             List<ScientificObjectModel> models,
             List<URI> urisToUpdateGlobally,
-            List<ScientificObjectModel> modelsToUpdateGlobally,
             Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri
     ) throws Exception {
         //Don't do any of this if the update already concerned the global context
@@ -773,7 +775,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 }
         );
         //Get old versions of global objects we're guna have to update
-        modelsToUpdateGlobally = scientificObjectDAO.searchByURIs(
+        List<ScientificObjectModel> modelsToUpdateGlobally = scientificObjectDAO.searchByURIs(
                 sparql.getDefaultGraphURI(ScientificObjectModel.class),
                 urisToUpdateGlobally,
                 currentUser
@@ -825,16 +827,18 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
     private void update(List<ScientificObjectModel> models, List<GeospatialModel> geospatialModelsToUpdate) throws Exception {
 
+        if(CollectionUtils.isEmpty(models)) {
+            return;
+        }
+
         GeospatialModel geospatialToBeUpdated;
 
-        //List of models to update globally after changing type of models with same uri in the experimental context
-        List<ScientificObjectModel> modelsToUpdateGlobally = new ArrayList<>();
         List<URI> urisToUpdateGlobally = new ArrayList<>();
         //Map for faster retrieval of models later
         Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri = new HashMap<>();
 
         //Handle preparation of updating in global context after a type change
-        calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
+        calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
 
 
         // DELETE and INSERT
@@ -883,15 +887,13 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         );
 
         //Do the secondary update in global context (if we were updating in an XP and if at least one OS had a type change)
-        if(!CollectionUtils.isEmpty(modelsToUpdateGlobally)) {
+        if(!CollectionUtils.isEmpty(modelsToUpdateGloballyByExpandedUri.entrySet())) {
             scientificObjectDAO.updateMultipleSOAndMoves(
-                    modelsToUpdateGlobally,
+                    new ArrayList<>(modelsToUpdateGloballyByExpandedUri.values()),
                     currentUser,
                     sparql.getDefaultGraph(ScientificObjectModel.class),
                     true
             );
         }
-
     }
-
 }

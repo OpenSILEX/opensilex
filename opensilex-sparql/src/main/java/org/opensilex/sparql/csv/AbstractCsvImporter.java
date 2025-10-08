@@ -12,6 +12,7 @@ import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.csv.validation.CustomCsvValidation;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -250,7 +251,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
             Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
-            Map<String, Integer> filledUrisToUpdateIndexesInChunk = new PatriciaTrie<>();
+            //Map<String, Integer> filledUrisToUpdateIndexesInChunk = new PatriciaTrie<>();
             int chunkRowIdx = 0;
 
             // continue while batch size or max error limit is not reached
@@ -264,7 +265,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
                     // handle URI generation or association of filled uris to their line index in a Map.
                     // add model in modelChunk List
-                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
+                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk/*, filledUrisToUpdateIndexesInChunk*/);
                 }
                 totalRowIdx++;
             }
@@ -309,7 +310,16 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * <b>override this method</b> {@link #upsert(CSVValidationModel, List, List)} also for the models in modelChunkToUpdate to be updated
      *
      */
-    protected void handleURIMapping(CsvOwlRestrictionValidator validator, T model, int totalRowIdx, List<T> modelChunkToCreate, List<T> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+    protected void handleURIMapping(
+            CsvOwlRestrictionValidator validator,
+            T model,
+            int totalRowIdx,
+            List<T> modelChunkToCreate,
+            List<T> modelChunkToUpdate,
+            Map<String, Integer> generatedUrisToIndexesInChunk,
+            Map<String, Integer> filledUrisToIndexesInChunk/*,
+            Map<String, Integer> filledUrisToUpdateIndexesInChunk*/
+    ) throws SPARQLException {
         addModelInModelChunk(model, modelChunkToCreate);
         // generate new URI and register it to set of URI to check
         if (model.getUri() == null) {
@@ -411,6 +421,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         }
 
         Set<String> urisToCheck = new HashSet<>(generatedUrisToIndexes.keySet());
+        //Create a local map for retrieval of models as the length of models is not necessarily the same as the row length of csv
+        HashMap<String, T> modelByUri = new HashMap<>();
+        models.forEach(model -> {modelByUri.put(SPARQLDeserializers.getShortURI(model.getUri()), model);});
 
         // store the number of duplicate for a row
         Map<Integer, Integer> duplicateCountByRowIdx = new HashMap<>();
@@ -441,7 +454,8 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     // retrieve corresponding uri and  corresponding model
                     String duplicate = urisIterator.next();
                     int rowIdx = generatedUrisToIndexes.get(duplicate);
-                    T duplicateModel = models.get(rowIdx);
+                    //T duplicateModel = models.get(rowIdx);
+                    T duplicateModel = modelByUri.get(SPARQLDeserializers.getShortURI(duplicate));
 
                     // regenerate a new URI
                     try {

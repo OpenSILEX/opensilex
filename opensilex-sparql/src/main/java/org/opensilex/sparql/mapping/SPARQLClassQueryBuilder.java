@@ -433,13 +433,20 @@ class SPARQLClassQueryBuilder {
         Var predicateVar = makeVar("p");
         Var objectVar = makeVar("o");
         Var graphVar = makeVar("g");
-        Object graphObject = graph != null ? graph : graphVar;
+        Node graphObject = null;
+        if(graph != null){
+            graphObject = SPARQLDeserializers.nodeURI(graph);
+        }
 
         Triple relation = new  Triple(uriVar, predicateVar, objectVar);
         Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
 
-        delete.addDelete(relation);
-        delete.addDelete(inverseRelation);
+        //WhereBuilder insideGraphDelete = new WhereBuilder();
+
+        delete.addDelete((graphObject != null ? graphObject : graphVar), relation);
+        delete.addDelete((graphObject != null ? graphObject : graphVar), inverseRelation);
+        //delete.addGraph((graphObject != null ? graphObject : graphVar), insideGraphDelete);
+
 
         WhereBuilder globalWhere = new WhereBuilder();
 
@@ -457,10 +464,10 @@ class SPARQLClassQueryBuilder {
             graphSubquery.addFilter(predicateFilter);
         }
 
-        graphsBlock.addGraph(graphObject, graphSubquery);
+        graphsBlock.addGraph((graphObject != null ? graphObject : graphVar), graphSubquery);
 
         //graph to delete inverse relations
-        graphsBlock.addUnion(new WhereBuilder().addGraph(graphObject, inverseRelation));
+        graphsBlock.addUnion(new WhereBuilder().addGraph((graphObject != null ? graphObject : graphVar), inverseRelation));
 
         globalWhere.addWhere(graphsBlock);
         delete.addWhere(globalWhere);

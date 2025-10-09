@@ -5,7 +5,8 @@ ignore-changelog: false # Passer cette valeur à "true" si le changelog n'est pa
 
 - [ ] Relecture MR
 - [ ] Tests écrits et OK
-- [ ] Documentation
+- [ ] Documentation technique
+- [ ] Specifications fonctionnelles validées ([see spec template](../../opensilex-doc/src/main/resources/specs/template/spec_template.md))
 - [ ] Testé
 - [ ] Remplir l'entrée changelog ou la marquer comme ignorée
   ([comment ?](https://forge.inrae.fr/OpenSILEX/opensilex-dev-tools/-/blob/master/docs/workflow/conventions/mr_redaction.md?ref_type=heads#description))

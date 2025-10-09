@@ -7,8 +7,8 @@
 ## Table of contents
 <!-- TOC -->
   * [Table of contents](#table-of-contents)
-  * [Needs](#needs)
   * [Definitions](#definitions)
+  * [functional requirements](#functional-requirements)
   * [Solution](#solution)
     * [Business logic](#business-logic)
   * [Technical specifications](#technical-specifications)
@@ -16,40 +16,6 @@
     * [API](#api)
   * [Limitations and Improvements](#limitations-and-improvements)
 <!-- TOC -->
-
-## Needs
-
-In OpenSilex, element locations are store in several ways : with an address, spatial coordinates and relative positions
-(from/to a facility, X/Y/Z and/or textual position). These locations are associated with the element when it is created 
-or through the "move" event. 
-
-This location information is stored in different databases and with different models, depending on the type of element. 
-See the table below: 
-
-| Element                   | MongoDB - collection "geospatial"        | MongoDB - collection "move"                                    | RDF4J                                |
-|---------------------------|------------------------------------------|----------------------------------------------------------------|--------------------------------------|
-| Scientific object         | on creation/update : spatial coordinates | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facility |
-| Device                    |                                          | on "move" event : spatial coordinates / XYZ / textual position | on "move" event : from/to a facility |
-| Facility                  | on creation/update : spatial coordinates |                                                                | on creation/update :  address        |
-| Site                      | on creation/update : spatial coordinates |                                                                | on creation/update :  address        |
-| Structural/ temporal area | on creation/update : spatial coordinates |                                                                |                                      |
-
-In the case of a "move" event, the location is associated with a date (instant or interval).
-
-When an address is associated with a site or facility, the address is stored in RDF4J and converted into spatial 
-coordinates, stored in the MongoDB in the "geospatial" collection".
-
-For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the 
-[facility specification](/src/main/resources/functional-specifications/facilities.md).
-
-![Location_models_before](../_imgs/Location_Models_before.png)
-
-This dispersion of the location information, especially for scientific objects stored in the 2 MongoDB 
-collections with 2 different models, leads to difficulties to get the right location information and spatio-temporal 
-inconsistencies.
-
-We need to homogenize and simplify the location model of the elements, their storage and control consistency.
-In second stage, we would also like to store spatial dataset (e.g. drone flight sessions). . 
 
 ## Definitions
 
@@ -59,6 +25,11 @@ In second stage, we would also like to store spatial dataset (e.g. drone flight 
 - **Spatial coordinates**: Numerical representation of the position of an object in space, expressed in various forms according to the spatial coordinate system (sexagesimal or decimal degrees, longitude and latitude).
 - **Move**: Oriented distance separating the starting point from the finishing point, in a straight line over a given time.
 - **Trajectory**: The trajectory of a moving object is the set of positions it has occupied throughout its movement. A line describes the object's movement with a time dimension (x positions at x times).
+
+## functional requirements
+
+**functional specification** : to understand the purpose of the feature and its precise rules see relative functional specification file :
+- [geospatial-location.md](../../../functional-specifications/geospatial-location.md)
 
 ## Solution
 
@@ -218,24 +189,11 @@ Because there is a difference between the "address" location (no date) and "posi
 `getFacilitiesWithGeometry`: the last position or, if there is no position, the address spatial coordinates.
 
 ## Limitations and Improvements
-### Limitations
 ### Improvements
 
 - Refactoring the new location model for the rest of the elements : scientific objects, devices and areas.
 - Tests mongoDB queries and indexes.
 
+## Documentation
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- see the technical document [new_location_model.md](new_location_model.md)

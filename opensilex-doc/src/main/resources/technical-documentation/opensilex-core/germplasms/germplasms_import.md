@@ -12,7 +12,8 @@
 * [Specifications : germplasms import](#specifications--germplasms-import)
   * [Table of contents](#table-of-contents)
   * [Definitions](#definitions)
-    * [Non-functional requirements](#non-functional-requirements)
+  * [functional requirements](#functional-requirements)
+  * [Non-functional requirements](#non-functional-requirements)
   * [Solution](#solution)
     * [Business logic](#business-logic)
   * [Technical specifications](#technical-specifications)
@@ -27,11 +28,12 @@
 - **germplasm** : genetic material of plant cells.
 - **data import** : in this case we talk about importing hundreds of germplasms from a CSV file.
 
-### fonctional requirements
+## functional requirements
 
-- **Importation of germplasms** : it should be possible to import many germplasms at once from a CSV file with an upsert operation.
+**functional specification** : to understand the purpose of the feature and its precise rules see relative functional specification file :
+- [germplasms_import_specs.md](../../../functional-specifications/germplasms_import_specs.md)
 
-### Non-functional requirements
+## Non-functional requirements
 
 - **Performance** : rework of germplasm's importation was done to improve performance. For more details on improvements see [the benchmark document](https://forgemia.inra.fr/OpenSILEX/opensilex-dev-tools/-/blob/master/benchmark/germplasmes/import.md?ref_type=heads)
 

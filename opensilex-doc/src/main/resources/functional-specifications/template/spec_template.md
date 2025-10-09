@@ -34,16 +34,8 @@ These first three paragraphs of this template are to be removed before publishin
 * [Specifications : [{category}] {title}](#specifications--category-title)
   * [Table of contents](#table-of-contents)
   * [Definitions](#definitions)
-  * [Needs](#needs)
-    * [Non-functional requirements](#non-functional-requirements)
-  * [Solution](#solution)
-    * [Business logic](#business-logic)
-  * [Technical specifications](#technical-specifications)
-    * [Technical definitions](#technical-definitions)
-    * [Detailed explanations](#detailed-explanations)
-    * [Tests](#tests)
-    * [Environment](#environment)
-  * [Limitations and improvements](#limitations-and-improvements)
+  * [functional requirements](#functional-requirements)
+  * [Business logic](#business-logic)
   * [Documentation](#documentation)
 <!-- TOC -->
 
@@ -51,62 +43,21 @@ These first three paragraphs of this template are to be removed before publishin
 
 - **{Term}** : {definition}
 
-## Needs
+## functional requirements
 
 {Briefly describe the user needs}
 
 - Use case #{number}: As a {user category}, I want to {action}.
 
-### Non-functional requirements
-
-{Describe all non-functional requirements in this section, and give precise metrics if possible.
-Below are some common examples.}
-
-- **{Performance}** : {limit of the acceptable performances (latency, execution time, etc.) for the feature}
-- **{Security}** : {access restriction (which user should have access to the feature, are there potential
-  vulnerabilities, etc.)}
-- **{Ergonomy}** : {how accessible the feature should be (visual or textual representations, number of
-  clicks needed to perform an action)}
-- **{Reliability}** : {how resilient the feature should be (what happens if the user enters an invalid input,
-  or if a service is unavailable)}
-
-## Solution
-
-{Describe the solution we chose in OpenSILEX. You can explain why this solution was chosen, which
-other solutions were considered and why they were not kept.}
-
-### Business logic
+## Business logic
 
 {If some specific business rules are applicable in the solution, describe them extensively in this
 section. Business logic also includes authorization rules.}
 
-## Technical specifications
-
-### Technical definitions
-
-- **{Term}** : {definition}
-
-### Detailed explanations
-
-{Describe the files, classes, methods, algorithms and architectural choices that are essential to the
-solution. You can divide this section in subsections to keep it organized. For example, you can have
-an API and Front-end subsections, but that is not mandatory.}
-
-### Tests
-
-{Describe the automatic tests related to this feature, where they are located and what they are supposed
-to check.}
-
-### Environment
-
-{Describe the packages and libraries required for the solution, and the specific version if needed.}
-
-## Limitations and improvements
-
-{Describe the known limits of the solution. If you have potential solutions to suggest, you
-can specify them here.}
-
 ## Documentation
 
-{List internal and external documentations relevant to the feature. For example, configuration
-instructions or an external library documentation website}.
+{List internal and external not technical documentations relevant to the feature. For example, configuration
+instructions}.
+
+- see the technical document {path}
+- see the user documentation {path}

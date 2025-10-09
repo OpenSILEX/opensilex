@@ -12,9 +12,9 @@
 * [Specifications : germplasms import](#specifications--germplasms-import)
   * [Table of contents](#table-of-contents)
   * [Definitions](#definitions)
-  * [fonctional requirements](#fonctional-requirements)
-  * [Non-functional requirements](#non-functional-requirements)
+  * [functional requirements](#functional-requirements)
   * [Business logic](#business-logic)
+  * [Documentation](#documentation)
 <!-- TOC -->
 
 ## Definitions
@@ -22,13 +22,9 @@
 - **germplasm** : genetic material of plant cells.
 - **data import** : in this case we talk about importing hundreds of germplasms from a CSV file.
 
-## fonctional requirements
+## functional requirements
 
 - **Importation of germplasms** : it should be possible to import many germplasms at once from a CSV file with an upsert operation.
-
-## Non-functional requirements
-
-- **Performance** : rework of germplasm's importation was done to improve performance. For more details on improvements see [the benchmark document](https://forgemia.inra.fr/OpenSILEX/opensilex-dev-tools/-/blob/master/benchmark/germplasmes/import.md?ref_type=heads)
 
 ## Business logic
 
@@ -46,3 +42,7 @@ The business logic is the same as the creation web service, any germplasm presen
   - if germplasm 'A' has an accession and a species, the accession should have the same species as germplasm 'A'
   - if germplasm 'A' has an accession and a variety, the accession should have the same variety as germplasm 'A'
 - Coherency of relations *** ⚠️ _WARNING_ : this part is not actually very clear (see GermplasmAPI::getGermplasmModelsAndValidateRelations ) ***
+
+## Documentation
+
+- see the technical document [germplasms_import.md](../technical-documentation/opensilex-core/germplasms/germplasms_import.md)

@@ -2,8 +2,8 @@
 
 **Document history (please add a line when you edit the document)**
 
-| Date | Editor(s)             | OpenSILEX version | Comment          |
-|------|-----------------------|-------------------|-------------------|
+| Date       | Editor(s)          | OpenSILEX version | Comment           |
+|------------|--------------------|-------------------|-------------------|
 | 12/01/2023 | yvan.roux@inrae.fr | 1.0.2             | Document creation |
 
 ## Table of contents

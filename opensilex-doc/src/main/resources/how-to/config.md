@@ -7,7 +7,7 @@ Le fichier de configuration d'OpenSilex est un fichier [YAML](https://yaml.org/)
 
 Ce fichier est ensuite automatiquement déserialisé vers un objet Java repésentant une interface.
 
-Pour plus d'information sur les détails sur la configuration et les détails d'implémentation voir [ici](../architecture/main.md#Configuration)
+Pour plus d'information sur les détails sur la configuration et les détails d'implémentation voir [ici](../technical-documentation/architecture/main.md#Configuration)
 
 # Comment connaitre les paramètres de configuration existants ?
 

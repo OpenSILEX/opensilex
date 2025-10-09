@@ -63,7 +63,7 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> system install
 
 - You can connect as guest by just clicking on "**Connect as guest**" button
 
-![guest_account.png](img%2Fguest_account.png)
+![guest_account.png](imgs/guest_account.png)
 
 > **Swagger**
 
@@ -76,7 +76,7 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> system install
 }
 ```
 
-![guest_account_swagger.png](img%2Fguest_account_swagger.png)
+![guest_account_swagger.png](imgs/guest_account_swagger.png)
 
 
 ## Rights
@@ -89,5 +89,5 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> system install
 
 -  **WARNING** !!! : The creation of the guest account is only available if :
 	- You run a fresh/new installation of OpenSILEX (OpenSILEX version >= `1.0.0-rc+7`)
-	- Or if you have run the migration command described in [1.0.0-rc+7.md](..%2Frelease%2F1.0.0-rc%2B7.md)  (OpenSILEX version < `1.0.0-rc+7`)
+	- Or if you have run the migration command described in [1.0.0-rc+7.md](/src/main/resources/release/1.0.0-rc%2B7.md)  (OpenSILEX version < `1.0.0-rc+7`)
 - Please ensure that you fill these requirements before creating the guest account

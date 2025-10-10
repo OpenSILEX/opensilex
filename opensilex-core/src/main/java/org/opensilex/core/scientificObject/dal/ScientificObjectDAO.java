@@ -943,13 +943,12 @@ public class ScientificObjectDAO {
             Map<URI, List<URI>> oldChildrenPerOSUri = new HashMap<>();
 
             //Do a loop on models to update moves and to fetch children if we are in an experiment
-            //TODO MAX updateMoveS multiple ? handle this when we change geospat csv import
+            //TODO optimization? is it possible to not update the moves one by one?
             for (ScientificObjectModel model : models) {
                 //Only fetch children if we are in an experiment
                 if(!isGlobalContext){
                     List<URI> childrenURIs = fetchChildrenURIs(model.getUri(), currentUser, context);
                     if (!childrenURIs.isEmpty()) {
-                        //sparql.insertPrimitive(context, childrenURIs, Oeso.isPartOf, model.getUri());
                         oldChildrenPerOSUri.put(model.getUri(), childrenURIs);
                     }
                 }
@@ -1080,33 +1079,6 @@ public class ScientificObjectDAO {
     }
 
     private void updateSOAndChildren(URI objectURI, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs) throws Exception {
-        //TODO MAX delete this probably, we are guna use yvan's thing
-
-        /*ScientificObjectModel oldObject = sparql.getByURI(graphNode, ScientificObjectModel.class, objectURI, null);
-        //If there is a type change then we need to check the relations to see if any are no longer compatible
-        if(!SPARQLDeserializers.compareURIs(oldObject.getType(), object.getType())) {
-            //Get the old property tree to compare with new property tree to retrieve differences
-
-            BiPredicate<DatatypePropertyModel, ClassModel> dataPropFilter = ((property, classModel) -> property.getRangeURI() != null);
-            BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = ((property, classModel) -> property.getRangeURI() != null);
-
-            OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
-
-            List<ResourceTreeDTO> oldProperties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
-                    ontologyStore.searchDataProperties(oldObject.getType(), null, null, true, dataPropFilter),
-                    ontologyStore.searchObjectProperties(oldObject.getType(), null, null, true, objectPropFilter)
-            ));
-
-            List<ResourceTreeDTO> newProperties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
-                    ontologyStore.searchDataProperties(object.getType(), null, null, true, dataPropFilter),
-                    ontologyStore.searchObjectProperties(object.getType(), null, null, true, objectPropFilter)
-            ));
-
-            //Remove any relations present that belong to old type but not the new
-            //relationsToPreserve = ...
-            //oldObject.getRelations().stream().filter(relation -> relation.getProperty().)
-        }*/
-
         sparql.update(graphNode, object);
         if (!childrenURIs.isEmpty()) {
             sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);

@@ -34,6 +34,7 @@ These first three paragraphs of this template are to be removed before publishin
 * [Technical documentation : [{category}] {title}](#technical-documentation--category-title)
   * [Table of contents](#table-of-contents)
   * [Definitions](#definitions)
+  * [functional requirements](#functional-requirements)
   * [Non-functional requirements](#non-functional-requirements)
   * [Solution](#solution)
   * [Technical specifications](#technical-specifications)

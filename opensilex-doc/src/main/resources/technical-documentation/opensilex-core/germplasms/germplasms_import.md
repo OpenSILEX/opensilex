@@ -15,7 +15,6 @@
   * [functional requirements](#functional-requirements)
   * [Non-functional requirements](#non-functional-requirements)
   * [Solution](#solution)
-    * [Business logic](#business-logic)
   * [Technical specifications](#technical-specifications)
     * [Upsert Service](#upsert-service)
     * [Multiple errors return](#multiple-errors-return)
@@ -44,23 +43,6 @@ To improve performance, the importation of germplasms was reworked. We now use a
 Moreover, the importation is an upsert operation, meaning that if a germplasm already exists in the database, it will be updated with the new information from the CSV file. If it does not exist, it will be created.
 
 One of the requirements of the importation is to have a very detailed error return, containing each error for each germplasm.
-
-### Business logic
-
-The business logic is the same as the creation web service, any germplasm present in the CSV file should :
-- have a unique URI (unique in the database and in the CSV file)
-- have a valid RDF type (a type that exists in ontology and is a subclass of `OESO:Germplasm`)
-- sometimes have a species, variety or accession, according to the following rules :
-  - if it is a species, no other information is needed
-  - if it is a variety, it should have a species
-  - if it is an accession, it should have a variety or a species
-  - if it has another type, it should have an accession, a variety or a species
-- if it has species, variety or accession, they should exist in the database (URI exists with the right RDF type)
-- coherency between the species, variety and accession (if they exist) should validate the following rules :
-  - if germplasm 'A' has a variety and a species, the variety should have the same species as germplasm 'A'
-  - if germplasm 'A' has an accession and a species, the accession should have the same species as germplasm 'A'
-  - if germplasm 'A' has an accession and a variety, the accession should have the same variety as germplasm 'A'
-- Coherency of relations *** ⚠️ _WARNING_ : this part is not actually very clear (see GermplasmAPI::getGermplasmModelsAndValidateRelations ) *** 
 
 ## Technical specifications
 

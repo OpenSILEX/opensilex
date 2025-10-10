@@ -30,6 +30,7 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 
 import java.io.BufferedReader;
@@ -55,11 +56,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     @BeforeClass
     public static void setup() throws Exception {
-        SPARQLService sparql = OpenSilexTestEnvironment.getInstance().getSparql();
-
-        //Set user
-        /*user = sparql.search(AccountModel.class,null).get(0);
-        Objects.requireNonNull(user);*/
+        SPARQLService sparql = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         // create user
         user = new AccountModel();
         user.setUri(URI.create("test:user_test"));
@@ -68,20 +65,11 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
         //Add a custom relation to some OS type for type change testing during bulk update
         addCustomProperty(sparql);
-
-        /*experiment = initExperimentModel("test_os_csv_import");
-        experiment2 = initExperimentModel("test_os_csv_import2");
-        sparql.create(experiment);
-        sparql.create(experiment2);
-
-        // load ontology extension used for OS <-> germplasm relation handling
-        // indeed this relation is not declared inside opensilex-core package.
-        sparql.loadOntology(new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH),
-                OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);*/
     }
 
     @Before
     public void beforeEachTest() throws Exception {
+
         experiment = initExperimentModel("test_os_csv_import");
         experiment2 = initExperimentModel("test_os_csv_import2");
         getSparqlService().create(experiment);

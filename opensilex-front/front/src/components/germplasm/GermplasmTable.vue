@@ -1183,20 +1183,12 @@ export default class GermplasmTable extends Vue {
 </script>
 
 <style scoped lang="scss">
-#tableOptions,#tableActions {
-  display: flex;
-  flex-wrap: wrap;
-  text-align: center;
-  justify-content: center;
-}
-
 .requiredOnCondition {
   color: blue;
 }
 
 .tabulator {
   font-size: 13px;
-  text-align: center;
 }
 
 .tabulator-row {

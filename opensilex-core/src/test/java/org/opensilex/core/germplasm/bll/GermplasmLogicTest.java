@@ -138,7 +138,7 @@ public class GermplasmLogicTest extends TestSuite {
      * tryIng with an accession and a variety (not the one that is linked to the accession).
      */
     @Test
-    public void otherTypeWithAccessionAndVarietyCreateSuccess() throws Exception {
+    public void otherTypeWithAccessionAndSpeciesAndVarietyCreateSuccess() throws Exception {
         URI speciesUri = new URI("http://example.org/species/1");
         URI variety1Uri = new URI("http://example.org/variety/1");
         URI variety2Uri = new URI("http://example.org/variety/2");
@@ -167,6 +167,62 @@ public class GermplasmLogicTest extends TestSuite {
         GermplasmModel variety2 = getCorrectVariety(variety2Uri, species);
         GermplasmModel accession = getCorrectGermplasmAccession(accessionUri, species, variety1);
         GermplasmModel otherTypeGermplasm = getCorrectGermplasmOtherType(otherTypeUri, otherType, species, variety2, accession);
+        var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
+        String errorMessage = String.format("this simple germplasm with an other type should not raise any error. %s errors was found", multipleErrorObject.toDTO().errors.size());
+        TestCase.assertFalse(errorMessage, multipleErrorObject.hasErrors());
+    }
+
+    /**
+     * we once had a bug where creating a germplasm with only an accession and a species (no variety) was raising an error.
+     */
+    @Test
+    public void otherTypeWithOnlyAccessionAndSpeciesCreateSuccess() throws Exception {
+        URI speciesUri = new URI("http://example.org/species/1");
+        URI accessionUri = new URI("http://example.org/accession/1");
+        URI otherTypeUri = new URI("http://example.org/otherType/1");
+        URI otherType = new URI("http://example.org/ontology/OtherType");
+
+        //Mocking new type existence
+        when(daoMocked.isGermplasmType(otherType)).thenReturn(true);
+        // Mocking species existence with the right type
+        when(daoMocked.checkExistence(List.of(speciesUri))).thenReturn(List.of(speciesUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Species.getURI()), speciesUri)).thenReturn(true);
+        // Mocking accession existence with the right type
+        when(daoMocked.checkExistence(List.of(accessionUri))).thenReturn(List.of(accessionUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Accession.getURI()), accessionUri)).thenReturn(true);
+
+        GermplasmLogic logic = new GermplasmLogic(daoMocked, sparqlMocked, null);
+        GermplasmModel species = getCorrectGermplasmSpecies(speciesUri);
+        GermplasmModel accession = getCorrectGermplasmAccession(accessionUri, species, null);
+        GermplasmModel otherTypeGermplasm = getCorrectGermplasmOtherType(otherTypeUri, otherType, species, null, accession);
+        var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
+        String errorMessage = String.format("this simple germplasm with an other type should not raise any error. %s errors was found", multipleErrorObject.toDTO().errors.size());
+        TestCase.assertFalse(errorMessage, multipleErrorObject.hasErrors());
+    }
+
+    /**
+     * we once had a bug where creating a germplasm with only an accession and a variety (no species) was raising an error.
+     */
+    @Test
+    public void otherTypeWitheOnlyAccessionAndVarietyCreateSuccess() throws Exception {
+        URI varietyUri = new URI("http://example.org/variety/1");
+        URI accessionUri = new URI("http://example.org/accession/1");
+        URI otherTypeUri = new URI("http://example.org/otherType/1");
+        URI otherType = new URI("http://example.org/ontology/OtherType");
+
+        //Mocking new type existence
+        when(daoMocked.isGermplasmType(otherType)).thenReturn(true);
+        // Mocking variety existence with the right type
+        when(daoMocked.checkExistence(List.of(varietyUri))).thenReturn(List.of(varietyUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Variety.getURI()), varietyUri)).thenReturn(true);
+        // Mocking accession existence with the right type
+        when(daoMocked.checkExistence(List.of(accessionUri))).thenReturn(List.of(accessionUri));
+        when(sparqlMocked.uriExists(new URI(Oeso.Accession.getURI()), accessionUri)).thenReturn(true);
+
+        GermplasmLogic logic = new GermplasmLogic(daoMocked, sparqlMocked, null);
+        GermplasmModel variety = getCorrectVariety(varietyUri, null);
+        GermplasmModel accession = getCorrectGermplasmAccession(accessionUri, null, variety);
+        GermplasmModel otherTypeGermplasm = getCorrectGermplasmOtherType(otherTypeUri, otherType, null, variety, accession);
         var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
         String errorMessage = String.format("this simple germplasm with an other type should not raise any error. %s errors was found", multipleErrorObject.toDTO().errors.size());
         TestCase.assertFalse(errorMessage, multipleErrorObject.hasErrors());

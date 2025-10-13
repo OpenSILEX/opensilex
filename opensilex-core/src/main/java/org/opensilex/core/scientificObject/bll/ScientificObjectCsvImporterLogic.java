@@ -326,15 +326,10 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             //filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
         }
         // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
-        else if (model.getUri() == null && alreadyExistingOsWithName == null) {
+        else {
             // register URI to the set of URIs to update the existing SOs
             generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
             addModelInModelChunk(model, modelChunkToCreate);
-        }
-
-        // global flow (not inside an XP)
-        else {
-            super.handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk/*, filledUrisToUpdateIndexesInChunk*/);
         }
     }
 

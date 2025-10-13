@@ -696,7 +696,7 @@ public class ScientificObjectDAO {
         return existingOs.isEmpty() ? null : existingOs.get(0);
     }
 
-    public List<SPARQLResult> checkUriExistInXP(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, URI rootClassURI, Node graphNode) throws SPARQLException {
+    public List<SPARQLResult> checkUriExistInContext(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx, URI rootClassURI, Node graphNode) throws SPARQLException {
         // query used to check existence of a URI (return false/true) in XP
         SelectBuilder checkUriQuery = sparql.getCheckUriListExistQuery(Stream.of(String.valueOf(model.getUri())), 1, rootClassURI.toString(), graphNode);
         List<SPARQLResult> result;

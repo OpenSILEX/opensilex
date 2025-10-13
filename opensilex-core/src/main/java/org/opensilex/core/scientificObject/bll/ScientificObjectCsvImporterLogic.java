@@ -6,7 +6,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
@@ -295,12 +294,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
 
         if (model.getUri() != null) {
-            // check existence of a URI (return false/true) in XP
-            List<SPARQLResult> result = scientificObjectDAO.checkUriExistInXP(validator, model, totalRowIdx, rootClassURI, graphNode);
+            // check existence of a URI (return false/true) in Context
+            List<SPARQLResult> result = scientificObjectDAO.checkUriExistInContext(validator, model, totalRowIdx, rootClassURI, graphNode);
             if (result == null) return;
             String isURIExistInGraph = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
 
-            // Scenario 1 & 5: If the URI entered in CSV doesn't exist in XP and there's no SO with the same name in XP -> insert the SO
+            // Scenario 1 & 5: If the URI entered in CSV doesn't exist and if there's no SO with the same name in XP if we are in an XP -> insert the SO
             if ((isURIExistInGraph.equalsIgnoreCase("") || isURIExistInGraph.equalsIgnoreCase("false"))
                     && (alreadyExistingOsWithName == null)) {
                 addModelInModelChunk(model, modelChunkToCreate);
@@ -308,7 +307,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
             }
 
-            // Scenario 3: If the URI entered in CSV exist in XP -> update the SO
+            // Scenario 3: If the URI entered in CSV does exist in context -> update the SO
             else if (isURIExistInGraph.equalsIgnoreCase("true")) {
                 addModelInModelChunk(model, modelChunkToUpdate);
                 // register URI to the set of URIs to update the existing SOs
@@ -434,11 +433,11 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         //Validations to perform if batch concerns an update
         if(forUpdate){
-            int maxNumberOfXpPermittedForTypeChange = experiment != null ? 1 : 0;
+            final int maxNumberOfXpPermittedForTypeChange = experiment != null ? 1 : 0;
 
-            verifyTypeUpdateStatus(
+            verifyTypeChangeAndApplyConsumer(
                     modelChunk,
-                    (TypeTestRequestResult nextParsedResult) -> {
+                    (VerifyTypeRequestResult nextParsedResult) -> {
                         if(nextParsedResult.participatesInArray.length > maxNumberOfXpPermittedForTypeChange){
                             addForbiddenTypeChangeError(restrictionValidator, offset, nextParsedResult.expandedURI, SPARQLDeserializers.getExpandedURI(nextParsedResult.newTypeUri));
                         }
@@ -448,20 +447,41 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
     }
 
-    private static class TypeTestRequestResult{
+    private static class VerifyTypeRequestResult {
         final String expandedURI;
         final URI newTypeUri;
         final String[] participatesInArray;
 
-        private TypeTestRequestResult(String expandedURI, URI newTypeUri, String[] participatesInArray) {
+        private VerifyTypeRequestResult(String expandedURI, URI newTypeUri, String[] participatesInArray) {
             this.expandedURI = expandedURI;
             this.newTypeUri = newTypeUri;
             this.participatesInArray = participatesInArray;
         }
     }
 
-    //TODO document and rename?
-    private void verifyTypeUpdateStatus(List<ScientificObjectModel> modelChunk, Consumer<TypeTestRequestResult> onTypeChange) throws IOException {
+    /**
+     * Runs a sparql query that will fetch old type of each OS in the chunk, as well as a list of all the experiments that each OS is participating in.
+     * If the old type does not match the future type then we know we are trying to update the type of this object, for each one of these we then call the
+     * onTypeChange consumer.
+     *
+     * @param modelChunk each model concerned by the update.
+     * @param onTypeChange Function to apply for each model where a type change has been detected.
+     * @throws IOException if something goes wrong during the sparql request
+     *
+     * Produced/executed request:
+     *
+     * <pre><code>
+     *     SELECT  (GROUP_CONCAT(DISTINCT ?experiment ; separator=',') AS ?experiments) ?uri ?rdfType
+     * WHERE
+     *   { ?rdfType (rdfs:subClassOf)* vocabulary:ScientificObject .
+     *     ?uri  rdf:type              ?rdfType ;
+     *           vocabulary:participatesIn  ?experiment
+     *     VALUES ?uri { <OSURI1><OSURI2>etc }
+     *   }
+     * GROUP BY ?uri ?rdfType
+     * </code></pre>
+     */
+    private void verifyTypeChangeAndApplyConsumer(List<ScientificObjectModel> modelChunk, Consumer<VerifyTypeRequestResult> onTypeChange) throws IOException {
         Map<String, URI> newTypesPerUri = new HashMap<>();
         modelChunk.forEach(model -> newTypesPerUri.put(SPARQLDeserializers.getExpandedURI(model.getUri()), model.getType()));
 
@@ -479,7 +499,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                     String participatesInStringValue = sparqlResult.getStringValue(EXPERIMENTS_CONCAT_VAR_NAME);
                     if(!StringUtils.isEmpty(participatesInStringValue)){
                         onTypeChange.accept(
-                                new TypeTestRequestResult(
+                                new VerifyTypeRequestResult(
                                         expandedURI,
                                         newTypeUri,
                                         participatesInStringValue.split(",")
@@ -590,13 +610,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     }
 
     private void addForbiddenTypeChangeError(CsvOwlRestrictionValidator validator, int offset, String objectUri, String failedNewTypeUri) {
-        int i = offset;
 
         String unformattedErrorMessage = this.experiment != null ? ScientificObjectDAO.FORBIDDEN_TYPE_CHANGE_XP_ERROR_MESSAGE : ScientificObjectDAO.FORBIDDEN_TYPE_CHANGE_GLOBAL_ERROR_MESSAGE;
         String errorMsg = String.format(unformattedErrorMessage, objectUri);
 
         CsvCellValidationContext cell = new CsvCellValidationContext(
-                i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET,
+                offset+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET,
                 CSV_TYPE_INDEX,
                 failedNewTypeUri,
                 CSV_TYPE_KEY
@@ -745,6 +764,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
     /**
      * Calculates if a model needs to be updated globally, does this by comparing type to old type.
+     * Precondition : this.experiment is not null.
      *
      * @param models Initial models that are being updated
      * @param urisToUpdateGlobally A uri list we will fill with uris of models that do need to also be updated globally.
@@ -756,13 +776,9 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             List<URI> urisToUpdateGlobally,
             Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri
     ) throws Exception {
-        //Don't do any of this if the update already concerned the global context
-        if(experimentModel == null) {
-            return;
-        }
-        verifyTypeUpdateStatus(
+        verifyTypeChangeAndApplyConsumer(
                 models,
-                (TypeTestRequestResult nextParsedResult) -> {
+                (VerifyTypeRequestResult nextParsedResult) -> {
                     //Less than one is impossible, more than one is normally also impossible as the validation would have failed before
                     if(nextParsedResult.participatesInArray.length == 1){
                         urisToUpdateGlobally.add(URI.create(nextParsedResult.expandedURI));
@@ -833,8 +849,9 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         Map<String, ScientificObjectModel> modelsToUpdateGloballyByExpandedUri = new HashMap<>();
 
         //Handle preparation of updating in global context after a type change
-        calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
-
+        if(experiment != null){
+            calculateModelsToUpdateGlobally(models, urisToUpdateGlobally, modelsToUpdateGloballyByExpandedUri);
+        }
 
         // DELETE and INSERT
         for(ScientificObjectModel model : models) {

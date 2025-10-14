@@ -751,7 +751,7 @@ public class DataLogic {
         if (csvImport) {
             csvValidation.setNbLinesImported(models.size());
             //If the data import was successful, post the annotations on objects
-            AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
+            AnnotationDAO annotationDAO = new AnnotationDAO(sparql, nosql);
             annotationDAO.create(csvValidation.getAnnotationsOnObjects());
         }
         return 0;

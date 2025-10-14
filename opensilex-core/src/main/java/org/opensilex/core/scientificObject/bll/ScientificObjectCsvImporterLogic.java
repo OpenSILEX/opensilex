@@ -869,7 +869,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         for(ScientificObjectModel model : models) {
             // setting experiment in SO model if we try updating a SO from an XP
             setExperimentInSOObj(model);
-            scientificObjectDAO.setLastUpdateDateInSO(model);
+            /*scientificObjectDAO.setLastUpdateDateInSO(model);*///TODO MAX delete if simple update still gives correct update date
 
             if(experiment != null) {
                 //Handle updating of species

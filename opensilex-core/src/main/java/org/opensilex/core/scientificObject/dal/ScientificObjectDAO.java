@@ -915,7 +915,7 @@ public class ScientificObjectDAO {
         if (Objects.nonNull(publicationDate)) {
             object.setPublicationDate(publicationDate);
         }
-        setLastUpdateDateInSO(object);
+        /*setLastUpdateDateInSO(object);*///TODO MAX delete if simple update still gives correct update date
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
         List<URI> childrenURIs = fetchChildrenURIs(objectURI, currentUser, graphNode);
         boolean hasFacilityURI = checkIfSOHasFacilityURIs(object);
@@ -1096,9 +1096,10 @@ public class ScientificObjectDAO {
         return childrenURIs;
     }
 
-    public void setLastUpdateDateInSO(SPARQLResourceModel object) {
+    //TODO MAX I think this method was pointless and the 2 usages of it, test and delete if corrcct
+    /*public void setLastUpdateDateInSO(SPARQLResourceModel object) {
         object.setLastUpdateDate(OffsetDateTime.now());
-    }
+    }*/
 
     public void updateGeoSpatialModel(GeoJsonObject geometry, String soName, URI soURI, URI soType, URI contextURI, GeospatialDAO geoDAO)
             throws JsonProcessingException {

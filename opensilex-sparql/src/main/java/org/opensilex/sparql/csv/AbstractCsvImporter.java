@@ -251,7 +251,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
             Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
-            //Map<String, Integer> filledUrisToUpdateIndexesInChunk = new PatriciaTrie<>();
             int chunkRowIdx = 0;
 
             // continue while batch size or max error limit is not reached
@@ -265,7 +264,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
                     // handle URI generation or association of filled uris to their line index in a Map.
                     // add model in modelChunk List
-                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk/*, filledUrisToUpdateIndexesInChunk*/);
+                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk);
                 }
                 totalRowIdx++;
             }
@@ -317,8 +316,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             List<T> modelChunkToCreate,
             List<T> modelChunkToUpdate,
             Map<String, Integer> generatedUrisToIndexesInChunk,
-            Map<String, Integer> filledUrisToIndexesInChunk/*,
-            Map<String, Integer> filledUrisToUpdateIndexesInChunk*/
+            Map<String, Integer> filledUrisToIndexesInChunk
     ) throws SPARQLException {
         addModelInModelChunk(model, modelChunkToCreate);
         // generate new URI and register it to set of URI to check
@@ -454,7 +452,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     // retrieve corresponding uri and  corresponding model
                     String duplicate = urisIterator.next();
                     int rowIdx = generatedUrisToIndexes.get(duplicate);
-                    //T duplicateModel = models.get(rowIdx);
                     T duplicateModel = modelByUri.get(SPARQLDeserializers.getShortURI(duplicate));
 
                     // regenerate a new URI

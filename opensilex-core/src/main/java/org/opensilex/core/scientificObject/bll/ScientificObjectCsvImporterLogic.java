@@ -276,8 +276,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             List<ScientificObjectModel> modelChunkToCreate,
             List<ScientificObjectModel> modelChunkToUpdate,
             Map<String, Integer> generatedUrisToIndexesInChunk,
-            Map<String, Integer> filledUrisToIndexesInChunk/*,
-            Map<String, Integer> filledUrisToUpdateIndexesInChunk*/
+            Map<String, Integer> filledUrisToIndexesInChunk
     ) throws SPARQLException {
         if (checkIfSONameIsNull(validator, model, totalRowIdx)) return;
 
@@ -310,8 +309,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             // Scenario 3: If the URI entered in CSV does exist in context -> update the SO
             else if (isURIExistInGraph.equalsIgnoreCase("true")) {
                 addModelInModelChunk(model, modelChunkToUpdate);
-                // register URI to the set of URIs to update the existing SOs
-                //filledUrisToUpdateIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
             }
 
         }
@@ -321,8 +318,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             URI alreadyExistingOSUri = alreadyExistingOsWithName.getUri();
             model.setUri(alreadyExistingOSUri);
             addModelInModelChunk(model, modelChunkToUpdate);
-            // register URI to the set of URIs to create new SOs
-            //filledUrisToUpdateIndexesInChunk.put(alreadyExistingOSUri.toString(), totalRowIdx);
         }
         // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
         else {

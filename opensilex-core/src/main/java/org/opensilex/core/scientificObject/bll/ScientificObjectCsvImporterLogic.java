@@ -441,7 +441,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                         if(nextParsedResult.participatesInArray.length > maxNumberOfXpPermittedForTypeChange){
                             addForbiddenTypeChangeError(restrictionValidator, offset, nextParsedResult.expandedURI, SPARQLDeserializers.getExpandedURI(nextParsedResult.newTypeUri));
                         }
-                    }
+                    },
+                    true
             );
 
         }
@@ -466,9 +467,10 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
      *
      * @param modelChunk each model concerned by the update.
      * @param onTypeChange Function to apply for each model where a type change has been detected.
+     * @param doCountExperiments if this is set to false then it simply becomes a "fetch objects where the type has changed" request
      * @throws IOException if something goes wrong during the sparql request
      *
-     * Produced/executed request:
+     * Produced/executed request when also fetching experiments:
      *
      * <pre><code>
      *     SELECT  (GROUP_CONCAT(DISTINCT ?experiment ; separator=',') AS ?experiments) ?uri ?rdfType
@@ -481,12 +483,16 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
      * GROUP BY ?uri ?rdfType
      * </code></pre>
      */
-    private void verifyTypeChangeAndApplyConsumer(List<ScientificObjectModel> modelChunk, Consumer<VerifyTypeRequestResult> onTypeChange) throws IOException {
+    private void verifyTypeChangeAndApplyConsumer(
+            List<ScientificObjectModel> modelChunk,
+            Consumer<VerifyTypeRequestResult> onTypeChange,
+            boolean doCountExperiments
+    ) throws IOException {
         Map<String, URI> newTypesPerUri = new HashMap<>();
         modelChunk.forEach(model -> newTypesPerUri.put(SPARQLDeserializers.getExpandedURI(model.getUri()), model.getType()));
 
         try{
-            SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()));
+            SelectBuilder typesAndExperimentsRequest = createTypeTestRequest(new ArrayList<>(newTypesPerUri.keySet()), doCountExperiments);
             sparql.executeSelectQueryAsStream(typesAndExperimentsRequest).forEach(sparqlResult -> {
 
                 String expandedURI = SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.URI_FIELD));
@@ -496,16 +502,17 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 //If type is not the same as old model then verify this action is permitted (object must be present in one or fewer experiments)
                 URI newTypeUri = newTypesPerUri.get(expandedURI);
                 if(!SPARQLDeserializers.compareURIs(oldTypeUri, newTypeUri)){
-                    String participatesInStringValue = sparqlResult.getStringValue(EXPERIMENTS_CONCAT_VAR_NAME);
-                    if(!StringUtils.isEmpty(participatesInStringValue)){
-                        onTypeChange.accept(
-                                new VerifyTypeRequestResult(
-                                        expandedURI,
-                                        newTypeUri,
-                                        participatesInStringValue.split(",")
-                                )
-                        );
+                    String participatesInStringValue = null;
+                    if(doCountExperiments){
+                        participatesInStringValue = sparqlResult.getStringValue(EXPERIMENTS_CONCAT_VAR_NAME);
                     }
+                    onTypeChange.accept(
+                            new VerifyTypeRequestResult(
+                                    expandedURI,
+                                    newTypeUri,
+                                    (StringUtils.isEmpty(participatesInStringValue) ? new String[0] : participatesInStringValue.split(","))
+                            )
+                    );
                 }
 
             });
@@ -514,28 +521,34 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
     }
 
-    private SelectBuilder createTypeTestRequest(List<String> osUrisToUpdate) throws Exception{
+    private SelectBuilder createTypeTestRequest(List<String> osUrisToUpdate, boolean doCountExperiments) throws Exception{
         SelectBuilder select = new SelectBuilder();
-        //We're only searching in the global graph as the participatesIn property will suffice
-        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
-        Var experimentVar = makeVar(ScientificObjectModel.PARTICIPATES_IN_FIELD);
+        //Only use following vars if we need to also fetch experiments that each OS is participating in
+        Var experimentVar = null;
+        Aggregator groupConcat = null;
+        Var experimentsConcatVar = null;
+        if(doCountExperiments){
+            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+            experimentVar = makeVar(ScientificObjectModel.PARTICIPATES_IN_FIELD);
+            groupConcat = new AggGroupConcatDistinct(exprFactory.asExpr(experimentVar), ",");
+            experimentsConcatVar = makeVar(EXPERIMENTS_CONCAT_VAR_NAME);
+        }
 
-        Aggregator groupConcat = new AggGroupConcatDistinct(exprFactory.asExpr(experimentVar), ",");
-        Var experimentsConcatVar = makeVar(EXPERIMENTS_CONCAT_VAR_NAME);
-
-        select.addVar(groupConcat.toString(), experimentsConcatVar);
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate.stream().map(URI::create).toList());
         select.addVar(uriVar);
         select.addVar(typeVar)
                 .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
-                .addWhere(uriVar, RDF.type, typeVar)
-                .addWhere(uriVar, Oeso.participatesIn, experimentVar);
+                .addWhere(uriVar, RDF.type, typeVar);
 
-        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), osUrisToUpdate.stream().map(URI::create).toList());
-        select.addGroupBy(uriVar);
-        select.addGroupBy(typeVar);
+        if(doCountExperiments){
+            select.addVar(groupConcat.toString(), experimentsConcatVar)
+                    .addWhere(uriVar, Oeso.participatesIn, experimentVar);
+            select.addGroupBy(uriVar);
+            select.addGroupBy(typeVar);
+        }
 
         return select;
     }
@@ -779,11 +792,10 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         verifyTypeChangeAndApplyConsumer(
                 models,
                 (VerifyTypeRequestResult nextParsedResult) -> {
-                    //Less than one is impossible, more than one is normally also impossible as the validation would have failed before
-                    if(nextParsedResult.participatesInArray.length == 1){
-                        urisToUpdateGlobally.add(URI.create(nextParsedResult.expandedURI));
-                    }
-                }
+                    //All we need to do is add each result as the results are each OS where the type has changed
+                    urisToUpdateGlobally.add(URI.create(nextParsedResult.expandedURI));
+                },
+                false
         );
         //Get old versions of global objects we're guna have to update
         List<ScientificObjectModel> modelsToUpdateGlobally = scientificObjectDAO.searchByURIs(

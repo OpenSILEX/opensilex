@@ -295,6 +295,8 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
                         )
                 )
         );
+
+        //Verify that name and comment were not copied  if for global indirect update, otherwise confirm that they were updated
         if(forGlobalIndirect){
             Assert.assertFalse(
                     updatedOS.getRelations().stream().anyMatch(

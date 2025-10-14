@@ -34,7 +34,7 @@
 ## Needs
 
 - Use case #1: As a user, I want to import a CSV with multiple Scientific Objects to insert them globally or in an experiment.
-- Use case #2: As a user, I would like to update the fields of a scientific object (except for the type) as part of an XP, or globally
+- Use case #2: As a user, I would like to update the fields of a scientific object as part of an XP, or globally
   so that I can make bulk additions and modifications to objects.
 - Use case #3: As a user, I would like to be able to update the types of Scientific objects globally if they are present in 0 experiments.
 - Use case #4: As a user, I would like to be able to update the types of Scientific objects inside an experiment if they are present in no other experiments. If the update passes, then i would also like it to automatically update the type to match globally. Any new custom relation values should also be copied.

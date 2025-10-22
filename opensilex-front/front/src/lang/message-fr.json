@@ -37,6 +37,7 @@
             "startDate" : "Date de début",
             "endDate" : "Date de fin",
             "begin":"Début",
+            "add":"Ajouter",
             "end":"Fin",
             "description": "Description",
             "informations": "Informations générales",
@@ -78,6 +79,7 @@
             "example": "Exemple",
             "loading" : "Chargement...",
             "metadata": "Metadonnée(s)",
+            "set-description": "Saisir une description",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -373,12 +375,24 @@
                 "first-name-placeholder": "aucun prénom trouvé dans vos données ORCID"
             }
         },
+        "annotation" : {
+            "details": "Détails de l'annotation",
+            "motivation": "Motivation",
+            "publisher": "Publieur",
+            "published": "Date",
+            "description": "Description",
+            "select-motivation": "Sélectionnez une motivation",
+            "motivation-help": "Intention ou motivation guidant la création de l'annotation",
+            "no-motivation": "Aucune motivation trouvée"
+
+        },
         "variable" : {
             "entity" : {
                 "entity" : "Entité",
                 "add-entity": "Ajouter une entité",
                 "entity-placeholder": "Sélectionner une entité",
-                "entity-help": "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
+                "entity-help": "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent",
+                "edit": "Modifier une entité"
             },
             "entityOfInterest" : {
                 "entityOfInterest": "Entité d'intérêt",
@@ -438,7 +452,7 @@
             "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}",
             "time-interval":"Intervalle de temps",
             "add": "Ajouter une variable",
-            "edit": "Éditer une variable",
+            "edit": "Modifier une variable",
             "no-var-provided": "Aucune variable associée",
             "associated-data-error": "Données sont associées à cette variable",
             "datatype-placeholder": "Sélectionner un type de donnée",

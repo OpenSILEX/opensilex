@@ -22,6 +22,7 @@
         ref="componentRef"
         :is="component"
         v-model:form="form"
+        :key="componentRefreshKey"
         :editMode="editMode"
         :data="data"
       >
@@ -67,6 +68,7 @@ const emit = defineEmits(['hide', 'onCreate', 'onUpdate'])
 const editMode = ref(false)
 const form = ref<Record<string, any>>({})
 const rules = ref<Record<string, any>>({})
+const componentRefreshKey = ref(0)
 
 onMounted(() => {
   console.log('ModalForm mounted')
@@ -141,6 +143,9 @@ function showCreateForm(passedForm?: any) {
   nextTick(() => {
     form.value = passedForm ?? getFormRef()?.getEmptyForm?.() ?? {}
     getFormRef()?.reset?.()
+    // reconstruire le formulaire pour éviter les champs remplis par des valeurs precedentes
+    formRef.value?.restoreValidation?.()
+    componentRefreshKey.value++
     modalRef.value?.show()
   })
 }

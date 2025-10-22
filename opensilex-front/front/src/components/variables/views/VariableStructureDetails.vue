@@ -8,7 +8,7 @@
     </div>
     <div class="card-body">
       <!-- URI -->
-      <opensilex-UriView :uri="selected.uri" />
+      <opensilex-UriView :uri="selected.uri" :allowCopy="true" />
 
       <!-- Name -->
       <opensilex-TextView label="component.common.name" :value="selected.name" />

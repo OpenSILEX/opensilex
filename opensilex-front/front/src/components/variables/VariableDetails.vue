@@ -1,11 +1,11 @@
 <template>
   <div class="page">
     <div class="two-cols">
-      <!-- Colonne 1 : Infos principales -->
+      <!-- Infos principales -->
       <div>
         <opensilex-Card :no-footer="true" :label="t('component.common.informations')" icon="bi-clipboard">
           
-            
+          <!-- Boutons -->  
           <template #rightHeader>
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
@@ -80,7 +80,7 @@
         </opensilex-Card>
       </div>
 
-      <!-- Colonne 2 : Structure -->
+      <!-- Structure -->
       <div>
         <opensilex-Card :no-footer="true" :label="t('VariableDetails.structure')" icon="bi-clipboard">
           <template #body>
@@ -305,17 +305,23 @@ function getCountDataPromise(variableUri: string) {
 
 // Navigation vers VariablesView pré-filtré
 const ELEMENT_TYPES = {
-  ENTITY: 'ENTITY_TYPE',
-  INTEREST_ENTITY: 'INTEREST_ENTITY_TYPE',
-  CHARACTERISTIC: 'CHARACTERISTIC_TYPE',
-  METHOD: 'METHOD_TYPE',
-  UNIT: 'UNIT_TYPE'
-} as const;
+  ENTITY: 'Entity',
+  INTEREST_ENTITY: 'InterestEntity',
+  CHARACTERISTIC: 'Characteristic',
+  METHOD: 'Method',
+  UNIT: 'Unit'
+} as const
 
-function getPath(elementType: string, uri?: string) {
-  if (route.query.sharedResourceInstance) return undefined;
-  if (!uri) return undefined;
-  return { path: `/variables/?elementType=${elementType}&selected=${encodeURIComponent(uri)}` };
+function getPath (elementType: string, uri?: string) {
+  // pas de lien si on vient d'une instance partagée ou si pas d'URI
+  if (route.query.sharedResourceInstance || !uri) return undefined
+  return {
+    path: '/variables',
+    query: {
+      elementType,         // <- 'Entity' | 'Method' | ...
+      selected: uri        // (pour pré-sélectionner)
+    }
+  }
 }
 
 function getEntityPath() {

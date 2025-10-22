@@ -73,12 +73,26 @@
     border: 1px #c6c6c6 solid;
 }
 
+.displayAndListSelectionCount{
+    position: absolute;
+    right: 0px; /* distance fixe du bord droit */
+    top: 50%;
+    transform: translateY(-50%); /* centrage vertical */
+    display: flex;
+    align-items: center;
+  }
+  
+  .displayAndListSelectionCount *{
+    margin-left: 5px
+  }
+  
+
 /*************************************
 * CARDS
 *************************************/
 .card .card-body .static-field {
     margin-bottom: 0.8em;
-    font-size: 1.1em;
+    font-size: 1.1em; /*passer les 1.1 en 0.9 avec la nouvelle lib ? */
 }
 
 .card .card-body .static-field .static-field-key {
@@ -574,6 +588,18 @@ body.modal-open {
     z-index: 1100;
     width: 56%;
 }
+/* supprime l'espace reservé quand il n'y a pas de message a renvoyer à l'user */
+.documentForm .n-form-item-feedback-wrapper:empty {
+    display: none;
+    min-height: 0;
+    padding-top: 0;
+  }
+  
+  /* on force aussi la min-height à 0 dans ce formulaire par sécurité */
+  .documentForm .n-form-item-feedback-wrapper {
+    min-height: 0;
+    padding-top: 0;
+  }
 
 .greenThemeColor, .n-button.greenThemeColor {
     background-color: #00A38D;

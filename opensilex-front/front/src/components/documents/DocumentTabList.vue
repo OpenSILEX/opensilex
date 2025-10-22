@@ -91,7 +91,7 @@
       :createTitle="t('DocumentTabList.add')"
       :editTitle="t('DocumentTabList.update')"
       modalSize="lg"
-      :initForm="initForm"
+      :data="{ initialTargets}"
       icon="bi#bi-file-text"
       @onCreate="refresh"
       @onUpdate="refresh"
@@ -108,13 +108,19 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { DocumentsService } from '../../../../../opensilex-core/front/src/lib';
 
 const props = defineProps({
-  uri: String,
+  uri: [String, Array] as unknown as () => string | string[] | undefined,
   modificationCredentialId: String,
   search: {
     type: Boolean,
     default: true
   }
 });
+
+ const initialTargets = computed<string[]>(() => {
+   const elementUri = props.uri
+   if (!elementUri) return []
+   return Array.isArray(elementUri) ? elementUri.filter(Boolean) as string[] : [elementUri]
+ })
 
 const emit = defineEmits(['onUpdate']);
 const store = useStore();
@@ -162,21 +168,23 @@ watch(() => props.uri, () => {
 });
 
 function searchDocuments(options) {
-  return service
-    .searchDocuments(
-      undefined,
-      filter.value.title,
-      undefined,
-      props.uri,
-      undefined,
-      undefined,
-      undefined,
-      "false",
-      options.orderBy,
-      options.currentPage,
-      options.pageSize
-    );
+  const target: string | undefined = Array.isArray(props.uri) ? props.uri[0] : props.uri;
+
+  return service.searchDocuments(
+    undefined,
+    filter.value.title,
+    undefined,
+    target,
+    undefined,
+    undefined,
+    undefined,
+    'false',
+    options.orderBy,
+    options.currentPage,
+    options.pageSize
+  );
 }
+
 
 function refresh() {
   tableRef.value?.refresh();
@@ -184,27 +192,6 @@ function refresh() {
 
 function createDocument() {
   documentForm.value?.showCreateForm();
-}
-
-function initForm() {
-  if (props.uri) {
-    return {
-      description: {
-        uri: undefined,
-        identifier: undefined,
-        rdf_type: undefined,
-        title: undefined,
-        date: undefined,
-        description: undefined,
-        targets: decodeURIComponent(props.uri),
-        authors: undefined,
-        language: undefined,
-        deprecated: undefined,
-        keywords: undefined
-      },
-      file: undefined
-    };
-  }
 }
 
 function deprecatedDocument(uri: string) {

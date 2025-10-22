@@ -69,10 +69,15 @@
 
     <!-- Modale de création/édition d’un groupe de variables -->
     <opensilex-VariableGroupCreate
-    ref="variableGroupCreate"
-    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-
+      ref="variableGroupCreate"
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
     />
+
+    <!-- Modale de création/édition d’une entité -->
+    <!-- <opensilex-EntityForm
+      ref="entityForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+    /> -->
 
 
     <!-- Modale d'aide -->
@@ -90,9 +95,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, defineAsyncComponent, nextTick } from 'vue';
+import { ref, computed, inject, defineAsyncComponent, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
+import { useRoute, useRouter } from 'vue-router';
 import { VariablesService, DataService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { useStore } from "vuex";
@@ -107,14 +113,16 @@ const { t } = useI18n();
 const store = useStore();
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
+const route = useRoute();
+const router = useRouter();
 
 // Onglets
 const tabDefinitions = [
   { key: 'variables', labelKey: 'component.menu.variables', component: () => import('./VariableList.vue'), refKey: 'variableList' },
-  { key: 'entities', labelKey: 'VariableView.entity', component: () => import('./agroportal/AgroportalEntityForm.vue'), refKey: 'entityForm' },
-  { key: 'interestEntity', labelKey: 'VariableView.entityOfInterest', component: () => import('./agroportal/AgroportalEntityOfInterestForm.vue'), refKey: 'interestEntityForm' },
-  { key: 'characteristics', labelKey: 'VariableView.characteristic', component: () => import('./agroportal/AgroportalCharacteristicForm.vue'), refKey: 'characteristicForm' },
-  { key: 'methods', labelKey: 'VariableView.method', component: () => import('./agroportal/AgroportalMethodForm.vue'), refKey: 'methodForm' },
+  { key: 'entities', labelKey: 'VariableView.entity', component: () => import('./views/EntitiesView.vue'), refKey: 'entitiesView' },
+  { key: 'interestEntity', labelKey: 'VariableView.entityOfInterest', component: () => import('./views/EntityOfInterestView.vue'), refKey: 'entityOfInterestView' },
+  { key: 'characteristics', labelKey: 'VariableView.characteristic', component: () => import('./views/CharacteristicsView.vue'), refKey: 'characteristicsView' },
+  { key: 'methods', labelKey: 'VariableView.method', component: () => import('./views/MethodView.vue'), refKey: 'methodView' },
   { key: 'units', labelKey: 'VariableView.unit', component: () => import('./agroportal/AgroportalUnitForm.vue'), refKey: 'unitForm' },
   { key: 'groups', labelKey: 'VariableView.groupVariable', component: () => import('./../groupVariable/GroupVariablesView.vue'), refKey: 'groupVariablesView' }
 ];
@@ -204,16 +212,63 @@ const tabRefMap = {
 };
 
 const tabToElementType = {
-  variables: 'VARIABLE_TYPE',
-  entities: 'ENTITY_TYPE',
-  interestEntity: 'INTEREST_ENTITY_TYPE',
-  characteristics: 'CHARACTERISTIC_TYPE',
-  methods: 'METHOD_TYPE',
-  units: 'UNIT_TYPE',
-  groups: 'GROUP_VARIABLE_TYPE'
-};
+  variables: 'Variable',
+  entities: 'Entity',
+  interestEntity: 'InterestEntity',
+  characteristics: 'Characteristic',
+  methods: 'Method',
+  units: 'Unit',
+  groups: 'VariableGroup'
+} as const
 
-const elementType = computed(() => tabToElementType[currentTab.value] || 'VARIABLE_TYPE');
+const elementType = computed(() => tabToElementType[currentTab.value] || 'Variable')
+
+// inverse pour retrouver l’onglet depuis l'rul
+const elementTypeToTab = Object.fromEntries(
+  Object.entries(tabToElementType).map(([key,value]) => [value,key])
+) as Record<string, keyof typeof tabToElementType>
+
+// helper pour modifier l'url d'un onglet à l'autre de façon à supprimer l'elementType selectionné
+const replaceQuerySansSelected = (next: Record<string, any>) => {
+  const { selected, ...rest } = route.query
+  router.replace({ query: { ...rest, ...next } })
+}
+
+
+// écrire elementType dans l'url quand on change d'onglet 
+watch(currentTab, (key) => {
+  const val = tabToElementType[key]
+  const currentEl = typeof route.query.elementType === 'string' ? route.query.elementType : undefined
+
+  if (currentEl === val) {
+    // Changement déclenché par la route (ex: redirection avec ?selected=...)
+    // -> ne touche PAS à `selected`
+    router.replace({ query: { ...route.query, elementType: val } })
+  } else {
+    // Changement d’onglet initié localement
+    // -> on clear `selected`
+    const { selected, ...rest } = route.query
+    router.replace({ query: { ...rest, elementType: val } })
+  }
+})
+
+
+// au montage : si l’URL a déjà elementType, on positionne l’onglet
+const initTabFromQuery = () => {
+  const pathElementType = route.query.elementType as string | undefined
+  if (pathElementType && elementTypeToTab[pathElementType]) {
+    currentTab.value = elementTypeToTab[pathElementType]
+  }
+}
+initTabFromQuery()
+
+// si l’utilisateur navigue dans l’historique
+watch(() => route.query.elementType, (pathElementType) => {
+  if (typeof pathElementType === 'string' && elementTypeToTab[pathElementType] && currentTab.value !== elementTypeToTab[pathElementType]) {
+    currentTab.value = elementTypeToTab[pathElementType]
+  }
+})
+
 
 
 function showCreateForm() {

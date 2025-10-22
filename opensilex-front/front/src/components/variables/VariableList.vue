@@ -804,7 +804,7 @@ function* globalSelectedUrisFast(): Generator<string> {
   }
 }
 
-/** Variante “vraiment toutes les URIs” (si besoin d’un bulk côté serveur) */
+/** Variante “vraiment toutes les URIs”*/
 async function fetchAllVariableUris(): Promise<string[]> {
   const uris: string[] = []
   const pageSize = 500
@@ -1220,18 +1220,6 @@ defineExpose({
   gap: 0 !important; /* espace entre boutons */
 }
 
-.displayAndListSelectionCount{
-  position: absolute;
-  right: 0px; /* distance fixe du bord droit */
-  top: 50%;
-  transform: translateY(-50%); /* centrage vertical */
-  display: flex;
-  align-items: center;
-}
-
-.displayAndListSelectionCount *{
-  margin-left: 5px
-}
 
 .filtersNotCollapsed {
   margin-left: 55px

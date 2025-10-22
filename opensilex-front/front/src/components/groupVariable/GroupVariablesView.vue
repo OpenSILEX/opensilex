@@ -76,12 +76,12 @@
         </template>
       </opensilex-Card>
       
-    <opensilex-DocumentTabList
-      v-if="selected && selected.uri"
-      :selected="selected"
-      :uri="[selected.uri]"
-      :search=false
-    ></opensilex-DocumentTabList>
+      <opensilex-DocumentTabList
+        v-if="selected && selected.uri"
+        :selected="selected"
+        :uri="[selected.uri]"
+        :search="false"
+      ></opensilex-DocumentTabList>
     </div>
 
 
@@ -236,30 +236,9 @@ function closeForm() {
 const searchElements = async (filter = ''): Promise<NamedResourceDTO[]> => {
   const orderBy = ['name=asc'];
   let response: HttpResponse<OpenSilexResponse<NamedResourceDTO[]>>;
+  
+    response = await service.searchVariablesGroups(filter, undefined, orderBy);
 
-  switch (props.elementType) {
-    case 'ENTITY_TYPE':
-      response = await service.searchEntities(filter, orderBy);
-      break;
-    case 'INTEREST_ENTITY_TYPE':
-      response = await service.searchInterestEntity(filter, orderBy);
-      break;
-    case 'CHARACTERISTIC_TYPE':
-      response = await service.searchCharacteristics(filter, orderBy);
-      break;
-    case 'METHOD_TYPE':
-      response = await service.searchMethods(filter, orderBy);
-      break;
-    case 'UNIT_TYPE':
-      response = await service.searchUnits(filter, orderBy);
-      break;
-    case 'GROUP_VARIABLE_TYPE':
-      response = await service.searchVariablesGroups(filter, undefined, orderBy);
-      break;
-    default:
-      response = await service.searchEntities(filter, orderBy);
-      break;
-  }
 console.log("responsey ", response)
   return response.response.result;
 };

@@ -393,8 +393,14 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getDeleteBuilder(graph, instance);
     }
 
-    public UpdateBuilder getDeleteBuilderForUpdate(List<URI> urisToDelete, URI graph) throws Exception {
-        return classQueryBuilder.getDeleteBuilderForUpdateCases(urisToDelete, graph);
+    //TODO MAX add javadoc
+    public UpdateBuilder getDeleteBuilderForUpdate(List<URI> urisToDelete, URI graph, List<URI> extraExcludedProperties) throws Exception {
+        return classQueryBuilder.getDeleteBuilderForUpdateCases(urisToDelete, graph, extraExcludedProperties);
+    }
+
+    //TODO MAX add javadoc
+    public UpdateBuilder getDeletePropertyForValuesDeleteBuilder(Property property, List<URI> values, URI graph) throws Exception {
+        return classQueryBuilder.getDeletePropertyForValuesDeleteBuilder(property, graph, values);
     }
 
     public URI getURI(Object instance) {

@@ -25,6 +25,8 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     public static final String PREFIX = "so";
     public static final String GENERATION_PREFIX = "so-";
 
+    public ScientificObjectModel(){}
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf",

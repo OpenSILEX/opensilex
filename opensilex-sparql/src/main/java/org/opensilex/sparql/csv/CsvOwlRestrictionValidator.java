@@ -78,7 +78,7 @@ public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellV
 
     /**
      *
-     * Performs validations on the value of a cell
+     * Performs validations on the value of a cell, adds value to model if it is valid.
      */
     protected void validateCsvValue(int rowIdx, int colIdx, ClassModel classModel, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction) {
         validateModelRelation(graph, classModel, model, property, value, restriction, () -> {

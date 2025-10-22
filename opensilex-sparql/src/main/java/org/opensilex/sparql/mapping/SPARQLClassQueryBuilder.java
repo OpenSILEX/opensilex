@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -383,7 +384,7 @@ class SPARQLClassQueryBuilder {
         }, false);
 
     }
-
+//TODO add javadoc for new prop
     /**
      * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued once, whatever the graph they are stored in.
      * Useful for update operations where dc:publisher and dc:issued should not be updated.
@@ -391,14 +392,18 @@ class SPARQLClassQueryBuilder {
      * Filter will be : FILTER (?p NOT IN (dc:publisher, dc:issued))
      * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, List, URI) to see the generated query example
      */
-    public UpdateBuilder getDeleteBuilderForUpdateCases(List<URI> urisToDelete, URI graph) throws Exception {
-        List<URI> excludedPredicates = List.of(
+    public UpdateBuilder getDeleteBuilderForUpdateCases(List<URI> urisToDelete, URI graph, List<URI> extraExcludedProperties) throws Exception {
+        List<URI> excludedPredicates = new ArrayList<>(List.of(
                 URI.create("http://purl.org/dc/terms/publisher"),
                 URI.create("http://purl.org/dc/terms/issued")
-        );
+        ));
+        if(!CollectionUtils.isEmpty(extraExcludedProperties)){
+            excludedPredicates.addAll(extraExcludedProperties);
+        }
         return getDeleteBuilder(urisToDelete, excludedPredicates, graph);
     }
 
+    //TODO MAX update javadoc if my thing works
     /**
      * Delete all triples related to the given urisToDelete, except those with a predicate included in 'excludedPredicates' ,whatever the graph they are stored in.
      * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handle short and long uris.
@@ -441,12 +446,8 @@ class SPARQLClassQueryBuilder {
         Triple relation = new  Triple(uriVar, predicateVar, objectVar);
         Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
 
-        //WhereBuilder insideGraphDelete = new WhereBuilder();
-
         delete.addDelete((graphObject != null ? graphObject : graphVar), relation);
         delete.addDelete((graphObject != null ? graphObject : graphVar), inverseRelation);
-        //delete.addGraph((graphObject != null ? graphObject : graphVar), insideGraphDelete);
-
 
         WhereBuilder globalWhere = new WhereBuilder();
 
@@ -454,9 +455,10 @@ class SPARQLClassQueryBuilder {
 
         WhereBuilder graphsBlock = new WhereBuilder();
 
-        //graph to delete relations
+        //graph to delete relations and inverse relations
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
+        graphSubquery.addWhere(inverseRelation);
 
         //not delete excluded predicates
         if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
@@ -467,7 +469,49 @@ class SPARQLClassQueryBuilder {
         graphsBlock.addGraph((graphObject != null ? graphObject : graphVar), graphSubquery);
 
         //graph to delete inverse relations
-        graphsBlock.addUnion(new WhereBuilder().addGraph((graphObject != null ? graphObject : graphVar), inverseRelation));
+        //TODO Max delete if works
+        //graphsBlock.addUnion(new WhereBuilder().addGraph((graphObject != null ? graphObject : graphVar), inverseRelation));
+
+        globalWhere.addWhere(graphsBlock);
+        delete.addWhere(globalWhere);
+
+        return delete;
+    }
+
+    //TODO Max add javadoc
+    public UpdateBuilder getDeletePropertyForValuesDeleteBuilder(Property predicate, URI graph, List<URI> values){
+        UpdateBuilder delete = new UpdateBuilder();
+        if (CollectionUtils.isEmpty(values)) {
+            return delete;
+        }
+
+        Var uriVar = makeVar("uriToDelete");
+        Var subjectVar = makeVar("s");
+        Var objectVar = makeVar("o");
+        Var graphVar = makeVar("g");
+        Node graphObject = null;
+        if(graph != null){
+            graphObject = SPARQLDeserializers.nodeURI(graph);
+        }
+
+        Triple relation = new  Triple(uriVar, predicate.asNode(), objectVar);
+        Triple inverseRelation = new Triple(subjectVar, predicate.asNode(), uriVar);
+
+        delete.addDelete((graphObject != null ? graphObject : graphVar), relation);
+        delete.addDelete((graphObject != null ? graphObject : graphVar), inverseRelation);
+
+        WhereBuilder globalWhere = new WhereBuilder();
+
+        globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, values));
+
+        WhereBuilder graphsBlock = new WhereBuilder();
+
+        //graph to delete relations and inverse relations
+        WhereBuilder graphSubquery = new WhereBuilder();
+        graphSubquery.addWhere(relation);
+        graphSubquery.addWhere(inverseRelation);
+
+        graphsBlock.addGraph((graphObject != null ? graphObject : graphVar), graphSubquery);
 
         globalWhere.addWhere(graphsBlock);
         delete.addWhere(globalWhere);

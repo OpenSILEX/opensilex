@@ -1237,16 +1237,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    //TODO Max add javadoc to my extraexcluded prop if it works, say that it should not include publisher and things
     /**
      * create instances without publication date and publisher (for update use case).
      */
-    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances, Node graph) throws Exception {
+    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances, Node graph, List<String> extraFieldsToExclude) throws Exception {
         if (instances.isEmpty()) { return; }
 
         OffsetDateTime now = OffsetDateTime.now();
         instances.forEach(instance -> instance.setLastUpdateDate(now));
 
-        List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
+        List<String> fieldsToExclude = new ArrayList<>(List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD));
+        fieldsToExclude.addAll(extraFieldsToExclude);
         create(graph, instances, null, false, false, fieldsToExclude);
     }
 
@@ -1431,9 +1433,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if ( ! autoupdateFields.isEmpty()){ // we have some autoupdate fields, so we load old instances
             return loadListByURIs(mapper.getObjectClass(), instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toCollection(ArrayList::new)), getDefaultLang());
         }
+        return Collections.emptyList();
 
-
-        HashSet<URI> neededInstances = new HashSet<>();
+//TODO MAX delete or leave clean comment and todo if my temp way works
+        /*HashSet<URI> neededInstances = new HashSet<>();
         List<Field> ignoreUpdateIfNullFields = mapper.getIgnoreUpdateIfNullFields();
         for (T instance : instances) {
             for (Field field : ignoreUpdateIfNullFields) {
@@ -1444,12 +1447,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }
             }
 
-            if (mapper.getClassAnalyzer().isHandleCustomProperties()) {
+            //TODO MAX ask Yvan why do we need old instances when we have custom props
+            *//*if (mapper.getClassAnalyzer().isHandleCustomProperties()) {
                 neededInstances.add(instance.getUri());
-            }
-        }
+            }*//*
+        }*/
 
-        return loadListByURIs(graph, mapper.getObjectClass(), neededInstances, getDefaultLang(), null, null);
+        //return loadListByURIs(graph, mapper.getObjectClass(), neededInstances, getDefaultLang(), null, null);
     }
 
     private <T extends SPARQLResourceModel> void updateAutoUpdateFields(SPARQLClassObjectMapper<T> mapper, T oldInstance, T instance) throws Exception {
@@ -1604,6 +1608,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             updateAutoUpdateFields(mapper, oldInstance, instance);
     }
 
+    //TODO MAX update javadoc
     /**
      * Update instances by deleting and re-creating them.
      * This method handle autoUpdate and IgnoreUpdateIfNull annotations on fields.
@@ -1636,7 +1641,40 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
             List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper, graph);
 
-            deleteForUpdate(objectClass, instances.stream().map(SPARQLResourceModel::getUri).toList(), new URI(graph.getURI()));
+            //Fetch ignoreUpdateIfNull fields to exclude all deletions of these properties
+            List<Field> ignoreUpdateIfNullFields = mapper.getIgnoreUpdateIfNullFields();
+
+            //Main delete for update, don't delete ignoreUpdateIfNull fields.
+            deleteForUpdate(
+                    objectClass,
+                    instances.stream().map(SPARQLResourceModel::getUri).toList(),
+                    new URI(graph.getURI()),
+                    ignoreUpdateIfNullFields.stream().map(field -> URI.create(mapper.getFieldProperty(field).getURI())).toList()
+            );
+
+            //Set up deletion of triplets concerning this property by putting things in maps
+            Map<String, List<URI>> modifiedValuesPerProperty = new HashMap<>();
+            Map<String, Property> propertyPerPropertyUri = new HashMap<>();
+            ignoreUpdateIfNullFields.forEach(field -> {
+                Property property = mapper.getFieldProperty(field);
+                String propertyUri = SPARQLDeserializers.getShortURI(property.getURI());
+                propertyPerPropertyUri.put(propertyUri, property);
+            });
+            instances.forEach(instance ->{
+                ignoreUpdateIfNullFields.forEach(field -> {
+                    if(mapper.getFieldValue(instance, field) != null){
+                        Property property = mapper.getFieldProperty(field);
+                        String propertyUri = SPARQLDeserializers.getShortURI(property.getURI());
+                        modifiedValuesPerProperty.computeIfAbsent(propertyUri, key -> new ArrayList<>()).add(instance.getUri());
+                    }
+                });
+            });
+
+            //Delete triplets concerning each ignoreUpdateIfNull property, only when the value for this property was not null.
+            Node finalGraph = graph;
+            modifiedValuesPerProperty.forEach((key, value) -> {
+                this.deletePrimitivesForUris(finalGraph, value, propertyPerPropertyUri.get(key));
+            });
 
             for (T oldInstance : oldInstances) {
                 T instance = instances.stream()
@@ -1647,7 +1685,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 updateFields(instance, oldInstance);
             }
 
-            createForUpdate(instances, graph);
+            //Main create for update, do not create any ignoreUpdateIfNull triplets
+            createForUpdate(instances, graph, ignoreUpdateIfNullFields.stream().map(Field::getName).toList());
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);
@@ -1662,16 +1701,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         update(instances, null);
     }
 
+    //TODO MAX update javadoc if works
     /**
      * WARNING : this deletes method does not use the deleteCascade Sparql annotation AND does not delete dc:publisher and dc:issued relations.
      * Usefully for updates, dangerous for simple delete.
      * @param graph the graph onto instance are deleted, if null search in all graphs
      */
-    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<URI> uris, URI graph) throws Exception {
+    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<URI> uris, URI graph, List<URI> extraExcludedFields) throws Exception {
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(uris, graph);
+        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(uris, graph, extraExcludedFields);
         executeDeleteQuery(query);
     }
+
+    //TODO MAX add javadoc NO delete
+    /*private  <T extends SPARQLResourceModel> void deletePropertyValuesForUris(Class<T> objectClass, Property property, List<URI> values, URI graph) throws Exception {
+        SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
+        UpdateBuilder query = mapper.getDeletePropertyForValuesDeleteBuilder(property, values, graph);
+
+        executeDeleteQuery(query);
+    }*/
 
     public <T extends SPARQLResourceModel> void delete(Class<T> objectClass, URI uri) throws Exception {
         delete(getDefaultGraph(objectClass), objectClass, uri);
@@ -2517,6 +2565,41 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(delete);
     }
 
+    //TODO MAX add javadoc
+    public void deletePrimitivesForUris(Node graph, List<URI> uris, Property property){
+        if (CollectionUtils.isEmpty(uris)) {
+            return;
+        }
+
+        UpdateBuilder delete = new UpdateBuilder();
+        Var uriVar = makeVar("uriToDelete");
+        Var subjectVar = makeVar("s");
+        Var objectVar = makeVar("o");
+        Var graphVar = makeVar("g");
+
+        Triple relation = new  Triple(uriVar, property.asNode(), objectVar);
+        Triple inverseRelation = new Triple(subjectVar, property.asNode(), uriVar);
+
+        delete.addDelete((graph != null ? graph : graphVar), relation);
+        delete.addDelete((graph != null ? graph : graphVar), inverseRelation);
+
+        WhereBuilder globalWhere = new WhereBuilder();
+
+        globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
+
+        WhereBuilder graphsBlock = new WhereBuilder();
+
+        //graph to delete relations and inverse relations
+        WhereBuilder graphSubquery = new WhereBuilder();
+        graphSubquery.addWhere(relation);
+        graphSubquery.addWhere(inverseRelation);
+
+        graphsBlock.addGraph((graph != null ? graph : graphVar), graphSubquery);
+
+        globalWhere.addWhere(graphsBlock);
+        delete.addWhere(globalWhere);
+    }
+
     public void deleteRelations(Node graph, URI uri, Set<URI> properties) throws SPARQLException {
 
         Node subjectUri = SPARQLDeserializers.nodeURI(uri);
@@ -2533,6 +2616,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         executeDeleteQuery(delete);
     }
+
+    //TODO MAX just delete all the pass plats and put the query here its practically same as delete relations
 
     public List<URI> getRdfTypes(URI uri, Node graph) throws SPARQLException {
 

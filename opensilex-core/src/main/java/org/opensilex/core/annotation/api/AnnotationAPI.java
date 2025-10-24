@@ -24,6 +24,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -59,6 +60,7 @@ public class AnnotationAPI {
 
     @Inject
     private SPARQLService sparql;
+    private MongoDBService nosql;
 
     @CurrentUser
     AccountModel currentUser;
@@ -79,7 +81,7 @@ public class AnnotationAPI {
     public Response createAnnotation(@Valid AnnotationCreationDTO dto) throws Exception {
 
         try {
-            AnnotationDAO dao = new AnnotationDAO(sparql);
+            AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
             AnnotationModel model = dto.newModel();
             model.setPublisher(currentUser.getUri());
 
@@ -106,7 +108,7 @@ public class AnnotationAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateAnnotation(@ApiParam("Annotation description") @Valid AnnotationUpdateDTO dto) throws Exception {
 
-        AnnotationDAO dao = new AnnotationDAO(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
         dao.update(dto.newModel());
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
@@ -128,7 +130,7 @@ public class AnnotationAPI {
     public Response deleteAnnotation(
             @ApiParam(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        AnnotationDAO dao = new AnnotationDAO(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -138,23 +140,37 @@ public class AnnotationAPI {
     @ApiOperation("Get an annotation")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
-            @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
+        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
+        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this annotation", response = ErrorResponse.class),
+        @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAnnotation(
-            @ApiParam(value = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
-    ) throws Exception {
-        AnnotationDAO dao = new AnnotationDAO(sparql);
+        public Response getAnnotation(
+                @ApiParam(value = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
+        AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
+        
+        // Check user access rights
+        switch (dao.checkAccess(uri, currentUser)) {
+                case UNAUTHORIZED:
+                return new ErrorResponse(Response.Status.UNAUTHORIZED, "Unauthorized", "User is not authenticated").getResponse();
+                case FORBIDDEN:
+                return new ErrorResponse(Response.Status.FORBIDDEN, "Forbidden", "User does not have access to this annotation").getResponse();
+                case NOT_FOUND:
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Annotation not found", "Unknown annotation URI: " + uri).getResponse();
+        }
+        
         AnnotationModel model = dao.get(uri, currentUser);
+        
         if (model == null) {
-            throw new NotFoundURIException(uri);
+                throw new NotFoundURIException(uri);
         }
 
         AnnotationGetDTO dto = new AnnotationGetDTO(model);
         return new SingleObjectResponse<>(dto).getResponse();
-    }
+        }
 
     @GET
     @Path("/motivations")
@@ -172,7 +188,7 @@ public class AnnotationAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        AnnotationDAO dao = new AnnotationDAO(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
 
         ListWithPagination<MotivationModel> resultList = dao.searchMotivations(
                 namePattern,
@@ -207,7 +223,7 @@ public class AnnotationAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        AnnotationDAO dao = new AnnotationDAO(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
 
         ListWithPagination<AnnotationModel> resultList = dao.search(
                 descriptionPattern,
@@ -217,7 +233,8 @@ public class AnnotationAPI {
                 currentUser.getLanguage(),
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser
         );
 
         ListWithPagination<AnnotationGetDTO> resultDTOList = resultList.convert(
@@ -240,8 +257,8 @@ public class AnnotationAPI {
     public Response countAnnotations(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
-        AnnotationDAO dao = new AnnotationDAO(sparql);
-        int annotationCount = dao.countAnnotations(target);
+        AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
+        int annotationCount = dao.countAnnotations(target, currentUser);
 
         return new SingleObjectResponse<>(annotationCount).getResponse();
     }

@@ -34,7 +34,7 @@ class SPARQLProxyLabel extends SPARQLProxy<SPARQLLabel> {
 
     @Override
     protected SPARQLLabel loadData() throws Exception {
-        Map<String, String> translations = service.getTranslations(graph, resourceURI, labelProperty, reverseRelation);
+        Map<String, String> translations = service.getTranslations(resourceURI, labelProperty, reverseRelation);
         translations.remove(lang);
         SPARQLLabel label = new SPARQLLabel(defaultValue, lang);
         label.setTranslations(translations);

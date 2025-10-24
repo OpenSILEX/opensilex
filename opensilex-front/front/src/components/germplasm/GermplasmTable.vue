@@ -468,7 +468,7 @@ export default class GermplasmTable extends Vue {
           '<span class="requiredOnCondition">*</span>',
       field: "species",
       visible: true,
-      editor: "list",
+      editor: true,
     };
     let varietyCol = {
       title:
@@ -512,7 +512,7 @@ export default class GermplasmTable extends Vue {
     };
     let isPublicCol = {
       title:this.$t("GermplasmTable.is_public"),
-      field: this.$t("GermplasmTable.is_public"),
+      field: "is_public",
       visible: true,
       editor: "select",
       editorParams:{
@@ -902,7 +902,8 @@ export default class GermplasmTable extends Vue {
       if (
           dataToInsert[idx].is_public != null &&
           dataToInsert[idx].is_public != ""
-        ) {
+        )  form.is_public = true; // default value
+      else {
           form.is_public = dataToInsert[idx].is_public;
         }
 

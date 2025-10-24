@@ -115,8 +115,8 @@
               ></opensilex-LabelUriView>
 
               <opensilex-UriListView
-                v-if="(germplasm.groups_users.length > 0)"
-                label="GermplasmDetails.groups_users"
+                v-if="(germplasm.groups.length > 0)"
+                label="GermplasmDetails.groups"
                 :list="groupsList"
               ></opensilex-UriListView>
 
@@ -361,7 +361,7 @@ export default class GermplasmDetails extends Vue {
     has_parent_germplasm_m: [],
     has_parent_germplasm_f: [],
     synonyms: [],
-    groups_users : []
+    groups : []
   };
 
   created() {
@@ -418,9 +418,9 @@ export default class GermplasmDetails extends Vue {
       "opensilex.SecurityService"
     );
     this.groupsList = [];
-    if (this.germplasm.groups_users && this.germplasm.groups_users.length > 0) {
+    if (this.germplasm.groups && this.germplasm.groups.length > 0) {
       service
-        .getGroupsByURI(this.germplasm.groups_users)
+        .getGroupsByURI(this.germplasm.groups)
         .then((http: HttpResponse<OpenSilexResponse<GroupDTO[]>>) => {
           this.groupsList = http.response.result.map((group) => {
             return {
@@ -567,7 +567,7 @@ en:
     parentM: Male parents
     parentF: Female parents
     is_public: Public
-    groups_users : Groups
+    groups: Groups
 
 fr:
   GermplasmDetails:
@@ -596,7 +596,7 @@ fr:
     parent: Parents
     parentM: Parents mâle
     parentF: Parents femelles
-    is_public : Public
-    groups_users : Groupes
+    is_public: Public
+    groups: Groupes
 
 </i18n>

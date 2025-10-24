@@ -174,8 +174,8 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
             ontology = SecurityOntology.class,
             property = "hasGroup"
     )
-    List<GroupModel> groupsUsers;
-    public static final String GROUP_USER_FIELD = "groupsUsers";
+    List<GroupModel> groups;
+    public static final String GROUP_USER_FIELD = "groups";
 
     public SPARQLLabel getLabel() {
         return label;
@@ -232,11 +232,11 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     }
 
 
-    public List<GroupModel> getGroupsUsers() {
-        return this.groupsUsers;
+    public List<GroupModel> getGroups() {
+        return this.groups;
     }
-    public void setGroupsUsers(List<GroupModel> groupsUsers) {
-        this.groupsUsers = groupsUsers;    }
+    public void setGroups(List<GroupModel> groups) {
+        this.groups = groups;    }
     
     public String getComment() {
         return comment;

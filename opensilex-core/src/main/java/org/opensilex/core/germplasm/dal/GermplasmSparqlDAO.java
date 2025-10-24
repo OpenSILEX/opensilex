@@ -103,30 +103,29 @@ public class GermplasmSparqlDAO {
     }
 
     /**
-     * Recherche paginée de {@link GermplasmModel} selon les critères d’un {@link GermplasmSearchFilter}.
+     * Paginated search of {@link GermplasmModel} according to the criteria of a {@link GermplasmSearchFilter}.
      * <p>
-     * Applique des filtres SPARQL (nom, espèce, variété, accession, institut, visibilité, groupes, etc.)
-     * et gère la pagination ainsi que le tri. Si {@code fetchNestedObjects} est activé, les relations
-     * parentes (maternelles, paternelles, générales) sont également chargées. Les synonymes sont enrichis
-     * via un {@link SPARQLListFetcher}.
+     * Applies SPARQL filters (name, species, variety, accession, institute, visibility, groups, etc.)
+     * and handles pagination and sorting. If {@code fetchNestedObjects} is enabled, parent
+     * relationships (maternal, paternal, general) are also loaded. Synonyms are enriched
+     * via a {@link SPARQLListFetcher}.
      * </p>
      *
-     * @param searchFilter critères de recherche (filtres, pagination, tri, droits d’accès)
-     * @param fetchNestedObjects {@code true} pour charger aussi les relations parentes
-     * @return liste paginée de {@link GermplasmModel} correspondant aux critères
-     * @throws Exception en cas d’erreur lors de l’exécution de la requête SPARQL
+     * @param searchFilter        search criteria (filters, pagination, sorting, access rights)
+     * @param fetchNestedObjects  {@code true} to also load parent relationships
+     * @return a paginated list of {@link GermplasmModel} matching the criteria
+     * @throws Exception if an error occurs during the execution of the SPARQL query
      */
 
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchNestedObjects) throws Exception {
 
-        // Récupération des infos directement depuis le searchFilter
+        // retrieve information directly from the searchFilter
         Boolean isPublic = searchFilter.isPublic();
-        List<URI> groupsUsers = searchFilter.getGroupsUsers();
+        List<URI> groups = searchFilter.getGroups();
         boolean admin = searchFilter.getUser() != null && searchFilter.getUser().isAdmin();
 
-        // Puis on peut garder la logique existante en utilisant ces valeurs locales
         final Set<URI> filteredUris = new HashSet<>();
         if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
             filteredUris.addAll(searchFilter.getUris());
@@ -157,7 +156,7 @@ public class GermplasmSparqlDAO {
                     appendParentFilter(select, searchFilter.getParentGermplasms());
                     appendUserGermplasmFilter(select, searchFilter.getUser());
                     appendPublicFilter(select, isPublic);
-                    appendgroupsListFilters(select, admin, groupsUsers);
+                    appendgroupsListFilters(select, admin, groups);
                     appendExperimentFilter(select, finalExperiment);
 
                     initialSelect.set(select);
@@ -337,22 +336,22 @@ public class GermplasmSparqlDAO {
     }
 
     /**
-     * Vérifie qu’un utilisateur a accès à un germplasm donné.
+     * Checks whether a user has access to a given germplasm.
      * <p>
-     * - Si l’URI n’existe pas, une {@link NotFoundURIException} est levée. <br>
-     * - Si l’utilisateur est administrateur, l’accès est toujours autorisé. <br>
-     * - Sinon, l’accès est accordé uniquement si le germplasm est :
+     * - If the URI does not exist, a {@link NotFoundURIException} is thrown. <br>
+     * - If the user is an administrator, access is always granted. <br>
+     * - Otherwise, access is granted only if the germplasm is:
      *   <ul>
      *     <li>public,</li>
-     *     <li>lié à un groupe auquel appartient l’utilisateur,</li>
-     *     <li>ou publié par cet utilisateur.</li>
+     *     <li>linked to a group the user belongs to,</li>
+     *     <li>or published by the user.</li>
      *   </ul>
      * </p>
      *
-     * @param germplasmURI URI du germplasm à valider
-     * @param user         utilisateur demandant l’accès
-     * @throws NotFoundURIException si le germplasm n’existe pas
-     * @throws Exception            si une erreur survient lors de la construction ou exécution de la requête SPARQL
+     * @param germplasmURI URI of the germplasm to validate
+     * @param user         user requesting access
+     * @throws NotFoundURIException if the germplasm does not exist
+     * @throws Exception            if an error occurs during the construction or execution of the SPARQL query
      */
 
     public void validateGermplasmAccess(URI germplasmURI, AccountModel user) throws Exception {
@@ -430,20 +429,20 @@ public class GermplasmSparqlDAO {
     }
 
     /**
-     * Ajoute au {@link SelectBuilder} les filtres SPARQL liés aux droits d’accès d’un utilisateur.
+     * Adds SPARQL filters related to a user's access rights to the {@link SelectBuilder}.
      * <p>
-     * Si l’utilisateur est {@code null} ou administrateur, aucun filtre n’est ajouté.
-     * Sinon, le germplasm est accessible si :
+     * If the user is {@code null} or an administrator, no filters are added.
+     * Otherwise, the germplasm is accessible if:
      * <ul>
-     *   <li>l’utilisateur appartient à un groupe lié au germplasm,</li>
-     *   <li>le germplasm est marqué comme public,</li>
-     *   <li>ou l’utilisateur est le publisher du germplasm.</li>
+     *   <li>the user belongs to a group linked to the germplasm,</li>
+     *   <li>the germplasm is marked as public,</li>
+     *   <li>or the user is the publisher of the germplasm.</li>
      * </ul>
      * </p>
      *
-     * @param select requête SPARQL en construction
-     * @param user   utilisateur courant (ou {@code null})
-     * @throws Exception en cas d’erreur de construction du filtre
+     * @param select SPARQL query being constructed
+     * @param user   current user (or {@code null})
+     * @throws Exception if an error occurs while constructing the filter
      */
 
     public static void appendUserGermplasmFilter(SelectBuilder select, AccountModel user) throws Exception {
@@ -582,22 +581,21 @@ public class GermplasmSparqlDAO {
     }
 
     /**
-     * Ajoute au {@link SelectBuilder} les filtres SPARQL liés aux groupes de l’utilisateur.
+     * Adds SPARQL filters related to the user's groups to the {@link SelectBuilder}.
      * <p>
-     * - Si {@code admin} est vrai : aucun filtre n’est appliqué (accès complet). <br>
-     * - Si l’utilisateur n’a aucun groupe : seuls les germplasms sans groupe (publics) sont visibles. <br>
-     * - Sinon : les germplasms visibles sont ceux publics ou liés à l’un des groupes de l’utilisateur.
+     * - If {@code admin} is true: no filter is applied (full access). <br>
+     * - If the user has no groups: only germplasms without groups (public) are visible. <br>
+     * - Otherwise: visible germplasms are those that are public or linked to one of the user's groups.
      * </p>
      *
-     * @param select      requête SPARQL en construction
-     * @param admin       indique si l’utilisateur est administrateur
-     * @param groupsUsers liste des groupes auxquels appartient l’utilisateur (peut être vide)
+     * @param select      SPARQL query being constructed
+     * @param admin       indicates whether the user is an administrator
+     * @param groups list of groups the user belongs to (can be empty)
      */
 
-    private void appendgroupsListFilters(SelectBuilder select, boolean admin, List<URI> groupsUsers) {
+    private void appendgroupsListFilters(SelectBuilder select, boolean admin, List<URI> groups) {
 
         if (admin) {
-            // Admin : pas de filtre
             return;
         }
 
@@ -605,15 +603,15 @@ public class GermplasmSparqlDAO {
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
         Triple groupTriple = new Triple(makeVar(GermplasmModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
 
-        // Expression : ressources sans groupe (donc publiques)
+        // resources without a group (i.e., public)
         Expr publicExpr = exprFactory.notexists(new WhereBuilder().addWhere(groupTriple));
 
-        if (CollectionUtils.isEmpty(groupsUsers)) {
-            // L'utilisateur n'a aucun groupe → il ne peut voir que les publics
+        if (CollectionUtils.isEmpty(groups)) {
+            // user has no groups → can only see public resources
             select.addFilter(publicExpr);
         } else {
-            // Ressources associées à ses groupes
-            Expr groupInExpr = exprFactory.in(groupVar, groupsUsers.stream()
+            // resources associated with the user's groups
+            Expr groupInExpr = exprFactory.in(groupVar, groups.stream()
                     .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
                     .toArray());
 
@@ -621,41 +619,8 @@ public class GermplasmSparqlDAO {
                     .addWhere(groupTriple)
                     .addFilter(groupInExpr));
 
-            // Filtre combiné : public OU dans ses groupes
+            // combined filter: public OR in the user's groups
             select.addFilter(exprFactory.or(publicExpr, groupExpr));
-        }
-    }
-
-    // ancienne signature
-    private void appendgroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groupsUsers) {
-
-        if (admin) {
-            // add no filter on groupsUsers for the admin
-            return;
-        }
-        Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        Triple groupTriple = new Triple(makeVar(GermplasmModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
-
-        if (CollectionUtils.isEmpty(groupsUsers) || (isPublic != null && isPublic)) {
-            // get germplasm without any group
-            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(groupTriple)));
-
-        } else {
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-
-            // get germplasm with no group specified or in the given list
-            ElementGroup rootFilteringElem = new ElementGroup();
-            ElementGroup optionals = new ElementGroup();
-            optionals.addTriplePattern(groupTriple);
-
-            Expr boundExpr = exprFactory.not(exprFactory.bound(groupVar));
-            Expr groupInUrisExpr = exprFactory.in(groupVar, groupsUsers.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            rootFilteringElem.addElement(new ElementOptional(optionals));
-            rootFilteringElem.addElementFilter(new ElementFilter(SPARQLQueryHelper.or(boundExpr, groupInUrisExpr)));
-            select.getWhereHandler().getClause().addElement(rootFilteringElem);
         }
     }
 

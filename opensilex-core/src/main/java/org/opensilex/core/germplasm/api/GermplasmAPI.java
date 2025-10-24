@@ -342,30 +342,6 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
-//    public Response getGermplasmsByURI(
-//            @ApiParam(value = "Germplasms URIs") List<URI> uris
-//    ) throws Exception {
-//
-//        GermplasmSearchFilter filter = new GermplasmSearchFilter();
-//        filter.setLang(currentUser.getLanguage());
-//        filter.setUris(uris);
-//
-//        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false,true,false, false).getList();
-//
-//    if (!models.isEmpty()) {
-//            List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
-//            models.forEach(result -> resultDTOList.add(GermplasmGetAllDTO.fromModel(result)));
-//
-//            return new PaginatedListResponse<>(resultDTOList).getResponse();
-//        } else {
-//            // Otherwise return a 404 - NOT_FOUND error response
-//            return new ErrorResponse(
-//                    Response.Status.NOT_FOUND,
-//                    "Germplasm not found",
-//                    "Unknown germplasm URIs"
-//            ).getResponse();
-//        }
-//    }
 
     public Response getGermplasmsByURI(
             @ApiParam(value = "Germplasms URIs") List<URI> uris
@@ -482,37 +458,38 @@ public class GermplasmAPI {
     }
 
     /**
-     * Recherche et retourne une liste paginée de germplasms selon différents critères.
+     * Searches and returns a paginated list of germplasms based on various criteria.
      * <p>
-     * Les filtres disponibles incluent : URI, type RDF, nom/synonymes, code, espèce,
-     * variété, accession, institut, expérience associée, parents (A, B ou les deux),
-     * année de production, groupe, métadonnées et visibilité (public/privé).
+     * Available filters include: URI, RDF type, name/synonyms, code, species,
+     * variety, accession, institute, related experiment, parents (A, B, or both),
+     * production year, group, metadata, and visibility (public/private).
      * <br>
-     * Les résultats peuvent être triés, paginés et adaptés à la langue de l’utilisateur courant.
+     * Results can be sorted, paginated, and adapted to the language of the current user.
      * </p>
      *
-     * @param uri              filtre regex sur l’URI du germplasm
-     * @param type             type RDF du germplasm
-     * @param name             regex sur le nom ou les synonymes
-     * @param code             regex sur le code interne
-     * @param productionYear   année de production
-     * @param species          espèce du germplasm
-     * @param variety          variété du germplasm
-     * @param accession        accession du germplasm
-     * @param group            groupe lié au germplasm
-     * @param institute        institut ou organisme associé
-     * @param experiment       expérience liée
-     * @param parentGermplasms liste des germplasms parents (A ou B)
-     * @param parentGermplasmsM parents du type A (maternel)
-     * @param parentGermplasmsF parents du type B (paternel)
-     * @param metadata         métadonnées associées
-     * @param isPublic         visibilité : public ({@code true}) ou privé ({@code false})
-     * @param orderByList      critères de tri (ex : "uri=asc", "name=desc")
-     * @param page             numéro de page (≥ 0)
-     * @param pageSize         taille de la page (≥ 0)
-     * @return une réponse HTTP contenant une liste paginée de {@link GermplasmGetAllDTO}
-     * @throws Exception en cas d’erreur lors de la recherche ou de l’accès aux données
+     * @param uri               regex filter on the germplasm URI
+     * @param type              RDF type of the germplasm
+     * @param name              regex on the name or synonyms
+     * @param code              regex on the internal code
+     * @param productionYear    production year
+     * @param species           species of the germplasm
+     * @param variety           variety of the germplasm
+     * @param accession         accession of the germplasm
+     * @param group             group related to the germplasm
+     * @param institute         associated institute or organization
+     * @param experiment        related experiment
+     * @param parentGermplasms  list of parent germplasms (A or B)
+     * @param parentGermplasmsM maternal parents (type A)
+     * @param parentGermplasmsF paternal parents (type B)
+     * @param metadata          associated metadata
+     * @param isPublic          visibility: public ({@code true}) or private ({@code false})
+     * @param orderByList       sorting criteria (e.g., "uri=asc", "name=desc")
+     * @param page              page number (≥ 0)
+     * @param pageSize          page size (≥ 0)
+     * @return an HTTP response containing a paginated list of {@link GermplasmGetAllDTO}
+     * @throws Exception if an error occurs during the search or data access
      */
+
     @GET
     @ApiOperation("Search germplasm")
     @ApiProtected
@@ -562,18 +539,18 @@ public class GermplasmAPI {
                 .setParentFGermplasms(parentGermplasmsF)
                 .setUser(currentUser);
 
-        // récupération des groupes de l'utilisateur
+        // get user groups
         URI userURI = currentUser.getUri();
         GroupDAO dao = new GroupDAO(sparql);
         List<GroupModel> userGroups = dao.getUserGroups(userURI);
 
-        // extraction des URIs
+        // extraction of URIs
                 List<URI> groupURIs = userGroups.stream()
                         .map(GroupModel::getUri)
                         .collect(Collectors.toList());
 
-        // injection dans le filtre
-                searchFilter.setGroupsUsers(groupURIs);
+        // inject into the filter
+        searchFilter.setGroups(groupURIs);
 
 
         searchFilter.setOrderByList(orderByList)

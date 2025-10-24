@@ -22,7 +22,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  *
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name","is_public","groups_users",})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name","is_public","groups",})
 public class GermplasmGetAllDTO {
 
     /**
@@ -70,15 +70,15 @@ public class GermplasmGetAllDTO {
     @JsonProperty("is_public")
     protected Boolean isPublic;
 
-    @JsonProperty("groups_users")
-    protected List<URI> groupsUsers = new ArrayList<>();
+    @JsonProperty("groups")
+    protected List<URI> groups = new ArrayList<>();
 
-    public List<URI> setGroupsUsers() {
-        return groupsUsers;
+    public List<URI> setGroups() {
+        return groups;
     }
 
-    public void setGroupsUsers(List<URI> groups) {
-        this.groupsUsers = groups;
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
     }
 
 
@@ -162,15 +162,6 @@ public class GermplasmGetAllDTO {
         this.lastUpdatedDate = lastUpdatedDate;
     }
 
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -185,7 +176,8 @@ public class GermplasmGetAllDTO {
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
         dto.setIsPublic(model.getIsPublic());
-        dto.setGroupsUsers(getUriList(model.getGroupsUsers()));
+        dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
+
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());

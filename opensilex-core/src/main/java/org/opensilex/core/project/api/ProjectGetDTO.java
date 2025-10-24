@@ -24,15 +24,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class ProjectGetDTO extends ProjectDTO {
 
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     public static ProjectGetDTO fromModel(ProjectModel model) {
 
         ProjectGetDTO dto = new ProjectGetDTO();
@@ -55,10 +46,10 @@ public class ProjectGetDTO extends ProjectDTO {
         if (model.getEndDate() != null) {
             dto.setEndDate(model.getEndDate());
         }
-        dto.setScientificContacts(getUriList(model.getScientificContacts()))
-                .setAdministrativeContacts(getUriList(model.getAdministrativeContacts()))
-                .setCoordinators(getUriList(model.getCoordinators()))
-                .setRelatedProjects(getUriList(model.getRelatedProjects()));
+        dto.setScientificContacts(SPARQLResourceModel.getUriList(model.getScientificContacts()))
+                .setAdministrativeContacts(SPARQLResourceModel.getUriList(model.getAdministrativeContacts()))
+                .setCoordinators(SPARQLResourceModel.getUriList(model.getCoordinators()))
+                .setRelatedProjects(SPARQLResourceModel.getUriList(model.getRelatedProjects()));
 
         return dto;
     }

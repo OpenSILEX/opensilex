@@ -259,16 +259,7 @@
                     ></opensilex-UriLink>
                 </template>
 
-<!--                <template v-slot:cell(microorganism_is_public)="{data}">-->
-<!--                  <span v-if="data.item.is_public === true">-->
-<!--                    {{ $t('GermplasmList.filter.is_public_true') }}-->
-<!--                  </span>-->
-<!--                                <span v-else-if="data.item.is_public === false">-->
-<!--                    {{ $t('GermplasmList.filter.is_public_false') }}-->
-<!--                  </span>-->
-<!--                  &lt;!&ndash; sinon rien, laisse vide &ndash;&gt;-->
-<!--                </template>-->
-              <template v-slot:cell(microorganism_is_public)="{ data }">
+              <template v-slot:cell(germplasm_is_public)="{ data }">
                 <opensilex-Icon
                     v-if="data.item.is_public === false"
                     icon="ik#ik-lock"
@@ -482,7 +473,7 @@ export default class GermplasmList extends Vue {
                 label: "GermplasmList.speciesLabel"
             },
             {
-                key: "microorganism_is_public",
+                key: "germplasm_is_public",
                 label: "GermplasmList.is_public"
             }
 

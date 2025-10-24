@@ -124,9 +124,9 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
     @ApiModelProperty(value = "boolean", example = "True", required = true)
     protected Boolean isPublic;
 
-    @JsonProperty("groups_users")
-    @ApiModelProperty(value = "groups_users", example = "")
-    protected List<URI> groupsUsers = new ArrayList<>();
+    @JsonProperty("groups")
+    @ApiModelProperty(value = "groups", example = "")
+    protected List<URI> groups = new ArrayList<>();
 
 
 
@@ -232,12 +232,12 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
     }
     public void setIsPublic(boolean isPublic) { this.isPublic = isPublic; }
 
-    public List<URI> getGroupsUsers() {
-        return groupsUsers;
+    public List<URI> getGroups() {
+        return groups;
     }
 
-    public void setGroupsUsers(List<URI> groups) {
-        this.groupsUsers = groups;
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
     }
 
     /**
@@ -324,13 +324,13 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         if (website != null) {
             model.setWebsite(website);
         }
-        List<GroupModel> groupList = new ArrayList<>(groupsUsers.size());
-        groupsUsers.forEach((URI u) -> {
+        List<GroupModel> groupList = new ArrayList<>(groups.size());
+        groups.forEach((URI u) -> {
             GroupModel group = new GroupModel();
             group.setUri(u);
             groupList.add(group);
         });
-        model.setGroupsUsers(groupList);
+        model.setGroups(groupList);
 
         return model;
     }

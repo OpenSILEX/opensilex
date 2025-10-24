@@ -25,7 +25,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "synonyms", "code", 
     "production_year", "description", "species", "species_name","variety",
-    "variety_name", "accession", "accession_name", "institute", "website","is_public", "groups_users",
+    "variety_name", "accession", "accession_name", "institute", "website","is_public", "groups",
      GermplasmGetExportDTO.hasParentGermplasmFieldName, GermplasmGetExportDTO.hasParentMGermplasmFieldName, GermplasmGetExportDTO.hasParentFGermplasmFieldName})
 public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
@@ -84,15 +84,15 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
     @JsonProperty("is_public")
     protected boolean isPublic;
 
-    @JsonProperty("groups_users")
-    protected List<URI> groupsUsers = new ArrayList<>();
+    @JsonProperty("groups")
+    protected List<URI> groups = new ArrayList<>();
 
-    public List<URI> setGroupsUsers() {
-        return groupsUsers;
+    public List<URI> setGroups() {
+        return groups;
     }
 
-    public void setGroupsUsers(List<URI> groups) {
-        this.groupsUsers = groups;
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
     }
 
     /**
@@ -219,15 +219,6 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
      * @param model Germplasm Model to convert
      * @return Corresponding user DTO
      */
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
 
     public static GermplasmGetExportDTO fromModel(GermplasmModel model) {
         GermplasmGetExportDTO dto = new GermplasmGetExportDTO();
@@ -238,7 +229,7 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         dto.setName(model.getName());
 
         dto.setIsPublic(model.getIsPublic());
-        dto.setGroupsUsers(getUriList(model.getGroupsUsers()));
+        dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());

@@ -23,7 +23,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 @JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "synonyms", "code",
     "production_year", "description", "species", "species_name","variety",
-    "variety_name", "accession", "accession_name", "institute", "website","is_public", "groups_users",
+    "variety_name", "accession", "accession_name", "institute", "website","is_public", "groups",
      GermplasmGetExportDTO.hasParentGermplasmFieldName, GermplasmGetExportDTO.hasParentMGermplasmFieldName, GermplasmGetExportDTO.hasParentFGermplasmFieldName,
      "metadata"})
 public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
@@ -41,16 +41,6 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         this.metadata = metadata;
     }
 
-
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -64,7 +54,7 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         dto.setRdfType(model.getType());
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
-        dto.setGroupsUsers(getUriList(model.getGroupsUsers()));
+        dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
         if ((model.getIsPublic()) != null) {
             dto.setIsPublic(model.getIsPublic());
         }else{

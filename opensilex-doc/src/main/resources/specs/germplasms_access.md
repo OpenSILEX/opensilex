@@ -59,7 +59,7 @@ The main objective is to restrict access to germplasms by introducing the concep
 
 - **Ergonomy** :
     - Each germplasm in the main list shows whether it is public or private, allowing users to immediately understand the access restrictions.
-    - In the search menu, Users can filter germplasms by visibility (public/private) using dvanced filters.
+    - In the search menu, Users can filter germplasms by visibility (public/private) using advanced filters.
 
 
 
@@ -76,17 +76,11 @@ Germplasm access is now managed using a public/private classification combined w
 - **Public germplasms**
   These are accessible to all users, regardless of their group membership.
 
-
 - **Private germplasms**
   These are only accessible to users who belong to one of the groups associated with the germplasm.
 
-
-- **Access rules**
-
-
 - **Admin users**
     - Have unrestricted access to all germplasms (no filters applied).
-
 
 - **Non-admin users**
     1. If the user has **no group membership**:
@@ -114,49 +108,34 @@ Germplasm access is now managed using a public/private classification combined w
 ## Technical specifications
 
 
-- **API Layer**
+## API Layer
 
+- **Endpoint:** `GermplasmResource.searchGermplasm()`
+- **Accepted Query Parameters:**  
+  `uri`, `rdf_type`, `name`, `accession`, `species`, `variety`, `institute`, `experiment`, `parent_germplasms`, `metadata`, `is_public`, `order_by`, `page`, `page_size`
+- **Functionality:**
+    - Converts search results into DTOs (`GermplasmGetAllDTO`)
+    - Returns a paginated response (`PaginatedListResponse`)
 
-- Endpoint: GermplasmResource.searchGermplasm()
+---
 
+## Business Logic Layer
 
-- Accepts query parameters: uri, rdf_type, name, accession, species, variety, institute, experiment, parent_germplasms, metadata, is_public, order_by, page, page_size.
+- **Class:** `GermplasmLogic`
+- **Method:** `search(GermplasmSearchFilter searchFilter, boolean fetchMetadata, boolean fetchNestedObjects)`
+- **Responsibilities:**
+    - Builds the search query using `GermplasmSearchFilter`
+    - Handles optional metadata loading via `metaDataDao.getMetaDataAssociatedTo()`
+    - Loads nested germplasm relations conditionally via `fetchGermplasmsOfRelation()`
 
+---
 
-- Converts search results into DTOs (GermplasmGetAllDTO) and returns a paginated response (PaginatedListResponse).
+## Data Access Layer
 
+- **Classes:** `GermplasmDAO`, `SPARQLDAO`
+- **Responsibilities:**
+    - Performs SPARQL queries with pagination using `searchWithPagination()`
+    - Applies access filters at the query level via `appendUserGermplasmFilter()` and `appendgroupsListFilters()` to enforce user permissions
 
-- **Business Logic Layer**
-
-
-- **Class**: GermplasmLogic
-
-
-- **Method**: search(GermplasmSearchFilter searchFilter, boolean fetchMetadata, boolean fetchNestedObjects)
-
-
-       - Builds the search query using GermplasmSearchFilter.
-
-
-       - Handles optional metadata loading via metaDataDao.getMetaDataAssociatedTo().
-
-
-       - Loads nested germplasm relations conditionally (fetchGermplasmsOfRelation()).
-
-
-- **Data Access Layer**
-
-
-- **Class**: GermplasmDAO / SPARQLDAO
-
-
-- Performs SPARQL queries with pagination (searchWithPagination()).
-
-
-- Applies access filters (appendUserGermplasmFilter(), appendgroupsListFilters()) at the query level to enforce user permissions.
-
-### Tests
-
-The majority of tests are located in core/germplasm/api/GermplasmAPITest.java.
 
 

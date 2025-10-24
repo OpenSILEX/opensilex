@@ -117,8 +117,8 @@
 
     <!-- group -->
     <opensilex-GroupSelector
-      label="GermplasmForm.groups_users"
-      :groups.sync="form.groups_users"
+      label="GermplasmForm.groups"
+      :groups.sync="form.groups"
       :disabled="form.is_public"
       :multiple="true"
     ></opensilex-GroupSelector>
@@ -224,7 +224,7 @@ export default class GermplasmForm extends Vue {
         production_year: null,
         description: null,
         is_public: null,
-        groups_users: [],
+        groups: [],
         synonyms:[],
         relations:[],
         metadata: null
@@ -250,7 +250,7 @@ export default class GermplasmForm extends Vue {
       production_year: null,
       description: null,
       is_public: null,
-      groups_users: [],
+      groups: [],
       synonyms:[],
       relations:[],
       metadata: null
@@ -315,7 +315,7 @@ export default class GermplasmForm extends Vue {
   @Watch("form.is_public")
   resetGroupsOnPublicGermplasm(){
     if(this.form.is_public) {
-      this.form.groups_users = []
+      this.form.groups = []
     }
   }
 
@@ -335,9 +335,9 @@ en:
     uri-help: Unique germplasm identifier
     type: Type
     type-help: Germplasm Type
-    species : Species URI
+    species: Species URI
     species-help: Species URI of the germplasm
-    variety : Variety URI
+    variety: Variety URI
     variety-help: Variety URI of the germplasm
     accession: Accession URI
     accession-help: Accession URI of the germplasm
@@ -355,9 +355,9 @@ en:
     code-help: The code of the germplasm
     website: Web site
     website-help: the web page of the institute or the germplasm
-    groups_users : Groups
-    isPublic: Public 
-    isPrivate: Private 
+    groups: Groups
+    isPublic: Public
+    isPrivate: Private
     isPublic_label: Define status
 
 
@@ -369,9 +369,9 @@ fr:
     uri-help: Identifiant unique du germplasm
     type: Type
     type-help: Type du germplasm
-    species : URI de l'espèce
+    species: URI de l'espèce
     species-help: URI de l'espèce
-    variety : URI de variété
+    variety: URI de variété
     variety-help: URI de la variété
     accession: URI d'accession
     accession-help: Accession URI of the germplasm
@@ -389,7 +389,7 @@ fr:
     code-help: Code de la ressource génétique
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
-    groups_users : Groupes
+    groups: Groupes
     isPublic: Public
     isPrivate: Privé
     isPublic_label: Définir le statut

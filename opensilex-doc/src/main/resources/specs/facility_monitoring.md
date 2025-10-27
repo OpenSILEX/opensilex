@@ -83,12 +83,12 @@ Environmental data are grouped by the couple variable/provenance that gives us m
 For each data series, the hourly median is constructed.
 It consists of retrieving the median value of each hour (cf. [Figure 2](#median_serie)).
 
-![](images/median_serie.png)
+<!-- ![](images/median_serie.png) -->
 
 After obtaining individual median series, the process is repeated to gather the hourly median
 of all median series (cf. [Figure 3](#median_of_medians)).
 
-![](images/median_of_medians.png)
+<!-- ![](images/median_of_medians.png) -->
 
 The mean per day is also computed. It is formed by gathering all raw data (not the medians)
 and calculate the mean for each day.
@@ -123,7 +123,7 @@ such as median and mean.
 
 #### Models and DTOs
 
-![](images/dataSeriesPattern.png)
+<!-- ![](images/dataSeriesPattern.png) -->
     
 `DataVariableSeriesGetDTO` contains detailed information on the variable concerned, as well as two lists of data series.
 One contains the hourly medians for each provenance, the other the calculated data series
@@ -212,7 +212,7 @@ In order to associate groups of variables with an infrastructure, a property
       <rdfs:label xml:lang="en">has variable group</rdfs:label>
     </owl:ObjectProperty>
 
-![](images/modif_ontologie.png)
+<!-- ![](images/modif_ontologie.png) -->
 
 
 ### Tests

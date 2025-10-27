@@ -85,7 +85,6 @@ section. Business logic also includes authorization rules.}
 ### Technical definitions
 
 - **{Term}** : {definition}
-
 ### Detailed explanations
 
 {Describe the files, classes, methods, algorithms and architectural choices that are essential to the

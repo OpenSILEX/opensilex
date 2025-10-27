@@ -29,6 +29,15 @@ interface TreeOpt {
   disabled?: boolean
   children?: TreeOpt[]
 }
+
+type InputOpt = {
+  id: string
+  label: string
+  isDisabled?: boolean
+  children?: InputOpt[]
+  isDefaultExpanded?: boolean
+}
+
 interface NamedResourceDTO {
   uri: string
   name: string
@@ -41,7 +50,7 @@ const props = defineProps<{
   multiple?: boolean
   checkable?: boolean
   itemLoadingMethod?: (uris: string[]) => Promise<NamedResourceDTO[]>
-  options?: Array<{ id: string; label: string; isDisabled?: boolean }>
+  options?: InputOpt[]  
   resultLimit?: number
   limit?: number
   optionsLoadingMethod?: () => Promise<NamedResourceDTO[]>
@@ -102,7 +111,9 @@ const treeSelectBindings = computed(() => ({
   disabled: props.disabled,
   placeholder: props.placeholder,
   value: value.value,
-  'check-strategy': 'child' as const
+  'check-strategy': 'child' as const,
+  'default-expanded-keys': defaultExpandedKeys.value,   // <— optionnel
+  'default-expand-all': true
 }))
 
 const wrapperClass = computed(() => ({
@@ -111,18 +122,36 @@ const wrapperClass = computed(() => ({
 }))
 
 // map helpers
-function toTreeOpt(element: { id: string; label: string; isDisabled?: boolean }): TreeOpt {
-  return { key: element.id, label: element.label, disabled: element.isDisabled }
+// --- helpers : conversion récursive -> TreeOpt (on garde l’arbre !)
+function toTreeOpt(el: InputOpt): TreeOpt {
+  const node: TreeOpt = {
+    key: el.id,
+    label: el.label,
+    disabled: el.isDisabled
+  }
+  if (Array.isArray(el.children) && el.children.length) {
+    node.children = el.children.map(toTreeOpt)
+    // si on veut empêcher la sélection des parents :
+    if (props.disableBranchNodes) node.disabled = true
+  }
+  return node
 }
+
 function fromDTO(dto: NamedResourceDTO): { id: string; label: string; isDisabled?: boolean } {
   if (props.conversionMethod) return props.conversionMethod(dto)
   return { id: dto.uri, label: dto.name, isDisabled: dto.isDisabled }
 }
 
 // retrouver un TreeOpt par key
-function findOptionByKey(key: string): TreeOpt | undefined {
-  // options plates (si besoin, étendre à la recherche récursive)
-  return options.value.find(object => object.key === key)
+function findOptionByKey(key: string, list: TreeOpt[] = options.value): TreeOpt | undefined {
+  for (const n of list) {
+    if (n.key === key) return n
+    if (n.children?.length) {
+      const hit = findOptionByKey(key, n.children)
+      if (hit) return hit
+    }
+  }
+  return undefined
 }
 
  function cacheSelectedOption(opt: TreeOpt | undefined) {
@@ -187,9 +216,12 @@ const opts = dtos
 watch(() => props.selected, loadSelectedValues, { immediate: true })
 
 // sync options depuis props.options
+// --- watcher options : NE PAS aplatir
 watch(
   () => props.options,
-  (opts) => { options.value = (opts ?? []).map(toTreeOpt) },
+  (opts) => {
+    options.value = (opts ?? []).map(toTreeOpt)
+  },
   { immediate: true }
 )
 
@@ -268,6 +300,37 @@ function handleUpdateValue(v: string | string[] | null) {
     }
   }
 }
+
+
+// --- bindings NTreeSelect : on peut fournir des clés à étendre par défaut (si on veut étendre que certaines sous parties)
+const defaultExpandedKeys = computed(() => {
+  // collecte les ids marqués isDefaultExpanded dans les options d’entrée
+  const keys: string[] = []
+  function walk(input?: InputOpt[]) {
+    if (!input) return
+    for (const it of input) {
+      if (it.isDefaultExpanded) keys.push(it.id)
+      if (it.children?.length) walk(it.children)
+    }
+  }
+  walk(props.options)
+  return keys
+})
+
+// const defaultExpandedKeys = computed(() => {
+//   const keys: string[] = []
+//   function collectKeys(list?: InputOpt[]) {
+//     if (!list) return
+//     for (const item of list) {
+//       keys.push(item.id)
+//       if (item.children?.length) collectKeys(item.children)
+//     }
+//   }
+//   collectKeys(props.options)
+//   return keys
+// })
+
+
 
 function emitClose() { emit('close') }
 

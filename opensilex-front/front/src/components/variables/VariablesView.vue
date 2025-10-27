@@ -123,7 +123,7 @@ const tabDefinitions = [
   { key: 'interestEntity', labelKey: 'VariableView.entityOfInterest', component: () => import('./views/EntityOfInterestView.vue'), refKey: 'entityOfInterestView' },
   { key: 'characteristics', labelKey: 'VariableView.characteristic', component: () => import('./views/CharacteristicsView.vue'), refKey: 'characteristicsView' },
   { key: 'methods', labelKey: 'VariableView.method', component: () => import('./views/MethodView.vue'), refKey: 'methodView' },
-  { key: 'units', labelKey: 'VariableView.unit', component: () => import('./agroportal/AgroportalUnitForm.vue'), refKey: 'unitForm' },
+  { key: 'units', labelKey: 'VariableView.unit', component: () => import('./views/UnitsView.vue'), refKey: 'unitView' },
   { key: 'groups', labelKey: 'VariableView.groupVariable', component: () => import('./../groupVariable/GroupVariablesView.vue'), refKey: 'groupVariablesView' }
 ];
 

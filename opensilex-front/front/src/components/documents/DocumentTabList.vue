@@ -15,7 +15,7 @@
       @update="updateFilters"
       :debounce="300"
       :lazy="false"
-      placeholder="DocumentList.filter.title-placeholder"
+      :placeholder="t('DocumentTabList.title-placeholder')"
     />
 
     <div class="card">
@@ -273,6 +273,7 @@ en:
         deprecated: Deprecated
         download: Download file
         browseSource: Browse source
+        title-placeholder: Enter title
 
 fr:
     DocumentTabList:
@@ -288,5 +289,6 @@ fr:
         deprecated: Obsolète
         download: Télécharger le fichier
         browseSource: Naviguer à la source
+        title-placeholder: Saisir un titre
 </i18n>
 

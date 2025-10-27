@@ -19,6 +19,8 @@
           :allowClearingDisabled="true"
           @select="validator?.validate(); $emit('select', $event)"
           @open="$emit('open', $event)"
+          :tree="true"
+          :children-key="'children'"
         />
       </div>
     </template>
@@ -89,8 +91,11 @@ async function loadTypes () {
   typesOptions.value = opensilex.buildTreeListOptions(http.response.result, {
     expanded: null,
     disableSubTree: null,
-    nodesToIgnoreList: toIgnore
+    nodesToIgnoreList: toIgnore,
+    flat: false
   })
+  console.log('typesOptions sample', typesOptions.value?.[0])
+
 }
 
 function initTypes () {

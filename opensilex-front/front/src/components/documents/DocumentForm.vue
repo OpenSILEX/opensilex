@@ -54,8 +54,9 @@
     <!-- Date -->
     <opensilex-DateForm
       v-model:value="form.description.date"
-      label="DocumentForm.date"
-      helpMessage="DocumentForm.date-help"
+      :label="t('DocumentForm.date')"
+      :helpMessage="t('DocumentForm.date-help')"
+      class="documentFormField"
     />
 
     <!-- Description -->
@@ -391,7 +392,8 @@ defineExpose({
 
 <style scoped>
 .documentFormField {
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
+    margin-top: 15px
 }
 </style>
 

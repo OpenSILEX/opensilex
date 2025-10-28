@@ -89,7 +89,7 @@
     <opensilex-ModalForm
       v-if="showForm"
       ref="groupFormRef"
-      component="GroupVariablesForm"
+      component="opensilex-GroupVariablesForm"
       :createTitle="'component.variable.groupVariable.add-groupVariable'"
       :editTitle="'component.variable.groupVariable.edit'"
       :editData="editData"
@@ -212,6 +212,9 @@ function showCreateForm() {
 }
 
 // Formulaire édit
+
+
+
 function showEditForm(group: any) {
   editData.value = group;
   showForm.value = true;
@@ -219,6 +222,36 @@ function showEditForm(group: any) {
     groupFormRef.value?.showEditForm?.(group);
   });
 }
+
+// async function showEditForm(group: any) {
+//   // editData.value = group;
+//   // showForm.value = true;
+//   // nextTick(() => {
+//   //   groupFormRef.value?.showEditForm?.(group);
+//   // });
+//   const details = await fetchGroupDetails(group.uri);
+//   if (!details) return;
+
+//   const vars = details.variables ?? [];
+//   // Données pour le formulaire (URIs)
+//   const formData = {
+//     uri: details.uri,
+//     name: details.name || details.label || '',
+//     description: details.description || '',
+//     variables: vars.map((v: any) => v.uri),
+//     // on ajoute une charge utile "labels" pour le sélecteur
+//     __variablesWithLabels: vars.map((v: any) => ({
+//       id: v.uri,
+//       label: v.name || v.uri
+//     }))
+//   };
+
+//   editData.value = formData;
+//   showForm.value = true;
+//   nextTick(() => {
+//     groupFormRef.value?.showEditForm?.(formData);
+//   });
+// }
 
 function onFormSuccess() {
   showForm.value = false;

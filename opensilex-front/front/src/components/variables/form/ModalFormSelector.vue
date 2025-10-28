@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, nextTick } from 'vue'
+import { computed, inject, onMounted, ref, nextTick, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NSpin, NTag } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
@@ -432,6 +432,25 @@ function onModalSearchShown() {
   emit('shown')
   searchModal.value?.refreshWithKeepingSelection?.()
 }
+
+//  Réagir aux changements de selectedInJsonFormat après le montage
+// watch(
+//   () => props.selectedInJsonFormat,
+//   (list) => {
+//     if (!list || !list.length) return
+//     const normalized: SelectableItem[] = list.map((item: any) =>
+//       item.id && item.label ? { id: item.id, label: item.label } : { id: item.uri, label: item.name }
+//     )
+//     // si la sélection diffère, on synchronise les "chips"
+//     const before = selectedCopie.value.map(v => v.id).join('|')
+//     const after  = normalized.map(v => v.id).join('|')
+//     if (before !== after) {
+//       selectedTmp.value = normalized.slice()
+//       selectedCopie.value = normalized.slice()
+//     }
+//   },
+//   { immediate: true }
+// )
 
 defineExpose({
   setSelectorToFirstTimeOpen,

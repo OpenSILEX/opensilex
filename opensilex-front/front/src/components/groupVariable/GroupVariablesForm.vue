@@ -8,6 +8,7 @@
   >
     <!-- URI -->
     <opensilex-UriForm
+    :key="(form?.uri ?? '') + (editMode ? '-edit' : '-create')"
       v-model:uri="form.uri"
       :generated="localUriGenerated"
       @update:generated="val => (localUriGenerated = val)"
@@ -50,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FormInst } from 'naive-ui'
 import { NForm, NFormItem } from 'naive-ui'
@@ -125,6 +126,7 @@ async function validate () {
     return false
   }
 }
+
 
 // Expose pour le parent (ModalForm l’appelle)
 defineExpose({

@@ -32,7 +32,7 @@
       <input
         :id="'field' + id"
         v-model="uri"
-        :disabled="uriGenerated"
+        :disabled="editMode || uriGenerated"
         type="text"
         class="form-control"
         :class="{ 'is-invalid': !!errorMessage }"
@@ -114,9 +114,20 @@ const { value: uri, errorMessage, validate } = useField<string | undefined>(
 )
 
 /** Sync avec le parent */
-watch(uri, (v) => emit('update:uri', typeof v === 'string' ? v : undefined))
-watch(uriGenerated, (v) => {
-  emit('update:generated', v)
-  validate() // revalider quand on (dé)coche
-})
+// watch(uri, (v) => emit('update:uri', typeof v === 'string' ? v : undefined))
+// watch(uriGenerated, (v) => {
+//   emit('update:generated', v)
+//   validate() // revalider quand on (dé)coche
+// })
+
+ // Quand le parent change l'URI (nouveau element à éditer), on la répercute
+ watch(() => props.uri, (v) => {
+   uri.value = typeof v === 'string' ? v : undefined
+   validate()
+ })
+
+ // En mode édition, on force l'URI désactivée (sécurité UX)
+ watch(() => props.editMode, (isEdit) => {
+   if (isEdit) uriGenerated.value = true
+ })
 </script>

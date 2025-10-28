@@ -19,7 +19,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
-import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -141,7 +140,6 @@ public class GermplasmSparqlDAO {
                 GermplasmModel.class,
                 searchFilter.getLang(),
                 (SelectBuilder select) -> {
-                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
 
                     appendRegexUriFilter(select, searchFilter.getUri());
                     appendRdfTypeFilter(select, searchFilter.getType());
@@ -154,10 +152,12 @@ public class GermplasmSparqlDAO {
                     appendURIsFilter(select, filteredUris);
                     appendGroupFilter(select, searchFilter.getGroup());
                     appendParentFilter(select, searchFilter.getParentGermplasms());
-                    appendUserGermplasmFilter(select, searchFilter.getUser());
+                    appendParentMFilter(select, searchFilter.getParentMGermplasms());
+                    appendParentFFilter(select, searchFilter.getParentFGermplasms());
                     appendPublicFilter(select, isPublic);
                     appendgroupsListFilters(select, admin, groups);
                     appendExperimentFilter(select, finalExperiment);
+                    appendUserGermplasmFilter(select, searchFilter.getUser());
 
                     initialSelect.set(select);
                 },

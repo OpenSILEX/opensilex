@@ -16,6 +16,8 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.security.group.api.GroupCreationDTO;
+import org.opensilex.security.group.api.GroupUserProfileDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -351,7 +353,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         someChildDTO2.setRdfType(new URI(Oeso.Species.toString()));
         List<RDFObjectRelationDTO> childDTORelations2 = new ArrayList<>();
         RDFObjectRelationDTO someVarietyChildDTORelation1 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmM.getURI()), child1Uri.toString(), false);
-        someAccessionChildDTORelations.add(someVarietyChildDTORelation1);
+        childDTORelations2.add(someVarietyChildDTORelation1);
         RDFObjectRelationDTO someVarietyChildDTORelation2 = new RDFObjectRelationDTO(new URI(Oeso.hasParentGermplasmF.getURI()), someParentFURI.toString(), false);
         childDTORelations2.add(someVarietyChildDTORelation2);
         someChildDTO2.setRelations(childDTORelations2);
@@ -498,7 +500,6 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         attributes.put("p1","v1");
         attributes.put("p2","v2");
         model1.setMetadata(new MetaDataModel(attributes));
-
         dao.create(model1);
 
         GermplasmModel model2 = new GermplasmModel();
@@ -513,7 +514,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         dao.create(model2);
 
         // search models and ensure that metadata are OK for each model
-        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),false,false);
+        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true,false);
 
         GermplasmModel model1FromDb = models.getList().stream()
                 .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model1.getUri()))

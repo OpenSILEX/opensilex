@@ -39,8 +39,8 @@
     <!-- Variables -->
     <opensilex-VariableSelectorWithFilter
       ref="variablesSelectorRef"
+      v-model:variables-with-labels="variablesWithLabels"
       v-model:variables="form.variables"
-      :variables-with-labels="variablesWithLabels"
       :editMode="editMode"
       :label="$t('component.variable.title')"
       :placeholder="$t('component.variable.placeholder-multiple')"
@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FormInst } from 'naive-ui'
 import { NForm, NFormItem } from 'naive-ui'
@@ -67,12 +67,14 @@ const props = defineProps<{
     name?: string | null
     description?: string | null
     variables: string[]
+    __variablesWithLabels?: Array<{ id: string; label: string }>
   }
 }>()
 
 const emit = defineEmits<{
   (e: 'hideSelector'): void
   (e: 'shownSelector'): void
+  (e: 'hide'): void
 }>()
 
 const { t } = useI18n()
@@ -83,7 +85,7 @@ const variablesSelectorRef = ref<any>()
 const localUriGenerated = ref(props.uriGenerated ?? true)
 
 // Liste de labels passée au sélecteur
-const variablesWithLabels = ref<Array<{ uri: string; name?: string }>>([])
+const variablesWithLabels = ref<Array<{ id: string; label: string }>>([])
 
 // ---- Règles Naive UI ----
 const rules = computed(() => ({
@@ -100,7 +102,8 @@ function getEmptyForm () {
     uri: null,
     name: null,
     description: null,
-    variables: [] as string[]
+    variables: [] as string[],
+    __variablesWithLabels: [] as Array<{ id: string; label: string }>
   }
 }
 
@@ -112,13 +115,27 @@ function reset () {
 }
 
 // Compat utilitaire : positionner “à la première ouverture” + labels sélectionnés
-function setSelectorsToFirstTimeOpenAndSetLabels (list: Array<{ uri: string; name?: string }>) {
+function setSelectorsToFirstTimeOpenAndSetLabels (list: Array<{ id: string; label: string }>) {
   variablesSelectorRef.value?.setVariableSelectorToFirstTimeOpen?.()
   variablesWithLabels.value = list ?? []
 }
 
+// Quand le parent injecte le form en édition, pré-remplir les champs
+watch(
+  () => props.form,
+  async (form) => {
+    const list = form?.__variablesWithLabels
+    if (Array.isArray(list) && list.length) {
+      await nextTick()
+      setSelectorsToFirstTimeOpenAndSetLabels(list)
+    }
+  },
+  { immediate: true }
+)
+
 // Optionnel : méthode de validation utilisée en amont si besoin
 async function validate () {
+  console.log("validate ??")
   try {
     await formRef.value?.validate()
     return true

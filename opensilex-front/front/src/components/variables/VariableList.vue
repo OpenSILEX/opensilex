@@ -986,9 +986,8 @@ function successMessage() { return '' }
 const loadGroupVariablesForm = ref(false)
 
 // ---------------------------------------------------------------------------
-// --- API exposée pour les sélecteurs modaux (compat V2) --------------------
 
-// 1) Retourner la sélection courante (items avec { uri, name } si possible)
+// Retourner la sélection courante
 function getSelected(): Array<{ uri: string; name?: string }> {
   const selectedUris = allSelected.value
     ? variables.value.filter(r => !unselectedSet.value.has(r.item.uri)).map(r => r.item.uri)
@@ -999,7 +998,7 @@ function getSelected(): Array<{ uri: string; name?: string }> {
 }
 
 
-// 2) Hooks pour que la modale puisse cocher/décocher des lignes
+// Hooks pour que la modale puisse cocher/décocher des lignes
 function onItemSelected(row: any) {
   const key = typeof row === 'string' ? row : row?.uri || row?.id
   if (!key) return
@@ -1029,16 +1028,28 @@ function onItemUnselected(row: any) {
   checkedRowKeys.value = checkedRowKeys.value.filter(k => k !== key)
 }
 
-function setInitiallySelectedItems(items: Array<{ uri: string }>) {
-  allSelected.value = false
-  selectedSet.value = new Set(items.map(i => i.uri))
-  // refléter sur la page courante
-  const pageKeys = variables.value.map(r => r.item.uri)
-  checkedRowKeys.value = pageKeys.filter(k => selectedSet.value.has(k))
-  prevPageChecked = new Set(checkedRowKeys.value)
+function normalizeUri(uri: string): string {
+  // uniformise : si l'URI est abrégée, on reconstruit le http://phenome.inrae.fr/...
+  if (!uri) return ''
+  if (uri.startsWith('http')) return uri
+  // ajuste le préfixe selon ton contexte (ici "m3p:id/variable" → "http://phenome.inrae.fr/m3p/id/variable")
+  return uri.replace(/^m3p:id/, 'http://phenome.inrae.fr/m3p/id')
 }
 
-// 4) Refreshs attendus par la modale
+
+async function setInitiallySelectedItems(items: Array<{ uri: string }>) {
+  allSelected.value = false
+  selectedSet.value = new Set(
+    items.map(i => normalizeUri(i.uri))
+  )
+  unselectedSet.value.clear()
+}
+
+
+
+
+
+// Refreshs attendus par la modale
 function refresh() {
   if (onlySelected.value) {
     syncCheckedForOnlySelectedPage()
@@ -1050,10 +1061,25 @@ function refreshWithKeepingSelection() {
   refresh()
 }
 
-function applySelectionToPage () {
-  const pageKeys = variables.value.map(r => r.item.uri)
-  checkedRowKeys.value = pageKeys.filter(k => isGloballySelected(k))
+async function applySelectionToPage() {
+  await nextTick()
+  await new Promise(r => setTimeout(r, 100))
+
+  const pageKeys = variables.value.map(r => normalizeUri(r.item.uri))
+  const selectedUris = Array.from(selectedSet.value).map(normalizeUri)
+  checkedRowKeys.value = pageKeys.filter(key => selectedUris.includes(key))
   prevPageChecked = new Set(checkedRowKeys.value)
+
+  await nextTick()
+
+
+  console.log("applySelectionToPage:", { 
+  pageKeys, 
+  checkedRowKeys: checkedRowKeys.value, 
+  selectedSet: Array.from(selectedSet.value) 
+})
+
+
 }
 
 /** ---------------- Filtres (panneau latéral) ---------------- */
@@ -1171,6 +1197,18 @@ const activeFilters = computed(() => {
   }
   return count
 })
+
+// Recalque visuel des cases à cocher quand les lignes changent
+watch(
+  () => variables.value.map(row => row.item.uri),   // réagit quand la page change
+  () => {
+    const pageKeys = variables.value.map(row => row.item.uri)
+    checkedRowKeys.value = pageKeys.filter(key => isGloballySelected(key))
+    prevPageChecked = new Set(checkedRowKeys.value)
+  },
+  { immediate: true }
+)
+
 
 defineExpose({
   getSelected,

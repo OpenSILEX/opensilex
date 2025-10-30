@@ -428,10 +428,29 @@ function onValidate() {
 }
 
 /** Ouverture de la modale (événement) */
-function onModalSearchShown() {
+// function onModalSearchShown() {
+//   emit('shown')
+//   searchModal.value?.refreshWithKeepingSelection?.()
+// }
+
+async function onModalSearchShown() {
   emit('shown')
+
+  const json = selectedCopie.value.map(v => ({ uri: v.id, name: v.label }))
+  searchModal.value?.setInitiallySelectedItems?.(json)
   searchModal.value?.refreshWithKeepingSelection?.()
+
+  await nextTick()
+  selectedTmp.value = selectedCopie.value.slice()
+  updateModal() // selectItem/unSelect sur les lignes visibles
+
+  await new Promise(r => setTimeout(r, 0))
+  updateModal()
+
+  searchModal.value?.applySelectionToPage?.()
 }
+
+
 
 //  Réagir aux changements de selectedInJsonFormat après le montage
 // watch(
@@ -451,6 +470,24 @@ function onModalSearchShown() {
 //   },
 //   { immediate: true }
 // )
+
+// 👉 Mettre à jour l'affichage si selectedInJsonFormat change après montage
+watch(
+  () => props.selectedInJsonFormat,
+  (list) => {
+    if (!list || !list.length) return
+    const normalized = list.map((it: any) =>
+      it.id && it.label ? { id: it.id, label: it.label } : { id: it.uri, label: it.name }
+    )
+    const before = selectedCopie.value.map(v => v.id).join('|')
+    const after  = normalized.map(v => v.id).join('|')
+    if (before !== after) {
+      selectedTmp.value = normalized.slice()
+      selectedCopie.value = normalized.slice()
+    }
+  },
+  { immediate: true }
+)
 
 defineExpose({
   setSelectorToFirstTimeOpen,

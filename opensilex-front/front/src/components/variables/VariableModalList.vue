@@ -4,7 +4,7 @@
     :mask-closable="false"
     :preset="'dialog'"
     :show-icon="false"
-    :style="{ width: '1140px', maxWidth: '95vw' }"
+    :style="{ width: '1400px', maxWidth: '95vw' }"
     @after-leave="$emit('hide')"
   >
     <template #header>
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, nextTick} from 'vue'
 import { NModal, NButton, NSpace } from 'naive-ui'
 
 const variableSelection = ref<any>(null)
@@ -68,8 +68,9 @@ const emit = defineEmits<{
   (e: 'selectall', value: any): void
 }>()
 
-function show() {
+async function show() {
   visible.value = true
+  await nextTick()
   emit('shown')
 }
 
@@ -93,9 +94,29 @@ function selectItem(row: any) {
 function unSelect(row: any) {
   variableSelection.value?.onItemUnselected?.(row)
 }
+// function setInitiallySelectedItems(items: Array<any>) {
+//   variableSelection.value?.setInitiallySelectedItems?.(items)
+// }
+
 function setInitiallySelectedItems(items: Array<any>) {
+  // 1) charger la sélection côté liste
   variableSelection.value?.setInitiallySelectedItems?.(items)
+  // 2) synchroniser l’UI de la page courante (checkbox)
+  syncSelectionToUI()
 }
+
+async function syncSelectionToUI() {
+  // rafraîchir en gardant la sélection, puis laisser la table se (re)monter
+  variableSelection.value?.refreshWithKeepingSelection?.()
+  await nextTick()
+  // premier passage : cocher ce qui est visible
+  variableSelection.value?.applySelectionToPage?.()
+  // second passage après un micro délai pour couvrir les rendus async
+  await new Promise(r => setTimeout(r, 50))
+  variableSelection.value?.applySelectionToPage?.()
+}
+
+
 function refresh() {
   variableSelection.value?.refresh?.()
 }

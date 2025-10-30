@@ -115,6 +115,8 @@ if (!ok) return
           emit('onCreate', res)
         }
         modalRef.value?.hide()
+        emit("hide")
+        console.log("modalform hide ", res)
       }
     })
     .catch((err) => {

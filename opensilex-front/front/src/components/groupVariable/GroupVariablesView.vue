@@ -193,16 +193,21 @@ async function fetchGroupDetails(uri: string) {
   }
 }
 
+// Supprime un groupe côté serveur puis resynchronise la liste
+async function onDeleteGroup(group: any) {
+  try {
+    const http = await service.deleteVariablesGroup(group.uri);
 
-// Supprime un groupe
-function onDeleteGroup(group: any) {
-  groups.value = groups.value.filter(g => g.uri !== group.uri);
-  if (selected.value?.uri === group.uri) {
-    selected.value = null;
+    // Message de succès
+    opensilex.showSuccessToast(t("component.group.group-deleted"));
+
+    if (selected.value?.uri === group.uri) {
+      selected.value = null;
+    }
+    await fetchGroups(); // recharge depuis le serveur
+  } catch (e) {
+    opensilex.errorHandler(e);
   }
-  opensilex.showSuccessToast(
-    t("component.group.group-deleted")
-  );
 }
 
 // Formulaire crea
@@ -215,43 +220,37 @@ function showCreateForm() {
 
 
 
-function showEditForm(group: any) {
-  editData.value = group;
-  showForm.value = true;
-  nextTick(() => {
-    groupFormRef.value?.showEditForm?.(group);
-  });
-}
-
-// async function showEditForm(group: any) {
-//   // editData.value = group;
-//   // showForm.value = true;
-//   // nextTick(() => {
-//   //   groupFormRef.value?.showEditForm?.(group);
-//   // });
-//   const details = await fetchGroupDetails(group.uri);
-//   if (!details) return;
-
-//   const vars = details.variables ?? [];
-//   // Données pour le formulaire (URIs)
-//   const formData = {
-//     uri: details.uri,
-//     name: details.name || details.label || '',
-//     description: details.description || '',
-//     variables: vars.map((v: any) => v.uri),
-//     // on ajoute une charge utile "labels" pour le sélecteur
-//     __variablesWithLabels: vars.map((v: any) => ({
-//       id: v.uri,
-//       label: v.name || v.uri
-//     }))
-//   };
-
-//   editData.value = formData;
+// function showEditForm(group: any) {
+//   editData.value = group;
 //   showForm.value = true;
 //   nextTick(() => {
-//     groupFormRef.value?.showEditForm?.(formData);
+//     groupFormRef.value?.showEditForm?.(group);
 //   });
 // }
+
+ async function showEditForm(group: any) {
+   const details = await fetchGroupDetails(group.uri);
+   if (!details) return;
+
+   const vars = details.variables ?? [];
+   const formData = {
+     uri: details.uri,
+     name: details.name || details.label || '',
+     description: details.description || '',
+     variables: vars.map((v: any) => v.uri),
+     __variablesWithLabels: vars.map((v: any) => ({
+       id: v.uri,
+       label: v.name || v.label || v.uri
+     }))
+   };
+
+   editData.value = formData;
+   showForm.value = true;
+   nextTick(() => {
+     groupFormRef.value?.showEditForm?.(formData);
+   });
+ }
+
 
 function onFormSuccess() {
   showForm.value = false;

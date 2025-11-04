@@ -51,8 +51,8 @@
         <div v-if="event && isMove()">
             <opensilex-MoveView
               :event="event"
-              :positionsUriLabels="positionsUriLabels"
-              :positionsUriPaths="positionsUriPaths"
+              :targetLabelsByUri="positionsUriLabels"
+              :targetUriPathsByUri="positionsUriPaths"
             ></opensilex-MoveView>
         </div>
 
@@ -192,13 +192,9 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         }
 
       /**
-       * Fetches Event details using uri, loads the labels for inner targets and relations, then shows the modal
+       *  Loads the labels for inner targets and relations, then shows the modal
        *
-       * @param promiseParam , not typed because this param is a bit wierd, it gets used alongside the getEventPromise whose param is also untyped
-       * @param getEventPromise the getEvent service
-       *
-       * @return An EventViewCalculatableProps with the props values, or undefined if an error was caught and handled
-       * the caller must verify not undefined.
+       * @param getEventPromiseHttpResult The event details
        */
       async show(
         getEventPromiseHttpResult: HttpResponse<OpenSilexResponse<EventDetailsDTO>>
@@ -252,11 +248,11 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
           }
         }
 
-        if (this.isMove(event) && (event as MoveDetailsDTO).targets_positions) {
+        if (this.isMove(event) && (event as MoveDetailsDTO).location) {
 
           try {
             // Retrieve position target names from move
-            const targetUris = (event as MoveDetailsDTO).targets_positions.map((positionObject: any) => positionObject.target);
+            const targetUris = [(event as MoveDetailsDTO).location.featureOfInterest];
 
             const [labelsResponse, typesResponse] = await Promise.all([
               this.ontologyService.getURILabelsList(targetUris),

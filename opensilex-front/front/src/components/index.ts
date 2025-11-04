@@ -901,8 +901,8 @@ components["opensilex-DataMonitoring"] = DataMonitoring;
 // POSITION
 import PositionForm from './positions/form/PositionForm.vue';
 components["opensilex-PositionForm"] = PositionForm;
-import PositionsView from './positions/view/PositionsView.vue';
-components["opensilex-PositionsView"] = PositionsView;
+import PositionView from './positions/view/PositionView.vue';
+components["opensilex-PositionView"] = PositionView;
 import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
 import AssociatedPosition from './positions/list/AssociatedPositionList.vue';

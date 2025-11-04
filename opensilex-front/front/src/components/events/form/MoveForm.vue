@@ -12,7 +12,7 @@
                 <opensilex-FacilitySelector
                         ref="moveFromSelector"
                         label="Position.from"
-                        :facilities.sync="form.from"
+                        :facilities.sync="form.location.from"
                         :multiple="false"
                         :required="fromRequired"
                         @select="updateRequiredProps()"
@@ -24,7 +24,7 @@
                 <opensilex-FacilitySelector
                         ref="moveToSelector"
                         label="Position.to"
-                        :facilities.sync="form.to"
+                        :facilities.sync="form.location.to"
                         :multiple="false"
                         :required="toRequired"
                         @select="updateRequiredProps()"
@@ -38,7 +38,7 @@
             <p><b> {{ $t("Position.title") }}</b></p>
             <hr/>
             <opensilex-PositionForm 
-               :form.sync="form.targets_positions[0].position">
+               :form.sync="positionFormObject">
             </opensilex-PositionForm>
         </div>
 
@@ -48,8 +48,8 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import PositionForm from "../../positions/form/PositionForm.vue";
-    import { MoveCreationDTO, TargetPositionCreationDTO } from 'opensilex-core/index';
+    import PositionForm, {PositionFormObject} from "../../positions/form/PositionForm.vue";
+    import { MoveCreationDTO } from 'opensilex-core/index';
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import VueI18n from "vue-i18n";
 
@@ -64,16 +64,10 @@
         toRequired: boolean = false;
         $opensilex: OpenSilexVuePlugin;
         $i18n: VueI18n;
+        positionFormObject: PositionFormObject = PositionForm.getEmptyForm();
 
         @Prop({default: () => MoveForm.getEmptyForm()})
         form: MoveCreationDTO;
-
-        static getEmptyTargetsPositions() : Array<TargetPositionCreationDTO> {
-            return  [{
-                    target: undefined,
-                    position : PositionForm.getEmptyForm()
-                }];
-         }
 
         static getEmptyForm() : MoveCreationDTO{
             return {
@@ -88,11 +82,7 @@
               relations: [],
 
               // move specific properties
-                from: undefined,
-                to: undefined,
-
-                // move position(s)
-              targets_positions: MoveForm.getEmptyTargetsPositions()
+              location:{}
             };
         }
 
@@ -116,10 +106,10 @@
          * The "From" field is optional, and becomes required from the moment the "To" field is completed.
          */
         updateRequiredProps() {
-            if(this.form.from == undefined 
-            && this.form.to == undefined 
-            && this.form.targets_positions[0].position !== undefined 
-            && this.form.targets_positions[0].position !== "") {
+            if(this.form.location.from == undefined
+              && this.form.location.to == undefined
+              && this.positionFormObject.point !== undefined
+              && this.positionFormObject.point !== "") {
                 this.fromRequired = false;
                 this.toRequired = false; 
             } else {
@@ -127,9 +117,6 @@
             }
         }
 
-        handleSubmitError(){
-          this.$opensilex.showErrorToast(this.$i18n.t("Move.fieldRequired").toString());
-        }
     }
 </script>
 

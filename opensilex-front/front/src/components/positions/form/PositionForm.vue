@@ -64,7 +64,16 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import { PositionCreationDTO } from 'opensilex-core/index';
+    import { GeoJsonObject } from 'opensilex-core/model/geoJsonObject';
+
+    //Declare a javascript object as the old PositionCreationDTO doesn't exist anymore
+    export interface PositionFormObject {
+      point: GeoJsonObject,
+      x: string,
+      y: string,
+      z: string,
+      text: string,
+    }
 
     @Component
     export default class PositionForm extends Vue {
@@ -72,9 +81,9 @@
         @Ref("validatorRef") readonly validatorRef!: any;
 
         @Prop({default: () => PositionForm.getEmptyForm()})
-        form: PositionCreationDTO;
+        form: PositionFormObject;
 
-        static getEmptyForm() : PositionCreationDTO{
+        static getEmptyForm() : PositionFormObject{
             return {
               point: undefined,
               x: undefined,

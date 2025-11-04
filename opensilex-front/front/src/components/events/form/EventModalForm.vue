@@ -24,12 +24,9 @@
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
     import {EventsService} from "opensilex-core/api/events.service";
-
-    import PositionsView from "../../positions/view/PositionsView.vue";
-    import MoveForm from "./MoveForm.vue";
     import {VueJsOntologyExtensionService} from "../../../lib";
     import EventForm from "./EventForm.vue";
-    import {EventCreationDTO, MoveCreationDTO, PositionCreationDTO} from 'opensilex-core/index';
+    import {EventCreationDTO} from 'opensilex-core/index';
     import {EventUpdateDTO} from "opensilex-core/model/eventUpdateDTO";
     import DTOConverter from '../../../models/DTOConverter';
     import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
@@ -100,7 +97,7 @@
                     let dto = http.response.result;
 
                     if (isMove) {
-                        EventModalForm.convertMoveDtoToMoveForm(dto);
+                        //EventModalForm.convertMoveDtoToMoveForm(dto);
                     }
 
                     let form: EventForm = this.modalForm.getFormRef();
@@ -117,9 +114,12 @@
 
         create(event: EventCreationDTO) {
             let isMove = this.isMove(event.rdf_type);
-            let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
+            //TODO MAX call to what i think is pointless , delete this if so
+          console.debug(JSON.stringify(event));
+            //let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
 
-            let events = [formatedMoveEvent];
+            //let events = [formatedMoveEvent];
+            let events = [event];
             let createPromise = isMove ?
                 this.service.createMoves(events) :
                 this.service.createEvents(events);
@@ -128,8 +128,10 @@
                 let message = this.$i18n.t("Event.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                formatedMoveEvent.uri = http.response.result.toString();
-                this.$emit("onCreate", formatedMoveEvent);
+                //formatedMoveEvent.uri = http.response.result.toString();
+                event.uri = http.response.result.toString();
+                this.$emit("onCreate", event);
+                //this.$emit("onCreate", formatedMoveEvent);
 
             }).catch((error) => {
               if (error.status == 409) {
@@ -144,19 +146,24 @@
         update(event: EventUpdateDTO) {
 
             let isMove = this.isMove(event.rdf_type);
-            let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
+            //let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
             
 
-            let updatePromise = isMove?
+            /*let updatePromise = isMove?
                 this.service.updateMoveEvent(formatedMoveEvent) :
-                this.service.updateEvent(formatedMoveEvent);
+                this.service.updateEvent(formatedMoveEvent);*/
+          let updatePromise = isMove?
+            this.service.updateMoveEvent(event) :
+            this.service.updateEvent(event);
 
             return updatePromise.then(() => {
 
-                let message = this.$i18n.t("Event.name") + " " + formatedMoveEvent.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                //let message = this.$i18n.t("Event.name") + " " + formatedMoveEvent.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                let message = this.$i18n.t("Event.name") + " " + event.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                this.$emit("onUpdate", formatedMoveEvent);
+                //this.$emit("onUpdate", formatedMoveEvent);
+                this.$emit("onUpdate", event);
             }).catch((error) => {
                 this.$opensilex.errorHandler(error,error.response.result.message);
             });
@@ -192,7 +199,8 @@
             return this.$i18n.t("EventView.name");
         }
 
-        static convertMoveDtoToMoveForm(move){
+        //TODO MAX i dont even know what all this is, i dont get the differnce between the methods, why they are static , i get the impression they are pointless now that from and to are allready just URIS
+        /*static convertMoveDtoToMoveForm(move){
 
             if (!move.targets_positions || move.targets_positions.length == 0) {
                 move.targets_positions = PositionsView.getEmptyForm();
@@ -213,7 +221,7 @@
             if (isMove) {
                 EventModalForm.convertMoveFormToMoveDto(moveCopy);
             } else {
-                moveCopy.targets_positions = undefined;
+                moveCopy.location = undefined;
             }
 
             if (event.is_instant) {
@@ -225,7 +233,7 @@
 
         static convertMoveFormToMoveDto(move){
 
-            if (move.from && move.from.uri) {
+            if (move.location.from && move.from.uri) {
                 move.from = move.from.uri;
             }
             if (move.to && move.to.uri) {
@@ -253,7 +261,7 @@
                     }
                 }
             }
-        }
+        }*/
 
         isMove(type): boolean {
             if (!type) {
@@ -262,7 +270,7 @@
             return this.$opensilex.Oeev.checkURIs(type, this.$opensilex.Oeev.MOVE_TYPE_URI);
         }
 
-        static isPositionValid(position: PositionCreationDTO): boolean {
+        /*static isPositionValid(position: PositionCreationDTO): boolean {
             if (!position) {
                 return false;
             }
@@ -279,7 +287,7 @@
                 }
             }
             return true;
-        }
+        }*/
 
     }
 

@@ -11,12 +11,6 @@
             @onCreate="$emit('onCreate', $event)"
             @onUpdate="$emit('onUpdate', $event)"
     >
-<!--        <template v-slot:customFields="{ form }">
-            <opensilex-MoveFormV2
-                    :form.sync="form.targets_positions"
-                    ref="moveForm"
-            ></opensilex-MoveFormV2>
-        </template>-->
     </opensilex-ModalForm>
 </template>
 
@@ -35,7 +29,6 @@ import {ScientificObjectUpdateDTO} from "opensilex-core/model/scientificObjectUp
 import DTOConverter from "../../models/DTOConverter";
 import {UserGetDTO} from "../../../../../opensilex-security/front/src/lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import MoveFormV2 from "@/components/events/form/MoveFormV2.vue";
 
 @Component
 export default class ScientificObjectForm extends Vue {
@@ -52,7 +45,6 @@ export default class ScientificObjectForm extends Vue {
     //#region Refs
     @Ref("modalForm")
     private readonly modalForm!: ModalForm<OntologyObjectForm, ScientificObjectCreationDTO, ScientificObjectUpdateDTO>;
-    @Ref("moveFormV2") readonly moveFormV2!: MoveFormV2;
     //endregion
 
     //#region Data

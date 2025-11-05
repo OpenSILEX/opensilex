@@ -550,8 +550,6 @@ export default class GermplasmTable extends Vue {
         commentCol,
         checkingStatusCol,
         insertionStatusCol,
-        synonymCol,
-        commentCol,
         isPublicCol,
       ];
     } else if (
@@ -899,13 +897,14 @@ export default class GermplasmTable extends Vue {
       ) {
         form.variety = dataToInsert[idx].variety;
       }
-      if (
-          dataToInsert[idx].is_public != null &&
-          dataToInsert[idx].is_public != ""
-        )  form.is_public = true; // default value
-      else {
-          form.is_public = dataToInsert[idx].is_public;
-        }
+
+      const isPublicRaw = dataToInsert[idx].is_public;
+
+      if (isPublicRaw === undefined || isPublicRaw === null || isPublicRaw === "") {
+        form.is_public = true;
+      } else {
+        form.is_public = String(isPublicRaw).trim().toLowerCase() === "true";
+      }
 
       if (
           dataToInsert[idx].accession != null &&

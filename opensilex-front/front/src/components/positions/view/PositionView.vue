@@ -1,5 +1,5 @@
 <template>
-  <div v-if="hasPosition()">
+  <div>
     <opensilex-UriListView label="Event.targets" :list="getUriLinkDescriptions"></opensilex-UriListView>
     <opensilex-GeometryView label="component.common.geometry"
                             :value="positionObject.point"></opensilex-GeometryView>
@@ -18,7 +18,15 @@
 <script lang="ts">
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import {PositionFormObject} from "../form/PositionForm.vue";
+import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
+
+export interface PositionFormObject {
+  point: GeoJsonObject,
+  x: string,
+  y: string,
+  z: string,
+  text: string,
+}
 
 @Component
 export default class PositionView extends Vue {

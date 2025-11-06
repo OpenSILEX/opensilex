@@ -3,7 +3,6 @@
     :rules="isMove ? 'containsPoint|wkt' : 'wkt'"
     :label="label"
     :helpMessage="helpMessage"
-    :isMove="isMove"
     :vid="vid"
     :required="isRequired"
   >

@@ -899,8 +899,6 @@ import DataMonitoring from './home/dashboard/DataMonitoring.vue'
 components["opensilex-DataMonitoring"] = DataMonitoring;
 
 // POSITION
-import PositionForm from './positions/form/PositionForm.vue';
-components["opensilex-PositionForm"] = PositionForm;
 import PositionView from './positions/view/PositionView.vue';
 components["opensilex-PositionView"] = PositionView;
 import PositionList from './positions/list/PositionList.vue';

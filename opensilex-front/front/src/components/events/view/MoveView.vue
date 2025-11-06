@@ -28,10 +28,8 @@
 <script lang="ts">
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
-    import PositionsView from "../../positions/view/PositionsView.vue";
     import { MoveDetailsDTO } from 'opensilex-core/index';
-    import {PositionFormObject} from "../../positions/form/PositionForm.vue";
-    import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
+    import {PositionFormObject} from "../../positions/view/PositionView.vue";
 
     @Component
     export default class MoveView extends Vue {

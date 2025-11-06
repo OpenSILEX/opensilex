@@ -76,7 +76,6 @@
             this.$nextTick(() => {
                 let form: EventForm = this.modalForm.getFormRef();
                 form.setContext(this.context);
-
                 this.modalForm.showCreateForm();
             });
         }
@@ -95,11 +94,6 @@
 
                 eventPromise.then(http => {
                     let dto = http.response.result;
-
-                    if (isMove) {
-                        //EventModalForm.convertMoveDtoToMoveForm(dto);
-                    }
-
                     let form: EventForm = this.modalForm.getFormRef();
                     form.typeSwitch(dto.rdf_type,true);
                     form.setContext(this.context);
@@ -114,11 +108,7 @@
 
         create(event: EventCreationDTO) {
             let isMove = this.isMove(event.rdf_type);
-            //TODO MAX call to what i think is pointless , delete this if so
-          console.debug(JSON.stringify(event));
-            //let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
 
-            //let events = [formatedMoveEvent];
             let events = [event];
             let createPromise = isMove ?
                 this.service.createMoves(events) :
@@ -127,11 +117,8 @@
             return createPromise.then((http: HttpResponse<OpenSilexResponse<string>>) => {
                 let message = this.$i18n.t("Event.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
-
-                //formatedMoveEvent.uri = http.response.result.toString();
                 event.uri = http.response.result.toString();
                 this.$emit("onCreate", event);
-                //this.$emit("onCreate", formatedMoveEvent);
 
             }).catch((error) => {
               if (error.status == 409) {
@@ -146,23 +133,15 @@
         update(event: EventUpdateDTO) {
 
             let isMove = this.isMove(event.rdf_type);
-            //let formatedMoveEvent = EventModalForm.convertFormToDto(event,isMove);
-            
 
-            /*let updatePromise = isMove?
-                this.service.updateMoveEvent(formatedMoveEvent) :
-                this.service.updateEvent(formatedMoveEvent);*/
-          let updatePromise = isMove?
-            this.service.updateMoveEvent(event) :
-            this.service.updateEvent(event);
+            let updatePromise = isMove?
+              this.service.updateMoveEvent(event) :
+              this.service.updateEvent(event);
 
             return updatePromise.then(() => {
 
-                //let message = this.$i18n.t("Event.name") + " " + formatedMoveEvent.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                 let message = this.$i18n.t("Event.name") + " " + event.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
-
-                //this.$emit("onUpdate", formatedMoveEvent);
                 this.$emit("onUpdate", event);
             }).catch((error) => {
                 this.$opensilex.errorHandler(error,error.response.result.message);
@@ -199,95 +178,12 @@
             return this.$i18n.t("EventView.name");
         }
 
-        //TODO MAX i dont even know what all this is, i dont get the differnce between the methods, why they are static , i get the impression they are pointless now that from and to are allready just URIS
-        /*static convertMoveDtoToMoveForm(move){
-
-            if (!move.targets_positions || move.targets_positions.length == 0) {
-                move.targets_positions = PositionsView.getEmptyForm();
-            }
-            if (!move.targets_positions) {
-                move.targets_positions = MoveForm.getEmptyTargetsPositions();
-            }
-            if (move.from && move.from.uri) {
-                move.from = move.from.uri;
-            }
-            if (move.to && move.to.uri) {
-                move.to = move.to.uri;
-            }
-        }
-
-        static convertFormToDto(event: MoveCreationDTO, isMove: boolean) {
-            let moveCopy = JSON.parse(JSON.stringify(event));
-            if (isMove) {
-                EventModalForm.convertMoveFormToMoveDto(moveCopy);
-            } else {
-                moveCopy.location = undefined;
-            }
-
-            if (event.is_instant) {
-                moveCopy.start = undefined;
-            }
-            return moveCopy
-
-        }
-
-        static convertMoveFormToMoveDto(move){
-
-            if (move.location.from && move.from.uri) {
-                move.from = move.from.uri;
-            }
-            if (move.to && move.to.uri) {
-                move.to = move.to.uri;
-            }
-
-            // to the moment the form only handle on position for the first or for all targets
-            if (move.targets_positions && move.targets_positions.length == 1) {
-
-                let position = move.targets_positions[0].position;
-
-                if (EventModalForm.isPositionEmpty(position)) {
-                    move.targets_positions = [];
-                } else if (EventModalForm.isPositionValid(position)) {
-
-                    // one position on one target
-                    if (move.targets.length == 1) {
-                        move.targets_positions[0].target = move.targets[0];
-                    } else {
-                        // one position unique for each target
-                        move.targets_positions = move.targets.map(target => ({
-                            target: target,
-                            position: position
-                        }));
-                    }
-                }
-            }
-        }*/
-
         isMove(type): boolean {
             if (!type) {
                 return false;
             }
             return this.$opensilex.Oeev.checkURIs(type, this.$opensilex.Oeev.MOVE_TYPE_URI);
         }
-
-        /*static isPositionValid(position: PositionCreationDTO): boolean {
-            if (!position) {
-                return false;
-            }
-
-            // position is valid if all property of position are not undefined or empty
-            let allPropertiesUndefined = (!position.point && (!position.text || position.text.length == 0) && !position.x && !position.y && !position.z);
-            return !allPropertiesUndefined;
-        }
-
-        static isPositionEmpty(position: PositionCreationDTO): boolean {
-            for (const prop in position) {
-                if (Object.prototype.hasOwnProperty.call(position, prop)) {
-                    return false;
-                }
-            }
-            return true;
-        }*/
 
     }
 

@@ -1,0 +1,6 @@
+scientific_object,Date,http://opensilex.dev/id/variable/plant_height_manual_centimeter
+Scientific object name or URI,Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD),Plant_Height_manual_centimeter
+Column data type: Short string,"Date
+Required : yes",Column data type: Decimal number
+dev:id/scientific-object/so_obj_sc_v103,20245-11-12T04:11:44.712+02:00,100
+dev:id/scientific-object/so_obj_sc_v103,2024-11-13T04:11:35.712+02:00,101

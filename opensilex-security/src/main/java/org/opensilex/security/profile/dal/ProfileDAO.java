@@ -101,38 +101,6 @@ public final class ProfileDAO {
         );
     }
 
-    /**
-     *
-     * @param uriFilter uris filter
-     * @param lang user lang
-     * @return All profile models with minimal amount of field loaded
-     * @throws Exception
-     */
-    public ListWithPagination<ProfileModel> noProxySearch(List<URI> uriFilter, String lang) throws Exception {
-        SparqlNoProxyFetcher<ProfileModel> profileFetcher = new SparqlNoProxyFetcher<>(ProfileModel.class, sparql);
-
-        return sparql.searchWithPagination(
-                sparql.getDefaultGraph(ProfileModel.class),
-                ProfileModel.class,
-                lang,
-                (SelectBuilder select) -> {
-                    if(!CollectionUtils.isEmpty(uriFilter)){
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(GroupUserProfileModel.URI_FIELD, uriFilter));
-                    }
-                },
-                Collections.emptyMap(),
-                (SPARQLResult result) -> {
-                    //Set to short uri so that they can be easily used in Front-end for Profile selectors
-                    ProfileModel nextModel = profileFetcher.getInstance(result, lang);
-                    nextModel.setUri(new URI(SPARQLDeserializers.getShortURI(nextModel.getUri())));
-                    return nextModel;
-                },
-                Collections.emptyList(),
-                0,
-                0
-        );
-    }
-
     public List<ProfileModel> getAll(List<OrderBy> orderByList) throws Exception {
         return sparql.search(
                 ProfileModel.class,

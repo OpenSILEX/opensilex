@@ -297,7 +297,7 @@ public class ExperimentAPI {
                 .setPage(page)
                 .setPageSize(pageSize);
 
-        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
+        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter, false, false, false);
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = resultList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);

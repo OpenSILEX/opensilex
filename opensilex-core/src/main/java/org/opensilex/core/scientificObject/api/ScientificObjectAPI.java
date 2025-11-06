@@ -24,6 +24,7 @@ import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
+import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -501,7 +502,7 @@ public class ScientificObjectAPI {
             nosql.startTransaction();
 
             CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                    new ScientificObjectCsvImporter(sparql, nosql, fs, descriptionDto.getExperiment(), currentUser),
+                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                     descriptionDto.getValidationToken()
             );
 
@@ -586,7 +587,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 //TODO max: à faire
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                new ScientificObjectCsvImporter(sparql, nosql, fs, descriptionDto.getExperiment(), currentUser),
+                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()
         );
 

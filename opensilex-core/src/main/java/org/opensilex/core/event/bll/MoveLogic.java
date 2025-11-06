@@ -21,6 +21,8 @@ import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.core.utils.ApiUtils;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -31,7 +33,6 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingFunction;
 import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -66,15 +67,22 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     public void updateModel(MoveModel model) throws Exception{
         check(Collections.singletonList(model), false);
 
-        wrapWithTransaction(session -> updateMoveNoTransaction(model, session));
+        ApiUtils.wrapWithTransaction(session -> updateMoveNoTransaction(model, session), this.clientSession, sparql, mongodb);
     }
 
     @Override
     public void delete(URI uri) throws Exception{
-        wrapWithTransaction(session ->{
-            deleteNoTransaction(uri, session);
-            return 0;
-        });
+
+        ApiUtils.wrapWithTransaction(
+                session ->{
+                    deleteNoTransaction(uri, session);
+                    return 0;
+                },
+                this.clientSession,
+                sparql,
+                mongodb
+        );
+
     }
 
     @Override
@@ -122,7 +130,12 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public MoveModel create(MoveModel model) throws Exception {
-        return wrapWithTransaction(session -> createNoTransaction(model, session));
+        return ApiUtils.wrapWithTransaction(
+                session ->createNoTransaction(model, session),
+                this.clientSession,
+                sparql,
+                mongodb
+        );
     }
 
     @Override
@@ -364,6 +377,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     //#endregion
 
     //#region PRIVATE METHODS
+
     /**
      * Runs function either in a transaction or nay
      *

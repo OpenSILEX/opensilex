@@ -49,6 +49,7 @@
           :sort-by="sortBy"
           :sort-desc="sortDesc"
           :selectable="selectable"
+          :filter-function="customFilter"
           select-mode="single"
           hover
           primary-key="uri"
@@ -138,6 +139,9 @@ export default class TableView extends Vue {
 
   @Prop({default: false})
   private readonly selectable: boolean;
+
+  @Prop()
+  private readonly customFilter;
   //#endregion
 
   //#region Refs

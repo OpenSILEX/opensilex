@@ -34,9 +34,12 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -67,7 +70,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
     @Override
     public List<MoveModel> create(List<MoveModel> models) throws Exception {
 
-        sparql.createWithoutTransaction(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+        sparql.createWithoutTransaction(graph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true, null);
         return models;
     }
 

@@ -1,6 +1,7 @@
 package org.opensilex.core.scientificObject.dal;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
@@ -32,6 +33,14 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             useDefaultGraph = false
     )
     protected ScientificObjectModel parent;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "participatesIn",
+            ignoreUpdateIfNull = true,
+            useDefaultGraph = false
+    )
+    protected ExperimentModel experiment;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -93,6 +102,14 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
 
     public void setFactorLevels(List<FactorLevelModel> factorLevels) {
         this.factorLevels = factorLevels;
+    }
+
+    public ExperimentModel getExperiment() {
+        return experiment;
+    }
+
+    public void setExperiment(ExperimentModel experiment) {
+        this.experiment = experiment;
     }
 
     public LocationObservationCollectionModel getLocationObservationCollection() {

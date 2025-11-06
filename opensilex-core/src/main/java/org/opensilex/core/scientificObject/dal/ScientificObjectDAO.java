@@ -5,8 +5,8 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
@@ -15,10 +15,16 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.*;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_OneOrMore1;
+import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
+import org.geojson.GeoJsonObject;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
@@ -47,12 +53,12 @@ import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.opensilex.sparql.csv.AbstractCsvImporter.*;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -64,6 +70,13 @@ public class ScientificObjectDAO {
     private final SPARQLService sparql;
     private static final String countField = "count";
 
+    public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
+    public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
+    public static final String NON_UNIQUE_URI_ERROR_MSG = "Object URI <%s> must be unique. %s has the same URI";
+    public static final String NO_NAME_ERROR_MSG = "Object name must be present which is %s";
+
+
+    private final URI defaultGraphURI;
     private final Node defaultGraphNode;
 
     //#region CONSTRUCTOR

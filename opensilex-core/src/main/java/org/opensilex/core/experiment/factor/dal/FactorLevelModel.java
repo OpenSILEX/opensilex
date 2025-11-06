@@ -72,8 +72,18 @@ public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel>
         if (!(obj instanceof FactorLevelModel)) {
             return false;
         }
+
+        //Sometimes if description was null we were getting a null pointer exception so do this
+        String objDescription = ((FactorLevelModel) obj).getDescription();
+        boolean descriptionEquals = false;
+        if (objDescription != null) {
+            descriptionEquals = objDescription.equals(description);
+        }else{
+            descriptionEquals = description == null;
+        }
+
         return ((FactorLevelModel) obj).getName().equals(getName())
-                && ((FactorLevelModel) obj).getDescription().equals(getDescription());
+                && descriptionEquals;
     }
 
     @Override

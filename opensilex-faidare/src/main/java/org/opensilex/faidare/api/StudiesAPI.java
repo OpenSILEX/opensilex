@@ -124,7 +124,7 @@ public class StudiesAPI extends FaidareCall {
             filter.setPage(page)
                     .setPageSize(pageSize);
 
-            resultList = xpDao.search(filter);
+            resultList = xpDao.search(filter, true, true, true);
         }
 
         ListWithPagination<Faidarev1StudyDTO> resultDTOList = resultList.convert(

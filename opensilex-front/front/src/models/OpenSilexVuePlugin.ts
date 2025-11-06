@@ -33,6 +33,10 @@ import NumberFormatter from "./NumberFormatter";
 import {BvToastOptions} from "bootstrap-vue/src/components/toast";
 import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {DataGetSearchDTO} from "opensilex-core/model/dataGetSearchDTO";
+import {DataService} from "opensilex-core/api/data.service";
+import {ProvenanceGetDTO} from "opensilex-core/model/provenanceGetDTO";
+import {BatchHistoryGetDTO} from "opensilex-core/model/batchHistoryGetDTO";
 
 declare var $cookies: VueCookies;
 
@@ -128,7 +132,7 @@ export default class OpenSilexVuePlugin {
     getPathFromUriTypes(types) {
         let path = "";
         types.forEach(type => {
-            let route = this.config.routes.find(route => this.checkURIs(route.rdfType, type))
+            let route = this.config.routes.find(route => this.compareUris(route.rdfType, type))
             if (route) {
                 path = route.path;
             }
@@ -179,7 +183,7 @@ export default class OpenSilexVuePlugin {
             [Oeso.VARIABLESGROUP_TYPE_URI]: "VariableGroup"
         };
 
-        const elementType = Object.entries(paths).find(([key]) => this.checkURIs(type, key))?.[1];
+        const elementType = Object.entries(paths).find(([key]) => this.compareUris(type, key))?.[1];
         return elementType ? `/variables?elementType=${elementType}&selected=${encodeURIComponent(uri)}` : null;
     }
 
@@ -201,7 +205,7 @@ export default class OpenSilexVuePlugin {
             [Oeso.FACTOR_CATEGORY_URI]: "factor-category-types"
         };
 
-        const elementType: string = Object.entries(paths).find(([key]) => this.checkURIs(rootClassUri, key))?.[1];
+        const elementType: string = Object.entries(paths).find(([key]) => this.compareUris(rootClassUri, key))?.[1];
         const propertyPath: string = isProperty ? '/properties' : '';
         return elementType ? `/${elementType}${propertyPath}?selected=${encodeURIComponent(uri)}` : null;
     }
@@ -880,6 +884,33 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    public getProvenance(uri: string, dataServiceToUse: DataService) {
+        if (uri != undefined) {
+            return dataServiceToUse
+                .getProvenance(uri)
+                .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+                    return http.response.result;
+                });
+        }
+    }
+
+
+    /**
+     * Gets the batch history dto, containing a link to csv document
+     *
+     * @param uri
+     * @param dataServiceToUse
+     */
+    public getBatch(uri: string, dataServiceToUse: DataService):Promise<BatchHistoryGetDTO> {
+        if (uri != undefined) {
+            return dataServiceToUse
+                .getBatchHistory(uri)
+                .then((http: HttpResponse<OpenSilexResponse<BatchHistoryGetDTO>>) => {
+                    return http.response.result;
+                });
+        }
+    }
+
     public generateID() {
         return '_' + Math.random().toString(36).substr(2, 9);
     }
@@ -1391,12 +1422,21 @@ export default class OpenSilexVuePlugin {
      * > This function checks if two URIs are the same
      * @param uri1 - The first URI to compare.
      * @param uri2 - The URI to check against.
-     * @returns The short URI of the first URI is being compared to the short URI of the second URI.
+     * @returns true if the two URIs are the same, comparison is done on their long uri.
      */
-    public checkURIs(uri1, uri2) {
-        return this.getShortUri(uri1) === this.getShortUri(uri2);
+    public compareUris(uri1, uri2) {
+        return this.getLongUri(uri1) === this.getLongUri(uri2);
     }
 
+    /**
+     * returns true if the given uri is in the list of uris, wether the uri is a short or long uri
+     */
+    public includesUri(uris: Array<string>, uri: string): boolean {
+        if (!uris || !Array.isArray(uris)) {
+            return false;
+        }
+        return uris.some((item) => this.compareUris(item, uri));
+    }
     public versionInfo: any = [];
 
     public loadVersionInfo() {

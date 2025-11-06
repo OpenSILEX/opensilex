@@ -26,18 +26,25 @@ import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -165,11 +172,24 @@ public class ExperimentDAO {
 
     }
 
-    public ListWithPagination<ExperimentModel> search(ExperimentSearchFilter filter) throws Exception {
+    /**
+     *
+     * @param filter search filter to use
+     * @param fetchProjects, if true then fetch projects associated to experiments, otherwise no extra request will be made.
+     * @param fetchScientificSupervisors, if true then fetch scientific supervisors, otherwise no extra request will be made.
+     * @param fetchTechnicalSupervisors, if true then fetch technical supervisors, otherwise no extra request will be made.
+     * @return list of experiments, with embedded fields loaded according to the used sparql schema
+     * @throws Exception
+     */
+    public ListWithPagination<ExperimentModel> search(
+            ExperimentSearchFilter filter,
+            boolean fetchProjects,
+            boolean fetchScientificSupervisors,
+            boolean fetchTechnicalSupervisors
+            ) throws Exception {
         LocalDate startDate;
         LocalDate endDate;
         if (filter.getYear() != null) {
-            String yearString = Integer.toString(filter.getYear());
             startDate = LocalDate.of(filter.getYear(), 1, 1);
             endDate = LocalDate.of(filter.getYear(), 12, 31);
         } else {
@@ -177,7 +197,9 @@ public class ExperimentDAO {
             endDate = null;
         }
 
-        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
+        SparqlSchema<ExperimentModel> schema = getSparqlSchema(fetchProjects, fetchScientificSupervisors, fetchTechnicalSupervisors);
+
+        ListWithPagination<ExperimentModel> xps = sparql.searchWithPaginationUsingSchema(
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
@@ -191,6 +213,7 @@ public class ExperimentDAO {
                     appendPublicFilter(select, filter.isPublic());
                     appendFacilitiesFilter(select, filter.getFacilities());
                 },
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
@@ -198,6 +221,32 @@ public class ExperimentDAO {
 
         return xps;
 
+    }
+
+    private SparqlSchema<ExperimentModel> getSparqlSchema(boolean fetchProjects, boolean fetchScientificSupervisors, boolean fetchTechnicalSupervisors) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        List<SparqlSchemaSimpleNode<?>> childrenOfRoot = new ArrayList<>(List.of(
+                new SparqlSchemaSimpleNode<>(FacilityModel.class, ExperimentModel.FACILITY_FIELD),
+                new SparqlSchemaSimpleNode<>(SpeciesModel.class, ExperimentModel.SPECIES_FIELD)
+        ));
+        if(fetchProjects){
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(ProjectModel.class, ExperimentModel.PROJECT_URI_FIELD));
+        }
+        if(fetchScientificSupervisors){
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(PersonModel.class, ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD));
+        }
+        if(fetchTechnicalSupervisors){
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(PersonModel.class, ExperimentModel.TECHNICAL_SUPERVISOR_FIELD));
+        }
+
+        SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
+                ExperimentModel.class,
+                childrenOfRoot,
+                false
+        );
+
+        SparqlSchema<ExperimentModel> schema = new SparqlSchema<>(rootNode);
+        return schema;
     }
 
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {

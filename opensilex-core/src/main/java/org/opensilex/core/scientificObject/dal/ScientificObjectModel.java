@@ -39,7 +39,6 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             useDefaultGraph = false
     )
     protected ExperimentModel experiment;
-
     public static String PARTICIPATES_IN_FIELD = "experiment";
 
     @SPARQLProperty(

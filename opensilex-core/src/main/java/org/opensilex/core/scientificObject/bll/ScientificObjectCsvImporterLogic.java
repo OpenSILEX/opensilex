@@ -71,7 +71,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * </ul>
  *
  * <hr>
- * <b>Batch validations : {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int)}</b>
+ * <b>Batch validations : {@link #customBatchValidation(CsvOwlRestrictionValidator, List, int, boolean)}</b>
  * <ul>
  *     <li>In experimental context, each object name must be unique inside experiment. We apply {@link ScientificObjectDAO#checkLocalDuplicates(List)} method to ensure that no duplicate names</li>
  *     <li>In experimental context, each URI must unique. We apply {@link ScientificObjectDAO#checkLocalURIDuplicates(List)} method to ensure that no duplicate URIs</li>
@@ -296,18 +296,18 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             // check existence of a URI (return false/true) in Context
             List<SPARQLResult> result = scientificObjectDAO.checkUriExistInContext(validator, model, totalRowIdx, rootClassURI, graphNode);
             if (result == null) return;
-            String isURIExistInGraph = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
+            String isURIExistInGraphString = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
+            boolean isUriExistInGraph = isURIExistInGraphString.equalsIgnoreCase("true");
 
             // Scenario 1 & 5: If the URI entered in CSV doesn't exist and if there's no SO with the same name in XP if we are in an XP -> insert the SO
-            if ((isURIExistInGraph.equalsIgnoreCase("") || isURIExistInGraph.equalsIgnoreCase("false"))
-                    && (alreadyExistingOsWithName == null)) {
+            if (!isUriExistInGraph && (alreadyExistingOsWithName == null)) {
                 addModelInModelChunk(model, modelChunkToCreate);
                 // register URI to the set of URIs to create new SOs
                 filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
             }
 
             // Scenario 3: If the URI entered in CSV does exist in context -> update the SO
-            else if (isURIExistInGraph.equalsIgnoreCase("true")) {
+            else if (isUriExistInGraph) {
                 addModelInModelChunk(model, modelChunkToUpdate);
             }
 
@@ -411,7 +411,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 CsvOwlRestrictionValidator restrictionValidator,
                 List<ScientificObjectModel> modelChunk,
                 int offset,
-                boolean forUpdate
+                boolean isForUpdate
             ) throws IOException{
         if(CollectionUtils.isEmpty(modelChunk)){
             return;
@@ -427,31 +427,19 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         checkLocalDuplicateURIs(restrictionValidator, modelChunk, offset);
 
         //Validations to perform if batch concerns an update
-        if(forUpdate){
+        if(isForUpdate){
             final int maxNumberOfXpPermittedForTypeChange = experiment != null ? 1 : 0;
 
             verifyTypeChangeAndApplyConsumer(
                     modelChunk,
                     (VerifyTypeRequestResult nextParsedResult) -> {
-                        if(nextParsedResult.participatesInArray.length > maxNumberOfXpPermittedForTypeChange){
+                        if(nextParsedResult.experimentQuantity > maxNumberOfXpPermittedForTypeChange){
                             addForbiddenTypeChangeError(restrictionValidator, offset, nextParsedResult.expandedURI, SPARQLDeserializers.getExpandedURI(nextParsedResult.newTypeUri));
                         }
                     },
                     true
             );
 
-        }
-    }
-
-    private static class VerifyTypeRequestResult {
-        final String expandedURI;
-        final URI newTypeUri;
-        final String[] participatesInArray;
-
-        private VerifyTypeRequestResult(String expandedURI, URI newTypeUri, String[] participatesInArray) {
-            this.expandedURI = expandedURI;
-            this.newTypeUri = newTypeUri;
-            this.participatesInArray = participatesInArray;
         }
     }
 
@@ -505,7 +493,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                             new VerifyTypeRequestResult(
                                     expandedURI,
                                     newTypeUri,
-                                    (StringUtils.isEmpty(participatesInStringValue) ? new String[0] : participatesInStringValue.split(","))
+                                    (StringUtils.isEmpty(participatesInStringValue) ? 0 : participatesInStringValue.split(",").length)
                             )
                     );
                 }
@@ -912,6 +900,18 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                     sparql.getDefaultGraph(ScientificObjectModel.class),
                     true
             );
+        }
+    }
+
+    private static class VerifyTypeRequestResult {
+        final String expandedURI;
+        final URI newTypeUri;
+        final int experimentQuantity;
+
+        private VerifyTypeRequestResult(String expandedURI, URI newTypeUri, int experimentQuantity) {
+            this.expandedURI = expandedURI;
+            this.newTypeUri = newTypeUri;
+            this.experimentQuantity = experimentQuantity;
         }
     }
 }

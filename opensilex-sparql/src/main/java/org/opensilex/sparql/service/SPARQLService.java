@@ -1449,31 +1449,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
         }
 
-        //Ugly, hopefully temporary solution (loadListByURIs was failing from around list length of 18)
-        List<URI> neededUrisAsList = new ArrayList<>(neededInstances);
-        List<T> allResults = new ArrayList<>();
-
-        int batchSize = 15;
-        for (int i = 0; i < neededInstances.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, neededInstances.size());
-            List<URI> batch = neededUrisAsList.subList(i, end);
-
-            List<T> partial = loadListByURIs(
-                    graph,
-                    mapper.getObjectClass(),
-                    batch,
-                    getDefaultLang(),
-                    null,
-                    null
-            );
-
-            if (partial != null) {
-                allResults.addAll(partial);
-            }
-        }
-
-        return allResults;
-
+        return loadListByURIs(
+                graph,
+                mapper.getObjectClass(),
+                neededInstances,
+                getDefaultLang(),
+                null,
+                null
+        );
     }
 
     private <T extends SPARQLResourceModel> void updateAutoUpdateFields(SPARQLClassObjectMapper<T> mapper, T oldInstance, T instance) throws Exception {

@@ -2,6 +2,7 @@ package org.opensilex.core.scientificObject.bll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -41,6 +42,7 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,7 +62,7 @@ import java.util.stream.Stream;
  * <hr>
  * <b>Batch validations : {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int)}</b>
  * <ul>
- *     <li>In experimental context, each object name must be unique inside experiment. We apply {@link ScientificObjectDAO#checkLocalDuplicates(List)} method to ensure that no duplicate names</li>
+ *     <li>In experimental context, each object name must be unique inside experiment. We apply {@link ScientificObjectLogic#checkLocalDuplicates(List)} method to ensure that no duplicate names</li>
  *     <li>In experimental context, each URI must unique. We apply {@link ScientificObjectDAO#checkLocalURIDuplicates(List)} method to ensure that no duplicate URIs</li>
  * </ul>
  *
@@ -114,7 +116,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         geoDAO = new GeospatialDAO(mongoDB);
         moveDAO = new MoveEventDAO(sparql, mongoDB);
-        scientificObjectDAO = new ScientificObjectDAO(sparql, mongoDB);
+        scientificObjectDAO = new ScientificObjectDAO(sparql);
 
         if (experiment != null) {
             // ensure that the user has the right to access experiment
@@ -397,14 +399,32 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
     private void checkLocalDuplicateNames(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
         try {
-            scientificObjectDAO.checkLocalDuplicates(modelChunk);
+            checkLocalDuplicates(modelChunk);
         } catch (DuplicateNameListException e) {
             addDuplicateNameErrors(modelChunk, restrictionValidator, e.getExistingUriByName(), offset);
         }
     }
+
+    private void checkLocalURIDuplicates(List<ScientificObjectModel> models) throws DuplicateURIListException {
+
+        Set<URI> uniqueURIs = new HashSet<>();
+
+        Map<URI,String> localDuplicatesByNames = new HashMap<>();
+        models.forEach(model -> {
+            // if URI already exist, then register it as a duplicate URI
+            if(! uniqueURIs.add(model.getUri())){
+                localDuplicatesByNames.put(model.getUri(), model.getName());
+            }
+        });
+
+        if(!localDuplicatesByNames.isEmpty()){
+            throw new DuplicateURIListException(localDuplicatesByNames);
+        }
+    }
+
     private void checkLocalDuplicateURIs(CsvOwlRestrictionValidator restrictionValidator, List<ScientificObjectModel> modelChunk, int offset) {
         try {
-            scientificObjectDAO.checkLocalURIDuplicates(modelChunk);
+            checkLocalURIDuplicates(modelChunk);
         } catch (DuplicateURIListException e) {
             addDuplicateURIErrors(modelChunk, restrictionValidator, e.getExistingNameByURI(), offset);
         }
@@ -567,13 +587,13 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 setExperimentInSOObj(model);
             }
         }
-        scientificObjectDAO.create(models, graph);
+        scientificObjectDAO.create(graphNode, models);
 
         // associated moves creation
         List<MoveModel> moves = new ArrayList<>();
         for (ScientificObjectModel object : models) {
             MoveModel facilityMoveEvent = new MoveModel();
-            if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
+            if (ScientificObjectLogic.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moves.add(facilityMoveEvent);
             }
         }
@@ -602,6 +622,26 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
     }
 
+    private void checkLocalDuplicates(List<ScientificObjectModel> models) throws DuplicateNameListException{
+        Set<String> uniquesNames = new HashSet<>();
+
+        Map<String,URI> localDuplicatesByUri = new HashMap<>();
+        models.forEach(model -> {
+            // if name already exist, then register it as a duplicate name
+            if(! uniquesNames.add(model.getName())){
+                localDuplicatesByUri.put(model.getName(),model.getUri());
+            }
+        });
+
+        if(!CollectionUtils.isEmpty(localDuplicatesByUri.keySet())){
+            throw new DuplicateNameListException(localDuplicatesByUri);
+        }
+    }
+
+    private boolean checkIfSOHasFacilityURIs(SPARQLResourceModel object) {
+        return object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
+    }
+
     private void update(List<ScientificObjectModel> models, List<GeospatialModel> geospatialModelsToUpdate) throws Exception {
 
         GeospatialModel geospatialToBeUpdated;
@@ -610,11 +650,11 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         for(ScientificObjectModel model : models) {
             // setting experiment in SO model if we try updating a SO from an XP
             setExperimentInSOObj(model);
-            scientificObjectDAO.setLastUpdateDateInSO(model);
+            model.setLastUpdateDate(OffsetDateTime.now());
             Node graphNode = SPARQLDeserializers.nodeURI(experiment);
             List<URI> childrenURIs = scientificObjectDAO.fetchChildrenURIs(model.getUri(), currentUser, graphNode);
 
-            boolean hasFacilityURI = scientificObjectDAO.checkIfSOHasFacilityURIs(model);
+            boolean hasFacilityURI = checkIfSOHasFacilityURIs(model);
             scientificObjectDAO.updateSOAndMove(model.getUri(), currentUser, graphNode, model, childrenURIs, hasFacilityURI);
 
             if(experiment != null) {

@@ -704,59 +704,6 @@ public class ScientificObjectLogic {
         }
     }
 
-    /**
-     * Check into objectGraph if it exists any object with a name corresponding with a name from objects, throw {@link DuplicateNameListException} if so
-     *
-     * @param objects objects to check (need to have a non-null {@link SPARQLNamedResourceModel#getName()}
-     * @param objectGraph graph into checking of duplicate name is done
-     *
-     * @throws DuplicateNameListException if at least one object from objects use a {@link SPARQLNamedResourceModel#getName()} already used by another object into objectGraph.
-     * The exception has the {@link DuplicateNameListException#getExistingUriByName()} method which return association between existing name and uri.
-     * @throws SPARQLException If some error is encountered during SPARQL query execution
-     * @throws IllegalArgumentException if objects is null or empty or if objectGraph is null
-     *
-     * @apiNote This method performs a SPARQL request with a VALUES clause on each object name
-     * A large collection of object could lead to a too big SPARQL query, which may be un-parsable or too slow.
-     * Try to split your object' names verification, into multiple call to this method, if you have too much object to handle.
-     *
-     * The produced query looks like : <br>
-     *
-     * <pre>
-     * {@code
-     *
-     * SELECT  ?uri ?name
-     * WHERE
-     * {
-     *     ?rdfType  rdfs:subClassOf*  vocabulary:ScientificObject
-     *     GRAPH <http://opensilex.dev/id/experiment/experiment1> {
-     *           ?uri  a           ?rdfType ;
-     *                 rdfs:label  ?name
-     *     }
-     *     VALUES ?name { "name_1" "name_2"  "name_k"}
-     * }
-     * }</pre>
-     */
-    public void checkUniqueNameByGraph(List<ScientificObjectModel> objects, URI objectGraph) throws DuplicateNameListException, SPARQLException {
-        Objects.requireNonNull(objectGraph);
-
-        // unique name restriction only apply on some experiment graph
-        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraphURI)){
-            return;
-        }
-
-        if(CollectionUtils.isEmpty(objects)){
-            throw new IllegalArgumentException("objects is null or empty");
-        }
-
-        checkLocalDuplicates(objects);
-
-        Map<String,URI> existingUriByName = dao.checkUniqueNameByGraph(objects, objectGraph);
-
-        if(existingUriByName!=null && !existingUriByName.isEmpty()){
-            throw new DuplicateNameListException(existingUriByName);
-        }
-    }
-
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
         List<URI> targets = new ArrayList<>();
         targets.add(object.getUri());
@@ -877,22 +824,6 @@ public class ScientificObjectLogic {
             }
         } else {
             return null;
-        }
-    }
-
-    private void checkLocalDuplicates(List<ScientificObjectModel> models) throws DuplicateNameListException{
-        Set<String> uniquesNames = new HashSet<>();
-
-        Map<String,URI> localDuplicatesByUri = new HashMap<>();
-        models.forEach(model -> {
-            // if name already exist, then register it as a duplicate name
-            if(! uniquesNames.add(model.getName())){
-                localDuplicatesByUri.put(model.getName(),model.getUri());
-            }
-        });
-
-        if(!CollectionUtils.isEmpty(localDuplicatesByUri.keySet())){
-            throw new DuplicateNameListException(localDuplicatesByUri);
         }
     }
     //#endregion

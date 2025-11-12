@@ -33,6 +33,8 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.ThrowingFunction;
+
 import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;

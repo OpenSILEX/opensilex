@@ -2399,6 +2399,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         validateReverseRelations(instance, parent);
     }
 
+    /**
+     * Validate a collection of instances, ie check that all relations URIS exists in the triplestore.
+     * Does not check that instances URIS exists.
+     * @param instances to check relations
+     */
     public <T extends SPARQLResourceModel> void validate(Collection<T> instances, SPARQLResourceModel parent) throws Exception {
         if (!this.isShaclEnabled()) {
             validateRelations(instances, parent);

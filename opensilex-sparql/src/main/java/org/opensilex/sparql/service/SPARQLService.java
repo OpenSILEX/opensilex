@@ -1215,7 +1215,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * Prepare the creation of multiple instances and their sub-instances | WARNING if parent is not null, all instances should have the same parent | WARNING all instances should be of the same class and have the same mapper
-     * @param graph                    the graph onto instances are created
+     * @param graph                    the graph where the instances are created
      * @param mapper                   the SPARQL mapper used in order to generate query according instances fields
      * @param subInstanceUpdateBuilder an UpdateBuilder which can be updated by adding new statements if not null
      * @param checkUriExist            indicate if the service must check if instances already exist
@@ -1234,8 +1234,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             URI rdfType = instance.getType();
             if (rdfType == null) {
                 instance.setType(new URI(mapper.getRDFType().getURI()));
-            } else {
-                instance.setType(rdfType);
             }
 
             if (!blankNode) {
@@ -1273,7 +1271,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
         Node graph = getDefaultGraph(instances.iterator().next().getClass());
-        create(graph, instances, 1000, false, false, fieldsToExclude);
+        create(graph, instances, DEFAULT_MAX_INSTANCE_PER_QUERY , false, false, fieldsToExclude);
     }
 
     public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {

@@ -1424,7 +1424,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * needed instances are :
      * - any instancies with autoUpdate fields
      * - any instancies with a field that is both null and is a IgnoreUpdateIfNull
-     * - any instancies with custom properties
      */
     private <T extends SPARQLResourceModel> List<T> loadOnlyOldNeededInstances(List<T> instances, SPARQLClassObjectMapper<T> mapper) throws Exception {
 
@@ -1443,10 +1442,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     neededInstances.add(instance.getUri());
                     break;
                 }
-            }
-
-            if (mapper.getClassAnalyzer().isHandleCustomProperties()) {
-                neededInstances.add(instance.getUri());
             }
         }
 

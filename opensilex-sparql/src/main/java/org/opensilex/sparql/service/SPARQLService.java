@@ -1312,36 +1312,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * load only needed old instances for an update operation.
      * needed instances are :
      * - any instancies with autoUpdate fields
-     * - any instancies with a field that is both null and is a IgnoreUpdateIfNull
      */
     private <T extends SPARQLResourceModel> List<T> loadOnlyOldNeededInstances(List<T> instances, SPARQLClassObjectMapper<T> mapper, Node graph) throws Exception {
-
         List<Field> autoupdateFields = mapper.getAutoUpdateFields();
         if ( ! autoupdateFields.isEmpty()){ // we have some autoupdate fields, so we load old instances
             return loadListByURIs(mapper.getObjectClass(), instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toCollection(ArrayList::new)), getDefaultLang());
         }
-
-
-        HashSet<URI> neededInstances = new HashSet<>();
-        List<Field> ignoreUpdateIfNullFields = mapper.getIgnoreUpdateIfNullFields();
-        for (T instance : instances) {
-            for (Field field : ignoreUpdateIfNullFields) {
-                Object fieldValue = mapper.getFieldValue(instance, field);
-                if (fieldValue == null) {
-                    neededInstances.add(instance.getUri());
-                    break;
-                }
-            }
-        }
-
-        return loadListByURIs(
-                graph,
-                mapper.getObjectClass(),
-                neededInstances,
-                getDefaultLang(),
-                null,
-                null
-        );
+        return new ArrayList<>();
     }
 
     private <T extends SPARQLResourceModel> void updateAutoUpdateFields(SPARQLClassObjectMapper<T> mapper, T oldInstance, T instance) throws Exception {

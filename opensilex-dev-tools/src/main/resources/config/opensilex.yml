@@ -1,44 +1,44 @@
 ontologies:
-  baseURI: http://opensilex.dev/
-  baseURIAlias: dev
-  sparql:
-    #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
-    config:
-      serverURI: http://localhost:8667/rdf4j-server/
-      repository: opensilex
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
+    sparql:
+        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
+        config:
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
 
 file-system:
-  fs:
-    config:
-      defaultFS: local
-      connections:
-        local:
-          implementation: org.opensilex.fs.local.LocalFileSystemConnection
-          config:
-            basePath: ../../opensilex-data
-        #     irods:
-        #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-        #         config:
-        #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-        gridfs:
-          implementation: org.opensilex.fs.gridfs.GridFSConnection
-          config:
+    fs:
+        config:
+            defaultFS: local
+            connections:
+                local:
+                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
+                    config:
+                        basePath: ../../opensilex-data
+                #     irods:
+                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+                #         config:
+                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
+                gridfs:
+                    implementation: org.opensilex.fs.gridfs.GridFSConnection
+                    config:
+                        host: localhost
+                        port: 8668
+                        database: opensilex
+            # customPath:
+            #     datafile/: irods
+
+big-data:
+    mongodb:
+        config:
             host: localhost
             port: 8668
             database: opensilex
-      # customPath:
-      #     datafile/: irods
-
-big-data:
-  mongodb:
-    config:
-      host: localhost
-      port: 8668
-      database: opensilex
-  #            timezone: Europe/Paris
+    #            timezone: Europe/Paris
 
 phisws:
-  infrastructure: opensilex
+    infrastructure: opensilex
 # Configuration for module: SecurityModule (SecurityConfig)
 # security:
 # #    Email service (EmailService)
@@ -72,9 +72,20 @@ phisws:
 #  projectHomepage: http://www.opensilex.org/
 
 system:
-  ignoredModules:
-    org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
-    org.opensilex.phis.PhisWsModule: opensilex-phis.jar
+    ignoredModules:
+        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+
+front:
+    agroportal:
+        entity:
+            - AGROVOC
+            - PO
+        trait:
+            - PATO
+        method:
+            - TRANSFORMON
+        unit:
+            - OBOE
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"

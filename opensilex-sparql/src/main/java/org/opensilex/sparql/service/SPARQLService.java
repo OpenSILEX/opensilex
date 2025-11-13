@@ -1436,7 +1436,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             if (oldInstance == null) {
                 throw new SPARQLInvalidURIException(instance.getUri());
             }
-            mapper.updateInstanceFromOldValues(oldInstance, instance);
             // update dependants fields
             updateAutoUpdateFields(mapper, oldInstance, instance);
     }

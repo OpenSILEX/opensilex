@@ -695,7 +695,7 @@ public class OntologyAPI {
 
     @POST
     @Path("/uri_types")
-    @ApiOperation("Return all rdf types of an uri")
+    @ApiOperation("Return all rdf types of some URIS")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

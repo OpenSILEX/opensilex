@@ -238,7 +238,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
     }
 
     /**
-     *  Check a single model relation
+     *  Check a single model relation. If it is valid it gets added to the relations list of model.
      * @param graph model graph
      * @param classModel {@link ClassModel} corresponding with {@code model} type ({@link SPARQLResourceModel#getType()})
      * @param model the model for which we validate the relation
@@ -277,7 +277,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
     }
 
     /**
-     * Check a single model relation with a datatype value
+     * Check a single model relation with a datatype value. If it is valid it gets added to the relations list in the model.
      * @param graph model graph
      * @param model the model for which we validate the relation
      * @param property property of the relation to validate
@@ -313,6 +313,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
     /**
      * Check a single model relation with an object-type value
      * Handles relations that are of type Instant separately as the normal way tries to parse as URI
+     * If it is valid it gets added to the relations list in the model.
      * @param graph model graph
      * @param model the model for which we validate the relation
      * @param property property of the relation to validate

@@ -416,6 +416,6 @@ Changes in the detailed results :
 
 For Observation Units positions the move events aren’t taken into account.
 
-No tests are implemented. Testing was done using the [BrAPI-Validator](https://github.com/plantbreeding/IPK-BrAPI-Validator) in a modifyied version to allow for the use of special characters in DbIds. This is needed because we use URIs, that have special characters, as DbIds. These changes couldn’t be added to the main repo yet. So for now this version is available [here](https://forgemia.inra.fr/OpenSILEX/opensilex-brapi-validator).
+No tests are implemented. Testing was done using the [BrAPI-Validator](https://github.com/plantbreeding/IPK-BrAPI-Validator) in a modifyied version to allow for the use of special characters in DbIds. This is needed because we use URIs, that have special characters, as DbIds. These changes couldn’t be added to the main repo yet. So for now this version is available [here](https://forge.inrae.fr/OpenSILEX/opensilex-brapi-validator).
 
 An additional step would be to use this app in our gitlab-ci for automated testing of these services.

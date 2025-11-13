@@ -5,58 +5,48 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.io.StringWriter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.ExprAggregator;
-import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
-import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
-import org.apache.jena.vocabulary.*;
+import org.apache.jena.vocabulary.OWL2;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.sparql.utils.SHACL;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Seq;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.vocabulary.OWL2;
-import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
-
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-
-import org.opensilex.sparql.utils.SHACL;
 
 /**
  * @author vincent
@@ -342,12 +332,18 @@ class SPARQLClassQueryBuilder {
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        addCreateBuilder(graph, instance, create, blankNode,createExtension);
+        addCreateBuilder(graph, instance, create, blankNode,createExtension, null);
         return create;
     }
 
-    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+    /**
+     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     */
+    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension, List<String> fieldsToExclude) throws Exception {
         Node uriNode = executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
+            if (fieldsToExclude != null && fieldsToExclude.contains(field.getName())) {
+                return;
+            }
 
             if (graph == null) {
                 create.addInsert(quad.asTriple());
@@ -366,6 +362,7 @@ class SPARQLClassQueryBuilder {
         }
         return uriNode;
     }
+
 
     public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
         UpdateBuilder delete = new UpdateBuilder();
@@ -388,7 +385,99 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}
+     * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued once, whatever the graph they are stored in.
+     * Useful for update operations where dc:publisher and dc:issued should not be updated.
+     * Generated query same as getDeleteBuilder(List, List) with excludedPredicates = [dc:publisher, dc:issued]
+     * Filter will be : FILTER (?p NOT IN (dc:publisher, dc:issued))
+     * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, List, URI) to see the generated query example
+     */
+    public UpdateBuilder getDeleteBuilderForUpdateCases(List<URI> urisToDelete, URI graph) throws Exception {
+        List<URI> excludedPredicates = List.of(
+                URI.create("http://purl.org/dc/terms/publisher"),
+                URI.create("http://purl.org/dc/terms/issued")
+        );
+        return getDeleteBuilder(urisToDelete, excludedPredicates, graph);
+    }
+
+    /**
+     * Delete all triples related to the given urisToDelete, except those with a predicate included in 'excludedPredicates' ,whatever the graph they are stored in.
+     * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handle short and long uris.
+     * @param graph if not null, the graph will be used for the delete clause, else the query search in all graphs. Replacing the graph variable ?g by the given graph uri in the generated query.
+     * generated query example : (the filter clause appears only if excludedPredicates is not empty)
+     * DELETE {
+     *   GRAPH ?g { ?uriToDelete ?p ?o . }
+     *   GRAPH ?g { ?s ?p ?uriToDelete . }
+     * }
+     * WHERE {
+     *    FILTER ( ?uri IN ( <uriToDelete1>, <uriToDelete2>) )
+     *   {
+     *     	GRAPH ?g {
+     *                  ?uriToDelete  ?p  ?o
+     *                  FILTER (?p NOT IN (<excludedPredicates1>, <excludedPredicates1>))
+     *               }
+     *   }
+     *     UNION
+     *       { GRAPH ?g
+     *           { ?s  ?p  ?uriToDelete}
+     *       }
+     * }
+     */
+    private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates, URI graph) {
+        UpdateBuilder delete = new UpdateBuilder();
+        if (urisToDelete == null || urisToDelete.isEmpty()) {
+            return delete;
+        }
+
+        Var uriVar = makeVar("uriToDelete");
+        Var subjectVar = makeVar("s");
+        Var predicateVar = makeVar("p");
+        Var objectVar = makeVar("o");
+        Var graphVar = makeVar("g");
+        Node graphObject = null;
+        if(graph != null){
+            graphObject = SPARQLDeserializers.nodeURI(graph);
+        }
+
+        Triple relation = new  Triple(uriVar, predicateVar, objectVar);
+        Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
+
+        //WhereBuilder insideGraphDelete = new WhereBuilder();
+
+        delete.addDelete((graphObject != null ? graphObject : graphVar), relation);
+        delete.addDelete((graphObject != null ? graphObject : graphVar), inverseRelation);
+        //delete.addGraph((graphObject != null ? graphObject : graphVar), insideGraphDelete);
+
+
+        WhereBuilder globalWhere = new WhereBuilder();
+
+        globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, urisToDelete));
+
+        WhereBuilder graphsBlock = new WhereBuilder();
+
+        //graph to delete relations
+        WhereBuilder graphSubquery = new WhereBuilder();
+        graphSubquery.addWhere(relation);
+
+        //not delete excluded predicates
+        if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
+            Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
+            graphSubquery.addFilter(predicateFilter);
+        }
+
+        graphsBlock.addGraph((graphObject != null ? graphObject : graphVar), graphSubquery);
+
+        //graph to delete inverse relations
+        graphsBlock.addUnion(new WhereBuilder().addGraph((graphObject != null ? graphObject : graphVar), inverseRelation));
+
+        globalWhere.addWhere(graphsBlock);
+        delete.addWhere(globalWhere);
+
+        return delete;
+    }
+
+
+    /**
+     * Add the WHERE clause into handler, depending on if the given field is optional or not, according {@link #analyzer}
      *
      * @param select the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
@@ -421,17 +510,6 @@ class SPARQLClassQueryBuilder {
 
     /**
      * Add a WHERE clause into the handler, with the specified language filter.
-     *
-     * @param select
-     * @param graph
-     * @param uriFieldName
-     * @param property
-     * @param field
-     * @param requiredHandlersByGraph
-     * @param optionalHandlersByGraph
-     * @param customHandlerByFields
-     * @param lang
-     * @param isObject
      * @param filterLangWithDefault If true, the lang filter will have two options : the specified language and the
      *                              default language. If false, only the specified language will be filtered.
      */
@@ -585,10 +663,6 @@ class SPARQLClassQueryBuilder {
     /**
      * Add a lang filter which also takes the default language, if it exists. That means that this filter can return
      * at most 2 values. Do not use this method if you want only one value.
-     *
-     * @param fieldName
-     * @param lang
-     * @param handler
      */
     private void addLangFilterWithDefault(String fieldName, String lang,
                                           WhereHandler handler) {
@@ -618,12 +692,6 @@ class SPARQLClassQueryBuilder {
      * </pre>
      *
      * The method can also be used to filter on the default language with an empty string as the language parameter.
-     *
-     * @param where
-     * @param fieldVar
-     * @param property
-     * @param fieldNameVar
-     * @param lang
      */
     private void addOptionalLangClause(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
         WhereBuilder optionalLang = new WhereBuilder();
@@ -640,7 +708,7 @@ class SPARQLClassQueryBuilder {
      *     It is guaranteed that at most one value will be returned.
      * </p>
      * <p>
-     *     For example, it can be used to retrieve the label of a RDF type :
+     *     For example, it can be used to retrieve the label of an RDF type :
      * </p>
      * <pre>
      *     OPTIONAL {
@@ -651,12 +719,6 @@ class SPARQLClassQueryBuilder {
      *         FILTER (langMatches(lang(?rdfTypeName), "")
      *     }
      * </pre>
-     *
-     * @param where
-     * @param fieldVar
-     * @param property
-     * @param fieldNameVar
-     * @param lang
      */
     private void addOptionalLangClauseOrDefault(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
         addOptionalLangClause(where, fieldVar, property, fieldNameVar, lang);

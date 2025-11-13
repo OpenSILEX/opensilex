@@ -52,12 +52,13 @@ public interface CsvImporter<T extends SPARQLResourceModel> {
      * Import {@code models} parsed and validated
      * @param validation current state of validation
      * @param models models to be inserted
+     * @param modelChunkToUpdate models to be updated
      * @throws Exception if an unexpected errors occurs during models insertion in database
      *
      * @apiNote {@link #importCSV(File, boolean, BiConsumer)} and {@link #importCSV(File, boolean)} should
      * rely on this method for the insertion of models which are validated. It allows implementation
-     * to define a custom way to insert models, without affecting the validation and parsing logic.
+     * to define a custom way to insert and update models, without affecting the validation and parsing logic.
      */
-    void create(CSVValidationModel validation,  List<T> models) throws Exception;
+    void upsert(CSVValidationModel validation, List<T> models, List<T> modelChunkToUpdate) throws Exception;
 
 }

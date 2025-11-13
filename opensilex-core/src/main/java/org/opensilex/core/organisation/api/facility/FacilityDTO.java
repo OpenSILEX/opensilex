@@ -7,12 +7,10 @@ package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
-import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -125,4 +123,5 @@ public class FacilityDTO extends RDFObjectDTO {
 
         return dto;
     }
+
 }

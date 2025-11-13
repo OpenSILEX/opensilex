@@ -56,11 +56,11 @@ import java.util.stream.Collectors;
 
 public class FacilityLogic {
 
-    private SPARQLService sparql;
-    private MongoDBServiceV2 mongodb;
-    private FacilityDAO facilityDAO;
-    private OrganizationDAO organizationDAO;
-    private SiteLogic siteLogic;
+    private final SPARQLService sparql;
+    private final MongoDBServiceV2 mongodb;
+    private final FacilityDAO facilityDAO;
+    private final OrganizationDAO organizationDAO;
+    private final SiteLogic siteLogic;
     private final GeocodingService geocodingService;
 
 
@@ -126,7 +126,7 @@ public class FacilityLogic {
             validateFacilityAccess(uri, user);
             return facilityDAO.get(uri, user.getLanguage());
         } catch (ForbiddenURIAccessException exception) {
-            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri.toString());
+            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri);
         } catch (Exception e) {
             throw new NotFoundURIException(uri);
         }
@@ -235,7 +235,6 @@ public class FacilityLogic {
 
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.update(instance);
-
             if(Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())){
                 if(Objects.nonNull(existingModel.getLocationObservationCollection())){
                     updateFacilityLocations(session, instance, existingModel, locations);
@@ -255,6 +254,16 @@ public class FacilityLogic {
 
         organizationDAO.invalidateCache();
         return instance;
+    }
+
+    /**
+     * Updates many facilities, will NOT affect their locations.
+     *
+     * @param facilities
+     * @throws Exception
+     */
+    public void updateMany(List<FacilityModel> facilities) throws Exception {
+        facilityDAO.updateMany(facilities);
     }
 
     /**
@@ -302,6 +311,8 @@ public class FacilityLogic {
             return lastLocationByFacility.get(0);
         }
     }
+
+
     //#endregion
 
     //region Search rights
@@ -507,5 +518,6 @@ public class FacilityLogic {
         }
     }
     //#endregion
+
 }
 

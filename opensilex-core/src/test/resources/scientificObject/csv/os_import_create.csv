@@ -1,0 +1,6 @@
+uri,type,rdfs:label
+column_description,column_description,column_description
+test:id/csv_import_os_sample1,vocabulary:Sample,Sample1
+test:id/csv_import_os_sample2,vocabulary:Sample,Sample2
+test:id/csv_import_os_sample3,vocabulary:Sample,Sample3
+test:id/csv_import_os_sample4,vocabulary:Sample,Sample4

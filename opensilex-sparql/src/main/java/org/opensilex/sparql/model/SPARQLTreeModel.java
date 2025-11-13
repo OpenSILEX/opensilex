@@ -18,6 +18,7 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
     protected T parent;
     public static final String PARENT_FIELD = "parent";
 
+    //protected List<T> children;
     protected List<T> children = new ArrayList<>();
     public static final String CHILDREN_FIELD = "children";
 

@@ -282,8 +282,6 @@ import TableView from './common/views/TableView.vue'
 components["opensilex-TableView"] = TableView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
-import DataTableAsyncView from './common/views/DataTableAsyncView.vue'
-components["opensilex-DataTableAsyncView"] = DataTableAsyncView;
 import NbElementPerPageSelector from "./common/views/NbElementPerPageSelector.vue";
 components["opensilex-NbElementPerPageSelector"] = NbElementPerPageSelector;
 import Card from './common/views/Card.vue'
@@ -611,7 +609,8 @@ import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
 import VariablePropertySelector from './variables/views/VariablePropertySelector.vue';
 components["opensilex-VariablePropertySelector"] = VariablePropertySelector;
-
+import AssociatedVariablesList from "./variables/AssociatedVariableList.vue";
+components["opensilex-AssociatedVariableList"] = AssociatedVariablesList;
 import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
 components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 import VariableSelector from './variables/views/VariableSelector.vue';
@@ -709,6 +708,8 @@ import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
 components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
+import BatchDetails from './data/BatchDetails.vue';
+components["opensilex-BatchDetails"] = BatchDetails;
 import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';
@@ -744,6 +745,8 @@ import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
 import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
+import DeleteByBatchModal from './data/DeleteByBatchModal.vue';
+components["opensilex-DeleteByBatchModal"] = DeleteByBatchModal;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';
@@ -816,6 +819,8 @@ import AnnotationForm from './annotations/form/AnnotationForm.vue';
 components["opensilex-AnnotationForm"] = AnnotationForm;
 import AnnotationList from './annotations/list/AnnotationList.vue';
 components["opensilex-AnnotationList"] = AnnotationList;
+import AnnotationDetails from './annotations/form/AnnotationDetails.vue';
+components["opensilex-AnnotationDetails"] = AnnotationDetails;
 
 // DEVICES
 import DeviceView from './devices/DeviceView.vue';

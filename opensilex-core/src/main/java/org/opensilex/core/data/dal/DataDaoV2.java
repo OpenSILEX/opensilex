@@ -65,8 +65,11 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
         Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
         Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
+        Bson batchAscIndex = Indexes.ascending(DataModel.BATCH_URI_FIELD);
 
         Map<Bson, IndexOptions> indexes = DataFileDaoV2.getIndexes();
+
+        indexes.put(batchAscIndex, null);
 
         // Index of field, sorted by date : (experiment, provenance, variable, target, provenance agent)
         indexes.put(Indexes.compoundIndex(variableAscIndex, dateDescIndex), null);

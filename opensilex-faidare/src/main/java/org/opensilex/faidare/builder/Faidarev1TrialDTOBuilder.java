@@ -32,7 +32,10 @@ public class Faidarev1TrialDTOBuilder {
                 .setStudies(
                         this.experimentDAO.search(
                                         new ExperimentSearchFilter().setUser(accountModel)
-                                                .setProjects(Collections.singletonList(projectModel.getUri()))
+                                                .setProjects(Collections.singletonList(projectModel.getUri())),
+                                false,
+                                false,
+                                false
                                 )
                                 .getList()
                                 .stream().map(studySummaryDTOBuilder::fromModel).collect(Collectors.toList())

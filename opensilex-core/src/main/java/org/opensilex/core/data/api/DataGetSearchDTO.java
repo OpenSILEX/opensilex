@@ -37,6 +37,7 @@ public class DataGetSearchDTO extends DataGetDTO {
 
     public static DataGetSearchDTO getDtoFromModel(DataModel model, Set<URI> dateVariables) {
         DataGetSearchDTO dto = new DataGetSearchDTO();
+        dto.setPublisher(model.getPublisher());
         dto.fromModel(model, dateVariables);
         return dto;
     }

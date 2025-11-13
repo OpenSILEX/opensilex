@@ -91,7 +91,7 @@ public class RDFObjectDTO {
         this.relations = relations;
     }
 
-    public static void validatePropertiesAndAddToObject(URI contextUri, ClassModel classModel, SPARQLResourceModel object, List<RDFObjectRelationDTO> relations, OntologyDAO ontologyDAO) throws URISyntaxException {
+    public static void validatePropertiesAndAddToObject(URI contextUri, ClassModel classModel, SPARQLResourceModel object, List<RDFObjectRelationDTO> relations, OntologyDAO ontologyDAO) throws URISyntaxException, InvalidValueException {
         for (RDFObjectRelationDTO relation : relations) {
             URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
             if (!ontologyDAO.validateThenAddObjectRelationValue(contextUri, classModel, propertyShortURI, relation.getValue(), object)) {

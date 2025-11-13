@@ -8,6 +8,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.nosql.mongodb.MongoDBService;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -26,6 +27,7 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
     private static AccountModel user;
     private static AnnotationModel a1, a2, a3;
     private static AnnotationDAO dao;
+    private static MongoDBService nosql;
 
 
     @BeforeClass
@@ -46,7 +48,7 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
         user.setLanguage("en");
         user.setAdmin(true);
 
-        dao = new AnnotationDAO(sparql);
+        dao = new AnnotationDAO(sparql, nosql);
     }
 
     private static AnnotationModel getAnnotationModel(int i) {
@@ -104,21 +106,46 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
     public void testSearchAll() throws Exception {
         List<AnnotationModel> objects =
                 dao.search(
-                    null,
-                    null,
-                    null,
-                    null,
-                    user.getLanguage(),
-                    new ArrayList<OrderBy>(),
-                    0,
-                    20).getList();
+                        null,
+                        null,
+                        null,
+                        null,
+                        user.getLanguage(),
+                        new ArrayList<OrderBy>(),
+                        0,
+                        20,
+                         user).getList();
 
         assertNotNull(objects);
         assertEquals(3, objects.size());
 
-        assertModelEquals(a1, objects.get(0));
-        assertModelEquals(a2, objects.get(1));
-        assertModelEquals(a3, objects.get(2));
+        assertTrue(objects.stream().anyMatch(objectModel -> {
+            try {
+                assertModelEquals(a1, objectModel);
+                return true;
+            } catch (AssertionError e) {
+                return false;
+            }
+        }));
+
+        assertTrue(objects.stream().anyMatch(objectModel -> {
+            try {
+                assertModelEquals(a2, objectModel);
+                return true;
+            } catch (AssertionError e) {
+                return false;
+            }
+        }));
+
+        assertTrue(objects.stream().anyMatch(objectModel -> {
+            try {
+                assertModelEquals(a3, objectModel);
+                return true;
+            } catch (AssertionError e) {
+                return false;
+            }
+        }));
+
     }
 
     public void testCountAnnotations() {
@@ -134,4 +161,6 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
         assertEquals(expected.getDescription(), actual.getDescription());
         assertEquals(expected.getTargets(), actual.getTargets());
     }
+
+
 }

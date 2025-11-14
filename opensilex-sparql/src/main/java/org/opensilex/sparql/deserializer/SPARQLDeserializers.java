@@ -49,9 +49,6 @@ public class SPARQLDeserializers {
         datatypeClassMap.put(XSDDatatype.XSDnonNegativeInteger.getURI(), Integer.class);
         datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
         datatypeClassMap.put(XSDDatatype.XSDnonPositiveInteger.getURI(), Integer.class);
-        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
-        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
-        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
         datatypeClassMap.put(XSDDatatype.XSDlong.getURI(), Long.class);
         datatypeClassMap.put(XSDDatatype.XSDunsignedLong.getURI(), Long.class);
         datatypeClassMap.put(XSDDatatype.XSDshort.getURI(), Short.class);

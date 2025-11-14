@@ -8,12 +8,13 @@ package org.opensilex.core.germplasm.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import java.util.Map;
-import java.util.Objects;
+import java.net.URI;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  * DTO representing JSON for searching germplasm or getting them by uri
@@ -21,10 +22,10 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  * @author Alice Boizet
  */
 @JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "synonyms", "code",
-    "production_year", "description", "species", "species_name","variety", 
-    "variety_name", "accession", "accession_name", "institute", "website",
-    GermplasmGetExportDTO.hasParentGermplasmFieldName, GermplasmGetExportDTO.hasParentMGermplasmFieldName, GermplasmGetExportDTO.hasParentFGermplasmFieldName,
-    "metadata"})
+    "production_year", "description", "species", "species_name","variety",
+    "variety_name", "accession", "accession_name", "institute", "website","is_public", "groups",
+     GermplasmGetExportDTO.hasParentGermplasmFieldName, GermplasmGetExportDTO.hasParentMGermplasmFieldName, GermplasmGetExportDTO.hasParentFGermplasmFieldName,
+     "metadata"})
 public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
 
     /**
@@ -53,6 +54,12 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         dto.setRdfType(model.getType());
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
+        dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
+        if ((model.getIsPublic()) != null) {
+            dto.setIsPublic(model.getIsPublic());
+        }else{
+            dto.setIsPublic(true);
+        }
         if (Objects.nonNull(model.getPublicationDate())) {
             dto.setPublicationDate(model.getPublicationDate());
         }

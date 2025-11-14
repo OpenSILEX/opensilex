@@ -35,6 +35,7 @@
       label="GermplasmForm.subtaxa"
       helpMessage="GermplasmForm.subtaxa-help"
       variant="primary"
+      placeholder = "GermplasmForm.synonyms"
     ></opensilex-TagInputForm>
 
     <!-- synonyms -->
@@ -44,6 +45,7 @@
       label="GermplasmForm.synonyms"
       helpMessage="GermplasmForm.synonyms-help"
       variant="primary"
+      placeholder = "GermplasmForm.synonyms"
     ></opensilex-TagInputForm>
     <!-- <label for="tags-basic">Type a new tag and press enter</label>
     <b-form-tags
@@ -67,7 +69,7 @@
       type="text"
       helpMessage="GermplasmForm.species-help"
     ></opensilex-InputForm>
- 
+
     <!-- variety -->
     <opensilex-InputForm
       v-if=" !($opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI))"
@@ -76,7 +78,6 @@
       type="text"
       helpMessage="GermplasmForm.variety-help"
     ></opensilex-InputForm>
-    
 
     <!-- accession -->
     <opensilex-InputForm
@@ -86,7 +87,15 @@
       type="text"
       helpMessage="GermplasmForm.accession-help"
     ></opensilex-InputForm>
-    
+
+    <!-- public germplasm -->
+    <opensilex-FormSelector
+      :options="isPublicOptions"
+      :selected.sync="form.is_public"
+      :required="true"
+      label="GermplasmForm.isPublic_label"
+    ></opensilex-FormSelector>    
+
     <!-- institute -->
     <opensilex-InputForm
       v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
@@ -105,6 +114,14 @@
       rules="url"
       helpMessage="GermplasmForm.website-help"
     ></opensilex-InputForm>
+
+    <!-- group -->
+    <opensilex-GroupSelector
+      label="GermplasmForm.groups"
+      :groups.sync="form.groups"
+      :disabled="form.is_public"
+      :multiple="true"
+    ></opensilex-GroupSelector>
     
     <!-- year -->
     <opensilex-InputForm
@@ -142,7 +159,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref  } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch  } from "vue-property-decorator";
 import Vue from "vue";
 import {GermplasmGetAllDTO, GermplasmService, GermplasmUpdateDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
@@ -160,7 +177,6 @@ export default class GermplasmForm extends Vue {
   $store: any;
   service: GermplasmService;
   existingParentUrisToLabelsMap : Map<string, string> = new Map<string, string>();
-
 
   get user() {
     return this.$store.state.user;
@@ -180,6 +196,16 @@ export default class GermplasmForm extends Vue {
   uriGenerated = true;
 
   attributesArray = [];
+  isPublicOptions = [
+    {
+      id: true, 
+      label: this.$i18n.t("GermplasmForm.isPublic")
+    },
+    {
+      id: false, 
+      label: this.$i18n.t("GermplasmForm.isPrivate")
+    },
+  ];
 
   @Prop()
   editMode: boolean;
@@ -197,6 +223,8 @@ export default class GermplasmForm extends Vue {
         institute: null,
         production_year: null,
         description: null,
+        is_public: null,
+        groups: [],
         synonyms:[],
         relations:[],
         metadata: null
@@ -221,6 +249,8 @@ export default class GermplasmForm extends Vue {
       institute: null,
       production_year: null,
       description: null,
+      is_public: null,
+      groups: [],
       synonyms:[],
       relations:[],
       metadata: null
@@ -282,6 +312,13 @@ export default class GermplasmForm extends Vue {
     this.attributesArray = AttributesTable.readAttributes(metadata);
   }
 
+  @Watch("form.is_public")
+  resetGroupsOnPublicGermplasm(){
+    if(this.form.is_public) {
+      this.form.groups = []
+    }
+  }
+
 }
 </script>
 
@@ -298,16 +335,16 @@ en:
     uri-help: Unique germplasm identifier
     type: Type
     type-help: Germplasm Type
-    species : Species URI
+    species: Species URI
     species-help: Species URI of the germplasm
-    variety : Variety URI
+    variety: Variety URI
     variety-help: Variety URI of the germplasm
     accession: Accession URI
     accession-help: Accession URI of the germplasm
     institute: Institute
     institute-help: The code of the institute which the germplasm comes from
     comment: Description
-    comment-help: Description associated to the germplasm 
+    comment-help: Description associated to the germplasm
     year: Production Year
     year-help: Year when the ressource has been produced
     synonyms: Synonyms
@@ -318,6 +355,11 @@ en:
     code-help: The code of the germplasm
     website: Web site
     website-help: the web page of the institute or the germplasm
+    groups: Groups
+    isPublic: Public
+    isPrivate: Private
+    isPublic_label: Define status
+
 
 fr:
   GermplasmForm:
@@ -327,9 +369,9 @@ fr:
     uri-help: Identifiant unique du germplasm
     type: Type
     type-help: Type du germplasm
-    species : URI de l'espèce
+    species: URI de l'espèce
     species-help: URI de l'espèce
-    variety : URI de variété
+    variety: URI de variété
     variety-help: URI de la variété
     accession: URI d'accession
     accession-help: Accession URI of the germplasm
@@ -347,5 +389,10 @@ fr:
     code-help: Code de la ressource génétique
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
+    groups: Groupes
+    isPublic: Public
+    isPrivate: Privé
+    isPublic_label: Définir le statut
+
 </i18n>
 

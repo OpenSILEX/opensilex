@@ -147,6 +147,8 @@
                         </template>
 
                         <template v-slot:advancedSearch>
+
+                          <!-- Germplasm Attributes -->
                             <div>
                                 <opensilex-FilterField>
                                     <opensilex-GermplasmAttributesSelector
@@ -170,6 +172,26 @@
                                 </opensilex-FilterField>
                             </div>
 
+                          <!-- Germplasm Visibility -->
+                            <div>
+                              <opensilex-FilterField :fullWidth="true">
+                                <opensilex-FormSelector
+                                    :label="$t('GermplasmList.filter.is_public')"
+                                    :options="[
+                                                { id: true, label: $t('GermplasmList.filter.is_public_true') },
+                                                { id: false, label: $t('GermplasmList.filter.is_public_false') }
+                                              ]"
+                                    :selected.sync="filter.is_public"
+                                    :async="false"
+                                    :multiple="false"
+                                    :showCount="false"
+                                    :placeholder="$t('GermplasmList.filter.is_public-placeholder')"
+                                />
+                              </opensilex-FilterField>
+
+                            </div>
+
+
                         </template>
                     </opensilex-SearchFilterField>
                 </div>
@@ -184,7 +206,7 @@
                 @select="$emit('select', $event)"
                 @unselect="$emit('unselect', $event)"
                 @selectall="$emit('selectall', $event)"
-                :defaultSortBy="this.nameFieldLabel"
+                defaultSortBy="label"
                 labelNumberOfSelectedRow="GermplasmList.selected"
                 iconNumberOfSelectedRow="fa#seedling"
             >
@@ -237,9 +259,19 @@
                     ></opensilex-UriLink>
                 </template>
 
-                <template v-slot:cell(actions)="{data}">
+              <template v-slot:cell(germplasm_is_public)="{ data }">
+                <opensilex-Icon
+                    v-if="data.item.is_public === false"
+                    icon="ik#ik-lock"
+                    class="text-secondary"
+                    style="font-size: 1.2em"
+                    :title="$t('GermplasmList.filter.is_public_false')"
+                />
+              </template>
+
+              <template v-slot:cell(actions)="{data}">
                     <b-button-group size="sm">
-                        <opensilex-EditButton
+                      <opensilex-EditButton
                             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
                             @click="$emit('onEdit', data.item.uri)"
                             label="GermplasmList.update"
@@ -352,6 +384,7 @@ export default class GermplasmList extends Vue {
     parent_germplasms_f: [],
     germplasm_group: undefined,
     uri: undefined,
+    is_public: undefined,
     metadataKey: undefined,
     metadataValue: undefined
   };
@@ -369,6 +402,7 @@ export default class GermplasmList extends Vue {
           parent_germplasms_f: [],
           germplasm_group: undefined,
           uri: undefined,
+          is_public: undefined,
           metadataKey: undefined,
           metadataValue: undefined
         };
@@ -437,7 +471,12 @@ export default class GermplasmList extends Vue {
             {
                 key: "species_name",
                 label: "GermplasmList.speciesLabel"
+            },
+            {
+                key: "germplasm_is_public",
+                label: "GermplasmList.is_public"
             }
+
         ];
         if (!this.noActions) {
             tableFields.push({
@@ -453,7 +492,7 @@ export default class GermplasmList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.updateSelectedGermplasm()
-    this.tableRef.changeCurrentPage(1);     
+    this.tableRef.changeCurrentPage(1);
     }
 
     updateSelectedGermplasm(){
@@ -468,28 +507,30 @@ export default class GermplasmList extends Vue {
   searchGermplasm(options) {
     // this.updateExportFilters();
     return this.service.searchGermplasm(
-      this.filter.uri,
-      this.filter.rdf_type,
-      this.filter.name,
-      undefined,
-      this.filter.production_year,
-      this.filter.species,
-      undefined,
-      undefined,
-      this.filter.germplasm_group,
-      this.filter.institute,
-      this.experimentUri || this.filter.experiment,
-      this.filter.parent_germplasms,
-      this.filter.parent_germplasms_m,
-      this.filter.parent_germplasms_f,
-      this.addMetadataFilter(),
-      options.orderBy,
-      options.currentPage,
-      options.pageSize
+        this.filter.uri,
+        this.filter.rdf_type,
+        this.filter.name,
+        undefined,
+        this.filter.production_year,
+        this.filter.species,
+        undefined,
+        undefined,
+        this.filter.germplasm_group,
+        this.filter.institute,
+        this.experimentUri || this.filter.experiment,
+        this.filter.parent_germplasms,
+        this.filter.parent_germplasms_m,
+        this.filter.parent_germplasms_f,
+        this.addMetadataFilter(),
+        this.filter.is_public,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
     );
   }
 
-    exportCSV(exportAll: boolean) {
+
+  exportCSV(exportAll: boolean) {
         let path = "/core/germplasm/export";
         let today = new Date();
         let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
@@ -639,6 +680,7 @@ en:
         selected: Selected Germplasm
         export: Export Germplasm list
         selected-all: All Germplasm
+        is_public: Visibility
 
         filter:
           description: Germplasm Search
@@ -662,6 +704,10 @@ en:
           metadataValue: Attribute value
           germplasm-group: Germplasm Group
           parents: Parents
+          is_public: Visibility
+          is_public_true: Public
+          is_public_false: Private
+          is_public-placeholder : Select germplasm visibility
 
 fr:
     GermplasmList:
@@ -676,6 +722,7 @@ fr:
         selected: Ressource(s) Génétique(s) Sélectionnée(s)
         export: Exporter la liste
         selected-all: Toutes les ressources génétiques
+        is_public: Visibilité
 
 
         filter:
@@ -700,5 +747,9 @@ fr:
           metadataValue: Valeur de l'attribut
           germplasm-group: Groupe de ressources génétiques
           parents: Parents
+          is_public: Visibilité
+          is_public_true: Publique
+          is_public_false: Privé
+          is_public-placeholder : Sélectionner la visibilité du germplasm
 
 </i18n>

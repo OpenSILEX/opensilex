@@ -58,15 +58,16 @@ public class GermplasmDAO {
         this(sparql, nosql.getServiceV2());
     }
 
-    public GermplasmModel update(GermplasmModel model) throws Exception {
+    public GermplasmModel update(GermplasmModel model, AccountModel user) throws Exception {
+        //sparqlDAO.validateGermplasmAccess(model.getUri(), user);
         MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
         MetaDataModel attributeModel = model.getMetadata();
 
         if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
-            sparqlDAO.update(model);
+            sparqlDAO.update(model,user);
         } else {
-            new SparqlMongoTransaction(sparql,nosql).execute(session -> {
-                sparqlDAO.update(model);
+            new SparqlMongoTransaction(sparql, nosql).execute(session -> {
+                sparqlDAO.update(model, user);
 
                 if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
                     attributeModel.setUri(model.getUri());
@@ -120,7 +121,7 @@ public class GermplasmDAO {
             if(model.getMetadata() != null){
                 //Set the metaDataModel's uri to be the same as the device
                 model.getMetadata().setUri(model.getUri());
-                
+
                 metaDataDao.create(session, model.getMetadata());
             }
             return null;
@@ -165,6 +166,7 @@ public class GermplasmDAO {
      * @return GermplasmModel
      */
     public GermplasmModel get(URI uri, AccountModel user, boolean withNested) throws Exception {
+        //sparqlDAO.validateGermplasmAccess(uri, user);
         GermplasmModel germplasm = sparqlDAO.get(uri, user, withNested);
         if (germplasm != null) {
             MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
@@ -176,11 +178,21 @@ public class GermplasmDAO {
     }
 
     /**
-     * @param searchFilter  search filter
-     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+     * Paginated search of {@link GermplasmModel} according to the provided criteria, with an option
+     * to filter by metadata and the ability to load nested objects.
+     * <p>
+     * If a metadata filter is provided, the corresponding URIs are extracted
+     * and intersected with the selected URIs. If no results match, an
+     * empty list is returned.
+     * </p>
+     *
+     * @param searchFilter        search criteria (filters, pagination, sorting, access rights)
+     * @param fetchMetadata       {@code true} to retrieve and associate metadata with the results
+     * @param fetchNestedObjects  {@code true} to load nested relationships (e.g., parents)
+     * @return a paginated list of {@link GermplasmModel} matching the criteria
+     * @throws Exception if a SPARQL search or metadata retrieval error occurs
      */
+
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
@@ -212,11 +224,14 @@ public class GermplasmDAO {
 
         searchFilter.setUris(new ArrayList<>(filteredUris));
 
-        ListWithPagination<GermplasmModel> models = sparqlDAO.search(searchFilter, fetchNestedObjects);
+        ListWithPagination<GermplasmModel> models = sparqlDAO.search(
+                searchFilter,
+                fetchNestedObjects
+        );
 
         if (fetchMetadata) {
             // get all Germplasm metadata with one query
-             metaDataDao.getMetaDataAssociatedTo(
+            metaDataDao.getMetaDataAssociatedTo(
                     models.getList(), // get Metadata associated with Germplasm uris
                     GermplasmModel::setMetadata // update Germplasm metadata
             );
@@ -232,13 +247,14 @@ public class GermplasmDAO {
         return sparqlDAO.isGermplasmType(rdfType);
     }
 
-    public void delete(URI uri) throws Exception {
-        
-        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+    public void delete(URI uri, AccountModel user) throws Exception {
+
+        //sparqlDAO.validateGermplasmAccess(uri, user);
+        new SparqlMongoTransaction(sparql, nosql).execute(session -> {
             if (metaDataDao.exists(uri)) {
                 metaDataDao.delete(session, uri);
             }
-            sparqlDAO.delete(uri);
+            sparqlDAO.delete(uri,user);
             return null;
         });
     }

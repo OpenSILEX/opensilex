@@ -113,6 +113,19 @@
                 :uri="germplasm.variety"
                 :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.variety)}"
               ></opensilex-LabelUriView>
+
+              <opensilex-UriListView
+                v-if="(germplasm.groups.length > 0)"
+                label="GermplasmDetails.groups"
+                :list="groupsList"
+              ></opensilex-UriListView>
+
+                <opensilex-BooleanView
+                  v-if="(germplasm.is_public != null)"
+                  label="GermplasmDetails.is_public"
+                  :value="germplasm.is_public"
+                ></opensilex-BooleanView>
+
               <opensilex-LabelUriView
                 v-if="(germplasm.accession_name != null) || (germplasm.accession != null)"
                 label="GermplasmDetails.accession"
@@ -224,6 +237,7 @@ import GermplasmForm from "./GermplasmForm.vue";
 
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {DocumentsService} from "opensilex-core/api/documents.service";
+import {GroupDTO, SecurityService} from "opensilex-security/index";
 
 @Component
 export default class GermplasmDetails extends Vue {
@@ -240,6 +254,7 @@ export default class GermplasmDetails extends Vue {
   addInfo = [];
   experimentName: any = "";
   germplasmGroupName = "";
+  groupsList = [];
 
   $AnnotationsService: AnnotationsService
   $DocumentsService: DocumentsService
@@ -335,6 +350,7 @@ export default class GermplasmDetails extends Vue {
     variety_name: null,
     accession: null,
     accession_name: null,
+    is_public : null,
     institute: null,
     code: null,
     production_year: null,
@@ -344,7 +360,8 @@ export default class GermplasmDetails extends Vue {
     has_parent_germplasm: [],
     has_parent_germplasm_m: [],
     has_parent_germplasm_f: [],
-    synonyms: []
+    synonyms: [],
+    groups : []
   };
 
   created() {
@@ -363,6 +380,7 @@ export default class GermplasmDetails extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
         this.germplasm = http.response.result;
         this.loadExperiments;
+        this.loadGroups();
         this.getAddInfo();
       })
       .catch(this.$opensilex.errorHandler);
@@ -393,6 +411,26 @@ export default class GermplasmDetails extends Vue {
       options.currentPage,
       options.pageSize
     );
+  }
+
+  loadGroups() {
+    let service: SecurityService = this.$opensilex.getService(
+      "opensilex.SecurityService"
+    );
+    this.groupsList = [];
+    if (this.germplasm.groups && this.germplasm.groups.length > 0) {
+      service
+        .getGroupsByURI(this.germplasm.groups)
+        .then((http: HttpResponse<OpenSilexResponse<GroupDTO[]>>) => {
+          this.groupsList = http.response.result.map((group) => {
+            return {
+              uri: group.uri,
+              value: group.name,
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
+    }
   }
 
   loadGermplasmGroups(options) {
@@ -436,6 +474,14 @@ export default class GermplasmDetails extends Vue {
     let updateDTO : GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(this.germplasm);
     this.germplasmForm.showEditForm(updateDTO);
   }
+
+    toggleUpdatePublicStatus() {
+        let updateDTO : GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(this.germplasm);
+        this.service
+          .updateGermplasm(updateDTO)
+          .catch(this.$opensilex.errorHandler);
+
+    }
 
   deleteGermplasm() {
     this.service
@@ -520,6 +566,8 @@ en:
     parent: Parent Germplasms
     parentM: Male parents
     parentF: Female parents
+    is_public: Public
+    groups: Groups
 
 fr:
   GermplasmDetails:
@@ -528,17 +576,17 @@ fr:
     info: Informations générales
     experiment: Expérimentations connexes
     document: Documents associées
-    uri: URI 
-    name: Nom 
-    rdfType: Type 
-    species: Espèce 
-    variety: Variété 
-    accession: Accession 
-    institute: Institut 
-    year: Année 
-    comment: Description 
+    uri: URI
+    name: Nom
+    rdfType: Type
+    species: Espèce
+    variety: Variété
+    accession: Accession
+    institute: Institut
+    year: Année
+    comment: Description
     backToList: Retourner à la liste des germplasm
-    code: Code 
+    code: Code
     synonyms: Synonymes
     additionalInfo: Informations supplémentaires
     attribute: Attribut
@@ -548,4 +596,7 @@ fr:
     parent: Parents
     parentM: Parents mâle
     parentF: Parents femelles
+    is_public: Public
+    groups: Groupes
+
 </i18n>

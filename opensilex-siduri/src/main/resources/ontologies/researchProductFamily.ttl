@@ -1,0 +1,24 @@
+PREFIX vocabulary: <http://www.opensilex.org/vocabulary/ofs#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+<http://opensilex.dev/id/variable/researchProductFamily.maths_info>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opensilex.dev/id/variable/researchProductFamily.maths_info>  rdfs:label  "Maths-Info"    .
+<http://opensilex.dev/id/variable/researchProductFamily.maths_info>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/d_9"    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_e9ce595a>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_e9ce595a>  rdfs:label  "Analytical chemistry"    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_e9ce595a>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_e9ce595a"    .
+<http://opensilex.dev/id/variable/researchProductFamily.microbial_metrics>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opensilex.dev/id/variable/researchProductFamily.microbial_metrics>  rdfs:label  "Microbial metrics"    .
+<http://opensilex.dev/id/variable/researchProductFamily.molecular_sequences>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opensilex.dev/id/variable/researchProductFamily.molecular_sequences>  rdfs:label  "Molecular sequences"    .
+<http://opensilex.dev/id/variable/researchProductFamily.molecular_sequences>  <http://www.w3.org/2004/02/skos/core#closeMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_514"    .
+<http://opensilex.dev/id/variable/researchProductFamily.sensory_analysis>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opensilex.dev/id/variable/researchProductFamily.sensory_analysis>  rdfs:label  "Sensory analysis"    .
+<http://opensilex.dev/id/variable/researchProductFamily.sensory_analysis>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_16956"    .
+<http://opensilex.dev/id/variable/researchProductFamily.phenotype>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opensilex.dev/id/variable/researchProductFamily.phenotype>  rdfs:label  "Phenotype"    .
+<http://opensilex.dev/id/variable/researchProductFamily.phenotype>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_6131"    .
+<http://opensilex.dev/id/variable/researchProductFamily.microscopy>  rdf:type  vocabulary:ResearchProductFamily    .
+<http://opensilex.dev/id/variable/researchProductFamily.microscopy>  rdfs:label  "Microscopy"    .
+<http://opensilex.dev/id/variable/researchProductFamily.microscopy>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_17604"    .

@@ -1,0 +1,96 @@
+PREFIX vocabulary: <http://www.opensilex.org/vocabulary/oeso#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+<http://aims.fao.org/aos/agrovoc/c_33750>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_33750>  vocabulary:hasId "1578"    .
+<http://aims.fao.org/aos/agrovoc/c_33750>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_33750>  rdfs:label  "Lactobacillus delbrueckii"    .
+<http://aims.fao.org/aos/agrovoc/c_33748>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_33748>  vocabulary:hasId "1582"    .
+<http://aims.fao.org/aos/agrovoc/c_33748>  vocabulary:isPublic  false   .
+<http://aims.fao.org/aos/agrovoc/c_33748>  rdfs:label  "Lactobacillus casei"    .
+<http://opensilex.dev/id/germplasm/species.leuconostoc_citreum>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.leuconostoc_citreum>  rdfs:label  "Leuconostoc citreum"    .
+<http://opensilex.dev/id/germplasm/species.leuconostoc_citreum>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_34492>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_34492>  rdfs:label  "Leuconostoc mesenteroides"    .
+<http://aims.fao.org/aos/agrovoc/c_34492>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.levilactobacillus_brevis>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.levilactobacillus_brevis>  rdfs:label  "Levilactobacillus brevis"    .
+<http://opensilex.dev/id/germplasm/species.levilactobacillus_brevis>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.limosilactobacillus_fermentum>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.limosilactobacillus_fermentum>  rdfs:label  "Limosilactobacillus fermentum"    .
+<http://opensilex.dev/id/germplasm/species.limosilactobacillus_fermentum>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.limosilactobacillus_reuteri>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.limosilactobacillus_reuteri>  rdfs:label  "Limosilactobacillus reuteri"    .
+<http://opensilex.dev/id/germplasm/species.limosilactobacillus_reuteri>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.pediococcus_parvulus>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.pediococcus_parvulus>  rdfs:label  "Pediococcus parvulus"    .
+<http://opensilex.dev/id/germplasm/species.pediococcus_parvulus>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_37576>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_37576>  rdfs:label  "Pediococcus acidilactici"    .
+<http://aims.fao.org/aos/agrovoc/c_37576>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.pediococcus_pentosaceus>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.pediococcus_pentosaceus>  rdfs:label  "Pediococcus pentosaceus"    .
+<http://opensilex.dev/id/germplasm/species.pediococcus_pentosaceus>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_37812>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_37812>  rdfs:label  "Propionibacterium freudenreichii"    .
+<http://aims.fao.org/aos/agrovoc/c_37812>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_26708>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_26708>  rdfs:label  "Streptococcus thermophilus"    .
+<http://aims.fao.org/aos/agrovoc/c_26708>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.weisella_confusa>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.weisella_confusa>  rdfs:label  "Weisella confusa"    .
+<http://opensilex.dev/id/germplasm/species.weisella_confusa>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_paracasei>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_paracasei>  rdfs:label  "Lacticaseibacillus paracasei"    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_paracasei>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_paraplantarum>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_paraplantarum>  rdfs:label  "Lactiplantibacillus paraplantarum"    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_paraplantarum>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_pentosus>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_pentosus>  rdfs:label  "Lactiplantibacillus pentosus"    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_pentosus>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_plantarum>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_plantarum>  rdfs:label  "Lactiplantibacillus plantarum"    .
+<http://opensilex.dev/id/germplasm/species.lacticaseibacillus_plantarum>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_23938>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_23938>  rdfs:label  "Lactobacillus acidophilus"    .
+<http://aims.fao.org/aos/agrovoc/c_23938>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lactobacillus_helveticus>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lactobacillus_helveticus>  rdfs:label  "Lactobacillus helveticus"   .
+<http://opensilex.dev/id/germplasm/species.lactobacillus_helveticus>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lactobacillus_johnsonii>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lactobacillus_johnsonii>  rdfs:label  "Lactobacillus johnsonii"    .
+<http://opensilex.dev/id/germplasm/species.lactobacillus_johnsonii>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lactococcus_cremoris>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lactococcus_cremoris>  rdfs:label  "Lactococcus cremoris"    .
+<http://opensilex.dev/id/germplasm/species.lactococcus_cremoris>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_33370>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_33370>  rdfs:label  "Lactococcus lactis"    .
+<http://aims.fao.org/aos/agrovoc/c_33370>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lentilactobacillus_buchneri>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lentilactobacillus_buchneri>  rdfs:label  "Lentilactobacillus buchneri"    .
+<http://opensilex.dev/id/germplasm/species.lentilactobacillus_buchneri>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.lentilactobacillus_hilgardii>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.lentilactobacillus_hilgardii>  rdfs:label  "Lentilactobacillus hilgardii"    .
+<http://opensilex.dev/id/germplasm/species.lentilactobacillus_hilgardii>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_15940>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_15940>  rdfs:label  "Bacillus subtilis"    .
+<http://aims.fao.org/aos/agrovoc/c_15940>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.eremothecium_gossypii>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.eremothecium_gossypii>  rdfs:label  "Eremothecium gossypii"    .
+<http://opensilex.dev/id/germplasm/species.eremothecium_gossypii>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.janthinobacterium_lividum>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.janthinobacterium_lividum>  rdfs:label  "Janthinobacterium lividum"    .
+<http://opensilex.dev/id/germplasm/species.janthinobacterium_lividum>  vocabulary:isPublic  true   .
+<http://opensilex.dev/id/germplasm/species.chromobacterium_violaceum>  rdf:type  vocabulary:Species    .
+<http://opensilex.dev/id/germplasm/species.chromobacterium_violaceum>  rdfs:label  "Chromobacterium violaceum"    .
+<http://opensilex.dev/id/germplasm/species.chromobacterium_violaceum>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_33751>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_33751>  rdfs:label  "Lactobacillus fermentum"    .
+<http://aims.fao.org/aos/agrovoc/c_33751>  vocabulary:isPublic  true   .
+<http://aims.fao.org/aos/agrovoc/c_33752>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_33752>  rdfs:label  "Lactobacillus helveticus"    .
+<http://aims.fao.org/aos/agrovoc/c_33752>  vocabulary:isPublic  true   .

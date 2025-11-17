@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.opensilex.org/vocabulary/ofs/"
+     xml:base="http://www.opensilex.org/vocabulary/ofs/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:oeev="http://www.opensilex.org/vocabulary/oeev#"
+     xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/ofs"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/source -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/source"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#exactMatch -->
+
+    <owl:AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#exactMatch"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://edamontology.org/data_2044 -->
+
+    <owl:Class rdf:about="http://edamontology.org/data_2044">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+        <rdfs:comment xml:lang="en">One or more molecular sequences, possibly with associated annotation.</rdfs:comment>
+        <rdfs:label xml:lang="en">Sequence</rdfs:label>
+        <rdfs:label xml:lang="fr">Séquence</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://edamontology.org/data_2048 -->
+
+    <owl:Class rdf:about="http://edamontology.org/data_2048">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+        <rdfs:comment xml:lang="en">A human-readable collection of information including annotation on a biological entity or phenomena, computer-generated reports of analysis of primary data (e.g. sequence or structural), and metadata (data about primary data) or any other free (essentially unformatted) text, as distinct from the primary data itself.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Rapport</rdfs:label>
+        <rdfs:label xml:lang="en">Report</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://edamontology.org/data_2884 -->
+
+    <owl:Class rdf:about="http://edamontology.org/data_2884">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+        <rdfs:comment xml:lang="en">Biological data that has been plotted as a graph of some type, or plotting instructions for rendering such a graph.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Graphique</rdfs:label>
+        <rdfs:label xml:lang="en">Plot</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://edamontology.org/data_2977 -->
+
+    <owl:Class rdf:about="http://edamontology.org/data_2977">
+        <rdfs:subClassOf rdf:resource="http://edamontology.org/data_2044"/>
+        <rdfs:comment xml:lang="en">One or more nucleic acid sequences, possibly with associated annotation.</rdfs:comment>
+        <rdfs:label xml:lang="en">Nucleic acid sequence</rdfs:label>
+        <rdfs:label xml:lang="fr">Séquence d&apos;acide nucléique</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://edamontology.org/topic_0769 -->
+
+    <owl:Class rdf:about="http://edamontology.org/topic_0769">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:comment xml:lang="en">Biological or biomedical analytical workflows or pipelines.</rdfs:comment>
+        <rdfs:label>Workflow</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device"/>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#EuropeanOrganization -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EuropeanOrganization">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+        <rdfs:label xml:lang="en">european organization</rdfs:label>
+        <rdfs:label xml:lang="fr">organisation européenne</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#LocalOrganization -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LocalOrganization">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+        <rdfs:comment xml:lang="en">A LOCAL ORGANIZATION is a group of installations located in one site depending on one institution (or more), which share governance committees, a common (or at least highly interoperable) information system, common principles for cost calculation and pricing and a common tool for user access.</rdfs:comment>
+        <rdfs:label xml:lang="en">local organization</rdfs:label>
+        <rdfs:label xml:lang="fr">organisation locale</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#NationalOrganization -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NationalOrganization">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+        <rdfs:comment xml:lang="en">A NATIONAL ORGANIZATION is an organized group of local organizations with governance recognised by national authorities (e.g. respective ministry or national structures).</rdfs:comment>
+        <rdfs:label xml:lang="en">national organization</rdfs:label>
+        <rdfs:label xml:lang="fr">organisation nationale</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/ofs#JointResearchUnit -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/ofs#JointResearchUnit">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+        <dc:source>skos:exactMatch http://opendata.inrae.fr/thesaurusINRAE/c_21443</dc:source>
+        <rdfs:comment xml:lang="fr">Unité de recherche dont la tutelle est partagée avec un ou plusieurs autres partenaires académiques, organismes nationaux de recherche (ONR) et/ou universités et/ou grandes écoles.</rdfs:comment>
+        <rdfs:label xml:lang="en">joint research unit </rdfs:label>
+        <rdfs:label xml:lang="fr">unité mixte de recherche</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/ofs#ServiceUnit -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/ofs#ServiceUnit">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+        <dc:source>skos:exactMatch http://opendata.inrae.fr/thesaurusINRAE/c_2ab0c24d</dc:source>
+        <rdfs:comment xml:lang="fr"> Structure dont les activités sont principalement dédiées à des offres de services et de ressources technologiques.</rdfs:comment>
+        <rdfs:label xml:lang="en">service unit</rdfs:label>
+        <rdfs:label xml:lang="fr">unité de service </rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/Organization -->
+
+    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Organization"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#usesOrganization -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#usesOrganization"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+

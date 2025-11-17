@@ -72,6 +72,12 @@
         <module>opensilex-doc</module>
         <module>opensilex-migration</module>
         <module>opensilex-graphql</module>
+
+        <!-- Connexion Siduri module -->
+        <module>opensilex-siduri</module>
+
+        <!-- Data analysis module -->
+        <module>opensilex-data-analysis</module>
     </modules>
     
     <dependencies>
@@ -172,6 +178,20 @@
             <artifactId>opensilex-dataverse</artifactId>
             <version>${revision}</version>
         </dependency>
+
+                <!-- Siduri dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-siduri</artifactId>
+            <version>${revision}</version>
+        </dependency> 
+
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-data-analysis</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
     </dependencies>
       
     <build>

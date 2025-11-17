@@ -1,0 +1,76 @@
+.bg-phis-green {
+    background-color: #00A3A6
+}
+
+.nav-tab .nav-tab-item .nav-tab-link.active {
+    border-bottom: 2px solid #00A3A6;    
+
+}
+
+.sidebar-header {
+    background-color: #00A3A6;
+}
+
+.customized #main-menu-navigation .nav-item.active::after {
+    background: #00A3A6;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after ,
+.custom-control-input:checked ~ .custom-control-label::before {
+    border-color: #00A3A6;
+    background-color: #00A3A6;
+}
+
+.greenThemeColor {
+    background-color: #00A3A6;
+    border-color: #00A3A6;
+}
+
+.greenThemeColor:hover {
+    background-color: #018371;
+    border-color:#018371;
+    background-color: #00878a;
+    border-color:#00878a;
+    color: #fff;
+}
+
+.createButton:hover {
+    background-color: #00878a;
+    border-color:#00878a;
+}
+
+.addChildButton, .DeviceImportHelpEyeIcon, .ScientificObjectImportHelpEyeIcon, .EventHelpTableViewHelpEyeIcon, .DataHelpTableViewHelpEyeIcon {
+    color: #00A3A6;
+    border-color: #00A3A6;
+}
+
+.addChildButton:hover{
+    background-color: #00A3A6;
+    border-color: #00A3A6;
+}
+
+.downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon {
+    color: #00A3A6;
+    border-color: #00A3A6;
+}
+
+.downloadTemplateBtn:hover, .cardAdvancedSearchIcon:hover, .cardAnnotationIcon:hover {
+    background-color: #00A3A6;
+}
+  
+.back-button:hover {
+    background-color: #00A3A6;
+}
+
+.back-button-icon {
+    color:  #00A3A6;
+}
+  
+.searchMenuIcon .ik-search{
+    -webkit-text-stroke: 1px #00A3A6;
+    color:#00A3A6;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active::after {
+    background: #E9173A;
+}

@@ -1,0 +1,15 @@
+PREFIX vocabulary: <http://www.opensilex.org/vocabulary/ofs#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+<http://opensilex.dev/id/variable/entity.replica>  rdf:type  vocabulary:Entity    .
+<http://opensilex.dev/id/variable/entity.replica>  rdfs:label  "replica"    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_25099>  rdf:type  vocabulary:Entity    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_25099>  rdfs:label  "bacteria"    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_25099>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_25099"    .
+<http://opensilex.dev/id/variable/entity.culture_medium>  rdf:type  vocabulary:Entity    .
+<http://opensilex.dev/id/variable/entity.culture_medium>  rdfs:label  "culture medium"    .
+<http://opensilex.dev/id/variable/entity.culture_medium>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_16840"    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_6583>  rdf:type  vocabulary:Entity    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_6583>  rdfs:label  "strain"    .
+<http://opendata.inrae.fr/thesaurusINRAE/c_6583>  <http://www.w3.org/2004/02/skos/core#exactMatch>  "http://opendata.inrae.fr/thesaurusINRAE/c_6583"    .

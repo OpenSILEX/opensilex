@@ -288,14 +288,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         connection.executeDeleteQuery(delete);
     }
 
-    @Override
-    public void executeDeleteQuery(String delete) throws SPARQLException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("SPARQL DELETE%n%s", delete));
-        }
-        connection.executeDeleteQuery(delete);
-    }
-
     private int transactionLevel = 0;
 
     @Override

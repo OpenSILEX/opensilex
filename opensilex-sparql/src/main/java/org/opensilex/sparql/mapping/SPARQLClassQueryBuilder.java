@@ -543,18 +543,6 @@ class SPARQLClassQueryBuilder {
      *               )
      *         }
      *     }
-     *
-     *   { FILTER NOT EXISTS
-     *     { GRAPH <http://phenome.inrae.fr/m3p/set/germplasm>
-     *       { ?uriToDelete  ?p  ?o
-     *         FILTER (
-     *           ( ( ?uriToDelete = "http://falseuri"^^<http://www.w3.org/2001/XMLSchema#anyURI> ) && ( ?p = "http://www.w3.org/2000/01/rdf-schema#label"^^<http://www.w3.org/2001/XMLSchema#anyURI> ) )
-     *           || ( ( ?uriToDelete = "http://falseuri"^^<http://www.w3.org/2001/XMLSchema#anyURI> ) && ( ?p = "http://www.opensilex.org/vocabulary/oeso#hasId"^^<http://www.w3.org/2001/XMLSchema#anyURI> ) )
-     *         )
-     *       }
-     *     }
-     *   }
-
      */
     private Expr buildNotExistsFilterForUriAndPredicateCouples(Var uriToDeleteVar,
                                                                Var predicateVar,
@@ -567,6 +555,18 @@ class SPARQLClassQueryBuilder {
         predicatesToIgnoreByUri = new HashMap<URI, List<URI>>();
         predicatesToIgnoreByUri.put(URI.create("http://falseuri"), predicatesToIgnore);
 
+        //create new map to work only with long uri in string format
+        Map<String, List<String>> finalPredicatesToIgnoreByUri = new HashMap<>();
+        for (URI uriToDelete : predicatesToIgnoreByUri.keySet()) {
+            List<String> modifiedPredicates = new ArrayList<>();
+            for (URI predicate : predicatesToIgnoreByUri.get(uriToDelete)) {
+                String expandedPredicate = SPARQLDeserializers.getExpandedURI(predicate);
+                modifiedPredicates.add(expandedPredicate);
+            }
+            String expandedUriToDelete = SPARQLDeserializers.getExpandedURI(uriToDelete);
+            finalPredicatesToIgnoreByUri.put(expandedUriToDelete, modifiedPredicates);
+        }
+
         WhereBuilder graphBlock = new WhereBuilder();
         Triple relation = isReverseRelation ? new Triple(subjectVar, predicateVar, uriToDeleteVar) :
                 new Triple(uriToDeleteVar, predicateVar, objectVar);
@@ -574,15 +574,19 @@ class SPARQLClassQueryBuilder {
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
 
-        if (predicatesToIgnoreByUri != null && !predicatesToIgnoreByUri.isEmpty()) {
+        if (!finalPredicatesToIgnoreByUri.isEmpty()) {
             List<Expr> uriPredicateFilters = new ArrayList<>();
-            for (URI uri : predicatesToIgnoreByUri.keySet()) {
-                List<URI> predicates = predicatesToIgnoreByUri.get(uri);
-                for (URI predicate : predicates) {
+            for (String uri : finalPredicatesToIgnoreByUri.keySet()) {
+                Expr uriExpr = SPARQLQueryHelper.getExprFactory().asExpr(NodeFactory.createURI(uri));
+                List<String> predicates = finalPredicatesToIgnoreByUri.get(uri);
+                List<Expr> predicatesExpr = predicates.stream()
+                        .map(stringUri -> SPARQLQueryHelper.getExprFactory().asExpr(NodeFactory.createURI(stringUri)))
+                        .toList();
+                for (Expr predicate : predicatesExpr) {
                     Expr andFilter = SPARQLQueryHelper.getExprFactory().and(
                             SPARQLQueryHelper.getExprFactory().eq(
                                     SPARQLQueryHelper.getExprFactory().asVar(uriToDeleteVar.getVarName()),
-                                    uri
+                                    uriExpr
                             ),
                             SPARQLQueryHelper.getExprFactory().eq(
                                     SPARQLQueryHelper.getExprFactory().asVar(predicateVar.getVarName()),

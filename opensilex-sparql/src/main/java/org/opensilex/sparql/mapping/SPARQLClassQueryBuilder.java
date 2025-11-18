@@ -472,11 +472,8 @@ class SPARQLClassQueryBuilder {
         Triple relation = new  Triple(uriVar, predicateVar, objectVar);
         Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
 
-        //WhereBuilder insideGraphDelete = new WhereBuilder();
-
         delete.addDelete((graphObject != null ? graphObject : graphVar), relation);
         delete.addDelete((graphObject != null ? graphObject : graphVar), inverseRelation);
-        //delete.addGraph((graphObject != null ? graphObject : graphVar), insideGraphDelete);
 
 
         WhereBuilder globalWhere = new WhereBuilder();
@@ -489,35 +486,52 @@ class SPARQLClassQueryBuilder {
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
 
-        //not delete excluded predicates
+        //do not delete excluded predicates
         if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
             Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
             graphSubquery.addFilter(predicateFilter);
         }
 
-        var a = buildNotExistsFilterForUriAndPredicateCouples(
-                uriVar,
-                predicateVar,
-                subjectVar,
-                objectVar,
-                (graphObject != null ? graphObject : graphVar),
-                false,
-                new HashMap<>()
-        );
-        a = buildNotExistsFilterForUriAndPredicateCouples(
-                uriVar,
-                predicateVar,
-                subjectVar,
-                objectVar,
-                (graphObject != null ? graphObject : graphVar),
-                true,
-                new HashMap<>()
-        );
+        var predicatesToIgnore = List.of(URI.create("http://www.w3.org/2000/01/rdf-schema#label"), URI.create("http://www.opensilex.org/vocabulary/oeso#hasId"));
+        var predicatesToIgnoreByUri = new HashMap<URI, List<URI>>();
+        predicatesToIgnoreByUri.put(URI.create("http://rfcv/variety/2281"), predicatesToIgnore);
+
+        //do not delete excluded predicate for specific URIs
+        if (predicatesToIgnoreByUri != null && !predicatesToIgnoreByUri.isEmpty()) {
+            Expr NotExists = buildNotExistsFilterForUriAndPredicateCouples(
+                    uriVar,
+                    predicateVar,
+                    subjectVar,
+                    objectVar,
+                    (graphObject != null ? graphObject : graphVar),
+                    false,
+                    predicatesToIgnoreByUri
+            );
+            graphSubquery.addFilter(NotExists);
+        }
+
 
         graphsBlock.addGraph((graphObject != null ? graphObject : graphVar), graphSubquery);
 
         //graph to delete inverse relations
-        graphsBlock.addUnion(new WhereBuilder().addGraph((graphObject != null ? graphObject : graphVar), inverseRelation));
+        WhereBuilder inverseGraphSubquery = new WhereBuilder().
+                addGraph((graphObject != null ? graphObject : graphVar), inverseRelation);
+
+        //do not delete excluded predicate for specific URIs for inverse relations
+        if (predicatesToIgnoreByUri != null && !predicatesToIgnoreByUri.isEmpty()) {
+            Expr NotExistsInverse = buildNotExistsFilterForUriAndPredicateCouples(
+                    uriVar,
+                    predicateVar,
+                    subjectVar,
+                    objectVar,
+                    (graphObject != null ? graphObject : graphVar),
+                    true,
+                    predicatesToIgnoreByUri
+            );
+            inverseGraphSubquery.addFilter(NotExistsInverse);
+        }
+
+        graphsBlock.addUnion(inverseGraphSubquery);
 
         globalWhere.addWhere(graphsBlock);
         delete.addWhere(globalWhere);
@@ -551,10 +565,6 @@ class SPARQLClassQueryBuilder {
                                                                Object graph,
                                                                boolean isReverseRelation,
                                                                Map<URI, List<URI>> predicatesToIgnoreByUri){
-        var predicatesToIgnore = List.of(URI.create("http://www.w3.org/2000/01/rdf-schema#label"), URI.create("http://www.opensilex.org/vocabulary/oeso#hasId"));
-        predicatesToIgnoreByUri = new HashMap<URI, List<URI>>();
-        predicatesToIgnoreByUri.put(URI.create("http://falseuri"), predicatesToIgnore);
-
         //create new map to work only with long uri in string format
         Map<String, List<String>> finalPredicatesToIgnoreByUri = new HashMap<>();
         for (URI uriToDelete : predicatesToIgnoreByUri.keySet()) {

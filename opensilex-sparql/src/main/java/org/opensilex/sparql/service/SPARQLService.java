@@ -1439,7 +1439,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * This method does not delete and recreate dc:publisher and dc:issued relations, in order to keep metadata information.
      * for mor details see :
      * @see SPARQLService#createForUpdate(Collection, Node)
-     * @see SPARQLService#deleteForUpdate(Class, List, URI)
+     * @see SPARQLService#deleteForUpdate(Class, List, Node) 
      * @see #updateFields(SPARQLResourceModel, SPARQLResourceModel)
      */
     public <T extends SPARQLResourceModel> void update(List<T> instances, Node graph) throws Exception {
@@ -1464,7 +1464,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             }
             List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper, graph);
 
-            deleteForUpdate(objectClass, instances, new URI(graph.getURI()));
+            deleteForUpdate(objectClass, instances, graph);
 
             for (T oldInstance : oldInstances) {
                 T instance = instances.stream()
@@ -1495,9 +1495,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * Use it for update operations only.
      * @param graph the graph onto instance are deleted, if null search in all graphs
      */
-    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<T> modelsToDelete, URI graph) throws Exception {
+    private  <T extends SPARQLResourceModel> void deleteForUpdate(Class<T> objectClass, List<T> modelsToDelete, Node graph) throws Exception {
+        URI graphUri = graph == null ? null : URI.create(graph.toString()) ;
+
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(modelsToDelete, graph);
+        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(modelsToDelete, graphUri);
         executeDeleteQuery(query);
     }
 

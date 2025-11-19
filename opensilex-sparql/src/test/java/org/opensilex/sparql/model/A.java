@@ -112,6 +112,13 @@ public class A extends SPARQLResourceModel {
     )
     private String renamedProperty;
 
+    @SPARQLProperty(
+            ontology = TEST_ONTOLOGY.class,
+            property = TEST_ONTOLOGY.ignoreUpdateIfNullString,
+            ignoreUpdateIfNull = true
+    )
+    private String ignoreUpdateIfNullProperty;
+
     public A getA() {
         return a;
     }
@@ -231,4 +238,8 @@ public class A extends SPARQLResourceModel {
     public void setRenamedProperty(String renamedProperty) {
         this.renamedProperty = renamedProperty;
     }
+
+    public String getIgnoreUpdateIfNullProperty() {return ignoreUpdateIfNullProperty;}
+
+    public void setIgnoreUpdateIfNullProperty(String ignoreUpdateIfNullProperty) {this.ignoreUpdateIfNullProperty = ignoreUpdateIfNullProperty;}
 }

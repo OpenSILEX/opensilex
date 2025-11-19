@@ -70,50 +70,6 @@ phisws:
 #  contactEmail: opensilex-help@groupes.renater.fr
 #  # Project homepage (String)
 #  projectHomepage: http://www.opensilex.org/
-core:
-    agroportal:
-        basePath: "https://agroportal.lirmm.fr"
-        baseAPIPath: "https://data.agroportal.lirmm.fr"
-        externalAPIKey: "168d4a29-b44f-4295-b827-6fa5d3fc6389"
-    sharedResourceInstances:
-        -   uri: http://138.102.159.36:8083/rest
-            label:
-                fr: "PHENOME"
-                en: "PHENOME"
-            accountName: admin@opensilex.org
-            accountPassword: admin
-        -   uri: http://138.102.159.36:8082/rest
-            label:
-                fr: "EMPHASIS"
-                en: "EMPHASIS"
-            accountName: admin@opensilex.org
-            accountPassword: admin
-        -   uri: https://vitioeno.mistea.inrae.fr/resource/rest
-            label:
-                fr: "VitiOeno"
-                en: "VitiOeno"
-            accountName: admin@opensilex.org
-            accountPassword: admin
-   # Metrics options (MetricsConfig)
-    metrics:
-        # Activate access metrics (boolean)
-        enableMetrics: true
-        # Metrics configs about system (SystemMetricsConfig)
-        system:
-            # First metrics for any time depending on is time unit (int)
-            timeBeforeFirstMetric: 1
-            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
-            delayBetweenMetrics: 10
-            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
-            metricsTimeUnit: DAYS
-        # Metrics configs about experiments (ExperimentsMetricsConfig)
-        experiments:
-            # First metrics for any time depending on is time unit (int)
-            timeBeforeFirstMetric: 1
-            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
-            delayBetweenMetrics: 2
-            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
-            metricsTimeUnit: DAYS
 
 system:
     ignoredModules:
@@ -121,11 +77,6 @@ system:
 
 front:
     agroportal:
-        ontologyPortals:
-            -   name: AgroPortal
-                url: "https://agroportal.lirmm.fr/"
-            -   name: BioPortal
-                url: "http://bioportal.bioontology.org/"
         entity:
             - AGROVOC
             - PO

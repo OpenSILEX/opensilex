@@ -74,7 +74,7 @@ core:
     agroportal:
         basePath: "https://agroportal.lirmm.fr"
         baseAPIPath: "https://data.agroportal.lirmm.fr"
-        externalAPIKey: "8bc3c0c9-464a-4bce-a218-a9d43fbf0df8"
+        externalAPIKey: "168d4a29-b44f-4295-b827-6fa5d3fc6389"
     sharedResourceInstances:
         -   uri: http://138.102.159.36:8083/rest
             label:

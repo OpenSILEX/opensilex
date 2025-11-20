@@ -14,6 +14,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -35,7 +36,7 @@ import java.util.Map;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
-    "description", "species", "variety", "accession", "institute", "website", "relations", "metadata"})
+    "description", "species","variety", "accession","institute", "website", "relations", "metadata","is_public","groups"}) // "variety", "accession",
 public class GermplasmCreationDTO extends RDFObjectDTO {
 
     
@@ -117,6 +118,18 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
     public URI getType() {
         return type;
     }
+
+    @JsonProperty("is_public")
+    @NotNull
+    @ApiModelProperty(value = "boolean", example = "True", required = true)
+    protected Boolean isPublic;
+
+    @JsonProperty("groups")
+    @ApiModelProperty(value = "groups", example = "")
+    protected List<URI> groups = new ArrayList<>();
+
+
+
 
     public void setRdfType(URI rdfType) {
         super.setType(rdfType);
@@ -214,11 +227,28 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         this.website = website;
     }
 
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    public void setIsPublic(boolean isPublic) { this.isPublic = isPublic; }
+
+    public List<URI> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
+    }
+
     /**
      * WARNING: this method validate the properties of the GermplasmCreationDTO, that should be done in the business layer, but this would require refactoring.
      */
     public GermplasmModel newModel(SPARQLService sparql, String lang, ClassModel classModel) throws SPARQLException, URISyntaxException, InvalidValueException {
         GermplasmModel model = newModelWithoutRelations();
+
+        if (isPublic != null) {
+            model.setIsPublic(isPublic);
+        }
 
         if(relations != null){
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
@@ -294,6 +324,13 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         if (website != null) {
             model.setWebsite(website);
         }
+        List<GroupModel> groupList = new ArrayList<>(groups.size());
+        groups.forEach((URI u) -> {
+            GroupModel group = new GroupModel();
+            group.setUri(u);
+            groupList.add(group);
+        });
+        model.setGroups(groupList);
 
         return model;
     }

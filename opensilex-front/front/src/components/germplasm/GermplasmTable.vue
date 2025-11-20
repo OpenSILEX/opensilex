@@ -11,7 +11,7 @@
       ></opensilex-GermplasmAddColumnModal>
     </div>
 
-    <b-input-group class="mt-2 mb-2" size="sm">
+    <b-input-group id="tableOptions" class="mt-2 mb-2" size="sm">
       <downloadCsv
           ref="downloadCsv"
           class="btn downloadTemplateBtn mb-2 mr-2"
@@ -57,7 +57,7 @@
       ></b-form-select>
     </b-input-group>
 
-    <b-input-group size="sm">
+    <b-input-group id="tableActions" size="sm">
       <b-button
           class="mb-2 mr-2 greenThemeColor"
           @click="onCheckBtnClick()"
@@ -245,8 +245,8 @@ export default class GermplasmTable extends Vue {
   private jsonForTemplate = [];
 
   private readonly checkBoxOptions = [
-    {text: "See all lines", value: "all"},
-    {text: "See lines with errors", value: "NOK"},
+    { text: this.$t("GermplasmTable.checkBoxOptionsAll"), value: "all" },
+    { text: this.$t("GermplasmTable.checkBoxOptionsAllErrors"), value: "NOK" },
   ];
 
   /**
@@ -510,6 +510,18 @@ export default class GermplasmTable extends Vue {
       visible: true,
       editor: true,
     };
+    let isPublicCol = {
+      title:this.$t("GermplasmTable.is_public"),
+      field: "is_public",
+      visible: true,
+      editor: "select",
+      editorParams:{
+        values: {
+          true: "true",
+          false: "false",
+        }
+      }
+    };
     let checkingStatusCol = {
       title: this.$t("GermplasmTable.checkingStatus"),
       field: "checkingStatus",
@@ -527,16 +539,18 @@ export default class GermplasmTable extends Vue {
       formatter: this.errorFormaterFunction,
     };
 
+
     if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.SPECIES_TYPE_URI)) {
       this.tableColumns = [
         idCol,
         statusCol,
         uriCol,
         labelCol,
-        checkingStatusCol,
-        insertionStatusCol,
         synonymCol,
         commentCol,
+        checkingStatusCol,
+        insertionStatusCol,
+        isPublicCol,
       ];
     } else if (
         Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)
@@ -560,6 +574,7 @@ export default class GermplasmTable extends Vue {
         instituteCol,
         websiteCol,
         commentCol,
+        isPublicCol,
       ];
     } else if (
         Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)
@@ -584,6 +599,7 @@ export default class GermplasmTable extends Vue {
         instituteCol,
         websiteCol,
         commentCol,
+        isPublicCol,
       ];
     } else {
       let codeLot = {
@@ -608,6 +624,7 @@ export default class GermplasmTable extends Vue {
         websiteCol,
         productionYearCol,
         commentCol,
+        isPublicCol,
       ];
     }
 
@@ -851,6 +868,7 @@ export default class GermplasmTable extends Vue {
         accession: null,
         institute: null,
         production_year: null,
+        is_public: null,
         description: null,
         code: null,
         synonyms: [],
@@ -879,6 +897,15 @@ export default class GermplasmTable extends Vue {
       ) {
         form.variety = dataToInsert[idx].variety;
       }
+
+      const isPublicRaw = dataToInsert[idx].is_public;
+
+      if (isPublicRaw === undefined || isPublicRaw === null || isPublicRaw === "") {
+        form.is_public = true;
+      } else {
+        form.is_public = String(isPublicRaw).trim().toLowerCase() === "true";
+      }
+
       if (
           dataToInsert[idx].accession != null &&
           dataToInsert[idx].accession != ""
@@ -1215,6 +1242,8 @@ en:
     downloadTemplate: Dowload template
     resetTable: Reset table
     check: Check
+    checkBoxOptionsAll: See all lines
+    checkBoxOptionsAllErrors: See lines with errors
     errorCheckMessage: checking shows some errors, see the table for more details
     successCheckMessage: germplasms are ready to be inserted and/or updated
     successCheckRowMessage: ready to be inserted/updated
@@ -1232,6 +1261,7 @@ en:
     synonyms: Synonyms
     subtaxa: Subtaxa
     website: Website
+    is_public: Public
     addColumn: Add column
     checkingStatusMessage: ready
     insertionStatusMessage: created
@@ -1257,6 +1287,8 @@ fr:
     downloadTemplate: Télécharger un gabarit
     resetTable: Vider tableau
     check: Valider
+    checkBoxOptionsAll: Visualiser tout
+    checkBoxOptionsAllErrors: Visualiser éléments avec erreurs
     errorCheckMessage: Des erreurs sont apparues lors de la validation, voir le tableau pour plus de détails
     successCheckMessage: Les ressources génétiques sont prêts à être insérées
     successCheckRowMessage: prête à être insérée/modifiée
@@ -1274,6 +1306,7 @@ fr:
     synonyms: Synonymes
     subtaxa: Subtaxa
     website: Site web
+    is_public : Publique
     addColumn: Ajouter colonne
     checkingStatusMessage: validé
     insertionStatusMessage: créé

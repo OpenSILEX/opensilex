@@ -14,10 +14,8 @@ import org.opensilex.sparql.utils.Ontology;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -166,5 +164,15 @@ public class SPARQLResourceModel implements SPARQLModel {
 
         this.relations.add(r);
     }
+
+    public static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
+        if (models == null || models.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return models.stream()
+                .map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
 
 }

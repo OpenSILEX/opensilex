@@ -130,7 +130,7 @@ public class GermplasmLogic {
             throw new MultipleErrorListException("getting errors while updating germplasm", multipleErrorObjectList);
         }
         retrieveLinkedSpeciesAndVariety(germplasmModel);
-        return dao.update(germplasmModel);
+        return dao.update(germplasmModel,currentUser);
     }
 
     public void delete(URI instanceURI) throws Exception {
@@ -145,7 +145,7 @@ public class GermplasmLogic {
                     "germplasm with URI '%s' can't be deleted. It is already linked to another germplasm or a scientific object or an experiment."
                     , instanceURI.toString()));
         } else {
-            dao.delete(instanceURI);
+            dao.delete(instanceURI,currentUser);
         }
     }
 
@@ -161,15 +161,20 @@ public class GermplasmLogic {
     }
 
     /**
-     * @param searchFilter  search filter
-     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+     * Paginated search of {@link GermplasmModel} via the DAO according to the provided criteria.
+     *
+     * @param searchFilter        search criteria (filters, pagination, sorting, access rights)
+     * @param fetchMetadata       {@code true} to also load associated metadata
+     * @param fetchNestedObjects  {@code true} to also load related objects (parents, relationships, etc.)
+     * @return a paginated list of {@link GermplasmModel} matching the criteria
+     * @throws Exception if an error occurs during the search
      */
+
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
-            boolean fetchNestedObjects) throws Exception {
+            boolean fetchNestedObjects
+    ) throws Exception {
         return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
     }
 

@@ -20,6 +20,7 @@
     :placeholder="placeholder"
     :noResultsText="noResultsText"
     :helpMessage="helpMessage"
+    :disabled="disabled"
     @select="select"
     @deselect="deselect"
   ></opensilex-FormSelector>
@@ -55,6 +56,9 @@ export default class GroupSelector extends Vue {
 
   @Prop()
   private readonly multiple;
+
+  @Prop()
+  private readonly disabled;
 
   @Prop()
   private readonly helpMessage: string;

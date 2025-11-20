@@ -259,15 +259,6 @@ public class ExperimentGetDTO {
         this.factors = factors;
     }
 
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     public static ExperimentGetDTO fromModel(ExperimentModel model) {
 
         ExperimentGetDTO dto = new ExperimentGetDTO();
@@ -290,11 +281,11 @@ public class ExperimentGetDTO {
             dto.setEndDate(model.getEndDate());
         }
 
-        dto.setScientificSupervisors(getUriList(model.getScientificSupervisors()));
-        dto.setTechnicalSupervisors(getUriList(model.getTechnicalSupervisors()));
-        dto.setGroups(getUriList(model.getGroups()));
-        dto.setSpecies(getUriList(model.getSpecies()));
-        dto.setFactors(getUriList(model.getFactors()));
+        dto.setScientificSupervisors(SPARQLResourceModel.getUriList(model.getScientificSupervisors()));
+        dto.setTechnicalSupervisors(SPARQLResourceModel.getUriList(model.getTechnicalSupervisors()));
+        dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
+        dto.setSpecies(SPARQLResourceModel.getUriList(model.getSpecies()));
+        dto.setFactors(SPARQLResourceModel.getUriList(model.getFactors()));
 
         List<NamedResourceDTO<OrganizationModel>> organizationsDTO = new ArrayList<>();
         model.getOrganizations().forEach((orga) -> {

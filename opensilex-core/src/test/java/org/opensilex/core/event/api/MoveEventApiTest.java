@@ -14,7 +14,6 @@ import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveDetailsDTO;
 import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;

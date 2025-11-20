@@ -8,6 +8,7 @@ package org.opensilex.core.scientificObject.dal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
@@ -42,8 +43,11 @@ import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
@@ -66,7 +70,9 @@ import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -90,8 +96,8 @@ public class ScientificObjectDAO {
     public static final String FORBIDDEN_TYPE_CHANGE_GLOBAL_ERROR_MESSAGE = "Object with URI <%s>'s type cannot be changed, as it is present in at least one experiment";
     public static final String FORBIDDEN_TYPE_CHANGE_XP_ERROR_MESSAGE = "Object with URI <%s>'s type cannot be changed, as it is present in other experiments";
 
-    private final URI defaultGraphURI;
     private final Node defaultGraphNode;
+    private final URI defaultGraphURI;
 
     //#region CONSTRUCTOR
     public ScientificObjectDAO(SPARQLService sparql) {
@@ -99,6 +105,7 @@ public class ScientificObjectDAO {
 
         try{
             defaultGraphNode = sparql.getDefaultGraph(ScientificObjectModel.class);
+            defaultGraphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }catch (SPARQLException e){
             throw new RuntimeException(e);
         }
@@ -517,7 +524,7 @@ public class ScientificObjectDAO {
 
 
     public SelectBuilder getCheckUriListExist(Stream<String> urisToCheck, int streamSize, URI rootClassURI) {
-        return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), getDefaultGraphNode());
+        return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), defaultGraphNode);
     }
 
     /**
@@ -570,17 +577,19 @@ public class ScientificObjectDAO {
 
         Set<URI> uniqueURIs = new HashSet<>();
 
-        Map<URI,String> localDuplicatesByNames = new HashMap<>();
+        Map<URI, String> localDuplicatesByNames = new HashMap<>();
         models.forEach(model -> {
             // if URI already exist, then register it as a duplicate URI
-            if(! uniqueURIs.add(model.getUri())){
+            if (!uniqueURIs.add(model.getUri())) {
                 localDuplicatesByNames.put(model.getUri(), model.getName());
             }
         });
 
-        if(!localDuplicatesByNames.isEmpty()){
+        if (!localDuplicatesByNames.isEmpty()) {
             throw new DuplicateURIListException(localDuplicatesByNames);
         }
+    }
+
     /**
      * Check into objectGraph if it exists any object with a name corresponding with a name from objects, throw {@link DuplicateNameListException} if so
      *
@@ -657,86 +666,27 @@ public class ScientificObjectDAO {
         sparql.create(graphNode, object);
     }
 
-    public URI update(Node graphNode, SPARQLResourceModel object, String lang) throws Exception {
+    public List<URI> fetchChildrenURIs(URI objectURI, Node graphNode, String lang) throws Exception {
         List<URI> childrenURIs = sparql.searchURIs(
                 graphNode,
                 ScientificObjectModel.class,
                 lang,
-                select ->
-                        select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(object.getUri()))
-        );
+                (select) -> {
+                    select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
+                });
+        return childrenURIs;
+    }
+
+    public URI update(Node graphNode, SPARQLResourceModel object, String lang) throws Exception {
+        List<URI> childrenURIs = fetchChildrenURIs(object.getUri(), graphNode, lang);
 
         sparql.update(graphNode, object);
         if (!childrenURIs.isEmpty()) {
             sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, object.getUri());
         }
-    public boolean checkIfSOHasFacilityURIs(SPARQLResourceModel object) {
-        return object.getRelations().stream().anyMatch(relation -> SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI()));
-    }
-
-    /**
-     * Updates a list of scientific objects, handles updating of associated move
-     *
-     * @param models to update
-     * @param currentUser user performing the update
-     * @param context to update in (an experiment or global)
-     * @throws Exception
-     */
-    public void updateMultipleSOAndMoves(List<ScientificObjectModel> models, AccountModel currentUser, Node context, boolean isGlobalContext) throws Exception{
-        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
-
-            //Fetch children so we can replace them
-            Map<URI, List<URI>> oldChildrenPerOSUri = new HashMap<>();
-
-            //Do a loop on models to update moves and to fetch children if we are in an experiment
-            //TODO optimization? is it possible to not update the moves one by one?
-            for (ScientificObjectModel model : models) {
-                //Only fetch children if we are in an experiment
-                if(!isGlobalContext){
-                    List<URI> childrenURIs = fetchChildrenURIs(model.getUri(), currentUser, context);
-                    if (!childrenURIs.isEmpty()) {
-                        oldChildrenPerOSUri.put(model.getUri(), childrenURIs);
-                    }
-                }
-                //Always update move
-                updateMove(model, currentUser, context, session);
-            }
-
-            //Perform the actual update of OS's
-            sparql.update(models, context);
-
-            //Replace the children
-            for(Map.Entry<URI, List<URI>> entry : oldChildrenPerOSUri.entrySet()){
-                sparql.insertPrimitive(context, entry.getValue(), Oeso.isPartOf, entry.getKey());
-            }
-
-            return 0;
-        });
-    }
-
-    public void updateSOAndMove(URI objectURI, AccountModel currentUser, Node graphNode, SPARQLResourceModel object, List<URI> childrenURIs, boolean hasFacilityURI) throws Exception {
-        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
-            updateSOAndChildren(objectURI, graphNode, object, childrenURIs);
-
         sparql.deletePrimitives(graphNode, object.getUri(), Oeso.isHosted);
 
         return object.getUri();
-    }
-
-    private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
-
-        ScientificObjectModel object = new ScientificObjectModel();
-        object.setType(soType);
-        object.setName(name);
-        // Add XP in SO while creating an obj of SO model
-        object.setExperiment(xp);
-        if(relations != null){
-            RDFObjectDTO.validatePropertiesAndAddToObject(contextURI, model, object, relations, ontologyDAO);
-        }
-
-        return object;
     }
 
     public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI, String lang) throws Exception {

@@ -389,7 +389,7 @@ public class DeviceAPI {
                 newMetaData.setUri(deviceUri);
                 metaDataDao.upsert(session, newMetaData);
             }
-            deviceDAO.update(deviceModel, currentUser);
+            deviceDAO.update(deviceModel);
             return deviceUri;
         });
 

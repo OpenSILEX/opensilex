@@ -501,7 +501,7 @@ public class ScientificObjectAPI {
             nosql.startTransaction();
 
             CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser, fs),
                     descriptionDto.getValidationToken()
             );
 
@@ -585,7 +585,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser, fs),
                 descriptionDto.getValidationToken()
         );
 

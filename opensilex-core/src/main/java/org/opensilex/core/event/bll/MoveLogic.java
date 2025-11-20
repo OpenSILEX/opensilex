@@ -193,7 +193,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             }
         }
 
-        return wrapWithTransaction(session -> createMultipleNoTransaction(models, locationObservationList, session));
+        return ApiUtils.wrapWithTransaction(session -> createMultipleNoTransaction(models, locationObservationList, session), clientSession, sparql, mongodb);
     }
 
     /**
@@ -345,7 +345,6 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                     if (Objects.isNull(collectionURI)) {
                         collectionURI = collectionLogic.createLocationObservationCollection(target);
                     }
-
                     Instant end =realModel.getEnd().getDateTimeStamp().toInstant();
                     Instant start = Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null;
 

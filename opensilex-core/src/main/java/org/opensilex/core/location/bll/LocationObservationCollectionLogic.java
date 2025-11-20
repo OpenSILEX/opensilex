@@ -39,6 +39,7 @@ public class LocationObservationCollectionLogic {
 
     //#region public
     public URI createLocationObservationCollection(URI featureOfInterest) throws Exception {
+        //TODO MAX so as soon as we try to add a new location via this function an error will be thrown?? If so make  a getOrCreateNew, if i do this start by verifying all usages of this function to make sure no logic was added
         checkUniqueObservationCollection(featureOfInterest);
 
         LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel();

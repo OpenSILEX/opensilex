@@ -202,7 +202,7 @@ public class ScientificObjectDaoTest extends AbstractMongoIntegrationTest {
         URI xpUri = xp.getUri();
         sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),modelWithXp);
 
-        dao.create(xpUri, xp, modelWithXp.getType(), null, modelWithXp.getName(), null, AccountModel.getAnonymous());
+        dao.create(SPARQLDeserializers.nodeURI(xpUri), modelWithXp);
 
         boolean doesSOParticipatesInXP = sparql.executeAskQuery(new AskBuilder()
                 .addWhere(SPARQLDeserializers.nodeURI(modelWithXp.getUri()), Oeso.participatesIn, SPARQLDeserializers.nodeURI(xpUri)));

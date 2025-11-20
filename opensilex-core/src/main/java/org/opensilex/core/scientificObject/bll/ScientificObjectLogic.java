@@ -113,7 +113,13 @@ public class ScientificObjectLogic {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI createScientificObject(ScientificObjectModel model, URI contextURI, List<RDFObjectRelationDTO>  relations,MoveModel move, AccountModel currentUser) throws Exception {
+    public URI createScientificObject(
+            ScientificObjectModel model,
+            URI contextURI,
+            List<RDFObjectRelationDTO>  relations,
+            MoveModel move,
+            AccountModel currentUser
+    ) throws Exception {
         // Define the graph (global or XP)
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         ExperimentModel experiment;
@@ -484,7 +490,14 @@ public class ScientificObjectLogic {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI updateScientificObject(ScientificObjectModel model, URI contextURI, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception {
+    public URI updateScientificObject(
+            ScientificObjectModel model,
+            URI contextURI,
+            List<RDFObjectRelationDTO> relations,
+            UserGetDTO publisher,
+            OffsetDateTime publicationDate,
+            AccountModel currentUser
+    ) throws Exception {
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         boolean hasExperiment = contextURI != null;
         URI context;
@@ -520,6 +533,46 @@ public class ScientificObjectLogic {
                 checkFactorLevelsBelongsToExperiment(relations, experimentModel);
             }
             return object.getUri();
+        });
+    }
+
+    /**
+     * Updates a list of scientific objects, handles updating of associated move
+     *
+     * @param models to update
+     * @param currentUser user performing the update
+     * @param context to update in (an experiment or global)
+     * @throws Exception
+     */
+    public void updateMultipleSOAndMoves(List<ScientificObjectModel> models, AccountModel currentUser, Node context, boolean isGlobalContext) throws Exception{
+        new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
+
+            //Fetch children so we can replace them
+            Map<URI, List<URI>> oldChildrenPerOSUri = new HashMap<>();
+
+            //Do a loop on models to update moves and to fetch children if we are in an experiment
+            //TODO optimization? is it possible to not update the moves one by one?
+            for (ScientificObjectModel model : models) {
+                //Only fetch children if we are in an experiment
+                if(!isGlobalContext){
+                    List<URI> childrenURIs = this.dao.fetchChildrenURIs(model.getUri(), context, currentUser.getLanguage());
+                    if (!childrenURIs.isEmpty()) {
+                        oldChildrenPerOSUri.put(model.getUri(), childrenURIs);
+                    }
+                }
+                //Always update move
+                //TODO MAX the old updateMove method used old target positions and things, i may have to do something different just comment out for now
+                //updateMove(model, currentUser, context, session);
+            }
+
+            //Perform the actual update of OS's
+            sparql.update(models, context);
+
+            //Replace the children
+            for(Map.Entry<URI, List<URI>> entry : oldChildrenPerOSUri.entrySet()){
+                sparql.insertPrimitive(context, entry.getValue(), Oeso.isPartOf, entry.getKey());
+            }
+            return 0;
         });
     }
 

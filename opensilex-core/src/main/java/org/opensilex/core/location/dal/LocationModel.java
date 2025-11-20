@@ -5,29 +5,22 @@ import com.mongodb.client.model.geojson.Geometry;
 import java.net.URI;
 
 public class LocationModel {
-    public static final String GEOMETRY_FIELD = "location.geometry";
+
+    public static final String TO_FIELD = "to";
+    public static final String FROM_FIELD = "from";
+    public static final String GEOMETRY_FIELD = "coordinates";
+    public static final String X_FIELD = "x";
+    public static final String Y_FIELD = "y";
+    public static final String Z_FIELD = "z";
+    public static final String TEXTUAL_POSITION_FIELD = "textualPosition";
 
     private Geometry geometry;
     private URI to;
-    public static final String TO_FIELD = "to";
     private URI from;
-    public static final String FROM_FIELD = "from";
     private String x;
     private String y;
     private String z;
     private String textualPosition;
-
-    public LocationModel createCopy() {
-        LocationModel copy = new LocationModel();
-        copy.x = this.x;
-        copy.y = this.y;
-        copy.z = this.z;
-        copy.textualPosition = this.textualPosition;
-        copy.to = this.to;
-        copy.from = this.from;
-        copy.geometry = this.geometry;
-        return copy;
-    }
 
     public Geometry getGeometry() {
         return geometry;

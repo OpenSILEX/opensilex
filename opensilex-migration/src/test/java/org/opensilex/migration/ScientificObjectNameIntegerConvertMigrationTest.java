@@ -49,13 +49,6 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
     private static final int TOTAL_OS_NB = 20;
 
     protected static FileStorageService fs;
-    static FileStorageService getFs(){
-
-        if(fs == null){
-            fs = getOpensilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
-        }
-        return fs;
-    }
 
     @BeforeClass
     public static void setup() throws Exception {

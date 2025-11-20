@@ -53,6 +53,7 @@
               :event="event"
               :targetLabelsByUri="positionsUriLabels"
               :targetUriPathsByUri="positionsUriPaths"
+              :facilitiesUriLabels="facilitiesUriLabels"
             ></opensilex-MoveView>
         </div>
 
@@ -102,6 +103,7 @@ import {EventDetailsDTO, MoveDetailsDTO} from 'opensilex-core/index';
 import {UserGetDTO} from "../../../../../../opensilex-security/front/src/lib";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
 
     @Component
@@ -139,6 +141,9 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         positionsUriLabels: {[key : string] : string} = {};
 
         positionsUriPaths: {[key : string] : string} = {};
+
+        //Similar variable for the from and to facility fields of a move
+        facilitiesUriLabels: {[key : string] : string} = {};
 
         event: EventDetailsDTO = {};
 
@@ -252,15 +257,32 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
           try {
             // Retrieve position target names from move
-            const targetUris = [(event as MoveDetailsDTO).location.featureOfInterest];
+            const moveLocation: LocationObservationDTO = (event as MoveDetailsDTO).location;
+            const targetUris = [moveLocation.featureOfInterest];
+            const fromUri = moveLocation?.from;
+            const toUri   = moveLocation?.to;
 
-            const [labelsResponse, typesResponse] = await Promise.all([
+            const facilityUris = [toUri, fromUri].filter(Boolean);
+
+            const promises = [
               this.ontologyService.getURILabelsList(targetUris),
-              this.ontologyService.getURITypes(targetUris),
-            ]);
+              this.ontologyService.getURITypes(targetUris)
+            ];
+
+            if (facilityUris.length > 0) {
+              promises.push(this.ontologyService.getURILabelsList(facilityUris));
+            }
+
+            const [labelsResponse, typesResponse, facilityLabelsResponse] = await Promise.all(promises);
 
             for (let element of labelsResponse.response.result) {
               this.$set(this.positionsUriLabels, element.uri, element.name);
+            }
+
+            if(facilityLabelsResponse){
+              for (let element of facilityLabelsResponse.response.result) {
+                this.$set(this.facilitiesUriLabels, element.uri, element.name);
+              }
             }
 
             // Creation of paths for move position targets types

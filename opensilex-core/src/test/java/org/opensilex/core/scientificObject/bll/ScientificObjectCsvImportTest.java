@@ -17,6 +17,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -50,9 +51,12 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private static final Path CSV_FILES_DIR = Paths.get("src","test","resources","scientificObject","csv");
 
+    private static FileStorageService fs;
+
     @BeforeClass
     public static void setup() throws Exception {
         SPARQLService sparql = getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+        fs = getFs();
         // create user
         user = new AccountModel();
         user.setUri(URI.create("test:user_test"));
@@ -87,7 +91,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
 
-        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user, fs);
         File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
         return importer.importCSV(csvFile,false);
     }
@@ -275,7 +279,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
      *                          type of OS was updated in an experiment.
      */
     private void validateOSAfterTypeChange(URI contextUri, boolean forGlobalIndirect) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(getSparqlService(), getMongoDBService());
+        ScientificObjectDAO dao = new ScientificObjectDAO(getSparqlService());
         ScientificObjectModel updatedOS = dao.getObjectByURI(
                 URI.create("test:id/csv_import_os_sample3"),
                 contextUri,
@@ -317,7 +321,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
      * @throws Exception
      */
     private void verifyRelationRemovedAfterTypeReChange(URI contextUri) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(getSparqlService(), getMongoDBService());
+        ScientificObjectDAO dao = new ScientificObjectDAO(getSparqlService());
         ScientificObjectModel updatedOS = dao.getObjectByURI(
                 URI.create("test:id/csv_import_os_sample3"),
                 contextUri,

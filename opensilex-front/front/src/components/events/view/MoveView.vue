@@ -5,12 +5,12 @@
         <p class="h5">{{$t("Move.location")}} </p>
         <hr/>
 
-        <opensilex-StringView label="Position.from" :value="event.location.from ? event.location.from.name : '' "></opensilex-StringView>
-        <opensilex-StringView label="Position.to" :value="event.location.to ? event.location.to.name : '' "></opensilex-StringView>
+        <opensilex-StringView label="MoveView.from" :value="event.location.from ? facilitiesUriLabels[event.location.from] : '' "></opensilex-StringView>
+        <opensilex-StringView label="MoveView.to" :value="event.location.to ? facilitiesUriLabels[event.location.to] : '' "></opensilex-StringView>
 
         <div  v-if="hasPosition(event)">
             <br>
-            <p class="h5"> {{ $t("Position.title") }}</p>
+            <p class="h5"> {{ $t("MoveView.positionTitle") }}</p>
             <hr/>
           <opensilex-PositionView
             :positionObject="positionObjectFromLocation"
@@ -43,9 +43,8 @@
         @Prop({default: () => {} })
         targetUriPathsByUri: {[key : string] : string};
 
-        created() {
-
-        }
+        @Prop({default: () => {} })
+        facilitiesUriLabels: {[key : string] : string};
 
         static getEmptyForm(): MoveDetailsDTO {
             return {
@@ -79,8 +78,19 @@
         }
 
     }
-
-
-
 </script>
 
+<i18n>
+en:
+  MoveView:
+    from: From
+    to: To
+    positionTitle: Position
+
+fr:
+  MoveView:
+    from: De
+    to: Vers
+    positionTitle: Position
+
+</i18n>

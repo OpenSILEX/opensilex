@@ -4,11 +4,11 @@
     <opensilex-GeometryView label="component.common.geometry"
                             :value="positionObject.point"></opensilex-GeometryView>
 
-    <opensilex-StringView label="Position.x" :value="positionObject.x"></opensilex-StringView>
-    <opensilex-StringView label="Position.y" :value="positionObject.y"></opensilex-StringView>
-    <opensilex-StringView label="Position.z" :value="positionObject.z"></opensilex-StringView>
+    <opensilex-StringView label="PositionView.x" :value="positionObject.x"></opensilex-StringView>
+    <opensilex-StringView label="PositionView.y" :value="positionObject.y"></opensilex-StringView>
+    <opensilex-StringView label="PositionView.z" :value="positionObject.z"></opensilex-StringView>
 
-    <opensilex-TextView v-if="positionObject" label="Position.textual-position"
+    <opensilex-TextView v-if="positionObject" label="PositionView.textual-position"
                         :value="positionObject.text"></opensilex-TextView>
 
   </div>
@@ -54,4 +54,19 @@ export default class PositionView extends Vue {
 }
 
 </script>
+<i18n>
+en:
+    PositionView:
+        textual-position: Textual position
+        x: X
+        y: Y
+        z: Z
 
+fr:
+    PositionView:
+        textual-position: Position textuelle
+        x: X
+        y: Y
+        z: Z
+
+</i18n>

@@ -21,6 +21,7 @@ public class LocationObservationModel extends MongoModel {
     private boolean hasGeometry;
     private LocationModel location;
     public static final String LOCATION_TO_FIELD = "location.to";
+    public static final String GEOMETRY_FIELD = "location.geometry";
 
     //TODO temporary link to a move, delete this if we ever get rid of moves
     private URI moveUri;

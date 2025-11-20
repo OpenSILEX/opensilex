@@ -72,6 +72,8 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
     private MongoDBService mongodb;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private static final String OLD_MOVE_COLLECTION = "move";
+
     @Override
     public String getDescription() {
         return "In MongoDB, get scientific objects from the Geospatial and Move collections to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each scientific objects with location. ";
@@ -266,7 +268,7 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
     private Map<URI, List<LocationObservationModel>> mongoGetMoveFromMongo(Map<URI, List<LocationObservationModel>> soLocationGeospatialListMap, Stream<SPARQLResult> moveDetailsList){
         //Get SO from move collection
         MongoDatabase db = mongodb.getDatabase();
-        MongoCollection<MoveNosqlModel> moveCollection = db.getCollection(MoveEventNoSqlDao.COLLECTION_NAME, MoveNosqlModel.class);
+        MongoCollection<MoveNosqlModel> moveCollection = db.getCollection(OLD_MOVE_COLLECTION, MoveNosqlModel.class);
 
         Map<URI,SPARQLResult> moveURIs = moveDetailsList.collect(Collectors.toMap(
              sparqlResult -> URI.create(sparqlResult.getStringValue(EventModel.GRAPH)),

@@ -10,6 +10,12 @@
                 :editMode="editMode"
             ></opensilex-Tutorial>
 
+            <!-- Help message -->
+            <div class="divHelpMsg" v-if="!editMode">
+                <p>{{$t('VariableForm.help-msg')}} </p>
+                <router-link target="_blank" :to="{ path: '/variables?elementType=Variable' }"><span class="helpMsg">{{ $t('component.menu.variables')}}</span></router-link>
+            </div>
+
             <!-- URI -->
             <opensilex-UriForm
                 :uri.sync="form.uri"
@@ -830,6 +836,23 @@ export default class VariableForm extends Vue {
     #traitButton {
         padding-top: 23px;
     }
+    .helpMsg{
+    margin: 0;
+    padding: 0;
+    font-size: 0.8rem;
+    color: #007bff;
+    padding-left: 0.2rem;
+    }
+
+    .divHelpMsg{
+        display: flex;
+        background-color: rgba(0, 162, 140, 0.1);
+        border: 1px solid rgba(0, 162, 140, 0.5);
+        border-radius: 5px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+
 </style>
 
 <i18n>
@@ -875,6 +898,7 @@ en:
         trait-button-help: Add a trait (entity and characteristic) already existing in an ontology
         datatype-help: Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable).
         datatype-placeholder: Select a datatype
+        help-msg: Before proceeding, verify wheter an appropriate variable has already been created in the section 
         dimension-values:
             unique: Unique measurement
             millisecond : Millisecond
@@ -966,6 +990,7 @@ fr:
         trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
         datatype-help: Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable).
         datatype-placeholder: Sélectionner un type de donnée
+        help-msg: Avant de poursuivre, vérifiez si une variable appropriée a déjà été créée dans la section
         dimension-values:
             unique: Enregistrement unique
             millisecond : Milliseconde

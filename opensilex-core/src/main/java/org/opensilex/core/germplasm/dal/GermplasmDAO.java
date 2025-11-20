@@ -136,7 +136,7 @@ public class GermplasmDAO {
      */
     public List<GermplasmModel> createListWithoutUriExistsCheck(List<GermplasmModel> instanceList) throws Exception {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
-            sparql.create(sparql.getDefaultGraph(GermplasmModel.class), instanceList, null, false, true);
+            sparql.create(sparql.getDefaultGraph(GermplasmModel.class), instanceList, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
             this.createMetaData(instanceList, session);
             return null;
         });

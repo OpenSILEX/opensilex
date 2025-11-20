@@ -94,6 +94,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public static final Var TYPE_VAR = makeVar(SPARQLResourceModel.TYPE_FIELD);
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
+    public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
     private final SPARQLConnection connection;
 
     /**
@@ -1209,32 +1210,54 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             UpdateBuilder subInstanceUpdateBuilder,
             boolean checkUriExist,
             boolean blankNode) throws Exception {
+        prepareInstancesCreation(graph, List.of(instance), parent, mapper, subInstanceUpdateBuilder, checkUriExist, blankNode);
+    }
 
-        URI rdfType = instance.getType();
-        if (rdfType == null) {
-            instance.setType(new URI(mapper.getRDFType().getURI()));
-        } else {
-            instance.setType(rdfType);
-        }
+    /**
+     * Prepare the creation of multiple instances and their sub-instances | WARNING if parent is not null, all instances should have the same parent | WARNING all instances should be of the same class and have the same mapper
+     * @param graph                    the graph where the instances are created
+     * @param mapper                   the SPARQL mapper used in order to generate query according instances fields
+     * @param subInstanceUpdateBuilder an UpdateBuilder which can be updated by adding new statements if not null
+     * @param checkUriExist            indicate if the service must check if instances already exist
+     * @param blankNode                indicate if the instance URI must be a blank node
+     */
+    protected <T extends SPARQLResourceModel> void prepareInstancesCreation(
+            Node graph,
+            List<T> instances,
+            SPARQLResourceModel parent,
+            SPARQLClassObjectMapper<T> mapper,
+            UpdateBuilder subInstanceUpdateBuilder,
+            boolean checkUriExist,
+            boolean blankNode) throws Exception {
 
-        if (!blankNode) {
-            generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
-        }
+        for (T instance : instances) {
+            URI rdfType = instance.getType();
+            if (rdfType == null) {
+                instance.setType(new URI(mapper.getRDFType().getURI()));
+            }
 
-        validate(instance, parent);
-
-        URI subjectGraph = graph != null ? URI.create(graph.toString()) : null;
-
-        Map<URI, List<SPARQLResourceModel>> nestedResources = mapper.getNestedInstancesByGraph(subjectGraph, instance);
-        for(Map.Entry<URI,List<SPARQLResourceModel>> entry : nestedResources.entrySet()){
-
-            URI subGraph = entry.getKey();
-            Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
-
-            for (SPARQLResourceModel subInstance :  entry.getValue()) {
-                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
+            if (!blankNode) {
+                generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
             }
         }
+
+        validate(instances, parent);
+
+        for (T instance : instances) {
+            URI subjectGraph = graph != null ? URI.create(graph.toString()) : null;
+
+            Map<URI, List<SPARQLResourceModel>> nestedResources = mapper.getNestedInstancesByGraph(subjectGraph, instance);
+            for(Map.Entry<URI,List<SPARQLResourceModel>> entry : nestedResources.entrySet()){
+
+                URI subGraph = entry.getKey();
+                Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
+
+                for (SPARQLResourceModel subInstance :  entry.getValue()) {
+                    create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
+                }
+            }
+        }
+
     }
 
     /**
@@ -1247,7 +1270,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         instances.forEach(instance -> instance.setLastUpdateDate(now));
 
         List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
-        create(graph, instances, null, false, false, fieldsToExclude);
+        create(graph, instances, DEFAULT_MAX_INSTANCE_PER_QUERY , false, false, fieldsToExclude);
     }
 
     public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {
@@ -1263,11 +1286,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true, true);
+        create(graph, instances, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, true, true);
     }
-
-    public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
-
 
     public <R> R withTransaction(ThrowingSupplier<R,Exception> operation) throws Exception {
         try{
@@ -1307,35 +1327,29 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         // use the same query for the instance and her sub-instance if a query batch size is specified
         UpdateBuilder subInstanceUpdateBuilder = reuseSameQuery ? updateBuilder : null;
 
-        // set a maximum number of instance to insert into one query in order to ensure that the INSERT query will not be too big
-        int insertedInstanceNb = 0;
-
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instances.iterator().next().getClass());
 
-        for (T instance : instances) {
-            if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
-                instance.setPublicationDate(OffsetDateTime.now());
+        List<List<T>> batches = splitListInBatches(instances, maxInstancePerQuery, reuseSameQuery);
+
+        for (List<T> batchInstances : batches) {
+
+            for (T instance : batchInstances) {
+                if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
+                    instance.setPublicationDate(OffsetDateTime.now());
+                }
             }
 
-            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-            prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
-            mapper.addCreateBuilder(graph, instance, updateBuilder, false, null, fieldsToExclude);
+            prepareInstancesCreation(graph, batchInstances, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
 
-            // if query limit is reached, then insert query and reset builder
-            if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
-                executeUpdateQuery(updateBuilder);
-                insertedInstanceNb = 0;
-                updateBuilder = new UpdateBuilder();
-                subInstanceUpdateBuilder = updateBuilder;
+            for (T instance : batchInstances) {
+                mapper.addCreateBuilder(graph, instance, updateBuilder, false, null, fieldsToExclude);
             }
-        }
 
-        if (reuseSameQuery) {
-            if (insertedInstanceNb > 0) {
-                executeUpdateQuery(updateBuilder);
-            }
-        } else {
+            // execute query and reset the builder for the next batch
             executeUpdateQuery(updateBuilder);
+            updateBuilder = new UpdateBuilder();
+            subInstanceUpdateBuilder = updateBuilder;
         }
 
         long durationMs = Duration.between(start, Instant.now()).toMillis();
@@ -1343,8 +1357,26 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
+     * Split the list of instance in batches of maxInstancePerQuery size.
+     * If maxInstancePerQuery is not a multiple of the number of instances, then the last batch will contain the remaining instances.
+     * ex : if we have 10 instances and maxInstancePerQuery = 3, then we will have 4 batches of size 3, 3, 3, 1
+     * @param reuseSameQuery if false return n lists of 1 element, n being the number of instances
+     */
+    private static <T extends SPARQLResourceModel> List<List<T>> splitListInBatches(Collection<T> instances, Integer maxInstancePerQuery, boolean reuseSameQuery) {
+        List<List<T>> batches = new ArrayList<>();
+        List<T> instanceList = new ArrayList<>(instances);
+        int batchSize = reuseSameQuery ? maxInstancePerQuery : 1;
+        for (int i = 0; i < instanceList.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, instanceList.size());
+            batches.add(instanceList.subList(i, end));
+        }
+        return batches;
+    }
+
+    /**
      * call create without excluding any field from creation query.
      * @see #create(Node, Collection, Integer, boolean, boolean, List) for more details
+     * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used. If you don't have specific needs, use SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY.
      */
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
         create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, null);

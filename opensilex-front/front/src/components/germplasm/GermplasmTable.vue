@@ -1148,6 +1148,7 @@ export default class GermplasmTable extends Vue {
         }
       }
     }
+    this.SetUpdateStatusForEachGermplasm();
   }
 
   /**

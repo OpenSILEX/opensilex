@@ -63,12 +63,19 @@
 
             <div :key="index" v-for="(relation, index) in event.relations">
                 <opensilex-UriView
+                    v-if="specificPropertiesLabels[relation.value]"
                     :uri="relation.value"
                     :value="specificPropertiesLabels[relation.value] ? specificPropertiesLabels[relation.value] : relation.value"
                     :title="getPropertyName(relation.property)"
                     v-bind:to="specificPropertiesPaths[relation.value] ? { path: specificPropertiesPaths[relation.value] } : null"
                     customClass="specificProperties"
                 ></opensilex-UriView>
+                <opensilex-StringView
+                  v-else
+                  :label="getPropertyName(relation.property)"
+                  :value="relation.value"
+                  customClass="specificProperties"
+                ></opensilex-StringView>
 
             </div>
         </div>
@@ -234,21 +241,34 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         if (event.relations && event.relations.length > 0) {
           const relationsURIs = event.relations.map(relation => relation.value);
 
-          const [specificPropertyLabels, specificPropertyTypes] = await Promise.all([
+          //Using allSettled instead of promise.all stops the component from breaking if some property values were not uris
+          const results = await Promise.allSettled([
             this.ontologyService.getURILabelsList(relationsURIs),
-            this.ontologyService.getURITypes(relationsURIs),
+            this.ontologyService.getURITypes(relationsURIs)
           ]);
 
-          for (const element of specificPropertyLabels.response.result) {
-            this.specificPropertiesLabels[element.uri] = element.name;
+          const labelsResult = results[0];
+          const typesResult = results[1];
+
+          if (labelsResult.status === "fulfilled") {
+            const specificPropertyLabels = labelsResult.value;
+            console.debug("labels response: ", specificPropertyLabels.response);
+
+            for (const element of specificPropertyLabels.response.result || []) {
+              this.specificPropertiesLabels[element.uri] = element.name;
+            }
           }
 
-          for (const element of specificPropertyTypes.response.result) {
-            this.specificPropertiesPaths[element.uri] = this.$opensilex.getTargetPath(
-              element.uri,
-              null,
-              this.$opensilex.getPathFromUriTypes(element.rdf_types)
-            );
+          if (typesResult.status === "fulfilled") {
+            const specificPropertyTypes = typesResult.value;
+
+            for (const element of specificPropertyTypes.response.result || []) {
+              this.specificPropertiesPaths[element.uri] = this.$opensilex.getTargetPath(
+                element.uri,
+                null,
+                this.$opensilex.getPathFromUriTypes(element.rdf_types)
+              );
+            }
           }
         }
 

@@ -24,8 +24,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.Path;
-import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
@@ -1103,7 +1101,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
         }
 
-        validate(instance, parent);
+        validateAllRelations(instance, parent);
 
         URI subjectGraph = graph != null ? URI.create(graph.toString()) : null;
 
@@ -1183,7 +1181,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
         Instant start = Instant.now();
 
-        validate(instances, null);
+        validateAllRelations(instances, null);
         UpdateBuilder updateBuilder = new UpdateBuilder();
 
         // use the same query for the instance and her sub-instance if a query batch size is specified
@@ -1457,7 +1455,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             startTransaction();
 
-            validate(instances, null);
+            validateAllRelations(instances, null);
+
+            Set<URI> nonExistingUris = getExistingUris(objectClass, instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()), false);
+            if ( !nonExistingUris.isEmpty()) {
+                throw new SPARQLNotExistingUriListException("cannot update instances with non existing URIs", nonExistingUris);
+            }
 
             if (graph == null){
                 graph = getDefaultGraph(instances.iterator().next().getClass());
@@ -2236,7 +2239,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return getMapperIndex().getForClass(modelClass).getURIFieldVar();
     }
 
-    public <T extends SPARQLResourceModel> void validate(T instance, SPARQLResourceModel parent) throws Exception {
+    public <T extends SPARQLResourceModel> void validateAllRelations(T instance, SPARQLResourceModel parent) throws Exception {
         if (!this.isShaclEnabled()) {
             validateRelations(instance, parent);
         }
@@ -2249,7 +2252,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * Does not check that instances URIS exists.
      * @param instances to check relations
      */
-    public <T extends SPARQLResourceModel> void validate(Collection<T> instances, SPARQLResourceModel parent) throws Exception {
+    public <T extends SPARQLResourceModel> void validateAllRelations(Collection<T> instances, SPARQLResourceModel parent) throws Exception {
         if (!this.isShaclEnabled()) {
             validateRelations(instances, parent);
         }

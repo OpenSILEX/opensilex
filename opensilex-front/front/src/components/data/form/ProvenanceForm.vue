@@ -1,5 +1,13 @@
 <template>
   <b-form>
+    <!-- Help message -->
+    <div class="divHelpMsg">
+      <p>
+        {{$t('ProvenanceForm.help-msg')}}
+        <router-link target="_blank" :to="{ path: '/devices' }"><span class="helpMsg">{{ $t('component.menu.devices') }}</span> </router-link>
+      </p>
+    </div>
+
     <!-- URI-->
     <opensilex-UriForm
       :uri.sync="form.uri" 
@@ -261,6 +269,22 @@ export default class ProvenanceForm extends Vue {
   background-color: #a7a7a7;
   border-bottom: 1px solid #a7a7a7;
 }
+
+.divHelpMsg{
+  background-color: rgba(0, 162, 140, 0.1);
+  border: 1px solid rgba(0, 162, 140, 0.5);
+  border-radius: 5px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+}
+
+.helpMsg {
+  color: #007bff;
+  margin: 0;
+  padding: 0;
+}
+
+
 </style>
 
 <i18n>
@@ -285,6 +309,7 @@ en:
     type-placeholder: Select a type of activity
     type-help: Select a type of activity
     url-help: External link describing the activity
+    help-msg: Before starting, verify that the related devices have been already created. Check the section 
 
 fr:
   ProvenanceForm:
@@ -307,4 +332,5 @@ fr:
     type-placeholder: Selectionner un type d'activité
     type-help: Selectionner un type d'activité
     url-help: Lien externe décrivant l'activity
+    help-msg: Avant de commencer, vérifiez d'abord que les appareils associés ont déjà été créés. Regardez sur la section
 </i18n>

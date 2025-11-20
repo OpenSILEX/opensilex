@@ -1465,11 +1465,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             if (graph == null){
                 graph = getDefaultGraph(instances.iterator().next().getClass());
             }
-            List<T> oldInstances = loadOnlyOldNeededInstances(instances, mapper, graph);
+            List<T> neededOldInstances = loadOnlyOldNeededInstances(instances, mapper, graph);
 
             deleteForUpdate(objectClass, instances, graph);
 
-            for (T oldInstance : oldInstances) {
+            for (T oldInstance : neededOldInstances) {
                 T instance = instances.stream()
                         .filter(newModel -> SPARQLDeserializers.compareURIs(newModel.getUri(), oldInstance.getUri()))
                         .findFirst()

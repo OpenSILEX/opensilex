@@ -1,23 +1,34 @@
 <template>
   <n-modal
     v-model:show="visible"
-    :mask-closable="false"
     preset="card"
+    :mask-closable="false"
     :style="{ width: modalWidth }"
     :title="editMode ? t(editTitle) : t(createTitle)"
+    to="body"
+    display-directive="if"
   >
-    <n-steps :current="currentStepIndex" :size="'small'" class="mb-4">
-      <n-step v-for="(step, index) in steps" :key="index" :title="step.title" />
+  <div class="wizard-steps">
+    <n-steps 
+      :current="currentStepIndex + 1" 
+      size="small" 
+      class="mb-4"
+    >
+      <n-step v-for="(step, i) in steps" :key="i" :title="t(step.title)" />
     </n-steps>
+  </div>
 
     <component
       :is="steps[currentStepIndex].component"
+      :key="currentStepIndex"
       v-bind="steps[currentStepIndex].props"
       :form="form"
       :editMode="editMode"
       ref="stepComponent"
       @fill="fillForm"
       @clear="clearForm"
+      @agroportalTermSelected="payload => emit('agroportalTermSelected', payload)"
+      @agroportalTermUnselected="() => emit('agroportalTermUnselected')"
     />
 
     <template #footer>
@@ -25,22 +36,28 @@
         <n-button @click="close">{{ t('component.common.form-wizard.cancel') }}</n-button>
 
         <div>
-          <n-button
-            v-if="currentStepIndex > 0"
-            @click="prevStep"
-          >{{ getStepBtnPreviousTitle }}</n-button>
+          <n-space justify="end" :size="10"> 
+            <n-button v-if="currentStepIndex > 0" @click="prevStep">
+              {{ prevText }}
+            </n-button>
 
-          <n-button
-            v-if="!isLastStep"
-            type="primary"
-            @click="nextStep"
-          >{{ getStepBtnNextTitle }}</n-button>
+            <n-button
+              v-if="finishText"
+              type="primary"
+              class="greenThemeColor"
+              @click="submitForm"
+            >
+              {{ finishText }}
+            </n-button>
 
-          <n-button
-            v-if="isLastStep"
-            type="primary"
-            @click="submitForm"
-          >{{ getStepBtnDoneTitle }}</n-button>
+            <n-button v-if="!isLastStep" type="primary" class="greenThemeColor" @click="nextStep">
+              {{ nextText }}
+            </n-button>
+
+            <n-button v-if="isLastStep" type="primary" class="greenThemeColor" @click="submitForm">
+              {{ doneText }}
+            </n-button>
+          </n-space>
         </div>
       </n-space>
     </template>
@@ -48,16 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 
 interface WizardStep {
   component: any
-  title: string
-  finish?: string
-  next?: string
-  done?: string
-  previous?: string
+  title: string          // clé i18n
+  finish?: string | (() => string)
+  next?: string | (() => string)
+  done?: string | (() => string)
+  previous?: string | (() => string)
   props?: Record<string, any>
 }
 
@@ -77,128 +95,137 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'onCreate', result: any): void
-  (e: 'onUpdate', result: any): void
+  (e: 'agroportalTermSelected', payload: any): void
+  (e: 'agroportalTermUnselected'): void
 }>()
 
 const { t } = useI18n()
+
 const visible = ref(false)
 const editMode = ref(false)
 const currentStepIndex = ref(0)
 const form = ref<any>(null)
-const stepComponent = ref()
+const stepComponent = ref<any>()
 
+const modalWidth = computed(() => props.modalWidth ?? '900px')
 const isLastStep = computed(() => currentStepIndex.value === props.steps.length - 1)
 
-const showCreateForm = () => {
+function showCreateForm () {
   form.value = props.initForm()
   editMode.value = false
-  visible.value = true
   currentStepIndex.value = 0
+  visible.value = true
   nextTick(() => stepComponent.value?.reset?.())
 }
 
-const showEditForm = (inputForm: any) => {
+function showEditForm (inputForm: any) {
   form.value = inputForm
   editMode.value = true
-  visible.value = true
   currentStepIndex.value = 0
+  visible.value = true
   nextTick(() => stepComponent.value?.reset?.())
 }
 
-const close = () => {
-  visible.value = false
-}
+function close () { visible.value = false }
 
-const validateStep = async (): Promise<boolean> => {
-  if (stepComponent.value?.validate) {
-    return await stepComponent.value.validate()
-  }
+async function validateStep () {
+  if (stepComponent.value?.validate) return await stepComponent.value.validate()
   return true
 }
 
-const nextStep = async () => {
-  const isValid = await validateStep()
-  if (!isValid) return
+async function nextStep () {
+  if (!(await validateStep())) return
 
   if (props.nextStepAction) {
-    const nextStepComponent = props.steps[currentStepIndex.value + 1]
-    const currentStepComp = stepComponent.value
-    const shouldProceed = await props.nextStepAction(
+    const ok = await props.nextStepAction(
       currentStepIndex.value,
       form.value,
-      nextStepComponent,
-      currentStepComp
+      props.steps[currentStepIndex.value + 1],
+      stepComponent.value
     )
-    if (!shouldProceed) return
+    if (!ok) return
   }
 
   currentStepIndex.value++
   nextTick(() => stepComponent.value?.reset?.())
 }
 
-const prevStep = () => {
+function prevStep () {
   currentStepIndex.value--
   nextTick(() => stepComponent.value?.reset?.())
 }
 
-const submitForm = async () => {
-  const isValid = await validateStep()
-  if (!isValid) return
+const finishText = computed(() => {
+  const raw = props.steps[currentStepIndex.value].finish
 
-  if (props.validateAction && !props.validateAction(form.value)) {
-    return
+  if (typeof raw === 'function') {
+    return raw()
   }
+
+  // si pas de finish défini > chaîne vide
+  if (!raw) return ''
+
+  return t(raw) as string
+})
+
+
+async function submitForm () {
+  if (!(await validateStep())) return
+  if (props.validateAction && !props.validateAction(form.value)) return
 
   const action = editMode.value ? props.updateAction : props.createAction
-  if (action) {
-    const result = await action(form.value)
-    if (result !== false) {
-        if (editMode.value) {
-            emit('onUpdate', result)
-        } else {
-            emit('onCreate', result)
-        }
-        close()
-    }
+  if (!action) return
+
+  const result = await action(form.value)
+  if (result !== false) {
+    // les événements sont émis par le parent (AgroportalCreateForm) si besoin
+    close()
   }
 }
 
-const fillForm = (dto: any) => {
-  if (props.convertAction) {
-    form.value = props.convertAction(form.value, dto)
+function fillForm (dto: any) {
+  if (props.convertAction) form.value = props.convertAction(form.value, dto)
+}
+function clearForm () { form.value = props.initForm() }
+
+const prevText = computed(() => {
+  const raw = props.steps[currentStepIndex.value].previous
+  if (typeof raw === 'function') {
+    return raw()
   }
-}
-
-const clearForm = () => {
-  form.value = props.initForm()
-}
-
-const getStepBtnPreviousTitle = computed(() => {
-  const step = props.steps[currentStepIndex.value]
-  return step.previous ? t(step.previous) : t('component.common.form-wizard.previous')
-})
-const getStepBtnNextTitle = computed(() => {
-  const step = props.steps[currentStepIndex.value]
-  return step.next ? t(step.next) : t('component.common.form-wizard.next')
-})
-const getStepBtnDoneTitle = computed(() => {
-  const step = props.steps[currentStepIndex.value]
-  return step.done ? t(step.done) : t('component.common.form-wizard.done')
+  return t(raw ?? 'component.common.form-wizard.previous')
 })
 
-// Expose public methods
-defineExpose({
-  showCreateForm,
-  showEditForm,
-  close
+const nextText = computed(() => {
+  const raw = props.steps[currentStepIndex.value].next
+  if (typeof raw === 'function') {
+    return raw()
+  }
+  return t(raw ?? 'component.common.form-wizard.next')
 })
+
+const doneText = computed(() => {
+  const raw = props.steps[currentStepIndex.value].done
+  if (typeof raw === 'function') {
+    return raw()
+  }
+  return t(raw ?? 'component.common.form-wizard.done')
+})
+
+
+
+defineExpose({ showCreateForm, showEditForm, close })
 </script>
 
-<style scoped>
-.wizard-footer {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 1rem;
+
+<style lang="scss">
+/* Pastille de chaque étape */
+.wizard-steps .n-step-indicator {
+  background-color: #00A38D !important;
+}
+
+/* Icone des étapes validées */
+.wizard-steps .n-base-icon {
+  color: #fff !important;
 }
 </style>

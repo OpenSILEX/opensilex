@@ -9,9 +9,9 @@
       <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
         <div class="select-button-container input-group">
+            <!-- v-bind="$attrs" -->
           <opensilex-CustomTreeselect
             ref="customTreeselect"
-            v-bind="$attrs"
             v-model:selected="selectedProxy"
             :searchMethod="searchMethod"
             :resultLimit="resultLimit"
@@ -22,16 +22,16 @@
             :optionsLoadingMethod="optionsLoadingMethod"
             :options="options"
             :viewHandler="viewHandler"
-            :itemLoadingMethod="itemLoadingMethod"
             :conversionMethod="conversionMethod"
             :defaultSelectedValue="defaultSelectedValue"
             :showCount="showCount"
             :actionHandler="actionHandler"
             :disableBranchNodes="disableBranchNodes"
+            :itemLoadingMethod="itemLoadingMethod || undefined"
             class="flex-fill"
             @totalCount="updateTotalCount"
             @resultCount="updateResultCount"
-            @close="onBlur"                   
+            @close="onBlur"
             @select="(v) => emit('select', v)"
             @deselect="(v) => emit('deselect', v)"
           >
@@ -84,6 +84,8 @@ import { formInjectionKey } from 'naive-ui/es/form/src/context'
 
 const { t } = useI18n()
 
+defineOptions({ inheritAttrs: false })
+
 const props = defineProps<{
   path: string
   selected: string | string[] | undefined
@@ -116,7 +118,7 @@ const emit = defineEmits<{
 }>()
 
 // v-model proxy
-const selectedProxy = computed({
+const selectedProxy = computed<string | string[] | undefined>({
   get: () => props.selected,
   set: (v) => emit('update:selected', v)
 })
@@ -169,15 +171,15 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .select-button-container {
-   margin-bottom: 0; width: 100%; 
+   margin-bottom: 0; width: 100%;
 }
 
-.input-group-append > button { 
-  height: 100%; 
+.input-group-append > button {
+  height: 100%;
 }
 
-.greenThemeColor { 
-  color: #fff; 
+.greenThemeColor {
+  color: #fff;
 }
 
 .refineSearchMessage {
@@ -188,9 +190,9 @@ onMounted(() => {
   white-space: normal;
 }
 
-.flex-fill { 
-  flex: 1 1 auto; 
-  min-width: 0; 
+.flex-fill {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* assure que le sélecteur occupe toute la largeur */

@@ -28,15 +28,14 @@
       :placeholder="t('DocumentForm.placeholder-identifier')"
       class="documentFormField"
     />
-
     <!-- Type -->
     <n-form-item path="description.rdf_type" ref="rdfTypeItem">
-        <opensilex-TypeForm
+      <opensilex-TypeForm
+        :key="form?.description?.rdf_type ?? 'no-type'"
         v-model:type="form.description.rdf_type"
         :baseType="opensilex.Oeso.DOCUMENT_TYPE_URI"
         :required="true"
-        :helpMessage="t('DocumentForm.type-help')"
-        />
+      />
     </n-form-item>
 
     <!-- Title -->
@@ -167,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, withDefaults, defineProps, watch } from 'vue'
+import { ref, computed, inject, withDefaults, defineProps, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FormInst, FormItemInst } from 'naive-ui'
 import { NForm, NFormItem, NRadio, NRadioGroup } from 'naive-ui'
@@ -216,6 +215,11 @@ type ContentKind = 'file' | 'external-source'
 const DOCUMENT_CONTENT_TYPE_FILE: ContentKind = 'file'
 const DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE: ContentKind = 'external-source'
 const documentContentType = ref<ContentKind>(DOCUMENT_CONTENT_TYPE_FILE)
+
+
+watch(() => props.form, (nv) => {
+  console.log('[DocumentForm] props.form a changé:', nv?.description);
+}, { deep: true });
 
 watch(
   () => props.form?.description?.rdf_type,

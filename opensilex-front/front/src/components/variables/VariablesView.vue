@@ -74,10 +74,11 @@
     />
 
     <!-- Modale de création/édition d’une entité -->
-    <!-- <opensilex-EntityForm
-      ref="entityForm"
-      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    /> -->
+           <opensilex-AgroportalEntityForm
+            ref="entityForm"
+            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+          ></opensilex-AgroportalEntityForm>
+
 
 
     <!-- Modale d'aide -->
@@ -104,6 +105,7 @@ import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { useStore } from "vuex";
 import VariableCreate from './form/VariableCreate.vue';
 import VariableGroupCreate from './form/VariableGroupCreate.vue';
+import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
 
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -147,6 +149,7 @@ const tabComponents = Object.fromEntries(
 // ajout de toutes les refs, y compris celle pour VariableCreate
 const formRefs = {
   variableCreate: ref(null),
+  entityForm: ref(null),
   variableList: ref(null),
   variableGroupCreate: ref(null),
   ...Object.fromEntries(
@@ -156,6 +159,7 @@ const formRefs = {
 
 const variableCreate = formRefs.variableCreate; // pour lier dans le template
 const variableGroupCreate = formRefs.variableGroupCreate;
+const entityForm = formRefs.entityForm;
 
 const currentTabComponent = computed(() => tabComponents[currentTab.value]);
 

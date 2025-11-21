@@ -1,46 +1,73 @@
 <template>
   <span>
     <label class="form-label" :for="labelFor">
-      {{ t(label) }}
+      {{ labelText }}
       &nbsp;
-      <i
-        v-if="helpMessage"
-        class="bi bi-question-circle-fill text-secondary"
-        tabindex="0"
-        role="button"
-        :data-bs-toggle="'tooltip'"
-        :data-bs-placement="'auto'"
-        :title="t(helpMessage)"
-        ref="tooltipIcon"
-      />
+      <n-tooltip
+        v-if="resolvedHelpMessage"
+        trigger="hover"
+        placement="top"
+      >
+        <template #trigger>
+          <i
+            class="bi bi-question-circle-fill text-secondary"
+            tabindex="0"
+            role="button"
+          />
+        </template>
+        <!-- Pour autoriser du HTML -->
+        <span v-html="resolvedHelpMessage"></span>
+      </n-tooltip>
     </label>
   </span>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Tooltip } from 'bootstrap';
+import { NTooltip } from 'naive-ui';
 
-// Props
 const props = defineProps<{
   helpMessage?: string;
   label: string;
   labelFor?: string;
 }>();
 
-// i18n
 const { t } = useI18n();
 
-// Tooltip init
-const tooltipIcon = ref<HTMLElement | null>(null);
+/**
+ * Essaie de traduire si ça ressemble à une clé i18n,
+ * sinon renvoie le texte tel quel.
+ */
+function resolveMaybeKey(msg: string): string {
+  if (!msg) return '';
 
-onMounted(() => {
-  if (tooltipIcon.value && props.helpMessage) {
-    new Tooltip(tooltipIcon.value);
+  //  une clé contient un point et pas d'espace, identifie si c'est le cas
+  const looksLikeKey = msg.includes('.') && !msg.includes(' ');
+
+  if (looksLikeKey) {
+    const translated = t(msg) as string;
+    if (!translated || translated === msg) {
+      return msg;
+    }
+    return translated;
   }
-});
+
+  return msg;
+}
+
+const labelText = computed(() => resolveMaybeKey(props.label));
+const resolvedHelpMessage = computed(() =>
+  props.helpMessage ? resolveMaybeKey(props.helpMessage) : ''
+);
 </script>
+
+<style lang="scss">
+// tooltips d'aide aggroportal, sans quoi ecriture noire sur fond noir 
+.tootltipLinks a {
+  color: #36ad6a !important;
+}
+</style>
 
 <style scoped lang="scss">
 .form-label {

@@ -62,6 +62,7 @@
             "search-prompt-text": "Type to search...",
             "advanced-search-title": "Advanced Search",
             "not-specified": "Not specified",
+            "required": "Required",
             "validate": "Validate",
             "validateSelection": "Validate the selection",
             "selected-only": "Selection only",

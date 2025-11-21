@@ -62,6 +62,7 @@
             "advanced-search-title": "Recherche Avancée",
             "not-specified": "Non renseigné(e)",
             "validate": "Valider",
+            "required": "Requis",
             "validateSelection": "Valider la selection",
             "selected-only": "Élements selectionnés seulement",
             "selected-onlyp": "Sélection seulement",

@@ -406,9 +406,9 @@ routes:
   # - path: /:xpUri/factor/document/:uri
   #   component: opensilex-FactorView
 
-  # - path: /document/details/:uri
-  #   component: opensilex-DocumentDetails
-  #   credentials: [ ]
+  - path: /document/details/:uri
+    component: opensilex-DocumentDetails
+    credentials: []
 
   # - path: /device/details/:uri
   #   component: opensilex-DeviceDetails

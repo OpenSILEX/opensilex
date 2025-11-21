@@ -527,35 +527,6 @@ public class ScientificObjectDAO {
         return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), defaultGraphNode);
     }
 
-    /**
-     * Check if an object with the same name already exists into objectGraph graph.
-     * @param name name
-     * @param graph graph
-     * @throws SPARQLException if some Exception is encountered during SPARQL query execution
-     * @throws DuplicateNameException if an object with the same name already exists into objectGraph graph.
-     */
-    public void checkUniqueNameByGraph(URI graph, String name, URI uri, boolean create) throws DuplicateNameException, SPARQLException {
-
-        Objects.requireNonNull(graph);
-
-        // unique name restriction only apply on some experiment graph
-        if(SPARQLDeserializers.compareURIs(graph, defaultGraphURI)){
-            return;
-        }
-
-        SPARQLNamedResourceModel alreadyExistingOs = getUriByNameAndGraph(SPARQLDeserializers.nodeURI(graph), name);
-        if(alreadyExistingOs == null){
-            return;
-        }
-
-        // error on create if -> an already existing os has the same name
-        // error on update if -> an already existing os different from <objectUri> has the same name
-        if (create || !SPARQLDeserializers.compareURIs(alreadyExistingOs.getUri(), uri)) {
-            String errorMsg = String.format(NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG, name, graph, alreadyExistingOs);
-            throw new DuplicateNameException(errorMsg,name);
-        }
-    }
-
     public void checkLocalDuplicates(List<ScientificObjectModel> models) throws DuplicateNameListException{
 
         Set<String> uniquesNames = new HashSet<>();

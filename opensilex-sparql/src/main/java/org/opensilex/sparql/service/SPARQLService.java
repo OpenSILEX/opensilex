@@ -1445,8 +1445,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * handle @IgnoreUpdateIfNull and autoUpdate annotations on fields.
-     * For @IgnoreUpdateIfNull, @See SPARQLClassObjectMapper.updateInstanceFromOldValues
+     * handle autoUpdate annotations on fields.
      */
     private  <T extends SPARQLResourceModel> void updateFields(T instance, T oldInstance) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();

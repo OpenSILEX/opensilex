@@ -44,8 +44,7 @@
           @click="onAddColumnBtnClick"
           variant="outline-dark"
       >{{ $t("GermplasmTable.addColumn") }}
-      </b-button
-      >
+      </b-button>
       <b-form-select
           v-if="this.checkedLines > 0"
           id="filter"
@@ -71,8 +70,10 @@
           variant="success"
           v-bind:disabled="disableInsert"
       >{{ $t("GermplasmTable.insert") }}
-      </b-button
-      >
+      </b-button>
+      <opensilex-FormInputLabelHelper
+          :helpMessage="$t('GermplasmTable.upsertHelpMessage')"
+      ></opensilex-FormInputLabelHelper>
     </b-input-group>
 
     <div class="legend">
@@ -169,6 +170,8 @@ import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDT
 import {MultipleErrorDTO} from "opensilex-core/model/multipleErrorDTO";
 import {URIsListPostDTO} from "opensilex-core/model/uRIsListPostDTO";
 import GermplasmTableDataRow from "./GermplasmTableDataRow";
+import FormInputLabelHelper from "../common/forms/FormInputLabelHelper.vue";
+import { helpers } from "@turf/turf";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -1290,6 +1293,7 @@ en:
     newColumnsHelp: Select the columns to add
     toggleAll: Select all / Unselect all
     errorServerMessage: A server error occurred, please contact your administrator for more information
+    upsertHelpMessage: creates and updates the list of germplasms in a single operation (germplasms that will be updated are highlighted in blue).
     legend: Before Checking/Insertion<\br> if rows are white then the germplasm has no URI or a new URI. <br/> If rows are blue then the germplasm URI already exists and will be updated and not created. <br/> If rows are green then the germplasm URI already exists and no changes were made.
 
 fr:
@@ -1335,6 +1339,7 @@ fr:
     newColumns: Colonnes additionnelles
     newColumnsHelp: Cochez les colonnes à ajouter
     toggleAll: Tout sélectionner / Tout désélectionner
-    errorServerMessage : Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
+    errorServerMessage: Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
+    upsertHelpMessage: crée et modifie la liste de ressources génétiques en une seule opération (les ressources génétiques qui seront mises à jour sont colorées en bleu).
     legend: Avant validation/insertion<\br> si les lignes sont blanches alors la ressource génétique n'a pas d'URI ou une nouvelle URI. <br/> Si les lignes sont bleues alors l'URI de la ressource génétique existe déjà et sera mise à jour et non créée. <br/> Si les lignes sont vertes alors l'URI de la ressource génétique existe déjà et aucune modification n'a été apportée.
 </i18n>

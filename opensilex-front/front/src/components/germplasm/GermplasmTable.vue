@@ -75,6 +75,10 @@
       >
     </b-input-group>
 
+    <div class="legend">
+      <p>{{$t('GermplasmTable.legend')}} </p>
+    </div>
+
     <div ref="table"></div>
 
     <b-modal
@@ -1218,6 +1222,20 @@ export default class GermplasmTable extends Vue {
   float: right;
   margin-right: 10px;
 }
+
+.legend{
+  background-color: rgba(0, 162, 140, 0.1);
+  border: 1px solid rgba(0, 162, 140, 0.5);
+  border-radius: 5px;
+  padding: 0.4rem 0.8rem;
+  margin: 0.5rem 0.5rem;
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+}
+
 </style>
 
 <style lang="scss">
@@ -1271,7 +1289,8 @@ en:
     newColumns: Supplementary columns
     newColumnsHelp: Select the columns to add
     toggleAll: Select all / Unselect all
-    errorServerMessage : A server error occurred, please contact your administrator for more information
+    errorServerMessage: A server error occurred, please contact your administrator for more information
+    legend: Before Checking/Insertion<\br> if rows are white then the germplasm has no URI or a new URI. <br/> If rows are blue then the germplasm URI already exists and will be updated and not created. <br/> If rows are green then the germplasm URI already exists and no changes were made.
 
 fr:
   GermplasmTable:
@@ -1317,4 +1336,5 @@ fr:
     newColumnsHelp: Cochez les colonnes à ajouter
     toggleAll: Tout sélectionner / Tout désélectionner
     errorServerMessage : Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
+    legend: Avant validation/insertion<\br> si les lignes sont blanches alors la ressource génétique n'a pas d'URI ou une nouvelle URI. <br/> Si les lignes sont bleues alors l'URI de la ressource génétique existe déjà et sera mise à jour et non créée. <br/> Si les lignes sont vertes alors l'URI de la ressource génétique existe déjà et aucune modification n'a été apportée.
 </i18n>

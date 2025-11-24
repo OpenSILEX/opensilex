@@ -1265,7 +1265,7 @@ en:
     errorCheckMessage: checking shows some errors, see the table for more details
     successCheckMessage: germplasms are ready to be inserted and/or updated
     successCheckRowMessage: ready to be inserted/updated
-    insert: Insert
+    insert: Create / update
     errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
     successUpsertRowMessage : inserted/updated
@@ -1311,7 +1311,7 @@ fr:
     errorCheckMessage: Des erreurs sont apparues lors de la validation, voir le tableau pour plus de détails
     successCheckMessage: Les ressources génétiques sont prêts à être insérées
     successCheckRowMessage: prête à être insérée/modifiée
-    insert: Insérer
+    insert: Créer / modifier
     errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
     successUpsertRowMessage: insertion / modification réussie

@@ -197,19 +197,6 @@ public class GermplasmLogic {
 
         if (!update) {
             lookForAlreadyExistantUri(germplasmModels, errors);
-        } else {
-            // in update mode, we check that every germplasm exists
-            Collection<URI> existingUris = getNonExistingUris(germplasmModels.stream()
-                    .map(SPARQLResourceModel::getUri)
-                    .toList());
-
-            germplasmModels.forEach(germplasmModel -> {
-                if (germplasmModel.getUri() == null) {
-                    errors.addError(germplasmModel, "Germplasm URI cannot be null for update.");
-                } else if (!SPARQLDeserializers.containsURI(existingUris, germplasmModel.getUri())) {
-                    errors.addError(germplasmModel, String.format("Germplasm URI doesn't exists with URI : %s.", germplasmModel.getUri()) );
-                }
-            });
         }
 
         globalFormatValidation(germplasmModels, errors);

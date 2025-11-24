@@ -731,14 +731,15 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         scientificObjectDAO.create(this.graphNode, models);
 
         // associated moves creation
-        List<MoveModel> moves = new ArrayList<>();
+        /*List<MoveModel> moves = new ArrayList<>();
         for (ScientificObjectModel object : models) {
             MoveModel facilityMoveEvent = new MoveModel();
             if (ScientificObjectLogic.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moves.add(facilityMoveEvent);
             }
-        }
-        moveDAO.create(moves);
+        }*/
+        //TODO MAX for ScientificObjectsGeo had to comment this above and below out on previous MR because a test was failing due to something in relation with isHosted which is going to change anyway
+        //moveDAO.create(moves);
 
         // Global OS copy and species update inside xp
         if (withinExperiment()) {

@@ -104,6 +104,8 @@ import {UserGetDTO} from "../../../../../../opensilex-security/front/src/lib";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+import {URITypesDTO} from "opensilex-core/model/uRITypesDTO";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 
     @Component
@@ -264,16 +266,16 @@ import {LocationObservationDTO} from "opensilex-core/model/locationObservationDT
 
             const facilityUris = [toUri, fromUri].filter(Boolean);
 
-            const promises = [
+            const [labelsResponse, typesResponse] = await Promise.all([
               this.ontologyService.getURILabelsList(targetUris),
               this.ontologyService.getURITypes(targetUris)
-            ];
+            ]);
 
+            let facilityLabelsResponse = null;
             if (facilityUris.length > 0) {
-              promises.push(this.ontologyService.getURILabelsList(facilityUris));
+              facilityLabelsResponse = await this.ontologyService.getURILabelsList(facilityUris);
             }
 
-            const [labelsResponse, typesResponse, facilityLabelsResponse] = await Promise.all(promises);
 
             for (let element of labelsResponse.response.result) {
               this.$set(this.positionsUriLabels, element.uri, element.name);
@@ -285,6 +287,7 @@ import {LocationObservationDTO} from "opensilex-core/model/locationObservationDT
               }
             }
 
+            console.debug(JSON.stringify(typesResponse.response.result));
             // Creation of paths for move position targets types
             for (let element of typesResponse.response.result) {
               const responsePath = this.$opensilex.getTargetPath(

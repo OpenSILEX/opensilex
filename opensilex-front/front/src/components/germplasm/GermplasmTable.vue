@@ -436,7 +436,7 @@ export default class GermplasmTable extends Vue {
       title: "",
       field: "rowNumber",
       visible: true,
-      formatter: "rownum",
+      formatter: this.idFormatterFunction,
     };
 
     let statusCol = {title: "status", field: "status", visible: false};
@@ -654,10 +654,6 @@ export default class GermplasmTable extends Vue {
           row.getElement().style.backgroundColor = "#a5e051";
         } else if (row.getData().status == "NOK") {
           row.getElement().style.backgroundColor = "#ed6661";
-        } else if (row.getData().status == "UPDATE"){
-          row.getElement().style.backgroundColor = "#4ba7cf";
-        } else {
-          row.getElement().style.backgroundColor = "#ffffff";
         }
       },
     });
@@ -1183,6 +1179,21 @@ export default class GermplasmTable extends Vue {
     return `<div class="error-log">${cell.getValue()||""}</div>`;
   }
 
+  /**
+   * function triggered by the tabulator cell formatter. Allow to customize the id column to add the update symbol
+   */
+  private idFormatterFunction(cell, formatterParams, onRendered) {
+    const rowData = this.tableData[cell.getRow().getData().index];
+    let updateSymbol = ``;
+    
+    if(rowData.isUpdate()){
+      updateSymbol = `<div class="update-symbol"></div>`;
+    } else {
+      updateSymbol =  `<div class="create-symbol"></div>`;
+    }
+         
+  return `<div class="id-update-symbol">${rowData.getRowNumber()} ${updateSymbol}</div>`;
+  }
 
 
   //endregion
@@ -1219,6 +1230,7 @@ export default class GermplasmTable extends Vue {
 .tabulator .tabulator-table .tabulator-row .tabulator-cell {
   border-right: 1px solid #dee2e6;
   height: 30px;
+  padding: 0em 0.4em;
 }
 
 .loadCsvButton {
@@ -1244,6 +1256,28 @@ export default class GermplasmTable extends Vue {
 <style lang="scss">
 .error-log{
   color: blue;
+}
+
+.id-update-symbol{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.update-symbol{
+  width: 1rem;
+  height: 1rem;
+  background-color: #3498db;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.create-symbol{
+  width: 1rem;
+  height: 1rem;
+  background-color: lightgray;
+  border-radius: 50%;
+  margin-left: 0.5rem;
 }
 </style>
 

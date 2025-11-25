@@ -77,7 +77,24 @@
     </b-input-group>
 
     <div class="legend">
-      <p>{{$t('GermplasmTable.legend')}} </p>
+      <div class="update-status-legend">
+        <div class="icon-and-legend">
+          <div class="update-symbol"></div> {{ $t('GermplasmTable.update-legend') }}
+        </div>
+        |
+        <div class="icon-and-legend">
+          <div class="create-symbol"></div> {{ $t('GermplasmTable.create-legend') }}
+        </div>
+      </div>
+      <div class="validation-status-legend">
+        <div class="icon-and-legend">
+          <div class="valid-legend"></div> {{ $t('GermplasmTable.valid-legend') }}
+        </div>
+        |
+        <div class="icon-and-legend">
+          <div class="invalid-legend"></div> {{ $t('GermplasmTable.invalid-legend') }}
+        </div>
+      </div>
     </div>
 
     <div ref="table"></div>
@@ -1251,6 +1268,37 @@ export default class GermplasmTable extends Vue {
   }
 }
 
+.validation-status-legend, .update-status-legend, .icon-and-legend{
+  display: flex;
+  margin-right: 1rem;
+}
+
+.update-status-legend{
+  margin-bottom: 0.5rem;
+}
+
+.icon-and-legend div{
+  margin-right: 0.5rem;
+}
+
+.valid-legend{
+  width: 4rem;
+  height: 1rem;
+  background-color: green;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.invalid-legend{
+  width: 4rem;
+  height: 1rem;
+  background-color: red;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+
+
 </style>
 
 <style lang="scss">
@@ -1328,7 +1376,10 @@ en:
     toggleAll: Select all / Unselect all
     errorServerMessage: A server error occurred, please contact your administrator for more information
     upsertHelpMessage: creates and updates the list of germplasms in a single operation (germplasms that will be updated are highlighted in blue).
-    legend: Before Checking/Insertion<\br> if rows are white then the germplasm has no URI or a new URI. <br/> If rows are blue then the germplasm URI already exists and will be updated and not created. <br/> If rows are green then the germplasm URI already exists and no changes were made.
+    update-legend: this line will be updated
+    create-legend: this line will be created
+    valid-legend: this line has been validated or inserted/updated successfully
+    invalid-legend: this line has errors
 
 fr:
   GermplasmTable:
@@ -1375,5 +1426,8 @@ fr:
     toggleAll: Tout sélectionner / Tout désélectionner
     errorServerMessage: Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
     upsertHelpMessage: crée et modifie la liste de ressources génétiques en une seule opération (les ressources génétiques qui seront mises à jour sont colorées en bleu).
-    legend: Avant validation/insertion<\br> si les lignes sont blanches alors la ressource génétique n'a pas d'URI ou une nouvelle URI. <br/> Si les lignes sont bleues alors l'URI de la ressource génétique existe déjà et sera mise à jour et non créée. <br/> Si les lignes sont vertes alors l'URI de la ressource génétique existe déjà et aucune modification n'a été apportée.
+    update-legend: la ligne sera mise à jour
+    create-legend: la ligne sera créée
+    valid-legend: cette ligne a été validée ou insérée/mise à jour avec succès
+    invalid-legend: cette ligne comporte des erreurs
 </i18n>

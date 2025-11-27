@@ -28,7 +28,7 @@
 
       <!-- Colonne droite -->
       <div class="col-12 col-lg-4">
-              <div class="mb-2 fw-bold d-flex align-items-center justify-content-between">
+        <div class="mb-2 fw-bold d-flex align-items-center justify-content-between">
         <span>{{ t('AgroportalSearchFormPart.selected-term') }}</span>
 
         <opensilex-Button
@@ -171,6 +171,7 @@ const tutorialSteps = [
     params: { placement: 'top' }
   },
   {
+    target: '#v-step-wizard-next-button',
     header: { title: t('AgroportalSearchFormPart.tutorial.step-no-concept.title') },
     content: t('AgroportalSearchFormPart.tutorial.step-no-concept.content'),
     before: beforeNoSearchStep
@@ -254,14 +255,14 @@ en:
       step-validation:
         title: Validation
         content: >
-          If you want to import the concept as-is, click the '@:AgroportalSearchFormPart.reuse' button. If
-          you want to use it as a basis for creating your own concept, click the '@:AgroportalSearchFormPart.next'
+          If you want to import the concept as-is, click the 'Reuse' button. If
+          you want to use it as a basis for creating your own concept, click the 'Next'
           button. Please note that for Units, you are required to enrich the concept.
       step-no-concept:
         title: No concept
         content: >
           If you didn't find any concept in Agroportal that matches yours, you can create your own by clicking the
-          '@:AgroportalSearchFormPart.skip' button when no concept is selected.
+          'Skip button when no concept is selected.
 fr:
   AgroportalSearchFormPart:
     step1-title: Chercher
@@ -297,13 +298,13 @@ fr:
         title: Validation
         content: >
           Si vous souhaitez réutiliser le concept tel quel, cliquez sur le bouton
-          '@:AgroportalSearchFormPart.reuse'. Si vous souhaitez l'utiliser comme base pour définir votre
-          propre concept, cliquez sur le bouton '@:AgroportalSearchFormPart.create'. Veuillez noter que vous
+          'Réutiliser'. Si vous souhaitez l'utiliser comme base pour définir votre
+          propre concept, cliquez sur le bouton 'Suivant'. Veuillez noter que vous
           devez impérativement enrichir le concept dans le cas d'une unité.
       step-no-concept:
         title: Pas de concept
         content: >
           Si vous ne trouvez pas de concept dans Agroportal qui correspond à celui que vous cherchez à définir, vous
-          pouvez créer le vôtre en cliquant sur le bouton '@:AgroportalSearchFormPart.create' lorsqu'aucun concept
+          pouvez créer le vôtre en cliquant sur le bouton 'Passer' lorsqu'aucun concept
           n'est sélectionné.
 </i18n>

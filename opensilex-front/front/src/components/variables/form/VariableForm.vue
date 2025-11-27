@@ -6,6 +6,7 @@
       @onSkip="continueFormEditing"
       @onFinish="continueFormEditing"
       :editMode="editMode"
+      class="variableFormTutorial"
     />
 
     <n-form
@@ -22,6 +23,7 @@
         @update:generated="val => uriGenerated = val"
         :editMode="editMode"
         label="component.common.uri"
+        class="v-step-uri"
       />
 
       <div class="row">
@@ -44,6 +46,11 @@
             :conversionMethod="objectToSelectNode"
             :disabled="false"
           />
+            <opensilex-AgroportalEntityForm
+              ref="entityForm"
+              ontologiesConfig="entities"
+              @onCreate="onEntityCreated"
+            />
         </div>
 
         <!-- INTEREST ENTITY -->
@@ -267,6 +274,7 @@ import type { ValidationObserverInstance } from '@vee-validate/components'
 import type { HttpResponse, OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin"
 import { requiredTrimmed } from  "../../../models/FormFieldsFormatter"
+import AgroportalEntityForm from './../agroportal/AgroportalEntityForm.vue'
 
 const props = defineProps({
   editMode: Boolean,
@@ -527,6 +535,17 @@ function loadUnit(uris:Array<string|{uri:string}>){
   return service.getUnit(item).then(res => [res.response.result])
 }
 
+function onEntityCreated(newEntityForm: any) {
+  // newEntityForm vient d'AgroportalCreateForm > contient au minimum `uri` et `name`
+  if (!newEntityForm?.uri) return
+  // 1. on met l’URI dans le formulaire de la variable
+  props.form.entity = newEntityForm.uri
+
+  // 2. on met à jour le nom auto-généré de la variable :
+  selectedEntityName.value = newEntityForm.name
+  updateName()
+}
+
 /* Create modals */
 function showEntityCreateForm(){ entityForm.value?.showCreateForm() }
 function showInterestEntityCreateForm(){ interestEntityForm.value?.showCreateForm() }
@@ -547,7 +566,6 @@ const rules = computed(() => ({
 }))
 
 async function validateForm() {
-  console.log("try validate form")
   try { 
     await formRef.value?.validate();
     return true 
@@ -556,7 +574,115 @@ async function validateForm() {
   }
 }
 
-defineExpose({ validate: validateForm })
+const tutorialSteps = [
+  {
+    target: '#v-step-global .v-step-uri' ,
+    header: { title: t('component.variable.title') },
+    content: t('VariableForm.tutorial.global'),
+    params: { placement: 'bottom' }
+  },
+  {
+    target: '#v-step-entity',
+    header: { title: t('component.variable.entity.entity') },
+    content: t('VariableForm.tutorial.entity'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-entity',
+    header: { title: t('component.variable.entity.entity') },
+    content: t('VariableForm.tutorial.entity-check'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-interestEntity',
+    header: { title: t('component.variable.entityOfInterest.entityOfInterest') },
+    content: t('VariableForm.tutorial.entityOfInterest'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-interestEntity',
+    header: { title: t('component.variable.entityOfInterest.entityOfInterest') },
+    content: t('VariableForm.tutorial.entityOfInterest-check'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-characteristic',
+    header: { title: t('component.variable.characteristic.characteristic') },
+    content: t('VariableForm.tutorial.characteristic'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-characteristic',
+    header: { title: t('component.variable.characteristic.characteristic') },
+    content: t('VariableForm.tutorial.characteristic-check'),
+    params: { placement: 'right' }
+  },
+  {
+    target: '#v-step-method',
+    header: { title: t('component.variable.method.method') },
+    content: t('VariableForm.tutorial.method'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-method',
+    header: { title: t('component.variable.method.method') },
+    content: t('VariableForm.tutorial.method-check'),
+    params: { placement: 'right' }
+  },
+  {
+    target: '#v-step-unit',
+    header: { title: t('component.variable.unit.unit') },
+    content: t('VariableForm.tutorial.unit'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-species',
+    header: { title: t('component.experiment.species') },
+    content: t('VariableForm.tutorial.species'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-name',
+    header: { title: t('component.common.name') },
+    content: t('VariableForm.tutorial.name'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-alt',
+    header: { title: t('VariableForm.altName') },
+    content: t('VariableForm.tutorial.altName'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-datatype',
+    header: { title: t('component.variable.dataType.data-type') },
+    content: t('VariableForm.tutorial.datatype'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-time-interval',
+    header: { title: t('VariableForm.time-interval') },
+    content: t('VariableForm.tutorial.time-interval'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-sampling-interval',
+    header: { title: t('VariableForm.sampling-interval') },
+    content: t('VariableForm.tutorial.sampling-interval'),
+    params: { placement: 'left' }
+  },
+  {
+    target: '#v-step-description',
+    header: { title: t('component.common.description') },
+    content: t('VariableForm.tutorial.description'),
+    params: { placement: 'top' }
+  }
+]
+
+defineExpose({ 
+  validate: validateForm,
+  tutorial
+})
 
 </script>
 
@@ -564,3 +690,57 @@ defineExpose({ validate: validateForm })
 #traitButton { padding-top: 23px; }
 .variableFormSelectors { margin-bottom: 15px; }
 </style>
+
+<i18n>
+en:
+  VariableForm:
+    altName: Alternative name
+    time-interval: Time interval
+    sampling-interval: Sample interval
+    tutorial:
+      global: "Create a variable : Before creating a new variable, make sur you check the existing ones in order to avoid duplicates. For example 'grain yield at harvest'."
+      entity: "Select the entity that is the object of the observation/measurement. Here 'Grain'."
+      entity-check: "If the entity is not already present in the list you can add it. Double check if there is no other spelling - seed, crop, etc."
+      entityOfInterest: "Select the entity of interest that is the object of the observation/measurement."
+      entityOfInterest-check: "If the entity of interest is not already present in the list you can add it. Double check if there is no other spelling."
+      characteristic: "Select the measured characteristic. Here 'Yield' "
+      characteristic-check: "If the characteristic is not in the list you can add it. Double check if it is not already present under another name."
+      method: "Select the method that is associated with this variable. In our case this is a yield sensor onboard the harvester."
+      method-check: "If the method is not present you can add it. Don't neglect the description as it is especially important for methods."
+      unit: "Select the unit in which the variable is measured. What should I do if the unit is different from what I have measured ? I can select kg/ha, but my measurements are in t/ha.
+        1 - I convert the measurements I have into the appropriate unit.
+        2 - I declare a new Unit. This is highly advised to not create too many units and prefer convert into the existing units."
+      name: "Precise the variable name. By default this field is auto filled according the entity and characteristic name, but it can be filled manually."
+      altName: "Precise the alternative variable name if it exist. By default this field is auto filled according the entity, characteristic, method and unit names, but this field can be filled manually."
+      time-interval: "Precise the time interval which associated with this variable. Here we obtained the grain yield each month."
+      sampling-interval: "Precise the sample interval which is associated with this variable. Here we obtained the grain yield by harvesting experimental microplot (10m * 2.5m)."
+      datatype: "Precise the data type. Here we are using decimal numbers."
+      description: "Finalize the variable with some text description of it."
+      species: "Select the species that is associated with this variable. Here rice."
+
+fr:
+  VariableForm:
+    altName: Nom alternatif
+    time-interval: Intervalle de temps
+    sampling-interval: Échantillonnage
+    tutorial:
+      global: "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'."
+      entity: "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'."
+      entity-check: "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives - seed, crop, etc."
+      entityOfInterest: "Sélectionner l'entité d'intérêt sur laquelle la variable est mesurée/observée."
+      entityOfInterest-check: "Si l'entité d'intérêt n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives."
+      characteristic: "Sélectionner la caractéristique mesurée. Ici 'rendement'."
+      characteristic-check: "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifier encore une fois que la caractéristique n'est pas présente sous un autre nom."
+      method: " Sélectionner la méthode qui vous a permis de réaliser cette variable. Dans notre cas, un capteur embarqué à bord de la moissoneuse-batteuse."
+      method-check: "Si la méthode n'est pas présente, vous pouvez l'ajouter. Ne pas oublier de bien renseigner la description, c'est particulièrement important pour la méthode."
+      unit: "Sélectionner l'unité dans laquelle est exprimée la variable. Que faire si l'unité proposée ne correspond pas à ma mesure ? On me propose kg/ha, mais j'ai des mesures en t/ha ?
+        1 - Je convertie ma variable dans la bonne unité.
+        2 - Je crée une nouvelle unité. Il vaut mieux limiter la création de multiples unités, privilégier la conversion."
+      name: "Renseigner le nom de cette variable. Par défault ce champ est rempli automatiquement en fonction de l'entité et de la caractéristique, mais il peut être rempli manuellement."
+      altName: "Renseigner le nom alternatif de cette variable si il existe. Par défault ce champ est rempli automatiquement en fonction de l'entité, de la caractéristique, de la méthode et de l'unité, mais il peut être rempli manuellement."
+      time-interval: "Renseigner le pas-de-temps qui a permis d'obtenir cette variable. Ici le rendement est mesuré chaque mois."
+      sampling-interval: "Renseigner l'échantillonnage qui a permis d'obtenir cette variable. Ici on a obtenu le rendement sur une microparcelle expérimentale de taille standard (2.5m*10m)."
+      datatype: "Renseigner le type de données. Ici nous avons des nombre décimaux."
+      description: "Finaliser la variable avec une description textuelle de la variable."
+      species: "Sélectionner l'espèce associée à la variable variable. Ici le 'riz'."
+</i18n>

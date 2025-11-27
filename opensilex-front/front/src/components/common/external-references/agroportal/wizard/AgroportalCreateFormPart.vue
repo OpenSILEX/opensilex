@@ -58,12 +58,11 @@ import type { BaseExternalReferencesDTO } from '../../ExternalReferencesTypes'
 /** Props */
 const props = defineProps<{
   editMode?: boolean
-  props: {
-    namePlaceholder: string
-    descriptionPlaceholder: string
-  }
+  namePlaceholder: string
+  descriptionPlaceholder: string
   form: BaseExternalReferencesDTO
 }>()
+
 
 const { t } = useI18n({ useScope: 'local' })
 
@@ -137,8 +136,11 @@ function validate() {
 /** Tutorial Methods */
 function startTutorial() {
   savedFormBeforeTutorial.value = JSON.parse(JSON.stringify(formDto.value))
-  formDto.value.name = t(props.props.namePlaceholder).toString()
-  formDto.value.description = t(props.props.descriptionPlaceholder).toString()
+
+  // On utilise directement les placeholders, sans passer par `t()`
+  formDto.value.name = props.namePlaceholder ?? ''
+  formDto.value.description = props.descriptionPlaceholder ?? ''
+
   tutorialRef.value?.start()
 }
 
@@ -202,8 +204,8 @@ en:
       step-validation:
         title: Validation
         content: >
-          Click on the '@:component.common.form-wizard.next' button to proceed to the next step, where you will add
-          external references to your concept. Click on the '@:AgroportalSearchFormPart.save' button to save your concept.
+          Click on the 'Next' button to proceed to the next step, where you will add
+          external references to your concept. Click on the 'Save' button to save your concept.
 fr:
   AgroportalCreateFormPart:
     uri-help: >
@@ -226,7 +228,7 @@ fr:
       step-validation:
         title: Validation
         content: >
-          Cliquez sur le bouton '@:component.common.form-wizard.next' pour passer à l'étape d'ajout de références
+          Cliquez sur le bouton 'Suivant' pour passer à l'étape d'ajout de références
           externes. Si vous pensez ne pas avoir besoin d'en ajouter, vous pouvez cliquer sur le bouton
-          '@:AgroportalSearchFormPart.save' pour sauvegarder votre concept tel quel.
+          'Enregistrer' pour sauvegarder votre concept tel quel.
 </i18n>

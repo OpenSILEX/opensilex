@@ -2,6 +2,7 @@
   <v-tour
     v-if="!editMode"
     ref="tutorial"
+    name="form-tour"
     :steps="steps"
     :options="options"
     :callbacks="callbacks"
@@ -9,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, computed } from 'vue'
+import { ref, defineProps, defineEmits, computed, getCurrentInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -53,12 +54,19 @@ const callbacks = {
   onStart: () => emit('onStart')
 }
 
+//  accès à this.$tours via l’instance courante
+const instance = getCurrentInstance()
+const proxy = instance?.proxy as any
+
+const tours = proxy?.$tours as any
+const TOUR_NAME = 'form-tour'
+
 // Méthodes exposées au parent si besoin
 defineExpose({
-  start: () => tutorial.value?.start(),
-  skip: () => tutorial.value?.skip(),
-  stop: () => tutorial.value?.stop(),
-  finish: () => tutorial.value?.finish()
+  start: () => tours?.[TOUR_NAME]?.start?.(),
+  skip: () => tours?.[TOUR_NAME]?.skip?.(),
+  stop: () => tours?.[TOUR_NAME]?.stop?.(),
+  finish: () => tours?.[TOUR_NAME]?.finish?.()
 })
 </script>
 

@@ -11,6 +11,7 @@
         <opensilex-HelpButton
           v-if="tutorial && !editMode"
           label="component.tutorial.name"
+          class="modalFormTutorial"
           @click="getFormRef()?.tutorial?.()"
           :small="true"
         />
@@ -153,7 +154,6 @@ function showCreateForm(passedForm?: any) {
 }
 
 function showEditForm(editForm: any) {
-  console.log('ModalForm showEditForm')
   editMode.value = true
   nextTick(() => {
     form.value = editForm
@@ -173,3 +173,10 @@ defineExpose({
   hide
 })
 </script>
+<style lang="scss">
+  .modalFormTutorial {
+  position: absolute;
+  top: 19px;
+  right: 50px;
+  }
+</style>

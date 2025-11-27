@@ -44,7 +44,7 @@ const props = defineProps<{
   descriptionPlaceholder?: string
   createTitle?: string
   editTitle?: string
-  icon?: string
+  icon: { type: string, default: "fa#vials"}
   createMethod: (form: any) => Promise<HttpResponse<OpenSilexResponse<string>>>
   updateMethod: (form: any) => Promise<HttpResponse<OpenSilexResponse<string>>>
   emptyForm?: BaseExternalReferencesDTO

@@ -4,20 +4,57 @@
     preset="card"
     :mask-closable="false"
     :style="{ width: modalWidth }"
-    :title="editMode ? t(editTitle) : t(createTitle)"
     to="body"
     display-directive="if"
   >
-  <div class="wizard-steps">
-    <n-steps 
-      :current="currentStepIndex + 1" 
-      size="small" 
-      class="mb-4"
-    >
-      <n-step v-for="(step, i) in steps" :key="i" :title="t(step.title)" />
-    </n-steps>
-  </div>
+    <!-- Header interne au contenu -->
+    <!-- <div class="wizard-header mb-3">
+      <div class="wizard-header-title">
+        {{ editMode ? t(editTitle) : t(createTitle) }}
+      </div>
 
+      <opensilex-Button
+        class="greenThemeColorText wizard-help-btn"
+        @click="startCurrentStepTutorial"
+        :small="true"
+        :title="t('component.tutorial.name')"
+        :label="t('component.tutorial.name')"
+      >
+        <template v-slot:icon>
+          <opensilex-Icon icon="fa#question" class="tutoriel-button-icon" />
+        </template>
+      </opensilex-Button>
+    </div> -->
+    <!-- ----------------------------------------- -->
+    <template #header>
+      <div class="flex justify-between items-center">
+        <h4>
+          <slot name="icon">
+            <opensilex-Icon :icon="icon" class="icon-title" />
+          </slot>
+          {{ translatedTitle }}
+        </h4>
+        <opensilex-HelpButton
+          label="component.tutorial.name"
+          class="wizard-help-btn"
+          @click="startCurrentStepTutorial"
+          :small="true"
+        />
+      </div>
+    </template>
+
+    <!-- Steps -->
+    <div class="wizard-steps">
+      <n-steps 
+        :current="currentStepIndex + 1" 
+        size="small" 
+        class="mb-4"
+      >
+        <n-step v-for="(step, i) in steps" :key="i" :title="t(step.title)" />
+      </n-steps>
+    </div>
+
+    <!-- Contenu de l’étape -->
     <component
       :is="steps[currentStepIndex].component"
       :key="currentStepIndex"
@@ -35,7 +72,7 @@
       <n-space justify="space-between">
         <n-button @click="close">{{ t('component.common.form-wizard.cancel') }}</n-button>
 
-        <div>
+        <div id="v-step-wizard-buttons">
           <n-space justify="end" :size="10"> 
             <n-button v-if="currentStepIndex > 0" @click="prevStep">
               {{ prevText }}
@@ -50,7 +87,7 @@
               {{ finishText }}
             </n-button>
 
-            <n-button v-if="!isLastStep" type="primary" class="greenThemeColor" @click="nextStep">
+            <n-button v-if="!isLastStep" type="primary" id="v-step-wizard-next-button" class="greenThemeColor" @click="nextStep">
               {{ nextText }}
             </n-button>
 
@@ -110,6 +147,11 @@ const stepComponent = ref<any>()
 const modalWidth = computed(() => props.modalWidth ?? '900px')
 const isLastStep = computed(() => currentStepIndex.value === props.steps.length - 1)
 
+const translatedTitle = computed(() => {
+  const key = editMode.value ? props.editTitle : props.createTitle
+  return t(key)
+})
+
 function showCreateForm () {
   form.value = props.initForm()
   editMode.value = false
@@ -119,6 +161,7 @@ function showCreateForm () {
 }
 
 function showEditForm (inputForm: any) {
+  console.log("wizardForm showEditForm fct,  inputForm  : ", inputForm)
   form.value = inputForm
   editMode.value = true
   currentStepIndex.value = 0
@@ -168,6 +211,10 @@ const finishText = computed(() => {
   return t(raw) as string
 })
 
+function startCurrentStepTutorial () {
+  // si le composant de l'étape expose `startTutorial`, on l’appelle
+  stepComponent.value?.startTutorial?.()
+}
 
 async function submitForm () {
   if (!(await validateStep())) return
@@ -219,6 +266,11 @@ defineExpose({ showCreateForm, showEditForm, close })
 
 
 <style lang="scss">
+
+.wizard-header-title {
+  font-size: 1.2em;
+  font-weight: bold;
+}
 /* Pastille de chaque étape */
 .wizard-steps .n-step-indicator {
   background-color: #00A38D !important;
@@ -228,4 +280,27 @@ defineExpose({ showCreateForm, showEditForm, close })
 .wizard-steps .n-base-icon {
   color: #fff !important;
 }
+
+.wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wizard-help-btn {
+  position: absolute;
+  top: 22px;
+  right: 55px;
+}
+
+/* Au survol */
+.wizard-help-btn:hover {
+  background-color: #00A38D;
+  color: #fff;
+}
+
+.wizard-help-btn:hover .tutoriel-button-icon {
+  color: #fff;
+}
+
 </style>

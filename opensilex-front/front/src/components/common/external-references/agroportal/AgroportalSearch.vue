@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Barre de recherche -->
-    <div class="input-group">
+    <div class="agroportal-search-group">
       <n-input
         v-model:value="searchText"
         type="text"
@@ -10,11 +10,11 @@
         @input="onInputValueChange"
       />
       <button class="btn btn-outline-secondary agroportalCleanSearchBtn" type="button" @click="cleanSearchField">
-        <i class="bi-x"></i>
+        <i class="bi-x icon-scaled"></i>
       </button>
-      <button class="btn btn-outline-secondary agroportalSearchBarBtn" type="button" @click="toggleAdvanced">
+      <!-- <button class="btn btn-outline-secondary agroportalSearchBarBtn" type="button" @click="toggleAdvanced">
         <i class="bi-funnel"></i>
-      </button>
+      </button> -->
       <button class="btn btn-outline-secondary agroportalSearchBarBtn" type="button" @click="emitChange">
         <i class="bi-search"></i>
       </button>
@@ -22,7 +22,7 @@
 
     <!-- Options avancées -->
     <n-collapse :default-expanded-names="showAdvanced ? ['advanced'] : []" class="mt-2">
-      <n-collapse-item name="advanced" title="">
+      <n-collapse-item name="advanced" :title="t('AgroportalSearch.ontologies-choice')">
         <div class="row align-items-center g-3">
           <div class="col-12 col-lg-8">
             <opensilex-FormSelector
@@ -170,6 +170,19 @@ function onInputValueChange(val: string) {
   padding: .5rem .75rem;
 }
 
+.agroportal-search-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.agroportal-search-group :deep(.n-input) {
+  flex: 1 1 auto;
+}
+
+.agroportal-search-group .btn {
+  margin-left: 4px;
+}
+
 .agroportalSearchBarBtn, .agroportalCleanSearchBtn {
   color: #00A38D;
   border-color: #00A38D;
@@ -183,6 +196,14 @@ function onInputValueChange(val: string) {
   background: red;
   border-color: red;
 }
+
+.icon-scaled {
+  font-size: 1rem;
+  line-height: 1;
+  transform: scale(1.2);
+  transform-origin: center;
+  display: inline-block;
+}
 </style>
 
 
@@ -191,9 +212,11 @@ en:
   AgroportalSearch:
     enter-search-text: Enter a name
     all-ontologies: All ontologies
+    ontologies-choice: Ontologies selection
 fr:
   AgroportalSearch:
     enter-search-text: Entrer un nom
     all-ontologies: Toutes les ontologies
+    ontologies-choice: Selection d'ontologies
 </i18n>
 

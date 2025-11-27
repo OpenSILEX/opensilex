@@ -48,23 +48,23 @@
       <div>
         <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas" :no-footer="true">
           <template #body>
-            <opensilex-ExternalReferencesDetails :skosReferences="entity" />
+            <opensilex-ExternalReferencesDetails :skosReferences="selected" />
           </template>
         </opensilex-Card>
       </div>
 
 
-    <!-- Formulaire création/édition entité -->
-    <opensilex-ModalForm
+    <!-- Formulaire édition entité -->
+    <opensilex-AgroportalEntityForm
       v-if="showForm"
       ref="entityFormRef"
-      component="EntityForm"
       :createTitle="'component.variable.entity.add-entity'"
       :editTitle="'component.variable.entity.edit'"
       :editData="editData"
       @onSuccess="onFormSuccess"
       @onClose="closeForm"
-    />
+    ></opensilex-AgroportalEntityForm>
+    
   </div>
   </div>
 </template>
@@ -126,13 +126,13 @@ onMounted(fetchEntities);
 
 // Affiche les détails
 async function updateSelected(entity: any) {
-   
-      const selectedEntityDetails = await fetchEntityDetails(entity.uri);
+  const selectedEntityDetails = await fetchEntityDetails(entity.uri);
   if (!selectedEntityDetails) return;
 
-console.log("selecteeeed details ", selectedEntityDetails)
   selected.value = {
-    uri: selectedEntityDetails.uri,
+    // on garde ce qui vient du backend dontexact_match, close_match, etc.
+    ...selectedEntityDetails,
+
     name: selectedEntityDetails.name || selectedEntityDetails.label || '',
     comment: selectedEntityDetails.description || '',
     publisher: selectedEntityDetails.publisher || '',
@@ -162,11 +162,12 @@ function showCreateForm() {
 }
 
 // Formulaire édit
-function showEditForm(entity: any) {
-  editData.value = entity;
+async function showEditForm(entity: any) {
+  const selectedEntityDetails = await fetchEntityDetails(entity.uri);
+  editData.value = selectedEntityDetails;
   showForm.value = true;
   nextTick(() => {
-    entityFormRef.value?.showEditForm?.(entity);
+    entityFormRef.value?.showEditForm?.(selectedEntityDetails);
   });
 }
 
@@ -258,18 +259,18 @@ async function selectFromQuery () {
   const details = await fetchEntityDetails(targetUri)
   if (!details) return
 
-  selected.value = {
-    uri: details.uri,
-    name: details.name || details.label || '',
-    comment: details.description || '',
-    publisher: details.publisher || '',
-    description: details.description || '',
-    publication_date: details.publication_date || '',
-    last_update_date: details.last_update_date || '',
-    type: details.type || '',
-    typeLabel: details.typeLabel || '',
-    variables: details.variables ?? []
-  }
+selected.value = {
+  ...details,
+  name: details.name || details.label || '',
+  comment: details.description || '',
+  publisher: details.publisher || '',
+  description: details.description || '',
+  publication_date: details.publication_date || '',
+  last_update_date: details.last_update_date || '',
+  type: details.type || '',
+  typeLabel: details.typeLabel || '',
+  variables: details.variables ?? []
+};
 }
 
 defineExpose({ showCreateForm });

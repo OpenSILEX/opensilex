@@ -820,8 +820,6 @@ export default class GermplasmTable extends Vue {
               row.setInsertionStatus(errorMessage);
             }
           });
-
-          this.filter = "NOK";
         })
   }
 

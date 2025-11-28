@@ -1,5 +1,13 @@
 <template>
   <div class="container-fluid">
+    <opensilex-PageActions>
+        <opensilex-CreateButton
+        @click="datafileForm.showCreateForm()"
+        label="DataFilesList.add"
+        class="createButton"
+        ></opensilex-CreateButton>
+    </opensilex-PageActions>
+
     <opensilex-PageContent
     class="pagecontent">
       <template v-slot>
@@ -190,6 +198,16 @@
           class="datafilesList">
         </opensilex-DataFilesList>
 
+        <opensilex-ModalForm
+          ref="datafileForm"
+          component="opensilex-DataFileForm"
+          editTitle="update"
+          createTitle="DataFilesList.add"
+          icon="ik#ik-file-text"
+          modalSize="lg"
+          @onCreate="refresh()"
+        >
+        </opensilex-ModalForm>
 
       </template>
     </opensilex-PageContent>
@@ -236,6 +254,7 @@ export default class DataFilesView extends Vue {
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
+  @Ref("datafileForm") readonly datafileForm!: any;
 
   filter = {
     name: undefined,
@@ -360,6 +379,12 @@ export default class DataFilesView extends Vue {
 .datafilesList {
   width: 100%
 }
+
+.createButton {
+  margin-bottom: 10px;
+  margin-top: -15px
+}
+
 </style>
 
 <i18n>
@@ -367,15 +392,15 @@ en:
   DataFilesView:
     description: View datafiles
     details: view datafile metadata
-    imagesView: Images view
     fileName: File Name
     fileName-placeholder: Enter file name
+    imagesView: View
 
 fr:
   DataFilesView:
     description: Voir les fichiers de données
     details: Voir les métadonnées du fichier
-    imagesView: Visualisation des images
     fileName: Nom de fichier
     fileName-placeholder: Saisir un nom de fichier
+    imagesView: Visualisation 
 </i18n>

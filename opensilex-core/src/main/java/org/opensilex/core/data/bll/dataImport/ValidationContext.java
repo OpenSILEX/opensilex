@@ -7,6 +7,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 
 import java.net.URI;
 import java.util.*;
@@ -36,6 +37,8 @@ public class ValidationContext {
     private DeviceModel deviceFromDeviceColumn;
     private SPARQLNamedResourceModel target;
     private SPARQLNamedResourceModel object;
+    private ProvEntityModel dataProvUsed;
+
 
     private int targetColIndex = 0;
     private int deviceColIndex = 0;
@@ -44,6 +47,7 @@ public class ValidationContext {
 
     public ValidationContext(
             ProvenanceModel provenance,
+            ProvEntityModel dataProvUsed,
             String[] values,
             int rowIndex,
             Map<Integer, String> headerByIndex,
@@ -56,6 +60,7 @@ public class ValidationContext {
             boolean sensingDeviceFoundFromProvenance
     ) {
         this.provenance = provenance;
+        this.dataProvUsed = dataProvUsed;
         this.values = values;
         this.rowIndex = rowIndex;
         this.headerByIndex = headerByIndex;
@@ -70,6 +75,14 @@ public class ValidationContext {
 
     public ProvenanceModel getProvenance() {
         return provenance;
+    }
+
+    public ProvEntityModel getDataProvUsed() { 
+        return dataProvUsed; 
+    }
+
+    public void setDataProvUsed(ProvEntityModel dataProvUsed) { 
+        this.dataProvUsed = dataProvUsed; 
     }
 
     public String[] getValues() {

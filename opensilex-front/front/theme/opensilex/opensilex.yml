@@ -17,6 +17,7 @@ stylesheets:
     - _layout.scss
     - _auth.scss
     - _main.scss
+    - _helpMessage.scss
     - main.css
     - fix.css
     - hamburgers.css

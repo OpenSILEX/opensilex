@@ -836,21 +836,13 @@ export default class VariableForm extends Vue {
     #traitButton {
         padding-top: 23px;
     }
+
     .helpMsg{
     margin: 0;
     padding: 0;
     font-size: 0.8rem;
     color: #007bff;
     padding-left: 0.2rem;
-    }
-
-    .divHelpMsg{
-        display: flex;
-        background-color: rgba(0, 162, 140, 0.1);
-        border: 1px solid rgba(0, 162, 140, 0.5);
-        border-radius: 5px;
-        padding: 1rem;
-        margin: 0.5rem 0;
     }
 
 </style>

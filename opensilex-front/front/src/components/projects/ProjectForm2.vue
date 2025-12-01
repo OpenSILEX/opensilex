@@ -34,7 +34,7 @@
     ></opensilex-PersonSelector>
 
     <!-- Objective -->
-    <div class="helpMsg"
+    <div class="divHelpMsg"
     v-if="form.objective != null || form.description != null "
     >
       <p>{{$t('ProjectForm.help-msg')}} </p>
@@ -79,13 +79,7 @@ export default class ProjectForm2 extends Vue {
 }
 </script>
 <style scoped lang="scss">
-.helpMsg{
-  background-color: rgba(0, 162, 140, 0.1);
-  border: 1px solid rgba(0, 162, 140, 0.5);
-  border-radius: 5px;
-  padding: 0.4rem 0.8rem;
-  margin: 0.5rem 0;
-
+.divHelpMsg{
   p {
     margin: 0;
     padding: 0;

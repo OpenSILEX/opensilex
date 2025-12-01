@@ -45,13 +45,10 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FacilityLogic {

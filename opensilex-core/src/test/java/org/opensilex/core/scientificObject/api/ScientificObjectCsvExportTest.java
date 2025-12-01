@@ -19,7 +19,6 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.fs.service.FileStorageService;

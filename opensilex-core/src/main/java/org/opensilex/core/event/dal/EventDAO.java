@@ -21,7 +21,6 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.nosql.mongodb.MongoDBService;

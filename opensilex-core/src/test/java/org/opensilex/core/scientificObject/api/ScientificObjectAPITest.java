@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.geojson.Geometry;
-import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.graph.Node;
@@ -33,7 +32,6 @@ import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
-import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
@@ -86,7 +84,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -94,7 +91,6 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author Vincent MIGOT

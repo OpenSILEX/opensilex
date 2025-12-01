@@ -21,7 +21,6 @@ import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationModel;
-import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.api.site.SiteAddressDTO;
@@ -50,7 +49,6 @@ import org.opensilex.utils.ListWithPagination;
 import javax.naming.SizeLimitExceededException;
 import java.net.URI;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SiteLogic {

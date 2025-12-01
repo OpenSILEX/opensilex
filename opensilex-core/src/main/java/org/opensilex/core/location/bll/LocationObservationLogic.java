@@ -11,7 +11,6 @@
 
 package org.opensilex.core.location.bll;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;

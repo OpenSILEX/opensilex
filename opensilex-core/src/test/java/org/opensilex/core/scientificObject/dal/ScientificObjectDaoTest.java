@@ -9,8 +9,6 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;

@@ -5,8 +5,6 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
@@ -26,30 +24,17 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.repository.http.HTTPQueryEvaluationException;
-import org.geojson.GeoJsonObject;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.MoveNosqlModel;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.exception.DuplicateURIListException;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -68,7 +53,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;

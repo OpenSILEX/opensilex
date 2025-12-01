@@ -1,7 +1,6 @@
 package org.opensilex.core.event.api.move.csv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.model.geojson.Point;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
@@ -9,10 +8,7 @@ import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
-import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -20,15 +16,10 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
-
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

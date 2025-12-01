@@ -24,15 +24,10 @@ import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.location.api.LocationObservationDTO;
-import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
-import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
@@ -49,10 +44,6 @@ import org.opensilex.core.variable.dal.*;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.group.api.GroupAPI;
-import org.opensilex.security.group.api.GroupCreationDTO;
-import org.opensilex.security.group.api.GroupDTO;
-import org.opensilex.security.group.api.GroupUserProfileModificationDTO;
 import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
@@ -81,7 +72,6 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author rcolin

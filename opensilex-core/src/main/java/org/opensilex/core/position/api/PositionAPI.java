@@ -1,6 +1,5 @@
 package org.opensilex.core.position.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoQueryException;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;

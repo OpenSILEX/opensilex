@@ -83,8 +83,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.mongodb.client.model.Filters.eq;
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
 

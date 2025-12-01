@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.geojson.Point;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +27,6 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.core.Response;

@@ -5,7 +5,6 @@
  */
 package org.opensilex.core.device.dal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.jena.arq.querybuilder.*;
@@ -21,7 +20,6 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
-import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.bll.FacilityLogic;
@@ -46,7 +44,6 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
@@ -59,7 +56,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 

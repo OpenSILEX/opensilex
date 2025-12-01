@@ -61,7 +61,7 @@
                         :value.sync="form.geojson"
                         label="component.common.geometry"
                         helpMessage="component.common.geometry-help"
-                        :required="true"
+                        :required="false"
                 ></opensilex-GeometryForm>
             </div>
         </div>

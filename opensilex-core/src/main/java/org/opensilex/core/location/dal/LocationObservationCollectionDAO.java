@@ -52,6 +52,11 @@ public class LocationObservationCollectionDAO {
         return result.stream().map(x -> URI.create(x.getStringValue(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD))).findFirst().orElse(null);
     }
 
+    /**
+     *
+     * @param featureOfInterests the uris of elements we want LocationCollections for
+     * @return the LocationCollection uri of each featureOfInterest, in a Map of FeatureOfInterestURI => LocationCollectionURI
+     */
     public Map<URI, URI> getCollections(List<URI> featureOfInterests) throws SPARQLException {
         Var featuresVar = makeVar(LocationObservationModel.FEATURE_OF_INTEREST_FIELD);
 

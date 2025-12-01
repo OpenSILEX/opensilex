@@ -57,6 +57,11 @@ public class LocationObservationCollectionLogic {
         }
     }
 
+    /**
+     *
+     * @param featureOfInterests the uris of elements we want LocationCollections for
+     * @return the LocationCollection uri of each featureOfInterest, in a Map of FeatureOfInterestURI => LocationCollectionURI
+     */
     public Map<URI, URI> getLocationObservationCollectionList(List<URI> featureOfInterests) throws SPARQLException {
         return locationObservationCollectionDAO.getCollections(featureOfInterests);
     }
@@ -64,7 +69,6 @@ public class LocationObservationCollectionLogic {
     /**
      * @param rdfType type of object
      * @return for each object of the rdfType, return the object uri, rdfType, and the location observation collection linked
-     * @throws SPARQLException
      */
     public Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> getLocationObservationCollectionListByType(URI rdfType) throws SPARQLException {
         return locationObservationCollectionDAO.getCollectionByType(rdfType);

@@ -105,6 +105,16 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         return model;
     }
 
+    /**
+     * The get list of Moves function. For their locations a special operation has to be performed as their is no direct mapping,
+     * the location fetching operation also involves MongoDB.
+     * To link the correct LocationObservation, it needs to belong to LocationObservationCollection
+     * whose featureOfInterest, is the target of the move in question. And from the collection, we need to fetch the LocationObservation whose
+     * dates match our move's dates.
+     *
+     * @param uriList uris of the Moves we are getting
+     * @return the list of corresponding MoveModels, with their LocationObservation properly filled.
+     */
     public List<MoveModel> getList(List<URI> uriList) throws Exception {
         var modelList = dao.getList(uriList, currentUser);
 
@@ -150,6 +160,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             //Set event move URI
             URI uri = model.getUri();
             if (Objects.isNull(uri)) {
+                //Generate URI manually before insertion as the LocationObservation needs this information.
                 uri = model.generateURI(dao.getGraphAsNode().toString(), model, 0);
                 model.setUri(uri);
             }
@@ -194,12 +205,11 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     /**
      *
-     * @param targetUris object list to get last location
-     * @param endDate date before location has to be
-     * @param intersection the extent where location has to be
-     * @return the last location of a target
-     * @throws NoSuchElementException
-     * @throws SPARQLException
+     * @param targetUris the uris of targets for whom we want to fetch a LocationObservation
+     * @param endDate Location has to have the most recent date before endDate.
+     * @param intersection only include Locations that are contained in intersection
+     * @return A map of target URI => LocationObservation, the location observation is either the last position, or the
+     * position that corresponds to the passed endDate.
      */
     public Map<URI, LocationObservationModel> getTargetWithPosition(
             List<URI> targetUris,

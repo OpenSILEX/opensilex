@@ -374,7 +374,6 @@ public class BrAPIv1ObservationUnitDTO {
         observationUnit.setPositionCoordinateXType(PositionType.LONGITUDE);
         observationUnit.setPositionCoordinateYType(PositionType.LATITUDE);
 
-        //TODO: Vérifier si OK
         LocationObservationModel locationObservationModel = observationLogic.getLastLocationObservation(
                 Collections.singletonList(model.getLocationObservationCollection().getUri()),
                 false,

@@ -90,6 +90,7 @@
         <cdi.api.version>2.0.SP1</cdi.api.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
         <apache.tika.version>2.9.2</apache.tika.version>
+        <jfree.version>1.5.4</jfree.version>
 
         <!-- test only dependencies version -->
         <junit.version>4.13.2</junit.version>
@@ -280,6 +281,12 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
             <type>pom</type>
         </dependency>
 
+        <!-- JFreeChart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.4</version>
+        </dependency>
 
         <!-- Apache-Tika - Used for file mime type detection -->
         <dependency>
@@ -722,6 +729,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <trimStackTrace>false</trimStackTrace>
                         <useFile>false</useFile>
                         <reuseForks>true</reuseForks>
+                        <argLine>-Djava.awt.headless=true</argLine>
                     </configuration>
                 </plugin>
                 <plugin>

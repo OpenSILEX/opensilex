@@ -94,6 +94,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opensilex.server.response.ObjectUriResponse;
+import java.io.InputStream;
+import org.apache.commons.io.FilenameUtils;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
 import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
@@ -116,6 +119,12 @@ public class DataFilesAPI {
 
     private static final Set<String> THUMBNAIL_EXTENSIONS = Set.of("png", "jpg", "gif", "bmp", "jpeg", "PNG", "JPG", "GIF", "BMP");
     private static final Set<String> TIFF_EXTENSIONS = Set.of("tiff", "tif");
+    private static final Set<String> DX_EXTENSIONS = Set.of("dx", "jdx", "DX", "JDX");
+
+
+
+    public static final Integer DATAFILE_MAX_SIZE = 104857600;
+    public static final String DATAFILE_MAX_SIZE_ERROR_MESSAGE = "Empty or too large file size:  0 MB < filesize < 100 MB";
 
 
     @Inject
@@ -159,6 +168,15 @@ public class DataFilesAPI {
     ) throws Exception {
         
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+
+        if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
+            return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "Bad file",
+                    DATAFILE_MAX_SIZE_ERROR_MESSAGE
+            ).getResponse();
+        }
+
         try {
             validDataFileDescription(Arrays.asList(dto));
             DataFileModel model = dto.newModel();
@@ -457,11 +475,11 @@ public class DataFilesAPI {
             DataFileModel description = dao.get(uri);
 
             // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
-            String fileExt = Files.getFileExtension(description.getFilename());
+            String fileExt = com.google.common.io.Files.getFileExtension(description.getFilename());
 
             // Non handled file type
-            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
-                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
+            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt) && ! DX_EXTENSIONS.contains(fileExt)){
+                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS, DX_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
                 return new BadRequestException("the file is not an image with a valid extension in the following list: " + everyExtensions).getResponse();
             }
 
@@ -472,6 +490,11 @@ public class DataFilesAPI {
                 image = convertTIFFToPNG(image);
             }
 
+            // Handle DX : convert to PNG
+            if(DX_EXTENSIONS.contains(fileExt)){
+                image = DXFileConverter.getInstance().convertDXToImage(image);
+            }
+
             return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
 
         } catch (NoSQLInvalidURIException e) {
@@ -480,6 +503,7 @@ public class DataFilesAPI {
             return new UnexpectedErrorException(e).getResponse();
         }
     }
+
 
     private Response resizeImageAndGetResponse(byte[] convertedImage, String fileName, Integer scaledWidth, Integer scaledHeight) throws IOException {
         byte[] resizedImage = ImageResizer.getInstance().resize(
@@ -875,4 +899,240 @@ public class DataFilesAPI {
 
         return filter;
     }
+    
+    /**
+     * Parse and save the metadata of a DX file
+     *
+     */
+    @POST
+    @Path("upload-dx")
+    @ApiOperation(value = "Upload and parse DX file")
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = DataFileGetDTO.class)
+    })
+    public Response uploadAndParseDX(
+        @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+        @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
+        @FormDataParam("rdf_type") URI rdfType,
+        @FormDataParam("provenance") URI provenanceUri,
+        @FormDataParam("experiments") List<URI> experiments
+    ) throws IOException {
+
+            DXFileParser fileParser = new DXFileParser(fs);
+            DXMetadataParser metadataParser = new DXMetadataParser();
+            if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "Bad file",
+                        DATAFILE_MAX_SIZE_ERROR_MESSAGE
+                ).getResponse();
+            }
+                
+            try {
+                fileParser.parseDXfile(file.getAbsolutePath());
+                String baseUri = sparql.getBaseURI().toString();
+                List<Map<String, Object>> jsonDataList = metadataParser.parseDXFileForJSON(file.getAbsolutePath(), rdfType, provenanceUri, experiments, baseUri);
+        
+                // Returning the JSON data list as the response
+                return new SingleObjectResponse<>(jsonDataList).getResponse();
+            } catch (IOException e) {
+                return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+            }
+        }
+    
+    
+    /**
+     * Parse and save the metadata of a CSV spctra file
+     *
+     */
+    @POST
+    @Path("upload-spectra-csv")
+    @ApiOperation(value = "Upload and parse spectra CSV file")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = DataFileGetDTO.class)})
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response uploadAndParseSpectraCSV(
+        @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+        @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
+        @FormDataParam("rdf_type") URI rdfType,
+        @FormDataParam("provenance") URI provenanceUri,
+        @FormDataParam("experiment") List<URI> experiments) throws IOException {
+
+            SpectraCSVFileParser fileParser = new SpectraCSVFileParser(fs);
+            SpectraCSVMetadataParser metadataParser = new SpectraCSVMetadataParser();
+ 
+            if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "Bad file",
+                        DATAFILE_MAX_SIZE_ERROR_MESSAGE
+                ).getResponse();
+            }
+        
+        
+            try {
+                fileParser.parseCSVFile(file.getAbsolutePath());
+                String baseUri = sparql.getBaseURI().toString();
+                List<Map<String, Object>> jsonDataList = metadataParser.parseSpectraCSVFileForJSON(file.getAbsolutePath(), rdfType, provenanceUri, experiments, baseUri);
+        
+                // Returning the JSON data list as the response
+                return new SingleObjectResponse<>(jsonDataList).getResponse();
+            } catch (IOException | com.opencsv.exceptions.CsvException e) {
+                return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+
+            }
+        }
+
+
+    /**
+     * Returns the content of the file corresponding to the URI given.
+     *
+     * @param uris
+     * @param response
+     * @return The file content or null with a 404 status if it doesn't exists
+     */
+    @ApiProtected
+    @POST
+    @Path("export-spectra-files")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportSpectraFiles(
+        @ApiParam(value = "Export format DX file, TSV file, CSV file if available", allowableValues = "dx, tsv, csv", defaultValue = "tsv") @QueryParam("format") String format,
+        @ApiParam(value = "URI datafiles") List<URI> uris,
+        @ApiParam(value = "Include average line", defaultValue = "false") @QueryParam("includeAverage") boolean includeAverage,
+        @ApiParam(value = "Include datetime column", defaultValue = "false") @QueryParam("includeSampleDatetime") boolean includeSampleDatetime,
+        @Context HttpServletResponse response
+        ) throws Exception {
+            StringBuilder combinedContent = new StringBuilder();
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            String firstFileExtension = null;
+            boolean isFirstFile = true;
+            List<String> firstFileHeader = null;
+
+            // Loop through all the selected file URIs provided by the user. 
+            // For each file, we check that all files have the same extension and that the requested export format is compatible.
+            // For CSV files, ensure that the first few columns of the header match across all files.
+            // This ensures that all selected files can be safely combined into a single export file.
+            for (URI uri : uris) {
+                try {
+                    DataFileModel description = dao.get(uri);
+                    java.nio.file.Path filePath = Paths.get(description.getPath());
+
+                    String fileExtension = FilenameUtils.getExtension(filePath.getFileName().toString());
+                    if (firstFileExtension == null) {
+                        firstFileExtension = fileExtension;  
+                    } else if (!firstFileExtension.equals(fileExtension)) {
+                        throw new IllegalArgumentException("All files must have the same extension. Mismatch found: " + filePath);
+                    }
+
+                    if ((fileExtension.equals("dx") && !(format.equals("dx") || format.equals("tsv"))) ||
+                    (fileExtension.equals("csv") && !format.equals("csv"))) {
+                        throw new IllegalArgumentException("Inconsistent download request for files: " + filePath);
+                    }
+            
+
+                    String fileContent = fs.readFile(FS_FILE_PREFIX, filePath);
+
+                    //processing for csv files to keep only the first header 
+                    if (fileExtension.equals("csv")) {
+                        List<String> lines = Arrays.asList(fileContent.split("\n"));
+                        // Only compare the first 5 columns of the header, as only these are guaranteed to be common across files
+                        List<String> currentFileHeader = Arrays.asList(lines.get(0).split(",")).subList(0, 5);
+
+                        if (isFirstFile) {
+                            firstFileHeader = currentFileHeader;
+                            combinedContent.append(fileContent).append("\n");  
+                        } else {
+                            if (!currentFileHeader.equals(firstFileHeader)) {
+                                throw new IllegalArgumentException("File headers are not compatible: " + filePath);
+                            }
+                            combinedContent.append(String.join("\n", lines.subList(1, lines.size()))).append("\n");
+                        }
+                        isFirstFile = false;
+                    } else {
+                        combinedContent.append(fileContent).append("\n");
+                    }
+                } catch (NoSQLInvalidURIException e) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Invalid URI: " + uri.toString())
+                            .build();
+                } catch (IOException e) {
+                    throw new NotFoundException("Datafile not found : " + uri.toString());
+                }
+            }
+
+            try {
+                java.nio.file.Path combinedFilePath = java.nio.file.Files.createTempFile("combined", ".dx");
+                java.nio.file.Files.write(combinedFilePath, combinedContent.toString().getBytes());        
+            
+                if ("dx".equalsIgnoreCase(format)) {
+                    fs.writeFile(FS_FILE_PREFIX, combinedFilePath, combinedContent.toString().getBytes(), null);
+                    File combinedFile = combinedFilePath.toFile();
+                    return Response.ok(combinedFile)
+                            .header("Content-Disposition", "attachment; filename=\"" + combinedFile.getName() + "\"")
+                            .build();
+                }
+
+                if ("csv".equalsIgnoreCase(format)) {
+                    java.nio.file.Path combinedFilePathCSV = java.nio.file.Files.createTempFile("combined", ".csv");
+                    java.nio.file.Files.write(combinedFilePathCSV, combinedContent.toString().getBytes());        
+                    fs.writeFile(FS_FILE_PREFIX, combinedFilePathCSV, combinedContent.toString().getBytes(), null);
+                    File combinedFile = combinedFilePathCSV.toFile();
+                    return Response.ok(combinedFile)
+                            .header("Content-Disposition", "attachment; filename=\"" + combinedFile.getName() + "\"")
+                            .build();
+                } 
+            
+                java.nio.file.Path outputFilePath = java.nio.file.Files.createTempFile("output", ".tsv");
+            
+                DXToTSVConverter converter = new DXToTSVConverter();
+                converter.convertDXFilesToTSV(combinedFilePath, outputFilePath, includeAverage, includeSampleDatetime);
+            
+                File outputFile = outputFilePath.toFile();
+                return Response.ok(outputFile)
+                        .header("Content-Disposition", "attachment; filename=\"" + outputFile.getName() + "\"")
+                        .build();
+            }  catch (IOException e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity("Error processing files: " + e.getMessage())
+                        .build();
+            }
+        }
+
+
+    /**
+     * Remove a datafile
+     * @param uri datafile uri
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted datafile {@link URI}
+     */
+    @DELETE
+    @Path("{uri}")
+    @ApiOperation("Delete a datafile")
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Datafile deleted", response = URI.class),
+        @ApiResponse(code = 404, message = "Datafile URI not found", response = ErrorResponse.class)
+    })
+    public Response deleteDatafile(
+            @ApiParam(value = "Datafile URI", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+
+        DataFileModel description = dao.get(uri);
+        java.nio.file.Path filePath = Paths.get(description.getPath());
+        fs.delete(FS_FILE_PREFIX, filePath);        
+        
+        nosql.getServiceV2().withSession(session -> {
+            dao.delete(session, uri);
+        });        
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
 }
+

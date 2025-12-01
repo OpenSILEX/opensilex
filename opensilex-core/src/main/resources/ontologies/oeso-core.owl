@@ -1893,6 +1893,34 @@ OESO</rdfs:label>
     </owl:Class>
 
 
+        <!-- http://www.opensilex.org/vocabulary/oeso#Spectrum -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Spectrum">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+        <rdfs:label xml:lang="fr">Spectre</rdfs:label>
+        <rdfs:label xml:lang="en">Spectrum</rdfs:label>
+    </owl:Class>
+
+
+
+        <!-- http://www.opensilex.org/vocabulary/oeso#NIRSpectra -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NIRSpectra">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Spectrum"/>
+        <rdfs:label xml:lang="fr">Spectre proche infrarouge</rdfs:label>
+        <rdfs:label xml:lang="en">Near-infrared spectra</rdfs:label>
+    </owl:Class>
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#IRSpectra -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#IRSpectra">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Spectrum"/>
+        <rdfs:label xml:lang="fr">Spectre infrarouge</rdfs:label>
+        <rdfs:label xml:lang="en">Infrared spectra</rdfs:label>
+    </owl:Class>
+
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
 

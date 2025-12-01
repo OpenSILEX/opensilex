@@ -47,6 +47,7 @@ let ontologies = {
     DEVICE_TYPE_URI: OESO_URI + '#Device',
     IS_PART_OF: OESO_URI + "#isPartOf",
     IMAGE_TYPE_URI: OESO_URI + "#Image",
+    SPECTRA_TYPE_URI: OESO_URI + "#Spectrum",
     DATAFILE_TYPE_URI: OESO_URI + "#Datafile",
     FACTOR_CATEGORY_URI: OESO_URI + '#FactorCategory',
     FACTOR_LEVEL_URI: OESO_URI + '#FactorLevel',

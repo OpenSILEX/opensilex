@@ -1,14 +1,19 @@
 This document is a template for writing specifications for a particular feature. Please copy-paste
 it into your own file. Please edit the first line of the **document history** table. Please fill
 the _WARNING_ annotation if the document is not exhaustive; you can remove it if the specification treats
-all topics concerning the feature.
+all topics concerning the feature. Please name the document without uppercase nor spaces nor underscore, use
+hyphens if for spaces (e.g. my-feature-specifications.md).
 
 Each section of the template is optional. If a section is not relevant for the specification of the
 feature, feel free to remove it. You can change the order of sections, and add new sections if you
 need it. All texts in {curly braces} are meant to be replaced. Before making a commit of your changes,
 please update the table of contents (you can do this automatically with your IDE).
 
-These first three paragraphs of this template are to be removed before publishing your specification.
+Specifications documents are not intended to contain technical details. They should focus on the needs from a user 
+perspective. The Business logic section is a very detailed description of the rules that must be applied to implement
+the feature, but always from a user perspective. Technical details should be in technical documentation, not in specifications.
+
+These first four paragraphs of this template are to be removed before publishing your specification.
 
 # Specifications : [{category}] {title}
 

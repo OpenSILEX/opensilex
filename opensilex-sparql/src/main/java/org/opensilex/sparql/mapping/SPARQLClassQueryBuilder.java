@@ -573,7 +573,7 @@ class SPARQLClassQueryBuilder {
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
         //do not delete excluded predicates
-        if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
+        if(!CollectionUtils.isEmpty(excludedPredicates)) {
             Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
             graphSubquery.addFilter(predicateFilter);
         }

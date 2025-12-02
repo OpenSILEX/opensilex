@@ -446,6 +446,8 @@ import ExperimentDataVisualisation from './experiments/ExperimentDataVisualisati
 components["opensilex-ExperimentDataVisualisation"] = ExperimentDataVisualisation;
 import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
 components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
+import ExperimentDataFiles from './experiments/views/ExperimentDataFiles.vue';
+components["opensilex-ExperimentDataFiles"] = ExperimentDataFiles;
 
 
 // Germplasm
@@ -738,6 +740,8 @@ import DataList from './data/DataList.vue';
 components["opensilex-DataList"] = DataList;
 import DataFilesList from './data/DataFilesList.vue';
 components["opensilex-DataFilesList"] = DataFilesList;
+import ExportDataFileModal from './data/ExportDataFileModal.vue';
+components["opensilex-ExportDataFileModal"] = ExportDataFileModal;
 
 import DataFilesImagesList from './data/DataFilesImagesList.vue';
 components["opensilex-DataFilesImagesList"] = DataFilesImagesList;
@@ -747,6 +751,8 @@ import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
 import DeleteByBatchModal from './data/DeleteByBatchModal.vue';
 components["opensilex-DeleteByBatchModal"] = DeleteByBatchModal;
+import DataFileForm from './data/form/DataFileForm.vue';
+components["opensilex-DataFileForm"] = DataFileForm;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';

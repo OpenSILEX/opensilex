@@ -5,6 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import com.nimbusds.oauth2.sdk.util.CollectionUtils;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -573,12 +575,12 @@ class SPARQLClassQueryBuilder {
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
         //do not delete excluded predicates
-        if(!CollectionUtils.isEmpty(excludedPredicates)) {
+        if(CollectionUtils.isNotEmpty(excludedPredicates)) {
             Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
             graphSubquery.addFilter(predicateFilter);
         }
         //do not delete excluded predicate for specific URIs
-        if(!CollectionUtils.isEmpty(predicatesToIgnoreByUri)) {
+        if(MapUtils.isNotEmpty(predicatesToIgnoreByUri)) {
             Expr NotExists = buildNotExistsFilterForUriAndPredicateCouples(
                     uriToDeleteVar,
                     predicateVar,

@@ -270,14 +270,6 @@ export default class ProvenanceForm extends Vue {
   border-bottom: 1px solid #a7a7a7;
 }
 
-.divHelpMsg{
-  background-color: rgba(0, 162, 140, 0.1);
-  border: 1px solid rgba(0, 162, 140, 0.5);
-  border-radius: 5px;
-  padding: 1rem;
-  margin: 0.5rem 0;
-}
-
 .helpMsg {
   color: #007bff;
   margin: 0;

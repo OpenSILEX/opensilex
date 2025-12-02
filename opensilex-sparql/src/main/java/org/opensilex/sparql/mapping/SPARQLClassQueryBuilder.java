@@ -578,7 +578,7 @@ class SPARQLClassQueryBuilder {
             graphSubquery.addFilter(predicateFilter);
         }
         //do not delete excluded predicate for specific URIs
-        if (predicatesToIgnoreByUri != null && !predicatesToIgnoreByUri.isEmpty()) {
+        if(!CollectionUtils.isEmpty(predicatesToIgnoreByUri)) {
             Expr NotExists = buildNotExistsFilterForUriAndPredicateCouples(
                     uriToDeleteVar,
                     predicateVar,

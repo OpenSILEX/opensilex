@@ -360,6 +360,8 @@ routes:
     component: opensilex-ExperimentView
   - path: /experiment/factors/:uri
     component: opensilex-ExperimentView
+  - path: /experiment/datafiles/:uri
+    component: opensilex-ExperimentView
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView

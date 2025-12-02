@@ -97,6 +97,7 @@
                 "cancel": "Annuler"
             },
             "delete-confirmation": "Cette action est définitive, merci de confirmer la suppression.",
+            "delete-datafile-confirmation": "Attention: Cette action est définitive, elle supprimera la déclaration du fichier et le fichier lui-même. Êtes-vous sûr de vouloir supprimer cet élément ?",
             "success": {
                 "success-title": "Succès",
                 "creation-success-message": " a été crée",

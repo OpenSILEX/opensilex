@@ -1282,7 +1282,7 @@ export default class GermplasmTable extends Vue {
 .valid-legend{
   width: 4rem;
   height: 1rem;
-  background-color: green;
+  background-color: #A5E051;
   border-radius: 0.2rem;
   margin-left: 0.5rem;
 }
@@ -1290,7 +1290,7 @@ export default class GermplasmTable extends Vue {
 .invalid-legend{
   width: 4rem;
   height: 1rem;
-  background-color: red;
+  background-color: #ED6661;
   border-radius: 0.2rem;
   margin-left: 0.5rem;
 }

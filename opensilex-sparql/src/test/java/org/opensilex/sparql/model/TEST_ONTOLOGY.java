@@ -41,6 +41,9 @@ public class TEST_ONTOLOGY {
     public static final String RENAME_DATA_GRAPH_URI = NAMESPACE_RENAME + "graph";
     public static final String uriToRenameString = "uriToRename";
     public static final String renamedUriString = "renamedUri";
+    public static final String ignoreUpdateIfNullString = "ignoreUpdateIfNullProperty";
+
+
 
     public static final Path MULTIPLE_LABEL_DATA_FILE_PATH = Paths.get("ontologies", "test_data_multiple_labels.ttl");
     public static final Lang MULTIPLE_LABEL_DATA_FILE_FORMAT = RDFLanguages.TURTLE;
@@ -79,4 +82,8 @@ public class TEST_ONTOLOGY {
 
     public static final Property uriToRename = Ontology.property(NAMESPACE_RENAME, "uriToRename");
     public static final Property renamedUri = Ontology.property(NAMESPACE_RENAME, "renamedUri");
+
+    public static final Property ignoreUpdateIfNullProperty = Ontology.property(NAMESPACE_RENAME, "ignoreUpdateIfNullProperty");
 }
+
+

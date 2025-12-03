@@ -34,6 +34,12 @@
     ></opensilex-PersonSelector>
 
     <!-- Objective -->
+    <div class="divHelpMsg"
+    v-if="form.objective != null || form.description != null "
+    >
+      <p>{{$t('ProjectForm.help-msg')}} </p>
+    </div>
+
     <opensilex-TextAreaForm
       :value.sync="form.objective"
       label="component.project.objective"
@@ -72,6 +78,15 @@ export default class ProjectForm2 extends Vue {
   }
 }
 </script>
+<style scoped lang="scss">
+.divHelpMsg{
+  p {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+</style>
 
 <i18n>
 
@@ -80,11 +95,15 @@ en:
     scientificContacts: Scientists involved in the project. They must already be declared in the system. If unavailable in the predefined list, people can be added from the Users menu, before the new project creation.
     administrativeContacts: Administrative personnel linked to the project (e.g. human ressources people). They must already be declared in the system.
     coordinators: Project coordinators
+    help-msg: Important! The objective and description will be visible to all users. Please specify confidential information directly in the experience section.
+
 fr:
   ProjectForm:
     scientificContacts: Scientifiques impliqués dans le projet. Uniquement les personnes existant dans le système. Si elles ne sont pas disponibles dans la liste prédéfinie, les personnes peuvent être ajoutées à partir du menu Utilisateurs, avant la création du nouveau projet.
     administrativeContacts: Personnel administratif lié au projet (par exemple, les personnes chargées des ressources humaines). Uniquement les personnes existant dans le système.
     coordinators: Coordinateurs du projet
+    help-msg: Attention! L'objectif et la description seront visibles par tous les utilisateurs. Veuillez spécifier les informations confidentielles directement dans la section expérience.
+
 
 </i18n>
 

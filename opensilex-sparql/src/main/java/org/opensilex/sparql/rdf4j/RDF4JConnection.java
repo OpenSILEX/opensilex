@@ -205,11 +205,6 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     @Override
-    public void executeDeleteQuery(String update) throws SPARQLException {
-        executeUpdateQuery(update);
-    }
-
-    @Override
     public void startTransaction() throws SPARQLException {
         try {
             rdf4JConnection.begin();

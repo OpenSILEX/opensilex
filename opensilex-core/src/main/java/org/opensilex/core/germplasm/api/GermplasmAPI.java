@@ -810,7 +810,7 @@ public class GermplasmAPI {
     public Response checkGermplasmsExist(
             @ApiParam(value = "list of uris to check for existence") URIsListPostDTO uris
             ) throws Exception {
-        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).checkExistence(uris.getUris());
+        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getNonExistingUris(uris.getUris());
 
         return new PaginatedListResponse<>(new ArrayList<>(existantUris)).getResponse();
     }

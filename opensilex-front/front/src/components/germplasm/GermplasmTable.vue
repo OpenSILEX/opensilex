@@ -76,7 +76,7 @@
       ></opensilex-FormInputLabelHelper>
     </b-input-group>
 
-    <div class="legend">
+    <div class="divHelpMsg">
       <div class="update-status-legend">
         <div class="icon-and-legend">
           <div class="update-symbol"></div> {{ $t('GermplasmTable.update-legend') }}
@@ -1253,17 +1253,9 @@ export default class GermplasmTable extends Vue {
   margin-right: 10px;
 }
 
-.legend{
-  background-color: rgba(0, 162, 140, 0.1);
-  border: 1px solid rgba(0, 162, 140, 0.5);
-  border-radius: 5px;
-  padding: 0.4rem 0.8rem;
+.divHelpMsg{
+  flex-direction: column;
   margin: 0.5rem 0.5rem;
-
-  p {
-    margin: 0;
-    padding: 0;
-  }
 }
 
 .validation-status-legend, .update-status-legend, .icon-and-legend{

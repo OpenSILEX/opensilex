@@ -1365,7 +1365,7 @@ en:
     newColumnsHelp: Select the columns to add
     toggleAll: Select all / Unselect all
     errorServerMessage: A server error occurred, please contact your administrator for more information
-    upsertHelpMessage: creates and updates the list of germplasms in a single operation (a blue square indicates that the germplasm already exists and will therefore be updated).
+    upsertHelpMessage: creates or updates each germplasm in the list in a single operation (a blue square indicates that the germplasm already exists and will therefore be updated).
     update-legend: this line will be updated
     create-legend: this line will be created
     valid-legend: this line has been validated or inserted/updated successfully
@@ -1415,7 +1415,7 @@ fr:
     newColumnsHelp: Cochez les colonnes à ajouter
     toggleAll: Tout sélectionner / Tout désélectionner
     errorServerMessage: Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
-    upsertHelpMessage: crée et modifie la liste de ressources génétiques en une seule opération (un carré bleu indique que la ressource existe déjà et sera donc mise à jour).
+    upsertHelpMessage: crée ou modifie chaque ressource rénétique de la liste en une seule opération (un carré bleu indique que la ressource existe déjà et sera donc mise à jour).
     update-legend: la ligne sera mise à jour
     create-legend: la ligne sera créée
     valid-legend: cette ligne a été validée ou insérée/mise à jour avec succès

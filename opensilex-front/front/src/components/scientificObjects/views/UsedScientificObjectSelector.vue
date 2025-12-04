@@ -94,7 +94,7 @@ export default class UsedScientificObjectSelector extends Vue {
     this.soFilter = {
       name: "",
       experiment: this.experiment,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       types: [],
       existenceDate: undefined,

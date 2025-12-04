@@ -751,7 +751,7 @@ export default class MapView extends Vue {
   soFilter:any = {
     name: "",
     experiment: undefined,
-    germplasm: undefined,
+    geneticResource: undefined,
     factorLevels: [],
     types: [],
     existenceDate: undefined,
@@ -885,7 +885,7 @@ export default class MapView extends Vue {
     this.soFilter = {
         name: "",
         experiment: this.experiment,
-        germplasm: undefined,
+        geneticResource: undefined,
         factorLevels: [],
         types: [],
         existenceDate: undefined,

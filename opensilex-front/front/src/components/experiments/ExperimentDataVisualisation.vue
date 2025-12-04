@@ -59,7 +59,7 @@ export default class ExperimentDataVisualisation extends Vue {
   soFilter = {
     name: "",
     experiment: this.uri,
-    germplasm: undefined,
+    geneticResource: undefined,
     factorLevels: [],
     types: [],
     existenceDate: undefined,
@@ -131,7 +131,7 @@ export default class ExperimentDataVisualisation extends Vue {
       this.soFilter = {
         name: "",
         experiment: this.uri,
-        germplasm: undefined,
+        geneticResource: undefined,
         factorLevels: [],
         types: [],
         existenceDate: undefined,
@@ -295,7 +295,7 @@ searchMethod(nodeURI, page, pageSize) {
         this.filters.types, 
         this.filters.name, 
         this.filters.parent ? this.filters.parent : nodeURI, 
-        undefined, // Germplasm
+        undefined, // GeneticResource
         this.filters.factorLevels, 
         undefined, // facility?: string,
         undefined,
@@ -329,7 +329,7 @@ searchMethod(nodeURI, page, pageSize) {
         undefined, // rdfTypes?: Array<string>,
         query, // pattern?: string,
         undefined, // parentURI?: string,
-        undefined, // Germplasm
+        undefined, // GeneticResource
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
         undefined,

@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -147,9 +147,9 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
             throw new IllegalArgumentException("Empty database property for mongodb config");
         }
 
-        // build the Map of old -> new collection names (germplasm/device attributes), log and form
+        // build the Map of old -> new collection names (geneticResource/device attributes), log and form
         Map<String, String> oldToNewCollectionNames = new HashMap<>();
-        oldToNewCollectionNames.put("germplasmAttributes", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
+        oldToNewCollectionNames.put("geneticResourceAttributes", GeneticResourceDAO.ATTRIBUTES_COLLECTION_NAME);
         oldToNewCollectionNames.put("devicesAttributes", DeviceAPI.METADATA_COLLECTION_NAME);
         oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
         oldToNewCollectionNames.put("Moves", MoveEventNoSqlDao.COLLECTION_NAME);

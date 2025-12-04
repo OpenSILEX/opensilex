@@ -1,7 +1,7 @@
 package org.opensilex.core.species.dal;
 
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -13,7 +13,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Species",
-        graph = GermplasmModel.GRAPH
+        graph = GeneticResourceModel.GRAPH
 )
 public class SpeciesModel extends SPARQLResourceModel {
 

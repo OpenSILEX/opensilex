@@ -1,12 +1,12 @@
 <template>
-  <b-form id="germplasm" >
-    <!-- Germplasm -->
-    <opensilex-GermplasmSelector
+  <b-form id="geneticResource" >
+    <!-- GeneticResource -->
+    <opensilex-GeneticResourceSelector
         :experiment="experiment"
-        :germplasm.sync="filter.germplasm"
+        :geneticResource.sync="filter.geneticResource"
         :multiple="false"
-        :label="$t('FilterMap.filter.germplasm')"
-    ></opensilex-GermplasmSelector>
+        :label="$t('FilterMap.filter.geneticResource')"
+    ></opensilex-GeneticResourceSelector>
         <!-- Factor -->
     <opensilex-FactorLevelSelector
         id="factorLevels"
@@ -52,7 +52,7 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {FactorDetailsGetDTO, GermplasmGetSingleDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
+import {FactorDetailsGetDTO, GeneticResourceGetSingleDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 
 @Component
@@ -92,7 +92,7 @@ export default class FilterMap extends Vue {
   $store: any;
 
   filter = {
-    germplasm: undefined,
+    geneticResource: undefined,
     factorLevels: undefined,
   };
 
@@ -108,7 +108,7 @@ export default class FilterMap extends Vue {
 
   reset() {
     this.filter = {
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: undefined,
     };
     this.color = this.getRandomColor();
@@ -136,7 +136,7 @@ export default class FilterMap extends Vue {
     return new Promise((resolve, reject) => {
       this.formatFactors();
 
-      const {germplasm, factorLevels} = this.filter;
+      const {geneticResource, factorLevels} = this.filter;
   
       this.feature.splice(0, this.feature.length);
   
@@ -151,7 +151,7 @@ export default class FilterMap extends Vue {
               [], // rdfTypes?: Array<string>,
               "", // pattern?: string,
               undefined, // parentURI?: string,
-              germplasm ?  [germplasm] : undefined,
+              geneticResource ?  [geneticResource] : undefined,
               factorLevels, // factorLevels?: Array<string>,
               undefined, // facility?: string,
               undefined,
@@ -228,12 +228,12 @@ export default class FilterMap extends Vue {
 
   getNameDisplay() {
     return new Promise((resolve, reject) => {
-      if (this.filter.germplasm !== undefined) {
-        // Germplasm
+      if (this.filter.geneticResource !== undefined) {
+        // GeneticResource
         this.$opensilex
-            .getService("opensilex.GermplasmService")
-            .getGermplasm(this.filter.germplasm)
-            .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
+            .getService("opensilex.GeneticResourceService")
+            .getGeneticResource(this.filter.geneticResource)
+            .then((http: HttpResponse<OpenSilexResponse<GeneticResourceGetSingleDTO>>) => {
                   this.titleDisplay = http.response.result.name;
                   // Factor
                   let promiseName = [];
@@ -288,7 +288,7 @@ export default class FilterMap extends Vue {
 
   private ReferenceDefinition() {
     let ref = "";
-    ref = this.filter.germplasm;
+    ref = this.filter.geneticResource;
     if (this.filter.factorLevels) {
       this.filter.factorLevels.forEach((item) => (ref += item));
     }
@@ -366,7 +366,7 @@ en:
       fillColor: Fill
       crossFilter: Cross filter
       empty-filter-error: Filter must have at least one criterion.
-      germplasm: Germplasm
+      geneticResource: GeneticResource
       factor-level: Factor level
       styleFilter: Filter style
       color: Selected color
@@ -379,7 +379,7 @@ fr:
       fillColor: Remplir
       crossFilter: Filtre croisé
       empty-filter-error: Le filtre doit avoir au moins un critère.
-      germplasm: Matériel génétique
+      geneticResource: Matériel génétique
       factor-level: Niveau de facteur
       styleFilter: Style de filtre
       color: Couleur sélectionnée

@@ -78,8 +78,8 @@ public class Oeso {
     // ---- VARIABLES GROUP ----
     public static final Resource VariablesGroup = Ontology.resource(NS, "VariablesGroup");
 
-    // ---- Germplasm GROUP ----
-    public static final Resource GermplasmGroup = Ontology.resource(NS, "GermplasmGroup");
+    // ---- GeneticResource GROUP ----
+    public static final Resource GeneticResourceGroup = Ontology.resource(NS, "GeneticResourceGroup");
 
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");
@@ -136,8 +136,8 @@ public class Oeso {
 
     public static final Resource Operator = Ontology.resource(NS, "Operator");
 
-    // ---- GERMPLASM ----
-    public static final Resource Germplasm = Ontology.resource(NS, "Germplasm");
+    // ---- GENETIC_RESOURCE ----
+    public static final Resource GeneticResource = Ontology.resource(NS, "GeneticResource");
     public static final Resource Species = Ontology.resource(NS, "Species");
     public static final Resource Variety = Ontology.resource(NS, "Variety");
     public static final Resource Accession = Ontology.resource(NS, "Accession");
@@ -147,16 +147,16 @@ public class Oeso {
     public static final Property fromAccession = Ontology.property(NS, "fromAccession");
     public static final Property fromInstitute = Ontology.property(NS, "fromInstitute");
     public static final Property hasProductionYear = Ontology.property(NS, "hasProductionYear");
-    public static final Property hasGermplasm = Ontology.property(NS, "hasGermplasm");
+    public static final Property hasGeneticResource = Ontology.property(NS, "hasGeneticResource");
     public static final Property hasReplication = Ontology.property(NS, "hasReplication");
     public static final Property hasId = Ontology.property(NS, "hasId");
 
-    public static final String PARENTM_PROPERTY_NAME = "hasParentGermplasmM";
-    public static final String PARENTF_PROPERTY_NAME = "hasParentGermplasmF";
-    public static final String PARENT_PROPERTY_NAME = "hasParentGermplasm";
-    public static final Property hasParentGermplasm = Ontology.property(NS, PARENT_PROPERTY_NAME);
-    public static final Property hasParentGermplasmM = Ontology.property(NS, PARENTM_PROPERTY_NAME);
-    public static final Property hasParentGermplasmF = Ontology.property(NS, PARENTF_PROPERTY_NAME);
+    public static final String PARENTM_PROPERTY_NAME = "hasParentGeneticResourceM";
+    public static final String PARENTF_PROPERTY_NAME = "hasParentGeneticResourceF";
+    public static final String PARENT_PROPERTY_NAME = "hasParentGeneticResource";
+    public static final Property hasParentGeneticResource = Ontology.property(NS, PARENT_PROPERTY_NAME);
+    public static final Property hasParentGeneticResourceM = Ontology.property(NS, PARENTM_PROPERTY_NAME);
+    public static final Property hasParentGeneticResourceF = Ontology.property(NS, PARENTF_PROPERTY_NAME);
 
     // ---- SCIENTIFIC OBJECTS ----
     public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");

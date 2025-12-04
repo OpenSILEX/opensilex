@@ -15,7 +15,7 @@
     * [Methods](#methods)
     * [Traits](#traits)
     * [Scales](#scales)
-  * [Germplasm](#germplasm)
+  * [GeneticResource](#geneticResource)
   * [Studies](#studies)
     * [Contacts](#contacts)
     * [Locations](#locations)
@@ -87,7 +87,7 @@ This service should return a list of the available services as well as their dat
         ]
       },
       {
-        "call": "germplasm",
+        "call": "geneticResource",
         "dataTypes": [
           "application/json"
         ],
@@ -253,10 +253,10 @@ __Note__ : this is used for *GET {studies}/observationVariables*, *GET variables
 
 <br>
 
-## Germplasm
+## GeneticResource
 
 
-__Note : only accessions are considered germplasms for BrAPI__
+__Note : only accessions are considered geneticResources for BrAPI__
 
 This is why an error is returned when this notion doesn't exist :
 
@@ -266,7 +266,7 @@ return new BadRequestException(
 );
 ```
 
-| BrAPIv1GermplasmDTO | OpenSILEX GermplasmModel | Notes |
+| BrAPIv1GeneticResourceDTO | OpenSILEX GeneticResourceModel | Notes |
 |----|----|----|
 | accessionNumber | accessionNumber |    |
 | acquisitionDate |    |    |
@@ -277,11 +277,11 @@ return new BadRequestException(
 | defaultDisplayName | name |    |
 | documentationURL | website | Incomplete mapping |
 | donors |    |    |
-| germplasmDbId | uri |    |
-| germplasmGenus |    |    |
-| germplasmName | name |    |
-| germplasmPUI | germplasm URI |    |
-| germplasmSpecies | species name |    |
+| geneticResourceDbId | uri |    |
+| geneticResourceGenus |    |    |
+| geneticResourceName | name |    |
+| geneticResourcePUI | geneticResource URI |    |
+| geneticResourceSpecies | species name |    |
 | instituteCode | institute Code |    |
 | instituteName |    |    |
 | pedigree |    |    |
@@ -292,7 +292,7 @@ return new BadRequestException(
 | subtaxaAuthority |    |    |
 | synonyms | synonyms |    |
 | taxonIds |    |    |
-| typeOfGermplasmStorageCode |    |    |
+| typeOfGeneticResourceStorageCode |    |    |
 
 <br>
 
@@ -367,8 +367,8 @@ Changes in the detailed results :
 
 | BrAPIv1ObservationDTO | OpenSILEX DataModel | Notes |
 |----|----|----|
-| germplasmDbId	string	The ID which uniquely identifies a germplasm | URI of first germplasm of target if exists | same issue of n->1 |
-| germplasmName	string	Name of the germplasm. It can be the prefered name and does not have to be unique. | same as above but name | same as above |
+| geneticResourceDbId	string	The ID which uniquely identifies a geneticResource | URI of first geneticResource of target if exists | same issue of n->1 |
+| geneticResourceName	string	Name of the geneticResource. It can be the prefered name and does not have to be unique. | same as above but name | same as above |
 | observationDbId	string	The ID which uniquely identifies an observation | URI of the data |    |
 | observationLevel	string	The level of an observation unit. ex. "plot", "plant" | type of the target |    |
 | observationTimeStamp	string (date-time)	The date and time when this observation was made | date of the data |    |
@@ -393,7 +393,7 @@ Changes in the detailed results :
 | blockNumber	string	The block number for an observation unit. Different systems may use different block designs. |    |    |
 | entryNumber	string	The entry number for an observation unit. Different systems may use different entry systems. |    |    |
 | entryType	string	The type of entry for this observation unit. ex. "check", "test", "filler" |    |    |
-| germplasmDbId	string	The ID which uniquely identifies a germplasm | SO germplasm if only one |    |
+| geneticResourceDbId	string	The ID which uniquely identifies a geneticResource | SO geneticResource if only one |    |
 | observationLevel	string	The level of an observation unit. ex. "plot", "plant" | SO type |    |
 | observationUnitDbId	string	The ID which uniquely identifies an observation unit | SO URI |    |
 | observationUnitName	string	A human readable name for an observation unit | SO name |    |

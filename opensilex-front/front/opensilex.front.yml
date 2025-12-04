@@ -97,14 +97,14 @@ menu:
           component: opensilex-VariablesView
           credentials:
             - variable-access
-      - id: germplasm
-        label: component.menu.experimentalDesign.germplasm
+      - id: geneticResource
+        label: component.menu.experimentalDesign.geneticResource
         icon: ik-cloud-rain
         route:
-          path: /germplasm
-          component: opensilex-GermplasmGlobalView
+          path: /geneticResource
+          component: opensilex-GeneticResourceGlobalView
           credentials:
-            - germplasm-access
+            - geneticResource-access
   - id: data-menu
     label: component.menu.data.label
     children:
@@ -415,22 +415,22 @@ routes:
     component: opensilex-ProjectDetails
   - path: /project/annotations/:uri
     component: opensilex-ProjectDetails
-  - path: /germplasm/create
-    component: opensilex-GermplasmCreate
-    credentials: [ germplasm-modification ]
+  - path: /geneticResource/create
+    component: opensilex-GeneticResourceCreate
+    credentials: [ geneticResource-modification ]
     icon: fa#seedling
-    title: GermplasmCreate.title
-    description: GermplasmCreate.description
-  - path: /germplasm/details/:uri
-    component: opensilex-GermplasmDetails
-    rdfType: vocabulary:Germplasm
+    title: GeneticResourceCreate.title
+    description: GeneticResourceCreate.description
+  - path: /geneticResource/details/:uri
+    component: opensilex-GeneticResourceDetails
+    rdfType: vocabulary:GeneticResource
     credentials: [ ]
-  - path: /germplasm/annotations/:uri
-    component: opensilex-GermplasmDetails
-  - path: /germplasm/documents/:uri
-    component: opensilex-GermplasmDetails
-  - path: /germplasm/group
-    component: opensilex-GermplasmGlobalView
+  - path: /geneticResource/annotations/:uri
+    component: opensilex-GeneticResourceDetails
+  - path: /geneticResource/documents/:uri
+    component: opensilex-GeneticResourceDetails
+  - path: /geneticResource/group
+    component: opensilex-GeneticResourceGlobalView
 
   - path: /factor/create
     component: opensilex-FactorForm

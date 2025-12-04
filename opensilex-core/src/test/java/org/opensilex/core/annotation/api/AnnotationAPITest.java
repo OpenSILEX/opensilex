@@ -8,7 +8,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -47,7 +47,7 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
     private static OpenSilexTestEnvironment openSilexTestEnv;
     // targets
     private static ScientificObjectModel scientificObject;
-    private static GermplasmModel germplasm;
+    private static GeneticResourceModel geneticResource;
     private static DeviceModel device;
     private static ProjectModel project;
     private static ExperimentModel experiment;
@@ -66,10 +66,10 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
         scientificObject.setUri(URI.create("test:annot-test-so"));
         sparql.create(ScientificObjectModel.class, Arrays.asList(scientificObject));
 
-        germplasm = new GermplasmModel();
-        germplasm.setUri(URI.create("test:annot-test-germplasm"));
-        germplasm.setLabel(new SPARQLLabel());
-        sparql.create(GermplasmModel.class, Arrays.asList(germplasm));
+        geneticResource = new GeneticResourceModel();
+        geneticResource.setUri(URI.create("test:annot-test-geneticResource"));
+        geneticResource.setLabel(new SPARQLLabel());
+        sparql.create(GeneticResourceModel.class, Arrays.asList(geneticResource));
 
         device = new DeviceModel();
         device.setUri(URI.create("test:annot-test-device"));
@@ -104,7 +104,7 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
     public void testCreateAnnotation() throws Exception {
 
         AnnotationCreationDTO annotation1 = getCreationDTO(1);
-        annotation1.setTargets(Arrays.asList(scientificObject.getUri(), germplasm.getUri()));
+        annotation1.setTargets(Arrays.asList(scientificObject.getUri(), geneticResource.getUri()));
         AnnotationCreationDTO annotation2 = getCreationDTO(2);
         annotation2.setTargets(Arrays.asList(experiment.getUri(), facility.getUri()));
 
@@ -199,7 +199,7 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
         AnnotationCreationDTO annotation2 = getCreationDTO(2);
         annotation2.setTargets(Arrays.asList(device.getUri(), facility.getUri()));
         AnnotationCreationDTO annotation3 = getCreationDTO(3);
-        annotation3.setTargets(Arrays.asList(device.getUri(), facility.getUri(), germplasm.getUri()));
+        annotation3.setTargets(Arrays.asList(device.getUri(), facility.getUri(), geneticResource.getUri()));
 
         Response postResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), annotation1);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
@@ -217,7 +217,7 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
         assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),annotation2.getUri())));
         assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),annotation3.getUri())));
 
-        searchParams.put("target", germplasm.getUri());
+        searchParams.put("target", geneticResource.getUri());
         results = getSearchResultsAsAdmin(SEARCH_PATH, searchParams, listTypeReference);
 
         assertNotNull(results);
@@ -233,7 +233,7 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
         AnnotationCreationDTO annotation2 = getCreationDTO(2);
         annotation2.setTargets(Arrays.asList(device.getUri(), facility.getUri()));
         AnnotationCreationDTO annotation3 = getCreationDTO(3);
-        annotation3.setTargets(Arrays.asList(device.getUri(), facility.getUri(), germplasm.getUri()));
+        annotation3.setTargets(Arrays.asList(device.getUri(), facility.getUri(), geneticResource.getUri()));
 
         Response postResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), annotation1);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());

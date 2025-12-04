@@ -17,7 +17,7 @@ import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -86,8 +86,8 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(UnitModel.class).toString());
         Assert.assertEquals(graphPrefix+"variablesGroup",sparql.getDefaultGraph(VariablesGroupModel.class).toString());
 
-        Assert.assertEquals(graphPrefix+"germplasm",sparql.getDefaultGraph(SpeciesModel.class).toString());
-        Assert.assertEquals(graphPrefix+"germplasm",sparql.getDefaultGraph(GermplasmModel.class).toString());
+        Assert.assertEquals(graphPrefix+"geneticResource",sparql.getDefaultGraph(SpeciesModel.class).toString());
+        Assert.assertEquals(graphPrefix+"geneticResource",sparql.getDefaultGraph(GeneticResourceModel.class).toString());
         Assert.assertEquals(graphPrefix+"factor",sparql.getDefaultGraph(FactorModel.class).toString());
         Assert.assertEquals(graphPrefix+"factor",sparql.getDefaultGraph(FactorLevelModel.class).toString());
 
@@ -283,26 +283,26 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testGermplasm() throws Exception {
+    public void testGeneticResource() throws Exception {
 
-        GermplasmModel model = new GermplasmModel();
+        GeneticResourceModel model = new GeneticResourceModel();
         model.setType(new URI(Oeso.Variety.getURI()));
         model.setName("name");
 
         getSparqlService().create(model);
-        String expectedUri = getOpensilexBaseURI()+"id/germplasm/variety.name";
+        String expectedUri = getOpensilexBaseURI()+"id/geneticResource/variety.name";
         Assert.assertEquals(model.getUri().toString(),expectedUri);
     }
 
     @Test
     public void testSpecies() throws Exception {
 
-        GermplasmModel model = new GermplasmModel();
+        GeneticResourceModel model = new GeneticResourceModel();
         model.setLabel(new SPARQLLabel("name","en"));
         model.setType(new URI(Oeso.Species.getURI()));
 
         getSparqlService().create(model);
-        String expectedUri = getOpensilexBaseURI()+"id/germplasm/species.name";
+        String expectedUri = getOpensilexBaseURI()+"id/geneticResource/species.name";
         Assert.assertEquals(model.getUri().toString(),expectedUri);
     }
 

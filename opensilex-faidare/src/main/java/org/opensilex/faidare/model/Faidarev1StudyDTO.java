@@ -35,7 +35,7 @@ public class Faidarev1StudyDTO {
     private String studyDescription;
     private List<String> seasons;
     private List<String> observationVariableDbIds; //Added for FAIDARE
-    private List<String> germplasmDbIds; //Added for FAIDARE
+    private List<String> geneticResourceDbIds; //Added for FAIDARE
 
     public String getActive() {
         return active;
@@ -234,12 +234,12 @@ public class Faidarev1StudyDTO {
         return this;
     }
 
-    public List<String> getGermplasmDbIds() {
-        return germplasmDbIds;
+    public List<String> getGeneticResourceDbIds() {
+        return geneticResourceDbIds;
     }
 
-    public Faidarev1StudyDTO setGermplasmDbIds(List<String> germplasmDbIds) {
-        this.germplasmDbIds = germplasmDbIds;
+    public Faidarev1StudyDTO setGeneticResourceDbIds(List<String> geneticResourceDbIds) {
+        this.geneticResourceDbIds = geneticResourceDbIds;
         return this;
     }
 }

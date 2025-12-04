@@ -189,7 +189,7 @@ export default class ScientificObjectList extends Vue {
       return {
         name: "",
         experiment: undefined,
-        germplasm: [],
+        geneticResource: [],
         variables: [],
         devices: [],
         factorLevels: [],
@@ -284,7 +284,7 @@ export default class ScientificObjectList extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: [],
+      geneticResource: [],
       factorLevels: [],
       types: [],
       existenceDate: undefined,
@@ -344,7 +344,7 @@ export default class ScientificObjectList extends Vue {
       this.filter.types,
       this.filter.name,
       undefined,
-      this.filter.germplasm,
+      this.filter.geneticResource,
       this.filter.factorLevels,
       undefined,
       this.variables,
@@ -408,7 +408,7 @@ export default class ScientificObjectList extends Vue {
       rdf_types: this.filter.types,
       name: this.filter.name,
       facility: this.filter.facility,
-      germplasm: this.filter.germplasm,
+      geneticResource: this.filter.geneticResource,
       factor_levels: this.filter.factorLevels,
       existence_date: this.filter.existenceDate,
       creation_date: this.filter.creationDate,
@@ -489,7 +489,7 @@ en:
       actions: Actions
     placeholder:
       experiments: All Experiments
-      germplasm: All Germplasm
+      geneticResource: All GeneticResource
       types: All Types
       uri: All URI
       isPartOf: All Alias / URI
@@ -499,7 +499,7 @@ en:
     filter:
       label: Search for Scientific Objects
       experiments: Filter by Experiments
-      germplasm: Filter by Germplasm
+      geneticResource: Filter by GeneticResource
       types: Filter by Type(s)
       uri: Filter by  URI
       isPartOf: isPartOf (Alias ou URI)
@@ -530,7 +530,7 @@ fr:
       actions: Actions
     placeholder:
       experiments: Toutes les Expérimentations
-      germplasm: Tous les Matériels Génétiques
+      geneticResource: Tous les Matériels Génétiques
       types: Tous les Types
       uris: Toutes les URI
       isPartOf: Tous les Alias / URI
@@ -540,7 +540,7 @@ fr:
     filter:
       label: Rechercher des Objets Scientifiques
       experiments: Filtrer par Expérimentation(s)
-      germplasm: Filtrer par Matériel Génétiques
+      geneticResource: Filtrer par Matériel Génétiques
       types: Filtrer par Type(s)
       uri: Filtrer par URI
       isPartOf: isPartOf (Alias ou URI)

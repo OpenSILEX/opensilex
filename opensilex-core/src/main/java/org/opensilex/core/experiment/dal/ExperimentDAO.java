@@ -670,7 +670,7 @@ public class ExperimentDAO {
     }
 
     /**
-     * Update the experiment species from the germplasms of their scientific objects. Three requests are performed :
+     * Update the experiment species from the geneticResources of their scientific objects. Three requests are performed :
      *
      * First query (delete) :
      *
@@ -682,24 +682,24 @@ public class ExperimentDAO {
      * }
      * </pre>
      *
-     * Second query (insert germplasms that are species) :
+     * Second query (insert geneticResources that are species) :
      *
      * <pre>
      * insert {
      *     graph <../set/experiment> {
-     *         <experimentUri> vocabulary:hasSpecies ?germplasm .
+     *         <experimentUri> vocabulary:hasSpecies ?geneticResource .
      *     }
      * } where {
      *     graph <experimentUri> {
      *         ?scientificObject a ?rdfType ;
-     *             vocabulary:hasGermplasm ?germplasm;
+     *             vocabulary:hasGeneticResource ?geneticResource;
      *     }
      *     ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
-     *     ?germplasm a/rdfs:subClassOf* vocabulary:Species .
+     *     ?geneticResource a/rdfs:subClassOf* vocabulary:Species .
      * }
      * </pre>
      *
-     * Third query (insert species the germplasms derive from) :
+     * Third query (insert species the geneticResources derive from) :
      *
      * <pre>
      * insert {
@@ -709,10 +709,10 @@ public class ExperimentDAO {
      * } where {
      *     graph <experimentUri> {
      *         ?scientificObject a ?rdfType ;
-     *             vocabulary:hasGermplasm ?germplasm;
+     *             vocabulary:hasGeneticResource ?geneticResource;
      *     }
      *     ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
-     *     ?germplasm vocabulary:fromSpecies ?newSpecies .
+     *     ?geneticResource vocabulary:fromSpecies ?newSpecies .
      * }
      * </pre>
      *
@@ -724,7 +724,7 @@ public class ExperimentDAO {
         Var oldSpeciesVar = makeVar("oldSpecies");
         Var newSpeciesVar = makeVar("newSpecies");
         Var scientificObjectVar = makeVar("scientificObject");
-        Var germplasmVar = makeVar("germplasm");
+        Var geneticResourceVar = makeVar("geneticResource");
         Var rdfTypeVar = makeVar("rdfType");
 
         // Uris
@@ -736,7 +736,7 @@ public class ExperimentDAO {
         UpdateBuilder updateInsert1 = new UpdateBuilder();
         UpdateBuilder updateInsert2 = new UpdateBuilder();
         updateDelete.addDelete(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
-        updateInsert1.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), germplasmVar);
+        updateInsert1.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), geneticResourceVar);
         updateInsert2.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), newSpeciesVar);
 
         // Delete - where
@@ -748,18 +748,18 @@ public class ExperimentDAO {
         WhereBuilder insertWhere1 = new WhereBuilder();
         WhereBuilder insertWhere2 = new WhereBuilder();
 
-        // Selection of the scientific object and its germplasm
+        // Selection of the scientific object and its geneticResource
         WhereBuilder whereInExperiment = new WhereBuilder();
         whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
-        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
+        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGeneticResource.asNode(), geneticResourceVar);
         insertWhere1.addGraph(experimentUriNode, whereInExperiment);
         insertWhere1.addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode());
         insertWhere2.addGraph(experimentUriNode, whereInExperiment);
         insertWhere2.addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode());
 
         // The two cases for the species
-        insertWhere1.addWhere(germplasmVar, Ontology.typeSubClassAny, Oeso.Species.asNode());
-        insertWhere2.addWhere(germplasmVar, Oeso.fromSpecies.asNode(), newSpeciesVar);
+        insertWhere1.addWhere(geneticResourceVar, Ontology.typeSubClassAny, Oeso.Species.asNode());
+        insertWhere2.addWhere(geneticResourceVar, Oeso.fromSpecies.asNode(), newSpeciesVar);
 
         // Add the where clauses to the queries
         updateInsert1.addWhere(insertWhere1);

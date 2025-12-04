@@ -97,13 +97,13 @@
               </opensilex-FilterField>
             </div>
             
-            <!-- Germplasm -->
+            <!-- GeneticResource -->
             <div>
               <opensilex-FilterField quarterWidth="false">
-                <opensilex-GermplasmSelectorWithFilter
-                    :germplasmsUris.sync="filters.germplasm"
+                <opensilex-GeneticResourceSelectorWithFilter
+                    :geneticResourcesUris.sync="filters.geneticResource"
                     :experimentUri="uri"
-                ></opensilex-GermplasmSelectorWithFilter>
+                ></opensilex-GeneticResourceSelectorWithFilter>
               </opensilex-FilterField>
             </div>
 
@@ -398,7 +398,7 @@ export default class ExperimentScientificObjects extends Vue {
     name: "",
     types: [],
     parent: undefined,
-    germplasm: undefined,
+    geneticResource: undefined,
     factorLevels: [],
     criteriaDto: {criteria_list:[]}
   };
@@ -458,7 +458,7 @@ export default class ExperimentScientificObjects extends Vue {
       name: "",
       types: [],
       parent: undefined,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       criteriaDto: {criteria_list:[]}
     };
@@ -504,13 +504,13 @@ export default class ExperimentScientificObjects extends Vue {
     let orderBy = ["name=asc"];
     const hasAnyCriterion = this.filters.criteriaDto.criteria_list.length > 0;
     if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 ||
-        this.filters.name.length !== 0 || this.filters.germplasm || hasAnyCriterion) {
+        this.filters.name.length !== 0 || this.filters.geneticResource || hasAnyCriterion) {
        return this.soService.searchScientificObjects(
         this.uri, // experiment uri?: string,
         this.filters.types, 
         this.filters.name, 
         this.filters.parent ? this.filters.parent : nodeURI, 
-        this.filters.germplasm ? [this.filters.germplasm] : [], // Germplasm
+        this.filters.geneticResource ? [this.filters.geneticResource] : [], // GeneticResource
         this.filters.factorLevels, 
         undefined, // facility?: string,
         undefined,
@@ -544,7 +544,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // rdfTypes?: Array<string>,
         query, // pattern?: string,
         undefined, // parentURI?: string,
-        [], // Germplasm
+        [], // GeneticResource
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
         undefined,

@@ -62,16 +62,16 @@
               class="searchFilterField"
             >
               <template v-slot:filters>
-                <!-- Germplasm Group -->
+                <!-- GeneticResource Group -->
                 <div>
                   <opensilex-FilterField>
-                    <opensilex-GermplasmGroupSelector
-                        label="GermplasmList.filter.germplasm-group"
+                    <opensilex-GeneticResourceGroupSelector
+                        label="GeneticResourceList.filter.geneticResource-group"
                         :multiple="false"
-                        :germplasmGroup.sync="filter.germplasm_group"
+                        :geneticResourceGroup.sync="filter.geneticResource_group"
                         class="searchFilter"
                         @handlingEnterKey="refresh()"
-                    ></opensilex-GermplasmGroupSelector>
+                    ></opensilex-GeneticResourceGroupSelector>
                   </opensilex-FilterField>
                 </div>
 
@@ -251,7 +251,7 @@ export default class ExperimentData extends Vue {
   refreshKey = 0;
 
   filter = {
-    germplasm_group: undefined,
+    geneticResource_group: undefined,
     start_date: null,
     end_date: null,
     provenance: null,
@@ -268,7 +268,7 @@ export default class ExperimentData extends Vue {
   soFilter = {
     name: "",
     experiment: this.uri,
-    germplasm: undefined,
+    geneticResource: undefined,
     factorLevels: [],
     types: [],
     existenceDate: undefined,
@@ -307,7 +307,7 @@ export default class ExperimentData extends Vue {
     this.soFilter = {
       name: "",
       experiment: this.uri,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       types: [],
       existenceDate: undefined,
@@ -329,7 +329,7 @@ export default class ExperimentData extends Vue {
     this.soFilter = {
       name: "",
       experiment: this.uri,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       types: [],
       existenceDate: undefined,
@@ -339,7 +339,7 @@ export default class ExperimentData extends Vue {
 
   resetFilters() {
     this.filter = {
-      germplasm_group: undefined,
+      geneticResource_group: undefined,
       start_date: null,
       end_date: null,
       provenance: null,

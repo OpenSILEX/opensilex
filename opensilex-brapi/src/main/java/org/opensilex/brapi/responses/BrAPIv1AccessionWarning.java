@@ -16,10 +16,10 @@ public class BrAPIv1AccessionWarning {
 
     public static final URI ACCESSION_URI = URI.create(Oeso.DOMAIN + "#" + "Accession");
 
-    public static final URI GERMPLASM_URI = URI.create(Oeso.Germplasm.getURI());
+    public static final URI GENETIC_RESOURCE_URI = URI.create(Oeso.GeneticResource.getURI());
 
     public static final StatusDTO WARNING = new StatusDTO(
-            "This service will not return any information related to 'Germplasms' as the 'Accession' notion doesn't exist in your ontology",
+            "This service will not return any information related to 'GeneticResources' as the 'Accession' notion doesn't exist in your ontology",
             StatusLevel.WARNING
     );
 
@@ -32,7 +32,7 @@ public class BrAPIv1AccessionWarning {
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         if (!ontologyStore.classExist(
                 ACCESSION_URI,
-                GERMPLASM_URI
+                GENETIC_RESOURCE_URI
         )) {
             LOGGER.warn(WARNING.getMessage());
             responseClass.addMetadataStatus(WARNING);

@@ -7,8 +7,8 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.utils.ListWithPagination;
 
@@ -167,7 +167,7 @@ public class BrAPIv1SuperStudyDTO {
         this.trialName = trialName;
     }
 
-    public BrAPIv1SuperStudyDTO extractFromModel(ExperimentModel model, GermplasmDAO germplasmDAO, AccountModel user) throws Exception {
+    public BrAPIv1SuperStudyDTO extractFromModel(ExperimentModel model, GeneticResourceDAO geneticResourceDAO, AccountModel user) throws Exception {
 
         this.setStudyDbId(model.getUri().toString());
         this.setStudyName(model.getName());
@@ -193,7 +193,7 @@ public class BrAPIv1SuperStudyDTO {
             this.setProgramDbId(model.getProjects().get(0).getUri().toString());
         }
 
-        ListWithPagination<GermplasmModel> germplasms = germplasmDAO.brapiSearch(
+        ListWithPagination<GeneticResourceModel> geneticResources = geneticResourceDAO.brapiSearch(
                 user,
                 null,
                 null,
@@ -201,8 +201,8 @@ public class BrAPIv1SuperStudyDTO {
                 0,
                 0
         );
-        if (!germplasms.getList().isEmpty()){
-            Set<GermplasmModel> species = germplasms.getList().stream().map(GermplasmModel::getSpecies).collect(Collectors.toSet());
+        if (!geneticResources.getList().isEmpty()){
+            Set<GeneticResourceModel> species = geneticResources.getList().stream().map(GeneticResourceModel::getSpecies).collect(Collectors.toSet());
             if (species.size() == 1){
                 this.setCommonCropName(species.iterator().next().getName());
             }
@@ -210,9 +210,9 @@ public class BrAPIv1SuperStudyDTO {
         return this;
     }
 
-    public static BrAPIv1SuperStudyDTO fromModel(ExperimentModel model, GermplasmDAO germplasmDAO, AccountModel user) throws Exception {
+    public static BrAPIv1SuperStudyDTO fromModel(ExperimentModel model, GeneticResourceDAO geneticResourceDAO, AccountModel user) throws Exception {
         BrAPIv1SuperStudyDTO study = new BrAPIv1SuperStudyDTO();
-        return study.extractFromModel(model, germplasmDAO, user);
+        return study.extractFromModel(model, geneticResourceDAO, user);
 
     }
 }

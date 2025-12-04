@@ -376,24 +376,24 @@ public class MetricAPI {
                 periodDTO.setDeviceList(deviceList);
             }
 
-            //Germplasm
-            if (latestSummary.getGermplasmByType() != null) {
-                CountListItemPeriodDTO germplasmList = new CountListItemPeriodDTO();
+            //GeneticResource
+            if (latestSummary.getGeneticResourceByType() != null) {
+                CountListItemPeriodDTO geneticResourceList = new CountListItemPeriodDTO();
 
-                if ((oldestSummary != null) && (oldestSummary.getGermplasmByType() != null)) {
-                    List<CountItemModel> latestGermplasmItemList = latestSummary.getGermplasmByType().getItems();
-                    List<CountItemModel> oldestGermplasmItemList = oldestSummary.getGermplasmByType().getItems();
+                if ((oldestSummary != null) && (oldestSummary.getGeneticResourceByType() != null)) {
+                    List<CountItemModel> latestGeneticResourceItemList = latestSummary.getGeneticResourceByType().getItems();
+                    List<CountItemModel> oldestGeneticResourceItemList = oldestSummary.getGeneticResourceByType().getItems();
 
-                    germplasmList = substractTwoCountItemModelLists(latestGermplasmItemList, oldestGermplasmItemList); //contains recently added germplasms
+                    geneticResourceList = substractTwoCountItemModelLists(latestGeneticResourceItemList, oldestGeneticResourceItemList); //contains recently added geneticResources
                 }
                 else{
-                    germplasmList.setTotalDifferenceItemsCount(0);
+                    geneticResourceList.setTotalDifferenceItemsCount(0);
                 }
-                germplasmList.setType(latestSummary.getGermplasmByType().getType());
-                germplasmList.setName(latestSummary.getGermplasmByType().getName());
-                germplasmList.setTotalItemsCount(latestSummary.getGermplasmByType().getTotalCount());
+                geneticResourceList.setType(latestSummary.getGeneticResourceByType().getType());
+                geneticResourceList.setName(latestSummary.getGeneticResourceByType().getName());
+                geneticResourceList.setTotalItemsCount(latestSummary.getGeneticResourceByType().getTotalCount());
 
-                periodDTO.setGermplasmList(germplasmList);
+                periodDTO.setGeneticResourceList(geneticResourceList);
             }
         }
 

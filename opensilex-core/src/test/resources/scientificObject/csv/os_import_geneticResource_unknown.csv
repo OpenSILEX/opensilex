@@ -1,0 +1,4 @@
+uri,type,vocabulary:hasGeneticResource,rdfs:label
+,,,
+,,test:id/unknown_geneticResource1,os_import_geneticResource_unknown_1
+,,test:id/unknown_geneticResource2,os_import_geneticResource_unknown_2

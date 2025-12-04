@@ -21,8 +21,8 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -67,8 +67,8 @@ public class BrAPIv1ObservationUnitDTO {
     private String blockNumber;         
     private String entryNumber;
     private String entryType;
-    private String germplasmDbId;
-    private String germplasmName;
+    private String geneticResourceDbId;
+    private String geneticResourceName;
     private String locationDbId;
     private String locationName;
     private String observationLevel;
@@ -115,20 +115,20 @@ public class BrAPIv1ObservationUnitDTO {
         this.entryType = entryType;
     }
 
-    public String getGermplasmDbId() {
-        return germplasmDbId;
+    public String getGeneticResourceDbId() {
+        return geneticResourceDbId;
     }
 
-    public void setGermplasmDbId(String germplasmDbId) {
-        this.germplasmDbId = germplasmDbId;
+    public void setGeneticResourceDbId(String geneticResourceDbId) {
+        this.geneticResourceDbId = geneticResourceDbId;
     }
 
-    public String getGermplasmName() {
-        return germplasmName;
+    public String getGeneticResourceName() {
+        return geneticResourceName;
     }
 
-    public void setGermplasmName(String germplasmName) {
-        this.germplasmName = germplasmName;
+    public void setGeneticResourceName(String geneticResourceName) {
+        this.geneticResourceName = geneticResourceName;
     }
 
     public String getObservationLevel() {
@@ -318,7 +318,7 @@ public class BrAPIv1ObservationUnitDTO {
             OntologyDAO ontologyDAO,
             MoveLogic moveEventLogic,
             GeospatialDAO geospatialDAO,
-            GermplasmDAO germplasmDAO,
+            GeneticResourceDAO geneticResourceDAO,
             SPARQLService sparql
     ) throws Exception {
         BrAPIv1ObservationUnitDTO observationUnit = new BrAPIv1ObservationUnitDTO();
@@ -339,13 +339,13 @@ public class BrAPIv1ObservationUnitDTO {
             }
         }
 
-        Set<SPARQLModelRelation> germplasms = model.getRelations(Oeso.hasGermplasm).collect(Collectors.toSet());
-        if (germplasms.size() == 1){
-            for (SPARQLModelRelation germplasm:germplasms) {
-                GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasm.getValue()), currentUser, false);
-                if (Objects.equals(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
-                    observationUnit.setGermplasmDbId(germplasmModel.getUri().toString());
-                    observationUnit.setGermplasmName(germplasmModel.getName());
+        Set<SPARQLModelRelation> geneticResources = model.getRelations(Oeso.hasGeneticResource).collect(Collectors.toSet());
+        if (geneticResources.size() == 1){
+            for (SPARQLModelRelation geneticResource:geneticResources) {
+                GeneticResourceModel geneticResourceModel = geneticResourceDAO.get(new URI(geneticResource.getValue()), currentUser, false);
+                if (Objects.equals(geneticResourceModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
+                    observationUnit.setGeneticResourceDbId(geneticResourceModel.getUri().toString());
+                    observationUnit.setGeneticResourceName(geneticResourceModel.getName());
                 }
             }
         }

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.*;
@@ -208,7 +208,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
 
     @ValidURI
-    @ApiModelProperty(notes = "URI of the species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    @ApiModelProperty(notes = "URI of the species associated with the variable", example = GeneticResourceAPI.GENETIC_RESOURCE_EXAMPLE_SPECIES)
     public List<URI> getSpecies() {
         return species;
     }

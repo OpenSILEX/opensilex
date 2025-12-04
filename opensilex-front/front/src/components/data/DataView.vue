@@ -130,25 +130,25 @@
                   </opensilex-FilterField>
                 </div>
 
-                <!-- Germplasm Group -->
+                <!-- GeneticResource Group -->
                 <div>
                   <opensilex-FilterField>
-                    <opensilex-GermplasmGroupSelector
-                        label="GermplasmList.filter.germplasm-group"
+                    <opensilex-GeneticResourceGroupSelector
+                        label="GeneticResourceList.filter.geneticResource-group"
                         :multiple="false"
-                        :germplasmGroup.sync="filter.germplasm_group"
+                        :geneticResourceGroup.sync="filter.geneticResource_group"
                         class="searchFilter"
                         @handlingEnterKey="refresh()"
-                    ></opensilex-GermplasmGroupSelector>
+                    ></opensilex-GeneticResourceGroupSelector>
                   </opensilex-FilterField>
                 </div>
 
-                <!-- germplasm -->
+                <!-- geneticResource -->
                 <div>
                   <opensilex-FilterField quarterWidth="false">
-                    <opensilex-GermplasmSelectorWithFilter
-                        :germplasmsUris.sync="filter.germplasm"
-                    ></opensilex-GermplasmSelectorWithFilter>
+                    <opensilex-GeneticResourceSelectorWithFilter
+                        :geneticResourcesUris.sync="filter.geneticResource"
+                    ></opensilex-GeneticResourceSelectorWithFilter>
                   </opensilex-FilterField>
                 </div>
 
@@ -344,7 +344,7 @@ export default class DataView extends Vue {
   @Ref("deleteByBatchModal") readonly deleteByBatchModal!: DeleteByBatchModal;
 
   filter = {
-    germplasm_group: undefined,
+    geneticResource_group: undefined,
     start_date: null,
     end_date: null,
     variables: [],
@@ -355,14 +355,14 @@ export default class DataView extends Vue {
     devices: [],
     facilities: [],
     operators: [],
-    germplasm: [],
+    geneticResource: [],
     batch_uri: undefined
   };
 
   soFilter = {
     name: "",
     experiment: undefined,
-    germplasm: undefined,
+    geneticResource: undefined,
     factorLevels: [],
     types: [],
     existenceDate: undefined,
@@ -400,7 +400,7 @@ export default class DataView extends Vue {
 
   resetFilter() {
     this.filter = {
-      germplasm_group: undefined,
+      geneticResource_group: undefined,
       start_date: null,
       end_date: null,
       variables: [],
@@ -411,7 +411,7 @@ export default class DataView extends Vue {
       devices: [],
       facilities: [],
       operators: [],
-      germplasm: [],
+      geneticResource: [],
       batch_uri: undefined
     };
 

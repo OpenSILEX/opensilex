@@ -6,8 +6,7 @@ ontologies:
         config:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
-
-file-system:
+            
     fs:
         config:
             defaultFS: local

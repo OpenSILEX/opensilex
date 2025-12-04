@@ -181,12 +181,12 @@ the JVM can optimize operation which are repeated in some amount of time by comp
 
 ### Cache instance for some classes in RAM 
 
-We can suppose that the number of instance of concept like variable, germplasm, factor, experiment etc. 
+We can suppose that the number of instance of concept like variable, geneticResource, factor, experiment etc. 
 is largely smaller than the number of scientific object, event or measure/data.
 
 So we could check if a property has as range, a concept which is cached.
-Ex: If the property is `vocabulary:hasGermplasm` has `vocabulary:Germplasm` as range.
-So if Germplasms are cached (small number of germplasm and low frequency of update or insertion), we can 
+Ex: If the property is `vocabulary:hasGeneticResource` has `vocabulary:GeneticResource` as range.
+So if GeneticResources are cached (small number of geneticResource and low frequency of update or insertion), we can 
 retrieve them from RAM in order to accelerate validation.
 
 

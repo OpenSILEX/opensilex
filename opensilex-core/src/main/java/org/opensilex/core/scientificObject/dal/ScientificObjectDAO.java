@@ -38,7 +38,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
+import org.opensilex.core.geneticResourceGroup.dal.GeneticResourceGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -537,17 +537,17 @@ public class ScientificObjectDAO {
             }
         }
 
-        // Add germplasm filter
-        List<URI> germplasmMulti = searchFilter.getGermplasm();
-        if (! CollectionUtils.isEmpty(germplasmMulti)) {
-            Var germplasmVar = makeVar("__germplasm");
+        // Add geneticResource filter
+        List<URI> geneticResourceMulti = searchFilter.getGeneticResource();
+        if (! CollectionUtils.isEmpty(geneticResourceMulti)) {
+            Var geneticResourceVar = makeVar("__geneticResource");
             if (searchFilter.getExperiment() != null) {
-                builder.addGraph(contextNode, uriVar, Oeso.hasGermplasm, germplasmVar);
+                builder.addGraph(contextNode, uriVar, Oeso.hasGeneticResource, geneticResourceVar);
             } else {
                 // in case of no XP
-                builder.addWhere(uriVar, Oeso.hasGermplasm, germplasmVar);
+                builder.addWhere(uriVar, Oeso.hasGeneticResource, geneticResourceVar);
             }
-            builder.addFilter(SPARQLQueryHelper.inURIFilter(germplasmVar, germplasmMulti));
+            builder.addFilter(SPARQLQueryHelper.inURIFilter(geneticResourceVar, geneticResourceMulti));
 
         }
 
@@ -602,36 +602,36 @@ public class ScientificObjectDAO {
         }
     }
 
-    public List<URI> getScientificObjectUrisAssociatedWithGermplasms(
+    public List<URI> getScientificObjectUrisAssociatedWithGeneticResources(
             List<URI> experiments,
-            URI germplasmGroupUri,
-            List<URI> passedGermplasms
+            URI geneticResourceGroupUri,
+            List<URI> passedGeneticResources
     ) throws Exception {
 
-        final Node germplasmGroupGraph = sparql.getDefaultGraph(GermplasmGroupModel.class);
+        final Node geneticResourceGroupGraph = sparql.getDefaultGraph(GeneticResourceGroupModel.class);
 
-        Var germplasm = makeVar("germplasm");
+        Var geneticResource = makeVar("geneticResource");
         Var permittedExperimentsNodeVar = makeVar("experiment_contexts");
         Var target = makeVar(SPARQLResourceModel.URI_FIELD);
         Var targetType = makeVar(SPARQLResourceModel.TYPE_FIELD);
-        Var passedGermplasmsVar = makeVar("passed_germplasms");
+        Var passedGeneticResourcesVar = makeVar("passed_geneticResources");
 
         WhereBuilder groupPart = null;
-        if(germplasmGroupUri!=null){
-            groupPart = new WhereBuilder().addWhere(target, Oeso.hasGermplasm, germplasm);
+        if(geneticResourceGroupUri!=null){
+            groupPart = new WhereBuilder().addWhere(target, Oeso.hasGeneticResource, geneticResource);
         }
         WhereBuilder passedGermsPart = null;
-        if(!CollectionUtils.isEmpty(passedGermplasms)){
-            passedGermsPart = new WhereBuilder().addWhere(target, Oeso.hasGermplasm, passedGermplasmsVar);
+        if(!CollectionUtils.isEmpty(passedGeneticResources)){
+            passedGermsPart = new WhereBuilder().addWhere(target, Oeso.hasGeneticResource, passedGeneticResourcesVar);
         }
-        WhereBuilder hasGermplasmWhereBuilder = null;
+        WhereBuilder hasGeneticResourceWhereBuilder = null;
         if(groupPart != null && passedGermsPart!=null){
-            hasGermplasmWhereBuilder = new WhereBuilder().addWhere(groupPart).addUnion(passedGermsPart);
+            hasGeneticResourceWhereBuilder = new WhereBuilder().addWhere(groupPart).addUnion(passedGermsPart);
         }else{
             if(groupPart != null){
-                hasGermplasmWhereBuilder = groupPart;
+                hasGeneticResourceWhereBuilder = groupPart;
             }else{
-                hasGermplasmWhereBuilder = passedGermsPart;
+                hasGeneticResourceWhereBuilder = passedGermsPart;
             }
         }
 
@@ -640,18 +640,18 @@ public class ScientificObjectDAO {
                 .addVar(target)
                 .addGraph(permittedExperimentsNodeVar, new WhereBuilder()
                         .addWhere(target, RDF.type, targetType)
-                        .addWhere(hasGermplasmWhereBuilder)
+                        .addWhere(hasGeneticResourceWhereBuilder)
                 )
                 .addWhere(targetType, Ontology.subClassAny, Oeso.ScientificObject);
 
-        if(germplasmGroupUri != null){
-            query.addGraph(germplasmGroupGraph, new WhereBuilder()
-                    .addWhere(SPARQLDeserializers.nodeURI(germplasmGroupUri), RDF.type, Oeso.GermplasmGroup)
-                    .addWhere(SPARQLDeserializers.nodeURI(germplasmGroupUri), RDFS.member, germplasm)
+        if(geneticResourceGroupUri != null){
+            query.addGraph(geneticResourceGroupGraph, new WhereBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(geneticResourceGroupUri), RDF.type, Oeso.GeneticResourceGroup)
+                    .addWhere(SPARQLDeserializers.nodeURI(geneticResourceGroupUri), RDFS.member, geneticResource)
             );
         }
-        if(!CollectionUtils.isEmpty(passedGermplasms)){
-            SPARQLQueryHelper.addWhereUriValues(query, passedGermplasmsVar.getVarName(), passedGermplasms.stream(), passedGermplasms.size());
+        if(!CollectionUtils.isEmpty(passedGeneticResources)){
+            SPARQLQueryHelper.addWhereUriValues(query, passedGeneticResourcesVar.getVarName(), passedGeneticResources.stream(), passedGeneticResources.size());
         }
         query.addFilter(SPARQLQueryHelper.inURIFilter("experiment_contexts", experiments));
 

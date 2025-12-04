@@ -60,15 +60,15 @@
       </template>
 
       <template v-slot:advancedSearch>
-        <!-- Germplasm -->
+        <!-- GeneticResource -->
         <div>
         <opensilex-FilterField>
-          <opensilex-GermplasmSelector
+          <opensilex-GeneticResourceSelector
             :multiple="false"
-            :germplasm.sync="filter.germplasm"
+            :geneticResource.sync="filter.geneticResource"
             :experiment="filter.experiment"
             class="searchFilter"
-          ></opensilex-GermplasmSelector>
+          ></opensilex-GeneticResourceSelector>
         </opensilex-FilterField>
         </div>
 

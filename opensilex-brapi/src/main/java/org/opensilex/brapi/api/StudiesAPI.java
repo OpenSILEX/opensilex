@@ -19,7 +19,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -78,7 +78,7 @@ public class StudiesAPI extends BrapiCall {
     protected Response standardGetStudies(URI studyDbId, String active, String sortBy, String sortOrder, int page, int pageSize) throws Exception {
 
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GeneticResourceDAO geneticResourceDAO = new GeneticResourceDAO(sparql, nosql);
 
         ArrayList<OrderBy> orderByList = new ArrayList<>();
 
@@ -127,7 +127,7 @@ public class StudiesAPI extends BrapiCall {
         }
         ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, experimentModel -> {
             try {
-                return BrAPIv1StudyDTO.fromModel(experimentModel, germplasmDAO, currentUser);
+                return BrAPIv1StudyDTO.fromModel(experimentModel, geneticResourceDAO, currentUser);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -207,11 +207,11 @@ public class StudiesAPI extends BrapiCall {
         OrganizationDAO organisationDAO = new OrganizationDAO(sparql);
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GeneticResourceDAO geneticResourceDAO = new GeneticResourceDAO(sparql, nosql);
 
         if (model != null) {
             BrAPIv1SingleStudyResponse responseClass = new BrAPIv1SingleStudyResponse(
-                    BrAPIv1StudyDetailsDTO.fromModel(model, facilityLogic, organisationDAO, currentUser, germplasmDAO)
+                    BrAPIv1StudyDetailsDTO.fromModel(model, facilityLogic, organisationDAO, currentUser, geneticResourceDAO)
             );
             BrAPIv1AccessionWarning.setAccessionWarningIfNeeded(responseClass);
             return responseClass.getResponse();
@@ -244,12 +244,12 @@ public class StudiesAPI extends BrapiCall {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GeneticResourceDAO geneticResourceDAO = new GeneticResourceDAO(sparql, nosql);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
         ListWithPagination<BrAPIv1ObservationDTO> observations = datas.convert(BrAPIv1ObservationDTO.class, data -> {
             try {
-                return BrAPIv1ObservationDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, germplasmDAO);
+                return BrAPIv1ObservationDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, geneticResourceDAO);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -323,7 +323,7 @@ public class StudiesAPI extends BrapiCall {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         GeospatialDAO geospatialDAO = new GeospatialDAO(nosql);
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GeneticResourceDAO geneticResourceDAO = new GeneticResourceDAO(sparql, nosql);
 
         ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
                 .setExperiment(studyDbId)
@@ -346,7 +346,7 @@ public class StudiesAPI extends BrapiCall {
                         ontologyDAO,
                         moveLogic,
                         geospatialDAO,
-                        germplasmDAO,
+                        geneticResourceDAO,
                         sparql);
             } catch (Exception e) {
                 throw new RuntimeException(e);

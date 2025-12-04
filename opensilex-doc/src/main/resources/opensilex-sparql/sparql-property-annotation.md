@@ -49,9 +49,9 @@ Another improvement idea would be to load only concerned fields of concerned mod
 But to be efficient, this should be done in a single SPARQL query for all model (or for a batch of models).
 
 ## @AutoUpdate
-> ⚠️ **Warning:** Auto update is recursive. For example, imagine a Germplasm A with a Parent field referencing Germplasm B.
+> ⚠️ **Warning:** Auto update is recursive. For example, imagine a GeneticResource A with a Parent field referencing GeneticResource B.
 > If both the parent and child fields are set to auto update, updating A will automatically update its parent B, which will then automatically update its child A, and so on, potentially leading to an infinite loop.>
 
 ## @CascadeDelete
-> ⚠️ **Warning:** Cascade delete is recursive. For example, imagine a Germplasm A with a Parent field referencing Germplasm B.
+> ⚠️ **Warning:** Cascade delete is recursive. For example, imagine a GeneticResource A with a Parent field referencing GeneticResource B.
 > If both the parent and child fields are set to cascade delete, deleting A will first automatically delete its parent B, which will first automatically delete its child A, and so on, potentially leading to an infinite loop.

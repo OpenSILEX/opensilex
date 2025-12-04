@@ -140,15 +140,15 @@ public class Faidarev1StudyDTOBuilder {
         // select {
         //     graph <experimentUri> {
         //         ?scientificObject a ?rdfType ;
-        //         vocabulary:hasGermplasm ?germplasm;
+        //         vocabulary:hasGeneticResource ?geneticResource;
         //     }
         //     ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
-        //     ?germplasm a/rdfs:subClassOf* vocabulary:Accession .
+        //     ?geneticResource a/rdfs:subClassOf* vocabulary:Accession .
         // }
 
         // Vars
         Var scientificObjectVar = makeVar("scientificObject");
-        Var germplasmVar = makeVar("germplasm");
+        Var geneticResourceVar = makeVar("geneticResource");
         Var rdfTypeVar = makeVar("rdfType");
 
         // Uris
@@ -156,18 +156,18 @@ public class Faidarev1StudyDTOBuilder {
 
         WhereBuilder whereInExperiment = new WhereBuilder();
         whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
-        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
+        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGeneticResource.asNode(), geneticResourceVar);
         SelectBuilder accessionSelect = new SelectBuilder()
                 .addGraph(experimentUriNode, whereInExperiment)
                 .addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode())
-                .addWhere(germplasmVar, Ontology.typeSubClassAny, Oeso.Accession.asNode());
+                .addWhere(geneticResourceVar, Ontology.typeSubClassAny, Oeso.Accession.asNode());
 
         try {
             List<SPARQLResult> selectedAccessions = sparql.executeSelectQuery(accessionSelect);
 
             if (!selectedAccessions.isEmpty()) {
-                dto.setGermplasmDbIds(new ArrayList<>(selectedAccessions
-                        .stream().map(accession -> SPARQLDeserializers.getExpandedURI(accession.getStringValue("germplasm")))
+                dto.setGeneticResourceDbIds(new ArrayList<>(selectedAccessions
+                        .stream().map(accession -> SPARQLDeserializers.getExpandedURI(accession.getStringValue("geneticResource")))
                         .collect(Collectors.toSet())));
             }
         } catch (SPARQLException e) {

@@ -239,7 +239,7 @@
                 "label": "Informations scientifiques",
                 "factors": "Facteurs",
                 "factorLevels": "Niveaux de facteurs",
-                "germplasm": "Ressources Génétiques"
+                "geneticResource": "Ressources Génétiques"
             },
             "groupVariables": "Groupe de variables",
             "organizations": "Organisations",
@@ -581,7 +581,7 @@
                 "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
             }
         },
-        "germplasms": {
+        "geneticResources": {
             "errors": {
                 "duplicateUri": "URI en double : {uri}",
                 "duplicateLabel": "Label en double : {label}",
@@ -631,15 +631,15 @@
             "no-external-links-provided": "Aucune référence disponible",
             "external-already-existing": "Référence déja associée"
         },
-        "germplasm": {
-            "germplasmTitle": "Ressources Génétiques",
+        "geneticResource": {
+            "geneticResourceTitle": "Ressources Génétiques",
             "description": "Gérer les informations du matériel génétique",
-            "add": "Créer germplasm",
-            "update": "éditer germplasm",
-            "delete": "supprimer germplasm",
-            "backToList": "Revenir à la liste des germplasm",
-            "germplasmList": "Germplasm",
-            "select": "Veuillez sélectionner un type de germplasm",
+            "add": "Créer une ressource génétique",
+            "update": "éditer une ressource génétique",
+            "delete": "supprimer une ressource génétique",
+            "backToList": "Revenir à la liste des ressources génétiques",
+            "geneticResourceList": "Ressources Génétiques",
+            "select": "Veuillez sélectionner un type de ressource génétique",
             "filter": {
                 "description": "Recherche de Ressources Génétiques",
                 "allTypes": "Tous",
@@ -647,7 +647,7 @@
                 "year": "Filtrer par année de production",
                 "institute": "Filtrer par code institution",
                 "label": "Filtrer par nom",
-                "label-placeholder": "Entrez un nom de germplasm",
+                "label-placeholder": "Entrez un nom de ressource génétique",
                 "rdfType": "Filtrer par type",
                 "experiment": "Filtrer par expérimentation",
                 "search": "Rechercher",
@@ -683,8 +683,8 @@
                 }
             },
             "details": {
-                "title": "Germplasm Details",
-                "tab": "Germplasm Information",
+                "title": "Ressource génétique Details",
+                "tab": "Ressource génétique Information",
                 "uri": "URI",
                 "label": "Name",
                 "rdfType": "Type",
@@ -696,12 +696,12 @@
                 "comment": "Comment"
             },
             "form": {
-                "uri-help": "Unique germplasm identifier",
-                "label-help": "Name used to define this germplasm",
-                "rdfType-help": "Germplasm Type"
+                "uri-help": "Unique Ressource génétique identifiant",
+                "label-help": "Nom utilisé pour définir cette ressource génétique",
+                "rdfType-help": "Type de Ressource génétique"
             },
             "errors": {
-                "germplasm-already-exists": "Germplasm already exists with this URI."
+                "geneticResource-already-exists": "Ressource génétique existe déjà avec cette URI."
             }
         },
         "document": {
@@ -770,7 +770,7 @@
         "variables": "Variables",
         "factors": "Facteurs",
         "organizations": "Organisations",
-        "germplasm": "Germplasm",
+        "geneticResource": "Ressources Génétiques",
         "area": "Zone",
         "scientific-objects": "Objets scientifiques",
         "data": "Data",
@@ -819,9 +819,9 @@
             "modification": "Ajout / Modification des facteurs",
             "delete": "Suppression des facteurs"
         },
-        "germplasm": {
-            "modification": "Ajout / Modification germplasm",
-            "delete": "Suppression des germplasm"
+        "geneticResource": {
+            "modification": "Ajout / Modification Ressources Génétiques",
+            "delete": "Suppression des Ressources Génétiques"
         },
         "area": {
             "modification": "Ajout / Modification des zones",

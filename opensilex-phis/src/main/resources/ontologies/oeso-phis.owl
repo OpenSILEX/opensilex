@@ -61,14 +61,14 @@
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromAccession">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Accession"/>
     </owl:ObjectProperty>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#fromSpecies -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromSpecies">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Species"/>
     </owl:ObjectProperty>
 
@@ -76,7 +76,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#fromVariety -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromVariety">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variety"/>
     </owl:ObjectProperty>
 
@@ -127,12 +127,12 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasGeneticResource -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGeneticResource">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
     </owl:ObjectProperty>
     
 
@@ -553,7 +553,7 @@
  <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
         <rdfs:label xml:lang="en">Variety</rdfs:label>
         <rdfs:label xml:lang="fr">Variété</rdfs:label>
     </owl:Class>
@@ -561,7 +561,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
         <rdfs:label xml:lang="en">Accession</rdfs:label>
         <rdfs:label xml:lang="fr">Accession</rdfs:label>
     </owl:Class>
@@ -1017,9 +1017,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#GeneticResource -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
     
 
 
@@ -1316,7 +1316,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
         <rdfs:label xml:lang="fr">Lot de matériel vegetal</rdfs:label>
         <rdfs:label xml:lang="en">Plant material lot</rdfs:label>
     </owl:Class>
@@ -1458,9 +1458,9 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGeneticResource"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#GeneticResource"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -1884,9 +1884,9 @@
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeev#Staking"/>
     
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasGeneticResource -->
 
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGeneticResource"/>
 
     <!-- http://www.opensilex.org/vocabulary/oeev#Thinning -->
 
@@ -1894,12 +1894,12 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#germplasmEOI -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#geneticResourceEOI -->
 
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#germplasmEOI">
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#geneticResourceEOI">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
-        <rdfs:label xml:lang="en">germplasm</rdfs:label>
-        <rdfs:label xml:lang="fr">germplasm</rdfs:label>
+        <rdfs:label xml:lang="en">geneticResource</rdfs:label>
+        <rdfs:label xml:lang="fr">geneticResource</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -1942,9 +1942,9 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGeneticResource">
         <rdfs:label xml:lang="fr">Matériel génétique</rdfs:label>
-        <rdfs:label xml:lang="en">Germplasm</rdfs:label>
+        <rdfs:label xml:lang="en">GeneticResource</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Staking">
         <rdfs:label xml:lang="fr">Tuteurage</rdfs:label>

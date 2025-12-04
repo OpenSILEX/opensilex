@@ -1,0 +1,129 @@
+<template>
+  <b-modal
+      ref="colModal"
+      hide-footer
+      :title="$t('GeneticResourceTable.addColumn')"
+      size="md"
+  >
+    <ValidationObserver ref="validatorRef">
+        <!-- Existing property -->
+        <opensilex-GeneticResourceControlledAttributesSelector
+            ref="controlledAttributeSelector"
+            :property.sync="chosenPropertyUri"
+            :existingRdfAttributes="existingRdfAttributesObjects"
+            @select="selectedExistingProperty()"
+            @clear="clearedExistingPropertyField()"
+        ></opensilex-GeneticResourceControlledAttributesSelector>
+        <!-- Non existing property -->
+        <opensilex-InputForm
+            ref="uncontrolledAttributeInput"
+            :key="inputFormKey"
+            :value.sync="uncontrolledColName"
+            :disabled="pickedExisting"
+            :rules="existingRdfAttributesStringRule"
+            label="GeneticResourceAddColumnModal.nonExistingAttributeFieldLabel"
+            type="text"
+            :required="false"
+        ></opensilex-InputForm>
+        <b-button class="mt-3 btn greenThemeColor" variant="primary" block @click="checkValidationAndAddColumn">{{
+            $t("GeneticResourceAddColumnModal.addColumn")
+          }}</b-button>
+
+<!--      </form>-->
+    </ValidationObserver>
+  </b-modal>
+</template>
+
+
+<script lang="ts">
+import Vue from 'vue';
+import Component from 'vue-class-component';
+import {Prop, Ref} from 'vue-property-decorator';
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import { SelectableItem } from 'src/components/common/forms/FormSelector.vue';
+import InputForm from "@/components/common/forms/InputForm.vue";
+import GeneticResourceControlledAttributesSelector from './GeneticResourceControlledAttributesSelector.vue';
+
+@Component({})
+/**
+ * Modal that pops up when the user hits the add column button.
+ */
+export default class GeneticResourceAddColumnModal extends Vue {
+
+  @Ref("colModal") readonly colModal!: any;
+  @Ref("uncontrolledAttributeInput") readonly uncontrolledAttributeInput!: InputForm;
+  @Ref("controlledAttributeSelector") readonly controlledAttributeSelector!: GeneticResourceControlledAttributesSelector;
+  @Ref("validatorRef") readonly validatorRef!: any;
+
+  inputFormKey = 0;
+
+  $opensilex: OpenSilexVuePlugin;
+
+  uncontrolledColName: string = null;
+
+  chosenPropertyUri: string = "";
+
+  @Prop()
+  existingRdfAttributesObjects: Array<SelectableItem>;
+
+  @Prop()
+  existingRdfAttributesStringRule:string;
+
+  pickedExisting: boolean = false;
+
+
+  /**
+   * @Pre The uri choice and labels were previously got together so we can assume that the filtered list will always have size 1
+   */
+  getColumnNameForExistingPropertyUri(): string{
+    let filteredByUri: Array<SelectableItem> = this.existingRdfAttributesObjects.filter(selectableItem => this.$opensilex.compareUris(selectableItem.id, this.chosenPropertyUri));
+    return filteredByUri[0].label;
+  }
+
+  async checkValidationAndAddColumn(){
+    let isValid: boolean = await this.validatorRef.validate();
+    if(!this.chosenPropertyUri){
+      if(isValid){
+        this.$emit('addingUncontrolledColumn', this.uncontrolledColName);
+      }
+    }else{
+      this.$emit('addingExistingColumn', this.getColumnNameForExistingPropertyUri(), this.chosenPropertyUri);
+    }
+  }
+
+  selectedExistingProperty(){
+    this.pickedExisting = true;
+
+  }
+  clearedExistingPropertyField(){
+    this.pickedExisting = false;
+  }
+
+  show(){
+    this.colModal.show();
+  }
+  hide(){
+    this.colModal.hide();
+  }
+}
+</script>
+
+
+<style scoped lang="scss">
+
+</style>
+
+<i18n>
+
+en:
+  GeneticResourceAddColumnModal:
+    addColumn: Add column
+    nonExistingAttributeFieldLabel: Non existing new column
+    thereIsAnExistingErrorMessage: This property already exists.
+
+fr:
+  GeneticResourceAddColumnModal:
+    addColumn: Ajouter colonne
+    nonExistingAttributeFieldLabel: Nouvelle colonne non existante
+    thereIsAnExistingErrorMessage: Cette propriété est déjà existante.
+</i18n>

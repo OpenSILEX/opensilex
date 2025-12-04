@@ -71,8 +71,8 @@ public class SparqlMultiGraphQuery<T extends SPARQLResourceModel> extends Abstra
      * {@code
      * SELECT DISTINCT ?uri ?type where {
      *    {
-     *    ?type rdfs:subClassOf* vocabulary:Germplasm .
-     *    GRAPH <http://opensilex.dev/set/germplasm> {
+     *    ?type rdfs:subClassOf* vocabulary:GeneticResource .
+     *    GRAPH <http://opensilex.dev/set/geneticResource> {
      *      ?uri a ?type
      *    }
      *  }

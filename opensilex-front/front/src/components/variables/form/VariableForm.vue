@@ -103,7 +103,7 @@
                 <!-- Species -->
                 <div class="col-lg-6" id="v-step-species">
                     <opensilex-SpeciesSelector
-                        v-if="!isGermplasmMenuExcluded"
+                        v-if="!isGeneticResourceMenuExcluded"
                         label="SpeciesSelector.select-multiple"
                         placeholder="SpeciesSelector.select-multiple-placeholder"
                         :multiple="true"
@@ -327,8 +327,8 @@ export default class VariableForm extends Vue {
 
     @Ref("traitForm") readonly traitForm!: any;
 
-    get isGermplasmMenuExcluded() {
-        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+    get isGeneticResourceMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("geneticResource");
     }
 
     traitSteps = [

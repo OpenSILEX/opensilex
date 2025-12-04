@@ -7,7 +7,7 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -144,8 +144,8 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         this.seasons = seasons;
     }
 
-    public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model, FacilityLogic facilityLogic, OrganizationDAO organizationDAO, AccountModel currentAccount, GermplasmDAO germplasmDAO) throws Exception {
-        super.extractFromModel(model, germplasmDAO, currentAccount);
+    public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model, FacilityLogic facilityLogic, OrganizationDAO organizationDAO, AccountModel currentAccount, GeneticResourceDAO geneticResourceDAO) throws Exception {
+        super.extractFromModel(model, geneticResourceDAO, currentAccount);
 
         if (!model.getDescription().isEmpty()){
             this.setStudyDescription(model.getDescription());
@@ -182,8 +182,8 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         return this;
     }
 
-    public static BrAPIv1StudyDetailsDTO fromModel(ExperimentModel model, FacilityLogic facilityLogic, OrganizationDAO organizationDAO, AccountModel currentAccount, GermplasmDAO germplasmDAO) throws Exception {
+    public static BrAPIv1StudyDetailsDTO fromModel(ExperimentModel model, FacilityLogic facilityLogic, OrganizationDAO organizationDAO, AccountModel currentAccount, GeneticResourceDAO geneticResourceDAO) throws Exception {
         BrAPIv1StudyDetailsDTO study = new BrAPIv1StudyDetailsDTO();
-        return study.extractFromModel(model, facilityLogic, organizationDAO, currentAccount, germplasmDAO);
+        return study.extractFromModel(model, facilityLogic, organizationDAO, currentAccount, geneticResourceDAO);
     }
 }

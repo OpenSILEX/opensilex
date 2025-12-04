@@ -56,7 +56,7 @@ These actions be available for the following collection set :
 - `fs.files`
 - `move`
 - `geospatial`
-- `germplasmAttribute`
+- `geneticResourceAttribute`
 - `deviceAttribute`
 - `metrics`
 - `history`

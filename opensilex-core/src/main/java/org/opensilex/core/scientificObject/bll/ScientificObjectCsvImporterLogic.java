@@ -87,7 +87,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * <b>Creation : {@link #upsert(CSVValidationModel, List, List)} </b>
  * <ul>
  *     <li>In experimental context, object name and type are copied into global OS graph</li>
- *     <li>In experimental context, experiment species are updated according OS germplasms. {@link ExperimentDAO#updateExperimentSpeciesFromScientificObjects(URI)}</li>
+ *     <li>In experimental context, experiment species are updated according OS geneticResources. {@link ExperimentDAO#updateExperimentSpeciesFromScientificObjects(URI)}</li>
  *     <li>Objects geometries are inserted by using the {@link GeospatialDAO}</li>
  *     <li>If object has a creation date ({@link Oeso#hasCreationDate}) and is hosted in some facility ({@link Oeso#isHosted}), then a corresponding {@link MoveModel} is created by using {@link MoveEventDAO}</li>
  * </ul>

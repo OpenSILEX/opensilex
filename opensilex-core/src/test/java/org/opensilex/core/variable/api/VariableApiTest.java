@@ -8,9 +8,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.germplasm.api.GermplasmAPITest;
-import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPITest;
+import org.opensilex.core.geneticResource.api.GeneticResourceCreationDTO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
@@ -44,7 +44,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     public String updatePath = path ;
     public String deletePath = path + "/{uri}";
 
-    private GermplasmCreationDTO germplasm;
+    private GeneticResourceCreationDTO geneticResource;
     private EntityCreationDTO entity;
 
     @Before
@@ -56,11 +56,11 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.CREATED.getStatusCode(), postEntityResult.getStatus());
         entity.setUri(extractUriFromResponse(postEntityResult));
 
-        // create a germplasm to use as InterestEntity
-        germplasm = GermplasmAPITest.getCreationSpeciesDTO();
-        final Response postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), germplasm);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
-        germplasm.setUri(extractUriFromResponse(postGermplasmResult));
+        // create a geneticResource to use as InterestEntity
+        geneticResource = GeneticResourceAPITest.getCreationSpeciesDTO();
+        final Response postGeneticResourceResult = getJsonPostResponseAsAdmin(target(GeneticResourceAPITest.createPath), geneticResource);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postGeneticResourceResult.getStatus());
+        geneticResource.setUri(extractUriFromResponse(postGeneticResourceResult));
     }
 
     public VariableCreationDTO getCreationDto() throws Exception {
@@ -239,8 +239,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getUnit(), dtoFromDb.getUnit().getUri()));
     }
 
-    private final static URI GERMPLASM_URI_1 = URI.create("test:species_testCreateWithSpeciesOK_1");
-    private final static URI GERMPLASM_URI_2 = URI.create("test:species_testCreateWithSpeciesOK_2");
+    private final static URI GENETIC_RESOURCE_URI_1 = URI.create("test:species_testCreateWithSpeciesOK_1");
+    private final static URI GENETIC_RESOURCE_URI_2 = URI.create("test:species_testCreateWithSpeciesOK_2");
 
     @Test
     /**
@@ -249,17 +249,17 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     public void testCreateWithSpeciesOK() throws Exception {
 
         // create species and ensure that creation was OK
-        GermplasmCreationDTO species1 = GermplasmAPITest.getCreationSpeciesDTO();
+        GeneticResourceCreationDTO species1 = GeneticResourceAPITest.getCreationSpeciesDTO();
         species1.setName("species_testCreateWithSpeciesOK_1");
-        species1.setUri(GERMPLASM_URI_1);
-        Response postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), species1);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
+        species1.setUri(GENETIC_RESOURCE_URI_1);
+        Response postGeneticResourceResult = getJsonPostResponseAsAdmin(target(GeneticResourceAPITest.createPath), species1);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postGeneticResourceResult.getStatus());
 
-        GermplasmCreationDTO species2 = GermplasmAPITest.getCreationSpeciesDTO();
+        GeneticResourceCreationDTO species2 = GeneticResourceAPITest.getCreationSpeciesDTO();
         species2.setName("species_testCreateWithSpeciesOK_2");
-        species2.setUri(GERMPLASM_URI_2);
-        postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), species2);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
+        species2.setUri(GENETIC_RESOURCE_URI_2);
+        postGeneticResourceResult = getJsonPostResponseAsAdmin(target(GeneticResourceAPITest.createPath), species2);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postGeneticResourceResult.getStatus());
 
         // create variable with species -> should be CREATED
         VariableCreationDTO dto = getCreationDto();
@@ -301,28 +301,28 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
     @Test
     /**
-     * Test that the variable creation fail if a sub-type of Germplasm, different than species, is provided
+     * Test that the variable creation fail if a sub-type of GeneticResource, different than species, is provided
      */
-    public void testFailWithGermplasmWithoutSpeciesType() throws Exception {
+    public void testFailWithGeneticResourceWithoutSpeciesType() throws Exception {
 
-        // create variety and associated germplasm
-        GermplasmCreationDTO speciesOfVariety = new GermplasmCreationDTO();
+        // create variety and associated geneticResource
+        GeneticResourceCreationDTO speciesOfVariety = new GeneticResourceCreationDTO();
         speciesOfVariety.setName("speciesOfVariety");
         speciesOfVariety.setRdfType(URI.create(Oeso.Species.getURI()));
         speciesOfVariety.setUri(URI.create("test:speciesOfVariety"));
 
         // ensure species was created
-        Response postSpeciesResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), speciesOfVariety);
+        Response postSpeciesResponse = getJsonPostResponseAsAdmin(target(GeneticResourceAPITest.createPath), speciesOfVariety);
         assertEquals(Response.Status.CREATED.getStatusCode(), postSpeciesResponse.getStatus());
 
-        GermplasmCreationDTO variety = new GermplasmCreationDTO();
+        GeneticResourceCreationDTO variety = new GeneticResourceCreationDTO();
         variety.setName("variety");
-        variety.setRdfType(URI.create(Oeso.Germplasm.toString()));
+        variety.setRdfType(URI.create(Oeso.GeneticResource.toString()));
         variety.setUri(URI.create("test:test_variety"));
         variety.setSpecies(speciesOfVariety.getUri());
 
         // ensure variety was created
-        Response postVarietyResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), variety);
+        Response postVarietyResponse = getJsonPostResponseAsAdmin(target(GeneticResourceAPITest.createPath), variety);
         assertEquals(Response.Status.CREATED.getStatusCode(), postVarietyResponse.getStatus());
 
         // create variable with variety -> should fail, since variable expect species, not variety
@@ -350,7 +350,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // run a search query with species filter
         Map<String, Object> searchParams = new HashMap<>();
-        searchParams.put("species", Arrays.asList(GERMPLASM_URI_1));
+        searchParams.put("species", Arrays.asList(GENETIC_RESOURCE_URI_1));
 
         // convert returned JSON into dtos
         List<VariableGetDTO> results = getSearchResultsAsAdmin(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
@@ -423,7 +423,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Arrays.asList(
                 EntityModel.class,
-                GermplasmModel.class,
+                GeneticResourceModel.class,
                 SpeciesModel.class,
                 VariableModel.class
         );

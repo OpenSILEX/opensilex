@@ -130,8 +130,8 @@ public class MetricDTO {
         CountListItemDTO devicesByTypeDTO = CountListItemDTO.getDTOFromModel(model.getDeviceByType());
         devicesByTypeDTO.setName(SystemSummaryModel.DEVICE_BY_TYPE_FIELD);
         
-        CountListItemDTO germplasmByTypeDTO = CountListItemDTO.getDTOFromModel(model.getGermplasmByType());
-        germplasmByTypeDTO.setName(SystemSummaryModel.GERMPLASM_TYPE_FIELD);
+        CountListItemDTO geneticResourceByTypeDTO = CountListItemDTO.getDTOFromModel(model.getGeneticResourceByType());
+        geneticResourceByTypeDTO.setName(SystemSummaryModel.GENETIC_RESOURCE_TYPE_FIELD);
 
         CountListItemDTO experimentByTypeDTO = CountListItemDTO.getDTOFromModel(model.getExperimentByType());
         experimentByTypeDTO.setName(SystemSummaryModel.EXPERIMENT_BY_TYPE_FIELD);
@@ -139,7 +139,7 @@ public class MetricDTO {
         systemSummaryDTO.addItems(variablesDTO);
         systemSummaryDTO.addItems(scientificObjectsByTypeDTO);
         systemSummaryDTO.addItems(devicesByTypeDTO);
-        systemSummaryDTO.addItems(germplasmByTypeDTO);
+        systemSummaryDTO.addItems(geneticResourceByTypeDTO);
         systemSummaryDTO.addItems(experimentByTypeDTO);
         systemSummaryDTO.setDate(model.getCreationDate(), null, true);
 

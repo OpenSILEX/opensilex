@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPI;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -242,7 +242,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     }
     
     @ValidURI
-    @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    @ApiModelProperty(notes = "Species associated with the variable", example = GeneticResourceAPI.GENETIC_RESOURCE_EXAMPLE_SPECIES)
     public List<URI> getSpecies() {
         return this.species;
     }

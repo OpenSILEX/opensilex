@@ -68,7 +68,7 @@ The following table list all graph used by OpenSILEX
 | **Unit**               | vocabulary:Unit             | variable          | http://www.opensilex.org/set/variable          |                                  |
 | **Variable group**     | vocabulary:VariablesGroup   | variablesGroup    | http://www.opensilex.org/set/variablesGroup    |                                  |
 | **Species**            | vocabulary:Species          | gerplasm          | http://www.opensilex.org/set/gerplasm          |                                  |
-| **Germplasm**          | vocabulary:Germplasm        | germplasm         | http://www.opensilex.org/set/gerplasm          |                                  |
+| **GeneticResource**          | vocabulary:GeneticResource        | geneticResource         | http://www.opensilex.org/set/gerplasm          |                                  |
 | **Factor**             | vocabulary:Factor           | factor            | http://www.opensilex.org/set/factor            |                                   |
 | **Factor level**       | vocabulary:FactorLevel      | factor            | http://www.opensilex.org/set/factor            |                                  |
 | **Document**           | vocabulary:Document         | document          | http://www.opensilex.org/set/document          |                                  |

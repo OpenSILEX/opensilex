@@ -1,0 +1,4 @@
+uri,type,vocabulary:hasGeneticResource,rdfs:label
+,,,
+,,test:id/geneticResource/geneticResource.test_os_csv_import,os_import_geneticResource1
+,,test:id/geneticResource/geneticResource.test_os_csv_import2,os_import_geneticResource2

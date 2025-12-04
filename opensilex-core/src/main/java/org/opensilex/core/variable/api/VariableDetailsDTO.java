@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.species.api.SpeciesDTO;
@@ -246,7 +246,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     }
 
     @ValidURI
-    @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    @ApiModelProperty(notes = "Species associated with the variable", example = GeneticResourceAPI.GENETIC_RESOURCE_EXAMPLE_SPECIES)
     public List<SpeciesDTO> getSpecies() {
         return species;
     }

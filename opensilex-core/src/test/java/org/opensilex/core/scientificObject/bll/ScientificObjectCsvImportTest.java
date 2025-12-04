@@ -12,7 +12,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -39,8 +39,8 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 
-import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH;
-import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_PATH;
+import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_GRAPH;
+import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_PATH;
 
 public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest {
 
@@ -71,10 +71,10 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         getSparqlService().create(experiment);
         getSparqlService().create(experiment2);
 
-        // load ontology extension used for OS <-> germplasm relation handling
+        // load ontology extension used for OS <-> geneticResource relation handling
         // indeed this relation is not declared inside opensilex-core package.
-        getSparqlService().loadOntology(new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH),
-                OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
+        getSparqlService().loadOntology(new URI(GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_GRAPH),
+                OpenSilex.getResourceAsStream(GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
     }
 
     private static ExperimentModel initExperimentModel(String xpName) {
@@ -135,7 +135,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Arrays.asList(
                 FactorLevelModel.class,
-                GermplasmModel.class,
+                GeneticResourceModel.class,
                 FacilityModel.class,
                 ScientificObjectModel.class
         );
@@ -494,31 +494,31 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
     }
 
     @Test
-    public void testHasGermplasm() throws Exception {
+    public void testHasGeneticResource() throws Exception {
 
-        // create germplasms
-        GermplasmModel germplasm1 = new GermplasmModel();
-        germplasm1.setName("test_os_csv_import");
-        germplasm1.setType(URI.create(Oeso.Germplasm.getURI()));
+        // create geneticResources
+        GeneticResourceModel geneticResource1 = new GeneticResourceModel();
+        geneticResource1.setName("test_os_csv_import");
+        geneticResource1.setType(URI.create(Oeso.GeneticResource.getURI()));
 
-        GermplasmModel germplasm2 = new GermplasmModel();
-        germplasm2.setName("test_os_csv_import2");
-        germplasm2.setType(URI.create(Oeso.Germplasm.getURI()));
+        GeneticResourceModel geneticResource2 = new GeneticResourceModel();
+        geneticResource2.setName("test_os_csv_import2");
+        geneticResource2.setType(URI.create(Oeso.GeneticResource.getURI()));
 
-        getSparqlService().create(GermplasmModel.class,Arrays.asList(germplasm1, germplasm2));
+        getSparqlService().create(GeneticResourceModel.class,Arrays.asList(geneticResource1, geneticResource2));
 
-        // test with valid germplasm
-        CSVValidationModel validation = testImport("os_import_germplasm.csv", experiment.getUri(), user);
+        // test with valid geneticResource
+        CSVValidationModel validation = testImport("os_import_geneticResource.csv", experiment.getUri(), user);
         Assert.assertFalse(validation.hasErrors());
         Assert.assertEquals(2, validation.getNbObjectImported());
 
-        // test multiple germplasm
-        validation = testImport("os_import_germplasm_multiple.csv", experiment.getUri(), user);
+        // test multiple geneticResource
+        validation = testImport("os_import_geneticResource_multiple.csv", experiment.getUri(), user);
         Assert.assertFalse(validation.hasErrors());
         Assert.assertEquals(2, validation.getNbObjectImported());
 
-        // test with unknown germplasm
-        validation = testImport("os_import_germplasm_unknown.csv", experiment.getUri(), user);
+        // test with unknown geneticResource
+        validation = testImport("os_import_geneticResource_unknown.csv", experiment.getUri(), user);
         Assert.assertTrue(validation.hasErrors());
         Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
     }

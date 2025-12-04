@@ -208,7 +208,7 @@ export default class ExperimentDataFiles extends Vue {
   soFilter = {
       name: undefined,
       experiment: undefined,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       types: [],
       existenceDate: undefined,

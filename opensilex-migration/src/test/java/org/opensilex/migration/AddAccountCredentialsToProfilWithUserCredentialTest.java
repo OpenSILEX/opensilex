@@ -3,7 +3,7 @@ package org.opensilex.migration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPI;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.account.api.AccountAPI;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -77,7 +77,7 @@ public class AddAccountCredentialsToProfilWithUserCredentialTest extends Abstrac
         URI profilUri = getNonExistingUri();
         List<String> baseCredentialList = getUserCredentials();
         baseCredentialList.add(PersonAPI.CREDENTIAL_PERSON_MODIFICATION_ID);
-        baseCredentialList.add(GermplasmAPI.CREDENTIAL_GERMPLASM_DELETE_ID);
+        baseCredentialList.add(GeneticResourceAPI.CREDENTIAL_GENETIC_RESOURCE_DELETE_ID);
         profileDAO.create(profilUri, "withUsers", baseCredentialList, adminURI);
         migration.execute();
 

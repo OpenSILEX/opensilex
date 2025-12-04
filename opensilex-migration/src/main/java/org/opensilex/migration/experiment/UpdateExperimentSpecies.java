@@ -40,7 +40,7 @@ public class UpdateExperimentSpecies implements OpenSilexModuleUpdate {
 
     @Override
     public String getDescription() {
-        return "Update the species of an experiment based on the germplasm of their Scientific Objects";
+        return "Update the species of an experiment based on the geneticResource of their Scientific Objects";
     }
 
     @Override

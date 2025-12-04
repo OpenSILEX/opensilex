@@ -112,8 +112,8 @@
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
                       <opensilex-UriListView
-                          v-if="!isGermplasmMenuExcluded"
-                          label="GermplasmList.speciesLabel"
+                          v-if="!isGeneticResourceMenuExcluded"
+                          label="GeneticResourceList.speciesLabel"
                           :list="speciesList"
                       ></opensilex-UriListView>
 
@@ -191,14 +191,14 @@ export default class VariableDetails extends Vue {
         uri: species.uri,
         value: species.name,
         to: {
-          path: "/germplasm/details/" + encodeURIComponent(species.uri),
+          path: "/geneticResource/details/" + encodeURIComponent(species.uri),
         }
       };
     });
   }
 
-  get isGermplasmMenuExcluded() {
-        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  get isGeneticResourceMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("geneticResource");
   }
 
   created() {

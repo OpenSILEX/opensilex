@@ -78,7 +78,7 @@
               <div>   
               <opensilex-FilterField>
                 <opensilex-ExperimentSelector
-                  label="GermplasmList.filter.experiment"
+                  label="GeneticResourceList.filter.experiment"
                   :multiple="false"
                   :experiments.sync="filter.experiment"
                   class="searchFilter"
@@ -104,12 +104,12 @@
 
             <template v-slot:advancedSearch>
 
-              <!-- Germplasm -->
+              <!-- GeneticResource -->
               <div>
                 <opensilex-FilterField quarterWidth="false">
-                  <opensilex-GermplasmSelectorWithFilter
-                      :germplasmsUris.sync="filter.germplasm"
-                  ></opensilex-GermplasmSelectorWithFilter>
+                  <opensilex-GeneticResourceSelectorWithFilter
+                      :geneticResourcesUris.sync="filter.geneticResource"
+                  ></opensilex-GeneticResourceSelectorWithFilter>
                 </opensilex-FilterField>
               </div>
 
@@ -241,7 +241,7 @@ export default class ScientificObjectsView extends Vue {
   filter = {
     name: "",
     experiment: undefined,
-    germplasm: [],
+    geneticResource: [],
     factorLevels: [],
     types: [],
     existenceDate: undefined,
@@ -319,7 +319,7 @@ export default class ScientificObjectsView extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: [],
+      geneticResource: [],
       factorLevels: [],
       types: [],
       existenceDate: undefined,

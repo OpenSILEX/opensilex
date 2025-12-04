@@ -12,8 +12,8 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
  */
 public class BrAPIv1ObservationDTO {
 
-    private String germplasmDbId;
-    private String germplasmName;
+    private String geneticResourceDbId;
+    private String geneticResourceName;
     private String observationDbId; 
     private String observationLevel;
     private String observationTimeStamp;
@@ -52,20 +52,20 @@ public class BrAPIv1ObservationDTO {
     private String uploadedBy;
     private String value;
 
-    public String getGermplasmDbId() {
-        return germplasmDbId;
+    public String getGeneticResourceDbId() {
+        return geneticResourceDbId;
     }
 
-    public void setGermplasmDbId(String germplasmDbId) {
-        this.germplasmDbId = germplasmDbId;
+    public void setGeneticResourceDbId(String geneticResourceDbId) {
+        this.geneticResourceDbId = geneticResourceDbId;
     }
 
-    public String getGermplasmName() {
-        return germplasmName;
+    public String getGeneticResourceName() {
+        return geneticResourceName;
     }
 
-    public void setGermplasmName(String germplasmName) {
-        this.germplasmName = germplasmName;
+    public void setGeneticResourceName(String geneticResourceName) {
+        this.geneticResourceName = geneticResourceName;
     }
 
     public String getObservationDbId() {
@@ -164,7 +164,7 @@ public class BrAPIv1ObservationDTO {
         this.value = value;
     }
 
-    public BrAPIv1ObservationDTO extractFromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser, ScientificObjectDAO scientificObjectDAO, GermplasmDAO germplasmDAO) throws Exception {
+    public BrAPIv1ObservationDTO extractFromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser, ScientificObjectDAO scientificObjectDAO, GeneticResourceDAO geneticResourceDAO) throws Exception {
 
         Node experimentGraph = NodeFactory.createURI(expeModel.getUri().toString());
 
@@ -214,12 +214,12 @@ public class BrAPIv1ObservationDTO {
                 uriLabels.get(0).getType(), new URI(Oeso.ScientificObject.getURI())
         )){
             ScientificObjectModel objectModel = scientificObjectDAO.getObjectByURI(dataModel.getTarget(), expeModel.getUri(), currentUser.getLanguage());
-            List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
-            if (germplasms.size() >= 1){
-                GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser, false);
-                if (SPARQLDeserializers.compareURIs(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
-                    this.setGermplasmDbId(germplasmModel.getUri().toString());
-                    this.setGermplasmName(germplasmModel.getName());
+            List<SPARQLModelRelation> geneticResources = objectModel.getRelations(Oeso.hasGeneticResource).distinct().collect(Collectors.toList());
+            if (geneticResources.size() >= 1){
+                GeneticResourceModel geneticResourceModel = geneticResourceDAO.get(new URI(geneticResources.get(0).getValue()), currentUser, false);
+                if (SPARQLDeserializers.compareURIs(geneticResourceModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
+                    this.setGeneticResourceDbId(geneticResourceModel.getUri().toString());
+                    this.setGeneticResourceName(geneticResourceModel.getName());
                 }
             }
         }
@@ -227,8 +227,8 @@ public class BrAPIv1ObservationDTO {
         return this;
     }
 
-    public static BrAPIv1ObservationDTO fromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser, ScientificObjectDAO scientificObjectDAO, GermplasmDAO germplasmDAO) throws Exception {
+    public static BrAPIv1ObservationDTO fromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser, ScientificObjectDAO scientificObjectDAO, GeneticResourceDAO geneticResourceDAO) throws Exception {
         BrAPIv1ObservationDTO observation = new BrAPIv1ObservationDTO();
-        return observation.extractFromModel(dataModel, expeModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, germplasmDAO);
+        return observation.extractFromModel(dataModel, expeModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, geneticResourceDAO);
     }
 }

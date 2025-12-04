@@ -96,7 +96,7 @@ public class MetricDAO {
             List<URI> scientificObjectsURIs = metric.getScientificObjectsByType().getItems().stream()
                     .map(CountItemModel::getUri)
                     .collect(Collectors.toList());
-            List<URI> germplasmsURIs = metric.getGermplasmByType().getItems().stream()
+            List<URI> geneticResourcesURIs = metric.getGeneticResourceByType().getItems().stream()
                     .map(CountItemModel::getUri)
                     .collect(Collectors.toList());
             try {
@@ -110,14 +110,14 @@ public class MetricDAO {
                     item.setName(scientificObjects.get(item.getUri()));
                 }
 
-                //germplasms
-                HashMap<URI, String> germplasms = new HashMap<>();
-                for (URI germplasmURI : germplasmsURIs) {
-                    ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI, URI.create(Oeso.Germplasm.getURI()), currentLanguage);
-                    germplasms.put(germplasmURI, germplasmType.getName());
+                //geneticResources
+                HashMap<URI, String> geneticResources = new HashMap<>();
+                for (URI geneticResourceURI : geneticResourcesURIs) {
+                    ClassModel geneticResourceType = SPARQLModule.getOntologyStoreInstance().getClassModel(geneticResourceURI, URI.create(Oeso.GeneticResource.getURI()), currentLanguage);
+                    geneticResources.put(geneticResourceURI, geneticResourceType.getName());
                 }
-                for (CountItemModel item : metric.getGermplasmByType().getItems()) {
-                    item.setName(germplasms.get(item.getUri()));
+                for (CountItemModel item : metric.getGeneticResourceByType().getItems()) {
+                    item.setName(geneticResources.get(item.getUri()));
                 }
 
                 //variables
@@ -153,7 +153,7 @@ public class MetricDAO {
             List<URI> scientificObjectsURIs = summary.getScientificObjectsByType().getItems().stream()
                     .map(CountItemModel::getUri)
                     .collect(Collectors.toList());
-            List<URI> germplasmsURIs = summary.getGermplasmByType().getItems().stream()
+            List<URI> geneticResourcesURIs = summary.getGeneticResourceByType().getItems().stream()
                     .map(CountItemModel::getUri)
                     .collect(Collectors.toList());
             List<URI> experimentURIs = summary.getExperimentByType() == null ? Collections.emptyList() :
@@ -182,14 +182,14 @@ public class MetricDAO {
                     item.setName(scientificObjects.get(item.getUri()));
                 }
 
-                //germplasms
-                HashMap<URI, String> germplasms = new HashMap<>();
-                for (URI germplasmURI : germplasmsURIs) {
-                    ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI,URI.create(Oeso.Germplasm.getURI()),currentLanguage);
-                    germplasms.put(germplasmURI, germplasmType.getName());
+                //geneticResources
+                HashMap<URI, String> geneticResources = new HashMap<>();
+                for (URI geneticResourceURI : geneticResourcesURIs) {
+                    ClassModel geneticResourceType = SPARQLModule.getOntologyStoreInstance().getClassModel(geneticResourceURI,URI.create(Oeso.GeneticResource.getURI()),currentLanguage);
+                    geneticResources.put(geneticResourceURI, geneticResourceType.getName());
                 }
-                for (CountItemModel item : summary.getGermplasmByType().getItems()) {
-                    item.setName(germplasms.get(item.getUri()));
+                for (CountItemModel item : summary.getGeneticResourceByType().getItems()) {
+                    item.setName(geneticResources.get(item.getUri()));
                 }
 
                 //variables
@@ -241,7 +241,7 @@ public class MetricDAO {
             List<URI> scientificObjectsURIs = summary.getScientificObjectsByType().getItems().stream()
                     .map(CountItemModel::getUri)
                     .collect(Collectors.toList());
-            List<URI> germplasmsURIs = summary.getGermplasmByType().getItems().stream()
+            List<URI> geneticResourcesURIs = summary.getGeneticResourceByType().getItems().stream()
                     .map(CountItemModel::getUri)
                     .collect(Collectors.toList());
             List<URI> experimentURIs = summary.getExperimentByType() == null ? Collections.emptyList() :
@@ -295,19 +295,19 @@ public class MetricDAO {
                     item.setName(experiments.get(item.getUri()));
                 }
 
-                //germplasms
-                HashMap<URI, String> germplasms = new HashMap<>();
-                for (URI germplasmURI : germplasmsURIs) {
+                //geneticResources
+                HashMap<URI, String> geneticResources = new HashMap<>();
+                for (URI geneticResourceURI : geneticResourcesURIs) {
                     try {
-                        ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI, URI.create(Oeso.Germplasm.getURI()), currentLanguage);
-                        germplasms.put(germplasmURI, germplasmType.getName());
+                        ClassModel geneticResourceType = SPARQLModule.getOntologyStoreInstance().getClassModel(geneticResourceURI, URI.create(Oeso.GeneticResource.getURI()), currentLanguage);
+                        geneticResources.put(geneticResourceURI, geneticResourceType.getName());
                     } catch (SPARQLInvalidURIException e) {
-                        Logger.warn("Germplasm URI not found", e);
+                        Logger.warn("GeneticResource URI not found", e);
                         continue;
                     }
                 }
-                for (CountItemModel item : summary.getGermplasmByType().getItems()) {
-                    item.setName(germplasms.get(item.getUri()));
+                for (CountItemModel item : summary.getGeneticResourceByType().getItems()) {
+                    item.setName(geneticResources.get(item.getUri()));
                 }
 
                 //variables
@@ -384,11 +384,11 @@ public class MetricDAO {
             model.setCreationDate(Instant.now());
             CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(experimentURI, user, Oeso.ScientificObject, false);
             CountListItemModel variables = getDataCountByVariables(experimentURI, user);
-            CountListItemModel germplasmByCount = getCountByTypeAndContext(experimentURI, user, Oeso.Germplasm, false);
+            CountListItemModel geneticResourceByCount = getCountByTypeAndContext(experimentURI, user, Oeso.GeneticResource, false);
 
             model.setScientificObjectsByType(scientificObjectTypesByCount);
             model.setDataByVariables(variables);
-            model.setGermplasmByType(germplasmByCount);
+            model.setGeneticResourceByType(geneticResourceByCount);
 
             nosql.create(model, GlobalSummaryModel.class, METRICS_COLLECTION, "experiment");
         }
@@ -403,7 +403,7 @@ public class MetricDAO {
         CountListItemModel scientificObjectTypesByCount = getCountByTypeAndContext(null, user, Oeso.ScientificObject, false);
         CountListItemModel deviceTypesByCount = getCountByTypeAndContext(null, user, Oeso.Device, false);
         CountListItemModel variablesByCount = getDataCountByVariables(null, user);
-        CountListItemModel germplasmByCount = getCountByTypeAndContext(null, user, Oeso.Germplasm, false);
+        CountListItemModel geneticResourceByCount = getCountByTypeAndContext(null, user, Oeso.GeneticResource, false);
         // TODO : Refactor experiment , don't use
         CountListItemModel experimentsByCount = new CountListItemModel();
         experimentsByCount.setName("Experiment");
@@ -414,7 +414,7 @@ public class MetricDAO {
         model.setScientificObjectsByType(scientificObjectTypesByCount);
         model.setDeviceByType(deviceTypesByCount);
         model.setDataByVariables(variablesByCount);
-        model.setGermplasmByType(germplasmByCount);
+        model.setGeneticResourceByType(geneticResourceByCount);
         model.setExperimentByType(experimentsByCount);
 
         SPARQLConfig sparqlConfig = sparql.getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);

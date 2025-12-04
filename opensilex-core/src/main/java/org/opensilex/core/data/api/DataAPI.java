@@ -253,10 +253,10 @@ public class DataAPI {
         return new PaginatedListResponse<>(Arrays.stream(MathematicalOperator.values()).map(Enum::toString).collect(Collectors.toList())).getResponse();
     }
 
-    private Set<URI> targetByGermplasmFilter(List<URI> targets , URI germplasmGroup, List<URI> germplasmUris, List<URI> experiments) throws Exception {
+    private Set<URI> targetByGeneticResourceFilter(List<URI> targets , URI geneticResourceGroup, List<URI> geneticResourceUris, List<URI> experiments) throws Exception {
 
-        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
-        //Or/And scientific objects associated with passed germplasms
+        //Get scientific objects associated to geneticResources inside geneticResourceGroup if it's not null
+        //Or/And scientific objects associated with passed geneticResources
 
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
         Set<URI> finalTargetsFilter = new HashSet<>(targets);
@@ -280,8 +280,8 @@ public class DataAPI {
                     .collect(Collectors.toList());
         }
 
-        List<URI> germplasmGroupTargets = scientificObjectDAO.getScientificObjectUrisAssociatedWithGermplasms(xpForTargetSearch, germplasmGroup, germplasmUris);
-        finalTargetsFilter.addAll(germplasmGroupTargets);
+        List<URI> geneticResourceGroupTargets = scientificObjectDAO.getScientificObjectUrisAssociatedWithGeneticResources(xpForTargetSearch, geneticResourceGroup, geneticResourceUris);
+        finalTargetsFilter.addAll(geneticResourceGroupTargets);
         return finalTargetsFilter;
     }
 
@@ -309,9 +309,9 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_geneticResource") @ValidURI URI geneticResourceGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "geneticResourceUris") @QueryParam("geneticResourceUris") List<URI> geneticResourceUris,
             @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -331,8 +331,8 @@ public class DataAPI {
                 provenances,
                 metadata,
                 operators,
-                germplasmGroup,
-                germplasmUris,
+                geneticResourceGroup,
+                geneticResourceUris,
                 orderByList,
                 page,
                 pageSize,
@@ -367,9 +367,9 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_geneticResource") @ValidURI URI geneticResourceGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "geneticResourceUris") @QueryParam("geneticResourceUris") List<URI> geneticResourceUris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -388,8 +388,8 @@ public class DataAPI {
                 provenances,
                 metadata,
                 operators,
-                germplasmGroup,
-                germplasmUris,
+                geneticResourceGroup,
+                geneticResourceUris,
                 orderByList,
                 page,
                 pageSize,
@@ -465,8 +465,8 @@ public class DataAPI {
             List<URI> provenances,
             String metadata,
             List<URI> operators,
-            URI germplasmGroup,
-            List<URI> germplasmUris,
+            URI geneticResourceGroup,
+            List<URI> geneticResourceUris,
             List<OrderBy> orderByList,
             int page,
             int pageSize,
@@ -475,7 +475,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, orderByList, page, pageSize);
+            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, geneticResourceGroup, geneticResourceUris, orderByList, page, pageSize);
             if(filter == null){
                 return new PaginatedListResponse<>(new ListWithPagination<>(page, pageSize)).getResponse();
             }
@@ -514,8 +514,8 @@ public class DataAPI {
                                              List<URI> provenances,
                                              String metadata,
                                              List<URI> operators,
-                                             URI germplasmGroup,
-                                             List<URI> germplasmUris,
+                                             URI geneticResourceGroup,
+                                             List<URI> geneticResourceUris,
                                              List<OrderBy> orderByList,
                                              int page,
                                              int pageSize) throws Exception {
@@ -557,10 +557,10 @@ public class DataAPI {
 
         Collection<URI> finalTargets = targets;
 
-        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
-        //Or/And scientific objects associated with passed germplasms
-        if (germplasmGroup != null || !CollectionUtils.isEmpty(germplasmUris)) {
-            finalTargets = targetByGermplasmFilter(targets, germplasmGroup, germplasmUris, experiments);
+        //Get scientific objects associated to geneticResources inside geneticResourceGroup if it's not null
+        //Or/And scientific objects associated with passed geneticResources
+        if (geneticResourceGroup != null || !CollectionUtils.isEmpty(geneticResourceUris)) {
+            finalTargets = targetByGeneticResourceFilter(targets, geneticResourceGroup, geneticResourceUris, experiments);
 
             //if targets is still empty when a group was passed then we don't want any data to be returned
             if(finalTargets.isEmpty()){
@@ -592,8 +592,8 @@ public class DataAPI {
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
-            @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_geneticResource") @ValidURI URI geneticResourceGroup,
+            @ApiParam(value = "GeneticResource uris, can be an empty array but can't be null", name = "geneticResourceUris") @QueryParam("geneticResourceUris") List<URI> geneticResourceUris,
             @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
             @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
             @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
@@ -602,7 +602,7 @@ public class DataAPI {
         DataSearchFilter filter;
 
         try{
-            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, germplasmGroup, germplasmUris, null, 0, 0);
+            filter = getSearchFilter(batchUri, startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, geneticResourceGroup, geneticResourceUris, null, 0, 0);
             if(filter == null){
                 return new SingleObjectResponse<>(0).getResponse();
             }

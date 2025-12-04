@@ -16,7 +16,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
@@ -47,8 +47,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH;
-import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_PATH;
+import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_GRAPH;
+import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_PATH;
 
 /**
  * @author rcolin
@@ -122,22 +122,22 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         factor.setFactorLevels(Collections.singletonList(factorLevel1));
         sparql.create(factor);
 
-        // load ontology extension used for OS <-> germplasm relation handling
+        // load ontology extension used for OS <-> geneticResource relation handling
         // indeed this relation is not declared inside opensilex-core package.
-        sparql.loadOntology(new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH),
-                OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
+        sparql.loadOntology(new URI(GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_GRAPH),
+                OpenSilex.getResourceAsStream(GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
-        // create germplasms
-        GermplasmModel germplasm1 = new GermplasmModel();
-        germplasm1.setName("test_os_csv_export");
-        germplasm1.setType(URI.create(Oeso.Germplasm.getURI()));
-        germplasm1.setUri(URI.create("test:id/germplasm/germplasm.test_os_csv_export"));
+        // create geneticResources
+        GeneticResourceModel geneticResource1 = new GeneticResourceModel();
+        geneticResource1.setName("test_os_csv_export");
+        geneticResource1.setType(URI.create(Oeso.GeneticResource.getURI()));
+        geneticResource1.setUri(URI.create("test:id/geneticResource/geneticResource.test_os_csv_export"));
 
-        GermplasmModel germplasm2 = new GermplasmModel();
-        germplasm2.setName("test_os_csv_export2");
-        germplasm2.setType(URI.create(Oeso.Germplasm.getURI()));
-        germplasm2.setUri(URI.create("test:id/germplasm/germplasm.test_os_csv_export-2"));
-        sparql.create(GermplasmModel.class, Arrays.asList(germplasm1, germplasm2));
+        GeneticResourceModel geneticResource2 = new GeneticResourceModel();
+        geneticResource2.setName("test_os_csv_export2");
+        geneticResource2.setType(URI.create(Oeso.GeneticResource.getURI()));
+        geneticResource2.setUri(URI.create("test:id/geneticResource/geneticResource.test_os_csv_export-2"));
+        sparql.create(GeneticResourceModel.class, Arrays.asList(geneticResource1, geneticResource2));
 
         // create a device, in order to ensure that the custom property "customObjectPropExport" from the test ontology is well exported
         DeviceModel device = new DeviceModel();
@@ -302,7 +302,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 Oeso.hasDestructionDate.getURI(),
                 Oeso.isHosted.getURI(),
                 Oeso.isPartOf.getURI(),
-                Oeso.hasGermplasm.getURI(),
+                Oeso.hasGeneticResource.getURI(),
                 Oeso.hasFactorLevel.getURI(),
                 "vocabulary:customDataPropExport",
                 "vocabulary:customObjectPropExport"
@@ -322,13 +322,13 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         );
 
         // check multivalued properties
-        assertByProperty.put(Oeso.hasGermplasm.getURI(), germplasm -> {
-            Set<String> germplasms = Arrays.stream(germplasm.split(" ")).map(
+        assertByProperty.put(Oeso.hasGeneticResource.getURI(), geneticResource -> {
+            Set<String> geneticResources = Arrays.stream(geneticResource.split(" ")).map(
                     SPARQLDeserializers::formatURI
             ).collect(Collectors.toSet());
 
-            Assert.assertTrue(germplasms.contains("test:id/germplasm/germplasm.test_os_csv_export"));
-            Assert.assertTrue(germplasms.contains("test:id/germplasm/germplasm.test_os_csv_export-2"));
+            Assert.assertTrue(geneticResources.contains("test:id/geneticResource/geneticResource.test_os_csv_export"));
+            Assert.assertTrue(geneticResources.contains("test:id/geneticResource/geneticResource.test_os_csv_export-2"));
         });
 
         // check custom properties
@@ -344,7 +344,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
 
         sparql.clearGraph(ScientificObjectModel.class);
         sparql.clearGraph(ExperimentModel.class);
-        sparql.clearGraph(GermplasmModel.class);
+        sparql.clearGraph(GeneticResourceModel.class);
         sparql.clearGraph(FactorModel.class);
         sparql.clearGraph(FacilityModel.class);
 

@@ -7,7 +7,7 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.geneticResource.dal.GeneticResourceDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.account.dal.AccountModel;
 
@@ -29,9 +29,9 @@ public class BrAPIv1StudyDTO extends BrAPIv1SuperStudyDTO{
         this.seasons = seasons;
     }
 
-    public BrAPIv1StudyDTO extractFromModel(ExperimentModel model, GermplasmDAO germplasmDAO, AccountModel user) throws Exception {
+    public BrAPIv1StudyDTO extractFromModel(ExperimentModel model, GeneticResourceDAO geneticResourceDAO, AccountModel user) throws Exception {
 
-        super.extractFromModel(model, germplasmDAO, user);
+        super.extractFromModel(model, geneticResourceDAO, user);
 
         if (model.getEndDate() != null){
             List<BrAPIv1SeasonDTO> seasons = new ArrayList<>();
@@ -53,9 +53,9 @@ public class BrAPIv1StudyDTO extends BrAPIv1SuperStudyDTO{
         return this;
     }
 
-    public static BrAPIv1StudyDTO fromModel(ExperimentModel model, GermplasmDAO germplasmDAO, AccountModel user) throws Exception {
+    public static BrAPIv1StudyDTO fromModel(ExperimentModel model, GeneticResourceDAO geneticResourceDAO, AccountModel user) throws Exception {
         BrAPIv1StudyDTO study = new BrAPIv1StudyDTO();
-        return study.extractFromModel(model, germplasmDAO, user);
+        return study.extractFromModel(model, geneticResourceDAO, user);
 
     }
 }

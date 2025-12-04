@@ -14,7 +14,7 @@
     * [Methods](#methods)
     * [Traits](#traits)
     * [Scales](#scales)
-  * [Germplasm](#germplasm)
+  * [GeneticResource](#geneticResource)
   * [Studies](#studies)
     * [Contacts](#contacts)
     * [Locations](#locations)
@@ -77,7 +77,7 @@ This service should return a list of the available services as well as their dat
         ]
       },
       {
-        "call": "germplasm",
+        "call": "geneticResource",
         "dataTypes": [
           "application/json"
         ],
@@ -206,10 +206,10 @@ This service should return a list of the available services as well as their dat
 
 <br>
 
-## Germplasm
+## GeneticResource
 
 
-__Note : only accessions are considered germplasms for BrAPI__
+__Note : only accessions are considered geneticResources for BrAPI__
 
 This is why an error is returned when this notion doesn't exist :
 
@@ -219,34 +219,34 @@ return new BadRequestException(
 );
 ```
 
-| Faidarev1GermplasmDTO                                                                                                                                                                                          | OpenSILEX GermplasmModel | Notes              |
+| Faidarev1GeneticResourceDTO                                                                                                                                                                                          | OpenSILEX GeneticResourceModel | Notes              |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|--------------------|
 | accessionNumber string	This is the unique identifier for accessions within a genebank, and is assigned when a sample is entered into the genebank collection                                                   | accessionNumber          |                    |
-| acquisitionDate string (date)	The date this germplasm was aquired by the genebank (MCPD)                                                                                                                       |                          |                    |
+| acquisitionDate string (date)	The date this geneticResource was aquired by the genebank (MCPD)                                                                                                                       |                          |                    |
 | biologicalStatusOfAccessionCode integer	The 3 digit code representing the biological status of the accession (MCPD)                                                                                            |                          |                    |
-| breedingMethodDbId string	The unique identifier for the breeding method used to create this germplasm                                                                                                          |                          | __not in faidare__ |
+| breedingMethodDbId string	The unique identifier for the breeding method used to create this geneticResource                                                                                                          |                          | __not in faidare__ |
 | commonCropName string	Common name for the crop (MCPD)                                                                                                                                                          |              |                    |
 | countryOfOriginCode string	3-letter ISO 3166-1 code of the country in which the sample was originally collected (MCPD)                                                                                         |                          |                    |
 | defaultDisplayName string	Human readable name used for display purposes                                                                                                                                        | name                     |                    |
 | documentationURL string (uri)	A URL to the human readable documentation of this object                                                                                                                         | website                  | Incomplete mapping |
 | donors array\[object\]	List of donor institutes (MCPD)                                                                                                                                                         |                          |                    |
-| germplasmDbId string	The ID which uniquely identifies a germplasm within the given database server                                                                                                             | uri                      |                    |
-| genus string	DEPRECATED in v1.3 - see "germplasmGenus"                                                                                                                                                         |                          |                    |
-| germplasmGenus string	Genus name for taxon. Initial uppercase letter required. (MCPD)                                                                                                                          |                          | __not in faidare__ |
-| germplasmName string	Name of the germplasm. It can be the prefered name and does not have to be unique.                                                                                                        | name                     |                    |
-| germplasmPUI string	The Permanent Unique Identifier which represents a germplasm                                                                                                                               | germplasm URI            |                    |
-| germplasmSpecies string	Specific epithet portion of the scientific name in lowercase letters. (MCPD)                                                                                                           |                          | __not in faidare__ |
+| geneticResourceDbId string	The ID which uniquely identifies a geneticResource within the given database server                                                                                                             | uri                      |                    |
+| genus string	DEPRECATED in v1.3 - see "geneticResourceGenus"                                                                                                                                                         |                          |                    |
+| geneticResourceGenus string	Genus name for taxon. Initial uppercase letter required. (MCPD)                                                                                                                          |                          | __not in faidare__ |
+| geneticResourceName string	Name of the geneticResource. It can be the prefered name and does not have to be unique.                                                                                                        | name                     |                    |
+| geneticResourcePUI string	The Permanent Unique Identifier which represents a geneticResource                                                                                                                               | geneticResource URI            |                    |
+| geneticResourceSpecies string	Specific epithet portion of the scientific name in lowercase letters. (MCPD)                                                                                                           |                          | __not in faidare__ |
 | instituteCode string	The code for the Institute that has bred the material. (MCPD)                                                                                                                             | institute Code           |                    |
 | instituteName string	The name of the institution which bred the material (MCPD)                                                                                                                                |                          |                    |
 | pedigree string	The cross name and optional selection history.                                                                                                                                                 |                          |                    |
 | seedSource string	The source of the seed                                                                                                                                                                       |                          |                    |
-| species string	DEPRECATED in v1.3 - see "germplasmSpecies"                                                                                                                                                     | species name             |                    |
+| species string	DEPRECATED in v1.3 - see "geneticResourceSpecies"                                                                                                                                                     | species name             |                    |
 | speciesAuthority string	The authority organization responsible for tracking and maintaining the species name (MCPD)                                                                                            |                          |                    |
 | subtaxa string	Subtaxon can be used to store any additional taxonomic identifier. (MCPD)                                                                                                                       | var. *variety*           |                    |
 | subtaxaAuthority string	The authority organization responsible for tracking and maintaining the subtaxon information (MCPD)                                                                                    |                          |                    |
-| synonyms array\[string\]	List of alternative names or IDs used to reference this germplasm                                                                                                                     |                  |                    |
+| synonyms array\[string\]	List of alternative names or IDs used to reference this geneticResource                                                                                                                     |                  |                    |
 | taxonIds array\[object\]	The list of IDs for this SPECIES from different sources. If present, NCBI Taxon should be always listed as "ncbiTaxon" preferably with a purl. The rank of this ID should be species. |                          |                    |
-| typeOfGermplasmStorageCode array\[string\]	The 2 digit code representing the type of storage this germplasm is kept in at a genebank. (MCPD)                                                                   |                          |                    |
+| typeOfGeneticResourceStorageCode array\[string\]	The 2 digit code representing the type of storage this geneticResource is kept in at a genebank. (MCPD)                                                                   |                          |                    |
 
 <br>
 
@@ -282,7 +282,7 @@ __Note :__ The FAIDARE studies call seems to be a mix between the GET studies an
 | lastUpdate	object	The date and time when this study was last modified                                                                               | last update to timestamp (we don't have versioning)                                                                   | __from study by studyDbId ?__                                                                                 |
 | studyDescription	string	The description of this study                                                                                               | experiment description                                                                                                |                                                                                                               |
 | observationVariableDbIds	array[\string\]	Observation variables used in the study                                                                    | uris of variables of data in the experiment                                                                           | __not form BrAPI. Added for FAIDARE__                                                                         |
-| germplasmDbIds	array[\string\]	Germplasms used in the study                                                                                         | accessions of the scientific objects in the experiment                                                                | __not form BrAPI. Added for FAIDARE__                                                                         |
+| geneticResourceDbIds	array[\string\]	GeneticResources used in the study                                                                                         | accessions of the scientific objects in the experiment                                                                | __not form BrAPI. Added for FAIDARE__                                                                         |
 
 StudySummary :
 

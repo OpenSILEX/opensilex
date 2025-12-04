@@ -45,8 +45,8 @@ public class ScientificObjectSearchFilter extends SearchFilter {
     protected Boolean onlyFetchOsWithNoParent;
 
     @ValidURI
-    @JsonProperty("germplasm")
-    protected List<URI> germplasm;
+    @JsonProperty("geneticResource")
+    protected List<URI> geneticResource;
 
     @ValidURI
     @JsonProperty("factor_levels")
@@ -132,12 +132,12 @@ public class ScientificObjectSearchFilter extends SearchFilter {
         return this;
     }
 
-    public List<URI> getGermplasm() {
-        return germplasm;
+    public List<URI> getGeneticResource() {
+        return geneticResource;
     }
 
-    public ScientificObjectSearchFilter setGermplasm(List<URI> germplasm) {
-        this.germplasm = germplasm;
+    public ScientificObjectSearchFilter setGeneticResource(List<URI> geneticResource) {
+        this.geneticResource = geneticResource;
         return this;
     }
 

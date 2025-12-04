@@ -199,7 +199,7 @@ export default class DeviceDataFiles extends Vue {
   soFilter = {
       name: undefined,
       experiment: undefined,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       types: [],
       existenceDate: undefined,

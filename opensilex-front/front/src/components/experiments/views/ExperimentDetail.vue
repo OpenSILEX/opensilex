@@ -127,7 +127,7 @@
               :list="facilityListUris"
             ></opensilex-UriListView>
             <opensilex-UriListView
-              v-if="!isGermplasmMenuExcluded"
+              v-if="!isGeneticResourceMenuExcluded"
               label="component.experiment.species"
               :list="speciesList"
             ></opensilex-UriListView>
@@ -244,8 +244,8 @@ export default class ExperimentDetail extends Vue {
     this.experimentForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.experiment));
   }
 
-  get isGermplasmMenuExcluded() {
-        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  get isGeneticResourceMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("geneticResource");
   }
 
   get organizationsListURIs() {
@@ -421,7 +421,7 @@ export default class ExperimentDetail extends Vue {
               uri: item.uri,
               value: item.name,
               to: {
-                path: "/germplasm/details/" + encodeURIComponent(item.uri),
+                path: "/geneticResource/details/" + encodeURIComponent(item.uri),
               },
             };
           });

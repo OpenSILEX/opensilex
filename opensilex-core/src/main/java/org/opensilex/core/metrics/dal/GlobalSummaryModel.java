@@ -14,7 +14,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
  * Global GlobalSummaryModel that regroups information about :
  * OS
  * Devices
- * Germplasm
+ * GeneticResource
  * Variables
  * Each one contains at least one item
  * @author Arnaud Charleroy
@@ -24,8 +24,8 @@ abstract public class GlobalSummaryModel extends MongoModel implements Comparabl
     private CountListItemModel scientificObjectsByType;
     public static final String SCIENTIFIC_OBJECT_BY_TYPE_FIELD = "scientificObjectsByType";
   
-    private CountListItemModel germplasmByType;
-    public static final String GERMPLASM_TYPE_FIELD = "germplasmByType"; 
+    private CountListItemModel geneticResourceByType;
+    public static final String GENETIC_RESOURCE_TYPE_FIELD = "geneticResourceByType"; 
 
     private CountListItemModel dataByVariables;
     public static final String DATA_BY_VARIABLES = "dataByVariables";
@@ -78,11 +78,11 @@ abstract public class GlobalSummaryModel extends MongoModel implements Comparabl
         this.dataByVariables = dataByVariables;
     }
   
-    public CountListItemModel getGermplasmByType() {
-        return germplasmByType;
+    public CountListItemModel getGeneticResourceByType() {
+        return geneticResourceByType;
     }
 
-    public void setGermplasmByType(CountListItemModel germplasmByType) {
-        this.germplasmByType = germplasmByType;
+    public void setGeneticResourceByType(CountListItemModel geneticResourceByType) {
+        this.geneticResourceByType = geneticResourceByType;
     }
 }

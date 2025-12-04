@@ -43,7 +43,7 @@ import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.experiment.factors.api.FactorsAPITest;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.germplasm.api.GermplasmAPITest;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPITest;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
@@ -118,8 +118,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String searchGeomPath = path + "/geometry";
     public static final String exportGeospatialPath = path + "/export_geospatial";
 
-    public static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
-    public static final Path GERMPLASM_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "germplasmRestriction.owl");
+    public static final String GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-geneticResource-restriction#";
+    public static final Path GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "geneticResourceRestriction.owl");
 
     private int soCount = 1;
     private URI experiment;
@@ -138,12 +138,12 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public void beforeTest() throws Exception {
         final Response postResultXP = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultXP.getStatus());
-        final Response postResultGermplasm = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), GermplasmAPITest.getCreationSpeciesDTO());
-        assertEquals(Status.CREATED.getStatusCode(), postResultGermplasm.getStatus());
+        final Response postResultGeneticResource = getJsonPostResponseAsAdmin(target(GeneticResourceAPITest.createPath), GeneticResourceAPITest.getCreationSpeciesDTO());
+        assertEquals(Status.CREATED.getStatusCode(), postResultGeneticResource.getStatus());
 
         // ensure that the result is a well-formed URI, else throw exception
         experiment = extractUriFromResponse(postResultXP);
-        speciesUri = extractUriFromResponse(postResultGermplasm);
+        speciesUri = extractUriFromResponse(postResultGeneticResource);
         final Response getResultXP = getJsonGetByUriResponseAsAdmin(target(ExperimentAPITest.uriPath), experiment.toString());
         assertEquals(Status.OK.getStatusCode(), getResultXP.getStatus());
     }
@@ -157,8 +157,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             sparql.clearGraph(experiment);
         }
 
-        final Response delResultGermplasm = getDeleteByUriResponse(target(GermplasmAPITest.deletePath), speciesUri.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), delResultGermplasm.getStatus());
+        final Response delResultGeneticResource = getDeleteByUriResponse(target(GeneticResourceAPITest.deletePath), speciesUri.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), delResultGeneticResource.getStatus());
 
         experiment = null;
     }
@@ -182,7 +182,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         );
     }
 
-    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry, boolean globalOs, boolean withGermplasm) throws Exception {
+    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry, boolean globalOs, boolean withGeneticResource) throws Exception {
         ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();
 
         if (withGeometry) {
@@ -203,12 +203,12 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             dto.setExperiment(experiment);
         }
 
-        if (withGermplasm) {
-            RDFObjectRelationDTO germplasmRelation = new RDFObjectRelationDTO();
-            germplasmRelation.setProperty(new URI(Oeso.hasGermplasm.getURI()));
-            germplasmRelation.setValue(speciesUri.toString());
+        if (withGeneticResource) {
+            RDFObjectRelationDTO geneticResourceRelation = new RDFObjectRelationDTO();
+            geneticResourceRelation.setProperty(new URI(Oeso.hasGeneticResource.getURI()));
+            geneticResourceRelation.setValue(speciesUri.toString());
             List<RDFObjectRelationDTO> relationList = new ArrayList<>();
-            relationList.add(germplasmRelation);
+            relationList.add(geneticResourceRelation);
             dto.setRelations(relationList);
         }
 
@@ -241,15 +241,15 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     /**
      * Tests the automatic update of the species in an experiment based on their scientific objects.
-     * This test needs the "hasGermplasm" restriction on scientific objects to work, thus the ontology
-     * "germplasmRestriction" is added.
+     * This test needs the "hasGeneticResource" restriction on scientific objects to work, thus the ontology
+     * "geneticResourceRestriction" is added.
      *
      */
     @Test
-    public void testCreateAndDeleteWithGermplasmWithRestriction() throws Exception {
-        URI germplasmRestrictionOntologyGraphUri = new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH);
-        getSparqlService().loadOntology(germplasmRestrictionOntologyGraphUri,
-                OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
+    public void testCreateAndDeleteWithGeneticResourceWithRestriction() throws Exception {
+        URI geneticResourceRestrictionOntologyGraphUri = new URI(GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_GRAPH);
+        getSparqlService().loadOntology(geneticResourceRestrictionOntologyGraphUri,
+                OpenSilex.getResourceAsStream(GENETIC_RESOURCE_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
         ScientificObjectCreationDTO scientificObjectDTO = getCreationDTO(false, false, true);
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), scientificObjectDTO);
@@ -273,16 +273,16 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         assertEquals(0, experimentGetDTO.getSpecies().size());
 
-        getSparqlService().clearGraph(germplasmRestrictionOntologyGraphUri);
+        getSparqlService().clearGraph(geneticResourceRestrictionOntologyGraphUri);
     }
 
     /**
-     * Tests that creating a scientific object with a germplasm fails when the "hasGermplasm" restriction is not present
+     * Tests that creating a scientific object with a geneticResource fails when the "hasGeneticResource" restriction is not present
      * in the ontology
      *
      */
     @Test
-    public void testCreateWithGermplasmWithoutRestrictionShouldFail() throws Exception {
+    public void testCreateWithGeneticResourceWithoutRestrictionShouldFail() throws Exception {
         ScientificObjectCreationDTO scientificObjectDTO = getCreationDTO(false, false, true);
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), scientificObjectDTO);
         assertEquals(Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -1202,16 +1202,16 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         osModel.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
         osModel.setTypeLabel(new SPARQLLabel("ScientificObject","en"));
 
-        SPARQLModelRelation germplasmRelation = new SPARQLModelRelation();
-        germplasmRelation.setProperty(Oeso.hasGermplasm);
-        germplasmRelation.setValue(speciesUri.toString());
+        SPARQLModelRelation geneticResourceRelation = new SPARQLModelRelation();
+        geneticResourceRelation.setProperty(Oeso.hasGeneticResource);
+        geneticResourceRelation.setValue(speciesUri.toString());
 
         SPARQLModelRelation replicationRelation = new SPARQLModelRelation();
         replicationRelation.setProperty(Oeso.hasReplication);
         replicationRelation.setValue("2");
 
         List<SPARQLModelRelation> relationList = new ArrayList<>();
-        relationList.add(germplasmRelation);
+        relationList.add(geneticResourceRelation);
         relationList.add(replicationRelation);
 
         osModel.setRelations(relationList);
@@ -1239,7 +1239,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         ArrayList<URI> propsList= new ArrayList<>();
         propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
         propsList.add(new URI("vocabulary:hasFactorLevel"));
-        propsList.add(new URI("vocabulary:hasGermplasm"));
+        propsList.add(new URI("vocabulary:hasGeneticResource"));
         propsList.add(new URI("vocabulary:hasReplication"));
 
         Map<String, Object> paramsShp = new HashMap<>() {{

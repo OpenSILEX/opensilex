@@ -22,7 +22,7 @@ import org.opensilex.phis.ontology.OesoPhis;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.geneticResource.dal.GeneticResourceModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
@@ -72,7 +72,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
             SPARQLService sparql = factory.provide();
 
             SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-            String graph = sparql.getDefaultGraphURI(GermplasmModel.class).toString();
+            String graph = sparql.getDefaultGraphURI(GeneticResourceModel.class).toString();
             OntologyFileDefinition ontologyDef = new OntologyFileDefinition(
                     graph,
                     "ontologies/species.ttl",

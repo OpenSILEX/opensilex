@@ -8,7 +8,7 @@
 
 # Service `metrics` - metrics 
 
-The "metrics" service is used to present the amount of data available within an experiment or periodically in an instance of OpenSILEX on concepts (Data by variable, Germplasm (Plant material), Devices, Scientific Object). .
+The "metrics" service is used to present the amount of data available within an experiment or periodically in an instance of OpenSILEX on concepts (Data by variable, GeneticResource (Plant material), Devices, Scientific Object). .
 
 ## Feature
 

@@ -44,7 +44,7 @@ export class ExternalOntologies {
             name: "Crop Ontology",
             description: `The Crop Ontology (CO) current objective is to compile validated concepts along with
       their inter-relationships on anatomy, structure and phenotype of Crops, on trait measurement and
-      methods as well as on Germplasm with the multi-crop passport terms. The concepts of the CO are being
+      methods as well as on GeneticResource with the multi-crop passport terms. The concepts of the CO are being
       used to curate agronomic databases and describe the data.`
         }],
 

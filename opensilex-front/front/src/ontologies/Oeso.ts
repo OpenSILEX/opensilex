@@ -15,7 +15,7 @@ let ontologies = {
     EXPERIMENT_TYPE_URI: OESO_URI + "#Experiment",
     SCIENTIFIC_OBJECT_TYPE_URI: OESO_URI + "#ScientificObject",
     FACILITY_TYPE_URI: OESO_URI + "#Facility",
-    GERMPLASM_TYPE_URI: OESO_URI + "#Germplasm",
+    GENETIC_RESOURCE_TYPE_URI: OESO_URI + "#GeneticResource",
     SPECIES_TYPE_URI: OESO_URI + "#Species",
     VARIETY_TYPE_URI: OESO_URI + "#Variety",
     ACCESSION_TYPE_URI: OESO_URI + "#Accession",
@@ -60,10 +60,10 @@ let ontologies = {
     PERSON_IN_CHARGE: OESO_URI+"#personInCharge",
     START_UP: OESO_URI+"#startUp",
     REMOVAL: OESO_URI+"#removal",
-    HAS_PARENT_GERMPLASM: OESO_URI+"#hasParentGermplasm",
-    HAS_PARENT_GERMPLASM_M: OESO_URI+"#hasParentGermplasmM",
-    HAS_PARENT_GERMPLASM_F: OESO_URI+"#hasParentGermplasmF",
-    GERMPLASM_GROUP_TYPE_URI: OESO_URI+"#GermplasmGroup",
+    HAS_PARENT_GENETIC_RESOURCE: OESO_URI+"#hasParentGeneticResource",
+    HAS_PARENT_GENETIC_RESOURCE_M: OESO_URI+"#hasParentGeneticResourceM",
+    HAS_PARENT_GENETIC_RESOURCE_F: OESO_URI+"#hasParentGeneticResourceF",
+    GENETIC_RESOURCE_GROUP_TYPE_URI: OESO_URI+"#GeneticResourceGroup",
 
     getShortURI: getShortURI,
     checkURIs: checkURIs

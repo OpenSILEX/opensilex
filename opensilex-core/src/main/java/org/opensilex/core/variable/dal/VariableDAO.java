@@ -263,7 +263,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      *          ?variable a vocabulary:Variable .
      *           ?variable vocabulary:hasSpecies ?species
      *      }
-     *      GRAPH test:germplasm {
+     *      GRAPH test:geneticResource {
      *          ?species rdfs:label ?species_name .
      *          FILTER langMatches(lang(?species_name), "en")
      *      }

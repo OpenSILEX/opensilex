@@ -49,7 +49,7 @@
             <div>
             <opensilex-FilterField>
               <opensilex-ExperimentSelector
-                label="GermplasmList.filter.experiment"
+                label="GeneticResourceList.filter.experiment"
                 :multiple="false"
                 :experiments.sync="filter.experiment"
                 class="searchFilter"
@@ -73,16 +73,16 @@
           </template>
 
           <template v-slot:advancedSearch>
-            <!-- Germplasm -->
+            <!-- GeneticResource -->
             <div>
               <opensilex-FilterField>
-                <opensilex-GermplasmSelector
+                <opensilex-GeneticResourceSelector
                     :multiple="false"
-                    :germplasm.sync="filter.germplasm"
+                    :geneticResource.sync="filter.geneticResource"
                     :experiment="filter.experiment"
                     class="searchFilter"
                     @handlingEnterKey="refresh()"
-                ></opensilex-GermplasmSelector>
+                ></opensilex-GeneticResourceSelector>
               </opensilex-FilterField>
             </div>
             <!-- Factors levels -->
@@ -182,7 +182,7 @@ export default class ScientificObjectModalList extends Vue {
       return {
         name: "",
         experiment: undefined,
-        germplasm: undefined,
+        geneticResource: undefined,
         factorLevels: [],
         types: [],
         existenceDate: undefined,
@@ -231,7 +231,7 @@ export default class ScientificObjectModalList extends Vue {
     this.filter = {
       name: "",
       experiment: undefined,
-      germplasm: undefined,
+      geneticResource: undefined,
       factorLevels: [],
       types: [],
       existenceDate: undefined,

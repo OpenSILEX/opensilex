@@ -213,9 +213,9 @@ export default class GlobalUriSearchResult extends Vue {
     if(!this.hasResult){
       return formattedPath;
     }
-    //If type is a germplasm group then build path manually
-    if(this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
-      return "/germplasm/group?selected="+ encodeURIComponent(this.uri);
+    //If type is a geneticResource group then build path manually
+    if(this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.GENETIC_RESOURCE_GROUP_TYPE_URI)){
+      return "/geneticResource/group?selected="+ encodeURIComponent(this.uri);
     }
     //Check if type is one of the wierd other components on variables page that doesn't have its own page (Entities, etc...)
     formattedPath = this.$opensilex.getVariableComponentPath(this.type, this.uri);

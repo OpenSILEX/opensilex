@@ -16,7 +16,7 @@ import java.time.Instant;
  * @author Bernhard Gschloessl
  */
 
-@JsonPropertyOrder({"start_date", "end_date", "scientific_object_list", "experiment_list", "data_list", "device_list", "germplasm_list"})
+@JsonPropertyOrder({"start_date", "end_date", "scientific_object_list", "experiment_list", "data_list", "device_list", "geneticResource_list"})
 
 public class MetricPeriodDTO {
     @JsonProperty("start_date")
@@ -37,8 +37,8 @@ public class MetricPeriodDTO {
     @JsonProperty("device_list")
     private CountListItemPeriodDTO deviceList;
 
-    @JsonProperty("germplasm_list")
-    private CountListItemPeriodDTO germplasmList;
+    @JsonProperty("geneticResource_list")
+    private CountListItemPeriodDTO geneticResourceList;
 
     public CountListItemPeriodDTO getScientificObjectList() {
         return scientificObjectList;
@@ -72,12 +72,12 @@ public class MetricPeriodDTO {
         this.deviceList = deviceList;
     }
 
-    public CountListItemPeriodDTO getGermplasmList() {
-        return germplasmList;
+    public CountListItemPeriodDTO getGeneticResourceList() {
+        return geneticResourceList;
     }
 
-    public void setGermplasmList(CountListItemPeriodDTO germplasmList) {
-        this.germplasmList = germplasmList;
+    public void setGeneticResourceList(CountListItemPeriodDTO geneticResourceList) {
+        this.geneticResourceList = geneticResourceList;
     }
 
     public Instant getStartDate() {

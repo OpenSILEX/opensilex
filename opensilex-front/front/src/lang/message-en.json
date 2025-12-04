@@ -239,7 +239,7 @@
             "experimentalDesign": {
                 "label": "Scientific Information",
                 "factors": "Factors",
-                "germplasm": "Germplasm"
+                "geneticResource": "Genetic resource"
             },
             "groupVariables": "Variables Groups",
             "organizations": "Organizations",
@@ -602,7 +602,7 @@
                 "associated-data": "The experiment can't be deleted since there are some associated data"
             }
         },
-        "germplasms": {
+        "geneticResources": {
             "errors": {
                 "duplicateUri": "Duplicate URI: {uri}",
                 "duplicateLabel": "Duplicate label: {label}",
@@ -718,7 +718,7 @@
         "variables": "Variables",
         "factors": "Factors",
         "organizations": "Organizations",
-        "germplasm": "Germplasm",
+        "geneticResource": "Genetic resource",
         "area": "Area",
         "scientific-objects": "Scientific objects",
         "data": "Data",
@@ -767,9 +767,9 @@
             "modification": "Add / update factors",
             "delete": "Delete factors"
         },
-        "germplasm": {
-            "modification": "Add / update germplasm",
-            "delete": "Delete germplasm"
+        "geneticResource": {
+            "modification": "Add / update genetic resource",
+            "delete": "Delete genetic resource"
         },
         "area": {
             "modification": "Add / update area",

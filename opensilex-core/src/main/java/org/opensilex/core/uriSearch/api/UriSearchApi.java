@@ -9,7 +9,7 @@
  */
 package org.opensilex.core.uriSearch.api;
 import io.swagger.annotations.*;
-import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.geneticResource.api.GeneticResourceAPI;
 import org.opensilex.core.uriSearch.bll.UriSearchLogic;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -64,7 +64,7 @@ public class UriSearchApi {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response searchByUri(
-            @ApiParam(value = "URI", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
+            @ApiParam(value = "URI", example = GeneticResourceAPI.GENETIC_RESOURCE_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
         UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser, fs);
 

@@ -88,7 +88,7 @@ public class InstallTest {
             assertDefaultOntologiesExists(sparql);
             assertDefaultUserExists(sparql);
             assertDefaultProfileExists(sparql);
-            assertDefaultGermplasmExists(sparql);
+            assertDefaultGeneticResourceExists(sparql);
             assertDefaultMethodExists(sparql);
             assertDefaultVariableGroupExists(sparql);
             assertDefaultProvenanceExists(mongoDBService);
@@ -126,7 +126,7 @@ public class InstallTest {
         Assert.assertFalse(CollectionUtils.isEmpty(models));
     }
 
-    private void assertDefaultGermplasmExists(SPARQLService sparql) throws Exception {
+    private void assertDefaultGeneticResourceExists(SPARQLService sparql) throws Exception {
         List<SpeciesModel> models = sparql.search(SpeciesModel.class,null);
         Assert.assertFalse(CollectionUtils.isEmpty(models));
     }

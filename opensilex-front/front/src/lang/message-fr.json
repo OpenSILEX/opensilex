@@ -399,30 +399,35 @@
                 "entityOfInterest": "Entité d'intérêt",
                 "add-entityOfInterest": "Ajouter un niveau d'observation",
                 "entityOfInterest-placeholder": "Sélectionner une entité d'intérêt",
-                "interestEntity-help": "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype..."
+                "interestEntity-help": "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype...",
+                "edit": "Modifier une entité d'intérêt"
             },
             "characteristic" : {
                 "characteristic" : "Caractéristique",
                 "add-characteristic": "Ajouter une caractéristique",
                 "characteristic-placeholder": "Sélectionner une caractéristique",
-                "characteristic-help": "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
+                "characteristic-help": "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface",
+                "edit": "Modifier une caractéristique"
             },
             "species" : {
                 "species": "Espèces",
                 "species-placeholder": "Sélectionner une espèce",
-                "select-multiple-placeholder": "Sélectionner des espèces"
+                "select-multiple-placeholder": "Sélectionner des espèces",
+                "edit": "Modifier une espèce"
             },
             "method" : {
                 "method" : "Méthode",
                 "add-method": "Ajouter une méthode",
                 "method-placeholder": "Sélectionner une méthode",
-                "method-help": "Définir comment la mesure/l'observation a été effectuée. Si vous ne voulez pas spécifier de méthode, veuillez sélectionner la méthode standard."
+                "method-help": "Définir comment la mesure/l'observation a été effectuée. Si vous ne voulez pas spécifier de méthode, veuillez sélectionner la méthode standard.",
+                "edit": "Modifier une méthode"
             },
             "unit" : {
                 "unit" : "Unité/Echelle",
                 "add-unit": "Ajouter une unité",
                 "unit-placeholder": "Sélectionner une unité",
-                "unit-help": "Echelle de la variable ordinale (tel que bon, moyen, mauvais...). ex: kg/m2"
+                "unit-help": "Echelle de la variable ordinale (tel que bon, moyen, mauvais...). ex: kg/m2",
+                "edit": "Modifier une unité"
             },
             "groupVariable" : {           
                 "groupVariable": "Groupe de variables",

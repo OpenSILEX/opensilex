@@ -43,7 +43,11 @@
           />
 
           <!-- Champs additionnels -->
-          <slot name="createAdditionalFields" :form="formDto" />
+          <slot
+           name="createAdditionalFields" 
+           :form="formDto" 
+           :errors="{ symbol: symbolError }" 
+          />
         </div>
       </div>
     </div>
@@ -74,6 +78,7 @@ const formDto = computed<BaseExternalReferencesDTO>({
 const uriGenerated = ref(true)
 const tutorialRef = ref<any>(null)
 const nameError = ref<string>('')
+const symbolError = ref<string>('')
 
 watch(
   () => formDto.value.name,
@@ -83,6 +88,45 @@ watch(
     }
   }
 )
+
+watch(
+  () => (formDto.value as any).symbol,
+  (newVal) => {
+    if (symbolError.value && (newVal ?? '').toString().trim()) {
+      symbolError.value = ''
+    }
+  }
+)
+
+function reset() {
+  uriGenerated.value = true
+}
+function validate() {
+  nameError.value = ''
+  symbolError.value = ''
+
+  // validation du nom
+  const name = (formDto.value.name ?? '').toString().trim()
+  if (!name) {
+    nameError.value = t('validations.required_if', {
+      _field_: t('component.common.name') as string
+    }) as string
+  }
+
+  // validation du symbole SI le champ existe dans le form
+  if ('symbol' in (formDto.value as any)) {
+    const symbol = ((formDto.value as any).symbol ?? '').toString().trim()
+    if (!symbol) {
+      symbolError.value = t('validations.required_if', {
+        _field_: 'Symbole'
+      }) as string
+    }
+  }
+
+  // On ne valide que si aucun des 2 champs n’est en erreur
+  return !nameError.value && !symbolError.value
+}
+
 
 /** Tutorial Datas */
 const savedFormBeforeTutorial = ref<BaseExternalReferencesDTO | null>(null)
@@ -113,25 +157,6 @@ const tutorialSteps = [
     params: { placement: 'top' }
   }
 ]
-
-/** Public Methods */
-function reset() {
-  uriGenerated.value = true
-}
-function validate() {
-  nameError.value = ''
-
-  const name = (formDto.value.name ?? '').toString().trim()
-  if (!name) {
-    nameError.value = t('validations.required_if', {
-      _field_: t('component.common.name') as string
-    }) as string
-
-    return false
-  }
-  return true
-}
-
 
 /** Tutorial Methods */
 function startTutorial() {
@@ -166,18 +191,11 @@ defineExpose({
   padding-left: 15px;
 }
 
-/* Bordure rouge autour du champ Nom quand erreur */
+/* Bordure rouge autour du champ requis quand erreur */
 .has-error :deep(.n-input)
  {
   border: 1px solid !important;
   border-color: red !important;
-}
-
-/* Message d’erreur sous le champ */
-.field-error {
-  margin-top: 4px;
-  font-size: 0.875rem;
-  color: #dc3545;
 }
 </style>
 

@@ -48,23 +48,21 @@
       <div>
         <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas" :no-footer="true">
           <template #body>
-            <opensilex-ExternalReferencesDetails :skosReferences="unit" />
+            <opensilex-ExternalReferencesDetails :skosReferences="selected" />
           </template>
         </opensilex-Card>
       </div>
 
-
-    <!-- Formulaire création/édition unité/echelle -->
-    <opensilex-ModalForm
+    <!-- Formulaire édition unité/echelle -->
+    <opensilex-AgroportalUnitForm
       v-if="showForm"
       ref="unitFormRef"
-      component="UnitForm"
       :createTitle="'component.variable.unit.add-unit'"
       :editTitle="'component.variable.unit.edit'"
       :editData="editData"
       @onSuccess="onFormSuccess"
       @onClose="closeForm"
-    />
+    ></opensilex-AgroportalUnitForm>
   </div>
   </div>
 </template>
@@ -131,14 +129,14 @@ async function updateSelected(unit: any) {
 
 console.log("selecteeeed details ", selectedUnitDetails)
   selected.value = {
-    uri: selectedUnitDetails.uri,
+    ...selectedUnitDetails,
     name: selectedUnitDetails.name || selectedUnitDetails.label || '',
     comment: selectedUnitDetails.description || '',
     publisher: selectedUnitDetails.publisher || '',
     description: selectedUnitDetails.description || '',
     publication_date: selectedUnitDetails.publication_date || '',
     last_update_date: selectedUnitDetails.last_update_date || '',
-     exact_match: selectedUnitDetails.exact_match ?? [],
+    exact_match: selectedUnitDetails.exact_match ?? [],
     close_match: selectedUnitDetails.close_match ?? [],
     broad_match: selectedUnitDetails.broad_match ?? [],
     narrow_match: selectedUnitDetails.narrow_match ?? [],
@@ -163,11 +161,12 @@ function showCreateForm() {
 }
 
 // Formulaire édit
-function showEditForm(unit: any) {
-  editData.value = unit;
+async function showEditForm(unit: any) {
+  const selectedUnitDetails = await fetchUnitDetails(unit.uri)
+  editData.value = selectedUnitDetails;
   showForm.value = true;
   nextTick(() => {
-    unitFormRef.value?.showEditForm?.(unit);
+    unitFormRef.value?.showEditForm?.(selectedUnitDetails);
   });
 }
 
@@ -220,7 +219,7 @@ const renderers = {
 
 onMounted(async () => {
   await fetchUnits()
-  await selectFromQuery()                        // <— try preselect from URL on first load
+  await selectFromQuery()  // <— try preselect from URL on first load
 })
 
 watch(
@@ -259,13 +258,13 @@ async function selectFromQuery () {
   if (!details) return
 
   selected.value = {
-    uri: details.uri,
+    ...details,
     name: details.name || details.label || '',
     comment: details.description || '',
     publisher: details.publisher || '',
     description: details.description || '',
     publication_date: details.publication_date || '',
-     exact_match: details.exact_match ?? [],
+    exact_match: details.exact_match ?? [],
     close_match: details.close_match ?? [],
     broad_match: details.broad_match ?? [],
     narrow_match: details.narrow_match ?? [],

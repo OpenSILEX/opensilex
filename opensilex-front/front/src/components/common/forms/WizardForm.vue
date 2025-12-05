@@ -66,7 +66,12 @@
       @clear="clearForm"
       @agroportalTermSelected="payload => emit('agroportalTermSelected', payload)"
       @agroportalTermUnselected="() => emit('agroportalTermUnselected')"
-    />
+    >
+      <!-- Quand l’étape active expose un slot createAdditionalFields, passe son scope et renvoie au slot du même nom -->
+      <template #createAdditionalFields="slotProps">
+        <slot name="createAdditionalFields" v-bind="slotProps" />
+      </template>
+    </component>
 
     <template #footer>
       <n-space justify="space-between">

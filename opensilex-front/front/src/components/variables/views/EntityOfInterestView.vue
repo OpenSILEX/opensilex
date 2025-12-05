@@ -38,7 +38,7 @@
       </n-list>
     </div>
 
-    <!-- Détails de l'entité selectionné -->
+    <!-- Détails de l'entité d'intéret selectionné -->
     <div v-if="selected" class="entityDetails">
       <opensilex-VariableStructureDetails 
           :selected="selected"
@@ -48,22 +48,21 @@
       <div>
         <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas" :no-footer="true">
           <template #body>
-            <opensilex-ExternalReferencesDetails :skosReferences="entity" />
+            <opensilex-ExternalReferencesDetails :skosReferences="selected" />
           </template>
         </opensilex-Card>
       </div>
 
-      <!-- Formulaire création/édition entité -->
-      <opensilex-ModalForm
+      <!-- Formulaire édition entité d'intếret -->
+      <opensilex-AgroportalEntityOfInterestForm
         v-if="showForm"
         ref="entityFormRef"
-        component="EntityForm"
-        :createTitle="'component.variable.entity.add-entity'"
-        :editTitle="'component.variable.entity.edit'"
+        :createTitle="'component.variable.entityOfInterest.add-entityOfInterest'"
+        :editTitle="'component.variable.entityOfInterest.edit'"
         :editData="editData"
         @onSuccess="onFormSuccess"
         @onClose="closeForm"
-      />
+      ></opensilex-AgroportalEntityOfInterestForm>
     </div>
   </div>
 </template>
@@ -130,7 +129,7 @@ async function updateSelected(entity: any) {
   if (!selectedEntityDetails) return;
 
   selected.value = {
-    uri: selectedEntityDetails.uri,
+    ...selectedEntityDetails,
     name: selectedEntityDetails.name || selectedEntityDetails.label || '',
     comment: selectedEntityDetails.description || '',
     publisher: selectedEntityDetails.publisher || '',
@@ -148,8 +147,6 @@ async function updateSelected(entity: any) {
 async function fetchEntityDetails (uri: string) {
   try {
     const res = await service.getInterestEntity(uri);
-    console.log("uri entité ", uri)
-    console.log("reeeeeep ", res)
     return res.response.result;
   } catch (e) {
     opensilex.errorHandler(e);
@@ -165,11 +162,12 @@ function showCreateForm() {
 }
 
 // Formulaire édit
-function showEditForm(entity: any) {
-  editData.value = entity;
+async function showEditForm(entity: any) {
+  const selectedEntityDetails = await fetchEntityDetails(entity.uri);
+  editData.value = selectedEntityDetails;
   showForm.value = true;
   nextTick(() => {
-    entityFormRef.value?.showEditForm?.(entity);
+    entityFormRef.value?.showEditForm?.(selectedEntityDetails);
   });
 }
 
@@ -267,13 +265,13 @@ async function selectFromQuery () {
   if (!details) return
 
   selected.value = {
-    uri: details.uri,
+    ...details,
     name: details.name || details.label || '',
     comment: details.description || '',
     publisher: details.publisher || '',
     description: details.description || '',
     publication_date: details.publication_date || '',
-     exact_match: details.exact_match ?? [],
+    exact_match: details.exact_match ?? [],
     close_match: details.close_match ?? [],
     broad_match: details.broad_match ?? [],
     narrow_match: details.narrow_match ?? [],

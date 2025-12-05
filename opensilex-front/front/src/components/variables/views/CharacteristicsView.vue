@@ -48,23 +48,21 @@
       <div>
         <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas" :no-footer="true">
           <template #body>
-            <opensilex-ExternalReferencesDetails :skosReferences="characteristic" />
+            <opensilex-ExternalReferencesDetails :skosReferences="selected" />
           </template>
         </opensilex-Card>
       </div>
 
-
-    <!-- Formulaire création/édition caracteristique -->
-    <opensilex-ModalForm
-      v-if="showForm"
-      ref="characteristicFormRef"
-      component="CharacteristicForm"
-      :createTitle="'component.variable.characteristic.add-characteristic'"
-      :editTitle="'component.variable.characteristic.edit'"
-      :editData="editData"
-      @onSuccess="onFormSuccess"
-      @onClose="closeForm"
-    />
+      <!-- Formulaire édition caracteristique -->
+      <opensilex-AgroportalCharacteristicForm
+        v-if="showForm"
+        ref="characteristicFormRef"
+        :createTitle="'component.variable.characteristic.add-characteristic'"
+        :editTitle="'component.variable.characteristic.edit'"
+        :editData="editData"
+        @onSuccess="onFormSuccess"
+        @onClose="closeForm"
+      ></opensilex-AgroportalCharacteristicForm>
   </div>
   </div>
 </template>
@@ -131,14 +129,14 @@ async function updateSelected(characteristic: any) {
 
 console.log("selecteeeed details ", selectedCharacteristicDetails)
   selected.value = {
-    uri: selectedCharacteristicDetails.uri,
+    ...selectedCharacteristicDetails,
     name: selectedCharacteristicDetails.name || selectedCharacteristicDetails.label || '',
     comment: selectedCharacteristicDetails.description || '',
     publisher: selectedCharacteristicDetails.publisher || '',
     description: selectedCharacteristicDetails.description || '',
     publication_date: selectedCharacteristicDetails.publication_date || '',
     last_update_date: selectedCharacteristicDetails.last_update_date || '',
-     exact_match: selectedCharacteristicDetails.exact_match ?? [],
+    exact_match: selectedCharacteristicDetails.exact_match ?? [],
     close_match: selectedCharacteristicDetails.close_match ?? [],
     broad_match: selectedCharacteristicDetails.broad_match ?? [],
     narrow_match: selectedCharacteristicDetails.narrow_match ?? [],
@@ -163,11 +161,12 @@ function showCreateForm() {
 }
 
 // Formulaire édit
-function showEditForm(characteristic: any) {
-  editData.value = characteristic;
+async function showEditForm(characteristic: any) {
+  const selectedCharacteristicDetails = await fetchCharacteristicDetails(characteristic.uri);
+  editData.value = selectedCharacteristicDetails;
   showForm.value = true;
   nextTick(() => {
-    characteristicFormRef.value?.showEditForm?.(characteristic);
+    characteristicFormRef.value?.showEditForm?.(selectedCharacteristicDetails);
   });
 }
 
@@ -259,7 +258,7 @@ async function selectFromQuery () {
   if (!details) return
 
   selected.value = {
-    uri: details.uri,
+    ...details,
     name: details.name || details.label || '',
     comment: details.description || '',
     publisher: details.publisher || '',

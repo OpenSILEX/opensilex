@@ -48,7 +48,7 @@
       <div>
         <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas" :no-footer="true">
           <template #body>
-            <opensilex-ExternalReferencesDetails :skosReferences="method" />
+            <opensilex-ExternalReferencesDetails :skosReferences="selected" />
           </template>
         </opensilex-Card>
       </div>
@@ -62,17 +62,16 @@
       ></opensilex-DocumentTabList>
 
 
-    <!-- Formulaire création/édition methode -->
-    <opensilex-ModalForm
+    <!-- Formulaire édition methode -->
+    <opensilex-AgroportalMethodForm
       v-if="showForm"
       ref="methodFormRef"
-      component="MethodForm"
       :createTitle="'component.variable.method.add-method'"
       :editTitle="'component.variable.method.edit'"
       :editData="editData"
       @onSuccess="onFormSuccess"
       @onClose="closeForm"
-    />
+    ></opensilex-AgroportalMethodForm>
   </div>
   </div>
 </template>
@@ -138,7 +137,7 @@ async function updateSelected(method: any) {
   if (!selectedMethodDetails) return;
 
   selected.value = {
-    uri: selectedMethodDetails.uri,
+    ...selectedMethodDetails,
     name: selectedMethodDetails.name || selectedMethodDetails.label || '',
     comment: selectedMethodDetails.description || '',
     publisher: selectedMethodDetails.publisher || '',
@@ -171,11 +170,12 @@ function showCreateForm() {
 }
 
 // Formulaire édit
-function showEditForm(method: any) {
-  editData.value = method;
+async function showEditForm(method: any) {
+  const selectedMethodDetails = await fetchMethodDetails(method.uri);
+  editData.value = selectedMethodDetails;
   showForm.value = true;
   nextTick(() => {
-    methodFormRef.value?.showEditForm?.(method);
+    methodFormRef.value?.showEditForm?.(selectedMethodDetails);
   });
 }
 
@@ -273,13 +273,13 @@ async function selectFromQuery () {
   if (!details) return
 
   selected.value = {
-    uri: details.uri,
+    ...details,
     name: details.name || details.label || '',
     comment: details.description || '',
     publisher: details.publisher || '',
     description: details.description || '',
     publication_date: details.publication_date || '',
-     exact_match: details.exact_match ?? [],
+    exact_match: details.exact_match ?? [],
     close_match: details.close_match ?? [],
     broad_match: details.broad_match ?? [],
     narrow_match: details.narrow_match ?? [],

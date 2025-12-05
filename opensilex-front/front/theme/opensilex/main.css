@@ -667,6 +667,17 @@ body.modal-open {
 }
 
 /********************************
+* Errors
+********************************/
+
+/* Message d’erreur sous un champ requis */
+.field-error {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+/********************************
 * Tabs back-button
 ********************************/
 

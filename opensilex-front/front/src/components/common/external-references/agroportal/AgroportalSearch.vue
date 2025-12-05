@@ -25,6 +25,7 @@
       <n-collapse-item name="advanced" :title="t('AgroportalSearch.ontologies-choice')">
         <div class="row align-items-center g-3">
           <div class="col-12 col-lg-8">
+            <!-- Selection ontologies -->
             <opensilex-FormSelector
               ref="soSelector"
               label="Ontologies"

@@ -397,13 +397,15 @@
                 "entityOfInterest": "Entity of interest",
                 "add-entityOfInterest": "Add observation level",
                 "entityOfInterest-placeholder": "Select one entity of interest",
-                "interestEntity-help": "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype..."
+                "interestEntity-help": "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype...",
+                "edit": "Edit an entity of interest"
             },
             "characteristic" : {
                 "characteristic" : "Characteristic",
                 "add-characteristic": "Add characteristic",
                 "characteristic-placeholder": "Select one characteristic",
-                "characteristic-help": "Define what is measured/observed. e.g: temperature, infection level, weight, area"
+                "characteristic-help": "Define what is measured/observed. e.g: temperature, infection level, weight, area",
+                "edit": "Edit a characteristic"
             },
             "species" : {
                 "species": "Species",
@@ -415,13 +417,15 @@
                 "method" : "Method",
                 "add-method": "Add method",
                 "method-placeholder": "Select one method",
-                "method-help" : "How it was measured. If you don't want to specify a method, select the standard method."
+                "method-help" : "How it was measured. If you don't want to specify a method, select the standard method.",
+                "edit": "Edit a method"
             },
             "unit" : {
                 "unit" : "Unit/Scale",
                 "add-unit": "Add unit",
                 "unit-placeholder": "Select one unit",
-                "unit-help": "Scale for ordinal variable (such as good, medium, bad...). e.g : kg/m2"
+                "unit-help": "Scale for ordinal variable (such as good, medium, bad...). e.g : kg/m2",
+                "edit": "Edit an unit"
             },
             "groupVariable" : {
                 "groupVariable": "Group of variables",

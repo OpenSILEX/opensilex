@@ -49,8 +49,6 @@
       :ref="currentTabRef"
       :elementType="elementType"
     />
-      <!-- v-show="currentTab !== 'groups' || loadGroupForm" -->
-      <!-- @ready="markTabReady(currentTab)" -->
 
     <!-- Composant de crea/edit variable (invisible) -->
     <opensilex-VariableCreate
@@ -67,11 +65,6 @@
       @onUpdate="updateReferences"
     />
 
-    <!-- Modale de création/édition d’un groupe de variables -->
-    <opensilex-VariableGroupCreate
-      ref="variableGroupCreate"
-      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    />
 
     <!-- Modale de création/édition d’une entité -->
     <opensilex-AgroportalEntityForm
@@ -85,6 +78,29 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
     ></opensilex-AgroportalEntityOfInterestForm>
 
+    <!-- Modale d'édition d’une caracteristique -->
+    <opensilex-AgroportalCharacteristicForm
+      ref="characteristicForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+    ></opensilex-AgroportalCharacteristicForm>
+
+    <!-- Modale d'édition d’une methode -->
+    <opensilex-AgroportalMethodForm
+      ref="methodForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+    ></opensilex-AgroportalMethodForm>
+
+    <!-- Modale d'édition d’une unité -->
+    <opensilex-AgroportalUnitForm
+      ref="unitForm"
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+    ></opensilex-AgroportalUnitForm>
+
+    <!-- Modale de création/édition d’un groupe de variables -->
+    <opensilex-VariableGroupCreate
+      ref="variableGroupCreate"
+      v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+    />
 
 
     <!-- Modale d'aide -->
@@ -113,6 +129,9 @@ import VariableCreate from './form/VariableCreate.vue';
 import VariableGroupCreate from './form/VariableGroupCreate.vue';
 import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
 import AgroportalEntityOfInterestForm from './agroportal/AgroportalEntityOfInterestForm.vue'
+import AgroportalCharacteristicForm from './agroportal/AgroportalCharacteristicForm.vue'
+import AgroportalMethodForm from './agroportal/AgroportalMethodForm.vue'
+import AgroportalUnitForm from './agroportal/AgroportalUnitForm.vue'
 
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -157,6 +176,9 @@ const tabComponents = Object.fromEntries(
 const formRefs = {
   variableCreate: ref(null),
   entityForm: ref(null),
+  characteristicForm: ref(null),
+  methodForm: ref(null),
+  unitForm: ref(null),
   interestEntityForm: ref(null),
   variableList: ref(null),
   variableGroupCreate: ref(null),
@@ -169,6 +191,9 @@ const variableCreate = formRefs.variableCreate; // pour lier dans le template
 const variableGroupCreate = formRefs.variableGroupCreate;
 const entityForm = formRefs.entityForm;
 const interestEntityForm = formRefs.interestEntityForm;
+const characteristicForm = formRefs.characteristicForm;
+const methodForm = formRefs.methodForm;
+const unitForm = formRefs.unitForm;
 
 const currentTabComponent = computed(() => tabComponents[currentTab.value]);
 

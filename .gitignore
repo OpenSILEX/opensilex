@@ -18,3 +18,4 @@ site
 kotlin.log
 opensilex-main/dependency-reduced-pom.xml
 opensilex-front/front/src/opensilex.dev.ts
+reports_log/*

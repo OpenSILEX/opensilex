@@ -183,6 +183,9 @@
                 <inherited>false</inherited>
                 
                 <configuration>
+                    <locales>default</locales>
+                    <generateReports>true</generateReports>
+
                     <outputDirectory>${generated.doc.site.directory}</outputDirectory>
                 </configuration>
             </plugin>
@@ -308,6 +311,14 @@
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>${jacoco.maven.plugin.version}</version>
+                        <configuration>
+                            <dataFileIncludes>**/jacoco.exec</dataFileIncludes>
+                            <includes>
+                                <!--Analyze class files only to exclude shaded agent JAR from report--> 
+                                <include>**/*.class</include>
+                            </includes>
+                            <outputDirectory>${generated.doc.site.directory}/${project.name}/target/jacoco</outputDirectory>
+                        </configuration>
                         <reportSets>
                             <reportSet>
                                 <reports>

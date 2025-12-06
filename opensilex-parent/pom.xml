@@ -869,7 +869,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     <artifactId>dependency-check-maven</artifactId>
                     <version>${owasp.dependency.check.maven.plugin.version}</version>
                     <configuration>
-
+                        <ossIndexServerId>ossindex</ossIndexServerId>       
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
                         <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
@@ -1311,7 +1311,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <locales>en</locales>
+                    <locales>default</locales>
                     <!-- see below to enable multilang doc -->
                     <!--<locales>en,fr</locales>-->
                     <generateReports>true</generateReports>
@@ -1449,15 +1449,15 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>${spotbugs.maven.plugin.version}</version>
-                <reportSets>
+                <!-- <reportSets>
                     <reportSet>
                         <id>aggregate</id>
-                        <inherited>false</inherited>                        <!-- don't run aggregate in child modules -->
+                        <inherited>false</inherited>                       
                         <reports>
                             <report>aggregate</report>
                         </reports>
                     </reportSet>
-                </reportSets>
+                </reportSets> -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1489,7 +1489,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <configuration>
                             <outputFile>
                             ${generated.doc.site.directory}/${project.name}/checkstyle-result.xml</outputFile>
-                            <encoding>UTF-8</encoding>
+                            <!-- <encoding>UTF-8</encoding> -->
                             <consoleOutput>true</consoleOutput>
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <checkstyleRules>

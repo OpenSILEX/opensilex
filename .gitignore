@@ -17,5 +17,5 @@ owasp-dependency-check-logs
 site
 kotlin.log
 opensilex-main/dependency-reduced-pom.xml
-opensilex-front/front/src/opensilex.dev.ts
-reports_log/*
+opensilex-front/front/src/opensilex.dev.ts 
+sonarqube_reports_log/*

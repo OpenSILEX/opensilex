@@ -78,6 +78,10 @@ build-sonar:
     paths:
       - "${SONAR_USER_HOME}/cache"
       - sonar-scanner/ 
+  before_script:
+    # Clean Node artifacts on each build
+    - rm -rf .m2/repository/com/github/eirslett/node/
+    - rm -rf .node/
   script:
     - mkdir -p sonarqube_reports_log
     - mvn clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log &  

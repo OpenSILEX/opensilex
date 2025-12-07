@@ -80,7 +80,7 @@ build-sonar:
       - sonar-scanner/ 
   before_script:
     # Clean Node artifacts on each build
-    - rm -rf $CI_PROJECT_DIR/.m2/repository
+    - rm -rf $CI_PROJECT_DIR/.m2/repository/com/github/eirslett
     - rm -rf .node/
   script:
     - mkdir -p sonarqube_reports_log 

@@ -80,12 +80,11 @@ build-sonar:
       - sonar-scanner/ 
   before_script:
     # Clean Node artifacts on each build
-    - rm -rf .m2/repository/com/github/eirslett/node/
+    - rm -rf $CI_PROJECT_DIR/.m2/repository
     - rm -rf .node/
   script:
-    - mkdir -p sonarqube_reports_log
-    - mvn clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log &  
-    - mvn $MAVEN_CLI_OPTS clean install -DskipFrontBuild
+    - mkdir -p sonarqube_reports_log 
+    - mvn $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log &  
     - mvn $MAVEN_CLI_OPTS verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > sonarqube_reports_log/verify.log
     - mvn $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools' > sonarqube_reports_log/sonarqube.log
   artifacts:

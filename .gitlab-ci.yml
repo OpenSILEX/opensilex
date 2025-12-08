@@ -67,6 +67,20 @@ variables:
   GITLAB_HTTPS: "false"
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache 
 
+  SONAR_MAVEN_SETTINGS: |
+      <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                    http://maven.apache.org/xsd/settings-1.0.0.xsd"> 
+        <servers> 
+          <server>
+            <id>ossindex</id>
+            <username>$SONARQUBE_M2_SETTINGS_OSS_INDEX_ACCOUNT</username>
+            <password>$SONARQUBE_M2_SETTINGS_OSS_INDEX_PWD</password>
+          </server> 
+        </servers> 
+      </settings>
+
 build-sonar:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   variables:
@@ -81,11 +95,14 @@ build-sonar:
   script:
     - mkdir -p sonarqube_reports_log 
     - mvn $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
-    - mvn $MAVEN_CLI_OPTS verify -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report 
+    - mvn $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report 
     - mvn $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
   artifacts:
     paths:
       - sonarqube_reports_log
+  before_script:
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'

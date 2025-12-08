@@ -101,6 +101,7 @@ build-sonar:
     paths:
       - sonarqube_reports_log
   before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
     - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
     - more $CI_PROJECT_DIR/.m2/settings.xml
   allow_failure: true

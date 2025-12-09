@@ -90,7 +90,7 @@ export default class LocationList extends Vue {
         },
         {
             key: "geometry",
-            label: "component.geometry.geometry-title",
+            label: "component.common.geometry.geometry-title",
         }
     ]
     private readonly DEFAULT_DATE: string = "1970-01-01T00:00:00Z"

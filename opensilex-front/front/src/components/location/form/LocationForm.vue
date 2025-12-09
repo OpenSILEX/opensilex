@@ -59,8 +59,8 @@
             <div class="col-lg-9">
                 <opensilex-GeometryForm
                         :value.sync="form.geojson"
-                        label="component.geometry.geometry-title"
-                        helpMessage="component.geometry.geometry-help"
+                        label="component.common.geometry.geometry-title"
+                        helpMessage="component.common.geometry.geometry-help"
                         :required="false"
                 ></opensilex-GeometryForm>
             </div>
@@ -70,7 +70,7 @@
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.x"
-            label="component.geometry.x"
+            label="component.common.geometry.x"
             helpMessage="LocationForm.x-help"
             placeholder="LocationForm.x-placeholder"
             type="text"
@@ -80,7 +80,7 @@
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.y"
-            label="component.geometry.y"
+            label="component.common.geometry.y"
             helpMessage="LocationForm.y-help"
             placeholder="LocationForm.y-placeholder"
             type="text"
@@ -90,7 +90,7 @@
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.z"
-            label="component.geometry.z"
+            label="component.common.geometry.z"
             helpMessage="LocationForm.z-help"
             placeholder="LocationForm.z-placeholder"
             type="text"
@@ -103,7 +103,7 @@
           <!-- Comment -->
           <opensilex-TextAreaForm
             :value.sync="form.text"
-            label="component.geometry.textual-position"
+            label="component.common.geometry.textual-position"
             helpMessage="LocationForm.textual-position-help"
             placeholder="LocationForm.textual-position-placeholder"
             @keydown.native.enter.stop

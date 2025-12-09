@@ -1,14 +1,14 @@
 <template>
   <div>
     <opensilex-UriListView label="Event.targets" :list="getUriLinkDescriptions"></opensilex-UriListView>
-    <opensilex-GeometryView label="component.geometry.geometry-title"
+    <opensilex-GeometryView label="component.common.geometry.geometry-title"
                             :value="positionObject.point"></opensilex-GeometryView>
 
-    <opensilex-StringView label="component.geometry.x" :value="positionObject.x"></opensilex-StringView>
-    <opensilex-StringView label="component.geometry.y" :value="positionObject.y"></opensilex-StringView>
-    <opensilex-StringView label="component.geometry.z" :value="positionObject.z"></opensilex-StringView>
+    <opensilex-StringView label="component.common.geometry.x" :value="positionObject.x"></opensilex-StringView>
+    <opensilex-StringView label="component.common.geometry.y" :value="positionObject.y"></opensilex-StringView>
+    <opensilex-StringView label="component.common.geometry.z" :value="positionObject.z"></opensilex-StringView>
 
-    <opensilex-TextView v-if="positionObject" label="component.geometry.textual-position"
+    <opensilex-TextView v-if="positionObject" label="component.common.geometry.textual-position"
                         :value="positionObject.text"></opensilex-TextView>
 
   </div>

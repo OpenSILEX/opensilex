@@ -14,6 +14,15 @@
                 "semicolon" : "Semicolon (;)",
                 "tab" : "Tab (\\t)"
             },
+            "geometry": {
+                "geometry-title": "Geospatial coordinates",
+                "geometry-help": "Geospatial coordinates in WKT format",
+                "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
+                "x": "X",
+                "y": "Y",
+                "z": "Z",
+                "textual-position": "Textual position"
+            },
             "month": "month",
             "months": "months",
             "day":"day",
@@ -609,15 +618,6 @@
                 "unknownAccession": "The given accession doesn't exist in the database: {unknownAccession}",
                 "missingAttribute": "Missing required field : {message}"
             }
-        },
-        "geometry": {
-            "geometry-title": "Geospatial coordinates",
-            "geometry-help": "Geospatial coordinates in WKT format",
-            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
-            "x": "X",
-            "y": "Y",
-            "z": "Z",
-            "textual-position": "Textual position"
         },
         "scientificObjects": {
             "error" : {

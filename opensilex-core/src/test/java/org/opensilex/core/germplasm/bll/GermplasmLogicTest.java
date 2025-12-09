@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -226,6 +227,27 @@ public class GermplasmLogicTest extends TestSuite {
         var multipleErrorObject = logic.checkBeforeCreateOrUpdate(List.of(otherTypeGermplasm), false);
         String errorMessage = String.format("this simple germplasm with an other type should not raise any error. %s errors was found", multipleErrorObject.toDTO().errors.size());
         TestCase.assertFalse(errorMessage, multipleErrorObject.hasErrors());
+    }
+
+    /**
+     * use upsert to update a germplasm and create a new one ( in the same time ) should not raise error.
+     */
+    @Test
+    public void upsertHandleBothCreationAndUpdateGermplasm() throws Exception {
+        URI existingGermplasmUri = URI.create("http://example.org/germplasm/existing");
+        URI newGermplasmUri = URI.create("http://example.org/germplasm/new");
+
+        //mocking existing germplasm existence
+        when(daoMocked.checkExistence(anyList())).thenReturn(List.of(existingGermplasmUri));
+        //mocking currentuser to avoid error on getUri()
+        AccountModel currentUserMocked = mock(AccountModel.class);
+        when(currentUserMocked.getUri()).thenReturn(new URI("http://example.org/account/1"));
+
+        GermplasmModel existingGermplasm = getCorrectGermplasmSpecies(existingGermplasmUri);
+        GermplasmModel newGermplasm = getCorrectGermplasmSpecies(newGermplasmUri);
+
+        GermplasmLogic logic = new GermplasmLogic(daoMocked, sparqlMocked, currentUserMocked);
+        logic.upsert(List.of(existingGermplasm, newGermplasm));
     }
     //#endregion
 

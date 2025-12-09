@@ -44,8 +44,7 @@
           @click="onAddColumnBtnClick"
           variant="outline-dark"
       >{{ $t("GermplasmTable.addColumn") }}
-      </b-button
-      >
+      </b-button>
       <b-form-select
           v-if="this.checkedLines > 0"
           id="filter"
@@ -71,9 +70,32 @@
           variant="success"
           v-bind:disabled="disableInsert"
       >{{ $t("GermplasmTable.insert") }}
-      </b-button
-      >
+      </b-button>
+      <opensilex-FormInputLabelHelper
+          :helpMessage="$t('GermplasmTable.upsertHelpMessage')"
+      ></opensilex-FormInputLabelHelper>
     </b-input-group>
+
+    <div class="divHelpMsg">
+      <div class="update-status-legend">
+        <div class="icon-and-legend">
+          <div class="update-symbol"></div> {{ $t('GermplasmTable.update-legend') }}
+        </div>
+        |
+        <div class="icon-and-legend">
+          <div class="create-symbol"></div> {{ $t('GermplasmTable.create-legend') }}
+        </div>
+      </div>
+      <div class="validation-status-legend">
+        <div class="icon-and-legend">
+          <div class="valid-legend"></div> {{ $t('GermplasmTable.valid-legend') }}
+        </div>
+        |
+        <div class="icon-and-legend">
+          <div class="invalid-legend"></div> {{ $t('GermplasmTable.invalid-legend') }}
+        </div>
+      </div>
+    </div>
 
     <div ref="table"></div>
 
@@ -165,6 +187,8 @@ import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDT
 import {MultipleErrorDTO} from "opensilex-core/model/multipleErrorDTO";
 import {URIsListPostDTO} from "opensilex-core/model/uRIsListPostDTO";
 import GermplasmTableDataRow from "./GermplasmTableDataRow";
+import FormInputLabelHelper from "../common/forms/FormInputLabelHelper.vue";
+import { helpers } from "@turf/turf";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -429,7 +453,7 @@ export default class GermplasmTable extends Vue {
       title: "",
       field: "rowNumber",
       visible: true,
-      formatter: "rownum",
+      formatter: this.idFormatterFunction,
     };
 
     let statusCol = {title: "status", field: "status", visible: false};
@@ -647,10 +671,6 @@ export default class GermplasmTable extends Vue {
           row.getElement().style.backgroundColor = "#a5e051";
         } else if (row.getData().status == "NOK") {
           row.getElement().style.backgroundColor = "#ed6661";
-        } else if (row.getData().status == "UPDATE"){
-          row.getElement().style.backgroundColor = "#4ba7cf";
-        } else {
-          row.getElement().style.backgroundColor = "#ffffff";
         }
       },
     });
@@ -800,8 +820,6 @@ export default class GermplasmTable extends Vue {
               row.setInsertionStatus(errorMessage);
             }
           });
-
-          this.filter = "NOK";
         })
   }
 
@@ -1176,6 +1194,21 @@ export default class GermplasmTable extends Vue {
     return `<div class="error-log">${cell.getValue()||""}</div>`;
   }
 
+  /**
+   * function triggered by the tabulator cell formatter. Allow to customize the id column to add the update symbol
+   */
+  private idFormatterFunction(cell, formatterParams, onRendered) {
+    const rowData = this.tableData[cell.getRow().getData().index];
+    let updateSymbol = ``;
+    
+    if(rowData.isUpdate()){
+      updateSymbol = `<div class="update-symbol"></div>`;
+    } else {
+      updateSymbol =  `<div class="create-symbol"></div>`;
+    }
+         
+  return `<div class="id-update-symbol">${rowData.getRowNumber()} ${updateSymbol}</div>`;
+  }
 
 
   //endregion
@@ -1212,17 +1245,77 @@ export default class GermplasmTable extends Vue {
 .tabulator .tabulator-table .tabulator-row .tabulator-cell {
   border-right: 1px solid #dee2e6;
   height: 30px;
+  padding: 0em 0.4em;
 }
 
 .loadCsvButton {
   float: right;
   margin-right: 10px;
 }
+
+.divHelpMsg{
+  flex-direction: column;
+  margin: 0.5rem 0.5rem;
+}
+
+.validation-status-legend, .update-status-legend, .icon-and-legend{
+  display: flex;
+  margin-right: 1rem;
+}
+
+.update-status-legend{
+  margin-bottom: 0.5rem;
+}
+
+.icon-and-legend div{
+  margin-right: 0.5rem;
+}
+
+.valid-legend{
+  width: 4rem;
+  height: 1rem;
+  background-color: #A5E051;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.invalid-legend{
+  width: 4rem;
+  height: 1rem;
+  background-color: #ED6661;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+
+
 </style>
 
 <style lang="scss">
 .error-log{
   color: blue;
+}
+
+.id-update-symbol{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.update-symbol{
+  width: 1rem;
+  height: 1rem;
+  background-color: #3498db;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.create-symbol{
+  width: 1rem;
+  height: 1rem;
+  background-color: lightgray;
+  border-radius: 50%;
+  margin-left: 0.5rem;
 }
 </style>
 
@@ -1247,7 +1340,7 @@ en:
     errorCheckMessage: checking shows some errors, see the table for more details
     successCheckMessage: germplasms are ready to be inserted and/or updated
     successCheckRowMessage: ready to be inserted/updated
-    insert: Insert
+    insert: Create / update
     errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
     successUpsertMessage: germplasms inserted and/or updated
     successUpsertRowMessage : inserted/updated
@@ -1271,7 +1364,12 @@ en:
     newColumns: Supplementary columns
     newColumnsHelp: Select the columns to add
     toggleAll: Select all / Unselect all
-    errorServerMessage : A server error occurred, please contact your administrator for more information
+    errorServerMessage: A server error occurred, please contact your administrator for more information
+    upsertHelpMessage: creates or updates each germplasm in the list in a single operation (a blue square indicates that the germplasm already exists and will therefore be updated).
+    update-legend: this line will be updated
+    create-legend: this line will be created
+    valid-legend: this line has been validated or inserted/updated successfully
+    invalid-legend: this line has errors
 
 fr:
   GermplasmTable:
@@ -1292,7 +1390,7 @@ fr:
     errorCheckMessage: Des erreurs sont apparues lors de la validation, voir le tableau pour plus de détails
     successCheckMessage: Les ressources génétiques sont prêts à être insérées
     successCheckRowMessage: prête à être insérée/modifiée
-    insert: Insérer
+    insert: Créer / modifier
     errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
     successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
     successUpsertRowMessage: insertion / modification réussie
@@ -1316,5 +1414,10 @@ fr:
     newColumns: Colonnes additionnelles
     newColumnsHelp: Cochez les colonnes à ajouter
     toggleAll: Tout sélectionner / Tout désélectionner
-    errorServerMessage : Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
+    errorServerMessage: Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
+    upsertHelpMessage: crée ou modifie chaque ressource rénétique de la liste en une seule opération (un carré bleu indique que la ressource existe déjà et sera donc mise à jour).
+    update-legend: la ligne sera mise à jour
+    create-legend: la ligne sera créée
+    valid-legend: cette ligne a été validée ou insérée/mise à jour avec succès
+    invalid-legend: cette ligne comporte des erreurs
 </i18n>

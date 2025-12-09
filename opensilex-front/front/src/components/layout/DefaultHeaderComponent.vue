@@ -168,6 +168,7 @@
             >
               <template v-slot:button-content>
                 <i class="icon ik ik-user userIcon"></i>
+                <div class="user-name">{{ userNameHeader }}</div>
               </template>
               <b-dropdown-item href="#" @click.prevent="logout">
                 <i class="ik ik-log-out dropdown-icon"></i>
@@ -287,6 +288,19 @@ export default class DefaultHeaderComponent extends Vue {
 
     return this.$opensilex.getConfig().versionLabel.toLowerCase();
   }
+
+  /**
+   * Return either the email or the first letter of first name and the last nale for the current user
+  */
+  get userNameHeader() {
+    let userInfo = this.$store.state.user;
+    if (!userInfo.getLastName()){
+      return userInfo.getEmail();
+    } else {
+      return userInfo.getFirstName().replaceAll(' ', '').substring(0, 1).toUpperCase() + '. ' + userInfo.getLastName();
+    }
+  }
+
 
   /**
    * Set the current i18n language
@@ -521,6 +535,13 @@ export default class DefaultHeaderComponent extends Vue {
   vertical-align: middle;
   margin: -2px 0 0 12px
 }
+
+.user-name{
+  font-weight: bold;
+  padding: 0 20px;
+  color: #525252; 
+}
+
 
 @media only screen and (min-width: 1380px) {
   .top-menu {

@@ -218,6 +218,8 @@ opensilex-master:build:
 
 opensilex-develop:build:
   <<: *build_template_with_opensilex
+  needs:
+      - job: pages
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
 
@@ -603,24 +605,24 @@ test:build:java21:
 ########################
 
 pages:
-  <<: *test_build_on_schedules
-  script:
-    - ln -s $JAVA_HOME java.home
-    - mkdir logs
-    - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
-    - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
-    - mkdir public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
-  artifacts:
-    paths:
-      - public
-      - logs
-    when: always
-  rules:
-    - if: $NIGHTLY_BUILD == "true"
-  allow_failure: true
+    stage: build
+    image: node:20.19.6-alpine3.22
+    cache:
+        paths:
+            - opensilex-doc/src/main/resources/specs/node_modules/
+    before_script:
+        - apk add git
+    script:
+        - cd opensilex-doc/src/main/resources/specs
+        - npm install
+        - npm run docs:build
+        - cd $CI_PROJECT_DIR
+        - mkdir public
+        - mkdir public/specifications
+        - mv opensilex-doc/src/main/resources/specs/.vitepress/dist/* public/specifications/
+    artifacts:
+        paths:
+            - public
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -940,6 +942,8 @@ test:temporary4:deploy:
 
 test:temporary3:build:
   <<: *build_template_with_opensilex
+  needs:
+      -   job: pages
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:

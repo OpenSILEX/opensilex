@@ -210,7 +210,7 @@ public class DeviceDAO {
                 (SelectBuilder select) -> {
                     this.addFiltersForSomeSearch(select, filter, false);
                 },
-                Collections.emptyMap(),
+                customHandlerByFields,
                 schema,
                 filter.getOrderByList(),
                 filter.getPage(),

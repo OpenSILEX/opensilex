@@ -94,9 +94,9 @@ build-sonar:
       - sonar-scanner/ 
   script:
     - mkdir -p sonarqube_reports_log 
-    - mvn $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
-    - mvn $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report 
-    - mvn $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report 
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
   artifacts:
     paths:
       - sonarqube_reports_log

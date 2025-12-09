@@ -10,7 +10,7 @@
       <opensilex-LocationForm
         :form.sync="form.location"
         :isMove="true"
-        :doShowDateFields="false"
+        :displayDateFields="false"
       >
       </opensilex-LocationForm>
 
@@ -20,7 +20,6 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {PositionFormObject} from "../../positions/view/PositionView.vue";
     import { MoveCreationDTO } from 'opensilex-core/index';
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import VueI18n from "vue-i18n";

@@ -1,14 +1,14 @@
 <template>
   <div>
     <opensilex-UriListView label="Event.targets" :list="getUriLinkDescriptions"></opensilex-UriListView>
-    <opensilex-GeometryView label="component.common.geometry"
+    <opensilex-GeometryView label="component.geometry.geometry-title"
                             :value="positionObject.point"></opensilex-GeometryView>
 
-    <opensilex-StringView label="PositionView.x" :value="positionObject.x"></opensilex-StringView>
-    <opensilex-StringView label="PositionView.y" :value="positionObject.y"></opensilex-StringView>
-    <opensilex-StringView label="PositionView.z" :value="positionObject.z"></opensilex-StringView>
+    <opensilex-StringView label="component.geometry.x" :value="positionObject.x"></opensilex-StringView>
+    <opensilex-StringView label="component.geometry.y" :value="positionObject.y"></opensilex-StringView>
+    <opensilex-StringView label="component.geometry.z" :value="positionObject.z"></opensilex-StringView>
 
-    <opensilex-TextView v-if="positionObject" label="PositionView.textual-position"
+    <opensilex-TextView v-if="positionObject" label="component.geometry.textual-position"
                         :value="positionObject.text"></opensilex-TextView>
 
   </div>
@@ -54,19 +54,4 @@ export default class PositionView extends Vue {
 }
 
 </script>
-<i18n>
-en:
-    PositionView:
-        textual-position: Textual position
-        x: X
-        y: Y
-        z: Z
 
-fr:
-    PositionView:
-        textual-position: Position textuelle
-        x: X
-        y: Y
-        z: Z
-
-</i18n>

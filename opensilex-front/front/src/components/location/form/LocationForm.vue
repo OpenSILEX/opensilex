@@ -59,8 +59,8 @@
             <div class="col-lg-9">
                 <opensilex-GeometryForm
                         :value.sync="form.geojson"
-                        label="component.common.geometry"
-                        helpMessage="component.common.geometry-help"
+                        label="component.geometry.geometry-title"
+                        helpMessage="component.geometry.geometry-help"
                         :required="false"
                 ></opensilex-GeometryForm>
             </div>
@@ -70,7 +70,7 @@
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.x"
-            label="LocationForm.x"
+            label="component.geometry.x"
             helpMessage="LocationForm.x-help"
             placeholder="LocationForm.x-placeholder"
             type="text"
@@ -80,7 +80,7 @@
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.y"
-            label="LocationForm.y"
+            label="component.geometry.y"
             helpMessage="LocationForm.y-help"
             placeholder="LocationForm.y-placeholder"
             type="text"
@@ -90,7 +90,7 @@
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.z"
-            label="LocationForm.z"
+            label="component.geometry.z"
             helpMessage="LocationForm.z-help"
             placeholder="LocationForm.z-placeholder"
             type="text"
@@ -103,7 +103,7 @@
           <!-- Comment -->
           <opensilex-TextAreaForm
             :value.sync="form.text"
-            label="LocationForm.textual-position"
+            label="component.geometry.textual-position"
             helpMessage="LocationForm.textual-position-help"
             placeholder="LocationForm.textual-position-placeholder"
             @keydown.native.enter.stop
@@ -137,7 +137,7 @@ export default class LocationForm extends Vue {
     isMove: boolean
 
     @Prop({ default: true })
-    doShowDateFields: boolean;
+    displayDateFields: boolean;
     //endregion
 
     //#region Refs
@@ -226,15 +226,11 @@ en:
         update: Update location,
         positionTitle: Position,
         x-help: "1th dimension of a custom coordinate system"
-        x: X
         x-placeholder: "A or 10 or 10.5"
-        y: Y
         y-help: "2nd dimension of a custom coordinate system"
         y-placeholder: "A or 10 or 10.5"
-        z: Z
         z-placeholder: "A or 10 or 10.5"
         z-help: "3rd dimension of a custom coordinate system"
-        textual-position: Textual position
         textual-position-placeholder: Beside the left door
         textual-position-help: Description of the position with text
         from: From
@@ -249,15 +245,11 @@ fr:
         update: Modifier la localisation
         positionTitle: Position
         x-help: "1ère dimension d'un système de coordonnées"
-        x: X
         x-placeholder: "A ou 10 ou 10,5"
-        y: Y
         y-help: "2ème dimension d'un système de coordonnées"
         y-placeholder: "A ou 10 ou 10,5"
-        z: Z
         z-placeholder: "A ou 10 ou 10,5"
         z-help: "3ème dimension d'un système de coordonnées"
-        textual-position: Positition textuelle
         textual-position-placeholder: "à côté de la porte gauche"
         textual-position-help: Description textuelle de la position
         from: De

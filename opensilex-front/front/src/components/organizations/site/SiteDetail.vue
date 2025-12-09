@@ -91,7 +91,7 @@
                   variant="warning"
                   show
           >
-              {{$t("component.common.geometry-address-warning")}}
+              {{$t("component.geometry.geometry-address-warning")}}
           </b-alert>
 
         <!-- Metadata -->

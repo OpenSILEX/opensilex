@@ -35,7 +35,7 @@
                 <div class="col-8">
                     <opensilex-GeometryForm
                             :value.sync="position.geojson"
-                            label="component.common.geometry"
+                            label="component.geometry.geometry-title"
                             :required="!!position.endDate"
                             placeholder="LocationsForm.geometry"
                             @onUpdate="checkGeometryNotSaved"
@@ -147,7 +147,7 @@ export default class LocationsForm extends Vue {
         },
         {
             key: "geometry",
-            label: "component.common.geometry",
+            label: "component.geometry.geometry-title",
         },
         {
             key: "actions",

@@ -67,9 +67,6 @@
             "species":"Species",
             "period":"Period",
             "year":"Year",
-            "geometry": "Geospatial coordinates",
-            "geometry-help": "Geospatial coordinates in WKT format",
-            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",
@@ -612,6 +609,15 @@
                 "unknownAccession": "The given accession doesn't exist in the database: {unknownAccession}",
                 "missingAttribute": "Missing required field : {message}"
             }
+        },
+        "geometry": {
+            "geometry-title": "Geospatial coordinates",
+            "geometry-help": "Geospatial coordinates in WKT format",
+            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
+            "x": "X",
+            "y": "Y",
+            "z": "Z",
+            "textual-position": "Textual position"
         },
         "scientificObjects": {
             "error" : {

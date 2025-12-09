@@ -150,10 +150,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
                 .executeCallAndAssertStatus(Response.Status.CREATED);
 
         DeviceCreationDTO dto2 = getCreationDto();
-        dto2.setName("WrongMetadataDevice");
+        dto2.setName("WrongMetadataDevice-softwareType");
         Map<String, String> wrongMetadata = new HashMap<>();
         wrongMetadata.put("no", "nono");
         dto2.setMetadata(wrongMetadata);
+        dto2.setType(URI.create(Oeso.Software.getURI()));
 
         new UserCallBuilder(create)
                 .setBody(dto2)
@@ -171,7 +172,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         assertFalse(foundDevices.isEmpty());
         assertEquals(1, foundDevices.size());
-        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+        assertEquals("name", foundDevices.get(0).name);
 
         //Test search by name
         PaginatedListResponse<DeviceGetDTO> listResponse2 = new UserCallBuilder(search).addParam("name", "name")
@@ -181,7 +182,29 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         foundDevices = listResponse2.getResult();
         assertFalse(foundDevices.isEmpty());
         assertEquals(1, foundDevices.size());
-        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+        assertEquals("name", foundDevices.get(0).name);
+
+        //Test search by type
+        PaginatedListResponse<DeviceGetDTO> listResponse3 = new UserCallBuilder(search).addParam("rdf_type", Oeso.Software.getURI())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        foundDevices = listResponse3.getResult();
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("WrongMetadataDevice-softwareType", foundDevices.get(0).name);
+
+        //Test search by type with include_subtypes = true
+        PaginatedListResponse<DeviceGetDTO> listResponse4 = new UserCallBuilder(search)
+                .addParam("rdf_type", Oeso.Software.getURI())
+                .addParam("include_subtypes", "true")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        foundDevices = listResponse4.getResult();
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("WrongMetadataDevice-softwareType", foundDevices.get(0).name);
     }
 
     @Test

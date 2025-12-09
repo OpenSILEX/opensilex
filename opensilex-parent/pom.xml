@@ -122,7 +122,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <properties.maven.plugin.version>1.0.0</properties.maven.plugin.version>
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.13</jacoco.maven.plugin.version>
-        <owasp.dependency.check.maven.plugin.version>12.1.0</owasp.dependency.check.maven.plugin.version>
+        <owasp.dependency.check.maven.plugin.version>12.1.9</owasp.dependency.check.maven.plugin.version>
         <frontend.maven.plugin.version>1.15.4</frontend.maven.plugin.version>
         <maven.project.info.reports.plugin.version>3.4.5</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>

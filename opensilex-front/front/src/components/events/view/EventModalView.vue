@@ -51,8 +51,9 @@
         <div v-if="event && isMove()">
             <opensilex-MoveView
               :event="event"
-              :positionsUriLabels="positionsUriLabels"
-              :positionsUriPaths="positionsUriPaths"
+              :targetLabelsByUri="positionsUriLabels"
+              :targetUriPathsByUri="positionsUriPaths"
+              :facilitiesUriLabels="facilitiesUriLabels"
             ></opensilex-MoveView>
         </div>
 
@@ -102,6 +103,9 @@ import {EventDetailsDTO, MoveDetailsDTO} from 'opensilex-core/index';
 import {UserGetDTO} from "../../../../../../opensilex-security/front/src/lib";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
+import {URITypesDTO} from "opensilex-core/model/uRITypesDTO";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 
     @Component
@@ -139,6 +143,9 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         positionsUriLabels: {[key : string] : string} = {};
 
         positionsUriPaths: {[key : string] : string} = {};
+
+        //Similar variable for the from and to facility fields of a move
+        facilitiesUriLabels: {[key : string] : string} = {};
 
         event: EventDetailsDTO = {};
 
@@ -192,13 +199,9 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
         }
 
       /**
-       * Fetches Event details using uri, loads the labels for inner targets and relations, then shows the modal
+       *  Loads the labels for inner targets and relations, then shows the modal
        *
-       * @param promiseParam , not typed because this param is a bit wierd, it gets used alongside the getEventPromise whose param is also untyped
-       * @param getEventPromise the getEvent service
-       *
-       * @return An EventViewCalculatableProps with the props values, or undefined if an error was caught and handled
-       * the caller must verify not undefined.
+       * @param getEventPromiseHttpResult The event details
        */
       async show(
         getEventPromiseHttpResult: HttpResponse<OpenSilexResponse<EventDetailsDTO>>
@@ -252,21 +255,39 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
           }
         }
 
-        if (this.isMove(event) && (event as MoveDetailsDTO).targets_positions) {
+        if (this.isMove(event) && (event as MoveDetailsDTO).location) {
 
           try {
             // Retrieve position target names from move
-            const targetUris = (event as MoveDetailsDTO).targets_positions.map((positionObject: any) => positionObject.target);
+            const moveLocation: LocationObservationDTO = (event as MoveDetailsDTO).location;
+            const targetUris = [moveLocation.featureOfInterest];
+            const fromUri = moveLocation?.from;
+            const toUri   = moveLocation?.to;
+
+            const facilityUris = [toUri, fromUri].filter(Boolean);
 
             const [labelsResponse, typesResponse] = await Promise.all([
               this.ontologyService.getURILabelsList(targetUris),
-              this.ontologyService.getURITypes(targetUris),
+              this.ontologyService.getURITypes(targetUris)
             ]);
+
+            let facilityLabelsResponse = null;
+            if (facilityUris.length > 0) {
+              facilityLabelsResponse = await this.ontologyService.getURILabelsList(facilityUris);
+            }
+
 
             for (let element of labelsResponse.response.result) {
               this.$set(this.positionsUriLabels, element.uri, element.name);
             }
 
+            if(facilityLabelsResponse){
+              for (let element of facilityLabelsResponse.response.result) {
+                this.$set(this.facilitiesUriLabels, element.uri, element.name);
+              }
+            }
+
+            console.debug(JSON.stringify(typesResponse.response.result));
             // Creation of paths for move position targets types
             for (let element of typesResponse.response.result) {
               const responsePath = this.$opensilex.getTargetPath(

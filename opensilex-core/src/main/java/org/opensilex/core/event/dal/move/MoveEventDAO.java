@@ -18,6 +18,7 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -46,8 +47,8 @@ import java.util.stream.Stream;
  */
 public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
 
-    public static final Var fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.FROM_FIELD));
-    public static final Var toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.TO_FIELD));
+    public static final Var fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(LocationModel.FROM_FIELD));
+    public static final Var toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(LocationModel.TO_FIELD));
     private static final Var lastEndTimeStampVar = SPARQLQueryHelper.makeVar("last_end_ts");
     private static final Triple moveToTriple = Triple.create(uriVar, Oeev.to.asNode(), toVar);
     private static final Triple moveTypeTriple = Triple.create(uriVar, RDF.type.asNode(), Oeev.Move.asNode());
@@ -94,20 +95,20 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
 
         super.fromResult(result, lang, model);
 
-        String fromStr = result.getStringValue(MoveModel.FROM_FIELD);
+        String fromStr = result.getStringValue(LocationModel.FROM_FIELD);
         if (!StringUtils.isEmpty(fromStr)) {
             FacilityModel from = new FacilityModel();
             from.setUri(new URI(fromStr));
             from.setName(result.getStringValue(fromNameVar.getVarName()));
-            model.setFrom(from);
+            model.getLocationObservation().getLocation().setFrom(from.getUri());
         }
 
-        String toStr = result.getStringValue(MoveModel.TO_FIELD);
+        String toStr = result.getStringValue(LocationModel.TO_FIELD);
         if (!StringUtils.isEmpty(toStr)) {
             FacilityModel to = new FacilityModel();
             to.setUri(new URI(toStr));
             to.setName(result.getStringValue(toNameVar.getVarName()));
-            model.setTo(to);
+            model.getLocationObservation().getLocation().setTo(to.getUri());
         }
 
         return model;
@@ -161,7 +162,7 @@ public class MoveEventDAO extends EventDAO<MoveModel, MoveSearchFilter> {
 
         sparql.executeSelectQueryAsStream(outerSelect).forEach(
             result -> {
-                String lastLocation = result.getStringValue(MoveModel.TO_FIELD);
+                String lastLocation = result.getStringValue(LocationModel.TO_FIELD);
                 if (lastLocation != null) {
                     String target = result.getStringValue(MoveModel.TARGETS_FIELD);
                     if (target != null) {

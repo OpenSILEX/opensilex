@@ -69,15 +69,15 @@
                 <!--Last Position-->
                 <opensilex-StringView label="Event.lastPosition">
                   <!-- Position detail -->
-                  <span v-if="lastPosition.move_time">{{ new Date(lastPosition.move_time).toLocaleString() }}</span>
+                  <span v-if="lastPosition.location.endDate">{{ new Date(lastPosition.location.endDate).toLocaleString() }}</span>
                   <ul>
-                    <li v-if="lastPosition.to">{{ lastPosition.to.name }}</li>
-                    <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">
-                      {{ customCoordinatesText(lastPosition.position) }}
+                    <li v-if="lastPosition.location.to">{{ lastPosition.location.to.name }}</li>
+                    <li v-if="lastPosition.position && (lastPosition.location.x || lastPosition.location.y || lastPosition.location.z)">
+                      {{ customCoordinatesText(lastPosition.location) }}
                     </li>
-                    <li v-if="lastPosition.position && lastPosition.position.text">{{ lastPosition.position.text }}</li>
-                    <li v-if="lastPosition.position && lastPosition.position.point">
-                      <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
+                    <li v-if="lastPosition.location && lastPosition.location.text">{{ lastPosition.location.text }}</li>
+                    <li v-if="lastPosition.location && lastPosition.location.geojson">
+                      <opensilex-GeometryCopy label="" :value="lastPosition.location.geojson">
                       </opensilex-GeometryCopy>
                     </li>
                   </ul>
@@ -202,6 +202,7 @@ import {PositionsService} from "opensilex-core/api/positions.service";
 import {SecurityService, PersonDTO} from "opensilex-security/index";
 import {VariableDetailsDTO} from 'opensilex-core/index';
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
 @Component
 export default class DeviceDescription extends Vue {
@@ -269,15 +270,19 @@ export default class DeviceDescription extends Vue {
   lastCalibration: string = "";
   lastPosition: PositionGetDTO = {
     event: null,
-    from: null,
-    position: {
-      point: null,
-      text: null,
+    location: {
+      geojson: null,
+      featureOfInterest: null,
+      label: null,
+      startDate: null,
+      from: null,
+      to: null,
+      endDate: null,
       x: null,
       y: null,
-      z: null
-    },
-    to: null
+      z: null,
+      text: null
+    }
   };
 
   get user() {
@@ -464,7 +469,7 @@ export default class DeviceDescription extends Vue {
     return propertyUri;
   }
 
-  customCoordinatesText(position: any): string {
+  customCoordinatesText(position: LocationObservationDTO): string {
 
     if (!position) {
       return undefined;

@@ -40,7 +40,6 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -76,7 +75,6 @@ public class DataLogic {
     //VariableDAO
     //DeviceDAO
     //ExperimentDAO
-    //ScientificObjectDAO
     //ProvenanceDaoV2
     //OntologyDAO
 

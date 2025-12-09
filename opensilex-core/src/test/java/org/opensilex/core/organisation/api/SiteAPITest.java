@@ -264,7 +264,7 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
                 .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<SiteGetWithGeometryDTO>>() {})
                 .getDeserializedResponse();
 
-        assertEquals(sitelist.getResult().size(), 1);
+        assertEquals( 1, sitelist.getResult().size());
 
         URI resultURI = URI.create(SPARQLDeserializers.getExpandedURI(sitelist.getResult().get(0).getUri()));
         assertEquals(resultURI, siteWith3);

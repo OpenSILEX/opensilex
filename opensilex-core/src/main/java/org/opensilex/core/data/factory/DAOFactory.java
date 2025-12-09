@@ -96,6 +96,6 @@ public class DAOFactory {
      * @return A {@code ScientificObjectDAO} instance.
      */
     public ScientificObjectDAO createScientificObjectDAO() {
-        return new ScientificObjectDAO(sparql, nosql);
+        return new ScientificObjectDAO(sparql);
     }
 }

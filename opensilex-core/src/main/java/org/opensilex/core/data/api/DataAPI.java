@@ -42,7 +42,7 @@ import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
@@ -258,7 +258,7 @@ public class DataAPI {
         //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
         //Or/And scientific objects associated with passed germplasms
 
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectLogic scientificObjectLogic = new ScientificObjectLogic(sparql, nosql, fs);
         Set<URI> finalTargetsFilter = new HashSet<>(targets);
 
         //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
@@ -280,7 +280,7 @@ public class DataAPI {
                     .collect(Collectors.toList());
         }
 
-        List<URI> germplasmGroupTargets = scientificObjectDAO.getScientificObjectUrisAssociatedWithGermplasms(xpForTargetSearch, germplasmGroup, germplasmUris);
+        List<URI> germplasmGroupTargets = scientificObjectLogic.getScientificObjectUrisAssociatedWithGermplasms(xpForTargetSearch, germplasmGroup, germplasmUris);
         finalTargetsFilter.addAll(germplasmGroupTargets);
         return finalTargetsFilter;
     }

@@ -7,40 +7,12 @@
         </p>
         <hr/>
 
-        <div class="row">
-            <div class="col-lg-5">
-                <opensilex-FacilitySelector
-                        ref="moveFromSelector"
-                        label="Position.from"
-                        :facilities.sync="form.from"
-                        :multiple="false"
-                        :required="fromRequired"
-                        @select="updateRequiredProps()"
-                        @clear="updateRequiredProps()"
-                        helpMessage="Position.from-help"
-                ></opensilex-FacilitySelector>
-            </div>
-            <div class="col-lg-5">
-                <opensilex-FacilitySelector
-                        ref="moveToSelector"
-                        label="Position.to"
-                        :facilities.sync="form.to"
-                        :multiple="false"
-                        :required="toRequired"
-                        @select="updateRequiredProps()"
-                        @clear="updateRequiredProps()"
-                        helpMessage="Position.to-help"
-                ></opensilex-FacilitySelector>
-            </div>
-        </div>
-
-        <div>
-            <p><b> {{ $t("Position.title") }}</b></p>
-            <hr/>
-            <opensilex-PositionForm 
-               :form.sync="form.targets_positions[0].position">
-            </opensilex-PositionForm>
-        </div>
+      <opensilex-LocationForm
+        :form.sync="form.location"
+        :isMove="true"
+        :displayDateFields="false"
+      >
+      </opensilex-LocationForm>
 
     </ValidationObserver>
 </template>
@@ -48,8 +20,7 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import PositionForm from "../../positions/form/PositionForm.vue";
-    import { MoveCreationDTO, TargetPositionCreationDTO } from 'opensilex-core/index';
+    import { MoveCreationDTO } from 'opensilex-core/index';
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import VueI18n from "vue-i18n";
 
@@ -68,13 +39,6 @@
         @Prop({default: () => MoveForm.getEmptyForm()})
         form: MoveCreationDTO;
 
-        static getEmptyTargetsPositions() : Array<TargetPositionCreationDTO> {
-            return  [{
-                    target: undefined,
-                    position : PositionForm.getEmptyForm()
-                }];
-         }
-
         static getEmptyForm() : MoveCreationDTO{
             return {
               uri: undefined,
@@ -88,11 +52,7 @@
               relations: [],
 
               // move specific properties
-                from: undefined,
-                to: undefined,
-
-                // move position(s)
-              targets_positions: MoveForm.getEmptyTargetsPositions()
+              location:{}
             };
         }
 
@@ -112,24 +72,6 @@
             return this.validatorRef.validate();
         }
 
-        /**
-         * The "From" field is optional, and becomes required from the moment the "To" field is completed.
-         */
-        updateRequiredProps() {
-            if(this.form.from == undefined 
-            && this.form.to == undefined 
-            && this.form.targets_positions[0].position !== undefined 
-            && this.form.targets_positions[0].position !== "") {
-                this.fromRequired = false;
-                this.toRequired = false; 
-            } else {
-                 this.toRequired = true;
-            }
-        }
-
-        handleSubmitError(){
-          this.$opensilex.showErrorToast(this.$i18n.t("Move.fieldRequired").toString());
-        }
     }
 </script>
 

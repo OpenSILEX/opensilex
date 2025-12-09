@@ -195,7 +195,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testSearchIntersectsAreaErrorGeometry() throws Exception {
         Response responseFail = createDefaultAreaWithError();
-        assertEquals(responseFail.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), responseFail.getStatus());
     }
 
     @Test

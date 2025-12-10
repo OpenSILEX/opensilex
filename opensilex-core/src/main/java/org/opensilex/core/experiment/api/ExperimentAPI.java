@@ -40,7 +40,7 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
@@ -852,7 +852,7 @@ public class ExperimentAPI {
 
     private DataCSVValidationModel validateWholeCSV(URI experimentURI, ProvenanceModel provenance, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectLogic scientificObjectLogic = new ScientificObjectLogic(sparql, nosql,fs);
 
         Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
@@ -921,7 +921,7 @@ public class ExperimentAPI {
                 boolean validateCSVRow = false;
                 while ((values = csvReader.parseNext()) != null) {
                     try {
-                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType, duplicateDataByIndex);
+                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectLogic, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType, duplicateDataByIndex);
                     } catch (CSVDataTypeException e) {
                         csvValidation.addInvalidDataTypeError(e.getCsvCell());
                     }
@@ -950,7 +950,7 @@ public class ExperimentAPI {
             DataCSVValidationModel csvValidation, 
             Map<Integer, String> headerByIndex, 
             URI experimentURI, 
-            ScientificObjectDAO scientificObjectDAO, 
+            ScientificObjectLogic scientificObjectLogic,
             Map<String, ScientificObjectModel> nameURIScientificObjects, 
             List<String> scientificObjectsNotInXp, 
             HashMap<URI, URI> mapVariableUriDataType, 
@@ -970,7 +970,7 @@ public class ExperimentAPI {
                 } else {
                     // test not in uri list
                     if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-                            object = getObjectByNameOrURI(scientificObjectDAO, experimentURI, objectNameOrUri);
+                            object = getObjectByNameOrURI(scientificObjectLogic, experimentURI, objectNameOrUri);
                         }
                     if (object == null) {
                         scientificObjectsNotInXp.add(objectNameOrUri);
@@ -1037,23 +1037,23 @@ public class ExperimentAPI {
         return validRow;
     }
 
-    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
+    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectLogic scientificObjectLogic, URI contextUri, String nameOrUri) {
         ScientificObjectModel object = null;
         try {
-            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
+            object = testNameOrURI(scientificObjectLogic, contextUri, nameOrUri);
         } catch (Exception ex) {
         }
         return object;
     }
 
-    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
+    private ScientificObjectModel testNameOrURI(ScientificObjectLogic scientificObjectLogic, URI contextUri, String nameOrUri) throws Exception {
         ScientificObjectModel object;
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 
-            object = scientificObjectDAO.getObjectByURI(objectUri,contextUri,null);
+            object = scientificObjectLogic.getObjectByURI(objectUri,contextUri,currentUser);
         } else {
-                object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
+                object = scientificObjectLogic.getByNameAndContext(nameOrUri, contextUri);
             }
 
         return object;

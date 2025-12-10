@@ -13,34 +13,29 @@ package org.opensilex.core.event.bll;
 
 import com.apicatalog.jsonld.StringUtils;
 import com.mongodb.client.ClientSession;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
-import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.utils.ApiUtils;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import java.net.URI;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import static com.mongodb.client.model.Projections.excludeId;
 
 /**
  *
@@ -50,25 +45,20 @@ import static com.mongodb.client.model.Projections.excludeId;
  * This is a temporary solution for the embedded transactions problem
  */
 public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
-
-    private final MoveEventNoSqlDao noSqlDao;
     //If client session is null then we know we need to handle transactions
     private final ClientSession clientSession;
 
     public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, ClientSession clientSession) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
-        this.noSqlDao = new MoveEventNoSqlDao(mongodb.getServiceV2());
         this.clientSession = clientSession;
     }
 
     public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
-        this.noSqlDao = new MoveEventNoSqlDao(mongodb.getServiceV2());
         this.clientSession = null;
     }
 
     //#region PUBLIC METHODS
-
     @Override
     public void updateModel(MoveModel model) throws Exception{
         check(Collections.singletonList(model), false);
@@ -94,30 +84,52 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     @Override
     public MoveModel get(URI uri) throws Exception {
         MoveModel model = dao.get(uri, currentUser);
-        if (model == null) {
+        if (Objects.isNull(model)) {
             throw new NotFoundURIException(uri);
         }
 
-        //A move can exist that does not have any positions, if the noSqlModel does not exist then return our Move instead of throwing an error
-        if(!noSqlDao.exists(clientSession, uri)) {
-            return model;
+        //A move can exist that does not have any positions, if the location observation does not exist then return our Move instead of throwing an error
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
+
+        if(Objects.nonNull(collectionURI)) {
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            LocationObservationModel locationObservation = observationLogic.getASpecificLocationObservation(
+                    collectionURI,
+                    model.getEnd().getDateTimeStamp().toInstant(),
+                    Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+
+            model.setLocationObservation(locationObservation);
         }
-        MoveNosqlModel noSqlModel = noSqlDao.get(clientSession, uri);
-        if (noSqlModel != null) {
-            noSqlModel.setUri(uri);
-            model.setNoSqlModel(noSqlModel);
-        }
+
         return model;
     }
 
+    /**
+     * The get list of Moves function. For their locations a special operation has to be performed as their is no direct mapping,
+     * the location fetching operation also involves MongoDB.
+     * To link the correct LocationObservation, it needs to belong to LocationObservationCollection
+     * whose featureOfInterest, is the target of the move in question. And from the collection, we need to fetch the LocationObservation whose
+     * dates match our move's dates.
+     *
+     * @param uriList uris of the Moves we are getting
+     * @return the list of corresponding MoveModels, with their LocationObservation properly filled.
+     */
     public List<MoveModel> getList(List<URI> uriList) throws Exception {
         var modelList = dao.getList(uriList, currentUser);
-        var noSqlModelMap = noSqlDao.getMoveEventNoSqlModelMap(uriList);
+
+        //for each move, get the target collection URI and use move dates to get the specific location
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+
+        Map<URI, URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(modelList.stream().map(model -> model.getTargets().get(0)).collect(Collectors.toList()));
+
         for (var model : modelList) {
-            var noSqlModel = noSqlModelMap.get(SPARQLDeserializers.formatURI(model.getUri()));
-            if (noSqlModel != null) {
-                model.setNoSqlModel(noSqlModel);
-            }
+            LocationObservationModel location =  observationLogic.getASpecificLocationObservation(
+                    targetCollectionMap.get(URI.create(SPARQLDeserializers.getExpandedURI(model.getTargets().get(0)))),
+                    model.getEnd().getDateTimeStamp().toInstant(),
+                    Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+            model.setLocationObservation(location);
         }
         return modelList;
     }
@@ -134,70 +146,87 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     @Override
     public List<MoveModel> create(List<MoveModel> models, boolean validationOnly) throws Exception {
-        models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
-        for (var move : models) {
-            if (move.getFrom() != null && move.getTo() == null) {
-                throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
-            }
-        }
+        List<LocationObservationModel> locationObservationList = new ArrayList<>();
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
 
+        models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
         check(models, true);
 
         if(validationOnly){
             return  models;
         }
 
-        List<MoveNosqlModel> noSqlModels = new ArrayList<>();
-
-        // build nosql models
         for (MoveModel model : models) {
-
+            //Set event move URI
             URI uri = model.getUri();
-            if (uri == null) {
+            if (Objects.isNull(uri)) {
+                //Generate URI manually before insertion as the LocationObservation needs this information.
                 uri = model.generateURI(dao.getGraphAsNode().toString(), model, 0);
                 model.setUri(uri);
             }
 
-            // set noSql model uri and update noSql model list
-            MoveNosqlModel noSqlModel = model.getNoSqlModel();
-            if (noSqlModel != null) {
-                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
-                noSqlModel.setUri(new URI(shortEventUri));
-                noSqlModels.add(noSqlModel);
+            // build location observations
+            if (Objects.nonNull(model.getLocationObservation())) {
+                model.getTargets().forEach(target -> {
+                    LocationObservationModel locationObservation = new LocationObservationModel();
+                    LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+
+                    try {
+                        //Check if a location collection exists for this target
+                        URI targetCollection = collectionLogic.getLocationObservationCollectionURI(target);
+                        if(Objects.isNull(targetCollection)){
+                            targetCollection = collectionLogic.createLocationObservationCollection(target);
+                        }
+
+                        locationObservation.setMoveUri(model.getUri());
+                        locationObservation.setObservationCollection(targetCollection);
+                        locationObservation.setFeatureOfInterest(target);
+                        locationObservation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+                        locationObservation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
+                        locationObservation.setLocation(model.getLocationObservation().getLocation());
+
+                        boolean hasGeometry = observationLogic.checkHasGeometry(
+                                model.getLocationObservation(),
+                                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
+                                model.getEnd().getDateTimeStamp().toInstant());
+
+                        locationObservation.setHasGeometry(hasGeometry);
+
+                        locationObservationList.add(locationObservation);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
-
         }
 
-        return ApiUtils.wrapWithTransaction(
-                session -> createMultipleNoTransaction(models, noSqlModels, session),
-                this.clientSession,
-                sparql,
-                mongodb
+        return ApiUtils.wrapWithTransaction(session -> createMultipleNoTransaction(models, locationObservationList, session), clientSession, sparql, mongodb);
+    }
+
+    /**
+     *
+     * @param targetUris the uris of targets for whom we want to fetch a LocationObservation
+     * @param endDate Location has to have the most recent date before endDate.
+     * @param intersection only include Locations that are contained in intersection
+     * @return A map of target URI => LocationObservation, the location observation is either the last position, or the
+     * position that corresponds to the passed endDate.
+     */
+    public Map<URI, LocationObservationModel> getTargetWithPosition(
+            List<URI> targetUris,
+            Instant endDate,
+            Geometry intersection
+    ) throws NoSuchElementException, SPARQLException {
+
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(targetUris);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+
+        return locationObservationLogic.generateModelObservationCollectionMap(
+                targetCollectionMap,
+                Objects.nonNull(endDate) ? endDate : Instant.now(),
+                true,
+                intersection
         );
-    }
-
-    public MoveNosqlModel getMoveEventNoSqlModel(URI uri) throws NoSuchElementException, NoSQLInvalidURIException {
-
-        Objects.requireNonNull(uri);
-        if(!noSqlDao.exists(clientSession, uri)){
-            return null;
-        }
-
-        Bson projection = Projections.fields(excludeId());
-
-        MoveNosqlModel model = noSqlDao.get(clientSession, uri, projection);
-
-        model.setUri(uri);
-        return model;
-    }
-
-    public List<MoveNosqlModel> getIntersectPosition(List<MoveNosqlModel> moveEventNoSqlModelList, Geometry geometry){
-
-        MoveNoSqlSearchFilter filter = new MoveNoSqlSearchFilter();
-        filter.setIncludedUris(moveEventNoSqlModelList.stream().map(MoveNosqlModel::getUri).collect(Collectors.toList()));
-        filter.setGeometry(geometry);
-
-        return noSqlDao.searchAsStreamWithPagination(filter).getSource().collect(Collectors.toList());
     }
 
     /**
@@ -206,15 +235,13 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @return the position of the given object during a time interval with a descending sort on the move end.
      * @apiNote The method run in two times :
      * <ul>
-     * <li> Search corresponding move URI and location from the SPARQL repository </li>
-     * <li> Then for each move URI, get the corresponding {@link MoveNosqlModel} from the mongodb collection.
+     * <li> Search corresponding move URI from the SPARQL repository </li>
+     * <li> Then, get the target location history - get corresponding {@link LocationObservationModel} from the mongodb collection.
      * <ul>
-     * <li> This last operation is done with a single query with a IN filter on {@link MoveNosqlModel#ID_FIELD} field. </li>
-     * <li> A {@link Map} between move URI and {@link PositionModel} is maintained in order to associated data from the two databases</li>
+     * <li> This last operation is to set the corresponding location in each move.
      * </ul>
      * </li>
      * </ul>
-     * @see MoveEventDAO#search(MoveSearchFilter)
      */
     public ListWithPagination<MoveModel> getPositionsHistory(
             URI target,
@@ -235,65 +262,34 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         searchFilter.setOrderByList(orderByList);
         searchFilter.setPage(page);
         searchFilter.setPageSize(pageSize);
-        ListWithPagination<MoveModel> locationHistory = dao.search(searchFilter);
+        ListWithPagination<MoveModel> moveHistory = dao.search(searchFilter);
 
-        // Index of position by uri, sorted by event end time
-        LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
+        //For each move event get location
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(target);
+        List<LocationObservationModel> locationHistory;
 
-        // for each location, create a position model initialized with the location and update position index
-        locationHistory.forEach(move -> {
-            positionsByUri.put(move.getUri(), null);
-        });
+        if (Objects.nonNull(collectionURI)) {
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            locationHistory = locationObservationLogic.getLocationsHistory(
+                    collectionURI,
+                    start != null ? start.toInstant() : null,
+                    end != null ? end.toInstant() : null,
+                    orderByList,
+                    page,
+                    pageSize
+            ).getList();
+        } else {
+            locationHistory = new ArrayList<>();
+        }
 
-
-        if (start != null) {
-            MoveModel lastMove = getLastMoveAfter(target, start);
-            if (lastMove != null) {
-                positionsByUri.put(lastMove.getUri(), null);
+        moveHistory.forEach(move -> locationHistory.forEach(loc ->{
+            if(SPARQLDeserializers.compareURIs(loc.getMoveUri(), move.getUri())){
+                move.setLocationObservation(loc);
             }
-        }
+        }));
 
-        if (!positionsByUri.isEmpty()) {
-
-            MoveNoSqlSearchFilter noSqlSearchFilter = new MoveNoSqlSearchFilter();
-            noSqlSearchFilter.setIncludedUris(positionsByUri.keySet());
-            noSqlSearchFilter.setPage(page);
-            noSqlSearchFilter.setPageSize(pageSize);
-            Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(target);
-
-            MongoSearchQuery<MoveNosqlModel, MoveNoSqlSearchFilter, MoveNosqlModel> mongoSearchQuery = new MongoSearchQuery<>();
-            mongoSearchQuery.setFilter(noSqlSearchFilter);
-            mongoSearchQuery.setProjection(Projections.fields(concernedItemPositionProjection));
-            mongoSearchQuery.setConvertFunction(Function.identity());
-
-
-            noSqlDao.searchAsStreamWithPagination(mongoSearchQuery).getSource().forEach(moveNoSqlModel -> {
-                if (!moveNoSqlModel.getTargetPositions().isEmpty()) {
-                    positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
-                } else {
-                    positionsByUri.remove(moveNoSqlModel.getUri());
-                }
-            });
-
-        }
-
-        locationHistory.forEach(move -> {
-            var targetPosition = new TargetPositionModel();
-            targetPosition.setTarget(target);
-            targetPosition.setPosition(positionsByUri.get(move.getUri()));
-            var noSqlModel = new MoveNosqlModel();
-            noSqlModel.setTargetPositions(Collections.singletonList(targetPosition));
-            move.setNoSqlModel(noSqlModel);
-        });
-        return locationHistory;
-    }
-
-    /**
-     * @param concernedItem the object on which we get the last move event
-     * @return the last move event of the given object, null if no move event was found.
-     */
-    public MoveModel getLastMoveEvent(URI concernedItem) throws Exception {
-        return this.getLastMoveAfter(concernedItem, null);
+        return moveHistory;
     }
 
     public Map<URI, URI> getLastLocations(Stream<URI> targets, int size) throws Exception {
@@ -305,9 +301,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @return a {@link SPARQLResult} which the following bindings :
      */
     public MoveModel getLastMoveAfter(URI target, OffsetDateTime dateTime) throws Exception {
-
         MoveSearchFilter searchFilter = new MoveSearchFilter().setAfterEnd(dateTime);
         searchFilter.setPage(0);
+
         if(!StringUtils.isBlank(target.toString())){
             searchFilter.setTargets(Collections.singletonList(target));
         }
@@ -322,94 +318,134 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     /**
-     * @param objectUri the object on which we get the position
+     * @param move move
      * @return the position of the given object at a given time, null if no move event was found.
      * @apiNote if time is null, then the last known position will be returned
      */
-    public PositionModel getPosition(URI objectUri, URI moveURI) throws Exception {
+    public LocationObservationModel getPosition(MoveModel move) throws Exception {
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(move.getTargets().get(0));
 
-        Bson projection = Projections.fields(
-                excludeId(), // don't fetch position _id field
-                getConcernedItemArrayItemProjection(objectUri) //  don't fetch concernedItem and position of other item
-        );
-
-        if(!noSqlDao.exists(clientSession, moveURI)) {
-            return null;
-        }
-
-        MoveNosqlModel moveNoSqlModel = noSqlDao.get(clientSession, moveURI, projection);
-
-        if (moveNoSqlModel==null || moveNoSqlModel.getTargetPositions().isEmpty()) {
-            return null;
-        }
-
-        return moveNoSqlModel.getTargetPositions().get(0).getPosition();
+        //Get last location
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        return locationObservationLogic.getASpecificLocationObservation(
+                collectionURI,
+                move.getEnd().getDateTimeStamp().toInstant(),
+                move.getStart() != null ? move.getStart().getDateTimeStamp().toInstant() : null );
     }
 
+    public MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
+        //Validate and set publisher
+        MoveModel realModel = super.create(model);
+        // insert move event as location in mongodb
+        LocationObservationModel observation = realModel.getLocationObservation();
+
+        if (Objects.nonNull(observation)) {
+            LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+
+            realModel.getTargets().forEach(target -> {
+                try {
+                    URI collectionURI = collectionLogic.getLocationObservationCollectionURI(target);
+
+                    if (Objects.isNull(collectionURI)) {
+                        collectionURI = collectionLogic.createLocationObservationCollection(target);
+                    }
+                    Instant end =realModel.getEnd().getDateTimeStamp().toInstant();
+                    Instant start = Objects.nonNull(realModel.getStart()) ? realModel.getStart().getDateTimeStamp().toInstant() : null;
+
+                    observationLogic.validateDates(end, start);
+
+                    boolean hasGeometry = observationLogic.checkHasGeometry(
+                            observation,
+                            start,
+                            end);
+
+                    observationLogic.createLocationObservation(
+                            session,
+                            collectionURI,
+                            target,
+                            hasGeometry,
+                            start,
+                            end,
+                            observation.getLocation(),
+                            realModel.getUri()
+                    );
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        return realModel;
+    }
     //#endregion
 
     //#region PRIVATE METHODS
 
 
-    /**
-     * @param concernedItemUri the URI of the item concerned by a move event.
-     * @return a {@link Bson} with {@link Filters#eq(Object)} expression on itemPositions.concernedItem property and the given URI
-     * @see MoveNosqlModel#getTargetPositions()
-     * @see TargetPositionModel#getPosition()
-     */
-    private Bson getConcernedItemArrayItemProjection(URI concernedItemUri) {
-        return Filters.elemMatch(MoveEventNoSqlDao.POSITION_ARRAY_FIELD,
-                Filters.eq(MoveEventNoSqlDao.TARGET_FIELD, concernedItemUri)
-        );
-    }
-
-    private List<MoveModel> createMultipleNoTransaction(List<MoveModel> models, List<MoveNosqlModel> noSqlModels, ClientSession clientSech) throws Exception {
+    private List<MoveModel> createMultipleNoTransaction(List<MoveModel> models, List<LocationObservationModel> locations, ClientSession clientSech) throws Exception {
         //insert into sparql graph and nosql
         dao.create(models);
-        if (!noSqlModels.isEmpty()) {
-            noSqlDao.create(clientSech, noSqlModels);
+        if (!locations.isEmpty()) {
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            observationLogic.createLocationObservations(clientSech, locations, sparql, currentUser);
         }
         return models;
     }
 
-    private MoveModel createNoTransaction(MoveModel model, ClientSession session) throws Exception {
-        //Validate and set publisher
-        MoveModel realModel = super.create(model);
-        // insert move event in mongodb
-        MoveNosqlModel noSqlModel = realModel.getNoSqlModel();
-        if (noSqlModel != null) {
-            String shortEventUri = URIDeserializer.getShortURI(realModel.getUri().toString());
-            noSqlModel.setUri(new URI(shortEventUri));
-            noSqlDao.create(session, noSqlModel);
-        }
-        return realModel;
-    }
-
     private void deleteNoTransaction(URI uri, ClientSession session) throws Exception{
+        MoveModel model= dao.get(uri,currentUser);
+
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
+
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        observationLogic.deleteASpecificLocationObservation(
+                session,
+                collectionURI,
+                model.getEnd().getDateTimeStamp().toInstant(),
+                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null
+                );
 
         dao.delete(uri);
-        boolean moveExistInMongo = noSqlDao.exists(session, uri);
-
-        if (moveExistInMongo) {
-            noSqlDao.delete(session, uri);
-        }
     }
 
     private MoveModel updateMoveNoTransaction(MoveModel model, ClientSession session) throws Exception {
-        dao.update(model);
-        URI modelUri = model.getUri();
-        MoveNosqlModel noSqlModel = model.getNoSqlModel();
-        boolean moveExistInMongo = noSqlDao.exists(session, modelUri);
+        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
+        URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
+
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        LocationObservationModel observation = observationLogic.getASpecificLocationObservation(collectionURI, model.getLocationObservation().getEndDate(), model.getLocationObservation().getStartDate());
 
         // the new move event has no data model in mongodb, so we need to delete the old if exists
-        if (noSqlModel == null) {
-            if (moveExistInMongo) {
-                noSqlDao.delete(session, modelUri);
+        if (Objects.isNull(model.getLocationObservation())) {
+            if (Objects.nonNull(observation)) {
+                observationLogic.deleteASpecificLocationObservation(session, collectionURI,observation.getEndDate(),Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+                //if the feature of interest doesn't have location observations, delete the collection
+                int count = observationLogic.countLocationsForURI(collectionURI);
+                if(count == 0){
+                    collectionLogic.deleteLocationObservationCollection(collectionURI);
+                }
             }
         } else {
-            noSqlModel.setUri(model.getUri());
-            noSqlDao.upsert(session, noSqlModel);
+            LocationObservationModel newLocation = model.getLocationObservation();
+
+            boolean hasGeometry = observationLogic.checkHasGeometry(
+                    newLocation,
+                    Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
+                    model.getEnd().getDateTimeStamp().toInstant());
+
+            newLocation.setObservationCollection(collectionURI);
+            newLocation.setFeatureOfInterest(model.getTargets().get(0));
+            newLocation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+            newLocation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
+            newLocation.setHasGeometry(hasGeometry);
+
+            observationLogic.updateASpecificLocationObservation(session,observation, newLocation);
         }
+
+        dao.update(model);
         return model;
     }
     //#endregion

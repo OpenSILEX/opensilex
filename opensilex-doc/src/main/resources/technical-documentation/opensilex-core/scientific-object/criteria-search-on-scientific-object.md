@@ -1,17 +1,15 @@
-# [Scientific Objects] Search by criteria on Data
+# Technical documentation : [Scientific Objects] Search by criteria on Data
 
-Author: Maximilian Hart
+**Document history (please add a line when you edit the document)**
 
-Date: 27/07/2023
-
-Developer(s): Maximilian Hart
-
-Version: Ambitious Amber
+| Date       | Editor(s)                | OpenSILEX version     | Comment           |
+|------------|--------------------------|-----------------------|-------------------|
+| 27/07/2023 | maximilian.hart@inrae.fr | 1.0.1 Ambitious Amber | Document creation |
 
 
 <!-- TOC -->
-* [[Scientific Objects] Search by criteria on Data](#scientific-objects-search-by-criteria-on-data)
-  * [Definition of the feature](#definition-of-the-feature)
+* [Technical documentation : [Scientific Objects] Search by criteria on Data](#technical-documentation--scientific-objects-search-by-criteria-on-data)
+  * [functional requirements](#functional-requirements)
   * [Ontology](#ontology)
   * [Back-end](#back-end)
     * [Newly defined classes :](#newly-defined-classes-)
@@ -21,29 +19,13 @@ Version: Ambitious Amber
     * [Modified files :](#modified-files-)
     * [New files :](#new-files-)
     * [CriteriaSearchModalCreator](#criteriasearchmodalcreator)
+  * [Documentation](#documentation)
 <!-- TOC -->
 
-## Definition of the feature
+## functional requirements
 
-Initially requested for the Vitis explorer project, the goal was to add a filter to the list of Scientific Object filters.
-This filter would allow the user to retain only Objects that have data that validates an undefined amount of criteria connected
-by And/Or logic.  
-
-For the first version the criteria are only connected by an "And". For example : Give me all the plants that have a height 
-bigger than 30cm AND a yield lesser than 50%.
-
-The supported comparator **operators** are :
-
-- `<` 
-- `>`
-- `<=`
-- `>=` 
-- `=`
-
-The supported **variable types** are 
-- Datetime
-- Dates 
-- Numbers (decimal or nay).
+**functional specification** : to understand the purpose of the feature and its precise rules see relative functional specification file :
+- [criteria-search-on-scientific-object.md](../../../functional-specifications/scientific-object/criteria-search-on-scientific-object.md)
 
 ***
 
@@ -144,3 +126,7 @@ For example a Date selector if the variable datatype is a date. By default, a te
 - **Revert to last validation**, the criteria visible inside the modal aren't taken into account until the user validates. However
 the inner display is still saved, this allows the user to close the pop-up and come back without losing the information. 
 The revert button is useful if he/she realises he/she made a blunder since the last validation.
+
+## Documentation
+
+- see the [specification document](../../../functional-specifications/scientific-object/criteria-search-on-scientific-object.md)

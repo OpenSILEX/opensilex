@@ -1,12 +1,24 @@
-# Scientific object graph management
+# Specifications : [Scientific object] graph management and uri generation
 
-**Description**: This document describes which rules apply in case of a scientific object URI generation. <br>
-**Author**: Renaud COLIN (MISTEA INRAE) <br>
-**Date**: 13/09/2022 <br>
+**Document history (please add a line when you edit the document)**
 
-<hr>
+| Date       | Editor(s)             | OpenSILEX version       | Comment                                                         |
+|------------|-----------------------|-------------------------|-----------------------------------------------------------------|
+| 13/09/2022 | renaud.colin@inrae.fr | 1.0.0-rc+4.1            | Document creation                                               |
+| 10/12/2025 | yvan.roux@inrae.fr    | 1.4.9 Explosive Emerald | refactoring document to follow new template and file management |
 
-# Introduction
+## Table of contents
+
+<!-- TOC -->
+* [Specifications : [Scientific object] graph management and uri generation](#specifications--scientific-object-graph-management-and-uri-generation)
+  * [Table of contents](#table-of-contents)
+  * [functional requirements](#functional-requirements)
+  * [Business logic](#business-logic)
+    * [Experimental context (Insertion within an experiment)](#experimental-context-insertion-within-an-experiment)
+    * [Global context  (Insertion outside any experiment)](#global-context-insertion-outside-any-experiment)
+<!-- TOC -->
+
+## functional requirements
 
 Scientific object can be handled in two context :
 - **Experimental context** : the object is attached into one or multiple experiment and the object properties are stored
@@ -15,13 +27,13 @@ Scientific object can be handled in two context :
   These relations are stored when creating an object into experiment (name and type are copied into global graph), or when directly creating
   a scientific object into the global graph.
 
-# Conception
+## Business logic
 
 The UML activity diagram just below describe the process of URI handling in experimental/global context
 
-![uri_generation.png](uri_generation.png "OS URI generation : UML activity diagramm")
+![uri_generation.png](rsrc/uri_generation.png "OS URI generation : UML activity diagramm")
 
-## Experimental context (Insertion within an experiment)
+### Experimental context (Insertion within an experiment)
 
 - **If URI are set** 
   - check that OS are unique from experiment graph
@@ -76,7 +88,7 @@ The following insertion will result to error
 
 **Name** : OS name must be unique for an experiment, else it's an error.
 
-## Global context  (Insertion outside any experiment)
+### Global context  (Insertion outside any experiment)
 
 - **If URI are set**
   - Check that OS URIs are unique inside global graph, else it's a duplicate error
@@ -111,11 +123,4 @@ The following insertion will result to error
 **Name** : OS name is not unique inside global graph.
 - Two OS with same name which are inserted within two experiment, can have the same name into the global OS graph
 - Two OS inserted into the global graph, can have the same name
-
-## Implementation
-
-Implementation of these rules are into the `ScientificObjectDAO.create` method.
-
-Tests are implemented into the `ScientificObjectAPITest` test class
-
 

@@ -64,5 +64,5 @@ section. Business logic also includes authorization rules.}
 {List internal and external not technical documentations relevant to the feature. For example, configuration
 instructions}.
 
-- see the technical document {path}
-- see the user documentation {path}
+- see the [technical document]({path})
+- see the [user documentation]({path})

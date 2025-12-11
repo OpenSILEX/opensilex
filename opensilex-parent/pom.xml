@@ -55,7 +55,7 @@
 
         <!-- dependencies version -->
         <jersey.version>2.37</jersey.version>
-        <tomcat.version>9.0.107</tomcat.version>
+        <tomcat.version>9.0.113</tomcat.version>
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
         <jackson.version>2.17.2</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
@@ -143,6 +143,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <geotools.version>29.6</geotools.version>
         <maven.fluido.skin.version>2.1.0</maven.fluido.skin.version>
         <maven.checkstyle.plugin.version>3.6.0</maven.checkstyle.plugin.version>
+        <maven.git.commit.id.plugin>9.0.2</maven.git.commit.id.plugin>
         <!-- sonarqube -->
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
@@ -873,6 +874,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
                         <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+                        <pathToYarn>${maven.multiModuleProjectDirectory}/.node/node/yarn/dist/bin/yarn</pathToYarn>
                     </configuration>
                 </plugin>
                 <!-- Generate swagger.json file -->
@@ -1127,7 +1129,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <plugin>
                     <groupId>pl.project13.maven</groupId>
                     <artifactId>git-commit-id-plugin</artifactId>
-                    <version>4.9.10</version>
+                    <version>${maven.git.commit.id.plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

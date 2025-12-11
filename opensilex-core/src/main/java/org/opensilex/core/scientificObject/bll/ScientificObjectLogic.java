@@ -227,7 +227,7 @@ public class ScientificObjectLogic {
 
         return locationObservationLogic.generateModelObservationCollectionMap(
                 soList,
-                (ScientificObjectModel model) -> model.getLocationObservationCollection().getUri(),
+                (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
                 Instant.now(),
                 null,
                 null
@@ -432,7 +432,7 @@ public class ScientificObjectLogic {
 
             soAndLocationsMap = locationObservationLogic.generateModelObservationCollectionMap(
                     soList,
-                    (ScientificObjectModel model) -> model.getLocationObservationCollection().getUri(),
+                    (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
                     end,
                     null,
                     null

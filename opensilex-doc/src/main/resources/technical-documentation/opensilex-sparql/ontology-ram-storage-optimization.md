@@ -33,7 +33,7 @@ speed-up these services.
 
 The picture just below describe the main interface which provides functionalities of a OntologyStore.
 
-![Ontology store class diagrammm](./OntologyStoreUMLClassDiagramm.png)
+![Ontology store class diagrammm](OntologyStoreUMLClassDiagramm.png)
 
 We can split these functionalities into four parts : 
 

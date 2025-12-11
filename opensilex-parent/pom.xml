@@ -143,7 +143,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <geotools.version>29.6</geotools.version>
         <maven.fluido.skin.version>2.1.0</maven.fluido.skin.version>
         <maven.checkstyle.plugin.version>3.6.0</maven.checkstyle.plugin.version>
-        <maven.git.commit.id.plugin>9.0.2</maven.git.commit.id.plugin>
+        <maven.git.commit.id.plugin>4.9.10</maven.git.commit.id.plugin>
         <!-- sonarqube -->
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>

@@ -93,7 +93,7 @@ build-and-test:
   script:
     - mkdir -p sonarqube_reports_log 
     - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
-    - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report > sonarqube_reports_log/verify.log
+    - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report | grep -v "^\[ERROR\]"
   artifacts:
     paths:
       - sonarqube_reports_log

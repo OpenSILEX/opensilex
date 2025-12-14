@@ -81,21 +81,51 @@ variables:
         </servers> 
       </settings>
 
-build-sonar:
+build-and-test:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   variables:
-    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task  
-  stage: build-sonar 
+    GIT_DEPTH: "0"
+  stage: build
+  cache: 
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - $MAVEN_CACHE_FOLDER
+  script:
+    - mkdir -p sonarqube_reports_log 
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
+    - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report > sonarqube_reports_log/verify.log
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+      - target/
+      - "**/target/"
+    expire_in: 1 hour
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
+
+sonar-analysis:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: sonar
+  needs:
+    - job: build-and-test
+      artifacts: true
   cache: 
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
       - "${SONAR_USER_HOME}/cache"
-      - $MAVEN_CACHE_FOLDER
-      - sonar-scanner/ 
+      - sonar-scanner/
   script:
-    - mkdir -p sonarqube_reports_log 
-    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
-    - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > sonarqube_reports_log/verify.log  
     - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
   artifacts:
     paths:
@@ -111,6 +141,37 @@ build-sonar:
     - if: $CI_COMMIT_BRANCH == 'main'
     - if: $CI_COMMIT_BRANCH == 'develop'
     - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
+
+# build-sonar:
+#   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+#   variables:
+#     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task  
+#   stage: build-sonar 
+#   cache: 
+#     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+#     paths:
+#       - "${SONAR_USER_HOME}/cache"
+#       - $MAVEN_CACHE_FOLDER
+#       - sonar-scanner/ 
+#   script:
+#     - mkdir -p sonarqube_reports_log 
+#     - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
+#     - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > sonarqube_reports_log/verify.log  
+#     - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+#   artifacts:
+#     paths:
+#       - sonarqube_reports_log
+#   before_script:
+#     - mkdir -p $CI_PROJECT_DIR/.m2
+#     - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+#     - more $CI_PROJECT_DIR/.m2/settings.xml
+#   allow_failure: true
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+#     - if: $CI_COMMIT_BRANCH == 'master'
+#     - if: $CI_COMMIT_BRANCH == 'main'
+#     - if: $CI_COMMIT_BRANCH == 'develop'
+#     - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
   
 ########################
 ##  CACHE TEMPLATE

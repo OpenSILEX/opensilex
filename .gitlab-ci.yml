@@ -10,7 +10,7 @@ stages:
   - test
   - deploy
   - release
-  - build-sonar
+  - sonar
 
 ########################
 ##GLOBAL VARIABLES

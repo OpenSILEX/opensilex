@@ -52,7 +52,7 @@
 
     <!-- Composant de crea/edit variable (invisible) -->
     <opensilex-VariableCreate
-      ref="variableCreate" 
+      ref="variableCreate"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
       @onCreate="afterVariableSaved"
       @onUpdate="afterVariableSaved"
@@ -65,43 +65,53 @@
       @onUpdate="updateReferences"
     />
 
-
     <!-- Modale de création/édition d’une entité -->
     <opensilex-AgroportalEntityForm
       ref="entityForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    ></opensilex-AgroportalEntityForm>
+      @onCreate="form => onExternalResourceCreatedOrUpdated('entities', form)"
+      @onUpdate="form => onExternalResourceCreatedOrUpdated('entities', form)"
+    />
 
-    <!-- Modale d'édition d’une entité d'intéret -->
+    <!-- Modale d'édition d’une entité d'intérêt -->
     <opensilex-AgroportalEntityOfInterestForm
       ref="interestEntityForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    ></opensilex-AgroportalEntityOfInterestForm>
+      @onCreate="form => onExternalResourceCreatedOrUpdated('interestEntity', form)"
+      @onUpdate="form => onExternalResourceCreatedOrUpdated('interestEntity', form)"
+    />
 
-    <!-- Modale d'édition d’une caracteristique -->
+    <!-- Modale d'édition d’une caractéristique -->
     <opensilex-AgroportalCharacteristicForm
       ref="characteristicForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    ></opensilex-AgroportalCharacteristicForm>
+      @onCreate="form => onExternalResourceCreatedOrUpdated('characteristics', form)"
+      @onUpdate="form => onExternalResourceCreatedOrUpdated('characteristics', form)"
+    />
 
-    <!-- Modale d'édition d’une methode -->
+    <!-- Modale d'édition d’une méthode -->
     <opensilex-AgroportalMethodForm
       ref="methodForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    ></opensilex-AgroportalMethodForm>
+      @onCreate="form => onExternalResourceCreatedOrUpdated('methods', form)"
+      @onUpdate="form => onExternalResourceCreatedOrUpdated('methods', form)"
+    />
 
     <!-- Modale d'édition d’une unité -->
     <opensilex-AgroportalUnitForm
       ref="unitForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-    ></opensilex-AgroportalUnitForm>
+      @onCreate="form => onExternalResourceCreatedOrUpdated('units', form)"
+      @onUpdate="form => onExternalResourceCreatedOrUpdated('units', form)"
+    />
 
     <!-- Modale de création/édition d’un groupe de variables -->
     <opensilex-VariableGroupCreate
       ref="variableGroupCreate"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+      @onCreate="form => onExternalResourceCreatedOrUpdated('groups', form)"
+      @onUpdate="form => onExternalResourceCreatedOrUpdated('groups', form)"
     />
-
 
     <!-- Modale d'aide -->
     <teleport to="body">
@@ -118,94 +128,102 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, defineAsyncComponent, nextTick, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
-import { useRoute, useRouter } from 'vue-router';
-import { VariablesService, DataService } from 'opensilex-core/index';
-import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
-import { useStore } from "vuex";
-import VariableCreate from './form/VariableCreate.vue';
-import VariableGroupCreate from './form/VariableGroupCreate.vue';
+import { ref, type Ref, computed, inject, defineAsyncComponent, nextTick, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
+import { useRoute, useRouter } from 'vue-router'
+import { VariablesService, DataService } from 'opensilex-core/index'
+import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
+import { useStore } from 'vuex'
+
+// imports de composants de formulaires
+import VariableCreate from './form/VariableCreate.vue'
+import VariableGroupCreate from './form/VariableGroupCreate.vue'
 import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
 import AgroportalEntityOfInterestForm from './agroportal/AgroportalEntityOfInterestForm.vue'
 import AgroportalCharacteristicForm from './agroportal/AgroportalCharacteristicForm.vue'
 import AgroportalMethodForm from './agroportal/AgroportalMethodForm.vue'
 import AgroportalUnitForm from './agroportal/AgroportalUnitForm.vue'
 
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const variablesService = opensilex.getService<VariablesService>('opensilex.VariablesService')
+const datasService = opensilex.getService<DataService>('opensilex.DataService')
+const { t } = useI18n()
+const store = useStore()
+const user = computed(() => store.state.user)
+const credentials = computed(() => store.state.credentials)
+const route = useRoute()
+const router = useRouter()
 
-const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-const variablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
-const datasService = opensilex.getService<DataService>("opensilex.DataService");
-const { t } = useI18n();
-const store = useStore();
-const user = computed(() => store.state.user);
-const credentials = computed(() => store.state.credentials);
-const route = useRoute();
-const router = useRouter();
-
+// ----------------------
 // Onglets
+// ----------------------
 const tabDefinitions = [
-  { key: 'variables', labelKey: 'component.menu.variables', component: () => import('./VariableList.vue'), refKey: 'variableList' },
-  { key: 'entities', labelKey: 'VariableView.entity', component: () => import('./views/EntitiesView.vue'), refKey: 'entitiesView' },
-  { key: 'interestEntity', labelKey: 'VariableView.entityOfInterest', component: () => import('./views/EntityOfInterestView.vue'), refKey: 'entityOfInterestView' },
-  { key: 'characteristics', labelKey: 'VariableView.characteristic', component: () => import('./views/CharacteristicsView.vue'), refKey: 'characteristicsView' },
-  { key: 'methods', labelKey: 'VariableView.method', component: () => import('./views/MethodView.vue'), refKey: 'methodView' },
-  { key: 'units', labelKey: 'VariableView.unit', component: () => import('./views/UnitsView.vue'), refKey: 'unitView' },
-  { key: 'groups', labelKey: 'VariableView.groupVariable', component: () => import('./../groupVariable/GroupVariablesView.vue'), refKey: 'groupVariablesView' }
-];
+  { key: 'variables',       labelKey: 'component.menu.variables',     component: () => import('./VariableList.vue'),         refKey: 'variableList' },
+  { key: 'entities',        labelKey: 'VariableView.entity',          component: () => import('./views/EntitiesView.vue'),   refKey: 'entitiesView' },
+  { key: 'interestEntity',  labelKey: 'VariableView.entityOfInterest',component: () => import('./views/EntityOfInterestView.vue'), refKey: 'entityOfInterestView' },
+  { key: 'characteristics', labelKey: 'VariableView.characteristic',  component: () => import('./views/CharacteristicsView.vue'), refKey: 'characteristicsView' },
+  { key: 'methods',         labelKey: 'VariableView.method',          component: () => import('./views/MethodView.vue'),    refKey: 'methodView' },
+  { key: 'units',           labelKey: 'VariableView.unit',            component: () => import('./views/UnitsView.vue'),     refKey: 'unitView' },
+  { key: 'groups',          labelKey: 'VariableView.groupVariable',   component: () => import('./../groupVariable/GroupVariablesView.vue'), refKey: 'groupVariablesView' }
+] as const
 
 const tabs = computed(() =>
   tabDefinitions.map(({ key, labelKey }) => ({ key, label: t(labelKey) }))
-);
+)
 
-const currentTabRef = computed(() => {
-  const def = tabDefinitions.find(t => t.key === currentTab.value);
-  return def ? formRefs[def.refKey] : undefined;
-});
+const currentTab = ref<'variables' | 'entities' | 'interestEntity' | 'characteristics' | 'methods' | 'units' | 'groups'>('variables')
+const readyTabs = new Set<string>()
 
-const currentTab = ref('variables');
-const readyTabs = new Set<string>();
-
-// Composants asynchrones & références
+// Composants asynchrones
 const tabComponents = Object.fromEntries(
   tabDefinitions.map(tab => [tab.key, defineAsyncComponent(tab.component)])
-);
+) as Record<(typeof tabDefinitions)[number]['key'], any>
 
-// ajout de toutes les refs, y compris celle pour VariableCreate
-const formRefs = {
+// ----------------------
+// Refs centralisées
+// ----------------------
+const formRefs: Record<string, Ref<any>> = {
+  // modales
   variableCreate: ref(null),
   entityForm: ref(null),
   characteristicForm: ref(null),
   methodForm: ref(null),
   unitForm: ref(null),
   interestEntityForm: ref(null),
-  variableList: ref(null),
   variableGroupCreate: ref(null),
-  ...Object.fromEntries(
-    tabDefinitions.map(tab => [tab.refKey, ref()])
-  )
-};
+}
 
-const variableCreate = formRefs.variableCreate; // pour lier dans le template
-const variableGroupCreate = formRefs.variableGroupCreate;
-const entityForm = formRefs.entityForm;
-const interestEntityForm = formRefs.interestEntityForm;
-const characteristicForm = formRefs.characteristicForm;
-const methodForm = formRefs.methodForm;
-const unitForm = formRefs.unitForm;
+// on ajoute les refs des vues d’onglets
+tabDefinitions.forEach(tab => {
+  formRefs[tab.refKey] = ref(null)
+})
 
-const currentTabComponent = computed(() => tabComponents[currentTab.value]);
+const variableCreate = formRefs['variableCreate']
+const variableGroupCreate = formRefs['variableGroupCreate']
+const entityForm = formRefs['entityForm']
+const interestEntityForm = formRefs['interestEntityForm']
+const characteristicForm = formRefs['characteristicForm']
+const methodForm = formRefs['methodForm']
+const unitForm = formRefs['unitForm']
 
+const currentTabComponent = computed(() => tabComponents[currentTab.value])
 
-// Actions
+const currentTabRef = computed(() => {
+  const def = tabDefinitions.find(t => t.key === currentTab.value)
+  return def ? formRefs[def.refKey] : undefined
+})
+
+// ----------------------
+// Actions / titres
+// ----------------------
 const actions = ref([
   {
     label: t('actions.create'),
     icon: 'bi bi-plus-circle',
     onClick: () => showCreateForm()
   }
-]);
+])
 
 const tabToLabelKey = new Map<string, string>([
   ['variables', 'VariableView.add-variable'],
@@ -215,40 +233,73 @@ const tabToLabelKey = new Map<string, string>([
   ['methods', 'VariableView.add-method'],
   ['units', 'VariableView.add-unit'],
   ['groups', 'VariableView.add-groupVariable']
-]);
+])
 
 const buttonTitle = computed(() => {
-  const key = tabToLabelKey.get(currentTab.value);
-  return key ? t(key) : t('actions.create');
-});
+  const key = tabToLabelKey.get(currentTab.value)
+  return key ? t(key) : t('actions.create')
+})
 
-// Gestion modale
-const showHelpModal = ref(false);
+// ----------------------
+// Gestion modale d'aide
+// ----------------------
+const showHelpModal = ref(false)
 function openHelpModal() {
-  showHelpModal.value = true;
+  showHelpModal.value = true
 }
 function closeHelpModal() {
-  showHelpModal.value = false;
+  showHelpModal.value = false
 }
 
-// Onglets prêts
-function markTabReady(tabKey: string) {
-  readyTabs.add(tabKey);
+// ----------------------
+// Gestion des formulaires de création
+// ----------------------
+const loadGroupForm = ref(false)
+
+const tabRefMap: Record<string, Ref<any>> = {
+  variables: formRefs['variableCreate'],
+  entities: formRefs['entityForm'],
+  interestEntity: formRefs['interestEntityForm'],
+  characteristics: formRefs['characteristicForm'],
+  methods: formRefs['methodForm'],
+  units: formRefs['unitForm'],
+  groups: formRefs['variableGroupCreate']
 }
 
-// Création
-const loadGroupForm = ref(false);
+function showCreateForm() {
+  if (currentTab.value === 'groups') {
+    loadGroupForm.value = true
+    nextTick(() => {
+      tabRefMap[currentTab.value]?.value?.showCreateForm?.()
+    })
+  } else {
+    tabRefMap[currentTab.value]?.value?.showCreateForm?.()
+  }
+}
 
-const tabRefMap = {
-  variables: formRefs.variableCreate,
-  entities: formRefs.entityForm,
-  interestEntity: formRefs.interestEntityForm,
-  characteristics: formRefs.characteristicForm,
-  methods: formRefs.methodForm,
-  units: formRefs.unitForm,
-  groups: formRefs.variableGroupCreate
-};
+// ----------------------
+// Mapping des vues externes (entité d’intérêt, caractéristique, méthode, unité)
+// ----------------------
+const externalViewRefs = {
+  entities: formRefs['entitiesView'],
+  interestEntity: formRefs['entityOfInterestView'],
+  characteristics: formRefs['characteristicsView'],
+  methods: formRefs['methodView'],
+  units: formRefs['unitView'],
+  groups: formRefs['groupVariablesView']
+} as const
 
+function onExternalResourceCreatedOrUpdated(type: keyof typeof externalViewRefs, form: any) {
+  console.log('[VariablesView] onExternalResourceCreatedOrUpdated', type, form)
+  const viewRef = externalViewRefs[type]
+  const view = viewRef?.value
+  // Chaque vue doit exposer onFormSuccess via defineExpose({ onFormSuccess })
+  view?.onFormSuccess?.(form)
+}
+
+// ----------------------
+// URL / routing : elementType dans la query
+// ----------------------
 const tabToElementType = {
   variables: 'Variable',
   entities: 'Entity',
@@ -261,37 +312,22 @@ const tabToElementType = {
 
 const elementType = computed(() => tabToElementType[currentTab.value] || 'Variable')
 
-// inverse pour retrouver l’onglet depuis l'rul
 const elementTypeToTab = Object.fromEntries(
-  Object.entries(tabToElementType).map(([key,value]) => [value,key])
+  Object.entries(tabToElementType).map(([key, value]) => [value, key])
 ) as Record<string, keyof typeof tabToElementType>
 
-// helper pour modifier l'url d'un onglet à l'autre de façon à supprimer l'elementType selectionné
-const replaceQuerySansSelected = (next: Record<string, any>) => {
-  const { selected, ...rest } = route.query
-  router.replace({ query: { ...rest, ...next } })
-}
-
-
-// écrire elementType dans l'url quand on change d'onglet 
-watch(currentTab, (key) => {
+watch(currentTab, key => {
   const val = tabToElementType[key]
   const currentEl = typeof route.query.elementType === 'string' ? route.query.elementType : undefined
 
   if (currentEl === val) {
-    // Changement déclenché par la route (ex: redirection avec ?selected=...)
-    // -> ne touche PAS à `selected`
     router.replace({ query: { ...route.query, elementType: val } })
   } else {
-    // Changement d’onglet initié localement
-    // -> on clear `selected`
     const { selected, ...rest } = route.query
     router.replace({ query: { ...rest, elementType: val } })
   }
 })
 
-
-// au montage : si l’URL a déjà elementType, on positionne l’onglet
 const initTabFromQuery = () => {
   const pathElementType = route.query.elementType as string | undefined
   if (pathElementType && elementTypeToTab[pathElementType]) {
@@ -300,136 +336,127 @@ const initTabFromQuery = () => {
 }
 initTabFromQuery()
 
-// si l’utilisateur navigue dans l’historique
-watch(() => route.query.elementType, (pathElementType) => {
-  if (typeof pathElementType === 'string' && elementTypeToTab[pathElementType] && currentTab.value !== elementTypeToTab[pathElementType]) {
-    currentTab.value = elementTypeToTab[pathElementType]
+watch(
+  () => route.query.elementType,
+  pathElementType => {
+    if (
+      typeof pathElementType === 'string' &&
+      elementTypeToTab[pathElementType] &&
+      currentTab.value !== elementTypeToTab[pathElementType]
+    ) {
+      currentTab.value = elementTypeToTab[pathElementType]
+    }
   }
-})
+)
 
-
-
-function showCreateForm() {
-  if (currentTab.value === 'groups') {
-    loadGroupForm.value = true;
-    nextTick(() => {
-      tabRefMap[currentTab.value]?.value?.showCreateForm();
-    });
-  } else {
-    tabRefMap[currentTab.value]?.value?.showCreateForm();
-  }
-}
-
-
-// Edition de variable
-
-let currentEditRequest = null;
+// ----------------------
+// Variables : édition / suppression
+// ----------------------
+let currentEditRequest: Promise<any> | null = null
 
 async function onEditVariable(uri: string) {
   if (currentEditRequest) {
-    console.warn("Édition déjà en cours, annulation de la nouvelle demande.");
-    return;
+    console.warn('Édition déjà en cours, annulation de la nouvelle demande.')
+    return
   }
 
   try {
-    currentEditRequest = variablesService.getVariable(uri);
-    const getResult = await currentEditRequest;
-    currentEditRequest = null;
+    currentEditRequest = variablesService.getVariable(uri)
+    const getResult = await currentEditRequest
+    currentEditRequest = null
 
     if (getResult?.response) {
-      formRefs.variableCreate.value?.showEditForm(getResult.response.result);
+      formRefs['variableCreate'].value?.showEditForm(getResult.response.result)
     }
   } catch (e) {
-    console.error(e);
-    currentEditRequest = null;
+    console.error(e)
+    currentEditRequest = null
   }
 }
 
-// Suppression avec vérification de données liées
 async function onDeleteVariable(item: any) {
-  const uri: string | undefined = typeof item === 'string' ? item : item?.uri;
+  const uri: string | undefined = typeof item === 'string' ? item : item?.uri
   if (!uri) {
-    console.warn("onDeleteVariable: aucune URI fournie");
-    return;
+    console.warn('onDeleteVariable: aucune URI fournie')
+    return
   }
 
   try {
-
-    // 1) Vérifier s'il existe des données liées
     const http: HttpResponse<OpenSilexResponse<number>> = await datasService.countData(
-      undefined, 
-      undefined, 
-      undefined, 
-      undefined, 
       undefined,
-      [uri], // filtre par variable
-      undefined, 
-      undefined, 
-      undefined, 
-      undefined, 
       undefined,
-      undefined, 
-      undefined, 
-      1, 
-      undefined, 
+      undefined,
+      undefined,
+      undefined,
+      [uri],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      1,
+      undefined,
       undefined
-    );
-    const count = http?.response?.result ?? 0;
+    )
+    const count = http?.response?.result ?? 0
 
     if (count > 0) {
-      opensilex.showErrorToast(`${count} ${t('VariableView.associated-data-error')}`);
-      return;
+      opensilex.showErrorToast(`${count} ${t('VariableView.associated-data-error')}`)
+      return
     }
 
-    // 2) Supprimer la variable
-    const delResp: HttpResponse<OpenSilexResponse<string>> = await variablesService.deleteVariable(uri);
+    const deletVarResponse: HttpResponse<OpenSilexResponse<string>> = await variablesService.deleteVariable(uri)
 
-    // 3) Rafraîchir + succès
-    formRefs.variableList.value?.refresh?.();
-    const message = `${t('VariableView.name')} ${uri} ${t('component.common.success.delete-success-message')}`;
-    opensilex.showSuccessToast(message);
+    formRefs['variableList'].value?.refresh?.()
+    const message = `${t('VariableView.name')} ${uri} ${t('component.common.success.delete-success-message')}`
+    opensilex.showSuccessToast(message)
 
-    return delResp;
+    return deletVarResponse
   } catch (error: any) {
-    // Si le backend renvoie un 409, on affiche le message i18n dédié
-    const status = error?.httpStatus || error?.response?.code || error?.status;
+    const status = error?.httpStatus || error?.response?.code || error?.status
     if (status === 409) {
-      opensilex.showErrorToast(t('VariableView.associated-data-error') as string);
-      return;
+      opensilex.showErrorToast(t('VariableView.associated-data-error') as string)
+      return
     }
-    opensilex.errorHandler(error);
+    opensilex.errorHandler(error)
   }
 }
 
 function afterVariableSaved() {
-  formRefs.variableList.value?.refresh?.();
+  formRefs['variableList'].value?.refresh?.()
 }
 
-
-const selected = ref(null);
-const skosReferences = ref(null); // accès à la modale
+// ----------------------
+// Références / interop
+// ----------------------
+const selected = ref<any | null>(null)
+const skosReferences = ref<any | null>(null)
 
 const showVariableReferences = async (uri: string) => {
   try {
-    const http = await variablesService.getVariable(uri);
-    selected.value = http.response.result;
-    skosReferences.value?.show(); // appelle la méthode show() sur la modale
+    const http = await variablesService.getVariable(uri)
+    selected.value = http.response.result
+    skosReferences.value?.show?.()
   } catch (error) {
-    opensilex.errorHandler(error);
+    opensilex.errorHandler(error)
   }
-};
+}
 
+function updateReferences() {
+  // TODO ? logique de mise à jour des références SKOS
+}
 
-// Event binding conditionnel
+// Events pour la liste de variables
 const variableListeners = {
   edit: onEditVariable,
   onInteroperability: (variable: any) => {
-    showVariableReferences(variable);
+    showVariableReferences(variable)
   },
-  // delete: (item: any) => console.log("Delete:", item),
   delete: onDeleteVariable,
-  reset: () => console.log("Reset")
-};
+  reset: () => console.log('Reset')
+}
 </script>
 
 

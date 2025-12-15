@@ -60,7 +60,8 @@
       :createTitle="'component.variable.unit.add-unit'"
       :editTitle="'component.variable.unit.edit'"
       :editData="editData"
-      @onSuccess="onFormSuccess"
+      @onCreate="onFormSuccess"
+      @onUpdate="onFormSuccess"
       @onClose="closeForm"
     ></opensilex-AgroportalUnitForm>
   </div>
@@ -170,10 +171,34 @@ async function showEditForm(unit: any) {
   });
 }
 
-function onFormSuccess() {
-  showForm.value = false;
-  selected.value = null;
-  fetchUnits();
+async function onFormSuccess(form: any) {
+  // On garde en mémoire l'URI à reselectionner :
+  // - priorité à form.uri si présent
+  // - sinon, l'unité déjà sélectionnée avant la sauvegarde
+  const previousUri = selected.value?.uri
+  const targetUri = form?.uri || previousUri || null
+
+  // On ferme le formulaire
+  showForm.value = false
+  editData.value = null
+
+  // On recharge la liste
+  await fetchUnits()
+  await nextTick()
+
+  if (!targetUri) {
+    return
+  }
+
+  // Si l'unité est dans la liste, on l'utilise
+  const selectedUnit = units.value.find(e => e.uri === form.uri)
+
+  if (selectedUnit) {
+    await updateSelected(selectedUnit)
+  } else {
+    // Fallback on construit un mini-objet avec l'URI juste pour updateSelected
+    await updateSelected({ uri: targetUri })
+  }
 }
 
 function closeForm() {
@@ -273,7 +298,7 @@ async function selectFromQuery () {
   }
 }
 
-defineExpose({ showCreateForm });
+defineExpose({ showCreateForm, onFormSuccess });
 </script>
 
 <style>

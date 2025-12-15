@@ -60,7 +60,8 @@
         :createTitle="'component.variable.characteristic.add-characteristic'"
         :editTitle="'component.variable.characteristic.edit'"
         :editData="editData"
-        @onSuccess="onFormSuccess"
+        @onCreate="onFormSuccess"
+        @onUpdate="onFormSuccess"
         @onClose="closeForm"
       ></opensilex-AgroportalCharacteristicForm>
   </div>
@@ -127,7 +128,6 @@ async function updateSelected(characteristic: any) {
   const selectedCharacteristicDetails = await fetchCharacteristicDetails(characteristic.uri);
   if (!selectedCharacteristicDetails) return;
 
-console.log("selecteeeed details ", selectedCharacteristicDetails)
   selected.value = {
     ...selectedCharacteristicDetails,
     name: selectedCharacteristicDetails.name || selectedCharacteristicDetails.label || '',
@@ -170,15 +170,34 @@ async function showEditForm(characteristic: any) {
   });
 }
 
-function onFormSuccess() {
-  showForm.value = false;
-  selected.value = null;
-  fetchCharacteristics();
-}
+async function onFormSuccess(form: any) {
+  // On garde en mémoire l'URI à reselectionner :
+  // - priorité à form.uri si présent
+  // - sinon, la carac déjà sélectionnée avant la sauvegarde
+  const previousUri = selected.value?.uri
+  const targetUri = form?.uri || previousUri || null
 
-function closeForm() {
-  showForm.value = false;
-  editData.value = null;
+  // On ferme le formulaire
+  showForm.value = false
+  editData.value = null
+
+  // On recharge la liste
+  await fetchCharacteristics()
+  await nextTick()
+
+  if (!targetUri) {
+    return
+  }
+
+  // Si la charac est dans la liste, on l'utilise
+  const selectedCharacteristic = characteristics.value.find(e => e.uri === form.uri)
+
+  if (selectedCharacteristic) {
+    await updateSelected(selectedCharacteristic)
+  } else {
+    // Fallback on construit un mini-objet avec l'URI juste pour updateSelected
+    await updateSelected({ uri: targetUri })
+  }
 }
 
 // Requête de recherche
@@ -273,7 +292,7 @@ async function selectFromQuery () {
   }
 }
 
-defineExpose({ showCreateForm });
+defineExpose({ showCreateForm, onFormSuccess });
 </script>
 
 <style>

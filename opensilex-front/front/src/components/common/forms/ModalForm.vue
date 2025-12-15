@@ -64,7 +64,7 @@ const props = defineProps({
   overrideSuccessMessage: Boolean
 })
 
-const emit = defineEmits(['hide', 'onCreate', 'onUpdate'])
+const emit = defineEmits(['hide', 'onCreate', 'onUpdate', 'onSuccess'])
 
 const editMode = ref(false)
 const form = ref<Record<string, any>>({})
@@ -86,18 +86,29 @@ function getFormRef() {
 
 async function validate() {
   try {
-    // API Promise : erreur si invalide
-    // await formRef.value?.validate()
-    const ok = await getFormRef()?.validate?.()
-if (!ok) return
+    // 1) Validation Naive UI (si des rules sont définies)
+    if (formRef.value) {
+      // Si aucune règle, validate() résout immédiatement
+      await formRef.value.validate()
+    }
+
+    // 2) Validation custom optionnelle du composant enfant
+    const child = getFormRef()
+    if (child?.validate) {
+      const ok = await child.validate()
+      if (ok === false) {
+        // Le composant enfant décide d’annuler la soumission
+        return
+      }
+    }
   } catch (errors) {
-    console.log("error : ", errors)
+    console.log('ModalForm validation error : ', errors)
     return
   }
 
-  // si on arrive ici, formulaire valide
+  // si on arrive ici, le formulaire est considéré valide
   let submit = props.createAction ?? getFormRef()?.create
-  let event = 'onCreate'
+  let event: 'onCreate' | 'onUpdate' = 'onCreate'
 
   if (editMode.value) {
     submit = props.updateAction ?? getFormRef()?.update
@@ -110,14 +121,17 @@ if (!ok) return
     .then((res) => {
       if (res !== false) {
         creationOrUpdateMessage()
+
         if (editMode.value) {
           emit('onUpdate', res)
         } else {
           emit('onCreate', res)
         }
+
         modalRef.value?.hide()
-        emit("hide")
-        console.log("modalform hide ", res)
+        emit('hide')
+        emit('onSuccess') // rafraîchir les listes
+        console.log('[ModalForm] submit done, res = ', res)
       }
     })
     .catch((err) => {

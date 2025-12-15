@@ -93,7 +93,10 @@
       :createTitle="'component.variable.groupVariable.add-groupVariable'"
       :editTitle="'component.variable.groupVariable.edit'"
       :editData="editData"
-      @onSuccess="onFormSuccess"
+      :create-action="createGroup"
+      :update-action="updateGroup"
+      @onCreate="onFormSuccess"
+      @onUpdate="onFormSuccess"
       @onClose="closeForm"
     />
   </div>
@@ -193,6 +196,21 @@ async function fetchGroupDetails(uri: string) {
   }
 }
 
+async function createGroup(group: any) {
+  const http = await service.createVariablesGroup(group)
+  const createdUri = http?.response?.result?.toString?.() ?? http?.response?.result
+  return { ...group, uri: createdUri }
+}
+
+async function updateGroup(group: any) {
+  const http = await service.updateVariablesGroup(group)
+  const updatedUri = http?.response?.result?.toString?.() ?? http?.response?.result
+  const msg = `${group.name} ${t('component.common.success.update-success-message')}`
+    opensilex?.showSuccessToast(msg)
+  return { ...group, uri: updatedUri ?? group.uri }
+}
+
+
 // Supprime un groupe côté serveur puis resynchronise la liste
 async function onDeleteGroup(group: any) {
   try {
@@ -251,11 +269,40 @@ function showCreateForm() {
    });
  }
 
+async function onFormSuccess(form?: any) {
 
-function onFormSuccess() {
-  showForm.value = false;
-  selected.value = null;
-  fetchGroups();
+  // 1) On récupère l'URI du groupe à reselectionner :
+  //    - priorité à form?.uri si un jour on en a une
+  //    - sinon, on se base sur le groupe actuellement sélectionné
+  const previousUri = selected.value?.uri
+  const targetUri = form?.uri || previousUri || null
+
+  console.log('[GroupVariablesView] previousUri =', previousUri, 'targetUri =', targetUri)
+
+  // 2) On ferme le formulaire
+  showForm.value = false
+  editData.value = null
+
+  // 3) On recharge la liste des groupes depuis l’API
+  await fetchGroups()
+  await nextTick()
+
+  if (!targetUri) {
+    console.warn('[GroupVariablesView] onFormSuccess: aucune URI cible, rien à reselectionner')
+    return
+  }
+
+  // 4) On essaie de retrouver le groupe dans la liste rechargée
+  let selectedGroup = groups.value.find(g => g.uri === targetUri)
+  console.log('[GroupVariablesView] group trouvé dans la liste =', selectedGroup)
+
+  // 5) Si pas trouvé, on construit juste avec l’URI
+  if (!selectedGroup) {
+    selectedGroup = { uri: targetUri }
+  }
+
+  // 6) On recharge les détails complets du groupe (publisher, variables, etc.)
+  await updateSelected(selectedGroup)
 }
 
 
@@ -269,9 +316,8 @@ const searchElements = async (filter = ''): Promise<NamedResourceDTO[]> => {
   const orderBy = ['name=asc'];
   let response: HttpResponse<OpenSilexResponse<NamedResourceDTO[]>>;
   
-    response = await service.searchVariablesGroups(filter, undefined, orderBy);
+  response = await service.searchVariablesGroups(filter, undefined, orderBy);
 
-console.log("responsey ", response)
   return response.response.result;
 };
 

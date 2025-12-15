@@ -60,7 +60,8 @@
         :createTitle="'component.variable.entityOfInterest.add-entityOfInterest'"
         :editTitle="'component.variable.entityOfInterest.edit'"
         :editData="editData"
-        @onSuccess="onFormSuccess"
+        @onCreate="onFormSuccess"
+        @onUpdate="onFormSuccess"
         @onClose="closeForm"
       ></opensilex-AgroportalEntityOfInterestForm>
     </div>
@@ -171,16 +172,35 @@ async function showEditForm(entity: any) {
   });
 }
 
-function onFormSuccess() {
-  showForm.value = false;
-  selected.value = null;
-  fetchEntities();
-}
+async function onFormSuccess(form: any) {
+  // On garde en mémoire l'URI à reselectionner :
+  // - priorité à form.uri si présent
+  // - sinon, l'entité déjà sélectionnée avant la sauvegarde
+  const previousUri = selected.value?.uri
+  const targetUri = form?.uri || previousUri || null
 
+  // On ferme le formulaire
+  showForm.value = false
+  editData.value = null
 
-function closeForm() {
-  showForm.value = false;
-  editData.value = null;
+  // On recharge la liste
+  await fetchEntities()
+  await nextTick()
+
+  if (!targetUri) {
+    // pas d'uri à reselectionner (pas censé arriver)
+    return
+  }
+
+  // Si l'entité est dans la liste, on l'utilise
+  const selectedEntity = entities.value.find(e => e.uri === targetUri)
+
+  if (selectedEntity) {
+    await updateSelected(selectedEntity)
+  } else {
+    // Fallback on construit un mini-objet avec l'URI juste pour updateSelected
+    await updateSelected({ uri: targetUri })
+  }
 }
 
 // Requête de recherche
@@ -280,7 +300,7 @@ async function selectFromQuery () {
   }
 }
 
-defineExpose({ showCreateForm });
+defineExpose({ showCreateForm, onFormSuccess });
 </script>
 
 <style>

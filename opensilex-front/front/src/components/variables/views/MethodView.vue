@@ -69,7 +69,8 @@
       :createTitle="'component.variable.method.add-method'"
       :editTitle="'component.variable.method.edit'"
       :editData="editData"
-      @onSuccess="onFormSuccess"
+      @onCreate="onFormSuccess"
+      @onUpdate="onFormSuccess"
       @onClose="closeForm"
     ></opensilex-AgroportalMethodForm>
   </div>
@@ -179,10 +180,34 @@ async function showEditForm(method: any) {
   });
 }
 
-function onFormSuccess() {
-  showForm.value = false;
-  selected.value = null;
-  fetchMethods();
+async function onFormSuccess(form: any) {
+  // On garde en mémoire l'URI à reselectionner :
+  // - priorité à form.uri si présent
+  // - sinon, la methode déjà sélectionnée avant la sauvegarde
+  const previousUri = selected.value?.uri
+  const targetUri = form?.uri || previousUri || null
+
+  // On ferme le formulaire
+  showForm.value = false
+  editData.value = null
+
+  // On recharge la liste
+  await fetchMethods()
+  await nextTick()
+
+  if (!targetUri) {
+    return
+  }
+
+  // Si la methode est dans la liste, on l'utilise
+  const selectedMethod = methods.value.find(e => e.uri === form.uri)
+
+  if (selectedMethod) {
+    await updateSelected(selectedMethod)
+  } else {
+    // Fallback on construit un mini-objet avec l'URI juste pour updateSelected
+    await updateSelected({ uri: targetUri })
+  }
 }
 
 
@@ -288,7 +313,7 @@ async function selectFromQuery () {
   }
 }
 
-defineExpose({ showCreateForm });
+defineExpose({ showCreateForm, onFormSuccess });
 </script>
 
 <style>

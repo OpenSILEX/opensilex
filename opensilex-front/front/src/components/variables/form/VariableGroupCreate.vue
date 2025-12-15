@@ -12,7 +12,7 @@
     :success-message="successMessage"
     :key="key"
     @onCreate="onCreate"
-    @onUpdate="onUpdate"
+    @onUpdate="(group) => emit('onUpdate', group)"
   />
 </template>
 
@@ -84,7 +84,7 @@ async function create(group: VariablesGroupCreationDTO) {
     const createdUri = http?.response?.result?.toString?.() ?? http?.response?.result
     if (!createdUri) throw new Error('Réponse sans URI')
 
-    const msg = `${t('VariableView.groupVariable')} ${group.name} ${t('component.common.success.creation-success-message')}`
+    const msg = `${group.name} ${t('component.common.success.creation-success-message')}`
     opensilex?.showSuccessToast(msg)
     emit('onCreate', group)
     return group
@@ -96,8 +96,10 @@ async function create(group: VariablesGroupCreationDTO) {
 
 async function update(group: VariablesGroupUpdateDTO) {
   try {
-    await variablesService?.updateVariablesGroup(group)
-    const msg = `${t('VariableView.groupVariable')} ${group.name} ${t('component.common.success.update-success-message')}`
+    const http = await variablesService?.updateVariablesGroup(group)
+    const updatedUri = http?.response?.result
+    if (!updatedUri) throw new Error('Réponse sans URI')
+    const msg = `${group.name} ${t('component.common.success.update-success-message')}`
     opensilex?.showSuccessToast(msg)
     emit('onUpdate', group)
     return group

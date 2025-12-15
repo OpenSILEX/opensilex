@@ -92,7 +92,7 @@ build-and-test:
       - $MAVEN_CACHE_FOLDER
   script:
     - mkdir -p sonarqube_reports_log 
-    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild 
   artifacts:
     paths:
       - sonarqube_reports_log
@@ -135,6 +135,9 @@ sonar-analysis:
     - mkdir -p $CI_PROJECT_DIR/.m2
     - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
     - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'

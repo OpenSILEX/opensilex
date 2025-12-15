@@ -93,11 +93,11 @@ build-and-test:
   script:
     - mkdir -p sonarqube_reports_log 
     - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
-    - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=error -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report
   artifacts:
     paths:
       - sonarqube_reports_log
-      - target/
+      - target
+      - opensilex-release/
       - "**/target/"
     expire_in: 2 hour
   before_script:
@@ -111,8 +111,6 @@ build-and-test:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == 'master'
-    - if: $CI_COMMIT_BRANCH == 'main'
-    - if: $CI_COMMIT_BRANCH == 'develop'
 
 sonar-analysis:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
@@ -128,6 +126,7 @@ sonar-analysis:
       - "${SONAR_USER_HOME}/cache"
       - sonar-scanner/
   script:
+    - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=error -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report
     - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
   artifacts:
     paths:
@@ -140,8 +139,6 @@ sonar-analysis:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == 'master'
-    - if: $CI_COMMIT_BRANCH == 'main'
-    - if: $CI_COMMIT_BRANCH == 'develop'
 
 # build-sonar:
 #   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION

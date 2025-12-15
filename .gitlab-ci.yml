@@ -93,24 +93,26 @@ build-and-test:
   script:
     - mkdir -p sonarqube_reports_log 
     - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
-    - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report | grep -v "^\[ERROR\]"
+    - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=error -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report
   artifacts:
     paths:
       - sonarqube_reports_log
       - target/
       - "**/target/"
-    expire_in: 1 hour
+    expire_in: 2 hour
   before_script:
     - mkdir -p $CI_PROJECT_DIR/.m2
     - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
     - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == 'master'
     - if: $CI_COMMIT_BRANCH == 'main'
     - if: $CI_COMMIT_BRANCH == 'develop'
-    - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
 
 sonar-analysis:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
@@ -140,7 +142,6 @@ sonar-analysis:
     - if: $CI_COMMIT_BRANCH == 'master'
     - if: $CI_COMMIT_BRANCH == 'main'
     - if: $CI_COMMIT_BRANCH == 'develop'
-    - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
 
 # build-sonar:
 #   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION

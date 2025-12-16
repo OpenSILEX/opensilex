@@ -33,8 +33,8 @@ a scientific object into the global graph.
 If you use the **DELETE** `/core/scientific_object/{uri}` service by providing the `experiment` param, then we consider
 the case of deletion in the experimental context. Then the following rules apply specifically :
 
-- An object can't be deleted if it has child. Considering an experiment <xp> An object <child> is a child of the object <parent> if there exist 
-a RDF triple `<child> vocabulary:isPartOf <parent>` into the experiment <xp>
+- An object can't be deleted if it has child. Considering an experiment **[xp]** An object **[child]** is a child of the object **[parent]** if there exist 
+a RDF triple `[child] vocabulary:isPartOf [parent]` into the experiment **[xp]**
 - An object can't be deleted if there exists some data associated (within the experiment) to this object into the MongoDB `data` collection
 - An object can't be deleted if there exists some data-file associated (within the experiment) to this object into the MongoDB `files` collection
 

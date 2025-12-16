@@ -607,9 +607,6 @@ test:build:java21:
 pages:
     stage: build
     image: node:20.19.6-alpine3.22
-    cache:
-        paths:
-            - opensilex-doc/src/main/resources/functional-specifications/node_modules/
     before_script:
         - apk add git
     script:

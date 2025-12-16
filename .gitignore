@@ -1,6 +1,6 @@
 .*
 .*/
-!/opensilex-doc/src/main/resources/specs/.vitepress/
+!/opensilex-doc/src/main/resources/*/.vitepress/
 !/.gitignore
 target/
 node_modules/

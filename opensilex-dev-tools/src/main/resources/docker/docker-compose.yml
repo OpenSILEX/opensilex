@@ -11,7 +11,7 @@ services:
       volumes:
          - rdf4j_data:/var/rdf4j
       environment:
-         - JAVA_OPTS='-Dorg.eclipse.rdf4j.appdata.basedir=/var/rdf4j/'
+         - JAVA_OPTS='-Dorg.eclipse.rdf4j.appdata.basedir=/var/rdf4j/' '-Xss8m'
          
    mongodb:
       container_name: opensilex-mongodb

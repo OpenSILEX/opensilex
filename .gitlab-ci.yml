@@ -944,7 +944,7 @@ test:temporary3:build:
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary3"
+    - if: $CI_COMMIT_BRANCH == "feature/spec-deploy"
 test:temporary3:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
@@ -958,7 +958,7 @@ test:temporary3:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/temporary3"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary3"
+    - if: $CI_COMMIT_BRANCH == "feature/spec-deploy"
       when: on_success
   needs:
     - test:temporary3:build

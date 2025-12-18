@@ -150,7 +150,7 @@ export default class VisuImages extends Vue {
             data: this.imageData
           }
 
-          this.dataProvenanceModalView.setProvenance(value);
+          this.dataProvenanceModalView.setProvenanceAndBatch(value);
           this.dataProvenanceModalView.show();
         });
   }

@@ -580,7 +580,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                     .filter(parameter -> parameter.getAnnotation(QueryParam.class) != null)
                     .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
                     .collect(Collectors.toList());
-            assertTrue(availableParams.containsAll(params.keySet()));
+            assertTrue("One or more parameters in the request has an invalid key", availableParams.containsAll(params.keySet()));
         }
 
         /**

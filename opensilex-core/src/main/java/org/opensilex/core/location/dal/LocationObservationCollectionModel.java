@@ -27,6 +27,7 @@ import java.util.UUID;
 )
 public class LocationObservationCollectionModel  extends SPARQLResourceModel implements ClassURIGenerator<LocationObservationCollectionModel> {
     public static final String GRAPH = "ObservationCollection";
+    public static final String OBSERVATION_COLLECTION_FIELD = "locationObservationCollection";
 
     @SPARQLProperty(
             ontology = SOSA.class,

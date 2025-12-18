@@ -13,25 +13,20 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.event.bll.MoveLogic;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
@@ -316,10 +311,8 @@ public class BrAPIv1ObservationUnitDTO {
             DataDAO dataDAO, 
             ExperimentModel experimentModel, 
             OntologyDAO ontologyDAO,
-            MoveLogic moveEventLogic,
-            GeospatialDAO geospatialDAO,
-            GermplasmDAO germplasmDAO,
-            SPARQLService sparql
+            LocationObservationLogic observationLogic,
+            GermplasmDAO germplasmDAO
     ) throws Exception {
         BrAPIv1ObservationUnitDTO observationUnit = new BrAPIv1ObservationUnitDTO();
 
@@ -381,47 +374,42 @@ public class BrAPIv1ObservationUnitDTO {
         observationUnit.setPositionCoordinateXType(PositionType.LONGITUDE);
         observationUnit.setPositionCoordinateYType(PositionType.LATITUDE);
 
-        GeospatialModel objectGeometryModel = geospatialDAO.getGeometryByURI(model.getUri(), experimentModel.getUri());
-        //if the Object has a geometry take its centroid coordinates as long/lat
-        if (objectGeometryModel != null && objectGeometryModel.getGeometry() != null && !objectGeometryModel.getGeometry().toString().isEmpty()) {
-            org.locationtech.jts.geom.Geometry objectJtsGeometry = new GeoJsonReader().read(objectGeometryModel.getGeometry().toJson());
+        LocationObservationModel locationObservationModel = null;
+        if(model.getLocationObservationCollection() != null){
+            locationObservationModel = observationLogic.getLastLocationObservation(
+                    Collections.singletonList(model.getLocationObservationCollection().getUri()),
+                    false,
+                    null,
+                    null
+            ).get(0);
+        }
 
-            if (!objectJtsGeometry.isEmpty()){
+        if(locationObservationModel != null){
+            if(locationObservationModel.getLocation().getGeometry() != null){
+                //if the Object has a geometry take its centroid coordinates as long/lat
+                org.locationtech.jts.geom.Geometry objectJtsGeometry = new GeoJsonReader().read(locationObservationModel.getLocation().getGeometry().toJson());
 
-                Point centroid = objectJtsGeometry.getCentroid();
-                observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
-                observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
-            }
-        } else if (moveEventLogic.countForTarget(model.getUri()) >= 1){
-            MoveModel moveModel = moveEventLogic.getLastMoveEvent(model.getUri());
-            PositionModel movePosition = moveEventLogic.getPosition(model.getUri(), moveModel.getUri());
+                if (!objectJtsGeometry.isEmpty()){
 
-            if (Objects.nonNull(movePosition)){
-                //if the Object has a move with a geometry take its centroid coordinates as long/lat
-                if (Objects.nonNull(movePosition.getCoordinates())) {
-                    Geometry moveJtsGeometry = new GeoJsonReader().read(movePosition.getCoordinates().toJson());
-                    Point centroid = moveJtsGeometry.getCentroid();
+                    Point centroid = objectJtsGeometry.getCentroid();
                     observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
                     observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
-                } else if (Objects.nonNull(movePosition.getX()) || Objects.nonNull(movePosition.getY())) {
-                    //if the Object has a move with a position take its X/Y coordinates as grid coordinates
-                    if (Objects.nonNull(movePosition.getX())) {
-                        observationUnit.setPositionCoordinateX(movePosition.getX());
-                    }
-                    if (Objects.nonNull(movePosition.getY())) {
-                        observationUnit.setPositionCoordinateY(movePosition.getY());
-                    }
-                    observationUnit.setPositionCoordinateXType(PositionType.GRID_ROW);
-                    observationUnit.setPositionCoordinateYType(PositionType.GRID_COL);
                 }
-            } else if (Objects.nonNull(moveModel.getTo())) {
+            } else if((Objects.nonNull(locationObservationModel.getLocation().getX()) || Objects.nonNull(locationObservationModel.getLocation().getY()))) {
+                //if the Object has a position take its X/Y coordinates as grid coordinates
+                if (Objects.nonNull(locationObservationModel.getLocation().getX())) {
+                    observationUnit.setPositionCoordinateX(locationObservationModel.getLocation().getX());
+                }
+                if (Objects.nonNull(locationObservationModel.getLocation().getY())) {
+                    observationUnit.setPositionCoordinateY(locationObservationModel.getLocation().getY());
+                }
+                observationUnit.setPositionCoordinateXType(PositionType.GRID_ROW);
+                observationUnit.setPositionCoordinateYType(PositionType.GRID_COL);
+            } else if (Objects.nonNull(locationObservationModel.getLocation().getTo())) {
                 //if the Object has a move with a destination facility take the centroid of that facility's geometry
-                FacilityModel destinationFacility = moveModel.getTo();
-                GeospatialModel destinationFacilityGeometryModel = geospatialDAO.getGeometryByURI(
-                        destinationFacility.getUri(),
-                        sparql.getDefaultGraphURI(FacilityModel.class)
-                );
-                Geometry facilityJtsGeometry =  new GeoJsonReader().read(destinationFacilityGeometryModel.getGeometry().toJson());
+                LocationObservationModel facilityLocation = observationLogic.getFacilityGeometry(locationObservationModel);
+
+                Geometry facilityJtsGeometry =  new GeoJsonReader().read(facilityLocation.getLocation().getGeometry().toJson());
                 if (Objects.nonNull(facilityJtsGeometry)) {
                     Point centroid = facilityJtsGeometry.getCentroid();
                     observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));

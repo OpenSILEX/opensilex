@@ -5,6 +5,8 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import com.nimbusds.oauth2.sdk.util.CollectionUtils;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -385,43 +387,99 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued once, whatever the graph they are stored in.
+     * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued.
      * Useful for update operations where dc:publisher and dc:issued should not be updated.
-     * Generated query same as getDeleteBuilder(List, List) with excludedPredicates = [dc:publisher, dc:issued]
+     * This method handle IgnoreUpdateIfNull SPARQL annotation by not deleting relations for fields with this annotation when the field value is null.
+     * Generated query same as getDeleteBuilder with excludedPredicates = [dc:publisher, dc:issued]
      * Filter will be : FILTER (?p NOT IN (dc:publisher, dc:issued))
-     * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, List) to see the generated query example
+     * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, URI, List, Map, Map)  to see the generated query example
      */
-    public UpdateBuilder getDeleteBuilderForUpdateCases(List<URI> urisToDelete) throws Exception {
+    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilderForUpdateCases(List<T> modelsToDelete, URI graph) throws IllegalAccessException {
         List<URI> excludedPredicates = List.of(
                 URI.create("http://purl.org/dc/terms/publisher"),
                 URI.create("http://purl.org/dc/terms/issued")
         );
-        return getDeleteBuilder(urisToDelete, excludedPredicates);
+
+        // handle IgnoreUpdateIfNull annotation by not deleting relations for fields with this annotation when the field value is null
+        List<Field> ignoreUpdateIfNullFields = analyzer.getIgnorUpdateIfNullFields();
+        Map<URI, List<URI>> predicatesToIgnoreByUri = new HashMap<>();
+        Map<URI, List<URI>> reversePredicatesToIgnoreByUri = new HashMap<>();
+        for (T model : modelsToDelete) {
+            for (Field field : ignoreUpdateIfNullFields) {
+                    Object fieldValue = field.get(model);
+                    if (fieldValue == null) {
+                        Property property = analyzer.getFieldProperty(field);
+                        URI predicateUri = URI.create(property.getURI());
+
+                        boolean isReverseRelation = analyzer.isReverseRelation(field);
+                        var mapToUse = isReverseRelation ? reversePredicatesToIgnoreByUri : predicatesToIgnoreByUri;
+                        mapToUse.computeIfAbsent(model.getUri(), k -> new ArrayList<>()).add(predicateUri);
+                    }
+            }
+        }
+
+        List<URI> urisToDelete = modelsToDelete.stream().map(SPARQLResourceModel::getUri).toList();
+        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
     }
 
+
     /**
-     * Delete all triples related to the given urisToDelete, except those with a predicate included in 'excludedPredicates' ,whatever the graph they are stored in.
+     * Delete all triples related to the given urisToDelete, except those specified by excludedPredicates, predicatesToIgnoreByUri or reversePredicatesToIgnoreByUri params.
+     * @param graph could be a URI or null. If null, the graphs clauses are removed and so the query search in default graph only.
      * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handle short and long uris.
-     * generated query example : (the filter clause appears only if excludedPredicates is not empty)
-     * DELETE {
-     *   GRAPH ?g { ?uriToDelete ?p ?o . }
-     *   GRAPH ?g { ?s ?p ?uriToDelete . }
+     * @param predicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
+     * @param reversePredicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
+     * @implNote  generated query example : (the filter clause appears only if excludedPredicates is not empty)
+     *<pre>
+     *DELETE {
+     *     GRAPH <graphUri> {
+     *          ?uriToDelete ?p ?o .
+     *          ?s ?p ?uriToDelete .
+     *     }
      * }
      * WHERE {
-     *    FILTER ( ?uri IN ( <uriToDelete1>, <uriToDelete2>) )
-     *   {
-     *     	GRAPH ?g {
-     *                  ?uriToDelete  ?p  ?o
-     *                  FILTER (?p NOT IN (<excludedPredicates1>, <excludedPredicates1>))
-     *               }
-     *   }
+     *     FILTER ( ?uriToDelete IN (<uriToDelete1>, <uriToDelete2>) )
+     *
+     *     {
+     *         GRAPH <graphUri> {
+     *             ?uriToDelete ?p ?o .
+     *             FILTER (?p NOT IN (<excludedPredicate1>, <excludedPredicate2>))
+     *             FILTER NOT EXISTS {
+     *                 GRAPH <graphUri> {
+     *                     ?uriToDelete ?p ?o .
+     *                     FILTER (
+     *                         (?uriToDelete = <S1> && ?p = <P1>)
+     *                      || (?uriToDelete = <S2> && ?p = <P2>)
+     *                      || (?uriToDelete = <S3> && ?p = <P3>)
+     *                     )
+     *                 }
+     *             }
+     *         }
+     *     }
      *     UNION
-     *       { GRAPH ?g
-     *           { ?s  ?p  ?uriToDelete}
-     *       }
+     *     {
+     *         GRAPH <graphUri> {
+     *             ?s ?p ?uriToDelete .
+     *             FILTER NOT EXISTS {
+     *                 GRAPH <graphUri> {
+     *                     ?s ?p ?uriToDelete .
+     *                     FILTER (
+     *                         (?uriToDelete = <S1> && ?p = <P1>)
+     *                      || (?uriToDelete = <S2> && ?p = <P2>)
+     *                      || (?uriToDelete = <S3> && ?p = <P3>)
+     *                     )
+     *                 }
+     *             }
+     *         }
+     *     }
      * }
+     *</pre>
      */
-    private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,  List<URI> excludedPredicates) {
+    private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,
+                                           URI graph,
+                                           List<URI> excludedPredicates,
+                                           Map<URI, List<URI>> predicatesToIgnoreByUri,
+                                           Map<URI, List<URI>> reversePredicatesToIgnoreByUri) {
         UpdateBuilder delete = new UpdateBuilder();
         if (urisToDelete == null || urisToDelete.isEmpty()) {
             return delete;
@@ -431,39 +489,200 @@ class SPARQLClassQueryBuilder {
         Var subjectVar = makeVar("s");
         Var predicateVar = makeVar("p");
         Var objectVar = makeVar("o");
-        Var graphVar = makeVar("g");
 
         Triple relation = new  Triple(uriVar, predicateVar, objectVar);
         Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
 
-        delete.addDelete(relation);
-        delete.addDelete(inverseRelation);
+        if(graph != null){
+            Object graphObject = SPARQLDeserializers.nodeURI(graph);
+            delete.addDelete(graphObject, relation);
+            delete.addDelete(graphObject, inverseRelation);
+        } else {
+            delete.addDelete(relation);
+            delete.addDelete(inverseRelation);
+        }
 
         WhereBuilder globalWhere = new WhereBuilder();
 
         globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, urisToDelete));
 
-        WhereBuilder graphsBlock = new WhereBuilder();
+        WhereBuilder classicSubquery = buildWhereClauseForDeleteQuery(
+                uriVar,
+                predicateVar,
+                subjectVar,
+                objectVar,
+                graph,
+                false,
+                excludedPredicates,
+                predicatesToIgnoreByUri
+        );
 
-        //graph to delete relations
-        WhereBuilder graphSubquery = new WhereBuilder();
-        graphSubquery.addWhere(relation);
+        WhereBuilder inverseSubquery = buildWhereClauseForDeleteQuery(
+                uriVar,
+                predicateVar,
+                subjectVar,
+                objectVar,
+                graph,
+                true,
+                null,
+                reversePredicatesToIgnoreByUri
+        );
 
-        //not delete excluded predicates
-        if (excludedPredicates != null && !excludedPredicates.isEmpty()) {
-            Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
-            graphSubquery.addFilter(predicateFilter);
-        }
 
-        graphsBlock.addGraph(graphVar, graphSubquery);
-
-        //graph to delete inverse relations
-        graphsBlock.addUnion(new WhereBuilder().addGraph(graphVar, inverseRelation));
-
-        globalWhere.addWhere(graphsBlock);
+        WhereBuilder globalSubquery = new WhereBuilder();
+        globalSubquery.addWhere(classicSubquery);
+        globalSubquery.addUnion(inverseSubquery);
+        globalWhere.addWhere(globalSubquery);
         delete.addWhere(globalWhere);
 
         return delete;
+    }
+
+    /**
+     * @param graph could be a URI or null. If null, the graph clause is removed and so the query search in default graph only.
+     * @param isInverseRelation should be true if the uriToDelete is the object in the triple. False otherwise.
+     * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate.
+     * @param predicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
+     * @implNote generated SPARQL query example for isInverseRelation = false, graph = null :
+     * <pre>
+     * GRAPH <graphUri> {
+     *     ?uriToDelete ?p ?o .
+     *     FILTER (?p NOT IN (<excludedPredicate1>, <excludedPredicate2>))
+     *     FILTER NOT EXISTS {
+     *         GRAPH <graphUri> {
+     *             ?uriToDelete ?p ?o .
+     *             FILTER (
+     *                  (?uriToDelete = <S1> && ?p = <P1>)
+     *               || (?uriToDelete = <S2> && ?p = <P2>)
+     *               || (?uriToDelete = <S3> && ?p = <P3>)
+     *             )
+     *         }
+     *     }
+     * }
+     *</pre>
+     */
+    private WhereBuilder buildWhereClauseForDeleteQuery(Var uriToDeleteVar,
+                                                        Var predicateVar,
+                                                        Var subjectVar,
+                                                        Var objectVar,
+                                                        URI graph,
+                                                        boolean isInverseRelation,
+                                                        List<URI> excludedPredicates,
+                                                        Map<URI, List<URI>> predicatesToIgnoreByUri){
+        WhereBuilder globalWhere = new WhereBuilder();
+        Triple relation = isInverseRelation ? new Triple(subjectVar, predicateVar, uriToDeleteVar) :
+                new Triple(uriToDeleteVar, predicateVar, objectVar);
+        WhereBuilder graphSubquery = new WhereBuilder();
+        graphSubquery.addWhere(relation);
+        //do not delete excluded predicates
+        if(CollectionUtils.isNotEmpty(excludedPredicates)) {
+            Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);
+            graphSubquery.addFilter(predicateFilter);
+        }
+        //do not delete excluded predicate for specific URIs
+        if(MapUtils.isNotEmpty(predicatesToIgnoreByUri)) {
+            Expr NotExists = buildNotExistsFilterForUriAndPredicateCouples(
+                    uriToDeleteVar,
+                    predicateVar,
+                    subjectVar,
+                    objectVar,
+                    graph,
+                    isInverseRelation,
+                    predicatesToIgnoreByUri
+            );
+            graphSubquery.addFilter(NotExists);
+        }
+        
+        if (graph != null) {
+            return globalWhere.addGraph(SPARQLDeserializers.nodeURI(graph), graphSubquery);
+        }
+        return globalWhere.addWhere(graphSubquery);
+    }
+
+    /**
+     * Build a NOT EXISTS filter to exclude specific (S,P) or (P,O) couples from deletion
+     * @param graph could be a URI or null. If null, the graph clause is removed and so the filter search in default graph only.
+     * @param isInverseRelation should be true if the uriToDelete is the object in the triple. False otherwise.
+     * @param predicatesToIgnoreByUri for each uriToDelete (key), list of predicates (value) to exclude from deletion.
+     * @implNote generated SPARQL query example for isInverseRelation = false and putGraphClause = true :
+     * <pre>
+     *       FILTER NOT EXISTS {
+     *         GRAPH ?g {
+     *         ?uriToDelete ?p ?o .
+     *
+     *         # List of (S, P) couples to exclude from deletion
+     *         FILTER (
+     *                (?uriToDelete = <S1> && ?p = <P1>)
+     *             || (?uriToDelete = <S2> && ?p = <P2>)
+     *             || (?uriToDelete = <S3> && ?p = <P3>)
+     *               )
+     *         }
+     *     }
+     *</pre>
+     */
+    private Expr buildNotExistsFilterForUriAndPredicateCouples(Var uriToDeleteVar,
+                                                               Var predicateVar,
+                                                               Var subjectVar,
+                                                               Var objectVar,
+                                                               URI graph,
+                                                               boolean isInverseRelation,
+                                                               Map<URI, List<URI>> predicatesToIgnoreByUri){
+        //create new map to work only with long uri in string format
+        Map<String, List<String>> finalPredicatesToIgnoreByUri = new HashMap<>();
+        for (URI uriToDelete : predicatesToIgnoreByUri.keySet()) {
+            List<String> modifiedPredicates = new ArrayList<>();
+            for (URI predicate : predicatesToIgnoreByUri.get(uriToDelete)) {
+                String expandedPredicate = SPARQLDeserializers.getExpandedURI(predicate);
+                modifiedPredicates.add(expandedPredicate);
+            }
+            String expandedUriToDelete = SPARQLDeserializers.getExpandedURI(uriToDelete);
+            finalPredicatesToIgnoreByUri.put(expandedUriToDelete, modifiedPredicates);
+        }
+
+        WhereBuilder globalWhere = new WhereBuilder();
+        Triple relation = isInverseRelation ? new Triple(subjectVar, predicateVar, uriToDeleteVar) :
+                new Triple(uriToDeleteVar, predicateVar, objectVar);
+
+        WhereBuilder graphSubquery = new WhereBuilder();
+        graphSubquery.addWhere(relation);
+
+        if (!finalPredicatesToIgnoreByUri.isEmpty()) {
+            List<Expr> uriPredicateFilters = new ArrayList<>();
+            for (String uri : finalPredicatesToIgnoreByUri.keySet()) {
+                Expr uriExpr = SPARQLQueryHelper.getExprFactory().asExpr(NodeFactory.createURI(uri));
+                List<String> predicates = finalPredicatesToIgnoreByUri.get(uri);
+                List<Expr> predicatesExpr = predicates.stream()
+                        .map(stringUri -> SPARQLQueryHelper.getExprFactory().asExpr(NodeFactory.createURI(stringUri)))
+                        .toList();
+                for (Expr predicate : predicatesExpr) {
+                    Expr andFilter = SPARQLQueryHelper.getExprFactory().and(
+                            SPARQLQueryHelper.getExprFactory().eq(
+                                    SPARQLQueryHelper.getExprFactory().asVar(uriToDeleteVar.getVarName()),
+                                    uriExpr
+                            ),
+                            SPARQLQueryHelper.getExprFactory().eq(
+                                    SPARQLQueryHelper.getExprFactory().asVar(predicateVar.getVarName()),
+                                    predicate
+                            )
+                    );
+                    uriPredicateFilters.add(andFilter);
+                }
+            }
+            if (!uriPredicateFilters.isEmpty()) {
+                Expr combinedFilter = uriPredicateFilters.get(0);
+                for (int i = 1; i < uriPredicateFilters.size(); i++) {
+                    combinedFilter = SPARQLQueryHelper.getExprFactory().or(combinedFilter, uriPredicateFilters.get(i));
+                }
+                graphSubquery.addFilter(combinedFilter);
+            }
+        }
+
+        if (graph != null ) {
+            globalWhere.addGraph(SPARQLDeserializers.nodeURI(graph), graphSubquery);
+        } else {
+            globalWhere.addWhere(graphSubquery);
+        }
+        return SPARQLQueryHelper.getExprFactory().notexists(globalWhere);
     }
 
 

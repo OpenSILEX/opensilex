@@ -21,6 +21,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorObject;
@@ -78,7 +79,7 @@ public class GermplasmLogic {
      * @return updated or created germplasm as {@link List<GermplasmModel>}
      */
     public List<GermplasmModel> upsert(List<GermplasmModel> germplasmModels) throws Exception {
-        Collection<URI> existingUris = checkExistence(germplasmModels.stream()
+        Collection<URI> existingUris = getNonExistingUris(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
                 .toList());
 
@@ -113,7 +114,7 @@ public class GermplasmLogic {
      * @return Created germplasm as {@link GermplasmModel}
      */
     public GermplasmModel create(GermplasmModel germplasmModel) throws Exception {
-        var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
+        var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), false);
         if (multipleErrorObjectList.hasErrors()){
             throw new MultipleErrorListException("getting errors while creating germplasm", multipleErrorObjectList);
         }
@@ -125,12 +126,18 @@ public class GermplasmLogic {
     }
 
     public GermplasmModel update(GermplasmModel germplasmModel) throws Exception {
+        if (germplasmModel.getUri() == null){
+            throw new BadRequestException("Germplasm URI cannot be null for update.");
+        }
+        if (getNonExistingUris(List.of(germplasmModel.getUri())).isEmpty()){
+            throw new NotFoundException(String.format("Germplasm URI %s not found.", germplasmModel.getUri()));
+        }
         var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
         if (multipleErrorObjectList.hasErrors()){
             throw new MultipleErrorListException("getting errors while updating germplasm", multipleErrorObjectList);
         }
         retrieveLinkedSpeciesAndVariety(germplasmModel);
-        return dao.update(germplasmModel);
+        return dao.update(germplasmModel,currentUser);
     }
 
     public void delete(URI instanceURI) throws Exception {
@@ -145,7 +152,7 @@ public class GermplasmLogic {
                     "germplasm with URI '%s' can't be deleted. It is already linked to another germplasm or a scientific object or an experiment."
                     , instanceURI.toString()));
         } else {
-            dao.delete(instanceURI);
+            dao.delete(instanceURI,currentUser);
         }
     }
 
@@ -161,15 +168,20 @@ public class GermplasmLogic {
     }
 
     /**
-     * @param searchFilter  search filter
-     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+     * Paginated search of {@link GermplasmModel} via the DAO according to the provided criteria.
+     *
+     * @param searchFilter        search criteria (filters, pagination, sorting, access rights)
+     * @param fetchMetadata       {@code true} to also load associated metadata
+     * @param fetchNestedObjects  {@code true} to also load related objects (parents, relationships, etc.)
+     * @return a paginated list of {@link GermplasmModel} matching the criteria
+     * @throws Exception if an error occurs during the search
      */
+
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
-            boolean fetchNestedObjects) throws Exception {
+            boolean fetchNestedObjects
+    ) throws Exception {
         return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
     }
 
@@ -250,7 +262,7 @@ public class GermplasmLogic {
                     MultipleErrorObjectList<MultipleCreateUpdateErrorObject,
                     GermplasmModel> errors) throws Exception {
 
-        Collection<URI> existingUris = checkExistence(germplasmModels.stream()
+        Collection<URI> existingUris = getNonExistingUris(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
                 .toList());
 
@@ -500,7 +512,7 @@ public class GermplasmLogic {
     /**
      * @return the uris of already existing germplasms. If Uris are not valid, they are ignored.
      */
-    public Collection<URI> checkExistence(List<URI> uris) throws Exception {
+    public Collection<URI> getNonExistingUris(List<URI> uris) throws Exception {
         //sort uris to keep only well formatted ones
         List<URI> validUris = uris.stream()
                 .filter(uri -> uri != null && !uri.toString().isBlank() && URIDeserializer.validateURI(uri.toString()))

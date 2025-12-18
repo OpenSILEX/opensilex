@@ -12,6 +12,7 @@ import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.csv.validation.CustomCsvValidation;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -134,7 +135,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         this.sparql = sparql;
         this.objectClass = objectClass;
         this.graph = graph;
-        this.graphNode = NodeFactory.createURI(graph.toString());
+        this.graphNode = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(graph));
         this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -250,7 +251,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
             Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
-            Map<String, Integer> filledUrisToUpdateIndexesInChunk = new PatriciaTrie<>();
             int chunkRowIdx = 0;
 
             // continue while batch size or max error limit is not reached
@@ -262,9 +262,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
                     // read model and performs local validation
                     T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
-                    // handle URI generation or map filled URIs to the model object
+                    // handle URI generation or association of filled uris to their line index in a Map.
                     // add model in modelChunk List
-                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk, filledUrisToUpdateIndexesInChunk);
+                    handleURIMapping(validator, model, totalRowIdx, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk);
                 }
                 totalRowIdx++;
             }
@@ -273,8 +273,8 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             // batch validation and custom consumer use
             if(validator.isValid()){
-                batchValidation(validator, modelChunkToCreate,totalRowIdx-chunkRowIdx);
-                batchValidation(validator, modelChunkToUpdate,totalRowIdx-chunkRowIdx);
+                batchValidation(validator, modelChunkToCreate,totalRowIdx-chunkRowIdx, false);
+                batchValidation(validator, modelChunkToUpdate,totalRowIdx-chunkRowIdx, true);
 
                 if(modelsConsumer != null){
                     modelsConsumer.accept(validator.getValidationModel(), modelChunkToCreate.stream());
@@ -309,7 +309,15 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * <b>override this method</b> {@link #upsert(CSVValidationModel, List, List)} also for the models in modelChunkToUpdate to be updated
      *
      */
-    protected void handleURIMapping(CsvOwlRestrictionValidator validator, T model, int totalRowIdx, List<T> modelChunkToCreate, List<T> modelChunkToUpdate, Map<String, Integer> generatedUrisToIndexesInChunk, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> filledUrisToUpdateIndexesInChunk) throws SPARQLException {
+    protected void handleURIMapping(
+            CsvOwlRestrictionValidator validator,
+            T model,
+            int totalRowIdx,
+            List<T> modelChunkToCreate,
+            List<T> modelChunkToUpdate,
+            Map<String, Integer> generatedUrisToIndexesInChunk,
+            Map<String, Integer> filledUrisToIndexesInChunk
+    ) throws SPARQLException {
         addModelInModelChunk(model, modelChunkToCreate);
         // generate new URI and register it to set of URI to check
         if (model.getUri() == null) {
@@ -339,23 +347,36 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      *
      * @param restrictionValidator OWL validator
      * @param models chunk of models
+     * @param offset current index in CSV file
+     * @param forUpdate if true, then the batch contains objects with uri's already present in the system, the batch therefor concerns an update
      *
      * @throws IOException if some error occurs during custom validation
      */
-    protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<T> models, int offset) throws IOException {
+    protected void customBatchValidation(
+            CsvOwlRestrictionValidator restrictionValidator,
+            List<T> models,
+            int offset,
+            boolean forUpdate
+    ) throws IOException {
         // no custom batch validation
     }
 
     /**
-     * Performs batch validation by applying {@link CsvOwlRestrictionValidator#batchValidation()} and {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int)}
+     * Performs batch validation by applying {@link CsvOwlRestrictionValidator#batchValidation()} and {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int, boolean)}
      * @param restrictionValidator OWL validator
      * @param models chunk of models
      * @param offset current index in CSV file
+     * @param forUpdate if true, then the batch contains objects with uri's already present in the system, the batch therefor concerns an update
      * @throws IOException if some error occurs during custom validation
      */
-    private void batchValidation(CsvOwlRestrictionValidator restrictionValidator, List<T> models, int offset) throws IOException {
+    private void batchValidation(
+                CsvOwlRestrictionValidator restrictionValidator,
+                List<T> models,
+                int offset,
+                boolean forUpdate
+            ) throws IOException {
         restrictionValidator.batchValidation();
-        customBatchValidation(restrictionValidator,models,offset);
+        customBatchValidation(restrictionValidator,models,offset, forUpdate);
     }
 
     /**
@@ -398,6 +419,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         }
 
         Set<String> urisToCheck = new HashSet<>(generatedUrisToIndexes.keySet());
+        //Create a local map for retrieval of models as the length of models is not necessarily the same as the row length of csv
+        HashMap<String, T> modelByUri = new HashMap<>();
+        models.forEach(model -> {modelByUri.put(SPARQLDeserializers.getShortURI(model.getUri()), model);});
 
         // store the number of duplicate for a row
         Map<Integer, Integer> duplicateCountByRowIdx = new HashMap<>();
@@ -428,7 +452,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     // retrieve corresponding uri and  corresponding model
                     String duplicate = urisIterator.next();
                     int rowIdx = generatedUrisToIndexes.get(duplicate);
-                    T duplicateModel = models.get(rowIdx);
+                    T duplicateModel = modelByUri.get(SPARQLDeserializers.getShortURI(duplicate));
 
                     // regenerate a new URI
                     try {

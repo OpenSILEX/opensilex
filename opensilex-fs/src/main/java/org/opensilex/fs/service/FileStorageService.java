@@ -257,6 +257,10 @@ public class FileStorageService extends BaseService implements Service {
         getConnection(prefix).writeFile(filePath, file);
     }
 
+    public void writeFile(String prefix, Path filePath, byte[] content) throws IOException {
+        getConnection(prefix).writeFile(filePath, content);
+    }
+
     public byte[] readFileAsByteArray(String prefix, URI fileURI) throws IOException {
         return readFileAsByteArray(prefix, getFilePathFromPrefixURI(prefix, fileURI));
     }

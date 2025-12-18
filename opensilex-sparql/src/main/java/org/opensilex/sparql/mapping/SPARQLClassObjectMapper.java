@@ -393,8 +393,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getDeleteBuilder(graph, instance);
     }
 
-    public UpdateBuilder getDeleteBuilderForUpdate(List<URI> urisToDelete) throws Exception {
-        return classQueryBuilder.getDeleteBuilderForUpdateCases(urisToDelete);
+    public UpdateBuilder getDeleteBuilderForUpdate(List<T> modelsToDelete, URI graph) throws IllegalAccessException {
+        return classQueryBuilder.getDeleteBuilderForUpdateCases(modelsToDelete, graph);
     }
 
     public URI getURI(Object instance) {
@@ -716,71 +716,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         }
 
         return statementCount > 0;
-    }
-
-    /**
-     * Check for IgnoreUpdateIfNull sparql annotation in model class. If One field of the new instance has this annotation and is null, then
-     * this method will get the old value of this field and set it to the new instance.
-     */
-    public void updateInstanceFromOldValues(T oldInstance, T newInstance) throws Exception {
-        if (newInstance.getType() == null) {
-            newInstance.setType(oldInstance.getType());
-        }
-
-        if (oldInstance.getPublisher() != null && newInstance.getPublisher() == null) {
-            newInstance.setPublisher(oldInstance.getPublisher());
-        }
-
-        if (Objects.isNull(newInstance.getPublicationDate())) {
-            newInstance.setPublicationDate(oldInstance.getPublicationDate());
-        }
-
-        newInstance.setLastUpdateDate(OffsetDateTime.now());
-
-        for (Field field : classAnalyzer.getDataPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getObjectPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getLabelPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getDataListPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getObjectListPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
     }
 
     public Object getFieldValue(T instance, Field field) {

@@ -14,6 +14,7 @@ export default class GermplasmTableDataRow {
   /**
    * Flag to indicate if the line is for an update operation, i.e if the uri of the germplasm already exists.
    */
+  private isUpdateBool: boolean = false;
   private errors: Array<string> = null;
   private isValidated: boolean = false;
 
@@ -35,6 +36,14 @@ export default class GermplasmTableDataRow {
     return this.errors;
   }
 
+  public isUpdate(): boolean {
+    return this.isUpdateBool;
+  }
+
+  public getRowNumber(): number{
+    return this.data.index;
+  }
+
   public setCheckingStatus(checkingStatus: string): void {
     this.data.checkingStatus = checkingStatus;
   }
@@ -44,6 +53,7 @@ export default class GermplasmTableDataRow {
   }
 
   public setIsUpdate(isUpdate: boolean): void {
+    this.isUpdateBool = isUpdate;
     if ( !this.hasError() && !this.isValidated ) {
       this.data.status = isUpdate ? 'UPDATE' : '';
     }

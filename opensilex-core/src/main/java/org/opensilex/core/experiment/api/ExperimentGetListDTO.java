@@ -126,15 +126,6 @@ public class ExperimentGetListDTO {
         this.facilities = facilities;
     }
 
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     public static ExperimentGetListDTO fromModel(ExperimentModel model) {
 
         ExperimentGetListDTO dto = new ExperimentGetListDTO();
@@ -146,8 +137,8 @@ public class ExperimentGetListDTO {
         dto.setIsPublic(model.getIsPublic());
         dto.setObjective(model.getObjective());
         dto.setDescription(model.getDescription());
-        dto.setSpecies(getUriList(model.getSpecies()));
-        dto.setFacilities(getUriList(model.getFacilities()));
+        dto.setSpecies(SPARQLResourceModel.getUriList(model.getSpecies()));
+        dto.setFacilities(SPARQLResourceModel.getUriList(model.getFacilities()));
 
         return dto;
     }

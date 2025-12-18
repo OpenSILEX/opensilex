@@ -362,6 +362,28 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
     @Test
+    public void testUpdateWithIgnoreUpdateIfNullProperty() throws Exception {
+        final String ignoreUpdateIfNullPropertyValue = "shouldStillBeThereAfterUpdateWithNull";
+
+        A a = new A();
+        URI aURI = new URI("http://test.opensilex.org/a/005");
+        a.setUri(aURI);
+        a.setCharVar('V');
+        a.setIgnoreUpdateIfNullProperty(ignoreUpdateIfNullPropertyValue);
+
+        sparql.create(a);
+
+        a.setIgnoreUpdateIfNullProperty(null);
+        a.setCharVar(null);
+
+        sparql.update(a);
+
+        A updatedA = sparql.getByURI(A.class, aURI, null);
+        assertEquals("A.getIgnoreUpdateIfNullProperty Method should not have been deleted nor modified", ignoreUpdateIfNullPropertyValue, updatedA.getIgnoreUpdateIfNullProperty());
+        assertEquals("A.getCharVar Method should have been deleted", null, updatedA.getCharVar());
+    }
+
+    @Test
     public void testUriExistsWithClass() throws Exception {
         URI bURI = new URI("http://test.opensilex.org/b/001");
 

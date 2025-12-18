@@ -5,19 +5,20 @@
         <p class="h5">{{$t("Move.location")}} </p>
         <hr/>
 
-        <opensilex-StringView label="Position.from" :value="event.from ? event.from.name : '' "></opensilex-StringView>
-        <opensilex-StringView label="Position.to" :value="event.to ? event.to.name : '' "></opensilex-StringView>
+        <opensilex-StringView label="MoveView.from" :value="event.location.from ? facilitiesUriLabels[event.location.from] : '' "></opensilex-StringView>
+        <opensilex-StringView label="MoveView.to" :value="event.location.to ? facilitiesUriLabels[event.location.to] : '' "></opensilex-StringView>
 
         <div  v-if="hasPosition(event)">
             <br>
-            <p class="h5"> {{ $t("Position.title") }}</p>
+            <p class="h5"> {{ $t("MoveView.positionTitle") }}</p>
             <hr/>
-            <opensilex-PositionsView
-              :positions="event.targets_positions"
-              :positionsUriLabels="positionsUriLabels"
-              :positionsUriPaths="positionsUriPaths"
-            >
-            </opensilex-PositionsView>
+          <opensilex-PositionView
+            :positionObject="positionObjectFromLocation"
+            :targetUris="event.targets"
+            :targetLabelsByUri="targetLabelsByUri"
+            :targetUriPathsByUri="targetUriPathsByUri"
+          >
+          </opensilex-PositionView>
         </div>
 
     </div>
@@ -27,24 +28,23 @@
 <script lang="ts">
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
-    import PositionsView from "../../positions/view/PositionsView.vue";
     import { MoveDetailsDTO } from 'opensilex-core/index';
+    import {PositionFormObject} from "../../positions/view/PositionView.vue";
 
     @Component
     export default class MoveView extends Vue {
 
-        @Prop({default: () => PositionsView.getEmptyForm })
+        @Prop()
         event: MoveDetailsDTO;
 
-        @Prop()
-        positionsUriLabels;
+        @Prop({default: () => {} })
+        targetLabelsByUri: {[key : string] : string};
 
-        @Prop()
-        positionsUriPaths;
+        @Prop({default: () => {} })
+        targetUriPathsByUri: {[key : string] : string};
 
-        created() {
-
-        }
+        @Prop({default: () => {} })
+        facilitiesUriLabels: {[key : string] : string};
 
         static getEmptyForm(): MoveDetailsDTO {
             return {
@@ -57,23 +57,40 @@
                 description: undefined,
                 publisher: undefined,
                 is_instant: true,
-
-                // move specific properties
-                from: undefined,
-                to: undefined,
-
-                // move position(s)
-              targets_positions: PositionsView.getEmptyForm()
+                //Extra location prop
+                location: {},
             };
         }
 
         hasPosition(event) : boolean{
-            return event && event.targets_positions && event.targets_positions.length > 0;
+            return event && event.location
+        }
+
+        get positionObjectFromLocation() : PositionFormObject{
+          let location = this.event.location;
+          return ({
+            point: location.geojson,
+            x: location.x,
+            y: location.y,
+            z: location.z,
+            text: location.text,
+          });
         }
 
     }
-
-
-
 </script>
 
+<i18n>
+en:
+  MoveView:
+    from: From
+    to: To
+    positionTitle: Position
+
+fr:
+  MoveView:
+    from: De
+    to: Vers
+    positionTitle: Position
+
+</i18n>

@@ -33,6 +33,7 @@ import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -104,6 +105,7 @@ public class DataImportLogic {
     private final String RAW_DATA_HEADER = "raw_data";
     private final String SCIENTIFIC_OBJ_HEADER = "scientific_object";
     private final String ANNOTATION_HEADER = "object_annotation";
+    private final String PROVUSED_HEADER = "prov_used";
     private final MongoDBService nosql;
     private final SPARQLService sparql;
     private final FileStorageService fs;
@@ -415,7 +417,8 @@ public class DataImportLogic {
         DeviceContext deviceContext = new DeviceContext();
         TargetContext targetContext = new TargetContext();
         DAOContext daoContext = DAOContext.buildDaoContext(deviceDAO, ontologyDAO, experimentDAO, scientificObjectDAO, variableDAO);
-
+        ProvEntityModel dataProvUsed = new ProvEntityModel();
+        
         // checking device type for agent
         boolean sensingDeviceFoundFromProvenance = isSensingDeviceFoundFromProvenance(provenance, deviceDAO);
 
@@ -466,7 +469,7 @@ public class DataImportLogic {
         }
 
         // start rows processing in parallel
-        validateCSVRowsInParallel(provenance, allRows, sensingDeviceFoundFromProvenance,
+        validateCSVRowsInParallel(provenance, dataProvUsed, allRows, sensingDeviceFoundFromProvenance,
                 headerByIndex, experimentContext, targetContext, deviceContext, daoContext, csvValidation);
 
         // Set nb lines to import
@@ -523,6 +526,7 @@ public class DataImportLogic {
      * results across threads.</p>
      *
      * @param provenance                       the {@code ProvenanceModel} containing metadata related to the provenance of the data.
+     * @param dataProvUsed                     an URI of a datafile to be linked to the data
      * @param allRows                          a list of all rows from the CSV file, where each row is represented as a {@code String[]} array.
      * @param sensingDeviceFoundFromProvenance a boolean indicating if the sensing device is derived from the provenance data.
      * @param headerByIndex                    a map of column indexes to their corresponding header names.
@@ -533,7 +537,7 @@ public class DataImportLogic {
      * @param csvValidation                    the {@code DataCSVValidationModel} to which validation results will be merged.
      * @throws InterruptedException if thread execution is interrupted while awaiting termination.
      */
-    private void validateCSVRowsInParallel(ProvenanceModel provenance, List<String[]> allRows,
+    private void validateCSVRowsInParallel(ProvenanceModel provenance, ProvEntityModel dataProvUsed, List<String[]> allRows,
                                            boolean sensingDeviceFoundFromProvenance, Map<Integer, String> headerByIndex,
                                            ExperimentContext experimentContext, TargetContext targetContext, DeviceContext deviceContext,
                                            DAOContext daoContext, DataCSVValidationModel csvValidation) throws InterruptedException {
@@ -555,7 +559,7 @@ public class DataImportLogic {
                 List<String[]> batch = allRows.subList(start, end);
 
                 futures.add(executor.submit(() ->
-                        processBatch(provenance, sensingDeviceFoundFromProvenance, headerByIndex,
+                        processBatch(provenance, dataProvUsed, sensingDeviceFoundFromProvenance, headerByIndex,
                                 experimentContext, targetContext, deviceContext, daoContext, start, batch, stopProcessing, nbError, csvValidation)));
             }
 
@@ -587,6 +591,7 @@ public class DataImportLogic {
 
     private DataCSVValidationModel processBatch(
             ProvenanceModel provenance,
+            ProvEntityModel dataProvUsed,
             boolean sensingDeviceFoundFromProvenance,
             Map<Integer, String> headerByIndex,
             ExperimentContext experimentContext,
@@ -613,6 +618,7 @@ public class DataImportLogic {
             // Initialize the validation context for each row validation
             validationContext = new ValidationContext(
                     provenance,
+                    dataProvUsed,
                     row,
                     localRowIndex,
                     headerByIndex,
@@ -687,7 +693,7 @@ public class DataImportLogic {
     }
 
     private boolean isFixedHeader(String header) {
-        return Arrays.asList(EXPERIMENT_HEADER, TARGET_HEADER, DATE_HEADER, DEVICE_HEADER, SCIENTIFIC_OBJ_HEADER, RAW_DATA_HEADER, ANNOTATION_HEADER)
+        return Arrays.asList(EXPERIMENT_HEADER, TARGET_HEADER, DATE_HEADER, DEVICE_HEADER, SCIENTIFIC_OBJ_HEADER, RAW_DATA_HEADER, ANNOTATION_HEADER, PROVUSED_HEADER)
                 .contains(header.toLowerCase(Locale.ENGLISH));
     }
 
@@ -730,9 +736,11 @@ public class DataImportLogic {
                 validateDeviceColumn(context, colIndex);
             } else if (headerName.equalsIgnoreCase(ANNOTATION_HEADER)) {
                 processAnnotationColumn(context, colIndex);
+            } else if (headerName.equalsIgnoreCase(PROVUSED_HEADER)) {
+                handleProvUsedColumn(context, colIndex);
             } else if (!headerName.equalsIgnoreCase(RAW_DATA_HEADER)) {
                 handleVariableColumn(context, colIndex);
-            }
+            } 
         }
         LOGGER.debug("[validateColumnsRow] end validating columns");
     }
@@ -849,6 +857,9 @@ public class DataImportLogic {
         }
         if (validationContext.getTarget() != null) {
             dataModel.setTarget(validationContext.getTarget().getUri());
+        }
+        if (validationContext.getDataProvUsed() != null) {
+            provenanceModel.setProvUsed(List.of(validationContext.getDataProvUsed()));
         }
         dataModel.setProvenance(provenanceModel);
         dataModel.setVariable(varURI);
@@ -1006,6 +1017,22 @@ public class DataImportLogic {
             annotationFromAnnotationColumn.setMotivation(motivationModel);
 
             context.setAnnotationFromAnnotationColumn(annotationFromAnnotationColumn);
+        }
+    }
+
+    private void handleProvUsedColumn(ValidationContext context, int colIndex) {
+        String provUsed = context.getValues()[colIndex];
+        if (!StringUtils.isEmpty(provUsed)) {
+            try {
+                ProvEntityModel dataProvUsed = new ProvEntityModel();
+                dataProvUsed.setType(new URI("http://www.opensilex.org/vocabulary/oeso#Datafile"));
+                dataProvUsed.setUri(new URI(provUsed));
+                context.setDataProvUsed(dataProvUsed);
+            } catch (Exception e) {
+                CSVCell cell = new CSVCell(context.getRowIndex(), colIndex, provUsed, PROVUSED_HEADER);
+                context.getLocalCsvValidation().addInvalidValueError(cell);
+                context.setValidRow(false);
+            }
         }
     }
 

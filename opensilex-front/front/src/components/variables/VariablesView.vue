@@ -107,7 +107,7 @@
 
     <!-- Modale de création/édition d’un groupe de variables -->
     <opensilex-VariableGroupCreate
-      ref="variableGroupCreate"
+      ref="variableGroupForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
       @onCreate="form => onExternalResourceCreatedOrUpdated('groups', form)"
       @onUpdate="form => onExternalResourceCreatedOrUpdated('groups', form)"
@@ -191,7 +191,7 @@ const formRefs: Record<string, Ref<any>> = {
   methodForm: ref(null),
   unitForm: ref(null),
   interestEntityForm: ref(null),
-  variableGroupCreate: ref(null),
+  variableGroupForm: ref(null),
 }
 
 // on ajoute les refs des vues d’onglets
@@ -200,7 +200,7 @@ tabDefinitions.forEach(tab => {
 })
 
 const variableCreate = formRefs['variableCreate']
-const variableGroupCreate = formRefs['variableGroupCreate']
+const variableGroupForm = formRefs['variableGroupForm']
 const entityForm = formRefs['entityForm']
 const interestEntityForm = formRefs['interestEntityForm']
 const characteristicForm = formRefs['characteristicForm']
@@ -263,7 +263,7 @@ const tabRefMap: Record<string, Ref<any>> = {
   characteristics: formRefs['characteristicForm'],
   methods: formRefs['methodForm'],
   units: formRefs['unitForm'],
-  groups: formRefs['variableGroupCreate']
+  groups: formRefs['variableGroupForm']
 }
 
 function showCreateForm() {

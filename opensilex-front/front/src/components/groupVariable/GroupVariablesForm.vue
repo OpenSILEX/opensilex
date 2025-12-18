@@ -8,10 +8,10 @@
   >
     <!-- URI -->
     <opensilex-UriForm
-    :key="(form?.uri ?? '') + (editMode ? '-edit' : '-create')"
+      :key="(form?.uri ?? '') + (editMode ? '-edit' : '-create')"
       v-model:uri="form.uri"
-      :generated="localUriGenerated"
-      @update:generated="val => (localUriGenerated = val)"
+      :generated="uriGenerated"
+      @update:generated="val => (uriGenerated = val)"
       :editMode="editMode"
       :helpMessage="$t('component.common.uri-help-message')"
       label="component.group.group-uri"
@@ -61,7 +61,7 @@ import { requiredTrimmed } from  "../../models/FormFieldsFormatter"
 // ---- Props / Emits ----
 const props = defineProps<{
   editMode?: boolean
-  uriGenerated?: boolean
+  uriGenerated: { type: Boolean, default: true },
   form: {
     uri?: string | null
     name?: string | null
@@ -82,7 +82,7 @@ const { t } = useI18n()
 // ---- Form / Refs ----
 const formRef = ref<FormInst | null>(null)
 const variablesSelectorRef = ref<any>()
-const localUriGenerated = ref(props.uriGenerated ?? true)
+const uriGenerated = ref(props.uriGenerated ?? true)
 
 // Liste de labels passée au sélecteur
 const variablesWithLabels = ref<Array<{ id: string; label: string }>>([])

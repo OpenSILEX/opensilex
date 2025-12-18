@@ -48,8 +48,9 @@
           />
             <opensilex-AgroportalEntityForm
               ref="entityForm"
-              ontologiesConfig="entities"
+              ontologies="entities"
               @onCreate="onEntityCreated"
+              @onUpdate="onEntityCreated"
             />
         </div>
 
@@ -71,6 +72,12 @@
             noResultsText="VariableForm.no-interestEntity"
             :disabled="false"
           />
+            <opensilex-AgroportalEntityOfInterestForm
+              ref="interestEntityForm"
+              ontologies="entities"
+              @onCreate="onEntityOfInterestCreated"
+              @onUpdate="onEntityOfInterestCreated"
+            />
         </div>
 
         <!-- CHARACTERISTIC -->
@@ -92,6 +99,12 @@
             noResultsText="VariableForm.no-characteristic"
             :disabled="false"
           />
+            <opensilex-AgroportalCharacteristicForm
+              ref="characteristicForm"
+              ontologies="entities"
+              @onCreate="onCharacteristicCreated"
+              @onUpdate="onCharacteristicCreated"
+            />
         </div>
 
         <!-- SPECIES (facultatif) -->
@@ -126,6 +139,12 @@
             :conversionMethod="objectToSelectNode"
             :disabled="false"
           />
+            <opensilex-AgroportalMethodForm
+              ref="methodForm"
+              ontologies="entities"
+              @onCreate="onMethodCreated"
+              @onUpdate="onMethodCreated"
+            />
         </div>
 
         <!-- TRAIT BUTTON -->
@@ -171,6 +190,12 @@
             noResultsText="VariableForm.no-unit"
             :disabled="false"
           />
+            <opensilex-AgroportalUnitForm
+              ref="unitForm"
+              ontologies="unit"
+              @onCreate="onUnitCreated"
+              @onUpdate="onUnitCreated"
+            />
         </div>
       </div>
 
@@ -275,6 +300,10 @@ import type { HttpResponse, OpenSilexResponse } from 'opensilex-core/HttpRespons
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin"
 import { requiredTrimmed } from  "../../../models/FormFieldsFormatter"
 import AgroportalEntityForm from './../agroportal/AgroportalEntityForm.vue'
+import AgroportalEntityOfInterestForm from './../agroportal/AgroportalEntityOfInterestForm.vue'
+import AgroportalCharacteristicForm from './../agroportal/AgroportalCharacteristicForm.vue'
+import AgroportalMethodForm from './../agroportal/AgroportalMethodForm.vue'
+import AgroportalUnitForm from './../agroportal/AgroportalUnitForm.vue'
 
 const props = defineProps({
   editMode: Boolean,
@@ -543,6 +572,32 @@ function onEntityCreated(newEntityForm: any) {
 
   // 2. on met à jour le nom auto-généré de la variable :
   selectedEntityName.value = newEntityForm.name
+  updateName()
+}
+
+function onEntityOfInterestCreated(newInterestEntityForm: any) {
+  if (!newInterestEntityForm?.uri) return
+  props.form.entity_of_interest = newInterestEntityForm.uri
+}
+
+function onCharacteristicCreated(newCharacteristicForm: any) {
+  if (!newCharacteristicForm?.uri) return
+  props.form.characteristic = newCharacteristicForm.uri
+  selectedCharacteristicName.value = newCharacteristicForm.name
+  updateName()
+}
+
+function onMethodCreated(newMethodForm: any) {
+  if (!newMethodForm?.uri) return
+  props.form.method = newMethodForm.uri
+  selectedMethodName.value = newMethodForm.name
+  updateName()
+}
+
+function onUnitCreated(newUnitForm: any) {
+  if (!newUnitForm?.uri) return
+  props.form.unit = newUnitForm.uri
+  selectedUnitName.value = newUnitForm.name
   updateName()
 }
 

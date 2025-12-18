@@ -358,7 +358,7 @@ const filteredVariables = computed(() => {
   );
 });
 
-defineExpose({ showCreateForm });
+defineExpose({ showCreateForm, onFormSuccess });
 </script>
 
 <style>

@@ -1,9 +1,8 @@
 # Specifications : Spectra
 
-
-|Date      |Author          |Developer(s)|Version OpenSilex|Comment|
-|----------|----------------|------------|-----------------|
-|2024-11-27|Emilie Fernandez|EF          |                 |
+| Date       | Editor(s)        | OpenSILEX version | Comment           |
+|------------|------------------|-------------------|-------------------|
+| 2024-11-27 | Emilie Fernandez |                   | Document creation |
 
 ## Needs
 

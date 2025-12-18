@@ -42,7 +42,7 @@ coordinates, stored in the MongoDB in the "geospatial" collection".
 For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the 
 [facility specification](facilities.md).
 
-![Location_models_before](png/Location_Models_before.png)
+![Location_models_before](../_imgs/Location_Models_before.png)
 
 This dispersion of the location information, especially for scientific objects stored in the 2 MongoDB 
 collections with 2 different models, leads to difficulties to get the right location information and spatio-temporal 

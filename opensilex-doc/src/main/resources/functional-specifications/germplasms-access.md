@@ -6,7 +6,7 @@
 
 | Date       | Editor(s)    | OpenSILEX version | Comment           |
 |------------|--------------|-------------------|-------------------|
-| 22/09/2025 | Lydia ALIANE |                   | Document creation |
+| 22/09/2025 | Lydia ALIANE | 1.4.10            | Document creation |
 
 
 
@@ -15,16 +15,13 @@
 
 
 <!-- TOC -->
-* [Specifications : [{Germplasms}] {access rights}]
-* [Table of contents](#table-of-contents)
-* [Definitions](#definitions)
-* [Needs](#needs)
-    * [Non-functional requirements](#non-functional-requirements)
-* [Solution](#solution)
-    * [Business logic](#business-logic)
-* [Technical specifications](#technical-specifications)
-    * [Tests](#tests)
-    * [Environment](#environment)
+* [Specifications : Germplasms access](#specifications--germplasms-access-rights)
+  * [Table of contents](#table-of-contents)
+  * [Definitions](#definitions)
+  * [Needs](#needs)
+      * [Non-functional requirements](#non-functional-requirements)
+  * [Solution](#solution)
+      * [Business logic](#business-logic)
 <!-- TOC -->
 
 
@@ -61,8 +58,7 @@ The main objective is to restrict access to germplasms by introducing the concep
     - Each germplasm in the main list shows whether it is public or private, allowing users to immediately understand the access restrictions.
     - In the search menu, Users can filter germplasms by visibility (public/private) using advanced filters.
 
-
-
+    
 
 ## Solution
 
@@ -103,39 +99,6 @@ Germplasm access is now managed using a public/private classification combined w
 
 
 - *Security note:* Users who belong to multiple groups have cumulative access rights. Care must be taken to ensure that access control is correctly enforced across all groups.
-
-
-## Technical specifications
-
-
-## API Layer
-
-- **Endpoint:** `GermplasmResource.searchGermplasm()`
-- **Accepted Query Parameters:**  
-  `uri`, `rdf_type`, `name`, `accession`, `species`, `variety`, `institute`, `experiment`, `parent_germplasms`, `metadata`, `is_public`, `order_by`, `page`, `page_size`
-- **Functionality:**
-    - Converts search results into DTOs (`GermplasmGetAllDTO`)
-    - Returns a paginated response (`PaginatedListResponse`)
-
----
-
-## Business Logic Layer
-
-- **Class:** `GermplasmLogic`
-- **Method:** `search(GermplasmSearchFilter searchFilter, boolean fetchMetadata, boolean fetchNestedObjects)`
-- **Responsibilities:**
-    - Builds the search query using `GermplasmSearchFilter`
-    - Handles optional metadata loading via `metaDataDao.getMetaDataAssociatedTo()`
-    - Loads nested germplasm relations conditionally via `fetchGermplasmsOfRelation()`
-
----
-
-## Data Access Layer
-
-- **Classes:** `GermplasmDAO`, `SPARQLDAO`
-- **Responsibilities:**
-    - Performs SPARQL queries with pagination using `searchWithPagination()`
-    - Applies access filters at the query level via `appendUserGermplasmFilter()` and `appendgroupsListFilters()` to enforce user permissions
 
 
 

@@ -374,12 +374,15 @@ public class BrAPIv1ObservationUnitDTO {
         observationUnit.setPositionCoordinateXType(PositionType.LONGITUDE);
         observationUnit.setPositionCoordinateYType(PositionType.LATITUDE);
 
-        LocationObservationModel locationObservationModel = observationLogic.getLastLocationObservation(
-                Collections.singletonList(model.getLocationObservationCollection().getUri()),
-                false,
-                null,
-                null
-                ).get(0);
+        LocationObservationModel locationObservationModel = null;
+        if(model.getLocationObservationCollection() != null){
+            locationObservationModel = observationLogic.getLastLocationObservation(
+                    Collections.singletonList(model.getLocationObservationCollection().getUri()),
+                    false,
+                    null,
+                    null
+            ).get(0);
+        }
 
         if(locationObservationModel != null){
             if(locationObservationModel.getLocation().getGeometry() != null){

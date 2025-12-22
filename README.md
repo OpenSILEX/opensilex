@@ -34,6 +34,12 @@
   - [Default configuration example](#default-configuration-example)
 <!-- TOC -->
 
+
+OpenSILEX Contributing
+=============================================
+
+My changes to explain how to contribute to OpenSILEX project.
+
 OpenSILEX Developer's installation
 =============================================
 

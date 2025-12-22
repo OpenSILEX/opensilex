@@ -67,7 +67,7 @@
         <maven.resolver.version>1.7.3</maven.resolver.version>
         <maven.resolver.provider.version>3.8.4</maven.resolver.provider.version>
         <rdf4j.version>5.2.1</rdf4j.version>
-        <jena.query.builder.version>4.9.0</jena.query.builder.version>
+        <jena.query.builder.version>5.6.0</jena.query.builder.version>
         <mongodb.version>4.11.0</mongodb.version>
         <bytebuddy.version>1.14.18</bytebuddy.version>
         <java.jwt.version>4.4.0</java.jwt.version>

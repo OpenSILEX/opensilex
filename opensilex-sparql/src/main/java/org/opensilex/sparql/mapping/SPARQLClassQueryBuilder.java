@@ -490,8 +490,8 @@ class SPARQLClassQueryBuilder {
         Var predicateVar = makeVar("p");
         Var objectVar = makeVar("o");
 
-        Triple relation = new  Triple(uriVar, predicateVar, objectVar);
-        Triple inverseRelation = new Triple(subjectVar, predicateVar, uriVar);
+        Triple relation = Triple.create(uriVar, predicateVar, objectVar);
+        Triple inverseRelation = Triple.create(subjectVar, predicateVar, uriVar);
 
         if(graph != null){
             Object graphObject = SPARQLDeserializers.nodeURI(graph);
@@ -570,8 +570,8 @@ class SPARQLClassQueryBuilder {
                                                         List<URI> excludedPredicates,
                                                         Map<URI, List<URI>> predicatesToIgnoreByUri){
         WhereBuilder globalWhere = new WhereBuilder();
-        Triple relation = isInverseRelation ? new Triple(subjectVar, predicateVar, uriToDeleteVar) :
-                new Triple(uriToDeleteVar, predicateVar, objectVar);
+        Triple relation = isInverseRelation ? Triple.create(subjectVar, predicateVar, uriToDeleteVar) :
+                Triple.create(uriToDeleteVar, predicateVar, objectVar);
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
         //do not delete excluded predicates
@@ -640,8 +640,8 @@ class SPARQLClassQueryBuilder {
         }
 
         WhereBuilder globalWhere = new WhereBuilder();
-        Triple relation = isInverseRelation ? new Triple(subjectVar, predicateVar, uriToDeleteVar) :
-                new Triple(uriToDeleteVar, predicateVar, objectVar);
+        Triple relation = isInverseRelation ? Triple.create(subjectVar, predicateVar, uriToDeleteVar) :
+                Triple.create(uriToDeleteVar, predicateVar, objectVar);
 
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
@@ -951,7 +951,7 @@ class SPARQLClassQueryBuilder {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
 
-        triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
+        triple = Triple.create(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
         quad = new Quad(graph, triple);
         tripleHandler.accept(quad, analyzer.getURIField());
 
@@ -967,9 +967,9 @@ class SPARQLClassQueryBuilder {
                 Property property = analyzer.getDataPropertyByField(field);
                 Node fieldNodeValue = SPARQLDeserializers.getForClass(fieldValue.getClass()).getNode(fieldValue);
                 if (analyzer.isReverseRelation(field)) {
-                    triple = new Triple(fieldNodeValue, property.asNode(), uriNode);
+                    triple = Triple.create(fieldNodeValue, property.asNode(), uriNode);
                 } else {
-                    triple = new Triple(uriNode, property.asNode(), fieldNodeValue);
+                    triple = Triple.create(uriNode, property.asNode(), fieldNodeValue);
                 }
                 quad = new Quad(graph, triple);
                 tripleHandler.accept(quad, field);
@@ -993,10 +993,10 @@ class SPARQLClassQueryBuilder {
                 } else {
                     Property property = analyzer.getObjectPropertyByField(field);
                     if (analyzer.isReverseRelation(field)) {
-                        triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), uriNode);
+                        triple = Triple.create(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), uriNode);
                         quad = new Quad(fieldMapper.getDefaultGraph(), triple);
                     } else {
-                        triple = new Triple(uriNode, property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
+                        triple = Triple.create(uriNode, property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
                         quad = new Quad(graph, triple);
                     }
 
@@ -1018,9 +1018,9 @@ class SPARQLClassQueryBuilder {
                 for (Map.Entry<String, String> translation : label.getAllTranslations().entrySet()) {
                     Node translationNode = NodeFactory.createLiteral(translation.getValue(), translation.getKey());
                     if (analyzer.isReverseRelation(field)) {
-                        triple = new Triple(translationNode, property.asNode(), uriNode);
+                        triple = Triple.create(translationNode, property.asNode(), uriNode);
                     } else {
-                        triple = new Triple(uriNode, property.asNode(), translationNode);
+                        triple = Triple.create(uriNode, property.asNode(), translationNode);
                     }
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
@@ -1037,9 +1037,9 @@ class SPARQLClassQueryBuilder {
                 for (Object listValue : fieldValues) {
                     Node listNodeValue = SPARQLDeserializers.getForClass(listValue.getClass()).getNode(listValue);
                     if (analyzer.isReverseRelation(field)) {
-                        triple = new Triple(listNodeValue, property.asNode(), uriNode);
+                        triple = Triple.create(listNodeValue, property.asNode(), uriNode);
                     } else {
-                        triple = new Triple(uriNode, property.asNode(), listNodeValue);
+                        triple = Triple.create(uriNode, property.asNode(), listNodeValue);
                     }
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
@@ -1100,7 +1100,7 @@ class SPARQLClassQueryBuilder {
 
             if (! StringUtils.isEmpty(vString)) {
                 Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
-                Triple relationTriple = new Triple(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
+                Triple relationTriple = Triple.create(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
 
                 Node relationGraph = relation.getGraph() != null ? SPARQLDeserializers.nodeURI(relation.getGraph()) : graph;
 

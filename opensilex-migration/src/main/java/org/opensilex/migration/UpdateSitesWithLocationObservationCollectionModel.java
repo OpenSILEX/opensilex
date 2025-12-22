@@ -21,6 +21,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
@@ -187,15 +188,15 @@ public class UpdateSitesWithLocationObservationCollectionModel implements OpenSi
             //Bind functions of the where clause
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
-            Expr exprNameFormated = exprFactory.replace(nameVar.asNode(), " ", "");
+            Expr exprNameFormated = exprFactory.replace(NodeFactory.createVariable(nameVar.getVarName()), " ", "");
             where.addBind(exprNameFormated, nameFormatedVar);
             where.addBind(exprFactory.rand(), randomVar);
 
             Expr exprURI = exprFactory.iri(new ExprFactory().concat(
                     "http://opensilex.test/id/observationCollection/site/",
-                    new ExprFactory().str(nameFormatedVar.asNode()),
+                    new ExprFactory().str(NodeFactory.createVariable(nameFormatedVar.getVarName())),
                     "/",
-                    exprFactory.replace(new ExprFactory().str(randomVar.asNode()), "0.", ""))
+                    exprFactory.replace(new ExprFactory().str(NodeFactory.createVariable(randomVar.getVarName())), "0.", ""))
             );
             where.addBind(exprURI, observationCollectionURIVar);
 

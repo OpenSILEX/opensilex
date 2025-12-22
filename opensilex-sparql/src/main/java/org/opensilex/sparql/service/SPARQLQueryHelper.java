@@ -623,7 +623,7 @@ public class SPARQLQueryHelper {
 
         // get deserializer associated to the given value and create triple
         SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(value.getClass());
-        Triple triple = new Triple(subject, property.asNode(), deserializer.getNode(value));
+        Triple triple = Triple.create(subject, property.asNode(), deserializer.getNode(value));
         elementGroup.addTriplePattern(triple);
     }
 
@@ -759,13 +759,13 @@ public class SPARQLQueryHelper {
 
         switch (tupleSlot) {
             case SUBJECT:
-                uriTriple = new Triple(uriNode, p, o);
+                uriTriple = Triple.create(uriNode, p, o);
                 break;
             case PREDICATE:
-                uriTriple = new Triple(s, uriNode, o);
+                uriTriple = Triple.create(s, uriNode, o);
                 break;
             case OBJECT:
-                uriTriple = new Triple(s, p, uriNode);
+                uriTriple = Triple.create(s, p, uriNode);
                 break;
             default:
                 throw new IllegalArgumentException();

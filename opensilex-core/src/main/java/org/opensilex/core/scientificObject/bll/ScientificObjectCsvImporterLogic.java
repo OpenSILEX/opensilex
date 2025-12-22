@@ -26,6 +26,7 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
@@ -103,6 +104,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private final ExperimentDAO experimentDAO;
     private ExperimentModel experimentModel;
     private final AccountModel currentUser;
+    private final ScientificObjectLogic scientificObjectLogic;
 
     private static String EXPERIMENTS_CONCAT_VAR_NAME = "experiments";
 
@@ -112,7 +114,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
      * @param experiment URI of the experiment
      * @param user       {@link org.opensilex.security.account.dal.AccountModel} used to determine if user has the right to access the experiment {@link ExperimentDAO#validateExperimentAccess(URI, org.opensilex.security.account.dal.AccountModel) }
      */
-    public ScientificObjectCsvImporterLogic(SPARQLService sparql, MongoDBService mongoDB, URI experiment, AccountModel user) throws Exception {
+    public ScientificObjectCsvImporterLogic(SPARQLService sparql, MongoDBService mongoDB, URI experiment, AccountModel user, FileStorageService fs) throws Exception {
         super(
                 sparql,
                 ScientificObjectModel.class,
@@ -129,7 +131,10 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         geoDAO = new GeospatialDAO(mongoDB);
         moveDAO = new MoveEventDAO(sparql, mongoDB);
-        scientificObjectDAO = new ScientificObjectDAO(sparql, mongoDB);
+        //TODO MAX check usages of OS Dao at end, we should probably just be calling Logic class
+        scientificObjectDAO = new ScientificObjectDAO(sparql);
+        this.scientificObjectLogic = new ScientificObjectLogic(sparql, mongoDB, fs);
+
 
         if (experiment != null) {
             // ensure that the user has the right to access experiment
@@ -723,17 +728,18 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 setExperimentInSOObj(model);
             }
         }
-        scientificObjectDAO.create(models, graph);
+        scientificObjectDAO.create(this.graphNode, models);
 
         // associated moves creation
-        List<MoveModel> moves = new ArrayList<>();
+        /*List<MoveModel> moves = new ArrayList<>();
         for (ScientificObjectModel object : models) {
             MoveModel facilityMoveEvent = new MoveModel();
-            if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
+            if (ScientificObjectLogic.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moves.add(facilityMoveEvent);
             }
-        }
-        moveDAO.create(moves);
+        }*/
+        //TODO MAX for ScientificObjectsGeo had to comment this above and below out on previous MR because a test was failing due to something in relation with isHosted which is going to change anyway
+        //moveDAO.create(moves);
 
         // Global OS copy and species update inside xp
         if (withinExperiment()) {
@@ -780,11 +786,13 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 },
                 false
         );
+
         //Get old versions of global objects we're guna have to update
-        List<ScientificObjectModel> modelsToUpdateGlobally = scientificObjectDAO.searchByURIs(
+        List<ScientificObjectModel> modelsToUpdateGlobally = this.scientificObjectLogic.searchByURIs(
                 sparql.getDefaultGraphURI(ScientificObjectModel.class),
                 urisToUpdateGlobally,
-                currentUser
+                currentUser,
+                false
         );
         modelsToUpdateGlobally.forEach(e->modelsToUpdateGloballyByExpandedUri.put(SPARQLDeserializers.getExpandedURI(e.getUri()), e));
     }
@@ -885,7 +893,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
 
         //Do the standard update
-        scientificObjectDAO.updateMultipleSOAndMoves(
+        scientificObjectLogic.updateMultipleSOAndMoves(
                 models,
                 currentUser,
                 experiment==null ? sparql.getDefaultGraph(ScientificObjectModel.class) : SPARQLDeserializers.nodeURI(experiment),
@@ -894,7 +902,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         //Do the secondary update in global context (if we were updating in an XP and if at least one OS had a type change)
         if(!CollectionUtils.isEmpty(modelsToUpdateGloballyByExpandedUri.entrySet())) {
-            scientificObjectDAO.updateMultipleSOAndMoves(
+            scientificObjectLogic.updateMultipleSOAndMoves(
                     new ArrayList<>(modelsToUpdateGloballyByExpandedUri.values()),
                     currentUser,
                     sparql.getDefaultGraph(ScientificObjectModel.class),

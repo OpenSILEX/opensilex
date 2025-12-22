@@ -16,11 +16,13 @@ import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 public class LocationObservationCollectionLogic {
     private final SPARQLService sparql;
@@ -37,6 +39,7 @@ public class LocationObservationCollectionLogic {
 
     //#region public
     public URI createLocationObservationCollection(URI featureOfInterest) throws Exception {
+        //TODO MAX so as soon as we try to add a new location via this function an error will be thrown?? If so make  a getOrCreateNew, if i do this start by verifying all usages of this function to make sure no logic was added
         checkUniqueObservationCollection(featureOfInterest);
 
         LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel();
@@ -52,6 +55,23 @@ public class LocationObservationCollectionLogic {
         } catch (Exception e) {
             throw new NotFoundURIException("No location collection found for this URI", featureOfInterest);
         }
+    }
+
+    /**
+     *
+     * @param featureOfInterests the uris of elements we want LocationCollections for
+     * @return the LocationCollection uri of each featureOfInterest, in a Map of FeatureOfInterestURI => LocationCollectionURI
+     */
+    public Map<URI, URI> getLocationObservationCollectionList(List<URI> featureOfInterests) throws SPARQLException {
+        return locationObservationCollectionDAO.getCollections(featureOfInterests);
+    }
+
+    /**
+     * @param rdfType type of object
+     * @return for each object of the rdfType, return the object uri, rdfType, and the location observation collection linked
+     */
+    public Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> getLocationObservationCollectionListByType(URI rdfType) throws SPARQLException {
+        return locationObservationCollectionDAO.getCollectionByType(rdfType);
     }
 
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {

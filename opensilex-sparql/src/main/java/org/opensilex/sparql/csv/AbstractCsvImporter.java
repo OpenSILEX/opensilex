@@ -135,7 +135,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         this.sparql = sparql;
         this.objectClass = objectClass;
         this.graph = graph;
-        this.graphNode = NodeFactory.createURI(graph.toString());
+        this.graphNode = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(graph));
         this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();

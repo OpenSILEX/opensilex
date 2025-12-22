@@ -2,13 +2,18 @@ package org.opensilex.core.location.dal;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 
+import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +41,10 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         if (Objects.nonNull(searchQuery.getObservationCollection())) {
             filters.add(Filters.eq(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollection()));
         }
+        //Feature of interest URI
+        if (Objects.nonNull(searchQuery.getFeatureOfInterest())) {
+            filters.add(Filters.eq(LocationObservationModel.FEATURE_OF_INTEREST_FIELD, searchQuery.getFeatureOfInterest()));
+        }
         //Collection List
         if (Objects.nonNull(searchQuery.getObservationCollectionList())  && !searchQuery.getObservationCollectionList().isEmpty()) {
             filters.add(Filters.in(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, searchQuery.getObservationCollectionList()));
@@ -44,19 +53,18 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         appendHasGeometryFilters(filters,searchQuery);
         appendDateFilters(filters,searchQuery);
 
+        if (searchQuery.getIntersection() != null) {
+            filters.add(Filters.exists(LocationModel.GEOMETRY_FIELD, true));
+            filters.add(Filters.geoWithin(LocationModel.GEOMETRY_FIELD, searchQuery.getIntersection()));
+        }
+
+        if(Objects.nonNull(searchQuery.getTo())){
+            filters.add(Filters.eq(LocationObservationModel.LOCATION_TO_FIELD, searchQuery.getTo()));
+        }
+
         return filters;
     }
 
-    @Override
-    public String idField() {
-        return LocationObservationModel.OBSERVATION_COLLECTION_FIELD;
-    }
-
-    @Override
-    public void upsert(ClientSession session, LocationObservationModel instance) throws MongoException {
-        Bson filter = Filters.eq(MongoModel.MONGO_ID_FIELD, instance.getUri());
-        upsert(instance, filter, session);
-    }
     //#endregion
 
     /**
@@ -112,9 +120,9 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
                         Filters.exists(LocationObservationModel.START_DATE_FIELD, true),
                         Filters.lte(LocationObservationModel.START_DATE_FIELD, searchQuery.getEndDate()));
 
-                Bson filtersEnDate = Filters.or(filterOnEndDate, filterOnStartDate);
+                Bson filtersEndDate = Filters.or(filterOnEndDate, filterOnStartDate);
 
-                filters.add(filtersEnDate);
+                filters.add(filtersEndDate);
             }
             // Start Date
             if (Objects.nonNull(searchQuery.getStartDate())) {
@@ -124,5 +132,73 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
                 filters.add(filterStartDate);
             }
         }
+
     }
+
+    @Override
+    public String idField() {
+        return LocationObservationModel.OBSERVATION_COLLECTION_FIELD;
+    }
+
+    @Override
+    public void upsert(ClientSession session, LocationObservationModel instance) throws MongoException {
+        Bson filter = Filters.eq(MongoModel.MONGO_ID_FIELD, instance.getUri());
+        upsert(instance, filter, session);
+    }
+
+    public List<LocationObservationModel> getSpecificLocation(URI collectionURI, Instant end, Instant start){
+        Bson filter = specificFilters(collectionURI, end, start);
+        return aggregate(Collections.singletonList(Aggregates.match(filter)), LocationObservationModel.class);
+    }
+
+    public void upsertSpecificLocation(ClientSession session,  LocationObservationModel existingObservation, LocationObservationModel newObservation) throws MongoException {
+        Document filter = specificFilters(existingObservation.getObservationCollection(), existingObservation.getEndDate(), existingObservation.getStartDate());
+        filter.put(MongoModel.MONGO_ID_FIELD, existingObservation.getUri());
+
+        upsert(newObservation, filter, session);
+    }
+
+    public void deleteSpecificLocation(ClientSession session, URI collectionURI, Instant end, Instant start){
+        Bson filter = specificFilters(collectionURI, end, start);
+        deleteMany(session,filter);
+    }
+
+    /**
+     *
+     * "location.to":"http://opensilex.test/id/organization/facility.corroy_18-19", "location.geometry" :{$exists : false}
+     */
+    public List<LocationObservationModel> searchLocationsWithGeomLinkedToFacility(URI facility) {
+        //
+        Document filter = new Document();
+        Document noExistingGeomFilter = new Document("$exists", false);
+
+        filter.put("location.to", facility);
+        filter.put("location.geometry", noExistingGeomFilter);
+
+        return aggregate(Collections.singletonList(Aggregates.match(filter)), LocationObservationModel.class);
+    }
+    //#endregion
+
+    //#region private
+
+    /**
+     *
+     *$match
+     *  {
+     *        	observationCollection : "http://opensilex.dev/id/...",
+     *           endDate: ISODate("2022-05-31T11:26:16.856Z",
+     *         }
+     */
+    private Document specificFilters(URI collectionURI, Instant end, Instant start){
+
+        Document filter = new Document();
+        filter.put(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, collectionURI);
+        filter.put(LocationObservationModel.END_DATE_FIELD, end);
+        if (Objects.nonNull(start)) {
+            filter.put(LocationObservationModel.START_DATE_FIELD, start);
+        }
+
+        return filter;
+    }
+    //#endregion
 }

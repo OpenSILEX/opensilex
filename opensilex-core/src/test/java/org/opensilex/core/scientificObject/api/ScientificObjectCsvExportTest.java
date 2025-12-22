@@ -21,6 +21,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 
@@ -96,8 +97,9 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
 
         sparql = newSparqlService();
         mongodb = getMongoDBService();
+        FileStorageService fs = getFs();
 
-        dao = new ScientificObjectDAO(sparql, mongodb);
+        dao = new ScientificObjectDAO(sparql);
         geospatialDAO = new GeospatialDAO(mongodb);
 
         experiment = new ExperimentModel();
@@ -153,7 +155,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 OpenSilex.getResourceAsStream(EXPORT_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
         // load object with CSV import for testing purpose
-        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(sparql, getMongoDBService(), experiment.getUri(), user);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(sparql, getMongoDBService(), experiment.getUri(), user, fs);
         File csvFile = CSV_FILES_DIR.resolve("os_export_test_file.csv").toFile();
 
         CSVValidationModel validation = importer.importCSV(csvFile, false);

@@ -290,7 +290,9 @@ public class SiteLogic {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
         return locationObservationLogic.generateModelObservationCollectionMap(
                 siteList,
-                SiteModel::getLocationObservationCollection,
+                (SiteModel model)->(model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
+                null,
+                true,
                 null
         );
     }
@@ -404,8 +406,8 @@ public class SiteLogic {
 
             checkUniqueObservation(locationObservationCollectionUri);
 
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
-            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel);
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null, null, null);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel,null);
         }
     }
 
@@ -427,17 +429,17 @@ public class SiteLogic {
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null,null,null, null, null, null);
 
             try {
                 locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
             } catch (Exception e) {
                 //Even if the location is not found, it must not block the request
-                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel);
+                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel,null);
             }
         } else {
             try {
-                locationObservationLogic.delete(session, siteModel.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteLocationObservations(session, siteModel.getLocationObservationCollection().getUri());
             } catch (Exception ignore) {
                 //Even if the location is not found, it must not block the request
             }
@@ -472,7 +474,7 @@ public class SiteLogic {
             try {
                 LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(locationObservationCollectionUri);
                 if (locationObservationModel != null) {
-                    locationObservationLogic.delete(session, locationObservationCollectionUri);
+                    locationObservationLogic.deleteLocationObservations(session, locationObservationCollectionUri);
                     locationObservationCollectionLogic.deleteLocationObservationCollection(locationObservationCollectionUri);
                 }
             } catch (NoSQLInvalidURIException e) {

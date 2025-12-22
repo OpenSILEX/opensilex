@@ -14,6 +14,15 @@
                 "semicolon" : "Semicolon (;)",
                 "tab" : "Tab (\\t)"
             },
+            "geometry": {
+                "geometry-title": "Geospatial coordinates",
+                "geometry-help": "Geospatial coordinates in WKT format",
+                "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
+                "x": "X",
+                "y": "Y",
+                "z": "Z",
+                "textual-position": "Textual position"
+            },
             "month": "month",
             "months": "months",
             "day":"day",
@@ -67,9 +76,6 @@
             "species":"Species",
             "period":"Period",
             "year":"Year",
-            "geometry": "Geospatial coordinates",
-            "geometry-help": "Geospatial coordinates in WKT format",
-            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",

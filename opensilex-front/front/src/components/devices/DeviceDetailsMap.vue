@@ -37,13 +37,13 @@
     <!--Last Position-->
     <opensilex-StringView  v-if="isViewAllInformation || !showName" label="Event.position">
       <!--Position detail-->
-      <span v-if="position.move_time">{{new Date(position.move_time).toLocaleString()}}</span>
+      <span v-if="position.location.endDate">{{new Date(position.location.endDate).toLocaleString()}}</span>
       <ul>
-        <li v-if="position.to">{{position.to.name}}</li>
-        <li v-if="position.position && position.position.x || position.position.y || position.position.z">{{customCoordinatesText(position.position)}}</li>
-        <li v-if="position.position && position.position.text">{{position.position.text}}</li>
-        <li v-if="position.position && position.position.point">
-          <opensilex-GeometryCopy label="" :value="position.position.point">
+        <li v-if="position.location.to">{{position.location.to.name}}</li>
+        <li v-if="position.location && position.location.x || position.location.y || position.location.z">{{customCoordinatesText(position.location)}}</li>
+        <li v-if="position.location && position.location.text">{{position.location.text}}</li>
+        <li v-if="position.location && position.location.geojson">
+          <opensilex-GeometryCopy label="" :value="position.location.geojson">
           </opensilex-GeometryCopy>
         </li>
       </ul>
@@ -71,15 +71,18 @@ export default class DeviceDetailsMap extends Vue {
   moveService: EventsService;
   position: PositionGetDTO = {
     event: null,
-    from: null,
-    to: null,
-    move_time: null,
-    position: {
-      point: null,
-      text: null,
-      x:null,
-      y:null,
-      z:null
+    location: {
+      geojson: null,
+      featureOfInterest: null,
+      label: null,
+      startDate: null,
+      from: null,
+      to: null,
+      endDate: null,
+      x: null,
+      y: null,
+      z: null,
+      text: null
     }
   };
 
@@ -93,16 +96,7 @@ export default class DeviceDetailsMap extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<MoveDetailsDTO>> ) => {
            this.position =  {
                 event:  http.response.result.uri,
-                from: http.response.result.from,
-                to: http.response.result.to,
-                move_time: http.response.result.end,
-                position: {
-                  point: http.response.result.targets_positions[0].position.point,
-                  text: http.response.result.targets_positions[0].position.text,
-                  x:http.response.result.targets_positions[0].position.x,
-                  y:http.response.result.targets_positions[0].position.y,
-                  z:http.response.result.targets_positions[0].position.z
-                }
+                location: http.response.result.location
             };
       }).catch(this.$opensilex.errorHandler);
   }

@@ -64,13 +64,13 @@
       <!--Last Position-->
       <opensilex-StringView v-if="withBasicProperties && lastPosition.event" label="Event.lastPosition">
           <!-- Position detail -->
-          <span>{{new Date(lastPosition.move_time).toLocaleString()}}</span>
+          <span>{{new Date(lastPosition.location.endDate).toLocaleString()}}</span>
           <ul>
-              <li v-if="lastPosition.to">{{lastPosition.to.name}}</li>
-              <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">{{customCoordinatesText(lastPosition.position)}}</li>
-              <li v-if="lastPosition.position && lastPosition.position.text">{{lastPosition.position.text}}</li>
-              <li v-if="lastPosition.position && lastPosition.position.point">
-                  <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
+              <li v-if="lastPosition.location && lastPosition.location.to">{{lastPosition.location.to.name}}</li>
+              <li v-if="lastPosition.location && (lastPosition.location.x || lastPosition.location.y || lastPosition.location.z)">{{customCoordinatesText(lastPosition.location)}}</li>
+              <li v-if="lastPosition.location && lastPosition.location.text">{{lastPosition.location.text}}</li>
+              <li v-if="lastPosition.location && lastPosition.location.geojson">
+                  <opensilex-GeometryCopy label="" :value="lastPosition.location.geojson">
                   </opensilex-GeometryCopy>
               </li>
           </ul>
@@ -143,7 +143,7 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {PositionGetDTO} from "../../../../../opensilex-core/front/src/lib";
+import {LocationObservationDTO, PositionGetDTO} from "../../../../../opensilex-core/front/src/lib";
 import {ScientificObjectDetailByExperimentsDTO} from "../../../../../opensilex-core/front/src/lib";
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
@@ -179,17 +179,10 @@ export default class ScientificObjectDetailProperties extends Vue {
     default: null,
   })
   experiment;
+
   lastPosition:PositionGetDTO = {
     event: null,
-    from: null,
-    position: {
-      point: null,
-      text: null,
-      x:null,
-      y:null,
-      z:null
-    },
-    to: null
+    location: {}
   };
   mounted() {
     if (this.selected) {
@@ -263,28 +256,28 @@ export default class ScientificObjectDetailProperties extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  customCoordinatesText(position: any): string {
+  customCoordinatesText(location: LocationObservationDTO): string {
 
-    if (!position) {
+    if (!location) {
       return undefined;
     }
 
     let customCoordinates = "";
 
-    if (position.x) {
-      customCoordinates += "X:" + position.x;
+    if (location.x) {
+      customCoordinates += "X:" + location.x;
     }
-    if (position.y) {
+    if (location.y) {
       if (customCoordinates.length > 0) {
         customCoordinates += ", ";
       }
-      customCoordinates += "Y:" + position.y;
+      customCoordinates += "Y:" + location.y;
     }
-    if (position.z) {
+    if (location.z) {
       if (customCoordinates.length > 0) {
         customCoordinates += ", ";
       }
-      customCoordinates += "Z:" + position.z;
+      customCoordinates += "Z:" + location.z;
     }
 
     if (customCoordinates.length == 0) {

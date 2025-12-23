@@ -196,7 +196,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
             Node propertyNode = SPARQLDeserializers.nodeURI(property.getUri());
             Var propertyVar = propertiesVars.get(propertyIdx++);
-            Triple triple = new Triple(uriVar, propertyNode, propertyVar);
+            Triple triple = Triple.create(uriVar, propertyNode, propertyVar);
 
             ElementTriplesBlock elementTriple = new ElementTriplesBlock();
             elementTriple.addTriple(triple);

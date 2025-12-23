@@ -56,6 +56,10 @@ needed. Review and discussion of the pull request itself takes place on
 GitHub. Functional and acceptance tests may be done by the committer.
 
 Please make sur to be up to date with the develop branch before requesting the review.
+Also before requesting the review, please make sure that all tests are passing and project is compiling by running `mvn clean install`.
+
+Since GitHub is not the main repository, the final merge will be done by a project committer. In order to do that the committer will
+fetch your branch from your fork and merge it into the main repository. Your fix or feature will then be part of the next release.
 
 ### Code
 
@@ -74,3 +78,12 @@ The codebase has a long history - not all of it follows this style.
 
 Please don't mix reformatting and functional changes in the same file; it makes it harder
 to review.
+
+### Resources
+
+Not sure to understand the codebase ? Take a look at the documentation. Good starting points are:
+- [OpenSILEX Developer's installation](README.md)
+- [Global architecture](opensilex-doc/src/main/resources/architecture/index.md)
+
+Not sur about actual rules of a concept (exemple : rules of accounts, of scientific-objects import, ...) ?
+See the [specifications website](https://opensilex.pages-forge.inrae.fr/opensilex-dev/specifications/)

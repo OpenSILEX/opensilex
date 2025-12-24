@@ -4,7 +4,7 @@ import { withSidebar } from 'vitepress-sidebar'
 export default defineConfig(
   withSidebar(
     {
-      title: 'OpensilexDev-Specs',
+      title: 'Opensilex specifications',
       description: 'A VitePress Site',
       srcExclude: ['template/spec_template.md', 'scientific-object/scientific-objects-import.md'],
       base: '/opensilex-dev/specifications/',
@@ -13,11 +13,10 @@ export default defineConfig(
       themeConfig: {
         nav: [
           { text: 'Home', link: '/' },
-          { text: 'Examples', link: '/markdown-examples' }
         ],
         // DO NOt define sidebar, plugin will generate it
         socialLinks: [
-          { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+          { icon: 'github', link: 'https://github.com/OpenSILEX/opensilex' }
         ],
         search: {
           provider: 'local'

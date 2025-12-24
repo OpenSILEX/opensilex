@@ -1,25 +1,32 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
 hero:
-  name: "OpensilexDev-Specs"
-  text: "A VitePress Site"
-  tagline: My great project tagline
-  actions:
-    - theme: brand
-      text: example
-      link: /germplasms-import
-    - theme: alt
-      text: autre exemple
-      link: /scientific-object/scientific-objects-import
+    name: "Opensilex specification"
+    tagline: "rules and definition of core concepts<br/><br/>Use Ctrl + K to search among concepts."
+    actions:
+        - theme: brand
+          text: javadoc
+          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/
+
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
----
+  - title: "Scientific organization"
+    icon: "🏢"
+    details: "- Organizations<br/>- Projects<br/>- Experiments<br/>- Facilities<br/>- Devices<br/>- Sites<br/>- Persons"
 
+  - title: "Scientific information"
+    icon: "🧬"
+    details: "- Scientific Objects<br/>- Variables<br/>- Germplasm"
+    
+  - title: "Data & provenance"
+    icon: "📊"
+    details: "- Datasets<br/>- Data Files<br/>- Provenance<br/>- Events<br/>- Documents"
+    
+  - title: "Asministration"
+    icon: "👥"
+    details: "- Accounts<br/>- Groups<br/>- Profiles"
+---
+## Version
+
+This documentation corresponds to Opensilex developement version. It could differ from the version you are using.

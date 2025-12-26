@@ -1107,7 +1107,6 @@ test:temporary3:deploy:
           when: on_success
     needs:
         - test:temporary3:build
-        - job: pages:specifications
 
 ###################################
 ##  temporary4-TEST-BUILD-DEPLOYMENT

@@ -109,9 +109,9 @@ Any scientific object in the CSV file should :
 
 ## Errors shown in UI
 - If there are duplicate SO names in CSV in an Exp, we display the error 
-  'Invalid value. Column: 'rdfs:label' - Value: 'Plant1' - Details: 'Object name <SO1> must be unique. dev:id/scientific-object/so-example1 has the same name'
+  'Invalid value. Column: 'rdfs:label' - Value: 'Plant1' - Details: 'Object name `<SO1>` must be unique. dev:id/scientific-object/so-example1 has the same name'
 - If SO name is empty, the error ‘Missing required value. Column: rdfs:label - Object name must be present’ is displayed
-- If there are duplicate URIs in CSV in an Exp, we display the error 'Invalid value. Column: 'uri' - Value: 'dev:id/scientific-object/so-example1' - Details: 'Object URI <dev:id/scientific-object/so-example1> must be unique.'
+- If there are duplicate URIs in CSV in an Exp, we display the error 'Invalid value. Column: 'uri' - Value: 'dev:id/scientific-object/so-example1' - Details: `Object URI <dev:id/scientific-object/so-example1> must be unique.`
 - If the entered URI is incorrect in an Exp, we display the error 'Invalid URI. Column: 'uri' - Value: 'Not a valid (absolute) IRI'
 
 ### Tests

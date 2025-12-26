@@ -88,7 +88,7 @@ public class VariablesGroupDAO {
     }
 
     private static void addVariableFilter(SelectBuilder select, URI variableUri) throws Exception{
-        Triple triple = new Triple(makeVar(SPARQLResourceModel.URI_FIELD),RDFS.member.asNode(),makeVar(VariablesGroupModel.VARIABLES_LIST_FIELD));
+        Triple triple = Triple.create(makeVar(SPARQLResourceModel.URI_FIELD),RDFS.member.asNode(),makeVar(VariablesGroupModel.VARIABLES_LIST_FIELD));
         select.addWhere(triple);
         Expr filterVariableUri = SPARQLQueryHelper.eq(VariablesGroupModel.VARIABLES_LIST_FIELD, variableUri);
         select.addFilter(filterVariableUri);

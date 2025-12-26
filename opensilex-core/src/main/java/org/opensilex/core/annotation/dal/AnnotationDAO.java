@@ -66,7 +66,7 @@ public class AnnotationDAO {
 
         Var uriVar = SPARQLQueryHelper.makeVar(SPARQLResourceModel.URI_FIELD);
         Var targetVar = SPARQLQueryHelper.makeVar(AnnotationModel.TARGET_FIELD);
-        targetTriple = new Triple(uriVar, OA.hasTarget.asNode(), targetVar);
+        targetTriple = Triple.create(uriVar, OA.hasTarget.asNode(), targetVar);
 
     }
 

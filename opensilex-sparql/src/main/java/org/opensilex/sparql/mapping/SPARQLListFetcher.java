@@ -298,8 +298,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
             // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
             Triple triple = mapper.classAnalyzer.isReverseRelation(field)
-                    ? new Triple(fieldVar, property.asNode(), uriVar)
-                    : new Triple(uriVar, property.asNode(), fieldVar);
+                    ? Triple.create(fieldVar, property.asNode(), uriVar)
+                    : Triple.create(uriVar, property.asNode(), fieldVar);
 
             if (mapper.classAnalyzer.isOptional(field)) {
                 ElementTriplesBlock elementTriple = new ElementTriplesBlock();

@@ -335,7 +335,7 @@ public class ExperimentDAO {
     }
 
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
-        select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+        select.getWhereHandler().getClause().addTriplePattern(Triple.create(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
     private void appendGroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groups) {
@@ -345,7 +345,7 @@ public class ExperimentDAO {
             return;
         }
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
+        Triple groupTriple = Triple.create(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
 
         if (CollectionUtils.isEmpty(groups) || (isPublic != null && isPublic)) {
             // get experiment without any group
@@ -408,7 +408,7 @@ public class ExperimentDAO {
             appendUserExperimentsFilter(select, user); 
             Var uriVar = makeVar(ExperimentModel.URI_FIELD);
             Var endDateField = makeVar(ExperimentModel.END_DATE_FIELD);
-            Triple endDateTriple = new Triple(uriVar, Oeso.endDate.asNode(), endDateField);
+            Triple endDateTriple = Triple.create(uriVar, Oeso.endDate.asNode(), endDateField);
             select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(endDateTriple))); 
         });
 
@@ -430,26 +430,26 @@ public class ExperimentDAO {
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
 
         ElementGroup optionals = new ElementGroup();
-        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
-        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
-        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
+        optionals.addTriplePattern(Triple.create(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
+        optionals.addTriplePattern(Triple.create(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
+        optionals.addTriplePattern(Triple.create(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
         select.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
         Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
 
         Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
+        select.addOptional(Triple.create(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
         Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
 
         Var technicalSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
+        select.addOptional(Triple.create(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
         Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
 
         Var isPublicVar = makeVar(ExperimentModel.IS_PUBLIC_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        select.addOptional(Triple.create(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
         Var publisherVar = makeVar(ExperimentModel.PUBLISHER_FIELD);
-        select.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
+        select.addOptional(Triple.create(uriVar, DCTerms.publisher.asNode(), publisherVar));
         Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
 
         select.addFilter(SPARQLQueryHelper.or(

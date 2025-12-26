@@ -138,15 +138,15 @@ public class FactorDAO {
             Var factorLevelVars = makeVar(FactorModel.FACTORLEVELS_SPARQL_VAR);
             Var factorLevelNameVar = makeVar(FactorLevelModel.NAME_FIELD + "factorLevel");
             Var uriVar = makeVar(FactorModel.URI_FIELD);
-            select.addWhere(new Triple(factorLevelVars, Oeso.hasFactor.asNode(),uriVar));
-            select.addWhere(new Triple(factorLevelVars, RDFS.label.asNode(),factorLevelNameVar));
+            select.addWhere(Triple.create(factorLevelVars, Oeso.hasFactor.asNode(),uriVar));
+            select.addWhere(Triple.create(factorLevelVars, RDFS.label.asNode(),factorLevelNameVar));
             select.addFilter(SPARQLQueryHelper.regexFilter(FactorLevelModel.NAME_FIELD + "factorLevel", factorLevelName)); 
         }
 
 
         if (category != null) {
             Var uriVar = makeVar(FactorModel.URI_FIELD);
-            select.addWhere(new Triple(
+            select.addWhere(Triple.create(
                     uriVar,
                     Oeso.hasCategory.asNode(),
                     SPARQLDeserializers.nodeURI(category))
@@ -157,7 +157,7 @@ public class FactorDAO {
             Var xpsVar = makeVar(FactorModel.EXPERIMENTS_FIELD);
             Var xpVar = makeVar(FactorModel.EXPERIMENT_FIELD);
             Var uriVar = makeVar(FactorModel.URI_FIELD);
-            select.addWhere(new Triple(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
+            select.addWhere(Triple.create(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
             Expr experimentFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.inURIFilter(xpsVar, experimentUris),
                 SPARQLQueryHelper.inURIFilter(xpVar, experimentUris)
@@ -185,7 +185,7 @@ public class FactorDAO {
             );
             select.addFilter(experimentFilter); 
             select.addWhere(makeVar(FactorModel.URI_FIELD), Oeso.studiedEffectIn, SPARQLDeserializers.nodeURI(xpUri));
-            select.addOptional(new Triple(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
+            select.addOptional(Triple.create(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
         });
     }
     
@@ -229,7 +229,7 @@ public class FactorDAO {
                 SPARQLResourceModel.class,
                 null,
                 selectBuilder -> {
-                    selectBuilder.addWhere(new Triple(
+                    selectBuilder.addWhere(Triple.create(
                             uriVar,
                             Oeso.hasFactor.asNode(),
                             SPARQLDeserializers.nodeURI(factor.getUri())));

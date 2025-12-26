@@ -726,8 +726,6 @@ pages:site:
 pages:specifications:
     stage: build
     image: node:20.19.6-alpine3.22
-    before_script:
-        - apk add git
     script:
         - cd opensilex-doc/src/main/resources/functional-specifications
         - npm install

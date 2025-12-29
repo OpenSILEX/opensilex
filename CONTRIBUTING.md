@@ -4,7 +4,7 @@ The project welcomes contributions, large and small, from anyone.
 
 The mailing list for contributing is [opensilex-help@groupe.renater.fr](mailto:opensilex-help@groupe.renater.fr).
 
-The GitHub repository is a mirror of the official OpenSILEX repository hosted on a GitLab instance accessible only for **whoooooooooooooooooooo ????????**.
+The GitHub repository is a mirror of the official OpenSILEX repository hosted on a private GitLab instance.
 
 The processes described here are guidelines, rather than fixed requirements.
 

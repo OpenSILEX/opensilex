@@ -374,19 +374,19 @@ public class GermplasmSparqlDAO {
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
 
         ElementGroup optionals = new ElementGroup();
-        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
-        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
-        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
+        optionals.addTriplePattern(Triple.create(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
+        optionals.addTriplePattern(Triple.create(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
+        optionals.addTriplePattern(Triple.create(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
         ask.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
         Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
 
         Var publisherVar = makeVar(GermplasmModel.PUBLISHER_FIELD);
-        ask.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
+        ask.addOptional(Triple.create(uriVar, DCTerms.publisher.asNode(), publisherVar));
         Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
 
 
         Var isPublicVar = makeVar(GermplasmModel.IS_PUBLIC_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        ask.addOptional(Triple.create(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
         ask.addFilter(
@@ -458,19 +458,19 @@ public class GermplasmSparqlDAO {
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
 
         ElementGroup optionals = new ElementGroup();
-        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
-        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
-        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
+        optionals.addTriplePattern(Triple.create(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
+        optionals.addTriplePattern(Triple.create(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
+        optionals.addTriplePattern(Triple.create(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
         select.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
         Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
 
 
         Var isPublicVar = makeVar(GermplasmModel.IS_PUBLIC_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        select.addOptional(Triple.create(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
         Var publisherVar = makeVar(GermplasmModel.PUBLISHER_FIELD);
-        select.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
+        select.addOptional(Triple.create(uriVar, DCTerms.publisher.asNode(), publisherVar));
         Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
 
         select.addFilter(SPARQLQueryHelper.or(
@@ -513,8 +513,8 @@ public class GermplasmSparqlDAO {
 
     private void appendRegexLabelAndSynonymFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
-            select.addOptional(new Triple(makeVar(GermplasmModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
-            //select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(GermplasmModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
+            select.addOptional(Triple.create(makeVar(GermplasmModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
+            //select.getWhereHandler().getClause().addTriplePattern(Triple.create(makeVar(GermplasmModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
             select.addFilter(SPARQLQueryHelper.or(SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_FIELD, label), SPARQLQueryHelper.regexFilter(GermplasmModel.SYNONYM_VAR, label)));
         }
     }
@@ -561,13 +561,13 @@ public class GermplasmSparqlDAO {
     private void appendGermplasmFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
             WhereBuilder builder = new WhereBuilder();
-            builder.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString())));
+            builder.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), Triple.create(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString())));
 
             WhereBuilder builder2 = new WhereBuilder();
             builder2.addWhere(makeVar("gpl"), makeVar("p"), NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()));
             builder2.addWhere(makeVar("gpl"), RDF.type, makeVar("gplType"));
             builder2.addWhere(makeVar("gplType"), Ontology.subClassAny, Oeso.Germplasm);
-            builder2.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
+            builder2.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), Triple.create(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
 
             builder.addUnion(builder2);
             select.addWhere(builder);
@@ -601,7 +601,7 @@ public class GermplasmSparqlDAO {
 
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        Triple groupTriple = new Triple(makeVar(GermplasmModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
+        Triple groupTriple = Triple.create(makeVar(GermplasmModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
 
         // resources without a group (i.e., public)
         Expr publicExpr = exprFactory.notexists(new WhereBuilder().addWhere(groupTriple));

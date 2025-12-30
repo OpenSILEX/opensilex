@@ -183,6 +183,9 @@
                 <inherited>false</inherited>
                 
                 <configuration>
+                    <locales>default</locales>
+                    <generateReports>true</generateReports>
+
                     <outputDirectory>${generated.doc.site.directory}</outputDirectory>
                 </configuration>
             </plugin>
@@ -205,7 +208,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>${maven.jxr.plugin.version}</version>
                 <configuration>
                     <javadocDir>${generated.doc.site.directory}/apidocs</javadocDir>
                 </configuration>
@@ -214,14 +217,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>${maven.pmd.plugin.version}</version>
-                <configuration>
-                    <linkXref>true</linkXref>
-                    <sourceEncoding>utf-8</sourceEncoding>
-                    <minimumTokens>100</minimumTokens>
-                    <targetJdk>${java.compiler.version}</targetJdk>
-                    <aggregate>true</aggregate>
-                </configuration>
+                <version>${maven.pmd.plugin.version}</version> 
             </plugin>
             
             <plugin>
@@ -259,8 +255,7 @@
                                 <exclude>**/*.war</exclude>
                             </excludes>
                             <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
-                        </configuration>
-                                    
+                        </configuration> 
                         <executions>
                             <execution>
                                 <goals>
@@ -300,7 +295,7 @@
                                         <!--Analyze class files only to exclude shaded agent JAR from report--> 
                                         <include>**/*.class</include>
                                     </includes>
-                                    <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
+                                    <outputDirectory>${maven.multiModuleProjectDirectory}/${project.name}/target/jacoco</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
@@ -316,6 +311,14 @@
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>${jacoco.maven.plugin.version}</version>
+                        <configuration>
+                            <dataFileIncludes>**/jacoco.exec</dataFileIncludes>
+                            <includes>
+                                <!--Analyze class files only to exclude shaded agent JAR from report--> 
+                                <include>**/*.class</include>
+                            </includes>
+                            <outputDirectory>${generated.doc.site.directory}/${project.name}/target/jacoco</outputDirectory>
+                        </configuration>
                         <reportSets>
                             <reportSet>
                                 <reports>
@@ -327,7 +330,7 @@
                 </plugins>
             </reporting>
         </profile>
-        
+         
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>

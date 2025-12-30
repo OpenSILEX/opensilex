@@ -78,7 +78,7 @@ public class AccountAPITest extends AbstractSecurityIntegrationTest {
         AccountCreationDTO accountToCreate = getAccount1CreationDTO();
         accountToCreate.setLinkedPerson(URIPersonToLinkWith);
         Response postResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), accountToCreate);
-        assertEquals("crerate account failed", Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
+        assertEquals("create account failed", Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 
         URI createdUri = extractUriFromResponse(postResponse);
         return accountDAO.get(createdUri);

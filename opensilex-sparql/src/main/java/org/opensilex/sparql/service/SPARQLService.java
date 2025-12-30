@@ -1832,9 +1832,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             reverseWhere.addWhere(s, p, nodeUri);
             askQuery.addUnion(reverseWhere);
         } else {
-            askQuery.addGraph(graph, new Triple(nodeUri, p, o));
+            askQuery.addGraph(graph, Triple.create(nodeUri, p, o));
             WhereBuilder reverseWhere = new WhereBuilder();
-            reverseWhere.addGraph(graph, new Triple(s, p, nodeUri));
+            reverseWhere.addGraph(graph, Triple.create(s, p, nodeUri));
             askQuery.addUnion(reverseWhere);
         }
 
@@ -2124,7 +2124,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         // build a triple for each new object to insert
         Iterator<Triple> insertTriplesIt = objects.stream().map(object -> {
             try {
-                return new Triple(subjectNode, propertyNode, SPARQLDeserializers.getForClass(object.getClass()).getNode(object));
+                return Triple.create(subjectNode, propertyNode, SPARQLDeserializers.getForClass(object.getClass()).getNode(object));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -2160,7 +2160,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         // build a triple for each new subject to insert
         Iterator<Triple> insertTriplesIt = subjects.stream().map(subject -> {
             try {
-                return new Triple(SPARQLDeserializers.nodeURI(subject), propertyNode, objectNode);
+                return Triple.create(SPARQLDeserializers.nodeURI(subject), propertyNode, objectNode);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -2395,7 +2395,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         UpdateBuilder delete = new UpdateBuilder();
         delete.addDelete(graph, subjectUri, propertyVar, objectVar);
 
-        WhereBuilder where = new WhereBuilder().addWhere(new Triple(subjectUri, propertyVar, objectVar));
+        WhereBuilder where = new WhereBuilder().addWhere(Triple.create(subjectUri, propertyVar, objectVar));
         delete.addGraph(graph, where);
 
         delete.addFilter(SPARQLQueryHelper.inURIFilter(propertyVar, properties));
@@ -2469,7 +2469,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         Var p = makeVar("p");
         Var o = makeVar("o");
 
-        Triple triple = new Triple(s, p, o);
+        Triple triple = Triple.create(s, p, o);
         if (graph != null) {
             Quad quad = new Quad(graph, triple);
             delete.addDelete(quad);

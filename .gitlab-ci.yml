@@ -10,6 +10,7 @@ stages:
   - test
   - deploy
   - release
+  - sonar
 
 ########################
 ##GLOBAL VARIABLES
@@ -32,6 +33,7 @@ variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
+  SONAR_OPTIONS: "-Dsonar.projectKey=$SONARQUBE_OPENSILEX_PROJECT_KEY -Dsonar.projectName=$SONARQUBE_OPENSILEX_PROJECT_NAME -Dsonar.host.url=$SONARQUBE_URL -Dsonar.token=$SONARQUBE_TOKEN -Dhttp.keepAlive=true -Dhttp.connection.timeout=6000000 -Dhttp.socket.timeout=6000000"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.9.9
   # DEFAULT SERVER JAVA VERSION
@@ -63,7 +65,115 @@ variables:
   #EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
   GITLAB_HTTPS: "false"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache 
 
+  SONAR_MAVEN_SETTINGS: |
+      <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                    http://maven.apache.org/xsd/settings-1.0.0.xsd"> 
+        <servers> 
+          <server>
+            <id>ossindex</id>
+            <username>$SONARQUBE_M2_SETTINGS_OSS_INDEX_ACCOUNT</username>
+            <password>$SONARQUBE_M2_SETTINGS_OSS_INDEX_PWD</password>
+          </server> 
+        </servers> 
+      </settings>
+
+build-and-test:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: build
+  cache: 
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - $MAVEN_CACHE_FOLDER
+  script:
+    - mkdir -p sonarqube_reports_log 
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild 
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+      - target
+      - opensilex-release/
+      - "**/target/"
+    expire_in: 2 hour
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == 'master'
+
+sonar-analysis:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: sonar
+  needs:
+    - job: build-and-test
+      artifacts: true
+  cache: 
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - "${SONAR_USER_HOME}/cache"
+      - sonar-scanner/
+  script:
+    - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=error -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == 'master'
+
+# build-sonar:
+#   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+#   variables:
+#     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task  
+#   stage: build-sonar 
+#   cache: 
+#     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+#     paths:
+#       - "${SONAR_USER_HOME}/cache"
+#       - $MAVEN_CACHE_FOLDER
+#       - sonar-scanner/ 
+#   script:
+#     - mkdir -p sonarqube_reports_log 
+#     - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild > sonarqube_reports_log/clean-install.log  
+#     - mvn -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > sonarqube_reports_log/verify.log  
+#     - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+#   artifacts:
+#     paths:
+#       - sonarqube_reports_log
+#   before_script:
+#     - mkdir -p $CI_PROJECT_DIR/.m2
+#     - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+#     - more $CI_PROJECT_DIR/.m2/settings.xml
+#   allow_failure: true
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+#     - if: $CI_COMMIT_BRANCH == 'master'
+#     - if: $CI_COMMIT_BRANCH == 'main'
+#     - if: $CI_COMMIT_BRANCH == 'develop'
+#     - if: $CI_COMMIT_BRANCH == 'feature/arnaud/mvn-report-update-with-sonarcube'
+  
 ########################
 ##  CACHE TEMPLATE
 ########################
@@ -575,20 +685,10 @@ update:nightly:builds:branch:
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
  
-
-.with_java11: &java11
-  variables:
-    JAVA_VERSION: 11
-    MVN_PROFILE: "for-java-11" 
-    
+ 
 .with_java21: &java21
   variables:
     JAVA_VERSION: 21  
-
-test:build:java11: 
-  <<: *java11
-  <<: *test_build_on_schedules
-
 
 test:build:java21:
   <<: *java21
@@ -607,12 +707,12 @@ pages:
   script:
     - ln -s $JAVA_HOME java.home
     - mkdir logs
-    - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
-    - cd $CI_PROJECT_DIR
+    # - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
+    # - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
+    # - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
     - mkdir public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
+    - mv $CI_PROJECT_DIR/site/* public
   artifacts:
     paths:
       - public

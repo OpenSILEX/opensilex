@@ -642,12 +642,12 @@ public final class OntologyDAO {
         Node newRangeNode = SPARQLDeserializers.nodeURI(newRange);
 
         Triple oldRangeTriple = isDataProperty ?
-                new Triple(uriVar, OWL2.onDataRange.asNode(), rangeVar) :
-                new Triple(uriVar, OWL2.onClass.asNode(), rangeVar);
+                Triple.create(uriVar, OWL2.onDataRange.asNode(), rangeVar) :
+                Triple.create(uriVar, OWL2.onClass.asNode(), rangeVar);
 
         Triple newRangeTriple = isDataProperty ?
-                new Triple(uriVar, OWL2.onDataRange.asNode(), newRangeNode) :
-                new Triple(uriVar, OWL2.onClass.asNode(), newRangeNode);
+                Triple.create(uriVar, OWL2.onDataRange.asNode(), newRangeNode) :
+                Triple.create(uriVar, OWL2.onClass.asNode(), newRangeNode);
 
         UpdateBuilder update = new UpdateBuilder()
                 .addDelete(customGraph, oldRangeTriple)
@@ -917,7 +917,7 @@ public final class OntologyDAO {
             select.addVar(typeNameVar);
 
             if (context != null) {
-                select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), new Triple(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
+                select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), Triple.create(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
             } else {
                 select.addWhere(uriVar, RDFS.label, nameVar);
             }

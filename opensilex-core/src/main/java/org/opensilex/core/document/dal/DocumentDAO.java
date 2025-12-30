@@ -325,7 +325,7 @@ public class DocumentDAO {
             Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
             Var authorsVar = SPARQLQueryHelper.makeVar(DocumentModel.AUTHORS_FIELD);
 
-            Triple docAuthorsTriple = new Triple(uriVar, Oeso.hasAuthor.asNode(), authorsVar);
+            Triple docAuthorsTriple = Triple.create(uriVar, Oeso.hasAuthor.asNode(), authorsVar);
 
             authorsGraphGroupElem.addTriplePattern(docAuthorsTriple);
 
@@ -360,7 +360,7 @@ public class DocumentDAO {
         Var subjectVar = SPARQLQueryHelper.makeVar(DocumentModel.SUBJECT_FIELD);
 
         ElementGroup subjectTripleGroup = new ElementGroup();
-        subjectTripleGroup.addTriplePattern(new Triple(uriVar, DCTerms.subject.asNode(), subjectVar));
+        subjectTripleGroup.addTriplePattern(Triple.create(uriVar, DCTerms.subject.asNode(), subjectVar));
         elementGroup.addElement(new ElementOptional(subjectTripleGroup));
     }
 
@@ -391,7 +391,7 @@ public class DocumentDAO {
 
             // append where between doc uri and the multi-valued "targets" property because
             // the sparql service don't fetch multi-valued property during the search call
-            Triple targetsTriple = new Triple(uriVar, OA.hasTarget.asNode(), targetsVar);
+            Triple targetsTriple = Triple.create(uriVar, OA.hasTarget.asNode(), targetsVar);
 
             targetsGraphGroupElem.addTriplePattern(targetsTriple);
 
@@ -401,7 +401,7 @@ public class DocumentDAO {
     }
 
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
-        select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+        select.getWhereHandler().getClause().addTriplePattern(Triple.create(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
     /**

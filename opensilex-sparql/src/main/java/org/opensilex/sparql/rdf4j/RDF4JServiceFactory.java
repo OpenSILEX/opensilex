@@ -177,7 +177,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     protected File getRepositoryCreationTemplateFile() throws IOException {
         // Read repository configuration file located in jar
         File rdf4jApiJar = ClassUtils.getJarFile(RepositoryConfig.class);
-        return ClassUtils.getFileFromJar(rdf4jApiJar, "org/eclipse/rdf4j/repository/config/native-shacl.ttl");
+        return ClassUtils.getFileFromJar(rdf4jApiJar, "org/eclipse/rdf4j/repository/config/lmdb.ttl");
     }
 
     /**

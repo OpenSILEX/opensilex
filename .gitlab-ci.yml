@@ -118,7 +118,7 @@ sonar-analysis:
     GIT_DEPTH: "0"
   stage: sonar
   needs:
-    - job: build-and-test
+    - job: build-for-sonar
       artifacts: true
   cache: 
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
@@ -683,6 +683,7 @@ pages:
     - mv $CI_PROJECT_DIR/site/* public
   artifacts:
     paths:
+      - public
       - public
       - logs
     when: always

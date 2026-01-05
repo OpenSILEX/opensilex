@@ -672,6 +672,8 @@ test:build:java21:
 
 pages:
   <<: *test_build_on_schedules
+  variables:
+      RUNNER_SCRIPT_TIMEOUT: 7h
   script:
     - ln -s $JAVA_HOME java.home
     - mkdir logs

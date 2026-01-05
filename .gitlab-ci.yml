@@ -688,7 +688,7 @@ pages:
       - logs
     when: always
   rules:
-    - if: $NIGHTLY_BUILD == "true"
+    - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
   allow_failure: true
 
 # ##########################################

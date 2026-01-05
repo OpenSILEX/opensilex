@@ -81,7 +81,7 @@ variables:
         </servers> 
       </settings>
 
-build-and-test:
+build-for-sonar:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   variables:
     GIT_DEPTH: "0"

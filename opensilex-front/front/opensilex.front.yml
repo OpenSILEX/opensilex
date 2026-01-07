@@ -16,7 +16,7 @@ menu:
         label: component.menu.projects
         route:
           path: /projects
-          component: opensilex-ProjectView
+          component: opensilex-ProjectsView
           credentials:
             - project-access
           icon: bi#bi-folder
@@ -470,16 +470,6 @@ routes:
   #  - path: /users/create
   #    component: opensilex-UserCreate
   #    credentials: []
-
-  - path: /test
-    component: opensilex-TestPage
-    name: testPage
-    credentials: []
-
-  - path: /super
-    component: opensilex-MySuperComponent
-    name: mySuperComponent
-    credentials: []
 
   - path: /dash
     component: opensilex-HomeView

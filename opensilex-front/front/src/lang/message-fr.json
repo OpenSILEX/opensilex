@@ -81,6 +81,7 @@
             "loading" : "Chargement...",
             "metadata": "Metadonnée(s)",
             "set-description": "Saisir une description",
+            "no-more-results": "Pas de résultats supplémentaires",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",

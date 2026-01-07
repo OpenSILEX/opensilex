@@ -132,7 +132,6 @@ const getIcon = (item: Menu): string => {
 };
 
 const isActive = (item: Menu): boolean => {
-  console.log("item.route", item.route)
   return item.route && route.path.indexOf(item.route.path) === 0;
 };
 </script>

@@ -27,7 +27,7 @@
               <opensilex-EditButton
                 v-if="user?.hasCredential?.(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
                 @click="onUpdateClick"
-                label="DocumentDetails.update"
+                :label="t('DocumentDetails.update')"
               />
               <!--
               <opensilex-DeleteButton

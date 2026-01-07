@@ -1,24 +1,7 @@
 <template>
-
-
-
   <!-- Boutons manipulation liste  -->
   <!-- <n-space class="listActionButtons" :class="{ 'filtersCollapsed' : (!filtersCollapsed)}"> -->
   <n-space class="listActionButtons" :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']">
-
-
-    <!-- <n-button secondary size="small" @click="toggleOnlySelected">
-      {{ onlySelected ? t('VariableList.selected-all') : t('component.common.selected-only') }}
-    </n-button>
-
-    <n-button secondary size="small" @click="resetSelection">
-      {{ t('component.common.resetSelected') }}
-    </n-button>
-
-    <n-button secondary size="small" @click="handleSelectAllClick">
-      {{ t('component.common.select-all') }}
-    </n-button> -->
-
 
     <!-- Premier dropdown (gestion sélection) -->
     <n-dropdown
@@ -90,13 +73,6 @@
       class="globalFiltersSearchButton"
     >
       <i class="bi bi-search filtersGlobalSearchIcon"></i>
-      <!-- <div v-show="filtersCollapsed && activeFilters > 0">( {{ activeFilters }} )</div> -->
-      <!-- <span
-  v-show="filtersCollapsed && activeFilters > 0"
-  class="filters-count-badge"
->
-  {{ activeFilters }}
-</span> -->
 
       <div v-show="filtersCollapsed && activeFilters > 0" class="filters-count-badge"
         >
@@ -116,15 +92,8 @@
     bordered
     class="vars-sider"
   >
-  <!-- collapse-mode="transform" -->
-  <!-- show-trigger -->
-   <!-- collapse-mode="width" -->
-   <!-- :show-trigger="false"    hide the built-in trigger -->
+
     <n-space class="p-3" vertical>
-      <!-- <div class="sider-title">
-        <i class="bi bi-search"></i>
-        {{ t('VariableList.label-filter') }}
-      </div> -->
 
       <n-form label-placement="top" size="small" @submit.prevent="applyFilters">
         <!-- Nom -->
@@ -257,10 +226,6 @@
             @click="applyFilters"
           >
           </opensilex-Button>
-          <!-- <n-button tertiary @click="resetFilters">{{ t('component.common.search.clear-button') }}</n-button> -->
-          <!-- <n-button type="primary" icon="bi-globe" class="greenThemeColor" @click="applyFilters">
-            {{ t('component.common.search.search-button') }}
-          </n-button> -->
         </n-space>
       </n-form>
     </n-space>
@@ -268,13 +233,6 @@
 
   <!-- CONTENU : barre d’actions + table -->
   <n-layout-content class="vars-content">
-    <!-- Bouton pour replier/ouvrir le sidebar -->
-    <!-- <n-space class="mb-2" align="center">
-      <n-button quaternary circle @click="filtersCollapsed = !filtersCollapsed" :title="t('VariableList.label-filter')">
-        <i class="bi bi-search"></i>
-      </n-button>
-    </n-space> -->
-
 
   <n-data-table
     :remote="!onlySelected"                
@@ -333,7 +291,7 @@ const { t, n } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const $service = ref<VariablesService | null>(null)
 
-/** Dyn components */
+/** components */
 const EditButton = resolveComponent('opensilex-EditButton')
 const DetailButton = resolveComponent('opensilex-DetailButton')
 const InteroperabilityButton = resolveComponent('opensilex-InteroperabilityButton')
@@ -979,7 +937,6 @@ async function updateVariableGroup(form: any) {
 }
 
 
-
 function create() {/* no-op */}
 function update() {/* no-op */}
 function successMessage() { return '' }
@@ -1045,10 +1002,6 @@ async function setInitiallySelectedItems(items: Array<{ uri: string }>) {
   unselectedSet.value.clear()
 }
 
-
-
-
-
 // Refreshs attendus par la modale
 function refresh() {
   if (onlySelected.value) {
@@ -1078,7 +1031,6 @@ async function applySelectionToPage() {
   checkedRowKeys: checkedRowKeys.value, 
   selectedSet: Array.from(selectedSet.value) 
 })
-
 
 }
 

@@ -317,10 +317,10 @@ defineExpose({ showCreateForm, onFormSuccess });
 <i18n>
 en:
     EntityOfInterest:
-        filter-placeholder: Search entities by name
+        filter-placeholder: Search entities of interest by name
 
 fr:
     EntityOfInterest:
-        filter-placeholder: Rechercher des entités par nom
+        filter-placeholder: Rechercher des entités d'intérêt par nom
 </i18n>
 

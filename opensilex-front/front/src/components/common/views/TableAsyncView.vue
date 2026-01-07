@@ -4,7 +4,7 @@
   
 
       <!-- Header si table sélectionnable -->
-      <div v-if="isSelectable && tableRef" class="card-header d-flex justify-content-between align-items-center">
+      <div v-if="isSelectable && showHeaderCount && tableRef" class="card-header d-flex justify-content-between align-items-center">
         <div>
           <h3 class="d-inline me-2">
             <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
@@ -64,13 +64,14 @@
         :data="tableData"
         :loading="isSearching"
         :pagination="pagination"
+        :remote="true"
         :row-key="row => row.uri"
         @row-click="onRowClicked"
         :row-props="(row) => ({ style: 'cursor: pointer' })"
         :checked-row-keys="checkedRowKeys"
         @update:checked-row-keys="onCheckedRowKeysChange"
-        @update:page="(page) => pagination.page = page"
-        @update:page-size="(size) => pagination.pageSize = size"
+        @update:page="onPageChange"
+        @update:page-size="onPageSizeChange"
         :sorter="defaultSorter"
         @update:sorter="onSortChange"
       />
@@ -108,6 +109,7 @@ const props = defineProps<{
   defaultPageSize: number;
   showCount: { type: Boolean, default: true },
   isSelectable: { type: Boolean, default: false },
+  showHeaderCount: { type: Boolean, default: true },
   allowOnlySelected: Boolean, // optionnel, par défaut false
   showActions: Boolean, // pour bouton dropdown actions groupées
 }>();
@@ -136,6 +138,9 @@ const currentStartPath = ref("");
 const currentTabPath = ref("");
 const selectedRowIndex = ref<number | null>(null);
 const checkedRowKeys = ref<DataTableRowKey[]>([]);
+const selectedUriSet = ref<Set<string>>(new Set())
+const selectedCache = ref<Map<string, any>>(new Map()) // uri -> objet complet
+
 
 const emit = defineEmits<{
   (e: 'select', item: NamedResourceDTO): void;
@@ -154,57 +159,12 @@ const defaultSorter = ref({
 // Extracted from $route
 const routeArr = computed(() => route.path.split("/"));
 
-
-// watch(currentPage, () => {
-//   const startPath = localStorage.getItem("startPath");
-//   const tabPath = localStorage.getItem("tabPath");
-
-//   if (routeArr.value[1] === startPath || startPath === routeArr.value[1] + "s") {
-//     if (routeArr.value[2]) {
-//       if (routeArr.value[2] === tabPath) {
-//         currentPage.value = parseInt(localStorage.getItem("tabPage") || "1", 10);
-//         $opensilex.updateURLParameter("tabPage", currentPage.value, "");
-//       } else {
-//         localStorage.setItem("tabPath", routeArr.value[2]);
-//         localStorage.setItem("tabPage", "1");
-//         currentPage.value = 1;
-//         tableRef.value?.refresh();
-//       }
-//     } else {
-//       currentPage.value = parseInt(localStorage.getItem("page") || "1", 10);
-//       $opensilex.updateURLParameter("page", currentPage.value, "");
-//     }
-//   } else {
-//     localStorage.setItem("startPath", routeArr.value[1]);
-//     localStorage.setItem("page", "1");
-//     localStorage.setItem("tabPath", routeArr.value[2] || "");
-//     localStorage.setItem("tabPage", "1");
-//     currentPage.value = 1;
-//     tableRef.value?.refresh();
-//   }
-// });
-
 onMounted(() => {
-  // if (routeArr.value[2]) {
-  //   currentPage.value = parseInt(localStorage.getItem("tabPage") || "1", 10);
-  //   currentStartPath.value = localStorage.getItem("startPath") || "";
-  //   currentTabPath.value = localStorage.getItem("tabPath") || "";
-  // } else {
-  //   currentPage.value = parseInt(localStorage.getItem("page") || "1", 10);
-  //   currentStartPath.value = localStorage.getItem("startPath") || "";
-  // }
-
   if (props.isSelectable && props.selectMode !== "single") {
     props.fields.unshift({ key: "select", isSelect: true });
   }
 
-  // if (props.useQueryParams) {
-  //   const query = route.query;
-
-  //   pageSize.value = parseInt(query.pageSize as string) || props.defaultPageSize || 20;
-  //   sortBy.value = decodeURIComponent(query.sortBy as string || "") || props.defaultSortBy || "name";
-  //   sortDesc.value = query.sortDesc === "true" || props.defaultSortDesc || false;
-  // }
+  
 
   // attendre que la table soit générée pour appeler et remplir de données
   nextTick(() => {
@@ -217,44 +177,37 @@ onMounted(() => {
 
 
 function onCheckedRowKeysChange(newKeys: DataTableRowKey[]) {
-  checkedRowKeys.value = newKeys;
+  checkedRowKeys.value = newKeys
 
-  // Synchroniser selectedItems avec les objets complets correspondants
-  selectedItems.value = dataList.value.filter(item => newKeys.includes(item.uri));
+  // URIs présentes sur la page courante
+  const pageUris = dataList.value.map((it: any) => it.uri)
+  const newSet = new Set(newKeys as string[])
 
-  numberOfSelectedRows.value = selectedItems.value.length;
+  // 1) Retirer les désélections sur la page courante
+  for (const uri of pageUris) {
+    if (selectedUriSet.value.has(uri) && !newSet.has(uri)) {
+      selectedUriSet.value.delete(uri)
+      selectedCache.value.delete(uri)
+      emit('unselect', dataList.value.find((x: any) => x.uri === uri))
+    }
+  }
 
-  // Émettre un événement de selection
-  emit('row-selected', numberOfSelectedRows.value);
+  // 2) Ajouter les nouvelles sélections sur la page courante
+  for (const uri of newSet) {
+    if (!selectedUriSet.value.has(uri)) {
+      selectedUriSet.value.add(uri)
+      const item = dataList.value.find((x: any) => x.uri === uri)
+      if (item) {
+        selectedCache.value.set(uri, item)
+        emit('select', item)
+      }
+    }
+  }
+
+  numberOfSelectedRows.value = selectedUriSet.value.size
+  emit('row-selected', numberOfSelectedRows.value)
 }
 
-// function pageChange(newPage: number) {
-//   if (routeArr.value[2]) {
-//     localStorage.setItem("tabPage", newPage.toString());
-//   } else {
-//     localStorage.setItem("page", newPage.toString());
-//   }
-//   currentPage.value = newPage;
-//   tableRef.value?.refresh();
-// }
-
-// function setInitiallySelectedItems(initiallySelectedItems: any[]) {
-//   if (Array.isArray(initiallySelectedItems) && initiallySelectedItems.length !== 0) {
-//     selectedItems.value = [];
-//     initiallySelectedItems.forEach((e) => {
-//       selectedItems.value.push(e);
-//     });
-//     update();
-//   }
-// }
-
-// function getHeadTemplateName(key: string): string {
-//   return `head(${key})`;
-// }
-
-// function getCellTemplateName(key: string): string {
-//   return `cell(${key})`;
-// }
 
 function onRowClicked(item: NamedResourceDTO) {
   const idx = selectedItems.value.findIndex((it) => item.uri === it.uri);
@@ -280,32 +233,12 @@ function onRowClicked(item: NamedResourceDTO) {
   }
 }
 
-// function onRowSelected(items: any[]) {
-//   if (
-//     props.maximumSelectedRows &&
-//     numberOfSelectedRows.value > props.maximumSelectedRows
-//   ) {
-//     if (selectedRowIndex.value !== null) {
-//       tableRef.value?.unselectRow(selectedRowIndex.value);
-//       const idx = selectedItems.value.findIndex((it) => selectedItem.value === it);
-//       selectedItems.value.splice(idx, 1);
-//     }
-//   }
-
-//   numberOfSelectedRows.value = selectedItems.value.length;
-//   emit("row-selected", numberOfSelectedRows.value);
-// }
-
-
-// function pagination() {
-//   tableRef.value?.refresh();
-// }
-
 const pagination = ref({
   page: 1,
   pageSize: 10,
   pageSizes: [10, 20, 50, 100],
-  showSizePicker: true
+  showSizePicker: true,
+  itemCount: 0
 });
 
 const paginationInfo = computed(() => {
@@ -331,19 +264,12 @@ const total = computed(() => paginationInfo.value.total);
 const hasResults = computed(() => totalRow.value > 0);
 
 
-
-
-// function refresh() {
-//   currentPage.value = 1;
-//   pageSize.value = props.defaultPageSize || 20;
-//   tableRef.value?.refresh();
-// }
-
 async function refresh() {
   isSearching.value = true;
   try {
     const results = await loadData(); // ton wrapper de recherche (appel API ou slice selected)
     dataList.value = results;
+    syncCheckedForCurrentPage()
     console.log("datalist.value ", dataList.value)
   } catch (e) {
     if ($opensilex) {
@@ -353,46 +279,6 @@ async function refresh() {
     isSearching.value = false;
   }
 }
-
-
-// function changeCurrentPage(page: number) {
-//   currentPage.value = page;
-//   if (routeArr.value[2]) {
-//     localStorage.setItem("tabPage", page.toString());
-//   } else {
-//     localStorage.setItem("page", page.toString());
-//   }
-//   refresh();
-// }
-
-// function resetSelected() {
-//   onlySelected.value = false;
-//   selectAll.value = false;
-//   onSelectAll(); // à définir quelque part
-//   refresh();
-// }
-
-// function update() {
-//   tableRef.value?.refresh();
-// }
-
-// function onRefreshed() {
-//   emit("refreshed");
-//   numberOfSelectedRows.value = selectedItems.value.length;
-
-//   setTimeout(() => {
-//     afterRefreshedItemsSelection();
-//   }, 1);
-// }
-
-// function afterRefreshedItemsSelection() {
-//   selectedItems.value.forEach((element) => {
-//     const index = tableRef.value?.sortedItems.findIndex((it) => element.uri === it.uri);
-//     if (index !== undefined && index >= 0) {
-//       tableRef.value?.selectRow(index);
-//     }
-//   });
-// }
 
 function onItemUnselected(item: any) {
   const idx = tableRef.value?.sortedItems.findIndex(it => item.id === it.uri);
@@ -416,8 +302,14 @@ function onItemSelected(item: any) {
   }
 }
 
+function syncCheckedForCurrentPage() {
+  const keysOnPage = dataList.value.map((it: any) => it.uri)
+  checkedRowKeys.value = keysOnPage.filter((uri: string) => selectedUriSet.value.has(uri))
+}
+
+
 function getSelected(): any[] {
-  return selectedItems.value;
+  return Array.from(selectedCache.value.values())
 }
 
 function getOrderBy(): string[] {
@@ -435,47 +327,63 @@ function getOrderBy(): string[] {
   return orderBy;
 }
 
-// function clickOnlySelected() {
-//   onlySelected.value = !onlySelected.value;
-//   currentPage.value = 1;
-//   tableRef.value?.refresh();
-// }
+function clickOnlySelected() {
+  onlySelected.value = !onlySelected.value;
+  currentPage.value = 1;
+  tableRef.value?.refresh();
+}
+
+function toggleOnlySelected() {
+  onlySelected.value = !onlySelected.value
+  pagination.value.page = 1
+  currentPage.value = 1
+  refresh()
+}
+
+function resetSelection() {
+  selectedUriSet.value.clear()
+  selectedCache.value.clear()
+  checkedRowKeys.value = []
+  numberOfSelectedRows.value = 0
+
+  if (onlySelected.value) {
+    onlySelected.value = false
+  }
+
+  pagination.value.page = 1
+  currentPage.value = 1
+  refresh()
+}
 
 function loadData() {
   console.log("fonction load data")
   const orderBy = getOrderBy();
 
-  // if (props.useQueryParams) {
-  //   $opensilex.updateURLParameter("sortBy", sortBy.value, props.defaultSortBy);
-  //   $opensilex.updateURLParameter("sortDesc", sortDesc.value, props.defaultSortDesc);
-  //   $opensilex.updateURLParameter("pageSize", pageSize.value.toString(), pageSize.value.toString());
-  // }
-
   $opensilex.disableLoader();
   isSearching.value = true;
 
   if (onlySelected.value) {
-    totalRow.value = selectedItems.value.length;
-    pageSize.value = selectedItems.value.length <= props.defaultPageSize ? selectedItems.value.length : props.defaultPageSize;
-    isSearching.value = false;
+  const all = Array.from(selectedCache.value.values())
+  totalRow.value = all.length
 
-    if (pageSize.value > 0) {
-      selectAll.value = true;
-    }
+  pagination.value.itemCount = totalRow.value
 
-    $opensilex.enableLoader();
-    return Promise.resolve(
-      selectedItems.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value)
-    );
-  } else {
+  const startIdx = (currentPage.value - 1) * pagination.value.pageSize
+  const endIdx = currentPage.value * pagination.value.pageSize
+
+  $opensilex.enableLoader()
+  isSearching.value = false
+  return Promise.resolve(all.slice(startIdx, endIdx))
+} else {
     return props.searchMethod({
       orderBy,
       currentPage: currentPage.value - 1,
-      pageSize: parseInt(route.query.pageSize as string) || props.defaultPageSize,
+      pageSize: pagination.value.pageSize,
     })
       .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
         totalRow.value = http.response.metadata.pagination.totalCount;
-        pageSize.value = http.response.metadata.pagination.pageSize;
+        pageSize.value = pagination.value.pageSize;
+        pagination.value.itemCount = totalRow.value;
         isSearching.value = false;
         $opensilex.enableLoader();
         console.log("loadData response ", http.response)
@@ -497,55 +405,41 @@ function getCurrentItemOffset(): number {
   return Math.min(offset, totalRow.value);
 }
 
+function getPaginationInfo() {
+  const total = totalRow.value
+  const page = pagination.value.page
+  const size = pagination.value.pageSize
 
-function getTotalRow(): number {
-  return totalRow.value;
+  const start = total === 0 ? 0 : (page - 1) * size + 1
+  const end = Math.min(page * size, total)
+
+  return { start, end, total, hasResults: total > 0 }
 }
 
-// function onSelectAll() {
-//   if (selectAll.value) {
-//     if (totalRow.value > props.selectAllLimit) {
-//       alert(t("TableAsyncView.alertSelectAllLimitSize") + props.selectAllLimit);
-//       nextTick(() => {
-//         selectAll.value = false;
-//       });
-//     } else {
-//       if (!selectedItems.value) selectedItems.value = [];
+function getCurrentPage() {
+  return pagination.value.page
+}
+function getPageSize() {
+  return pagination.value.pageSize
+}
+function getTotalRow() {
+  return totalRow.value
+}
 
-//       const orderBy = getOrderBy();
+function onPageChange(page: number) {
+  pagination.value.page = page
+  currentPage.value = page
+  refresh()
+}
 
-//       props.searchMethod({
-//         orderBy,
-//         currentPage: 0,
-//         pageSize: props.selectAllLimit,
-//       }).then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
-//         totalRow.value = http.response.metadata.pagination.totalCount;
-//         const results = http.response.result;
-//         results.forEach((elem) => {
-//           if (!selectedItems.value.find(obj => obj.uri === elem.uri)) {
-//             selectedItems.value.push(elem);
-//           }
-//         });
-//         numberOfSelectedRows.value = selectedItems.value.length;
-//         tableRef.value?.selectAllRows();
-//         emit("selectall", selectedItems.value);
-//       });
-//     }
-//   } else {
-//     selectedItems.value = [];
-//     numberOfSelectedRows.value = 0;
-//     tableRef.value?.clearSelected();
-//     emit("selectall", selectedItems.value);
-//   }
-// }
+function onPageSizeChange(size: number) {
+  pagination.value.pageSize = size
+  pageSize.value = size
+  pagination.value.page = 1
+  currentPage.value = 1
+  refresh()
+}
 
-
-// function checkSelectedItems(uri: string) {
-//   const idx = selectedItems.value.findIndex(it => it.uri === uri);
-//   if (idx !== -1) {
-//     selectedItems.value.splice(idx, 1);
-//   }
-// }
 
 const slots = useSlots();
 
@@ -598,12 +492,23 @@ function onSortChange(sorter) {
   refresh();
 }
 
+function setPage(page: number) {
+  pagination.value.page = page
+  currentPage.value = page
+}
 
 defineExpose({
   refresh,
   getSelected,
   onItemSelected,
   onItemUnselected,
+  getPaginationInfo,
+  getCurrentPage,
+  getPageSize,
+  getTotalRow,
+  toggleOnlySelected,
+  resetSelection,
+  setPage
 });
 
 

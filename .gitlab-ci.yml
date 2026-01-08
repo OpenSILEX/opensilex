@@ -694,8 +694,6 @@ pages:
       - public 
       - logs
     when: always
-  rules:
-    - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
   allow_failure: true
 
 # ##########################################

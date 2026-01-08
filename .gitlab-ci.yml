@@ -670,7 +670,7 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
-pages:
+site:
   stage: build
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   timeout: 2h

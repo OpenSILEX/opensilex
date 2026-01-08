@@ -670,7 +670,7 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
-site:
+pages:
   stage: build
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   timeout: 2h
@@ -694,6 +694,10 @@ site:
       - public 
       - logs
     when: always
+  rules:
+    - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
   allow_failure: true
 
 # ##########################################

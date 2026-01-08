@@ -489,6 +489,7 @@ test:opensilex-develop:deploy:
       when: on_success
   needs:
     - opensilex-develop:build
+    - job: pages:specifications
 
 # Deployment of the release branch
 test:opensilex-release:deploy:
@@ -702,7 +703,7 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
-pages:
+pages:site:
   <<: *test_build_on_schedules
   script:
     - ln -s $JAVA_HOME java.home
@@ -721,6 +722,19 @@ pages:
   rules:
     - if: $NIGHTLY_BUILD == "true"
   allow_failure: true
+
+pages:specifications:
+    stage: build
+    image: node:20.19.6-alpine3.22
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications
+        - npm install
+        - npm run docs:build
+        - mkdir -p $CI_PROJECT_DIR/public/specifications
+        - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications/.vitepress/dist/* $CI_PROJECT_DIR/public/specifications/
+    artifacts:
+        paths:
+            - public
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

@@ -7,7 +7,7 @@ Une commande se décompose en un groupe de commande `<MyGroupId>`, un identifian
 
 Saisi en ligne de commande cela donne: `java -jar opensilex.jar [--DEBUG] [--CONFIG_FILE=...] <MyGroupId> <MyCommandId> <params...>`
 
-Pour plus d'information sur les détails de l'intégration des commandes voir [ici](../architecture/main.md#CLI)
+Pour plus d'information sur les détails de l'intégration des commandes voir [ici](../technical-documentation/architecture/main.md#CLI)
 
 # Comment ajouter un groupe de commandes ?
 

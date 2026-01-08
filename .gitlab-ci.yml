@@ -671,22 +671,27 @@ test:build:java21:
 ########################
 
 pages:
-  <<: *test_build_on_schedules
-  variables:
-      RUNNER_SCRIPT_TIMEOUT: 7h
+  stage: build
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  timeout: 2h
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
   script:
-    - ln -s $JAVA_HOME java.home
+    # - ln -s $JAVA_HOME java.home
     - mkdir logs
     # - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     # - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
     # - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -Ddependency-check.skip=true -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
-    - mkdir public
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > logs/site.log
     - mv $CI_PROJECT_DIR/site/* public
   artifacts:
     paths:
-      - public
-      - public
+      - public 
       - logs
     when: always
   rules:

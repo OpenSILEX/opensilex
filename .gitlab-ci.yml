@@ -727,13 +727,11 @@ pages:specifications:
     stage: build
     image: node:20.19.6-alpine3.22
     script:
-        - cd opensilex-doc/src/main/resources/functional-specifications
+        - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications
         - npm install
         - npm run docs:build
-        - cd $CI_PROJECT_DIR
-        - mkdir public
-        - mkdir public/specifications
-        - mv opensilex-doc/src/main/resources/functional-specifications/.vitepress/dist/* public/specifications/
+        - mkdir -p $CI_PROJECT_DIR/public/specifications
+        - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications/.vitepress/dist/* $CI_PROJECT_DIR/public/specifications/
     artifacts:
         paths:
             - public

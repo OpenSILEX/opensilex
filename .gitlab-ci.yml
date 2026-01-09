@@ -684,10 +684,11 @@ pages:
   script:
     # - ln -s $JAVA_HOME java.home
     - mkdir logs
+    - mkdir public
     # - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     # - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
     # - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > logs/site.log
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml install site $MAVEN_OPTS_SCHUEDULES -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > logs/site.log
     - mv $CI_PROJECT_DIR/site/* public
   artifacts:
     paths:

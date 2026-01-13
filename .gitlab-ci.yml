@@ -685,7 +685,14 @@ pages:site:
   script:
     - mkdir logs
     - mkdir public
-    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml install site $MAVEN_OPTS_SCHUEDULES -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > logs/site.log
+    - |
+        mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
+            install site $MAVEN_OPTS_SCHUEDULES \
+            -DskipFrontBuild \
+            -pl '!opensilex-dev-tools,!opensilex-front,!opensilex-parent,!opensilex-doc,!opensilex-release,!opensilex-module' \
+            -Pwith-security-check \
+            -Pwith-test-report \
+            > logs/site.log
     - mv $CI_PROJECT_DIR/site/* public
   artifacts:
     paths:

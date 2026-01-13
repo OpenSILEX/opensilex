@@ -107,10 +107,6 @@ build-for-sonar:
     - mkdir -p .mvn
     - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
     - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_BRANCH == 'master'
 
 sonar-analysis:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION

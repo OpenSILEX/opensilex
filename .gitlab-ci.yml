@@ -10,7 +10,7 @@ stages:
   - test
   - deploy
   - release
-  - sonar
+  - doc_and_metrics
 
 ########################
 ##GLOBAL VARIABLES
@@ -85,7 +85,7 @@ build-for-sonar:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   variables:
     GIT_DEPTH: "0"
-  stage: build
+  stage: doc_and_metrics
   cache: 
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
@@ -116,7 +116,7 @@ sonar-analysis:
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   variables:
     GIT_DEPTH: "0"
-  stage: sonar
+  stage: doc_and_metrics
   needs:
     - job: build-for-sonar
       artifacts: true
@@ -672,7 +672,7 @@ test:build:java21:
 ########################
 
 pages:site:
-  stage: build
+  stage: doc_and_metrics
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   timeout: 2h
   before_script:
@@ -683,12 +683,8 @@ pages:site:
     - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
     - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
   script:
-    # - ln -s $JAVA_HOME java.home
     - mkdir logs
     - mkdir public
-    # - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    # - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
-    # - cd $CI_PROJECT_DIR
     - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml install site $MAVEN_OPTS_SCHUEDULES -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check  -Pwith-test-report > logs/site.log
     - mv $CI_PROJECT_DIR/site/* public
   artifacts:
@@ -702,7 +698,7 @@ pages:site:
   allow_failure: true
 
 pages:specifications:
-    stage: build
+    stage: doc_and_metrics
     image: node:20.19.6-alpine3.22
     script:
         - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications

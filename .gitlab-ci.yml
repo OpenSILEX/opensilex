@@ -457,6 +457,7 @@ test:opensilex-develop:deploy:
       when: on_success
   needs:
     - opensilex-develop:build
+    - job: pages:specifications
 
 # Deployment of the release branch
 test:opensilex-release:deploy:
@@ -670,7 +671,7 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
-pages:
+pages:site:
   stage: build
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
   timeout: 2h
@@ -692,15 +693,26 @@ pages:
     - mv $CI_PROJECT_DIR/site/* public
   artifacts:
     paths:
-      - public 
+      - public
       - logs
     when: always
   rules:
     - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-
   allow_failure: true
 
+pages:specifications:
+    stage: build
+    image: node:20.19.6-alpine3.22
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications
+        - npm install
+        - npm run docs:build
+        - mkdir -p $CI_PROJECT_DIR/public/specifications
+        - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications/.vitepress/dist/* $CI_PROJECT_DIR/public/specifications/
+    artifacts:
+        paths:
+            - public
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################

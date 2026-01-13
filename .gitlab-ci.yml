@@ -457,7 +457,6 @@ test:opensilex-develop:deploy:
       when: on_success
   needs:
     - opensilex-develop:build
-    - job: pages:specifications
 
 # Deployment of the release branch
 test:opensilex-release:deploy:
@@ -701,7 +700,7 @@ pages:site:
     when: always
   rules:
     - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == 'develop'
   allow_failure: true
 
 pages:specifications:
@@ -716,6 +715,8 @@ pages:specifications:
     artifacts:
         paths:
             - public
+    rules:
+        -   if: $CI_PIPELINE_SOURCE == 'develop'
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################

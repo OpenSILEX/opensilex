@@ -678,7 +678,6 @@ pages:site:
         - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
         - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
     script:
-        - mkdir logs
         - mkdir site_public
         - |
             mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
@@ -686,18 +685,14 @@ pages:site:
                 -DskipFrontBuild \
                 -pl '!opensilex-dev-tools,!opensilex-front,!opensilex-doc,!opensilex-release,!opensilex-module' \
                 -Pwith-security-check \
-                -Pwith-test-report \
-                > logs/site.log
+                -Pwith-test-report
         - mv $CI_PROJECT_DIR/site/* site_public
     artifacts:
         paths:
             - site_public
-            - logs
         when: always
     rules:
-        - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
         - if: $CI_PIPELINE_SOURCE == 'develop'
-    allow_failure: true
 
 pages:specifications:
     stage: doc_and_metrics

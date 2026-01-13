@@ -716,7 +716,8 @@ pages:specifications:
         paths:
             - public
     rules:
-        -   if: $CI_PIPELINE_SOURCE == 'develop'
+        - if: $CI_COMMIT_BRANCH == "feature/yvan/ci-sites-sonar"
+        - if: $CI_PIPELINE_SOURCE == 'develop'
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################

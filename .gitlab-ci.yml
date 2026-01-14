@@ -683,7 +683,7 @@ pages:site:
             mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
                 install site $MAVEN_OPTS_SCHUEDULES \
                 -DskipFrontBuild \
-                -pl '!opensilex-dev-tools,!opensilex-front,!opensilex-doc,!opensilex-release,!opensilex-module' \
+                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
                 -Pwith-security-check \
                 -Pwith-test-report
         - mv $CI_PROJECT_DIR/site/* site_public

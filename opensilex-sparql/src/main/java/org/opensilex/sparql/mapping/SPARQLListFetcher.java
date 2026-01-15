@@ -85,6 +85,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     private final List<Method> listSetters;
 
     /**
+     * List of getters, in the same order as concatVarNameByFields
+     */
+    private final List<Method> listGetters;
+
+    /**
      * Associate to each concat var name, the corresponding {@link SPARQLDeserializer}
      */
     private final Map<String, SPARQLDeserializer<?>> deserializersByConcatFields;
@@ -144,6 +149,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
         // build list Deserializer and setter method in order to update each model
         listSetters = new ArrayList<>(concatVarNameByFields.size());
+        listGetters = new ArrayList<>(concatVarNameByFields.size());
         deserializersByConcatFields = new HashMap<>();
         objectMappersByConcatVarName = new HashMap<>();
 
@@ -152,6 +158,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             String concatFieldName = entry.getValue();
 
             listSetters.add(mapper.classAnalyzer.getSetterFromField(field));
+            listGetters.add(mapper.classAnalyzer.getGetterFromField(field));
             Class<?> listGenericType = ClassUtils.getGenericTypeFromField(field);
 
             try {
@@ -197,8 +204,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             // initialize list properties with empty list
             int fieldIndex = 0;
             for (String concatFieldName : concatVarNameByFields.values()) {
-                Method setter = listSetters.get(fieldIndex);
-                setter.invoke(model, Collections.emptyList());
+                var valueForTheModel  = listGetters.get(fieldIndex).invoke(model);
+                if (valueForTheModel == null) {
+                    Method setter = listSetters.get(fieldIndex);
+                    setter.invoke(model, Collections.emptyList());
+                }
                 fieldIndex++;
             }
 

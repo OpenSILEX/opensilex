@@ -174,7 +174,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      * @throws IllegalArgumentException if {@link SPARQLListFetcher#results} contains two models with the same URI.
      *                                  This exception if throw because the two SPARQL query used to match list attributes must work on the same unique results
      */
-    public void updateModels() throws SPARQLException {
+    public void updateModels() throws Exception {
 
         if (CollectionUtils.isEmpty(results)) {
             return;
@@ -193,6 +193,15 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                 throw new IllegalArgumentException(String.format("Multiple results with the same URI (%s) at index %d", modelURI, i));
             }
             modelsByUris.put(modelURI, model);
+
+            // initialize list properties with empty list
+            int fieldIndex = 0;
+            for (String concatFieldName : concatVarNameByFields.values()) {
+                Method setter = listSetters.get(fieldIndex);
+                setter.invoke(model, Collections.emptyList());
+                fieldIndex++;
+            }
+
             i++;
         }
 

@@ -59,8 +59,18 @@ function showCreateForm(targetsArg: string[] = []) {
   modalForm.value?.showCreateForm?.();
 }
 
-function showEditForm(form: AnnotationUpdateDTO) {
-  modalForm.value?.showEditForm?.(form);
+// function showEditForm(form: AnnotationUpdateDTO) {
+//   modalForm.value?.showEditForm?.(form);
+// }
+function showEditForm(form: any) {
+  const normalized = JSON.parse(JSON.stringify(form))
+
+  // Normalisation motivation : object -> string URI
+  if (normalized?.motivation && typeof normalized.motivation === 'object') {
+    normalized.motivation = normalized.motivation.uri
+  }
+
+  modalForm.value?.showEditForm?.(normalized)
 }
 
 // ----- actions

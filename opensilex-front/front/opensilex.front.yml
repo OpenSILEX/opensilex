@@ -370,12 +370,12 @@ routes:
   # - path: /variables_group/documents/:uri
   #   component: opensilex-GroupVariablesDescription
 
-  # - path: /project/details/:uri
-  #   component: opensilex-ProjectDetails
-  # - path: /project/documents/:uri
-  #   component: opensilex-ProjectDetails
-  # - path: /project/annotations/:uri
-  #   component: opensilex-ProjectDetails
+  - path: /project/details/:uri
+    component: opensilex-ProjectDetails
+  - path: /project/documents/:uri
+    component: opensilex-ProjectDetails
+  - path: /project/annotations/:uri
+    component: opensilex-ProjectDetails
   # - path: /germplasm/create
   #   component: opensilex-GermplasmCreate
   #   credentials: [ germplasm-modification ]

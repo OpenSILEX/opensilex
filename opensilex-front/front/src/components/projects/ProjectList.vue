@@ -1,5 +1,5 @@
 <template>
-  <!-- BARRE ACTIONS LISTE -->
+  <!-- Barre Actions / Counts / Selection -->
   <n-space
     class="listActionButtons"
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
@@ -64,7 +64,7 @@
     </div>
   </n-space>
 
-  <!-- LAYOUT -->
+  <!-- Layout -->
   <n-layout has-sider class="project-layout">
     <!-- Bouton loupe -->
     <n-space class="mb-2 me-1" align="top">
@@ -84,7 +84,7 @@
       </n-button>
     </n-space>
 
-    <!-- SIDEBAR / FILTRES -->
+    <!-- Sidebar / Filtres -->
     <n-layout-sider
       v-model:collapsed="filtersCollapsed"
       :collapsed-width="0"
@@ -152,7 +152,7 @@
       </n-space>
     </n-layout-sider>
 
-    <!-- CONTENU -->
+    <!-- Contenu Liste -->
     <n-layout-content class="project-content">
       <opensilex-TableAsyncView
         ref="tableRef"
@@ -171,7 +171,8 @@
           <opensilex-UriLink
             :uri="data.item.uri"
             :value="data.item.name"
-            :to="{ path: '/project/details/' + encodeURIComponent(data.item.uri) }"
+            :to="{ path: '/project/details/' + encodeURIComponent(data.item.uri) }",
+            :allowCopy= "true"
           />
         </template>
 
@@ -214,6 +215,7 @@
         </template>
       </opensilex-TableAsyncView>
 
+      <!-- Formulaire Creation Document -->
       <opensilex-ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
         ref="documentForm"
@@ -277,7 +279,7 @@ const filtersCollapsed = ref(true)
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
 
-/** filtre */
+/** filtres recherche */
 const filter = ref({
   year: '' as any,
   name: '',
@@ -318,18 +320,14 @@ const paginationInfo = computed(() => {
 })
 
 
-/** actions filtres */
+/** actions application filtres */
 function applyFilters() {
-  // 1) page 1
-//   tableRef.value?.changeCurrentPage?.(1)
-tableRef.value?.setPage?.(1)
-
-  // 2) URL
+  // 1) go page 1
+  tableRef.value?.setPage?.(1)
+  // 2) update URL
   if (!props.noUpdateURL) $opensilex.updateURLParameters(filter.value)
-
   // 3) refresh
   nextTick(() => tableRef.value?.refresh?.())
-
   // 4) refermer sidebar
   filtersCollapsed.value = true
 }
@@ -340,7 +338,6 @@ function resetFilters() {
   filter.value.keyword = ''
   filter.value.financial = ''
 
-//   tableRef.value?.changeCurrentPage?.(1)
 tableRef.value?.setPage?.(1)
   if (!props.noUpdateURL) $opensilex.updateURLParameters(filter.value)
   nextTick(() => tableRef.value?.refresh?.())
@@ -348,11 +345,9 @@ tableRef.value?.setPage?.(1)
 
 /** refresh externe (ex: parent) */
 function refresh() {
-//   tableRef.value?.changeCurrentPage?.(1)
   tableRef.value?.setPage?.(1)
   if (!props.noUpdateURL) $opensilex.updateURLParameters(filter.value)
   nextTick(() => tableRef.value?.refresh?.())
-  console.log("REFRESH - pagi ", paginationInfo.value)
 }
 
 function updateSelectedProject() {
@@ -360,10 +355,8 @@ function updateSelectedProject() {
   nextTick(() => tableRef.value?.refresh?.())
 }
 
-/** backend */
 async function loadData(options: any) {
   // options.currentPage est 0-based dans TableAsyncView
-
   const http = await service.searchProjects(
     filter.value.name,
     filter.value.year,
@@ -373,7 +366,6 @@ async function loadData(options: any) {
     options.currentPage,
     options.pageSize
   )
-
   return http
 }
 
@@ -422,7 +414,6 @@ function initForm() {
 
 /** dropdown display */
 const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-
 const displayDropdownOptions = computed(() => [
   { label: onlySelected.value ? t('ProjectList.selected-all') : t('component.common.selected-only'), key: 'onlySelected' },
   { type: 'divider', key: 'd1' },
@@ -465,16 +456,13 @@ defineExpose({
   border: none !important;
   cursor: not-allowed;
 }
-
-/* .project-layout {
+  .project-layout {
   background: transparent;
 }
-.project-sider {
-  background: #fff;
-}
+
 .project-content {
   padding-left: 12px;
-} */
+}
 
 .listActionButtons {
   position: relative;

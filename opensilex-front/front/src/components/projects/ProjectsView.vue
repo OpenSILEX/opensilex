@@ -1,9 +1,7 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageActions v-if="
-        user.hasCredential(
-          credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)
-      "
+    <opensilex-PageActions 
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
     >
       <opensilex-CreateButton
         @click="projectFormRef?.showCreateForm?.()"
@@ -19,12 +17,12 @@
       />
     </opensilex-PageContent>
 
-    <!-- <opensilex-ProjectForm
+    <opensilex-ProjectForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
       ref="projectFormRef"
       @onCreate="redirectToCreatedProject"
       @onUpdate="projectListRef?.updateSelectedProject?.()"
-    /> -->
+    />
   </div>
 </template>
 
@@ -36,11 +34,11 @@ import { useRouter } from 'vue-router'
 const store = useStore()
 const router = useRouter()
 
-// refs vers composants enfants (types "any" pour rester simple en migration)
+// refs vers composants enfants
 const projectFormRef = ref<any>(null)
 const projectListRef = ref<any>(null)
 
-// user + credentials depuis store (comme avant)
+// user + credentials depuis store 
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
 

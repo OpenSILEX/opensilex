@@ -677,6 +677,42 @@ body.modal-open {
   color: #dc3545;
 }
 
+/************************************
+* Tabs on detail page
+************************************/
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab.active {
+  font-weight: bold;
+  border-bottom-color: #007bff;
+}
+
+.tabBadge {
+    margin-left: .5rem;
+    display: inline-block;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 .35rem;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1.25rem;
+    text-align: center;
+    color: #fff;
+    background: #00A38D;
+  }
+
+
 /********************************
 * Tabs back-button
 ********************************/

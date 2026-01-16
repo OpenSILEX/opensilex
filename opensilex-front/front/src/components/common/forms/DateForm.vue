@@ -8,7 +8,7 @@
       <n-date-picker
         :input-props="{ id }"
         v-model:formatted-value="dateProxy"
-        value-format="dd-MM-yyyy"
+        value-format="yyyy-MM-dd"
         format="dd-MM-yyyy"
         type="date"
         clearable
@@ -53,7 +53,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const isRequired = computed(() => !!props.required)
 
-// On expose un v-model “formatted-value” (string 'YYYY-MM-DD')
+// On expose un v-model “formatted-value” (string 'yyyy-mm-dd' pour l'API)
 const dateProxy = computed<string | null>({
   get: () => props.value ?? null,
   set: (v) => emit('update:value', v ?? null)

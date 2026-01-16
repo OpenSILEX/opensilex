@@ -100,8 +100,8 @@
     <!-- Formulaire création/édition -->
     <opensilex-AnnotationModalForm
       ref="annotationModalForm"
-      @onCreate="refresh"
-      @onUpdate="refresh"
+      @onCreate="onAnnotationCreated"
+      @onUpdate="onAnnotationUpdated"
     />
   </div>
 </template>
@@ -149,10 +149,11 @@ const props = withDefaults(defineProps<{
   showCount: true
 });
 
-// Emits (si besoin onDelete coté parent)
+// Emits
 const emit = defineEmits<{
-  (e: 'onDelete', uri: string): void;
-}>();
+  (e: 'onDelete', uri: string): void
+  (e: 'changed', payload?: { reason: 'create' | 'update' | 'delete' }): void
+}>()
 
 // Services / env
 const store = useStore();
@@ -241,6 +242,17 @@ function search(options: { orderBy: string[]; currentPage: number; pageSize: num
   });
 }
 
+function onAnnotationCreated() {
+  console.log("annoList - anno created")
+  refresh()
+  emit('changed', { reason: 'create' })
+}
+
+function onAnnotationUpdated() {
+  refresh()
+  emit('changed', { reason: 'update' })
+}
+
 // Indexer les comptes pour affichage publisher
 function buildUsersIndexPromise(
   annotations: Array<AnnotationGetDTO>,
@@ -274,9 +286,22 @@ function refresh() {
 }
 
 // Edit / Details / Delete
-function editAnnotation(annotation: AnnotationGetDTO) {
-  const copy = JSON.parse(JSON.stringify(annotation));
-  annotationModalForm.value?.showEditForm?.(copy);
+// function editAnnotation(annotation: AnnotationGetDTO) {
+//   const copy = JSON.parse(JSON.stringify(annotation));
+//   annotationModalForm.value?.showEditForm?.(copy);
+// }
+async function editAnnotation(annotation: AnnotationGetDTO) {
+  try {
+    const uri = annotation?.uri
+    if (!uri) return
+
+    const http = await annotationService.getAnnotation(uri)
+    const selectedAnnotation = http.response.result
+
+    annotationModalForm.value?.showEditForm?.(JSON.parse(JSON.stringify(selectedAnnotation)))
+  } catch (e) {
+    opensilex.errorHandler(e)
+  }
 }
 
 function showDetails(annotation: AnnotationGetDTO) {
@@ -297,6 +322,7 @@ function deleteAnnotation(uri: string) {
       const message = `${t('Annotation.name')} ${uri} ${t('component.common.success.delete-success-message')}`;
       opensilex.showSuccessToast(message);
       emit('onDelete', uri);
+      emit('changed', { reason: 'delete' })
     })
     .catch(opensilex.errorHandler);
 }

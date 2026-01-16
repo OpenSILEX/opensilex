@@ -10,46 +10,46 @@
     />
 
     <!-- Onglets -->
-         <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
-            <template v-slot>
-    <nav class="tabs mb-3">
-      <button
-        :class="['tab', { active: isDetailsTab }]"
-        @click="go('details')"
-      >
-        {{ t('component.common.details-label') }}
-      </button>
+    <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
+      <template v-slot>
+        <nav class="tabs mb-3">
+          <button
+            :class="['tab', { active: isDetailsTab }]"
+            @click="go('details')"
+          >
+            {{ t('component.common.details-label') }}
+          </button>
 
-      <button
-        :class="['tab', { active: isAnnotationTab }]"
-        @click="go('annotations')"
-      >
-        {{ t('Annotations') }}
-        <span v-if="!annotationsCountIsLoading && annotations > 0" class="tabBadge">
-          {{ opensilex?.$numberFormatter?.formateResponse(annotations) ?? annotations }}
-        </span>
-      </button>
+          <button
+            :class="['tab', { active: isAnnotationTab }]"
+            @click="go('annotations')"
+          >
+            {{ t('Annotations') }}
+            <span v-if="!annotationsCountIsLoading && annotations > 0" class="tabBadge">
+              {{ opensilex?.$numberFormatter?.formateResponse(annotations) ?? annotations }}
+            </span>
+          </button>
 
-      <button
-        v-if="onLocalInstance"
-        :class="['tab', { active: isVisualizationTab }]"
-        @click="go('visualization')"
-      >
-        {{ t('component.variable.visualization') }}
-      </button>
+          <button
+            v-if="onLocalInstance"
+            :class="['tab', { active: isVisualizationTab }]"
+            @click="go('visualization')"
+          >
+            {{ t('component.variable.visualization') }}
+          </button>
 
-      <button
-        :class="['tab', { active: isDocumentTab }]"
-        @click="go('documents')"
-      >
-        {{ t('component.project.documents') }}
-        <span v-if="!documentsCountIsLoading && documents > 0" class="tabBadge">
-          {{ opensilex?.$numberFormatter?.formateResponse(documents) ?? documents }}
-        </span>
-      </button>
-    </nav>
-            </template>
-         </opensilex-PageActions>
+          <button
+            :class="['tab', { active: isDocumentTab }]"
+            @click="go('documents')"
+          >
+            {{ t('component.project.documents') }}
+            <span v-if="!documentsCountIsLoading && documents > 0" class="tabBadge">
+              {{ opensilex?.$numberFormatter?.formateResponse(documents) ?? documents }}
+            </span>
+          </button>
+        </nav>
+      </template>
+    </opensilex-PageActions>
 
     <!-- Contenu -->
     <opensilex-PageContent>
@@ -245,35 +245,6 @@ watch(
 </script>
 
 <style scoped>
-.tabs {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #dee2e6;
-}
-.tab {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-.tab.active {
-  font-weight: bold;
-  border-bottom-color: #007bff; /* à adapter selon la charte si jamais on veut */
-}
-.tabBadge {
-  margin-left: .5rem;
-  display: inline-block;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  padding: 0 .35rem;
-  border-radius: 999px;
-  font-size: 12px;
-  line-height: 1.25rem;
-  text-align: center;
-  color: #fff;
-  background: #00A38D;
-}
 .projectAnnotations{
   margin-top: 18px;
 }

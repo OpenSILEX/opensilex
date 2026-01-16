@@ -34,6 +34,7 @@
           </slot>
           {{ translatedTitle }}
         </h4>
+        <!-- TODO implémenter une condition sur l'apparition du bouton d'aide dans les forms en modal ("?")  -->
         <opensilex-HelpButton
           label="component.tutorial.name"
           class="wizard-help-btn"

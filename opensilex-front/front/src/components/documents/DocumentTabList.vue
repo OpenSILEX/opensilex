@@ -17,9 +17,8 @@
       :lazy="false"
       :placeholder="t('DocumentTabList.title-placeholder')"
     />
-
-    <div class="card">
-      <div class="card-body">
+      
+      <div>
         <opensilex-PageContent v-if="renderComponent">
           <template #default>
             <opensilex-TableAsyncView
@@ -82,7 +81,6 @@
           </template>
         </opensilex-PageContent>
       </div>
-    </div>
 
     <opensilex-ModalForm
       v-if="user.hasCredential(props.modificationCredentialId)"
@@ -93,8 +91,8 @@
       modalSize="lg"
       :data="{ initialTargets}"
       icon="bi#bi-file-text"
-      @onCreate="refresh"
-      @onUpdate="refresh"
+      @onCreate="onCreated"
+      @onUpdate="onUpdated"
     />
   </div>
 </template>
@@ -122,7 +120,11 @@ const props = defineProps({
    return Array.isArray(elementUri) ? elementUri.filter(Boolean) as string[] : [elementUri]
  })
 
-const emit = defineEmits(['onUpdate']);
+const emit = defineEmits<{
+  (e: 'onUpdate', payload?: any): void
+  (e: 'changed', payload?: { reason: 'create' | 'update' | 'deprecated' | 'delete', uri?: string }): void
+}>()
+
 const store = useStore();
 const route = useRoute();
 const { t } = useI18n();
@@ -185,6 +187,18 @@ function searchDocuments(options) {
   );
 }
 
+function onCreated(payload: any) {
+  refresh()
+  emit('changed', { reason: 'create' })
+  emit('onUpdate', payload)
+}
+
+function onUpdated(payload: any) {
+  refresh()
+  emit('changed', { reason: 'update' })
+  emit('onUpdate', payload)
+}
+
 
 function refresh() {
   tableRef.value?.refresh();
@@ -212,6 +226,7 @@ function updateForDeprecated(form) {
     .uploadFileToService('/core/documents', form, null, true)
     .then((http) => {
       emit('onUpdate', form);
+      emit('changed', { reason: 'deprecated', uri: form?.description?.uri })
       refresh();
     })
     .catch(opensilex.errorHandler);

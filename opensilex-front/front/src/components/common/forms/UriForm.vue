@@ -75,7 +75,7 @@ onMounted(() => {
   id.value = opensilex?.generateID?.() ?? Math.random().toString(36).slice(2)
 })
 
-/** État “auto-générée” */
+/** État auto-générée */
 const uriGenerated = ref(!!props.generated)
 
 // règle URL de vee-validate
@@ -106,25 +106,32 @@ const fieldLabel = computed(() => (props.label ? t(props.label) : 'URI'))
 
 const { value: uri, errorMessage, validate } = useField<string | undefined>(
   'uri',
-  rules,                               // règles dynamiques (string réactif)
+  rules, // règles dynamiques (string réactif)
   {
-    label: fieldLabel.value,           //  pour {_field_} dans les messages
+    label: fieldLabel.value, //  pour {_field_} dans les messages
     initialValue: props.uri
   }
 )
+// parent -> child
+watch(() => props.uri, (v) => {
+  uri.value = typeof v === 'string' ? v : undefined
+  validate()
+})
 
-/** Sync avec le parent */
-// watch(uri, (v) => emit('update:uri', typeof v === 'string' ? v : undefined))
-// watch(uriGenerated, (v) => {
-//   emit('update:generated', v)
-//   validate() // revalider quand on (dé)coche
-// })
+watch(() => props.generated, (v) => {
+  uriGenerated.value = !!v
+  validate()
+})
 
- // Quand le parent change l'URI (nouveau element à éditer), on la répercute
- watch(() => props.uri, (v) => {
-   uri.value = typeof v === 'string' ? v : undefined
-   validate()
- })
+// child -> parent
+watch(uri, (v) => {
+  emit('update:uri', typeof v === 'string' && v.trim().length ? v : undefined)
+})
+
+watch(uriGenerated, (v) => {
+  emit('update:generated', v)
+  validate()
+})
 
  // En mode édition, on force l'URI désactivée (sécurité UX)
  watch(() => props.editMode, (isEdit) => {

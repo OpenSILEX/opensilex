@@ -461,39 +461,6 @@ const variableListeners = {
 
 
 <style scoped>
-.tabs {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #dee2e6;
-}
-.tab {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-.tab.active {
-  font-weight: bold;
-  border-bottom-color: #007bff;
-}
-/* .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 90%;
-  max-height: 90%;
-  overflow: auto;
-} */
-
 .createButton, .helpButton{
   margin: -10px 15px 5px -10px
 }

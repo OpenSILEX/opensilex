@@ -179,14 +179,23 @@ function keysToObjects(keys: string | string[] | null): any {
   }
 }
 
+function normalizeSelectedToIds(selectedElements: string | string[] | undefined): string[] {
+  if (selectedElements == null) return []
+  const selectionArray = Array.isArray(selectedElements) ? selectedElements : [selectedElements]
+  return selectionArray
+    .map(s => (typeof s === 'string' ? s.trim() : ''))
+    .filter(s =arr> s.length > 0)
+}
+
 // sélection initiale
 async function loadSelectedValues() {
-  const sel = props.selected
-  if (!sel) {
+const sel = props.selected
+const ids = normalizeSelectedToIds(sel)
+// si aucune sélection réelle, on ne call pas itemLoadingMethod
+if (ids.length === 0) {
     value.value = null
     return
   }
-  const ids = Array.isArray(sel) ? sel : [sel]
   if (props.itemLoadingMethod) {
     const dtos = await props.itemLoadingMethod(ids)
   //  const opts = dtos
@@ -210,7 +219,8 @@ const opts = dtos
       cacheSelectedOption(object)
     })
   }
-  value.value = Array.isArray(sel) ? sel : sel
+   // on répercute la sélection normalisée
+  value.value = props.multiple ? ids : ids[0]
 }
 
 watch(() => props.selected, loadSelectedValues, { immediate: true })

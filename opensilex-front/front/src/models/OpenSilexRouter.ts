@@ -28,7 +28,6 @@ export class OpenSilexRouter {
     }
     
     public getSectionAttributes() {
-        console.log("RETURN sectionAttributes ", this.sectionAttributes)
         return this.sectionAttributes;
     }
     
@@ -61,49 +60,34 @@ export class OpenSilexRouter {
             console.error('Navigation error:', handler); 
         });
 
-        console.log("Routes enregistrées - createRouter :", this.router.getRoutes());
-        console.log("RETURN sectionAttributes ", this.sectionAttributes)
-
         this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
-            console.log("routerBefore from  : ", from, " / to : ", to);
 
             const isLoggedIn = store.state.user.loggedIn;
             const redirectTo = to.query.redirect ? to.query.redirect.toString() : undefined;
 
-            //////////////////////
             // si pas deja log et veut aller sur autre chose que /app : renvoi sur /app
             if (!isLoggedIn && to.path !== '/') {
-                console.log ("🍫 pas deja log et veut aller sur autre chose que app -> renvoi /app")
                 return next({ path: '/', query: { redirect: to.fullPath } });
             }
 
             // si deja log et veut aller sur /app : renvoi sur /dash
             if (isLoggedIn && to.path === '/' && !redirectTo) {
-                console.log("🍫 deja log et veut aller sur /app -> renvoi /dash")
                 return next({ path: '/dash', query: { redirect: redirectTo } }); 
             }
 
-            console.log("redirectTo : ", redirectTo)
             // a la premiere co, au moment ou l'utilisateur se log et viens donc bien de /app : 
                 // redirect soit sur /dash si pas d'historique, 
                 // sinon renvoi sur la derniere page consulté
                 if (isLoggedIn && to.path === '/' && redirectTo) {
-                    console.log("to.redirectedFrom : ", to.redirectedFrom)
-                    console.log("🍫 Redirection après login vers:", redirectTo);
                     return next({ path: redirectTo });
                 }
                 
                 // Vérification pour éviter la redirection infinie
                 if (to.path === from.path) {
-                    console.log("🍫 déjà sur la même page, redirection annulée");
                     return next(); 
                 }
-                
-                console.log("to ", to, " from " , from)
             next(); // aucun des cas ? on laisse passer
         });
-
-        console.log("this.router ", this.router)
 
         this.router.afterEach((to, from, failure) => {
             if (failure) {
@@ -122,7 +106,6 @@ export class OpenSilexRouter {
     }
 
     public computeMenuRoutes(user: User) {
-        console.log("🧨 compute menu route");
     
         const routes: Array<any> = [];
         const $opensilex: OpenSilexVuePlugin = this.$opensilex;
@@ -144,7 +127,6 @@ export class OpenSilexRouter {
             });
     
             for (const routeConfig of frontConfig.routes) {
-                console.log("🛤️ Route from frontConfig", routeConfig);
                 routes.push({
                     path: routeConfig.path,
                     name: routeConfig.name || undefined,
@@ -155,7 +137,6 @@ export class OpenSilexRouter {
     
         // 📌 Routes dynamiques depuis le menu utilisateur
         if (this.userFrontConfig) {
-            console.log("👤 userFrontConfig:", this.userFrontConfig);
             this.menu = this.buildMenu(this.userFrontConfig.menu, routes, user);
     
             const addMenuRoutes = (menuItems: any[]) => {
@@ -184,8 +165,6 @@ export class OpenSilexRouter {
                 component: loadComponent(frontConfig.notFoundComponent)
             });
         }
-
-        console.log("✅ Final routes:", routes);
         return routes;
     }
 
@@ -199,7 +178,6 @@ export class OpenSilexRouter {
             
             // Get the component from the app
             let component = this.app.component(componentDef.getId());
-            console.log("getComponentImport",component)
             if (component) {
                 return component;
             } else {
@@ -232,7 +210,6 @@ export class OpenSilexRouter {
 
     public refresh() {
         this.router.go(0);
-        console.log(" 💩 ", this.router.currentRoute)
     }
 
     private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {

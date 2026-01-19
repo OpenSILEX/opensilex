@@ -23,8 +23,7 @@ export default class DateTimeFormatter {
     $i18n;
 
     constructor(i18n) {
-        this.$i18n = i18n;
-        console.log("constructor i18n ", this.$i18n)
+      this.$i18n = i18n;
     }
 
     /**
@@ -76,7 +75,6 @@ export default class DateTimeFormatter {
             ...options
         };
         const locale = this.$i18n.locale?.value || "en"; // fallback si probleme avec la locale
-        console.log("locale ??? ", locale)
         return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
             .format(new Date(dateTimeValue));
     

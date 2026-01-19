@@ -104,9 +104,7 @@ const menuVisible = computed(() => store.state.menuVisible);
 const versionInfo = ref<versionInfoDTO | null>(null);
 
 onMounted(() => {
-  // versionInfo.value = store.state.versionInfo;
-     versionInfo.value = $opensilex.versionInfo;
-  console.log("VInfo : ", versionInfo.value)
+  versionInfo.value = $opensilex.versionInfo;
 });
 
 const toggleMenu = () => {
@@ -156,7 +154,7 @@ const isActive = (item: Menu): boolean => {
   outline: none;
 }
 
-.nav-item a { // viens du style global sur les liens normalement (main.scss ?) ..
+.nav-item a { // viens du style global sur les liens (main.scss ?) ..
   text-decoration: none;
 }
 

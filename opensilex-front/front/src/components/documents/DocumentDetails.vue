@@ -28,15 +28,8 @@
                 v-if="user?.hasCredential?.(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
                 @click="onUpdateClick"
                 :label="t('DocumentDetails.update')"
-              />
-              <!--
-              <opensilex-DeleteButton
-                v-if="user?.hasCredential?.(credentials.CREDENTIAL_DOCUMENT_DELETE_ID)"
-                @click="() => deleteDocument(document!.uri!)"
-                label="DocumentDetails.delete"
                 :small="true"
               />
-              -->
             </template>
 
             <template #body>
@@ -51,11 +44,11 @@
                 <!-- Targets -->
                 <opensilex-StringView
                     class="overflow-auto"
-                    style="height: 100px"
+                    style="height: 100px, display: content"
                     :label="t('DocumentDetails.targets')"
                     :uri="document?.targets"
                 >
-                    <span v-for="target in targetsTypes" :key="target.uri">
+                    <div v-for="target in targetsTypes" :key="target.uri">
                     <opensilex-UriLink
                         v-if="target.rdf_types?.includes(opensilex.Oeso.EXPERIMENT_TYPE_URI)"
                         :uri="target.uri"
@@ -90,7 +83,7 @@
                         :uri="target.uri"
                         :value="target.uri"
                     />
-                    </span>
+                    </div>
                 </opensilex-StringView>
 
                 <!-- Authors -->
@@ -337,7 +330,7 @@ en:
     type: Type
     date: Date
     authors: Authors
-    targets: Target
+    targets: Target(s)
     language: Language
     format: Format
     keywords: Keywords
@@ -361,7 +354,7 @@ fr:
     type: Type
     date: Date
     authors: Auteurs
-    targets: Cible
+    targets: Cible(s)
     language: Langue
     format: Format
     keywords: Mots-clés

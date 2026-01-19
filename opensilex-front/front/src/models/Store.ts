@@ -23,7 +23,6 @@ let currentUser = undefined;
 
 let getOpenSilexPlugin = function (): OpenSilexVuePlugin | undefined {
   const storeInstance = (store as any); // Accès direct à l'instance du store
-  console.log("storeInstance:", storeInstance);
   return storeInstance.$opensilex;
 };
 
@@ -40,7 +39,7 @@ let renewTokenOnEvent = function (event) {
     // If a modifier key is pressed don't consider it as a renewal activity sequence
     return;
   }
-  console.debug("Disable renew event listeners");
+  // console.debug("Disable renew event listeners");
   window.removeEventListener('mousemove', renewTokenOnEvent);
   window.removeEventListener('click', renewTokenOnEvent);
   window.removeEventListener('keydown', renewTokenOnEvent);
@@ -185,16 +184,10 @@ let store = createStore({
   },
   mutations: {
     login(state, user: User) {
-      console.debug("Login", user);
-
-       
-      console.debug("🔄 Avant mise à jour:", state.user);
 
       currentUser = user;
       state.user = user;
   
-      console.debug("✅ Après mise à jour:", state.user);
-      console.debug("✅ loggedIn:", state.user?.loggedIn);
 
       if (expireTimeout != undefined) {
         console.debug("Clear token timeout");
@@ -208,9 +201,9 @@ let store = createStore({
 
       let expireAfter = user.getDurationUntilExpirationMs();
       let expireDate = new Date(expireAfter);
-      console.debug("Define expiration timeout", expireDate.getMinutes(), "min", expireDate.getSeconds(), "sec");
+      // console.debug("Define expiration timeout", expireDate.getMinutes(), "min", expireDate.getSeconds(), "sec");
       expireTimeout = setTimeout(() => {
-        console.debug("Automatically call logout");
+        // console.debug("Automatically call logout");
         let method: any = "logout";
         this.commit(method);
         let opensilex = getOpenSilexPlugin();
@@ -221,11 +214,11 @@ let store = createStore({
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
       let inactivityRenewDelayDate = new Date(inactivityRenewDelay);
       if (inactivityRenewDelay > 0) {
-        console.debug("Enable inactivity renew timeout in", inactivityRenewDelayDate.getMinutes(), "min", inactivityRenewDelayDate.getSeconds(), "sec");
+        // console.debug("Enable inactivity renew timeout in", inactivityRenewDelayDate.getMinutes(), "min", inactivityRenewDelayDate.getSeconds(), "sec");
         autoRenewTimeout = setTimeout(() => {
           // TODO display toast to warn user that is session will be distoryed if no activity
           renewStarted = false;
-          console.debug("Enable renew event listeners");
+          // console.debug("Enable renew event listeners");
           window.addEventListener('mousemove', renewTokenOnEvent);
           window.addEventListener('click', renewTokenOnEvent);
           window.addEventListener('keydown', renewTokenOnEvent);
@@ -233,43 +226,39 @@ let store = createStore({
       }
 
       if (!user.needRenew()) {
-        console.debug("Define user");
         currentUser = user;
         state.user = user;
         if (state.openSilexRouter) {
-          console.debug("Reset router");
           state.openSilexRouter.resetRouter(state.user);
-          console.debug("Reset menu");
           state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
         }
       }
       
     },
     logout(state) {
-      console.debug("Logout");
+      // console.debug("Logout");
 
       if (expireTimeout != undefined) {
-        console.debug("Clear token timeout");
+        // console.debug("Clear token timeout");
         clearTimeout(expireTimeout);
         expireTimeout = undefined;
 
-        console.debug("Clear renew timeout");
+        // console.debug("Clear renew timeout");
         clearTimeout(autoRenewTimeout);
         autoRenewTimeout = undefined;
-        console.debug("Disable renew event listeners");
+        // console.debug("Disable renew event listeners");
         window.removeEventListener('mousemove', renewTokenOnEvent);
         window.removeEventListener('click', renewTokenOnEvent);
         window.removeEventListener('keydown', renewTokenOnEvent);
       }
 
-      console.debug("Set user to anonymous");
+      // console.debug("Set user to anonymous");
       state.user = User.ANONYMOUS();
 
 
       // getOpenSilexPlugin().clearCookie();
 
       const opensilexPlugin = (this as any).$opensilex;
-      console.log("Instance OpenSilexVuePlugin:", (this as any).$opensilex);
 
       if (opensilexPlugin) {
         
@@ -282,9 +271,9 @@ let store = createStore({
 
       state.disconnected = true;
       if (state.openSilexRouter) {
-        console.debug("Reset router");
+        // console.debug("Reset router");
         state.openSilexRouter.resetRouter(state.user);
-        console.debug("Reset menu");
+        // console.debug("Reset menu");
         state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
       }
     },
@@ -373,10 +362,7 @@ let store = createStore({
     },
     resetRouter(state) {
       if (state.openSilexRouter) {
-        console.debug("Reset router");
-        // console.log(" Logged ? " , state.user.isLoggedIn())
         state.openSilexRouter.resetRouter(state.user);
-        console.debug("Reset menu");
         state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
       }
     }

@@ -38,7 +38,7 @@
                 <span
                   v-if="!isEnded(project)"
                   class="badge badge-pill badge-info-phis"
-                  :title="t('component.project.view.status.in-progress')"
+                  :title="t('component.project.common.status.in-progress')"
                 >
                   <i class="bi bi-activity badge-icon badge-info-opensilex"></i>
                   {{ t('component.project.common.status.in-progress') }}
@@ -46,10 +46,10 @@
                 <!-- Etat : terminé -->
                 <span
                   v-else
-                  class="badge badge-pill badge-light"
-                  :title="t('component.project.view.status.finished')"
+                  class="badge badge-pill"
+                  :title="t('component.project.common.status.finished')"
                 >
-                  <i class="ik ik-archive"></i>
+                  <i class="bi bi-archive"></i>
                   {{ t('component.project.common.status.finished') }}
                 </span>
               </span>
@@ -323,5 +323,9 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.badge-info-phis {
+  color: black
 }
 </style>

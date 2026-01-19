@@ -256,7 +256,6 @@ export default class OpenSilexVuePlugin {
     }
 
     setConfig(config: FrontConfigDTO) {
-        console.log("-------vuePluging Setconfig -------", this.config)
         this.config = config;
     }
 
@@ -360,11 +359,8 @@ export default class OpenSilexVuePlugin {
     }
 
     public getServiceSync<T>(id: string): T | null {
-        console.debug("Get API service", this.baseApi, id);
+        // console.debug("Get API service", this.baseApi, id);
         let idParts = this.parseServiceId(id);
-        console.log("-----")
-        console.log("id ", id)
-        console.log("idParts : ", idParts)
         if (idParts.module == null) {
             return this.getServiceContainer().get<T>(idParts.service);
 
@@ -413,7 +409,6 @@ export default class OpenSilexVuePlugin {
     }
 
     public loadComponentModule(componentDef: ModuleComponentDefinition) {
-        console.log("Load component", componentDef);
         let moduleName = componentDef.getModule();
 
         if (!this.loadingModules[moduleName]) {
@@ -446,7 +441,7 @@ export default class OpenSilexVuePlugin {
 
     public loadModule(name) {
         if (window[name]) return window[name];
-        console.debug("Load module", name);
+        // console.debug("Load module", name);
         this.showLoader();
         let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
         let cssURI = this.baseApi + "/vuejs/extension/css/" + name + ".css";
@@ -463,13 +458,9 @@ export default class OpenSilexVuePlugin {
             script.async = true;
             script.src = url;
             script.addEventListener('load', () => {
-                console.debug(`module ${name} chargé`);
+                // console.debug(`module ${name} chargé`);
 
                 self.loadedModules.push(name);
-
-            console.log(`window["${name}"] après chargement :`, window[name]);
-            console.log(`window["${name}"].default après chargement :`, window[name]?.default);
-            console.log("name : " , name)
 
                 //@todo on doit trouver comment obtenir l'export par défaut du module importé par le script (HtmlScriptElement)
                 // Vincent utilise une façon bizarre d'importer le code JS des autres modules. D'après ce que j'ai compris :
@@ -481,14 +472,12 @@ export default class OpenSilexVuePlugin {
                 const plugin = window[name];
 
                 // Vue.use(plugin);
-                console.log("plugin detecté : ", plugin);
 
 
                  // Vérification si le plugin est valide pour Vue 3
             // if (plugin && (typeof plugin.install === 'function')) {
                 if (plugin) {
 
-                console.log("Plugin enregistré avec Vue : ", plugin);
                 this.app.use(plugin);
                 resolve(plugin);
             } else {
@@ -497,35 +486,6 @@ export default class OpenSilexVuePlugin {
             }
         
 
-                // this.app.use(plugin)
-
-                // resolve(plugin)
-                // console.log("log window",this.app);
-
-
-
-
-
-
-            //     if (plugin.lang) {
-            //         self.loadTranslations(plugin.lang);
-            //     }
-
-            //     if (plugin.components) {
-            //         for (let componentId in plugin.components) {
-            //             this.loadComponentTranslations(plugin.components[componentId]);
-            //         }
-            //     }
-
-                // self.initAsyncComponents(plugin.components)
-                //     .then(function () {
-                //         self.hideLoader();
-                //         resolve(plugin);
-                //     })
-                //     .catch(function (error) {
-                //         self.hideLoader();
-                //         reject(error);
-                //     });
             });
             script.addEventListener('error', () => {
                 self.hideLoader();
@@ -573,7 +533,6 @@ export default class OpenSilexVuePlugin {
     }
 
     public getServiceContainer() {
-        console.log("getServiceContainer container ", this.container)
         return this.container;
     }
 
@@ -591,7 +550,6 @@ export default class OpenSilexVuePlugin {
         if (pathPrefix) {
             cookieName += pathPrefix.replace('/', '-');
         }
-        console.debug("Read cookie name:", cookieName);
         return cookieName;
     }
 
@@ -603,7 +561,7 @@ export default class OpenSilexVuePlugin {
 
     public loadUserFromCookie(): User {
         let token = $cookies.get(this.getCookieName());
-        console.debug("Loaded token from cookie", token, this.getCookieName());
+        // console.debug("Loaded token from cookie", token, this.getCookieName());
         let user: User = User.ANONYMOUS();
         if (token != null) {
             try {

@@ -136,11 +136,9 @@ const copyURI = (address: string) => {
 };
 
 const storePrevious = () => {
-  console.log("Stocker la page précédente");
 };
 
 const handleUriLinkClicked = () => {
-  console.log("Lien cliqué, stocker la page");
   emit("linkClicked");
 };
 </script>

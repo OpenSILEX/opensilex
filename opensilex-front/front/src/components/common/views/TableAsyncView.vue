@@ -164,8 +164,6 @@ onMounted(() => {
     props.fields.unshift({ key: "select", isSelect: true });
   }
 
-  
-
   // attendre que la table soit générée pour appeler et remplir de données
   nextTick(() => {
     if (tableRef.value) {
@@ -173,7 +171,6 @@ onMounted(() => {
     }
   });
 });
-
 
 
 function onCheckedRowKeysChange(newKeys: DataTableRowKey[]) {
@@ -267,10 +264,9 @@ const hasResults = computed(() => totalRow.value > 0);
 async function refresh() {
   isSearching.value = true;
   try {
-    const results = await loadData(); // ton wrapper de recherche (appel API ou slice selected)
+    const results = await loadData(); //  wrapper de recherche
     dataList.value = results;
     syncCheckedForCurrentPage()
-    console.log("datalist.value ", dataList.value)
   } catch (e) {
     if ($opensilex) {
       $opensilex.errorHandler(e);
@@ -356,7 +352,6 @@ function resetSelection() {
 }
 
 function loadData() {
-  console.log("fonction load data")
   const orderBy = getOrderBy();
 
   $opensilex.disableLoader();
@@ -386,7 +381,6 @@ function loadData() {
         pagination.value.itemCount = totalRow.value;
         isSearching.value = false;
         $opensilex.enableLoader();
-        console.log("loadData response ", http.response)
         return http.response.result;
       })
       .catch((error) => {
@@ -470,7 +464,6 @@ const naiveColumns = computed(() => {
         : row[field.key];
     },
   }));
-      console.log("field : ", dynamicCols)
 
   if (props.isSelectable) {
     return [

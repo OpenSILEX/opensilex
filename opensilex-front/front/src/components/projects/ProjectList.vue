@@ -438,7 +438,9 @@ const actionsDropdownOptions = computed(() => [
 ])
 
 function onActionsDropdownSelect(key: string) {
-  if (key === 'addDocument') documentForm.value?.showCreateForm?.()
+  if (key === 'addDocument') {
+    documentForm.value?.showCreateForm?.(initForm())
+  }
 }
 
 defineExpose({

@@ -73,8 +73,6 @@
 
             <div id="main-content">
               <main class="main-content">
-                <div> pas public</div>
-
             <n-message-provider>
                 <router-view />
             </n-message-provider>
@@ -184,32 +182,13 @@ const toggleUriSearchBox = (visible) => {
  
 
 onMounted(async () => {
-  console.log('Before Router Preparation', router);
-  console.log('Current URL:', window.location.href);
-  console.log('Router options:', router.options);
   
   await router.isReady();
   
-  console.log('After Route Preparation', route.name);
-  console.log('Route object:', route);
-  console.log('Current route value:', router.currentRoute.value);
-  console.log('Route path:', route.path);
-  console.log('Route params:', route.params);
-  console.log('All routes:', router.getRoutes());
-
-  console.log("route publique ?  ", route.meta.public)
-  console.log("route : ", route)
-  console.log("user 👨: ", user)
-  // console.log("logged in ? ", user.isLoggedIn())
-  // Setup language watcher
-  // watch(() => store.getters.language, () => {
-  //   notificationMessageDisplayed.value = notificationMessage.value[opensilex.i18n.locale];
-  // });
 
   const config = opensilex.getConfig();
 
 // Created lifecycle - initialize data
-// opensilex.bvToast = bvToast;
 const currentDate = new Date();
 const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
 notificationMessage.value = config.notificationMessage;
@@ -227,8 +206,6 @@ try {
   if (!notificationEndDate.value || notificationEndDate.value > formattedCurrentDate) {
     displayNotificationMessage.value = true;
 
-    console.log("store.state.lang  ", lang.value)
-    console.log("usei18n locale :  ", locale)
     notificationMessageDisplayed.value = notificationMessage.value[locale.value];
   }
 } catch {
@@ -252,44 +229,6 @@ defineExpose({
 <style lang="scss">
 @use "./styles/common.scss" as *;
 @import "./../theme/opensilex/main.css";
-
-// header {
-//   display: flex;
-// }
-
-// main {
-//   background-color: getVar(--defaultColorLight);
-//   color: getVar(--defaultColorDark);
-// }
-
-// #header-content {
-//   max-width: 1600px;
-//   margin: auto;
-//   display: flex;
-//   width: 100%;
-// }
-
-// #header-content .header-logo {
-//   width: 70%;
-// }
-
-// #header-content .header-login {
-//   width: 30%;
-//   text-align: right;
-// }
-
-// section#content-wrapper {
-//   display: flex;
-//   margin: 0 auto;
-//   height: 100%;
-//   flex-grow: 1;
-//   width: 100%;
-// }
-
-
-// .header-top.logged-out {
-//   box-shadow: none;
-// }
 
 .toast-container {
   z-index: 9999 !important;

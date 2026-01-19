@@ -218,7 +218,6 @@ const documentContentType = ref<ContentKind>(DOCUMENT_CONTENT_TYPE_FILE)
 
 
 watch(() => props.form, (nv) => {
-  console.log('[DocumentForm] props.form a changé:', nv?.description);
 }, { deep: true });
 
 watch(

@@ -89,19 +89,6 @@
               </div>
               <br>
             </span>
-
-
-            <!-- Form -->
-            <!-- <opensilex-FormSelector
-              v-if="connectionOptions.length > 1"
-              :label="$t('LoginComponent.selectLoginMethod')"
-              :options="connectionOptions"
-              :selected.sync="loginMethod"
-              @select="loginMethodChange"
-            ></opensilex-FormSelector> -->
-
-
-
               <form @submit.prevent="onLogin" class="fullmodal-form">
 
               <!-- Email -->
@@ -182,9 +169,6 @@
 import Vue, { defineComponent, ref, onMounted, nextTick, inject, computed, watchEffect } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
-
-// import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
-// import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import type { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
 import type { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import HttpResponse from "opensilex-security/HttpResponse";
@@ -204,14 +188,12 @@ export default defineComponent({
     $opensilex: OpenSilexVuePlugin
   },
   setup() {
-    console.log("setup() exécuté !");
     // injection des dépendances
     const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
     const store = useStore();
     const user = computed(() => store.state.user);
     const isLoggedIn = computed(() => store.state.user.loggedIn);
     const route = useRoute();
-    console.log("route.matched",route.matched) // ✅ works (reactive object, not a ref)    // définition du formulaire
 
     const form = ref({
       email: "",
@@ -222,7 +204,7 @@ export default defineComponent({
 
 
     if (!$opensilex) {
-      throw new Error("L'instance $opensilex est introuvable 😨...");
+      throw new Error("L'instance $opensilex est introuvable ...");
     }
 
     
@@ -243,15 +225,11 @@ export default defineComponent({
 
     // Gestion du carrousel
     onMounted(() => {
-      console.log("🚀 onMounted() déclenché !");
-      console.log("connectAsGuest dispo ? : ", connectAsGuest.value)
-      console.log("locales : ", availableLocales)
 
       const bootstrapScript = document.createElement("script");
       bootstrapScript.src =
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js";
       bootstrapScript.onload = () => {
-        console.log("Bootstrap JS chargé avec succès !");
       };
       document.head.appendChild(bootstrapScript);
 
@@ -286,7 +264,6 @@ export default defineComponent({
 
     // Définition login (call by onLoginAsGuest)
     const login = async () => {
-      console.log("🤯 login method")
       $opensilex.showLoader();
       try {
         const authService = $opensilex.getService<AuthenticationService>(
@@ -300,7 +277,6 @@ export default defineComponent({
 
         const user = $opensilex.fromToken(response.response.result.token);
         $opensilex.setCookieValue(user);
-        console.log("response : ", response)
 
         store.commit("login", user);
         store.commit("refresh");
@@ -308,7 +284,6 @@ export default defineComponent({
         if (error.status === 403) {
           $opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
         } else {
-          console.log("⚠️ Login other error")
           $opensilex.errorHandler(error);
         }
       } finally {
@@ -319,24 +294,20 @@ export default defineComponent({
 
     // connexion principale 
     const onLogin = async () => {
-      console.log("--🌲--🌲--onLoginMethod--🌲--🌲--")
       $opensilex.showLoader();
       
       try {
         const authService = $opensilex.getService<AuthenticationService>(
           "opensilex-security.AuthenticationService"
         );
-        console.log('🌲 authService ', authService)
 
         const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
           await authService.authenticate({
             identifier: form.value.email,
             password: form.value.password
           });
-          console.log("🌲 response : ", response)
 
         const user = User.fromToken(response.response.result.token);
-        console.log("🌲 user ", user)
         $opensilex.setCookieValue(user);
         store.commit("login", user);
         store.commit("refresh");
@@ -344,11 +315,10 @@ export default defineComponent({
 
       } catch (error: any) {
         if (error.status === 403) {
-          console.error("🌳 onLogin - Invalid credentials", error);
+          console.error("onLogin - Invalid credentials", error);
           $opensilex.showErrorToast(t("LoginComponent.invalidCredentials", error));
         } else {
-          // $opensilex.errorHandler(error);
-          console.log("🌳 onLogin - other error.... ", error)
+          $opensilex.showErrorToast(error);
         }
       } finally {
         $opensilex.hideLoader();

@@ -39,11 +39,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed, onMounted } from 'vue'
+import { ref, nextTick, computed, onMounted, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FormInst } from 'naive-ui'
 import { NForm } from 'naive-ui'
+import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
 
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
 
 const modalRef = ref()
@@ -70,10 +72,6 @@ const editMode = ref(false)
 const form = ref<Record<string, any>>({})
 const rules = ref<Record<string, any>>({})
 const componentRefreshKey = ref(0)
-
-onMounted(() => {
-  console.log('ModalForm mounted')
-})
 
 const translatedTitle = computed(() => {
   const key = editMode.value ? props.editTitle : props.createTitle
@@ -152,7 +150,7 @@ function creationOrUpdateMessage() {
         : 'component.common.success.creation-success-message'
     )
   }
-  // TODO : afficher le message dans un toast
+  opensilex?.showSuccessToast?.(msg)
 }
 
 function showCreateForm(passedForm?: any) {

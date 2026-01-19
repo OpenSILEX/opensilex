@@ -71,8 +71,6 @@ const i18n = createI18n({
 
 });
 
-console.log("iiii : ", i18n)
-
 import "reflect-metadata"
 
 // Allow access to global "document" variable
@@ -100,7 +98,7 @@ let urlParams = new URLSearchParams(window.location.search);
 let isDebug = true;
 let isDevMode = true;
 
-console.debug("URL parameters", urlParams);
+// console.debug("URL parameters", urlParams);
 
 // Initialize logger
 console.log = console.log || function () { };
@@ -111,7 +109,6 @@ if (isDebug) {
 } else {
   console.debug = function () { };
 }
-console.debug("Logger initialized in debug mode");
 
 // Initialize service API container
 let baseApi = DEV_BASE_API_PATH;
@@ -126,24 +123,16 @@ if (isDevMode) {
   baseApi = splitURI[0] + "/rest"
 }
 
-console.debug("Base API URI:", baseApi);
-
 // Setup store imports
 import store from './models/Store'
 
 // Local imports
-console.debug("Import local files...");
+// console.debug("Import local files...");
 import {FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO, UserFrontConfigDTO} from './lib'
 import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
 import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
-console.debug("Local file imports done !");
-
-
-
-// console.debug("Enable OpenSilex plugin...");
-// const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
 
 const manageError = function manageError(error) {
   console.error(error);
@@ -151,7 +140,7 @@ const manageError = function manageError(error) {
 
 
 // Load default components
-console.debug("Load default components...");
+// console.debug("Load default components...");
 import components from './components';
 import { Router } from 'vue-router';
 // @ts-ignore
@@ -162,17 +151,6 @@ import Highcharts from 'highcharts';
 
 
 const app = createApp(App);
-
-
-// Import des modules Highcharts de manière asynchrone
-// import('highcharts/modules/exporting').then(module => {
-//   module.default(Highcharts);
-// });
-
-// import('highcharts/modules/stock').then(module => {
-//   module.default(Highcharts);
-// });
-
 
 const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
 
@@ -195,9 +173,7 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 
 
 for (let componentName in components) {
-  console.log("Load default components : ", componentName);
   let component = components[componentName];
-  //@todo est-ce qu'on a vraiment besoin ? pas de manière plus propre de faire ? sinon trouver le moyen en vue 3 
   app.component(componentName, component);
   $opensilex.loadComponentTranslations(component);
 }
@@ -249,23 +225,23 @@ function loadFonts(vueJsService: VueJsService, fonts: Array<FontConfigDTO>) {
 function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
   return new Promise((resolve, reject) => {
     if (config.themeModule && config.themeName) {
-      console.debug("Load defined theme configuration...", config.themeModule, config.themeName);
+      // console.debug("Load defined theme configuration...", config.themeModule, config.themeName);
       vueJsService.getThemeConfig(config.themeModule, config.themeName)
         .then((http: HttpResponse<OpenSilexResponse<ThemeConfigDTO>>) => {
-          console.debug("Theme configuration loaded !", config.themeModule, config.themeName);
+          // console.debug("Theme configuration loaded !", config.themeModule, config.themeName);
           const themeConfig: ThemeConfigDTO = http.response.result;
 
           $opensilex.setThemeConfig(themeConfig);
           loadFonts(vueJsService, themeConfig.fonts);
 
           if (themeConfig.hasStyle) {
-            console.debug("Load CSS theme style...");
+            // console.debug("Load CSS theme style...");
             const cssURI = baseApi + "/vuejs/theme/" + encodeURIComponent(config.themeModule) + "/" + encodeURIComponent(config.themeName) + "/style.css";
             var link = document.createElement('link');
             link.setAttribute("rel", "stylesheet");
             link.setAttribute("type", "text/css");
             link.onload = function () {
-              console.debug("CSS theme style loaded !");
+              // console.debug("CSS theme style loaded !");
               resolve(true);
             };
             link.onerror = reject;
@@ -277,81 +253,65 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
         })
         .catch(reject)
     } else {
-      console.debug("No theme defined !");
+      // console.debug("No theme defined !");
       resolve(true);
     }
   })
 }
-
-
-
 
 $opensilex.loadModules([
   "opensilex-security",
   "opensilex-core",
   // "opensilex-dataverse"
 ]).then(() => {
-  console.log("----------- loading")
   // Not seems mandatory in vue 3, need to test when component are loaded from other modules
-  // $opensilex.initAsyncComponents(components).then(() => {
-    console.debug("Default components loaded !");
-
-
     // Get OpenSilex configuration
-    console.debug("Start loading configuration...");
+    // console.debug("Start loading configuration...");
     let loadConfigFromOSVuePlugin = $opensilex.getConfig()
     // loadConfigFromOSVuePlugin;
-    console.log(loadConfigFromOSVuePlugin)
     const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
     vueJsService.getConfig().then((configResponse) => {
-      console.log("can we get a config PLEASE", configResponse)
       const config: FrontConfigDTO = configResponse.response.result;
       $opensilex.setConfig(config);
 
       store.commit("setConfig", { config, app });
-      console.debug("Configuration loaded", config);
+      // console.debug("Configuration loaded", config);
 
       // Define user
-      console.debug("Define current user...");
+      // console.debug("Define current user...");
       let user: User | undefined = undefined;
       if (urlParams.has("token")) {
         let token = urlParams.get("token");
-        console.debug("Try to load user from URL token...");
+        // console.debug("Try to load user from URL token...");
         if (token != null) {
           user = User.fromToken(token);
           $opensilex.setCookieValue(user);
-          console.debug("User successfully loaded from URL token !");
+          // console.debug("User successfully loaded from URL token !");
         }
       }
 
       if (user == undefined) {
-        console.debug("Try to load user from cookie...");
         user = $opensilex.loadUserFromCookie();
-        console.debug("User successfully loaded from cookie !");
       }
 
       // Set language
       if (!user.isLoggedIn()) {
-        console.debug("User is ANONYMOUS !");
+        // console.debug("User is ANONYMOUS !");
         // i18n.locale = lang;
       } else {
-        console.debug("User is:", user.getEmail());
+        // console.debug("User is:", user.getEmail());
         // i18n.locale = user.getLocale() || lang;
       }
-
       // Init user in store
-      console.debug("Initialize global user");
       store.commit("login", user);
 
 
       // Load user-specific configuration
-      console.debug("Start loading user-specific configuration...");
       vueJsService.getUserConfig()
         .then(function (userConfigResponse) {
           const userConfig: UserFrontConfigDTO = userConfigResponse.response.result;
 
           store.commit("setUserConfig", userConfig);
-          console.debug("User-specific configuration loaded", userConfig);
 
           let baseURL = window.location.href.split(/[?#]/)[0];
 
@@ -363,7 +323,6 @@ $opensilex.loadModules([
           }
 
           const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
-          console.log("MAIN - bageURL", baseURL)
           if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
             console.debug("Identify user with OpenID Connect");
             authService.authenticateOpenID(urlParams.get("code"))
@@ -386,27 +345,22 @@ $opensilex.loadModules([
                 let embed = urlParams.has('embed');
 
                 if (embed) {
-                  console.debug("Application is embed");
+                  // console.debug("Application is embed");
                 } else {
-                  console.debug("Application is not embed");
+                  // console.debug("Application is not embed");
                 }
 
                 // Init routing
-                console.debug("Initialize routing");
                 store.commit("resetRouter");
                 let router: Router = store.state.openSilexRouter.getRouter();
                 app.use(router);
-                console.log("Registered routes:");
-                router.getRoutes().forEach(route => console.log("route.path " ,route.path));
                  // Initialise main layout components from configuration
-                console.debug("Define initial modules to load...");
                 let modulesToLoad: ModuleComponentDefinition[] = [
                   ModuleComponentDefinition.fromString(config.homeComponent),
                   ModuleComponentDefinition.fromString(config.notFoundComponent)
                 ];
 
                 if (!embed) {
-                  console.log("Application is not embed");
                   modulesToLoad = modulesToLoad.concat([
                     ModuleComponentDefinition.fromString(config.footerComponent),
                     ModuleComponentDefinition.fromString(config.headerComponent),
@@ -428,64 +382,6 @@ $opensilex.loadModules([
                   $opensilex.loadComponentModules(modulesToLoad),
                   router.isReady()
                 ]).then(() => {
-
-                  // Initialize main application rendering
-                  console.debug("Initialize main application rendering");
-                  console.log("headerComponent dans render() :", config.headerComponent);
-                  
-                  // let vueOptions: any = {
-                  //   router,
-                  //   store,
-                  //   render: h => h(App, {
-                  //     props: {
-                  //       embed: embed,
-                  //       footerComponent: config.footerComponent,
-                  //       headerComponent: config.headerComponent,
-                  //       loginComponent: config.loginComponent,
-                  //       menuComponent: config.menuComponent
-                  //     }
-                  //   },
-                  //   ),
-                  //   // i18n
-                  //   undefined
-                  // };
-                  
-                  // console.log("app.config.globalProperties.headerComponent ", app.config.globalProperties.headerComponent)
-                  // console.log("config.headerComponent ", config.headerComponent)
-                  // app.config.globalProperties.headerComponent= config.headerComponent;
-                  // Load matomo
-                  // if (config.matomo.serverUrl) {
-                  //   console.debug(`Configuring Matomo with server URL ${config.matomo.serverUrl}`);
-                  //   // See https://github.com/AmazingDreams/vue-matomo for configuration
-                  //   Vue.use(VueMatomo, {
-                  //     host: config.matomo.serverUrl,
-                  //     siteId: config.matomo.siteId,
-                  //     trackerFileName: 'matomo',
-                  //     router,
-                  //     enableLinkTracking: true,
-                  //     requireConsent: false,
-                  //     trackInitialView: true,
-                  //     disableCookies: false,
-                  //     requireCookieConsent: false,
-                  //     enableHeartBeatTimer: false,
-                  //     heartBeatTimerInterval: 15,
-                  //     debug: false,
-                  //     userId: undefined,
-                  //     cookieDomain: undefined,
-                  //     domains: undefined,
-                  //     preInitActions: [],
-                  //     trackSiteSearch: false,
-                  //     crossOrigin: undefined
-                  //   });
-                  // }
-
-
-                  // new Vue(vueOptions).$mount('#app').$nextTick(() => {
-                  //   // Hide loader
-                  //   console.debug("Hide application init loader");
-                  //   document.getElementById('opensilex-loader').style.visibility = 'hidden';
-                  // });
-
                   app.mount('#app');
 
 
@@ -495,4 +391,3 @@ $opensilex.loadModules([
       }).catch(manageError);
     }).catch(manageError);
   }).catch(manageError);
-// }).catch(manageError);

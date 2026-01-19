@@ -587,7 +587,7 @@
             "administrativeContacts":"Administrative supervisors",           
             "experiments":"Experiments",
             "relatedProjects":"Related projects",
-            "inProgress":"In progress ..",
+            "inProgress":"In progress ...",
             "form-wizard": {
                 "funding-contacts": "Financial funding and contacts"
             },

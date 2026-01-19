@@ -7,14 +7,13 @@
   >
     <template #field="{ id: fieldId, validator }">
       <div :id="fieldId" @keydown.enter.stop="$emit('handlingEnterKey')">
-        <!-- BYPASS FORMSELECTOR -->
         <opensilex-CustomTreeselect
-          v-model:selected="selectedIds"                
-          :options="typesOptions"                      
+          v-model:selected="selectedIds"
+          :options="typesOptions"
           :multiple="multiple"
           :disabled="disabled"
           :placeholder="t(placeholder || 'component.common.type')"
-          :itemLoadingMethod="loadByUris"            
+          :itemLoadingMethod="loadByUris"
           :disableBranchNodes="false"
           :searchMethod="searchTypes"
           :resultLimit="20"
@@ -26,10 +25,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, watch } from 'vue'
+import { ref, computed, inject, onMounted, watch, withDefaults, defineProps } from 'vue'
 import { useStore } from 'vuex'
 import { useI18n } from 'vue-i18n'
-import CustomTreeselect from './CustomTreeselect.vue'  // 👈 adapte le chemin
 
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
 import type { OntologyService, ResourceTreeDTO } from 'opensilex-core'
@@ -72,15 +70,15 @@ type InputOpt = { id: string; label: string; children?: InputOpt[] }
 const typesOptions = ref<InputOpt[]>([])
 
 const selectedIds = computed<string[] | string>({
-  get: () => Array.isArray(props.type) ? props.type as string[] : (props.type ?? ''),
-  set: (v) => {
-    if (props.multiple) emit('update:type', Array.isArray(v) ? v : (v ? [v] : []))
-    else emit('update:type', Array.isArray(v) ? v[0] : v || undefined)
+  get: () => (Array.isArray(props.type) ? (props.type as string[]) : (props.type ?? '')),
+  set: (selectedValue) => {
+    if (props.multiple) emit('update:type', Array.isArray(selectedValue) ? selectedValue : (selectedValue ? [selectedValue] : []))
+    else emit('update:type', Array.isArray(selectedValue) ? selectedValue[0] : (selectedValue || undefined))
   }
 })
 
 function mapTree(nodes: any[]): InputOpt[] {
-  return (nodes || []).map(n => ({
+  return (nodes || []).map((n: any) => ({
     id: n.id,
     label: n.label,
     children: mapTree(n.children || [])
@@ -88,32 +86,46 @@ function mapTree(nodes: any[]): InputOpt[] {
 }
 
 async function loadTypes () {
-  const toIgnore = props.unselectableTypes.map(u => opensilex.getLongUri(u))
-  const http = await service.getSubClassesOf(props.baseType, props.ignoreRoot) as HttpResponse<OpenSilexResponse<ResourceTreeDTO[]>>
+  const toIgnore = (props.unselectableTypes ?? []).map(u => opensilex.getLongUri(u))
+
+const http = await service.getSubClassesOf(
+  props.baseType,
+  props.ignoreRoot
+) as HttpResponse<OpenSilexResponse<ResourceTreeDTO[]>>
+
   const built = opensilex.buildTreeListOptions(http.response.result, {
     expanded: null,
     disableSubTree: null,
     nodesToIgnoreList: toIgnore,
     flat: true
   })
+
   typesOptions.value = mapTree(built)
 
   // injecter la valeur si hors-arbre pour l'afficher
-  const vals = Array.isArray(selectedIds.value) ? selectedIds.value : (selectedIds.value ? [selectedIds.value] : [])
+  const vals = Array.isArray(selectedIds.value)
+    ? selectedIds.value
+    : (selectedIds.value ? [selectedIds.value] : [])
+
   for (const id of vals) {
     if (!id) continue
     const exists = JSON.stringify(typesOptions.value).includes(`"${id}"`)
-    if (!exists) typesOptions.value.unshift({ id, label: (opensilex as any)?.getShortUri?.(id) ?? id, children: [] })
+    if (!exists) {
+      typesOptions.value.unshift({
+        id,
+        label: (opensilex as any)?.getShortUri?.(id) ?? id,
+        children: []
+      })
+    }
   }
 }
 
 async function loadByUris(uris: string[]) {
   // DTOs attendus par CustomTreeselect: [{ uri, name }]
-  return uris.map(u => ({ uri: u, name: (opensilex as any)?.getShortUri?.(u) ?? u }))
+  return (uris || []).map(u => ({ uri: u, name: (opensilex as any)?.getShortUri?.(u) ?? u }))
 }
 
-
-// Recherche 
+// ---- Recherche LOCALE
 // Aplatit l’arbre {id,label,children[]} -> [{id,label}]
 function flatten(nodes: InputOpt[] = []): Array<{ id: string; label: string }> {
   const out: Array<{ id: string; label: string }> = []
@@ -128,13 +140,25 @@ function flatten(nodes: InputOpt[] = []): Array<{ id: string; label: string }> {
 
 // searchMethod attend => Promise<{ response: { result: NamedResourceDTO[], metadata: { pagination: { totalCount }}}}>
 // NamedResourceDTO minimal = { uri, name }
-async function searchTypes(query: string, _offset = 0, limit = 20) {
-  const http = await service.searchSubClasses(props.baseType, query, limit) // exemple
-  const list = http.response.result as Array<{ uri: string; name: string }>
+async function searchTypes(rawQuery: string, _offset = 0, limit = 20) {
+  // CustomTreeselect utilise '.*' quand query vide
+  const searchedText = (rawQuery === '.*' ? '' : (rawQuery ?? '')).trim().toLowerCase()
+
+  const all = flatten(typesOptions.value)
+
+  const filtered = searchedText
+    ? all.filter(x =>
+        (x.label ?? '').toLowerCase().includes(searchedText) ||
+        (x.id ?? '').toLowerCase().includes(searchedText)
+      )
+    : all
+
+  const sliced = filtered.slice(0, limit)
+
   return {
     response: {
-      result: list,                         // [{ uri, name }]
-      metadata: { pagination: { totalCount: http.response.metadata.pagination.totalCount } }
+      result: sliced.map(x => ({ uri: x.id, name: x.label })), // <= matcher ce que CustomTreeselect attend
+      metadata: { pagination: { totalCount: filtered.length } }
     }
   }
 }

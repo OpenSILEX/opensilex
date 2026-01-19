@@ -184,7 +184,7 @@ function normalizeSelectedToIds(selectedElements: string | string[] | undefined)
   const selectionArray = Array.isArray(selectedElements) ? selectedElements : [selectedElements]
   return selectionArray
     .map(s => (typeof s === 'string' ? s.trim() : ''))
-    .filter(s =arr> s.length > 0)
+    .filter(s => s.length > 0)
 }
 
 // sélection initiale

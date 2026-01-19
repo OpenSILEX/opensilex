@@ -250,8 +250,6 @@ const getAddedTypes = (listItems?: { name: string; difference_count: number }[])
       setTimeout(initPopover, 100); // Nouvelle tentative après 100ms
       return;
     }
-
-    console.log("✅ Élément trouvé, initialisation du popover...");
     new Popover(popoverTarget.value, {
       trigger: "hover",
       placement: "bottom",
@@ -268,7 +266,6 @@ const getAddedTypes = (listItems?: { name: string; difference_count: number }[])
   nextTick(() => {
 
         initPopover(); // Première tentative à l'affichage initial
-        console.log("content: ", popoverContent)
   });
 
     });

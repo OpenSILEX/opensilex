@@ -214,7 +214,6 @@ export default defineComponent({
 
     const iconvalue = computed(() => {
       const pathicon = store.state.openSilexRouter.sectionAttributes[route.path];
-      console.log("pathicon  :", pathicon)
       return pathicon ? pathicon.icon : '';
     });
 
@@ -264,7 +263,6 @@ export default defineComponent({
         onMounted(() => {
             window.addEventListener('resize', handleResize);
             handleResize();
-            console.log("languages : ", languages.value)
         });
 
         onBeforeUnmount(() => {

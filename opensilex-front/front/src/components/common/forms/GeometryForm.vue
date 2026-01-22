@@ -11,7 +11,7 @@
         :id="field.id"
         :value="stringValue"
         @input="stringValue = $event"
-        @blur="commit()"
+        @blur="updateValue()"
         :disabled="disabled"
         type="text"
         :required="isRequired"
@@ -56,16 +56,16 @@ export default class GeometryForm extends Vue {
     }
   }
 
-  commit() {
-    const v = (this.stringValue || "").trim();
-    if (!v) {
+  updateValue() {
+    const geometryValue = (this.stringValue || "").trim();
+    if (!geometryValue) {
       this.geoJson = undefined;
       this.$emit("onUpdate");
       return;
     }
 
     try {
-      const parsed = parse(v);
+      const parsed = parse(geometryValue);
       this.geoJson = parsed; // sync que si c'est ok
       this.$emit("onUpdate");
     } catch (e) {

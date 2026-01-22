@@ -10,7 +10,8 @@
       <b-form-input
         :id="field.id"
         :value="stringValue"
-        @update="updateValue($event)"
+        @input="stringValue = $event"
+        @blur="commit()"
         :disabled="disabled"
         type="text"
         :required="isRequired"
@@ -43,19 +44,35 @@ export default class GeometryForm extends Vue {
 
   @Watch("geoJson")
   onGeoJsonChange(value) {
-      try {
-        this.stringValue = stringify(value);
-      } catch (error) {
-        this.stringValue = "";
-      }
+    if (!value) {
+      this.stringValue = "";
+      return;
+    }
+
+    try {
+      this.stringValue = stringify(value);
+    } catch (e) {
+      console.warn("Invalid geojson to stringify", e);
+    }
   }
 
-  updateValue(newValue) {
-    this.stringValue = newValue;
-    let geoJson = parse(this.stringValue);
-    this.geoJson = geoJson;
-    this.$emit("onUpdate");
+  commit() {
+    const v = (this.stringValue || "").trim();
+    if (!v) {
+      this.geoJson = undefined;
+      this.$emit("onUpdate");
+      return;
+    }
+
+    try {
+      const parsed = parse(v);
+      this.geoJson = parsed; // sync que si c'est ok
+      this.$emit("onUpdate");
+    } catch (e) {
+      console.warn(e);
+    }
   }
+
 
   @Prop()
   label: string;

@@ -99,7 +99,7 @@ export default class SiteList extends Vue {
 
   private fields = [
     {key: 'name', label: 'component.common.name', sortable: true},
-    {key: 'city', label: 'SiteList.address', sortable: true},
+    {key: 'city', label: 'SiteList.address'},
     {key: 'facilities', label: 'SiteList.facilities'},
     {key: 'actions', label: 'component.common.actions'},
   ];

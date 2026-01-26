@@ -41,7 +41,7 @@
         <b-form-select
           size="sm"
           :options="profileOptionsWithFallback"
-          :value="data.item.profile_uri"
+          :value="normalizeUri(data.item.profile_uri)"
           @input="onProfileChange(data.item, $event)"
           :required="true"
           class="profile-selector"
@@ -121,45 +121,51 @@ export default class GroupUserProfileForm extends Vue {
     }
   ];
 
+  // Builds the list of profile options from the profiles returned by the API
   get profileOptions() {
-  return (this.profilesList || []).map(profil => ({
-    value: profil.uri,
-    text: profil.name
-  }));
-}
+    return (this.profilesList || []).map(profil => ({
+      value: profil.uri,
+      text: profil.name
+    }));
+  }
 
-get profileOptionsWithFallback() {
-  const existingOptions = this.profileOptions;
+  // Adds to the options the profiles already used in the group but absent from the API : getAllProfiles()
+  get profileOptionsWithFallback() {
+    const existingOptions = this.profileOptions;
 
-  const knownProfileUris = new Set(
-    existingOptions.map(option => option.value)
-  );
-
-  const missingOptions = (this.userProfiles || [])
-    .map(userProfile => ({
-      value: userProfile.profile_uri,
-      text: userProfile.profile_name || userProfile.profile_uri
-    }))
-    .filter(option =>
-      option.value && !knownProfileUris.has(option.value)
+    const knownProfileUris = new Set(
+      existingOptions.map(option => option.value)
     );
 
-  return [...missingOptions, ...existingOptions];
-}
+    const missingOptions = (this.userProfiles || [])
+      .map(userProfile => ({
+        value: userProfile.profile_uri,
+        text: userProfile.profile_name || userProfile.profile_uri
+      }))
+      .filter(option =>
+        option.value && !knownProfileUris.has(option.value)
+      );
 
-onProfileChange(item, newUri) {
-  item.profile_uri = newUri;
-
-  // si le profil est connu, on synchronise aussi le nom
-  const profilOptions = this.profileOptionsWithFallback.find(option => option.value === newUri);
-  if (profilOptions) {
-    item.profile_name = profilOptions.text;
-  } else {
-    // fallback au cas où
-    item.profile_name = item.profile_name || newUri;
+    return [...missingOptions, ...existingOptions];
   }
-}
 
+  // Updates the selected profile for a user and synchronizes the URI and label
+  onProfileChange(item, newUri) {
+    item.profile_uri = newUri;
+
+    // If the profile is known, the name is also synchronized.
+    const profilOptions = this.profileOptionsWithFallback.find(option => option.value === newUri);
+    if (profilOptions) {
+      item.profile_name = profilOptions.text;
+    } else {
+      // Fallback 
+      item.profile_name = item.profile_name || newUri;
+    }
+  }
+
+  normalizeUri(u: any) {
+    return String(u ?? "").trim().replace(/\/+$/, "");
+  }
 
   selectUser(user) {
     const index = this.userProfiles.findIndex(up => up.user_uri == user.id);

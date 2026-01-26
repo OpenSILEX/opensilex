@@ -13,7 +13,7 @@
     <opensilex-PageHeader
         icon="fa#map-marker-alt"
         :title="selected.name"
-        :description="selected.rdf_type_name"
+        :description="getTranslatedTypeName(selected)"
         class="detail-element-header"
     ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true">
@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Component, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
@@ -91,6 +91,19 @@ export default class SiteDetailView extends Vue {
           this.selected = http.response.result;
         })
   }
+
+  @Watch('$i18n.locale')
+  onLocaleChanged() {
+    this.refresh();
+  }
+
+  private getTranslatedTypeName(item: any): string {
+    const lang = this.$i18n.locale;
+    const translations = (item as any).rdf_type_name_translations;
+
+    return translations?.[lang] || item.rdf_type_name;
+  }
+
 
   //#endregion
 }

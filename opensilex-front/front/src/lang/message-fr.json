@@ -92,7 +92,8 @@
                 "not-a-valid-uri": "Le format de l'URI n'est pas valide.",
                 "regex": {
                     "invalid-regex" : "Expression régulière invalide : {__regex__}. Les caractères suivants sont interdits : {__forbidden_characters__}"
-                }
+                },
+                "uri-space-error": "L'URI ne peut contenir d'espace vide"
             },
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",

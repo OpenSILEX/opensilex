@@ -20,7 +20,7 @@
     </ValidationProvider>
     <ValidationProvider
       :name="$t(label)"
-      :rules="'required_if:' + id + ',false|url'"
+      :rules="'required_if:' + id + ',false|no_spaces|url'"
       v-slot="{ errors }"
     >
       <div v-bind:class="{ errors: errors.length > 0 }">

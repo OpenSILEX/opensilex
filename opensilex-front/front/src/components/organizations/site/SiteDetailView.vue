@@ -74,6 +74,13 @@ export default class SiteDetailView extends Vue {
 
   //#endregion
 
+  //#region Watchers
+  @Watch('$i18n.locale')
+  onLocaleChanged() {
+    this.refresh();
+  }
+  //#endregion
+
   //#region Hooks
   private created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
@@ -90,11 +97,6 @@ export default class SiteDetailView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
           this.selected = http.response.result;
         })
-  }
-
-  @Watch('$i18n.locale')
-  onLocaleChanged() {
-    this.refresh();
   }
 
   private getTranslatedTypeName(item: any): string {

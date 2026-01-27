@@ -20,28 +20,28 @@
       ></opensilex-CreateButton>
     </div>
 
-  <b-card>
-    <template v-slot:header>
-      <h3>
-        {{ $t("FacilitiesView.facilities") }}
+    <b-card>
+      <template v-slot:header>
+        <h3>
+          {{ $t("FacilitiesView.facilities") }}
 
-        <!--CreateButton position on card for OrganizationView-->
-        <span v-if="!withActions">
+          <!--CreateButton position on card for OrganizationView-->
+          <span v-if="!withActions">
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
-          @click="facilityForm.showCreateForm()"
-          label="FacilitiesView.add"
-          class="createButton"
+            v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
+            @click="facilityForm.showCreateForm()"
+            label="FacilitiesView.add"
+            class="createButton"
         ></opensilex-CreateButton>
         </span>
-        &nbsp;
-        <font-awesome-icon
-          icon="question-circle"
-          class="facilitiesHelp"
-          v-b-tooltip.hover.top="$t('FacilitiesView.facility-help')"
-        />
-      </h3>
-    </template>
+          &nbsp;
+          <font-awesome-icon
+              icon="question-circle"
+              class="facilitiesHelp"
+              v-b-tooltip.hover.top="$t('FacilitiesView.facility-help')"
+          />
+        </h3>
+      </template>
 
 
       <!--           Facilities table : if fetchAndShowCurrentExperiments then we want to sort by default on experiment_count in desc order-->
@@ -72,9 +72,9 @@
         </template>
 
         <template v-slot:cell(rdf_type_name_translated)="{data}">
-          <span class="capitalize-first-letter">
-            {{ data.item.rdf_type_name_translated }}
-          </span>
+                    <span class="capitalize-first-letter">{{
+                        data.item.rdf_type_name_translated
+                      }}</span>
         </template>
 
         <template v-slot:cell(actions)="{data}" v-if="withActions">
@@ -106,7 +106,9 @@
   </div>
 </template>
 
+
 <script lang="ts">
+
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
@@ -125,34 +127,69 @@ import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
+/**
+ * a type that is the same as NamedResourceDTOFacilityModel but with an additional field experiment_count.
+ * without it, the table can't sort by experiment_count.
+ */
 interface FacilityModelWithExperimentCount extends NamedResourceDTOFacilityModel {
   experiment_count: number;
-  rdf_type_name_translations?: Record<string, string>;  // <-- ajouté
-  rdf_type_name_translated?: string;                   // <-- ajouté
 }
 
 @Component
 export default class FacilitiesView extends Vue {
+  //#region Plugin & Services
   public $opensilex: OpenSilexVuePlugin;
   public $store: OpenSilexStore;
   private service: OrganizationsService;
   private experimentsService: ExperimentsService;
+  //#endregion
 
-  @Prop() private readonly organization: NamedResourceDTOOrganizationModel;
-  @Prop() private readonly site: NamedResourceDTOSiteModel;
-  @Prop() private readonly facilities: Array<NamedResourceDTOFacilityModel>;
-  @Prop({default: false}) private readonly isSelectable;
-  @Prop({default: false}) private readonly withActions: boolean;
-  @Prop({default: false}) private readonly fetchAndShowCurrentExperiments: boolean;
-  @Prop({default: "FacilitiesView.add"}) private createButtonLabel: string;
+  //#region Props
+  @Prop()
+  private readonly organization: NamedResourceDTOOrganizationModel;
 
+  @Prop()
+  private readonly site: NamedResourceDTOSiteModel;
+
+  /**
+   * Facilities as prop. If defined, then these facilities only are displayed in the view. Otherwise, facilities are
+   * fetched from the server.
+   */
+  @Prop()
+  private readonly facilities: Array<NamedResourceDTOFacilityModel>;
+
+  @Prop({default: false})
+  private readonly isSelectable;
+
+  @Prop({default: false})
+  private readonly withActions: boolean;
+
+  @Prop({default: false})
+  private readonly fetchAndShowCurrentExperiments: boolean;
+
+  @Prop({default: "FacilitiesView.add"})
+  private createButtonLabel: string;
+  //#endregion
+
+  //#region Refs
   @Ref("facilityForm") private readonly facilityForm!: FacilityModalForm;
+
   @Ref("tableView") private readonly tableView;
 
-  private fetchedFacilities: Array<NamedResourceDTOFacilityModel> = [];
-  private currentExperiments: Array<ExperimentGetListDTO> = [];
-  private filter: string = "";
+  //#endregion
 
+  //#region Data
+  /**
+   * Facilities fetched from the server, only if {@link facilities} is undefined.
+   */
+  private fetchedFacilities: Array<NamedResourceDTOFacilityModel> = [];
+
+  private currentExperiments: Array<ExperimentGetListDTO> = [];
+
+  private filter: string = "";
+  //#endregion
+
+  //#region Computed
   private get user() {
     return this.$store.state.user;
   }
@@ -165,6 +202,11 @@ export default class FacilitiesView extends Vue {
     return !Array.isArray(this.facilities);
   }
 
+  /**
+   * the list of facilities to display in the table.
+   * If {@link useFetchedFacilities} is true, then fetchedFacilities are displayed.
+   * If fetchAndShowCurrentExperiments is true, then the experiment_count field is added to the facilities.
+   */
   private get displayableFacilities() {
     const lang = this.$i18n.locale;
 
@@ -174,11 +216,27 @@ export default class FacilitiesView extends Vue {
           rdf_type_name_translated: (f as any).rdf_type_name_translations?.[lang] || f.rdf_type_name
         }));
 
-    return this.fetchAndShowCurrentExperiments
-        ? facilities.map(f => ({ ...f, experiment_count: this.experimentByFacility[f.uri]?.length || 0 }))
-        : facilities;
+    const facilitiesWithExperimentCount = facilities.map(facility => this.addExperimentCountIfNecessary(facility));
+
+    return !this.filter
+        ? facilitiesWithExperimentCount
+        : facilitiesWithExperimentCount.filter(facility => facility.name.match(new RegExp(this.filter, "i")));
   }
 
+
+  private addExperimentCountIfNecessary(facility: NamedResourceDTOFacilityModel) {
+    if (!this.fetchAndShowCurrentExperiments) {
+      return facility;
+    }
+    return {
+      ...facility,
+      experiment_count: this.experimentByFacility[facility.uri] ? this.experimentByFacility[facility.uri].length : 0
+    }
+  }
+
+  /**
+   * Get the list of experiments for each facility with facility uri as key.
+   */
   private get experimentByFacility(): { [key: string]: Array<ExperimentGetListDTO> } {
     let experimentsByFacility = {};
     this.currentExperiments.forEach(experiment => {
@@ -194,25 +252,59 @@ export default class FacilitiesView extends Vue {
 
   private get fields() {
     let fields = [
-      { key: "name", label: "component.common.name", sortable: true },
+      {
+        key: "name",
+        label: "component.common.name",
+        sortable: true,
+      },
     ];
     if (this.fetchAndShowCurrentExperiments) {
-      fields.push({ key: "experiment_count", label: "FacilitiesView.experiment_count", sortable: true });
+      fields.push({
+        key: "experiment_count",
+        label: "FacilitiesView.experiment_count",
+        sortable: true,
+      });
     }
-    fields.push({ key: "rdf_type_name_translated", label: "component.common.type", sortable: true }); // <-- changé
+    fields.push({
+      key: "rdf_type_name_translated",
+      label: "component.common.type",
+      sortable: true,
+    });
     if (this.withActions) {
-      fields.push({ label: "component.common.actions", key: "actions", sortable: false });
+      fields.push({
+        label: "component.common.actions",
+        key: "actions",
+        sortable: false
+      });
     }
     return fields;
   }
 
+  //#endregion
+
+  //#region Watchers
+  @Watch('$i18n.locale')
+  onLocaleChanged() {
+    this.refresh();
+  }
+  //#endregion
+
+  //#region Events
   private onFacilitySelected(selected: FacilityGetDTO) {
     this.$emit('facilitySelected', selected);
   }
 
-  private onUpdate() { this.$emit("onUpdate"); }
-  private onCreate() { this.$emit("onCreate"); }
+  private onUpdate() {
+    this.$emit("onUpdate");
+  }
 
+  private onCreate() {
+    this.$emit("onCreate");
+  }
+
+  //#endregion
+
+  //#region Public methods
   public deleteFacility(uri) {
     this.$opensilex
         .getService<OrganizationsService>("opensilex.OrganizationsService")
@@ -232,23 +324,26 @@ export default class FacilitiesView extends Vue {
     if (this.fetchAndShowCurrentExperiments) {
       await this.fetchExperiments();
     }
+
+    // Select the first element
     if (this.isSelectable && this.displayableFacilities.length > 0) {
       this.tableView.selectRow(0);
     }
     this.$opensilex.hideLoader();
   }
 
+  //#endregion
+
+  //#region Hooks
   private created() {
     this.service = this.$opensilex.getService("opensilex-core.OrganizationsService");
     this.experimentsService = this.$opensilex.getService("opensilex-core.ExperimentsService");
     this.refresh();
   }
 
-  @Watch('$i18n.locale')
-  async onLocaleChanged() {
-    await this.refresh();
-  }
+  //#endregion
 
+  //#region Private methods
   private fetchFacilities(): Promise<void> {
     return this.service.minimalSearchFacilities(this.filter)
         .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
@@ -259,8 +354,17 @@ export default class FacilitiesView extends Vue {
   private fetchExperiments(): Promise<void> {
     return this.experimentsService
         .searchExperiments(
-            "", undefined, null, null, null, null, null,
-            this.displayableFacilities.map(facility => facility.uri), null, 0, 0
+            "", // label
+            undefined, // year
+            null, // is_ended
+            null, // species
+            null, // factorCategories
+            null, // projects
+            null, // isPublic
+            this.displayableFacilities.map(facility => facility.uri), // facilities
+            null,
+            0,
+            0
         )
         .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {
           const experiments = http.response.result;
@@ -273,8 +377,12 @@ export default class FacilitiesView extends Vue {
   }
 
   private initForm(form: FacilityCreationDTO) {
-    if (this.organization) form.organizations = [this.organization.uri];
-    if (this.site) form.sites = [this.site.uri];
+    if (this.organization) {
+      form.organizations = [this.organization.uri];
+    }
+    if (this.site) {
+      form.sites = [this.site.uri];
+    }
   }
 
   private editFacility(facility: FacilityGetDTO) {

@@ -1,12 +1,13 @@
 <!--
-  - ******************************************************************************
-  -                         FacilitiesView.vue
-  - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-  - Copyright © INRAE 2024.
-  - Last Modification: 14/06/2024 13:32
-  - Contact: yvan.roux@inrae.fr
-  - ******************************************************************************
-  -->
+ - ******************************************************************************
+ -                         FacilitiesView.vue
+ - OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ - Copyright © INRAE 2024.
+ - Last Modification: 14/06/2024 13:32
+ - Contact: yvan.roux@inrae.fr
+ - ******************************************************************************
+ -->
+
 
 <template>
   <div>
@@ -20,28 +21,28 @@
       ></opensilex-CreateButton>
     </div>
 
-  <b-card>
-    <template v-slot:header>
-      <h3>
-        {{ $t("FacilitiesView.facilities") }}
+    <b-card>
+      <template v-slot:header>
+        <h3>
+          {{ $t("FacilitiesView.facilities") }}
 
-        <!--CreateButton position on card for OrganizationView-->
-        <span v-if="!withActions">
-        <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
-          @click="facilityForm.showCreateForm()"
-          label="FacilitiesView.add"
-          class="createButton"
-        ></opensilex-CreateButton>
-        </span>
-        &nbsp;
-        <font-awesome-icon
-          icon="question-circle"
-          class="facilitiesHelp"
-          v-b-tooltip.hover.top="$t('FacilitiesView.facility-help')"
-        />
-      </h3>
-    </template>
+          <!--CreateButton position on card for OrganizationView-->
+          <span v-if="!withActions">
+       <opensilex-CreateButton
+           v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
+           @click="facilityForm.showCreateForm()"
+           label="FacilitiesView.add"
+           class="createButton"
+       ></opensilex-CreateButton>
+       </span>
+          &nbsp;
+          <font-awesome-icon
+              icon="question-circle"
+              class="facilitiesHelp"
+              v-b-tooltip.hover.top="$t('FacilitiesView.facility-help')"
+          />
+        </h3>
+      </template>
 
 
       <!--           Facilities table : if fetchAndShowCurrentExperiments then we want to sort by default on experiment_count in desc order-->
@@ -50,7 +51,7 @@
           :fields="fields"
           :globalFilterField="true"
           filterPlaceholder="component.facility.filter-placeholder"
-          :sortBy="fetchAndShowCurrentExperiments ? 'experiment_count' : 'rdf_type_name'"
+          :sortBy="fetchAndShowCurrentExperiments ? 'experiment_count' : 'rdf_type_name_translated'"
           :sortDesc="fetchAndShowCurrentExperiments"
           :selectable="isSelectable"
           @row-selected="onFacilitySelected"
@@ -71,10 +72,10 @@
           />
         </template>
 
-        <template v-slot:cell(rdf_type_name)="{data}">
-                    <span class="capitalize-first-letter">{{
-                        data.item.rdf_type_name
-                      }}</span>
+        <template v-slot:cell(rdf_type_name_translated)="{data}">
+                   <span class="capitalize-first-letter">{{
+                       data.item.rdf_type_name_translated
+                     }}</span>
         </template>
 
         <template v-slot:cell(actions)="{data}" v-if="withActions">
@@ -106,10 +107,9 @@
   </div>
 </template>
 
-
 <script lang="ts">
 
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilityModalForm from "./FacilityModalForm.vue";
@@ -208,10 +208,16 @@ export default class FacilitiesView extends Vue {
    * If fetchAndShowCurrentExperiments is true, then the experiment_count field is added to the facilities.
    */
   private get displayableFacilities() {
-    if (this.useFetchedFacilities) {
-      return this.fetchedFacilities.map(facility => this.addExperimentCountIfNecessary(facility));
-    }
-    let facilitiesWithExperimentCount = this.facilities.map(facility => this.addExperimentCountIfNecessary(facility));
+    const lang = this.$i18n.locale;
+
+    const facilities = (this.useFetchedFacilities ? this.fetchedFacilities : this.facilities)
+        .map(f => ({
+          ...f,
+          rdf_type_name_translated: (f as any).rdf_type_name_translations?.[lang] || f.rdf_type_name
+        }));
+
+    const facilitiesWithExperimentCount = facilities.map(facility => this.addExperimentCountIfNecessary(facility));
+
     return !this.filter
         ? facilitiesWithExperimentCount
         : facilitiesWithExperimentCount.filter(facility => facility.name.match(new RegExp(this.filter, "i")));
@@ -259,7 +265,7 @@ export default class FacilitiesView extends Vue {
       });
     }
     fields.push({
-      key: "rdf_type_name",
+      key: "rdf_type_name_translated",
       label: "component.common.type",
       sortable: true,
     });
@@ -273,6 +279,13 @@ export default class FacilitiesView extends Vue {
     return fields;
   }
 
+  //#endregion
+
+  //#region Watchers
+  @Watch('$i18n.locale')
+  onLocaleChanged() {
+    this.refresh();
+  }
   //#endregion
 
   //#region Events
@@ -401,7 +414,7 @@ en:
     add: Add facility
     facilities: Facilities
     facility-help: "Factilities correspond to the various fixed installations of an organization.
-                                  These can be greenhouses, fields, culture chambers, growth chambers ..."
+                                 These can be greenhouses, fields, culture chambers, growth chambers ..."
     experiment_count: "current experiments"
 fr:
   FacilitiesView:
@@ -410,6 +423,6 @@ fr:
     add: Ajouter une installation environnementale
     facilities: Installations environnementales
     facility-help: "Les installations environnementales correspondent aux différentes installations fixes d'une organisation.
-                                  Il peut s'agir de serres, champs, chambres de culture, chambres de croissance ..."
+                                 Il peut s'agir de serres, champs, chambres de culture, chambres de croissance ..."
     experiment_count: "expériences en cours"
 </i18n>

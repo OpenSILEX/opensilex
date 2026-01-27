@@ -55,7 +55,7 @@
         <!-- Type -->
         <opensilex-TypeView
             :type="selected.rdf_type"
-            :typeLabel="selected.rdf_type_name"
+            :typeLabel="selected.rdf_type_name_translated"
         ></opensilex-TypeView>
 
         <!-- Organizations -->
@@ -228,6 +228,7 @@ fr:
   edit: Modifier le site
   delete: Supprimer le site
   SiteDetail:
+    organizations: Organisations
     facilities: Installations environnementales
     groups: Groupes
     noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.

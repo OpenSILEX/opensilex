@@ -116,13 +116,14 @@ export default class AgroportalSearch extends Vue {
   }
 
   private searchOntologies(searchQuery, _page, _pageSize):
-      Promise<HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>> {
+    Promise<HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>> {
+
+    const normalizedQuery = (searchQuery ?? "").toString().toLowerCase();
+
     return this.$opensilex
-        .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
-        .getAgroportalOntologies(searchQuery, undefined)
-        .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
-          return http;
-        });
+      .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
+      .getAgroportalOntologies(normalizedQuery, undefined)
+      .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => http);
   }
 
   private ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {

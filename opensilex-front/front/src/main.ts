@@ -368,6 +368,12 @@ extend('falsy', {
     message: 'incorrect value'
 });
 
+// To refuse URI that contain spaces
+extend("no_spaces", {
+  validate: (value: string) => !/\s/.test(value || ""),
+  message: () => i18n.t("component.common.errors.uri-space-error") as string
+});
+
 
 let validationTranslations = {
   "validations": validationMessagesEN.messages

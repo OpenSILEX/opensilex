@@ -5,10 +5,9 @@
  */
 package org.opensilex.sparql.rdf4j;
 
-import java.net.URISyntaxException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.sail.lmdb.LmdbStore;
 import org.eclipse.rdf4j.sail.shacl.ShaclSail;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.service.SPARQLService;
@@ -17,17 +16,17 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author vmigot
  */
-public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
+public class RDF4JLMDBServiceFactory extends RDF4JServiceFactory {
 
-    public RDF4JInMemoryServiceFactory(){
-        super(getInMemoryRepository());
+    public RDF4JLMDBServiceFactory(){
+        super(getLMDBRepository());
     }
 
-    public static Repository getInMemoryRepository() {
+    public static Repository getLMDBRepository() {
         //@todo To resoluve the `GroupConcat` errors, maybe change the repo config after updating RDF4J to 5.x.x.
         //      See https://rdf4j.org/documentation/programming/repository/#the-repositorymanager-and-repositoryprovider
-        MemoryStore memoryStore = new MemoryStore();
-        ShaclSail shacl = new ShaclSail(memoryStore);
+        LmdbStore lmdbStore = new LmdbStore();
+        ShaclSail shacl = new ShaclSail(lmdbStore);
         SailRepository repository = new SailRepository(shacl);
         repository.init();
 

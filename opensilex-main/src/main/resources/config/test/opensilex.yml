@@ -4,7 +4,7 @@ ontologies:
 #    usePrefixes: false
     enableSHACL: true
     sparql:
-        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
+        implementation: org.opensilex.sparql.rdf4j.RDF4JLMDBServiceFactory
         
 big-data:
     mongodb:

@@ -20,7 +20,7 @@
     </template>
     <template v-slot:head(relationURI)="head">{{ $t(head.label) }}</template>
     <template v-slot:cell(relationURI)="cell">
-      <a :href="cell.value" target="_blank">{{ cell.item.uri }}</a>
+      <a :href="cell.item.uri" target="_blank">{{ cell.item.uri }}</a>
     </template>
     <template v-slot:head(actions)="head">{{ $t(head.label) }}</template>
     <template v-slot:cell(actions)="cell">

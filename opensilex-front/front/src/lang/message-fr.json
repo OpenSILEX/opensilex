@@ -586,7 +586,8 @@
             },
             "errors": {
                 "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
-            }
+            },
+            "funding": "Financeurs"
         },
         "germplasms": {
             "errors": {

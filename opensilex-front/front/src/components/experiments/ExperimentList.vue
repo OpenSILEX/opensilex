@@ -132,6 +132,20 @@
                   ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
+
+              <!-- funding -->
+              <div>
+                <opensilex-FilterField>
+                  <opensilex-FundingSelector
+                  label="ExperimentList.filter-funding"
+                  placeholder="ExperimentList.filter-funding-placeholder"
+                  :multiple="true" 
+                  :funding.sync="filter.funding"
+                  class="searchFilter"
+                ></opensilex-FundingSelector> 
+                </opensilex-FilterField>
+              </div>
+
             </template>
           </opensilex-SearchFilterField>
         </div>
@@ -181,6 +195,13 @@
             path: '/experiment/details/' + encodeURIComponent(data.item.uri),
           }"
         ></opensilex-UriLink>
+          <img
+            v-for="fundingUri in data.item.funding.slice(0, 3)"
+            :key="fundingUri"
+            v-bind:src="$opensilex.getResourceURI('images/'+$opensilex.getShortUri(fundingUri), ['png', 'svg', 'jpg'])"
+            class="funding-badge"
+            :title="fundingUri"
+          >
       </template>
 
       <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
@@ -307,6 +328,7 @@ export default class ExperimentList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("projectSelector") readonly projectSelector!: any;
+  @Ref("fundingSelector") readonly fundingSelector!: any;
 
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
@@ -318,7 +340,6 @@ export default class ExperimentList extends Vue {
   refresh() {
     this.updateSelectedExperiment();
     this.tableRef.changeCurrentPage(1);
-    
   }
 
   filter = {
@@ -329,6 +350,7 @@ export default class ExperimentList extends Vue {
     yearFilter: undefined,
     state: "",
     facilities: [],
+    funding: [],
   };
 
 
@@ -341,6 +363,7 @@ export default class ExperimentList extends Vue {
       yearFilter: undefined,
       state: "",
       facilities: [],
+      funding: [],
     };   
     this.refresh();
   }
@@ -391,6 +414,7 @@ export default class ExperimentList extends Vue {
         this.filter.projects, // projects
         isPublic, // isPublic
         this.filter.facilities,
+        this.filter.funding, // funding
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -608,6 +632,12 @@ export default class ExperimentList extends Vue {
   display: inline-block;
   max-width: 40vw;
 }
+
+.funding-badge {
+  max-width: 22px;
+  margin: 0 2px;
+}
+
 </style>
 
 <i18n>
@@ -628,6 +658,8 @@ en:
     filter-state-placeholder: Select an experiment state
     filter-factors-categories: Factors categories
     filter-factors-categories-placeholder: Select one or more categories
+    filter-funding: Funding
+    filter-funding-placeholder: Select an experiment funding
     selected: Selected experiments
     selected-all: All experiments
 
@@ -648,6 +680,8 @@ fr:
     filter-state-placeholder: Sélectionner un état
     filter-factors-categories: Categories de facteurs
     filter-factors-categories-placeholder: Sélectionner une ou plusieurs categories
+    filter-funding: Financeur
+    filter-funding-placeholder: Sélectionner un financeur
     selected: Expérimentations selectionnées
     selected-all: Toutes les expérimentations
 

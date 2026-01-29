@@ -104,6 +104,7 @@ export default class FacilityDetails extends Vue {
             undefined, // projects
             undefined, // isPublic
             [this.uri],
+            undefined, // funding
             undefined,
             0,
             0)

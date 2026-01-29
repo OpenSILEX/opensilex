@@ -448,6 +448,8 @@ import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
 components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
 import ExperimentDataFiles from './experiments/views/ExperimentDataFiles.vue';
 components["opensilex-ExperimentDataFiles"] = ExperimentDataFiles;
+import FundingSelector from './experiments/FundingSelector.vue';
+components["opensilex-FundingSelector"] = FundingSelector;
 
 
 // Germplasm

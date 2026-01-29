@@ -21,6 +21,7 @@ public class ExperimentSearchFilter extends SearchFilter {
     private Boolean isPublic;
     private List<URI> facilities;
     private AccountModel user;
+    private List<URI> funding;
 
     public ExperimentSearchFilter() {
         super();
@@ -106,5 +107,15 @@ public class ExperimentSearchFilter extends SearchFilter {
         this.user = user;
         return this;
     }
+
+    public List<URI> getFunding() {
+        return funding;
+    }
+
+    public ExperimentSearchFilter setFunding(List<URI> funding) {
+        this.funding = funding;
+        return this;
+    }
+
 
 }

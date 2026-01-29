@@ -97,6 +97,7 @@ export default class FacilityListView extends Vue {
             undefined, // projects
             undefined, // isPublic
             [this.selectedFacility.uri],
+            undefined, // funding
             undefined,
             0,
             20)

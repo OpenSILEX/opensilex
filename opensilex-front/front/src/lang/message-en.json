@@ -607,7 +607,8 @@
             },
             "errors": {
                 "associated-data": "The experiment can't be deleted since there are some associated data"
-            }
+            },
+            "funding": "Funding"
         },
         "germplasms": {
             "errors": {

@@ -8,33 +8,23 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.rest.validation.Required;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
-
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
@@ -102,6 +92,9 @@ public class ExperimentGetDTO {
 
     @JsonProperty("is_public")
     protected Boolean isPublic;
+
+    @JsonProperty("funding") 
+    protected List<URI> funding = new ArrayList<>();
 
     public URI getUri() {
         return uri;
@@ -259,6 +252,14 @@ public class ExperimentGetDTO {
         this.factors = factors;
     }
 
+    public List<URI> getFunding() {
+        return funding;
+    }
+
+    public void setFunding(List<URI> funding) {
+        this.funding = funding;
+    }
+
     public static ExperimentGetDTO fromModel(ExperimentModel model) {
 
         ExperimentGetDTO dto = new ExperimentGetDTO();
@@ -286,6 +287,7 @@ public class ExperimentGetDTO {
         dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
         dto.setSpecies(SPARQLResourceModel.getUriList(model.getSpecies()));
         dto.setFactors(SPARQLResourceModel.getUriList(model.getFactors()));
+        dto.setFunding(SPARQLResourceModel.getUriList(model.getFunding()));
 
         List<NamedResourceDTO<OrganizationModel>> organizationsDTO = new ArrayList<>();
         model.getOrganizations().forEach((orga) -> {

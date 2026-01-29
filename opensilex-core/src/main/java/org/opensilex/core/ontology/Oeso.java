@@ -105,6 +105,8 @@ public class Oeso {
     public static final Property hasCampaign = Ontology.property(NS, "hasCampaign");
     public static final Property isPublic = Ontology.property(NS, "isPublic");
     public static final Property participatesIn = Ontology.property(NS, "participatesIn");
+    public static final Property hasFunding = Ontology.property(NS, "hasFunding");
+    public static final Resource Funding = Ontology.resource(NS, "Funding");
 
     // ---- ORGANIZATIONS AND INSTALLATION, FACILITY
     public static final Resource Facility = Ontology.resource(NS, "Facility");

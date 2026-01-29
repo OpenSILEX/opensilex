@@ -65,6 +65,7 @@ let ontologies = {
     HAS_PARENT_GERMPLASM_F: OESO_URI+"#hasParentGermplasmF",
     GERMPLASM_GROUP_TYPE_URI: OESO_URI+"#GermplasmGroup",
 
+
     getShortURI: getShortURI,
     checkURIs: checkURIs
 };

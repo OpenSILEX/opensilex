@@ -13,6 +13,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.core.experiment.dal.FundingModel;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -93,6 +94,14 @@ public class ExperimentCreationDTO extends ExperimentDTO {
             factorsList.add(factor);
         });
         model.setFactors(factorsList);
+
+        List<FundingModel> fundingList = new ArrayList<>(funding.size());
+        funding.forEach( fundingUri -> {
+            FundingModel fundingModel = new FundingModel();
+            fundingModel.setUri(fundingUri);
+            fundingList.add(fundingModel);
+        });
+        model.setFunding(fundingList);
 
         return model;
     }

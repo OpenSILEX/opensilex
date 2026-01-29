@@ -34,6 +34,7 @@
         createTitle="SiteView.create"
         editTitle="component.site.update"
         icon="ik#ik-map-pin"
+        :initForm="initForm"
         @onCreate="siteList.refresh()"
         @onUpdate="siteList.refresh()"
     ></opensilex-ModalForm>
@@ -83,6 +84,19 @@ export default class SiteView extends Vue {
     this.siteForm.showCreateForm();
   }
 
+  //#endregion
+  //#region Functions
+  initForm() {
+    return {
+      uri: undefined,
+      rdf_type: undefined,
+      name: undefined,
+      description: undefined,
+      address: undefined,
+      organizations: this.organizationsForFilter,
+      groups: []
+    }
+  }
   //#endregion
 
 

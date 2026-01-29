@@ -1,6 +1,6 @@
 # Variable help
 
-Author: Jean-Eudes Hollebecq - Opensilex (23/11/2020)
+---
 
 ## Create variables
 

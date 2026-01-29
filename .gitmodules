@@ -1,0 +1,3 @@
+[submodule "opensilex-data-analysis"]
+	path = opensilex-data-analysis
+	url = https://forge.inrae.fr/OpenSILEX/data-analysis-visualisation/opensilex-data-analysis.git

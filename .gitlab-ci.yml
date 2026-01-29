@@ -2,10 +2,7 @@
 ## STAGES
 #########
 
-# Default Gitlab stages are : build, test, deploy
-# The custom stage `check` is added for merge requests (see job merge-request:check)
 stages:
-  - check
   - build
   - test
   - deploy
@@ -283,27 +280,9 @@ sonar-analysis:
     reports:
       dotenv: deploy.env
 
-##################
-### DEFAULT BUILDS
-##################
-
-opensilex-master:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master"
-
-opensilex-develop:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
-
-opensilex-release:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release"
 
 ##################################
-### MERGE REQUESTS CHECK AND BUILD
+##  DEPLOY SIDURI
 ##################################
 
 # Checks that the merge request is valid. This job fails if one of these conditions is not met :
@@ -749,81 +728,21 @@ demo:build:
 test:maximilian:build:
   <<: *build_template_with_opensilex
   variables:
-    MAVEN_SKIP_TESTS: "true"
+    MAVEN_SKIP_TESTS: "false"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/maximilian2"
+    - if: $CI_COMMIT_BRANCH == "siduri-dev"
 
-test:maximilian:deploy:
+deploy:siduri:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/maximilian"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4084
-    OPENSILEX_JAR_PORT: 8084
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/maximilian"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/maximilian2"
-      when: on_success
-  needs:
-    - test:maximilian:build
-
-###################################
-##  ARNAUD-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:arnaud:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/arnaud"
-
-test:arnaud:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/arnaud"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4086
-    OPENSILEX_JAR_PORT: 8086
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/arnaud"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/arnaud"
-      when: on_success
-  needs:
-    - test:arnaud:build
-
-###################################
-##  YVAN-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:yvan:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/yvan"
-  tags:
-    - stable
-
-test:yvan:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/yvan"
+    CONFIGS_FILES_DIR_PATH: "src/main/resources/config"
     INSTANCE_CONFIGURATION_FILE_NAME: "opensilex.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4083
-    OPENSILEX_JAR_PORT: 8083
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/yvan"
+    OPENSILEX_JAR_ADMIN_PORT: 4666
+    OPENSILEX_JAR_PORT: 8666
+    REMOTE_SERVER_RSYNC_ACCOUNT: "siduri"
+    REMOTE_SERVER_IP: "138.102.144.102"
+    REMOTE_SERVER_RSYNC_DIR: "siduri"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "test/yvan"

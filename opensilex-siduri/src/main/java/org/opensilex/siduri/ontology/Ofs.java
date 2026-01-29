@@ -11,7 +11,7 @@ import org.opensilex.sparql.utils.Ontology;
 
 public class Ofs {
 
-    public static final String DOMAIN = "http://www.opensilex.org/vocabulary/ofs";
+    public static final String DOMAIN = "http://opendata.inrae.fr/ofs";
     public static final String PREFIX = "ofs";
 
 
@@ -31,10 +31,10 @@ public class Ofs {
     public static final Resource Strain = Ontology.resource(NS, "Strain");
     public static final Property fromStrain = Ontology.property(NS, "fromStrain");
 
-    public static final Property isFdF = Ontology.property(NS, "isFdF");
+    // public static final Property isFdF = Ontology.property(NS, "isFdF");
 
-    public static final Resource ResearchProductFamily = Ontology.resource(NS, "ResearchProductFamily");
-    public static final Property hasResearchProductFamily = Ontology.property(NS, "hasResearchProductFamily");
+    // public static final Resource ResearchProductFamily = Ontology.resource(NS, "ResearchProductFamily");
+    // public static final Property hasResearchProductFamily = Ontology.property(NS, "hasResearchProductFamily");
 
 
 }

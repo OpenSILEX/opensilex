@@ -1,10 +1,14 @@
 {
     "siduri": {
+        "data-analysis" : {
+            "label" : "Applications",
+            "description" : "Applications for data acquisition and processing"
+        },
         "component": {
             "login": {
                 "copyright": {
                     "1": "",
-                    "2": "Siduri - ntegrative information system for next generation fermented foods"
+                    "2": "Siduri - Integrative information system for next generation fermented foods"
                 }
             }
         }

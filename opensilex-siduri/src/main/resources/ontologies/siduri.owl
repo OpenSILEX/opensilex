@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://www.opensilex.org/vocabulary/ofs/"
-     xml:base="http://www.opensilex.org/vocabulary/ofs/"
+<rdf:RDF xmlns="http://opendata.inrae.fr/ofs/"
+     xml:base="http://opendata.inrae.fr/ofs/"
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -10,7 +10,7 @@
      xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:skos="http://www.w3.org/2004/02/skos/core#">
-    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/ofs"/>
+    <owl:Ontology rdf:about="http://opendata.inrae.fr/ofs"/>
     
 
 
@@ -146,9 +146,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/ofs#JointResearchUnit -->
+    <!-- http://opendata.inrae.fr/ofs#JointResearchUnit -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/ofs#JointResearchUnit">
+    <owl:Class rdf:about="http://opendata.inrae.fr/ofs#JointResearchUnit">
         <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
         <dc:source>skos:exactMatch http://opendata.inrae.fr/thesaurusINRAE/c_21443</dc:source>
         <rdfs:comment xml:lang="fr">Unité de recherche dont la tutelle est partagée avec un ou plusieurs autres partenaires académiques, organismes nationaux de recherche (ONR) et/ou universités et/ou grandes écoles.</rdfs:comment>
@@ -158,9 +158,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/ofs#ServiceUnit -->
+    <!-- http://opendata.inrae.fr/ofs#ServiceUnit -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/ofs#ServiceUnit">
+    <owl:Class rdf:about="http://opendata.inrae.fr/ofs#ServiceUnit">
         <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
         <dc:source>skos:exactMatch http://opendata.inrae.fr/thesaurusINRAE/c_2ab0c24d</dc:source>
         <rdfs:comment xml:lang="fr"> Structure dont les activités sont principalement dédiées à des offres de services et de ressources technologiques.</rdfs:comment>

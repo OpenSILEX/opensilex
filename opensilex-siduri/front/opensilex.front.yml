@@ -1,0 +1,9 @@
+menu:
+    - id: siduri-apps
+      label: siduri.data-analysis.label
+      route:
+        path: /data-analysis/apps
+        component: opensilex-data-analysis-ApplicationView
+        icon: ik#ik-tablet
+        title: siduri.data-analysis.label
+        description : siduri.data-analysis.description

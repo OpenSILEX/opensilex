@@ -6,13 +6,13 @@ system:
         org.opensilex.DataAnalysisModule : opensilex-data-analysis.jar
 
 ontologies:
-    baseURI: http://opensilex.dev/
+    baseURI: http://siduri.test.migale.inrae.fr/
     baseURIAlias: siduri
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            repository: siduri
 
 file-system:
     fs:
@@ -28,7 +28,7 @@ file-system:
                     config:
                         host: localhost
                         port: 8668
-                        database: opensilex
+                        database: siduri
 
 
 big-data:
@@ -56,6 +56,7 @@ core:
 
 
 front:
+    connectAsGuest: true
     agroportal:
         entity:
             - AGROVOC
@@ -73,6 +74,12 @@ front:
     loginComponent: opensilex-siduri-SiduriLoginComponent
     footerComponent: opensilex-siduri-SiduriFooterComponent
     headerComponent: opensilex-siduri-SiduriHeaderComponent
+    menuExclusions:
+        - germplasm
+        - scientific-apps
+
+server:
+    publicURI: http://localhost:8666
 
 data-analysis:
      scientificAppServer:

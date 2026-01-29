@@ -39,7 +39,7 @@ public class SiduriModule extends OpenSilexModule implements SPARQLExtension {
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/ofs#",
+                "http://opendata.inrae.fr/ofs#",
                 "ontologies/siduri.owl",
                 Lang.RDFXML,
                 "ofs"

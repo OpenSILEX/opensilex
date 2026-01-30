@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JServiceFactory.class);
-    private final static String TRIPLE_INDEXES = "cspo,cpos,cops,spoc,psoc,opsc";
+    private final static String TRIPLE_INDEXES = "";
 
     private final Repository repository;
     private PoolingHttpClientConnectionManager cm;

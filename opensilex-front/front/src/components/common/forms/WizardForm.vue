@@ -30,11 +30,13 @@
     </template>
     <b-form ref="formRef" v-if="form">
       <form-wizard
+        v-if="startIndex !== null"
         title
         subtitle
         ref="wizardRef"
         shape="square"
         :class="{'single-wizard' : steps.length == 1}"
+        :start-index="startIndex"
         color="#00a38d"
         @on-change="onChange"
       >
@@ -72,7 +74,7 @@
                   id="btn-finish"
                   class="greenThemeColor"
                   variant="success"
-                  v-if="!isBlockingStep && steps[props.activeTabIndex].finish"
+                  v-if="!isBlockingStep && steps[props.activeTabIndex] && steps[props.activeTabIndex].finish"
                   @click="validate(props)"
               >{{getStepBtnFinishTitle(props)}}</b-button>
 
@@ -168,6 +170,9 @@ export default class WizardForm extends Vue {
   @Prop()
   nextStepAction: Function;
 
+  @Prop({ default: 0 })
+  startingIndexWhenEditMode: number;
+
   private geometryNotSaved: boolean = false;
 
   private geometryIsNotSaved() {
@@ -193,10 +198,11 @@ export default class WizardForm extends Vue {
   @Prop()
   validateAction: (form: unknown) => boolean;
 
-  getStepBtnFinishTitle(props) {
-    return (this.steps[props.activeTabIndex].finish)
-        ? this.$t(this.steps[props.activeTabIndex].finish)
-        : this.$t('component.common.form-wizard.finish');
+  getStepBtnFinishTitle(props){
+    if(this.steps[props.activeTabIndex] && this.steps[props.activeTabIndex].finish){
+      return this.$t(this.steps[props.activeTabIndex].finish);
+    }
+    return this.$t('component.common.form-wizard.finish');
   }
 
   getStepBtnPreviousTitle(props) {
@@ -389,6 +395,15 @@ export default class WizardForm extends Vue {
     return !!(this.$refs["step" + this.currentStepIndex]
         ?.[0]
         ?.startTutorial);
+  }
+
+  get startIndex(): number | null {
+    if (!this.steps || this.steps.length === 0) return null;
+
+    if (this.editMode) {
+      return this.startingIndexWhenEditMode;
+    }
+    return 0;
   }
 
   startTutorial() {

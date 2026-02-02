@@ -238,13 +238,13 @@ public class GermplasmAPI {
         Map<URI, ClassModel> classModels = new HashMap<>();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         //get every different types from DTOs
-        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getType).distinct().toList();
+        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getRdfType).distinct().toList();
         for (URI type : germplasmsTypes) {
             classModels.put(type, ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
         }
 
         for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
-            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getType())));
+            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getRdfType())));
         }
 
         return models;
@@ -266,7 +266,7 @@ public class GermplasmAPI {
         Map<URI, ClassModel> classModels = new HashMap<>();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         //get every different types from DTOs
-        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getType).distinct().toList();
+        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getRdfType).distinct().toList();
         for (URI type : germplasmsTypes) {
             classModels.put(type, ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
         }
@@ -274,7 +274,7 @@ public class GermplasmAPI {
         for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
             GermplasmModel model = null;
             try {
-                model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getType()));
+                model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getRdfType()));
                 errors.addModel(model);
             } catch (InvalidValueException e){
                 model = germplasmDTO.newModelWithoutRelations();
@@ -773,7 +773,7 @@ public class GermplasmAPI {
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
-            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", germplasmDTO.getUri());
+            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", URI.create(germplasmDTO.getUri()));
         }
     }
 

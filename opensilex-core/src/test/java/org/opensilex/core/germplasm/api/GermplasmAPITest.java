@@ -16,8 +16,6 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
-import org.opensilex.security.group.api.GroupCreationDTO;
-import org.opensilex.security.group.api.GroupUserProfileDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -106,7 +104,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         //create a germplasm to update
         GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
         final Response germplasmToUpdatePostResponse = getJsonPostResponseAsAdmin(target(createPath), germplasmToUpdateDTO);
-        URI germplasmToUpdateURI = extractUriFromResponse(germplasmToUpdatePostResponse);
+        String germplasmToUpdateURI = extractUriFromResponse(germplasmToUpdatePostResponse);
 
         //Test update
         List<RDFObjectRelationDTO> newRelations = new ArrayList<>();
@@ -150,7 +148,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
     @Test
     public void updateFailIfWithSpeciesDoesNotExists() throws Exception {
         GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
-        URI germplasmToUpdateURI = new UserCallBuilder(create)
+        String germplasmToUpdateURI = new UserCallBuilder(create)
                 .setBody(germplasmToUpdateDTO)
                 .buildAdmin()
                 .executeCallAndReturnURI();
@@ -463,7 +461,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().name);
-                put("rdf_type", getCreationSpeciesDTO().getType());
+                put("rdf_type", getCreationSpeciesDTO().getRdfType());
             }
         };
 

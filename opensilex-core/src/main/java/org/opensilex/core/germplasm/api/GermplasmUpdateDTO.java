@@ -17,11 +17,10 @@ import org.opensilex.server.rest.validation.ValidURI;
  */
 public class GermplasmUpdateDTO extends GermplasmCreationDTO {
     
-    @NotNull
     @ValidURI
     @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     @Override
-    public URI getUri() {
+    public String getUri() {
         return uri;
     }
     

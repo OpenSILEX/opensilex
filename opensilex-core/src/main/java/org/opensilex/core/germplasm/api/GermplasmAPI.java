@@ -19,7 +19,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.utils.StringURIsListDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.bll.GermplasmLogic;
@@ -824,9 +825,9 @@ public class GermplasmAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
     })
     public Response checkGermplasmsExist(
-            @ApiParam(value = "list of uris to check for existence") URIsListPostDTO uris
+            @ApiParam(value = "list of uris to check for existence") StringURIsListDTO uris
             ) throws Exception {
-        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getNonExistingUris(uris.getUris());
+        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getNonExistingUrisFromString(uris.getUris());
 
         return new PaginatedListResponse<>(new ArrayList<>(existantUris)).getResponse();
     }

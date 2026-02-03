@@ -36,6 +36,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -518,6 +519,20 @@ public class GermplasmLogic {
                 .filter(uri -> uri != null && !uri.toString().isBlank() && URIDeserializer.validateURI(uri.toString()))
                 .toList();
         return dao.checkExistence(validUris);
+    }
+
+    /**
+     * @return the uris of already existing germplasms. If Uris are not valid or not parsable, they are ignored.
+     * @see GermplasmLogic#getNonExistingUris(List)
+     */
+    public Collection<URI> getNonExistingUrisFromString(List<String> uris) throws Exception {
+        List<URI> parsedUris = new ArrayList<>();
+        for (String uri : uris) {
+            try {
+                parsedUris.add(new URI(uri));
+            } catch (URISyntaxException ignoredException) {}
+        }
+        return getNonExistingUris(parsedUris);
     }
 
     //#region private methods

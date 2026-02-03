@@ -4,7 +4,7 @@
       <opensilex-GermplasmAddColumnModal
           class="searchFilter"
           ref="colModal"
-          :existingRdfAttributesObjects="existingDuplicatableRdfAttributesObjects"
+          :existingRdfAttributesObjects="availableDuplicatableRdfAttributesObjects"
           :existingRdfAttributesStringRule="existingRdfAttributesStringRule"
           @addingExistingColumn="onColModalAddExistingColumn"
           @addingUncontrolledColumn="onColModalAddingUncontrolledColumn"
@@ -287,6 +287,15 @@ export default class GermplasmTable extends Vue {
   private langUnwatcher;
 
   private errorsToShowInModal: Array<string> = [];
+
+  /**
+ * Escapes a string so it can safely be used inside a RegExp.
+ * This prevents special regex characters (., *, ?, +, etc.)
+ * from being interpreted as regex operators.
+ */
+  private _escapeRegExp(rawText: string): string {
+    return rawText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
   //endregion
 
   //#region Computed
@@ -298,6 +307,26 @@ export default class GermplasmTable extends Vue {
     return this.$store.state.credentials;
   }
 
+  /**
+  * Returns the list of duplicatable RDF properties that are NOT yet
+  * present in the Tabulator table.
+  *
+  * A property is considered "already added" if a table column field
+  * exactly matches: <propertyUri><numericIndex>
+  */
+  get availableDuplicatableRdfAttributesObjects(): Array<SelectableItem> {
+    // Collect all current column field identifiers from the table.
+    const tableColumnFields: string[] = this.tabulator
+      ? this.tabulator.getColumns().map(column => column.getField())
+      : this.tableColumns.map(column => column.field);
+
+    return this.existingDuplicatableRdfAttributesObjects.filter(attribute => {
+    // Build a RegExp that matches ONLY fields corresponding to this exact RDF property, followed by a numeric index.
+      const exactPropertyFieldRegex = new RegExp("^" + this._escapeRegExp(attribute.id) + "\\d+$");
+      // Keep only properties that are not already used
+      return !tableColumnFields.some(f => typeof f === "string" && exactPropertyFieldRegex.test(f));
+    });
+  }
   //endregion
 
   //#region Event handlers

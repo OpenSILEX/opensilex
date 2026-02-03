@@ -134,6 +134,10 @@ public class GermplasmCreationDTO {
 
     public void setRdfType(URI rdfType) {rdf_type = rdfType; }
 
+    public List<RDFObjectRelationDTO> getRelations() { return relations; }
+
+    public void setRelations(List<RDFObjectRelationDTO> relations) { this.relations = relations; }
+
     public String getName() {
         return name;
     }

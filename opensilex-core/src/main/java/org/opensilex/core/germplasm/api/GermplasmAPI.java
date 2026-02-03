@@ -791,6 +791,8 @@ public class GermplasmAPI {
 
         } catch (SPARQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown Germplasm URI ", URI.create(germplasmDTO.getUri()));
+        } catch (Exception e) {
+            throw e;
         }
     }
 

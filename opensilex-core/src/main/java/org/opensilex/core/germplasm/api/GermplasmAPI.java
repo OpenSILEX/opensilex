@@ -39,6 +39,7 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorObject;
 import org.opensilex.server.exceptions.multipleError.MultipleErrorListException;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorObject;
 import org.opensilex.server.exceptions.multipleError.MultipleErrorObjectList;
 import org.opensilex.server.response.*;
 import org.opensilex.server.response.multipleError.MultipleErrorResponse;
@@ -229,7 +230,14 @@ public class GermplasmAPI {
      *  This method validates relations of each germplasmDTO. It would be better to validate relations in the business layer, but this would require refactoring.
      * @throws MultipleErrorListException
      */
-    private List<GermplasmModel> getGermplasmModelsAndValidateRelations(List<GermplasmCreationDTO> germplasmDTOs) throws URISyntaxException, SPARQLException {
+    private List<GermplasmModel> getGermplasmModelsAndValidateRelations(List<GermplasmCreationDTO> germplasmDTOs) throws SPARQLException {
+        //this object allow to catch all uri syntax error and return them all in once.
+        MultipleErrorObjectList<MultipleErrorObject, GermplasmCreationDTO> errors = new MultipleErrorObjectList<>(
+                "some uris cannot be parsed due to syntax error",
+                germplasmDTOs,
+                MultipleErrorObject::new
+        );
+
         List<GermplasmModel> models = new ArrayList<>();
         if (CollectionUtils.isEmpty(germplasmDTOs)) {
             return models;
@@ -240,11 +248,19 @@ public class GermplasmAPI {
         //get every different types from DTOs
         List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getRdfType).distinct().toList();
         for (URI type : germplasmsTypes) {
-            classModels.put(type, ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
+            classModels.put(type, ontologyDAO.getClassModel(type, URI.create(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
         }
 
         for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
-            models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getRdfType())));
+            try {
+                models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getRdfType())));
+            } catch ( URISyntaxException e ) {
+                errors.addError(germplasmDTO, e.getMessage());
+            }
+        }
+
+        if (errors.hasErrors()) {
+            throw new MultipleErrorListException(errors.toDTO().title, errors);
         }
 
         return models;

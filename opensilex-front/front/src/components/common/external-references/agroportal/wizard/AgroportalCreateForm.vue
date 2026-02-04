@@ -14,6 +14,7 @@
       :nextStepAction="nextStep"
       :validateAction="validateCustom"
       :isBlockingStep="false"
+      :startingIndexWhenEditMode="1"
       @agroportalTermSelected="handleTermSelected"
       @agroportalTermUnselected="handleTermUnselected"
   >
@@ -132,7 +133,8 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
         next: "AgroportalSearchFormPart.next",
         props: {
           namePlaceholder: this.searchPlaceholder,
-          descriptionPlaceholder: this.descriptionPlaceholder
+          descriptionPlaceholder: this.descriptionPlaceholder,
+          didSelectTerm: this.termIsSelected
         },
         slots: [ "createAdditionalFields" ]
       }, {

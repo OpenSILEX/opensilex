@@ -18,7 +18,7 @@
               :generated.sync="uriGenerated"
               :required="true"
               helpMessage="AgroportalCreateFormPart.uri-help"
-              :editMode="editMode"
+              :editMode="uriFormIsInEditMode"
           ></opensilex-UriForm>
 
           <!-- Name -->
@@ -63,7 +63,8 @@ export default class AgroportalCreateFormPart extends Vue {
   @Prop()
   private readonly props: {
     namePlaceholder: string,
-    descriptionPlaceholder: string
+    descriptionPlaceholder: string,
+    didSelectTerm: boolean
   };
 
   @PropSync("form")
@@ -123,6 +124,15 @@ export default class AgroportalCreateFormPart extends Vue {
 
   public validate() {
     return this.validatorRef.validate();
+  }
+  //#endregion
+
+  //#region Computed
+  get uriFormIsInEditMode(){
+    if(this.props && this.props.didSelectTerm){
+      return true;
+    }
+    return this.editMode;
   }
   //#endregion
 

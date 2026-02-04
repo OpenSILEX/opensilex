@@ -293,7 +293,7 @@ export default class GermplasmTable extends Vue {
  * This prevents special regex characters (., *, ?, +, etc.)
  * from being interpreted as regex operators.
  */
-  private _escapeRegExp(rawText: string): string {
+  private escapeRegExp(rawText: string): string {
     return rawText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
   //endregion
@@ -322,7 +322,7 @@ export default class GermplasmTable extends Vue {
 
     return this.existingDuplicatableRdfAttributesObjects.filter(attribute => {
     // Build a RegExp that matches ONLY fields corresponding to this exact RDF property, followed by a numeric index.
-      const exactPropertyFieldRegex = new RegExp("^" + this._escapeRegExp(attribute.id) + "\\d+$");
+      const exactPropertyFieldRegex = new RegExp("^" + this.escapeRegExp(attribute.id) + "\\d+$");
       // Keep only properties that are not already used
       return !tableColumnFields.some(f => typeof f === "string" && exactPropertyFieldRegex.test(f));
     });

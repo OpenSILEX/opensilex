@@ -4,7 +4,7 @@
       <opensilex-GermplasmAddColumnModal
           class="searchFilter"
           ref="colModal"
-          :existingRdfAttributesObjects="availableDuplicatableRdfAttributesObjects"
+          :existingRdfAttributesObjects="existingDuplicatableRdfAttributesObjects"
           :existingRdfAttributesStringRule="existingRdfAttributesStringRule"
           @addingExistingColumn="onColModalAddExistingColumn"
           @addingUncontrolledColumn="onColModalAddingUncontrolledColumn"
@@ -293,9 +293,9 @@ export default class GermplasmTable extends Vue {
  * This prevents special regex characters (., *, ?, +, etc.)
  * from being interpreted as regex operators.
  */
-  private escapeRegExp(rawText: string): string {
-    return rawText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
+  // private escapeRegExp(rawText: string): string {
+  //   return rawText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // }
   //endregion
 
   //#region Computed
@@ -314,19 +314,19 @@ export default class GermplasmTable extends Vue {
   * A property is considered "already added" if a table column field
   * exactly matches: <propertyUri><numericIndex>
   */
-  get availableDuplicatableRdfAttributesObjects(): Array<SelectableItem> {
+  // get availableDuplicatableRdfAttributesObjects(): Array<SelectableItem> {
     // Collect all current column field identifiers from the table.
-    const tableColumnFields: string[] = this.tabulator
-      ? this.tabulator.getColumns().map(column => column.getField())
-      : this.tableColumns.map(column => column.field);
+    // const tableColumnFields: string[] = this.tabulator
+    //   ? this.tabulator.getColumns().map(column => column.getField())
+    //   : this.tableColumns.map(column => column.field);
 
-    return this.existingDuplicatableRdfAttributesObjects.filter(attribute => {
+    // return this.existingDuplicatableRdfAttributesObjects.filter(attribute => {
     // Build a RegExp that matches ONLY fields corresponding to this exact RDF property, followed by a numeric index.
-      const exactPropertyFieldRegex = new RegExp("^" + this.escapeRegExp(attribute.id) + "\\d+$");
+      // const exactPropertyFieldRegex = new RegExp("^" + this.escapeRegExp(attribute.id) + "\\d+$");
       // Keep only properties that are not already used
-      return !tableColumnFields.some(f => typeof f === "string" && exactPropertyFieldRegex.test(f));
-    });
-  }
+      // return !tableColumnFields.some(f => typeof f === "string" && exactPropertyFieldRegex.test(f));
+  //   });
+  // }
   //endregion
 
   //#region Event handlers

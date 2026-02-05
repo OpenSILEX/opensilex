@@ -3396,38 +3396,38 @@ OESO</rdfs:label>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ademe -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ademe">
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ademe">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
         <rdfs:label xml:lang="en">ADEME</rdfs:label>
-    </owl:Class>
+    </owl:NamedIndividual>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#inrae -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#inrae">
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrae">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
         <rdfs:label xml:lang="en">INRAE</rdfs:label>
-    </owl:Class>
+    </owl:NamedIndividual>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#anr -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#anr">
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#anr">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
         <rdfs:label xml:lang="en">ANR</rdfs:label>
-    </owl:Class>
+    </owl:NamedIndividual>
     
         <!-- http://www.opensilex.org/vocabulary/oeso#fdf -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#fdf">
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#fdf">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
         <rdfs:label xml:lang="en">Ferments du Futur</rdfs:label>
-    </owl:Class>
+    </owl:NamedIndividual>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#eu -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#eu">
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#eu">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
         <rdfs:label xml:lang="en">European Union</rdfs:label>
-    </owl:Class>
+    </owl:NamedIndividual>
 
 
     <!-- http://www.opensilex.org/vocabulary/owl-vue-extension#ClassExtension -->

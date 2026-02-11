@@ -636,4 +636,36 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         assertTrue("All values for the attribute should be retrieved", attributeValues.containsAll(allAttributeValuesForKey));
         assertTrue("values should be unique", attributeValues.size() == allAttributeValuesForKey.size());
     }
+
+    /**
+     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
+     * final uri should be http://myuri/é
+     */
+    @Test
+    public void testUriEncoding() throws Exception {
+        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        URI decodedURI = URI.create("http://myuri/é");
+
+        GermplasmCreationDTO creationDto = getCreationSpeciesDTO();
+        creationDto.setUri(uriWithSpecialChar);
+
+        URI createdURI = new UserCallBuilder(create)
+                .setBody(creationDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI),
+                SPARQLDeserializers.compareURIs(decodedURI, createdURI));
+
+        GermplasmGetSingleDTO dtoFromApi = new UserCallBuilder(get)
+                .addPathTemplateParam("uri", uriWithSpecialChar)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        assertNotNull("get service should retrieve URI even if we get with http://myuri/%C3%A9 ", dtoFromApi);
+        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()),
+                SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
+    }
+
 }

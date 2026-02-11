@@ -56,6 +56,24 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
     protected static final TypeReference<PaginatedListResponse<AnnotationGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<AnnotationGetDTO>>() {};
     protected static final TypeReference<PaginatedListResponse<MotivationGetDTO>> listTypeReferenceMotivation = new TypeReference<PaginatedListResponse<MotivationGetDTO>>() {};
 
+    private static final ServiceDescription getByUri;
+    private static final ServiceDescription create;
+
+    static {
+        try {
+            getByUri = new ServiceDescription(
+                    AnnotationAPI.class.getMethod("getAnnotation", URI.class),
+                    URI_PATH
+            );
+            create = new ServiceDescription(
+                    AnnotationAPI.class.getMethod("createAnnotation", AnnotationCreationDTO.class),
+                    CREATE_PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @BeforeClass
     public static void createTargets() throws Exception {
@@ -248,6 +266,38 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
         assertEquals(3, count);
 
         //TODO count by target
+    }
+
+    /**
+     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
+     * final uri should be http://myuri/é
+     */
+    @Test
+    public void testUriEncoding() throws Exception {
+        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        URI decodedURI = URI.create("http://myuri/é");
+
+        AnnotationCreationDTO creationDto = getCreationDTO(1);
+        creationDto.setUri(uriWithSpecialChar);
+        creationDto.setTargets(Collections.singletonList(device.getUri()));
+
+
+        URI createdURI = new UserCallBuilder(AnnotationAPITest.create)
+                .setBody(creationDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI), SPARQLDeserializers.compareURIs(decodedURI, createdURI));
+
+
+        AnnotationGetDTO dtoFromApi = new UserCallBuilder(AnnotationAPITest.getByUri)
+                .addPathTemplateParam("uri", uriWithSpecialChar)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AnnotationGetDTO>>() {} )
+                .getDeserializedResponse()
+                .getResult();
+
+        assertNotNull("get service should retrieve URI even if we get with http://myuri/%C3%A9 ", dtoFromApi);
+        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()), SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
     }
 
     @Override

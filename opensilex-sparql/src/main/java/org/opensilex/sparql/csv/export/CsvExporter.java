@@ -19,7 +19,7 @@ public interface CsvExporter<T extends SPARQLResourceModel> {
      * @throws IOException if CSV content write fail
      * @throws SPARQLException if some error occurs during a SPARQL query evaluated during export
      */
-    byte[] exportCSV() throws IOException, SPARQLException;
+    byte[] exportCSV() throws Exception;
 
     /**
      *

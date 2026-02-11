@@ -23,6 +23,8 @@ import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -39,13 +41,17 @@ import java.util.stream.Stream;
 public class LocationObservationLogic {
 
     private final LocationObservationDAO locationObservationDAO;
+    private final LocationObservationCollectionLogic collectionLogic;
 
     private final MongoDBServiceV2 nosql;
+    private final SPARQLService sparql;
 
     //#region constructor
-    public LocationObservationLogic(MongoDBServiceV2 nosql) {
+    public LocationObservationLogic(MongoDBServiceV2 nosql, SPARQLService sparql) {
         this.locationObservationDAO = new LocationObservationDAO(nosql);
+        this.collectionLogic = new LocationObservationCollectionLogic(sparql);
         this.nosql = nosql;
+        this.sparql = sparql;
     }
     //#endregion
 
@@ -155,12 +161,12 @@ public class LocationObservationLogic {
     }
 
     /**
-     * @param collectionUriList   collection uris of observations list of features of interest
+     * @param collectionUriList   collection URIs each corresponding to a single featureOfInterest
      * @param hasGeometry fetch only documents with a "geometry" field - displayable on a map
      * @param date        the date at which we search the location
      * @return list of the last locations of each feature of interest
      */
-    public List<LocationObservationModel> getLastLocationObservation(List<URI> collectionUriList, Boolean hasGeometry, Instant date, Geometry intersection) {
+    public List<LocationObservationModel> getLastLocationObservations(List<URI> collectionUriList, Boolean hasGeometry, Instant date, Geometry intersection) {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
 
         searchFilter.setObservationCollectionList(collectionUriList);
@@ -176,7 +182,9 @@ public class LocationObservationLogic {
             searchFilter.setIntersection(intersection);
         }
 
-        ListWithPagination<LocationObservationModel> resultSearch = locationObservationDAO.searchWithPagination(searchFilter);
+        //We know we want to get all but setting a mongo filter to pageSize 0 doesn't work unlike for sparql requests
+        //So do the annoying thing of making a loop to get them all
+        ListWithPagination<LocationObservationModel> resultSearch = repeatSearchTillAllGotten(searchFilter);
 
         // For each collection, get the latest location
         return new ArrayList<>(resultSearch.getList().stream()
@@ -210,18 +218,7 @@ public class LocationObservationLogic {
         searchFilter.setPageSize(pageSize);
 
         if(pageSize == 0){
-            searchFilter.setPageSize(10);
-            int currentPage = 0;
-            boolean doContinue = true;
-            List<LocationObservationModel> finalList = new ArrayList<>();
-            while(doContinue){
-                searchFilter.setPage(currentPage);
-                ListWithPagination<LocationObservationModel> nextPage = locationObservationDAO.searchWithPagination(searchFilter);
-                finalList.addAll(nextPage.getList());
-                doContinue = nextPage.getList().size() == 10;
-                currentPage++;
-            }
-            return new ListWithPagination<>(finalList);
+            return repeatSearchTillAllGotten(searchFilter);
         }
 
         return locationObservationDAO.searchWithPagination(searchFilter);
@@ -245,30 +242,80 @@ public class LocationObservationLogic {
     }
 
     /**
+     * The MongoReadRightDao doesn't handle updateMany for now, so just do 2 requests, delete old, add new.
+     *
+     * @param session the client session
+     * @param newVersionsOfLocationObservationModels new versions of models to be updated
+     */
+    public void updateList(
+            ClientSession session,
+            List<LocationObservationModel> newVersionsOfLocationObservationModels
+    ) throws NoSQLInvalidURIException {
+        locationObservationDAO.updateMany(session, newVersionsOfLocationObservationModels);
+    }
+
+    /**
      * Use this method to delete a specific location observation for a feature of interest
+     * Ensures deletion of location collection if there are no more location observations associated with it.
+     * This ensures coherence with objects that have never had a location (no collection)
      *
      * @param session mongo session
      * @param collectionURI location collection URI
      * @param end end date
      * @param start start date
      */
-    public void deleteASpecificLocationObservation(ClientSession session, URI collectionURI, Instant end, Instant start) {
+    public void deleteASpecificLocationObservation(ClientSession session, URI collectionURI, Instant end, Instant start) throws Exception {
         locationObservationDAO.deleteSpecificLocation(session, collectionURI, end, start);
+        if(countLocationsForCollectionURI(collectionURI) == 0){
+            collectionLogic.deleteLocationObservationCollection(collectionURI);
+        }
+
     }
 
     /**
-     * Delete all location observations for a feature of interest
+     * Delete all location observations for a Collection
+     * Then deletes the collection to maintain coherence with objects that were never given a location (they have no collection)
      *
      * @param locationObservationCollectionURI location observation
      */
-    public void deleteLocationObservations(ClientSession session, URI locationObservationCollectionURI) {
+    public void deleteEveryLocationObservationInCollection(ClientSession session, URI locationObservationCollectionURI) throws Exception {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
         searchFilter.setObservationCollection(locationObservationCollectionURI);
 
         locationObservationDAO.deleteMany(session, searchFilter);
+        collectionLogic.deleteLocationObservationCollection(locationObservationCollectionURI);
     }
 
-    public int countLocationsForURI(URI locationObservationCollectionURI) {
+    /**
+     * Deletes all the location observations.
+     * Handles deletion of all location collections that no longer have any associated location observations
+     * to ensure coherence with objects that never had a location given to them (no collections).
+     *
+     * @param session client session that caused this function call
+     * @param locObsModels the location observations to delete
+     */
+    public void deleteList(ClientSession session, List<LocationObservationModel> locObsModels) throws Exception {
+        Set<String> collectionUrisToCheckIfEmpty = new HashSet<>();
+        for(LocationObservationModel locationObservationModel : locObsModels){
+            collectionUrisToCheckIfEmpty.add(SPARQLDeserializers.getShortURI(locationObservationModel.getObservationCollection()));
+        }
+        locationObservationDAO.deleteMany(session, locObsModels.stream().map(LocationObservationModel::getUri).toList());
+        LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
+        locationObservationSearchFilter.setObservationCollectionList(collectionUrisToCheckIfEmpty.stream().map(URI::create).toList());
+        List<URI> collectionUrisThatStillHaveLocObs = locationObservationDAO.distinct(
+                session,
+                LocationObservationModel.OBSERVATION_COLLECTION_FIELD,
+                URI.class,
+                locationObservationSearchFilter
+        );
+        collectionUrisThatStillHaveLocObs.stream().map(SPARQLDeserializers::getShortURI).toList().forEach(collectionUrisToCheckIfEmpty::remove);
+        if(!collectionUrisToCheckIfEmpty.isEmpty()){
+            //All the remaining collection URIs do not have any associated location observations so we delete them
+            collectionLogic.deleteMany(collectionUrisToCheckIfEmpty.stream().map(URI::create).toList());
+        }
+    }
+
+    public int countLocationsForCollectionURI(URI locationObservationCollectionURI) {
         int count = 0;
 
         if (!Objects.isNull(locationObservationCollectionURI)) {
@@ -377,7 +424,6 @@ public class LocationObservationLogic {
      * @return
      */
     public LocationObservationModel getFacilityGeometry(LocationObservationModel location){
-        LocationObservationModel facilityLocationCorresponding = new LocationObservationModel();
 
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
         searchFilter.setFeatureOfInterest(location.getLocation().getTo());
@@ -388,6 +434,7 @@ public class LocationObservationLogic {
         ListWithPagination<LocationObservationModel> facilityLocationList = locationObservationDAO.searchWithPagination(searchFilter);
 
         if(!facilityLocationList.getList().isEmpty()){
+            LocationObservationModel facilityLocationCorresponding;
             if (facilityLocationList.getList().size() == 1 && facilityLocationList.getList().get(0).getEndDate() == null) { //Location from address (without date)
                 facilityLocationCorresponding= facilityLocationList.getList().get(0);
             } else {
@@ -396,42 +443,42 @@ public class LocationObservationLogic {
                                 Collectors.maxBy(Comparator.comparing(LocationObservationModel::getEndDate)),
                                 Optional::get));
             }
+            location.getLocation().setGeometry(facilityLocationCorresponding.getLocation().getGeometry()) ;
         }
 
-        location.getLocation().setGeometry(facilityLocationCorresponding.getLocation().getGeometry()) ;
         return location;
     }
 
     /**
      *
-     * @param modelsWithLocationMap a map of T to LocationObservationCollection uri, we will look at the last position for each of these collections
+     * @param locationCollectionURIPerModel a map of T to LocationObservationCollection uri, we will look at the last position for each of these collections
      * @param optionalEndDate endDate if we want to keep only locations before some time
      * @param optionalHasGeometry set to true if we want only models that have a location with geospatial coordinates that can be placed on map, null if we don't care about this
      * @return a map of T with or without corresponding location. If the initial found location's geometry is null,
      * then we look to see if the facility's to field has a facility with geometry instead.
      * @param <T> the type of the keys of the returned map
      */
-    public <T> Map<T, LocationObservationModel> generateModelObservationCollectionMap(
-            Map<T, URI> modelsWithLocationMap,
+    public <T> Map<T, LocationObservationModel> getLocationObservationPerModelFromCollectionMap(
+            Map<T, URI> locationCollectionURIPerModel,
             Instant optionalEndDate,
             Boolean optionalHasGeometry,
             Geometry optionalIntersection
     ){
         Map<T, LocationObservationModel> result = new HashMap<>();
 
-        if (modelsWithLocationMap!=null && !modelsWithLocationMap.isEmpty()) {
-            List<LocationObservationModel> locationObservationModels = getLastLocationObservation(
-                    new ArrayList<>(modelsWithLocationMap.values()),
+        if (locationCollectionURIPerModel!=null && !locationCollectionURIPerModel.isEmpty()) {
+            List<LocationObservationModel> locationObservationModels = getLastLocationObservations(
+                    new ArrayList<>(locationCollectionURIPerModel.values()),
                     optionalHasGeometry,
                     optionalEndDate,
                     optionalIntersection
             );
 
-            Map<URI, LocationObservationModel> locationObservationModelPerLocationObservationUri = locationObservationModels.stream()
+            Map<URI, LocationObservationModel> locationObservationModelPerLocationObservationCollectionUri = locationObservationModels.stream()
                     .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
 
-            modelsWithLocationMap.forEach((model, collectionUri) -> {
-                var locationObservation = locationObservationModelPerLocationObservationUri.get(collectionUri);
+            locationCollectionURIPerModel.forEach((model, collectionUri) -> {
+                var locationObservation = locationObservationModelPerLocationObservationCollectionUri.get(collectionUri);
                 if (Objects.nonNull(locationObservation)) {
                     //if geometry is null, try to get location facility
                     if(locationObservation.getLocation().getGeometry() == null && locationObservation.getLocation().getTo() != null) {
@@ -445,6 +492,30 @@ public class LocationObservationLogic {
         return result;
     }
 
+    /**
+     *
+     * @param targetUris the uris of targets for whom we want to fetch a LocationObservation
+     * @param endDate Location has to have the most recent date before endDate.
+     * @param intersection only include Locations that are contained in intersection
+     * @return A map of target URI => LocationObservation, the location observation is either the last position, or the
+     * position that corresponds to the passed endDate.
+     */
+    public Map<URI, LocationObservationModel> getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
+            List<URI> targetUris,
+            Instant endDate,
+            Geometry intersection
+    ) throws NoSuchElementException, SPARQLException {
+
+        Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionPerFeatureOfInterest(targetUris);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+
+        return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
+                targetCollectionMap,
+                Objects.nonNull(endDate) ? endDate : Instant.now(),
+                true,
+                intersection
+        );
+    }
 
     /**
      *
@@ -456,7 +527,7 @@ public class LocationObservationLogic {
      * then we look to see if the facility's to field has a facility with geometry instead.
      * @param <T> the type of the keys of the returned map
      */
-    public <T> Map<T, LocationObservationModel> generateModelObservationCollectionMap(
+    public <T> Map<T, LocationObservationModel> getLocationObservationPerModelFromCollectionMap(
             List<T> fromList,
             Function<T, URI> getLocationObservationCollectionFromModel,
             Instant optionalEndDate,
@@ -472,7 +543,7 @@ public class LocationObservationLogic {
                 .filter(model -> getLocationObservationCollectionFromModel.apply(model) != null)
                 .collect(Collectors.toMap(Function.identity(), getLocationObservationCollectionFromModel));
 
-        return generateModelObservationCollectionMap(
+        return getLocationObservationPerModelFromCollectionMap(
                 modelsWithLocationMap,
                 optionalEndDate,
                 optionalHasGeometry,
@@ -482,17 +553,18 @@ public class LocationObservationLogic {
 
     //#endregion
 
-    //#region private
     /**
      * Checks the consistency of all observation by feature of interest
      *
      * @param observations list of location observations
      */
-    private void validateCollectionsConsistency(List<LocationObservationModel> observations){
+    public void validateCollectionsConsistency(List<LocationObservationModel> observations) throws Exception{
         if(observations.size() >= 2){
             Map<URI,List<LocationObservationModel>> observationsByCollectionMap = observations.stream().collect(Collectors.groupingBy(LocationObservationModel::getObservationCollection));
 
-            observationsByCollectionMap.forEach((collectionURI, groupedObservation) -> {
+            for(var observationByCollectionEntry : observationsByCollectionMap.entrySet()){
+                URI collectionURI = observationByCollectionEntry.getKey();
+                List<LocationObservationModel> groupedObservation = observationByCollectionEntry.getValue();
                 //validate consistency the new observation list (observations) and between new and existing observations (existing observations)
                 List<LocationObservationModel> existingObservations = getLocationsHistory(collectionURI, null, null, null,0,0).getList();
                 List<LocationObservationModel> newAndExistingObservations = Stream.concat(groupedObservation.stream(), existingObservations.stream()).collect(Collectors.toList());
@@ -500,9 +572,11 @@ public class LocationObservationLogic {
                 if (newAndExistingObservations.size() >= 2) {
                     validateConsistencyObservationList(newAndExistingObservations);
                 }
-            });
+            }
         }
     }
+
+    //#region private
 
     /**
      * Checks consistency of all observation dates
@@ -510,48 +584,68 @@ public class LocationObservationLogic {
      *
      * @param models list of location observations
      */
-    private void validateConsistencyObservationList(List<LocationObservationModel> models) throws NotAllowedException {
+    private void validateConsistencyObservationList(List<LocationObservationModel> models) throws Exception{
         List<LocationObservationModel> modelsToCompare = new ArrayList<>(models);
 
-        models.forEach(model -> {
+        for(LocationObservationModel model : models){
             modelsToCompare.remove(model);
 
             if (Objects.isNull(model.getStartDate())) {  // Instant
-                modelsToCompare.forEach(m -> {
+                for(LocationObservationModel m : modelsToCompare){
                     if (Objects.isNull(m.getStartDate())) { // Instant
                         if (m.getEndDate().equals(model.getEndDate())) {
-                            notAllowedException(model);
+                            throw notAllowedException(model);
                         }
                     } else { // Interval
                         if (model.getEndDate().isBefore(m.getEndDate()) && model.getEndDate().isAfter(m.getStartDate())) {
-                            notAllowedException(model);
+                            throw notAllowedException(model);
                         }
                     }
-                });
+                }
             } else {  // Interval
-                modelsToCompare.forEach(m -> {
+                for(LocationObservationModel m : modelsToCompare){
                     if (Objects.isNull(m.getStartDate())) { // Instant
                         if (m.getEndDate().isBefore(model.getEndDate()) && m.getEndDate().isAfter(model.getStartDate())) {
-                            notAllowedException(model);
+                            throw notAllowedException(model);
                         }
                     } else { // Interval
                         if (!m.getEndDate().isBefore(model.getStartDate()) && !model.getEndDate().isBefore(m.getStartDate())) {
-                            notAllowedException(model);
+                            throw notAllowedException(model);
                         }
                     }
-                });
+                }
             }
-        });
+        }
     }
 
-    private void notAllowedException(LocationObservationModel model) throws NotAllowedException {
+    private Exception notAllowedException(LocationObservationModel model) {
         StringBuilder message = new StringBuilder();
         message.append(model.getObservationCollection().toString())
                 .append("can't be at 2 different locations in the same time (")
                 .append(model.getEndDate().toString())
                 .append(")");
 
-        throw new NotAllowedException(message.toString());
+        return new Exception(message.toString());
+    }
+
+    /**
+     * Because we currently can't get all via mongo, repeat a search with passed filter until all gotten
+     * @return the final list containing all elements corresponding to filter
+     */
+    private ListWithPagination<LocationObservationModel> repeatSearchTillAllGotten(LocationObservationSearchFilter searchFilter){
+        searchFilter.setPageSize(1000);
+
+        int currentPage = 0;
+        boolean doContinue = true;
+        List<LocationObservationModel> finalList = new ArrayList<>();
+        while(doContinue){
+            searchFilter.setPage(currentPage);
+            ListWithPagination<LocationObservationModel> nextPage = locationObservationDAO.searchWithPagination(searchFilter);
+            finalList.addAll(nextPage.getList());
+            doContinue = nextPage.getList().size() == 1000;
+            currentPage++;
+        }
+        return  new ListWithPagination<>(finalList);
     }
     //#endregion
 }

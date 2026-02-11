@@ -692,6 +692,9 @@ import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisat
   components: {ExperimentDataVisualisation}
 })
 export default class MapView extends Vue {
+
+  //TODO not an ounce of documentation in this component its a pisstake
+
   @Ref("JqxRangeSelector") readonly rangeSelector: any;
   @Ref("mapView") readonly mapView!: any;
   @Ref("map") readonly map!: any;
@@ -1402,7 +1405,21 @@ export default class MapView extends Vue {
           .catch(this.$opensilex.errorHandler)
     }
   }
-  // Recovery SO at the map creation
+  /**
+   * Fetches scientific objects for the current experiment (optionally filtered by date),
+   * extracts their GeoJSON geometries, enriches them with domain metadata,
+   * and groups them by RDF type for map rendering.
+   *
+   * The resulting structure `featuresOS` is an array of GeoJSON feature arrays:
+   * each inner array contains all geometries of the same RDF type.
+   *
+   * This method mutates GeoJSON properties to attach:
+   * - URI, name, RDF type
+   * - creation/destruction dates
+   * - human-readable type labels
+   *
+   * Once processing is complete, map layers are initialized via `initScientificObjects()`.
+   */
   private recoveryScientificObjects(startDate?, endDate?) {
     this.callSO = false;
     this.featuresOS = [];
@@ -1419,8 +1436,8 @@ export default class MapView extends Vue {
             }
             else{
               res.forEach((element :any) => {
-                if (element.geometry !== null) {
-                  element.geometry.properties = {
+                if (element.location !== null && element.location.geojson !== null) {
+                  element.location.geojson.geometry.properties = {
                     creation_date: element.creation_date,
                     destruction_date:element.destruction_date,
                     uri: element.uri,
@@ -1432,12 +1449,12 @@ export default class MapView extends Vue {
                   let inserted = false;
                   this.featuresOS.forEach((item) => {
                     if (item[0].properties.type === element.rdf_type) {
-                      item.push(element.geometry);
+                      item.push(element.location.geojson.geometry);
                       inserted = true;
                     }
                   });
                   if (!inserted) {
-                    this.featuresOS.push([element.geometry]);
+                    this.featuresOS.push([element.location.geojson.geometry]);
                   }
                 }
               });

@@ -32,15 +32,14 @@ import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.location.bll.LocationObservationLogic;
-import org.opensilex.core.location.dal.LocationModel;
-import org.opensilex.core.location.dal.LocationObservationCollectionModel;
-import org.opensilex.core.location.dal.LocationObservationDAO;
-import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.location.dal.*;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -58,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -74,6 +74,8 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String OLD_MOVE_COLLECTION = "move";
+    //Because the old geospatial position attribute of ScientificObjects had no date associated to it, we take some random one
+    private static final String defaultDateISOString = "2017-05-19T00:00:00Z";
 
     @Override
     public String getDescription() {
@@ -100,17 +102,18 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
             sparql.startTransaction();
             mongodb.startTransaction();
 
-            //1 - Get List SO with geospatial from mongo (subclass voc:so)--> get map = list URI (key) map with list of geospatial locations (values)
-            Map<URI, List<LocationObservationModel>> soLocationGeospatialListMap = mongoGetGeospatialFromMongo();
-            //2 - Get move detail with SO as target in RDF - Filter each move : map uri so with move details : endDate, startDate?, To?, From?
+            //1 - For every existing ScientificObject URI fetch all old GeospatialModels, create new LocationObservationModels,
+            //placed in a Map of Format ScientificObject URI -> List(LocationObservationModels)
+            StringUriMap<List<LocationObservationModel>> soLocationGeospatialListMap = makeNewLocationObservationsFromGeospatialModels();
+            //2 - Fetch all old Moves for every ScientificObject
             Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
             //3 - Create a move in RDF4J for each location from geospatial Collection
             List<MoveModel> newMoves = sparqlCreateSoMoves(soLocationGeospatialListMap);
-            //4 - Get List SO move from mongo --> completed map = list URI (key) map with list of move locations (values)
-            Map<URI, List<LocationObservationModel>> soLocationListMap = mongoGetMoveFromMongo(soLocationGeospatialListMap, moveDetailsList);
-            //5 - Add collection for each SO (key) --> map featureOfInterest URI/Collection URI
-            Map<URI,URI> soCollectionMap = sparqlAddLocationCollection(soLocationListMap);
-            //6 - Completed location models for each SO and insert to Location collection
+            //4 - Make new Location Observations for old existing Moves, add them to the soLocationGeospatialListMap Map
+            StringUriMap<List<LocationObservationModel>> soLocationListMap = makeLocationObservationsFromExistingMoves(soLocationGeospatialListMap, moveDetailsList);
+            //5 - Add collections for each OS that has at least one LocationObservation. Return in a Map of format OS URI -> ObservationCOLLECTION URI
+            StringUriMap<URI> soCollectionMap = sparqlAddLocationCollection(soLocationListMap);
+            //6 - Complete location models for each SO and insert to Location collection
             mongoSoToLocationCollection(soLocationListMap, soCollectionMap, newMoves);
 
             sparql.commitTransaction();
@@ -121,21 +124,26 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
             try {
                 sparql.rollbackTransaction();
                 mongodb.rollbackTransaction();
-                logger.error("error while migrate scientific object locations. No changes was saved on databases", e);
+                logger.error("Error while migrating scientific object locations. No changes were saved on databases", e);
             } catch (Exception exception) {
-                throw new OpensilexModuleUpdateException("error while migrate scientific object locations. No changes was saved on databases", exception);
+                throw new OpensilexModuleUpdateException("Error while migrating scientific object locations. No changes were saved on databases", exception);
             }
         }
     }
 
-    private Map<URI, List<LocationObservationModel>> mongoGetGeospatialFromMongo() throws SPARQLException {
+    /**
+     *
+     * @return a Map of format ScientificObjectURI -> List(LocationObservationModel), corresponding to the list of found
+     * locations (in correct new format) for every existing ScientificObject.
+     */
+    private StringUriMap<List<LocationObservationModel>> makeNewLocationObservationsFromGeospatialModels() throws SPARQLException {
         //Get OS subClass
         SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, Oeso.ScientificObject.asNode()));
         List<URI> soRdfType = sparql.executeSelectQueryAsStream(select)
                 .map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.TYPE_FIELD))))
                 .collect(Collectors.toList());
 
-        Map<URI, List<LocationObservationModel>> soLocationListMap = new HashMap<>();
+        StringUriMap<List<LocationObservationModel>> soLocationListMap = new StringUriMap<>();
         MongoDatabase db = mongodb.getDatabase();
 
         //Get SO from geospatial collection
@@ -151,9 +159,17 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
 
             LocationObservationModel locationObservation = new LocationObservationModel();
             locationObservation.setLocation(location);
-            locationObservation.setEndDate(Instant.parse("1970-01-01T00:00:00.000Z"));
+            locationObservation.setEndDate(Instant.parse(defaultDateISOString));
             locationObservation.setHasGeometry(true);
             locationObservation.setFeatureOfInterest(geo.getUri());
+
+            try {
+                if(!SPARQLDeserializers.compareURIs(geo.getGraph(), sparql.getDefaultGraphURI(ScientificObjectModel.class))){
+                    locationObservation.setExperimentUri(geo.getGraph());
+                }
+            } catch (SPARQLException ignore) {
+                //There should always be a default OS graph right?
+            }
 
             soLocationListMap.put(geo.getUri(), List.of(locationObservation));
         });
@@ -195,7 +211,7 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         Node eventGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(EventModel.class));
 
         //Variables
-        Var eventVar = makeVar(EventModel.GRAPH);
+        Var eventVar = makeVar(EventModel.URI_FIELD);
         Var endVar = makeVar(EventModel.END_FIELD);
         Var endDateVar = makeVar(LocationObservationModel.END_DATE_FIELD);
         Var startVar = makeVar(EventModel.START_FIELD);
@@ -227,12 +243,30 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         WhereBuilder where = new WhereBuilder().addGraph(eventGraph,whereEvent);
         SelectBuilder select = new SelectBuilder()
                 .addWhere(whereSO)
-                .addWhere(where);
+                .addWhere(where)
+                .addVar(eventVar)
+                .addVar(endVar)
+                .addVar(endDateVar)
+                .addVar(startVar)
+                .addVar(startDateVar)
+                .addVar(toVar)
+                .addVar(fromVar)
+                .addVar(soTypeVar);
+
+        SPARQLQueryHelper.appendGroupConcatAggregator(select, featureVar, true);
+        select.addGroupBy(eventVar);
+        select.addGroupBy(endVar);
+        select.addGroupBy(endDateVar);
+        select.addGroupBy(startVar);
+        select.addGroupBy(startDateVar);
+        select.addGroupBy(toVar);
+        select.addGroupBy(fromVar);
+        select.addGroupBy(soTypeVar);
 
         return sparql.executeSelectQueryAsStream(select);
     }
 
-    private List<MoveModel> sparqlCreateSoMoves(Map<URI, List<LocationObservationModel>> soLocationListMap){
+    private List<MoveModel> sparqlCreateSoMoves(StringUriMap<List<LocationObservationModel>> soLocationListMap){
         try {
             //build move
             MoveEventDAO moveDao = new MoveEventDAO(sparql, mongodb);
@@ -244,7 +278,7 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                     .forEach(location -> {
                         InstantModel defaultEnd = new InstantModel();
                         defaultEnd.setType(org.opensilex.sparql.model.time.Time.InstantURI);
-                        defaultEnd.setDateTimeStamp(OffsetDateTime.parse("2017-05-19T00:00:00Z"));
+                        defaultEnd.setDateTimeStamp(OffsetDateTime.parse(defaultDateISOString));
 
                         if (location.getEndDate() != null && location.getUri() == null) {
                             MoveModel moveModel = new MoveModel();
@@ -255,7 +289,8 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
                         }
                     });
 
-            return moveDao.create(moveModels);
+            List<MoveModel> createdMoves = moveDao.create(moveModels);
+            return createdMoves;
 
         } catch (SPARQLException e) {
             throw new RuntimeException(e);
@@ -266,197 +301,164 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         }
     }
 
-    private Map<URI, List<LocationObservationModel>> mongoGetMoveFromMongo(Map<URI, List<LocationObservationModel>> soLocationGeospatialListMap, Stream<SPARQLResult> moveDetailsList){
-        //Get SO from move collection
+    /**
+     *  Creates new LocationObservationModels by looking that old existing Moves (from the SPARQLResults and by looking
+     *  at the corresponding Mongo MoveNosqlModels that we will fetch). Then adds them to locationObservationsPerScientificObjectUri.
+     */
+    private StringUriMap<List<LocationObservationModel>> makeLocationObservationsFromExistingMoves(
+            StringUriMap<List<LocationObservationModel>> locationObservationsPerScientificObjectUri,
+            Stream<SPARQLResult> existingMoveDetailsList
+    ){
+        //Get ScientificObjects from old Move mongo collection (containing MoveNosqlModels)
         MongoDatabase db = mongodb.getDatabase();
         MongoCollection<MoveNosqlModel> moveCollection = db.getCollection(OLD_MOVE_COLLECTION, MoveNosqlModel.class);
 
-        Map<URI,SPARQLResult> moveURIs = moveDetailsList.collect(Collectors.toMap(
-             sparqlResult -> URI.create(sparqlResult.getStringValue(EventModel.GRAPH)),
-                sparqlResult -> sparqlResult,
-                (oldValue, newValue) -> oldValue
-                ));
+        Map<URI,SPARQLResult> sparqlMoveDetailsPerMoveURI = existingMoveDetailsList.collect(
+                Collectors.toMap(
+                        sparqlResult -> URI.create(sparqlResult.getStringValue(EventModel.URI_FIELD)),
+                        sparqlResult -> sparqlResult,
+                        (oldValue, newValue) -> oldValue
+                )
+        );
 
-        List<MoveNosqlModel> soFromMove = moveCollection.find(Filters.in("_id", new ArrayList<>(moveURIs.keySet()))).into(new ArrayList<>());
+        List<MoveNosqlModel> soFromMove = moveCollection.find(Filters.in("_id", new ArrayList<>(sparqlMoveDetailsPerMoveURI.keySet()))).into(new ArrayList<>());
 
-        // Mapping FeatureOfInterest and locations
-        //from move collection
-        soFromMove.forEach(move -> move.getTargetPositions().forEach(position -> {
-            //build location observation
-            LocationObservationModel locationObservation = new LocationObservationModel();
-            LocationModel location = new LocationModel();
-            URI target = position.getTarget();
+        //Make mapping from sparql move URI -> Mongo move
+        StringUriMap<MoveNosqlModel> noSqlMovePerMoveURI = new StringUriMap<>();
+        soFromMove.forEach(moveNosqlModel -> noSqlMovePerMoveURI.put(moveNosqlModel.getUri(), moveNosqlModel));
 
-            //mongo
-            if(position.getPosition() != null) {
-                if(position.getPosition().getCoordinates() != null) {
-                    location.setGeometry(position.getPosition().getCoordinates());
-                    locationObservation.setHasGeometry(true);
+        //Iterate over SPARQL moves whiles creating our new LocationObservations (iterating over the noSqlMoves would leave out facility stuff)
+        sparqlMoveDetailsPerMoveURI.forEach((moveUri, moveDetailsAsSPARQLResult) -> {
+            //Extract features of interest
+            List<URI> featuresOfInterest = Arrays.stream(moveDetailsAsSPARQLResult.getStringValue(SPARQLQueryHelper.getConcatVarName(LocationObservationModel.FEATURE_OF_INTEREST_FIELD)).split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR)).map(URI::create).toList();
+
+            //Save the common variables (StartDate and things)
+            Instant endDate = Instant.parse(moveDetailsAsSPARQLResult.getStringValue(LocationObservationModel.END_DATE_FIELD));
+
+            //Others can be null so need to null check
+            Instant startDate = null;
+            URI too= null;
+            boolean tooFacilityHasGeometry = false;
+            URI from = null;
+
+            if (moveDetailsAsSPARQLResult.getStringValue(LocationObservationModel.START_DATE_FIELD) != null) {
+                startDate = Instant.parse(moveDetailsAsSPARQLResult.getStringValue(LocationObservationModel.START_DATE_FIELD));
+            }
+            if (moveDetailsAsSPARQLResult.getStringValue(LocationModel.TO_FIELD) != null) {
+                too = URI.create(moveDetailsAsSPARQLResult.getStringValue(LocationModel.TO_FIELD));
+                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+                //Create a temporary model just to be able to call checkHasGeom
+                LocationObservationModel temp =  new LocationObservationModel();
+                LocationModel tempLocationModel = new LocationModel();
+                tempLocationModel.setTo(too);
+                temp.setLocation(tempLocationModel);
+                tooFacilityHasGeometry = observationLogic.checkHasGeometry(temp, startDate, endDate);
+            }
+            if (moveDetailsAsSPARQLResult.getStringValue(LocationModel.FROM_FIELD) != null) {
+                from = URI.create(moveDetailsAsSPARQLResult.getStringValue(LocationModel.FROM_FIELD));
+            }
+
+            //Create a LocationObservation for each featureOfInterest
+            for(URI singleFeature : featuresOfInterest){
+                //Initialize LocationObservationModel
+                LocationObservationModel locationObservation =  initializeLocationObservationFromSparqlFields(
+                        moveUri,
+                        startDate,
+                        endDate,
+                        singleFeature,
+                        tooFacilityHasGeometry,
+                        from,
+                        too
+                );
+
+                //Now that we've sorted the common stuff from sparql we can look at Mongo
+                MoveNosqlModel noSqlMove = noSqlMovePerMoveURI.get(moveUri);
+
+                //If noSqlMove not null then we can add some stuff to the Location
+                if(noSqlMove!=null){
+                    TargetPositionModel correctTargetPos = noSqlMove.getTargetPositions().stream().filter(targetPositionModel -> SPARQLDeserializers.compareURIs(targetPositionModel.getTarget(), singleFeature)).findFirst().orElse(null);
+                    if(correctTargetPos != null){
+                        PositionModel positionModel = correctTargetPos.getPosition();
+                        if(positionModel != null) {
+                            LocationModel location = locationObservation.getLocation();
+                            if(positionModel.getCoordinates() != null) {
+                                location.setGeometry(positionModel.getCoordinates());
+                                locationObservation.setHasGeometry(true);
+                            }
+                            if(positionModel.getTextualPosition() != null) {
+                                location.setTextualPosition(positionModel.getTextualPosition());
+                            }
+                            if(positionModel.getX() != null) {
+                                location.setX(positionModel.getX());
+                            }
+                            if(positionModel.getY() != null) {
+                                location.setY(positionModel.getY());
+                            }
+                            if(positionModel.getZ() != null) {
+                                location.setZ(positionModel.getZ());
+                            }
+                        }
+                    }
                 }
-                if(position.getPosition().getTextualPosition() != null) {
-                    location.setTextualPosition(position.getPosition().getTextualPosition());
-                }
-                if(position.getPosition().getX() != null) {
-                    location.setX(position.getPosition().getX());
-                }
-                if(position.getPosition().getY() != null) {
-                    location.setY(position.getPosition().getY());
-                }
-                if(position.getPosition().getZ() != null) {
-                    location.setZ(position.getPosition().getZ());
+
+                //if a location from the geospatial collection already exists, add it to the existing list, otherwise create a new entry
+                List<LocationObservationModel> list = locationObservationsPerScientificObjectUri.get(singleFeature);
+                if(Objects.isNull(list)) {
+                    locationObservationsPerScientificObjectUri.put(singleFeature, List.of(locationObservation));
+                }else{
+                    List<LocationObservationModel> mutableList = new ArrayList<>(list);
+                    mutableList.add(locationObservation);
+
+                    locationObservationsPerScientificObjectUri.put(singleFeature, mutableList);
                 }
             }
 
-            //rdf
-            SPARQLResult moveDetails = moveURIs.values().stream().filter(sparqlResult -> SPARQLDeserializers
-                            .compareURIs(URI.create(sparqlResult.getStringValue(EventModel.GRAPH)), move.getUri()))
-                    .findFirst().orElse(null);
+        });
 
-            if (moveDetails != null) {
-                locationObservation.setEndDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.END_DATE_FIELD)));
-
-                if (moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD) != null) {
-                    locationObservation.setStartDate(Instant.parse(moveDetails.getStringValue(LocationObservationModel.START_DATE_FIELD)));
-                }
-                if (moveDetails.getStringValue(LocationModel.TO_FIELD) != null) {
-                    location.setTo(URI.create(moveDetails.getStringValue(LocationModel.TO_FIELD)));
-                }
-                if (moveDetails.getStringValue(LocationModel.FROM_FIELD) != null) {
-                    location.setFrom(URI.create(moveDetails.getStringValue(LocationModel.FROM_FIELD)));
-                }
-            }
-
-            locationObservation.setLocation(location);
-
-            //Set hasGeometry at true if the "to" facility has corresponding location
-            if(!locationObservation.isHasGeometry() && locationObservation.getLocation().getTo() != null) {
-                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
-                boolean hasGeometry = observationLogic.checkHasGeometry(locationObservation, locationObservation.getStartDate(), locationObservation.getEndDate());
-                locationObservation.setHasGeometry(hasGeometry);
-            }
-
-            locationObservation.setFeatureOfInterest(target);
-            locationObservation.setUri(move.getUri()); //store event URI
-
-            //if a location from the geospatial collection already exists, add it to the existing list, otherwise create a new entry
-            List<LocationObservationModel> list = soLocationGeospatialListMap.get(target);
-            if(Objects.isNull(list)) {
-                soLocationGeospatialListMap.put(target,List.of(locationObservation));
-            }else{
-                List<LocationObservationModel> mutableList = new ArrayList<>(list);
-                mutableList.add(locationObservation);
-
-                soLocationGeospatialListMap.put(target,mutableList);
-            }
-        }));
-        return soLocationGeospatialListMap;
+        return locationObservationsPerScientificObjectUri;
     }
 
-    /**
-     * First migration in RDF4J to add a ObservationCollection to all SO from map.
-     * <p>
-     * The request to do that is :
-     * <pre>
-     *     PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-     *     PREFIX  org:  <http://www.w3.org/ns/org#>
-     *     PREFIX  sosa: <http://www.w3.org/ns/sosa/>
-     *     PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-     *
-     *  INSERT {
-     *      GRAPH  <http://opensilex.test/set/ObservationCollection> {
-     *          ?uri a sosa:ObservationCollection .
-     *          ?uri sosa:hasFeatureOfInterest ?objects .
-     *      }
-     * }
-     * WHERE {
-     *   	    ?objects rdfs:label ?name
-     *   	    FILTER ( ?objects IN (
-     *          <http://opensilex....>,
-     *          <http://opensilex....>
-     *          ))
-     *   BIND(REPLACE(?name, " ", "") AS ?nameFormated)
-     *   BIND(ROUND(RAND()*100) AS ?random)
-     *   BIND (URI(CONCAT("http://opensilex.test/id/observationCollection/so",STR(?nameFormated),"/",replace(str(?random),".0",""))) AS ?uri)
-     * }
-     * </pre>
-     */
-    private Map<URI,URI> sparqlAddLocationCollection(Map<URI, List<LocationObservationModel>> soLocationListMap) throws OpensilexModuleUpdateException {
-        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        sparql = factory.provide();
+    private LocationObservationModel initializeLocationObservationFromSparqlFields(
+            URI moveUri,
+            Instant startDate,
+            Instant endDate,
+            URI featurOfInterest,
+            boolean tooFacilityHasGeometry,
+            URI from,
+            URI too
+    ){
+        LocationObservationModel result =  new LocationObservationModel();
+        result.setMoveUri(moveUri);
+        result.setStartDate(startDate);
+        result.setEndDate(endDate);
+        result.setFeatureOfInterest(featurOfInterest);
+        result.setHasGeometry(tooFacilityHasGeometry);
+        LocationModel singleLocationModel = new LocationModel();
+        singleLocationModel.setFrom(from);
+        singleLocationModel.setTo(too);
+        result.setLocation(singleLocationModel);
+        return result;
+    }
 
-        Map<URI,URI> soCollectionMap;
+    private StringUriMap<URI> sparqlAddLocationCollection(StringUriMap<List<LocationObservationModel>> soLocationListMap) throws OpensilexModuleUpdateException {
+
+        StringUriMap<URI> soCollectionMap = new StringUriMap<>();
 
         try {
-            List<URI> soURIlist = soLocationListMap.keySet().stream().toList();
+            List<URI> soURIlist = soLocationListMap.keySet().stream().map(URI::create).toList();
+            List<LocationObservationCollectionModel> collectionsToInsert = soURIlist.stream().map(e->{
+                LocationObservationCollectionModel nextCollection = new LocationObservationCollectionModel();
+                nextCollection.setFeatureOfInterest(e);
+                return nextCollection;
+            }).toList();
 
-            //1 - Add Observation Collection
-            //Graph
-            Node graphObservationCollection = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(LocationObservationCollectionModel.class));
+            LocationObservationCollectionDAO locationObservationCollectionDAO = new LocationObservationCollectionDAO(sparql);
+            locationObservationCollectionDAO.createList(collectionsToInsert);
 
-            //Variables
-            Var observationCollectionURIVar = makeVar(LocationObservationCollectionModel.URI_FIELD);
-            Var objectsVar = makeVar("objects");
-            Var nameVar = makeVar(ScientificObjectModel.NAME_FIELD);
-            Var subject = makeVar("subject");
-            Var nameFormatedVar = makeVar("nameFormated");
-            Var randomVar = makeVar("random");
+            for(LocationObservationCollectionModel nextCollection : collectionsToInsert){
+                soCollectionMap.put(nextCollection.getFeatureOfInterest(), nextCollection.getUri());
+            }
 
-            //Insert CollectionObservation
-            UpdateBuilder query = new UpdateBuilder()
-                    .addInsert(graphObservationCollection, observationCollectionURIVar, RDF.type.asNode(), SOSA.ObservationCollection.asNode())
-                    .addInsert(graphObservationCollection, observationCollectionURIVar, SOSA.hasFeatureOfInterest.asNode(), objectsVar);
-
-            //where clause of the update Query
-            WhereBuilder where = new WhereBuilder()
-                    .addWhere(objectsVar, RDFS.label.asNode(), nameVar)
-                    .addFilter(SPARQLQueryHelper.inURIFilter(objectsVar, soURIlist));
-
-            //add not exists filter to avoid duplicates
-            WhereBuilder whereObservationCollection = new WhereBuilder();
-            whereObservationCollection.addGraph(graphObservationCollection, subject, SOSA.hasFeatureOfInterest.asNode(), objectsVar);
-            where.addFilter(new E_NotExists(whereObservationCollection.getHandlerBlock().getWhereHandler().getElement()));
-
-            //Bind functions of the where clause
-            ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-
-            Expr exprNameFormated = exprFactory.replace(NodeFactory.createVariable(nameVar.getVarName()), " ", "");
-            where.addBind(exprNameFormated, nameFormatedVar);
-            where.addBind(exprFactory.rand(), randomVar);
-
-            Expr exprURI = exprFactory.iri(new ExprFactory().concat(
-                    "http://opensilex.test/id/observationCollection/objects/",
-                    exprFactory.str(NodeFactory.createVariable(nameFormatedVar.getVarName())),
-                    "/",
-                    exprFactory.replace(new ExprFactory().str(NodeFactory.createVariable(randomVar.getVarName())), "0.", ""))
-            );
-            where.addBind(exprURI, observationCollectionURIVar);
-
-            //Add the where clause with the graph
-            query.addWhere(where);
-
-            sparql.executeUpdateQuery(query);
-
-            // Get SO and associated observation collection
-            /**
-             *  Select *
-             *  WHERE {
-             *            ?s  sosa:hasFeatureOfInterest ?objects
-             *            FILTER( ?objectss IN (
-             *            <http://opensilex.test/id/...>,
-             *            <http://opensilex.test/id/...>
-             *                ))
-             *      }
-             */
-            SelectBuilder select = new SelectBuilder()
-                    .addWhere(makeVar(LocationObservationModel.OBSERVATION_COLLECTION_FIELD), SOSA.hasFeatureOfInterest, objectsVar)
-                    .addFilter(SPARQLQueryHelper.inURIFilter(objectsVar, soURIlist));
-
-            soCollectionMap = sparql.executeSelectQueryAsStream(select).collect(Collectors.toMap(
-                            sparqlResult -> URI.create(sparqlResult.getStringValue("objects")), //key
-                            sparqlResult -> URI.create(sparqlResult.getStringValue(LocationObservationModel.OBSERVATION_COLLECTION_FIELD)), //value
-                            (oldValue, newValue) -> oldValue
-                    )
-            );
         } catch (Exception e) {
             throw new OpensilexModuleUpdateException("error while adding observation collections. No changes was saved on the rdf database", e);
         }
@@ -465,21 +467,26 @@ public class UpdateSOWithLocationObservationCollectionModel implements OpenSilex
         return soCollectionMap;
     }
 
-    private void mongoSoToLocationCollection(Map<URI, List<LocationObservationModel>> soLocationListMap, Map<URI, URI> soCollectionMap, List<MoveModel> newMoves ) {
+    private void mongoSoToLocationCollection(StringUriMap<List<LocationObservationModel>> soLocationListMap, StringUriMap<URI> soCollectionMap, List<MoveModel> newMoves ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
         soLocationListMap.forEach((feature, locationList) -> locationList.forEach(location -> {
-            location.setObservationCollection(soCollectionMap.get(feature));
+            location.setObservationCollection(soCollectionMap.get(URI.create(feature)));
 
-            if(location.getUri() == null) {   //location from geospatial - add move URI as id_
+            //If a location's MoveUri is null, then it means it was created from the geospatial coordinates of an OS (and not a generic Move)
+            // The corresponding Moves that were created earlier in migration are in newMoves, there will only be one per OS as there was also only one
+            // geospatial position per OS.
+            if(location.getMoveUri() == null) {
                  URI moveUri = newMoves.stream()
-                         .filter(move -> move.getTargets().contains(location.getFeatureOfInterest()))
+                         .filter(move -> move.getTargets().stream().anyMatch(target -> SPARQLDeserializers.compareURIs(target, location.getFeatureOfInterest())))
                          .map(SPARQLResourceModel::getUri)
-                         .findFirst().get();
-                location.setUri(moveUri);
+                         .findFirst().orElseThrow();
+                location.setMoveUri(moveUri);
             }
         }));
 
-        locationCollection.insertMany(soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+        LocationObservationDAO locationObservationDAO = new LocationObservationDAO(mongodb.getServiceV2());
+        locationObservationDAO.create(soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+
     }
 }

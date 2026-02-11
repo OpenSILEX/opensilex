@@ -22,7 +22,6 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -75,7 +74,7 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
             model.setType(osType);
             models.add(model);
         }
-        logic.create(models,experiment.getUri());
+        logic.createWithNoValidations(models,experiment.getUri());
         logic.copyIntoGlobalGraph(models.stream()); // good copy method
 
         // create Object affected by the bug
@@ -87,7 +86,7 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
             models.add(model);
         }
         globalObjectGraph = sparql.getDefaultGraph(ScientificObjectModel.class);
-        logic.create(models,experiment.getUri());
+        logic.createWithNoValidations(models,experiment.getUri());
 
         Node typeNode = SPARQLDeserializers.nodeURI(osType.toString());
 

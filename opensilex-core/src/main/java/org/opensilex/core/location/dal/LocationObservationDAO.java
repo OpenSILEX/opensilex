@@ -4,6 +4,7 @@ import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -44,6 +45,10 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         //Feature of interest URI
         if (Objects.nonNull(searchQuery.getFeatureOfInterest())) {
             filters.add(Filters.eq(LocationObservationModel.FEATURE_OF_INTEREST_FIELD, searchQuery.getFeatureOfInterest()));
+        }
+        //Move URIs
+        if (!CollectionUtils.isEmpty(searchQuery.getMoveUris())) {
+            filters.add(Filters.in(LocationObservationModel.MOVE_URI_FIELD, searchQuery.getMoveUris()));
         }
         //Collection List
         if (Objects.nonNull(searchQuery.getObservationCollectionList())  && !searchQuery.getObservationCollectionList().isEmpty()) {
@@ -137,7 +142,7 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
 
     @Override
     public String idField() {
-        return LocationObservationModel.OBSERVATION_COLLECTION_FIELD;
+        return MongoModel.MONGO_ID_FIELD;
     }
 
     @Override

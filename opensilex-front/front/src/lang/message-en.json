@@ -21,7 +21,23 @@
                 "x": "X",
                 "y": "Y",
                 "z": "Z",
-                "textual-position": "Textual position"
+                "textual-position": "Textual position",
+                "from": "From",
+                "too": "Too",
+                "coordinates": "Coordinates",
+                "from-help": "Starting facility URI (The facility must exist, and the 'to' field must be filled).",
+                "to-help": "Arrival facility URI (The facility must exist).",
+                "x-help": "1th dimension of a custom coordinate system",
+                "y-help": "2nd dimension of a custom coordinate system",
+                "z-help": "3rd dimension of a custom coordinate system",
+                "textual-position-help": "Description of the position with text",
+                "x-placeholder": "A or 10 or 10.5",
+                "y-placeholder": "A or 10 or 10.5",
+                "z-placeholder": "A or 10 or 10.5",
+                "textual-position-placeholder": "Beside the left door",
+                "from-placeholder": "dev-infra:greenHouseA",
+                "to-placeholder": "dev-infra:greenHouseB",
+                "coordinates-placeholder": "POINT Z(1 1 80)"
             },
             "month": "month",
             "months": "months",
@@ -466,7 +482,8 @@
             }
         },
         "events": {
-            "details": "View event details"
+            "details": "View event details",
+            "start-example": "2019-09-08T13:00:00+01:00"
         },
         "sharedResourceInstances": {
             "selector-placeholder":"Select a source",
@@ -629,6 +646,10 @@
                     "used-in-experiment" :"The object {scientific_object} can't be deleted since it's involved in some experiments. You must delete the object from the experiment first",
                     "has-child" :"The object {scientific_object} can't be deleted since it has some child. You must delete them first (It may sound cruel but it has to be)"
                 }
+            },
+            "geometry" : {
+                "startHelp" : "The moment where this object began to have this position.",
+                "endHelp" : "The moment where this object no longer had this position.\nREQUIRED IF any location field's are filled."
             }
         },
         "skos": {

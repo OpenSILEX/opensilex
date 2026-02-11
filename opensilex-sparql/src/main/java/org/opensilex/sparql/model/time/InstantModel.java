@@ -57,4 +57,14 @@ public class InstantModel extends SPARQLResourceModel implements ClassURIGenerat
                 UUID.randomUUID().toString()
         };
     }
+
+    public static boolean bothInstantsRepresentSameDate(InstantModel instant1, InstantModel instant2){
+        if(instant1 == null && instant2 == null){
+            return true;
+        }
+        if(instant1 == null || instant2 == null){
+            return false;
+        }
+        return instant1.getDateTimeStamp().toInstant().equals(instant2.getDateTimeStamp().toInstant());
+    }
 }

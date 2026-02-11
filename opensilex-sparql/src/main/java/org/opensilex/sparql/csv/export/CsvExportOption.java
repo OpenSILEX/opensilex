@@ -14,7 +14,10 @@ public class CsvExportOption<T extends SPARQLResourceModel> {
 
     URI classURI;
     String lang;
-    Set<String> columns;
+    Set<String> uriColumnsAsStrings;
+
+    //A way to have extra columns that aren't expected to be URIs
+    Set<String> extraColumns;
 
     char multiValuedCellSeparator;
 
@@ -47,8 +50,17 @@ public class CsvExportOption<T extends SPARQLResourceModel> {
         return this;
     }
 
-    public CsvExportOption<T> setColumns(Set<String> columns) {
-        this.columns = columns;
+    public CsvExportOption<T> setUriColumnsAsStrings(Set<String> uriColumnsAsStrings) {
+        this.uriColumnsAsStrings = uriColumnsAsStrings;
+        return this;
+    }
+
+    public Set<String> getExtraColumns() {
+        return extraColumns;
+    }
+
+    public CsvExportOption<T> setExtraColumns(Set<String> extraColumns) {
+        this.extraColumns = extraColumns;
         return this;
     }
 
@@ -64,8 +76,8 @@ public class CsvExportOption<T extends SPARQLResourceModel> {
         return lang;
     }
 
-    public Set<String> getColumns() {
-        return columns;
+    public Set<String> getUriColumnsAsStrings() {
+        return uriColumnsAsStrings;
     }
 
     public char getMultiValuedCellSeparator() {

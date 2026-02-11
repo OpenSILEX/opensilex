@@ -12,6 +12,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;

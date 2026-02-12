@@ -39,6 +39,7 @@
                 "to-placeholder": "dev-infra:serreB",
                 "coordinates-placeholder": "POINT Z(1 1 80)"
             },
+            "altName": "Nom alternatif",
             "month": "mois",
             "months": "mois",
             "day":"jour",

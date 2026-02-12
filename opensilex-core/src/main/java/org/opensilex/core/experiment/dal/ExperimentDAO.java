@@ -282,9 +282,19 @@ public class ExperimentDAO {
         }
     }
 
+    /**
+     * Applies the regex on any field we want to include, name and altLabel at the time of writing this.
+     *
+     * @param select , the Select request we are adding the filter to.
+     * @param name pattern to apply on name field and altLabel field.
+     */
     private void appendRegexLabelFilter(SelectBuilder select, String name) {
         if (!StringUtils.isEmpty(name)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name));
+            select.addFilter(
+                    SPARQLQueryHelper.or(
+                            SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name),
+                            SPARQLQueryHelper.regexFilter(ExperimentModel.ALTERNATIVE_NAME_FIELD_NAME, name)
+                    ));
         }
     }
 

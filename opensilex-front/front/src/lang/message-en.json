@@ -39,6 +39,7 @@
                 "to-placeholder": "dev-infra:greenHouseB",
                 "coordinates-placeholder": "POINT Z(1 1 80)"
             },
+            "altName": "Alternative name",
             "month": "month",
             "months": "months",
             "day":"day",

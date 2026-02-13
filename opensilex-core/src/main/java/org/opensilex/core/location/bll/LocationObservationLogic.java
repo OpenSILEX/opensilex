@@ -523,8 +523,9 @@ public class LocationObservationLogic {
      * @param getLocationObservationCollectionFromModel pass a function to tell this method how to fetch LocationObservationCollection from a T
      * @param optionalEndDate endDate if we want to keep only locations before some time
      * @param optionalHasGeometry set to true if we want only models that have a location with geospatial coordinates that can be placed on map, null if we don't care about this
-     * @return a map of T with or without corresponding location. If the initial found location's geometry is null,
-     * then we look to see if the facility's to field has a facility with geometry instead.
+     * @return a map of T with corresponding location. If the initial found location's geometry is null,
+     * then we look to see if the facility's to field has a facility with geometry instead. WARNING any element in fromList that has no observation collection
+     * will NOT be returned in the map.
      * @param <T> the type of the keys of the returned map
      */
     public <T> Map<T, LocationObservationModel> getLocationObservationPerModelFromCollectionMap(

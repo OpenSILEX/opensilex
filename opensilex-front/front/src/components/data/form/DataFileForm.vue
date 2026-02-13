@@ -121,13 +121,13 @@
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
+import { ScientificObjectsService } from "opensilex-core/index";
 import Vue from "vue";
 // @ts-ignore
 import {DataService} from "opensilex-core/api/data.service";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import {OpenSilexStore} from "../../../../../../opensilex-front/front/src/models/Store";
 import VueI18n from "vue-i18n";
-import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 
 @Component
 export default class DataFileForm extends Vue {
@@ -165,6 +165,13 @@ export default class DataFileForm extends Vue {
     }
   })
   form: any;
+
+  created() {
+    this.serviceOS = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
+    );
+
+  }
 
   formats = [
     {"id":"all", "label":"All file formats"},
@@ -383,8 +390,7 @@ export default class DataFileForm extends Vue {
     let target = this.form.target;
 
     try {
-      const service = this.$opensilex.getService("opensilex.ScientificObjectsService");
-      const http = await service.getScientificObjectsListByUris(contextURI, [target]);
+      const http = await this.serviceOS.getScientificObjectsListByUris(contextURI, [target]);
 
       const foundObjects = http?.response?.result || [];
 

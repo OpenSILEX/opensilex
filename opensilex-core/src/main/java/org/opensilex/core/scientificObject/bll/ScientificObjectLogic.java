@@ -221,13 +221,29 @@ public class ScientificObjectLogic {
 
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
 
-        return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
-                soList,
-                (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
+        //Make a new list of OS's that do have a LocationObservationCollection for fetching of LocationObservations
+        List<ScientificObjectModel> sciObjsToFetchLocationsFor = new ArrayList<>();
+        Map<ScientificObjectModel, LocationObservationModel> result = new HashMap<>();
+
+        for (ScientificObjectModel so : soList) {
+            if(so.getLocationObservationCollection() != null){
+                sciObjsToFetchLocationsFor.add(so);
+            }else{
+                result.put(so, null);
+            }
+        }
+
+        Map<ScientificObjectModel, LocationObservationModel> scientificObjectsWithLocations = locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
+                sciObjsToFetchLocationsFor,
+                (ScientificObjectModel model) -> model.getLocationObservationCollection().getUri(),
                 Instant.now(),
                 null,
                 null
         );
+
+        result.putAll(scientificObjectsWithLocations);
+
+        return result;
     }
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {

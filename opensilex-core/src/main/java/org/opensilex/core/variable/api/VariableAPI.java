@@ -15,7 +15,7 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.sharedResource.CopyResourceDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;

@@ -16,8 +16,6 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
-import org.opensilex.security.group.api.GroupCreationDTO;
-import org.opensilex.security.group.api.GroupUserProfileDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -106,7 +104,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         //create a germplasm to update
         GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
         final Response germplasmToUpdatePostResponse = getJsonPostResponseAsAdmin(target(createPath), germplasmToUpdateDTO);
-        URI germplasmToUpdateURI = extractUriFromResponse(germplasmToUpdatePostResponse);
+        String germplasmToUpdateURI = extractUriFromResponse(germplasmToUpdatePostResponse).toString();
 
         //Test update
         List<RDFObjectRelationDTO> newRelations = new ArrayList<>();
@@ -132,13 +130,13 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         });
         List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
         assertEquals(germplasmList.size(), 1);
-        assertEquals(germplasmList.get(0).uri, germplasmToUpdateURI);
+        assertTrue(SPARQLDeserializers.compareURIs(germplasmList.get(0).uri, germplasmToUpdateURI));
     }
 
     @Test
     public void updateFailWithUnexistentUri() throws Exception {
         GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
-        germplasmToUpdateDTO.setUri(new URI("http://www.opensilex.org/germplasm/doesnotexist"));
+        germplasmToUpdateDTO.setUri("http://www.opensilex.org/germplasm/doesnotexist");
 
         final Response updateResponse = new UserCallBuilder(update)
                 .setBody(germplasmToUpdateDTO)
@@ -150,10 +148,11 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
     @Test
     public void updateFailIfWithSpeciesDoesNotExists() throws Exception {
         GermplasmCreationDTO germplasmToUpdateDTO = getCreationSpeciesDTO();
-        URI germplasmToUpdateURI = new UserCallBuilder(create)
+        String germplasmToUpdateURI = new UserCallBuilder(create)
                 .setBody(germplasmToUpdateDTO)
                 .buildAdmin()
-                .executeCallAndReturnURI();
+                .executeCallAndReturnURI()
+                .toString();
 
         germplasmToUpdateDTO.setUri(germplasmToUpdateURI);
         germplasmToUpdateDTO.setSpecies(new URI("http://www.opensilex.org/germplasm/doesnotexist"));
@@ -174,7 +173,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Collection<URI> expectedUris = new ArrayList<>();
 
         GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key"));
+        germplasmDTO.setUri("http://test/germplasm/has_the_key");
         germplasmDTO.setMetadata(Map.of(key, "value1"));
         URI createdUri = new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -182,7 +181,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                 .executeCallAndReturnURI();
         expectedUris.add(createdUri);
 
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key_and_another_one"));
+        germplasmDTO.setUri("http://test/germplasm/has_the_key_and_another_one");
         germplasmDTO.setMetadata(Map.of(key, "value_other", "other_key", "value1"));
         createdUri = new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -191,7 +190,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         expectedUris.add(createdUri);
 
         // this one should not be retrieved
-        germplasmDTO.setUri(URI.create("http://test/germplasm/does_not_has_the_key"));
+        germplasmDTO.setUri("http://test/germplasm/does_not_has_the_key");
         germplasmDTO.setMetadata(Map.of("other_key", "value1"));
         new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -224,7 +223,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Collection<URI> expectedUris = new ArrayList<>();
 
         GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_both_key"));
+        germplasmDTO.setUri("http://test/germplasm/has_both_key");
         germplasmDTO.setMetadata(Map.of(key, "value1", key2, "value2"));
         URI createdUri = new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -232,7 +231,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                 .executeCallAndReturnURI();
         expectedUris.add(createdUri);
 
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_both_key_and_another_one"));
+        germplasmDTO.setUri("http://test/germplasm/has_both_key_and_another_one");
         germplasmDTO.setMetadata(Map.of(key, "value_other", key2, "value2","other_key", "value1"));
         createdUri = new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -242,7 +241,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
 
         // this one should not be retrieved beceause it has only one of the two keys
         germplasmDTO = getCreationSpeciesDTO();
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_only_one_key"));
+        germplasmDTO.setUri("http://test/germplasm/has_only_one_key");
         germplasmDTO.setMetadata(Map.of(key, "value1"));
         new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -272,7 +271,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Collection<URI> expectedUris = new ArrayList<>();
 
         GermplasmCreationDTO germplasmDTO = getCreationSpeciesDTO();
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key_and_complete_value"));
+        germplasmDTO.setUri("http://test/germplasm/has_the_key_and_complete_value");
         germplasmDTO.setMetadata(Map.of(key, value));
         URI createdUri = new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -280,7 +279,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                 .executeCallAndReturnURI();
         expectedUris.add(createdUri);
 
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_the_key_and_part_of_value"));
+        germplasmDTO.setUri("http://test/germplasm/has_the_key_and_part_of_value");
         germplasmDTO.setMetadata(Map.of(key, value.concat("_should_be_retrieved"), "other_key", "value1"));
         createdUri = new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -289,7 +288,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         expectedUris.add(createdUri);
 
         // this one should not be retrieved
-        germplasmDTO.setUri(URI.create("http://test/germplasm/doesnt_has_the_key"));
+        germplasmDTO.setUri("http://test/germplasm/doesnt_has_the_key");
         germplasmDTO.setMetadata(Map.of("other_key", "value1"));
         new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -298,7 +297,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
 
         // this one should not be retrieved
         String stringWithNoCharsInCommonWithValue = "azertyuiopqsdfghjklmwxcvbn,;:!7894561230-+_@".replace(value, "");
-        germplasmDTO.setUri(URI.create("http://test/germplasm/has_key_but_wrong_value"));
+        germplasmDTO.setUri("http://test/germplasm/has_key_but_wrong_value");
         germplasmDTO.setMetadata(Map.of(key, stringWithNoCharsInCommonWithValue));
         new UserCallBuilder(create)
                 .setBody(germplasmDTO)
@@ -463,7 +462,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().name);
-                put("rdf_type", getCreationSpeciesDTO().getType());
+                put("rdf_type", getCreationSpeciesDTO().getRdfType());
             }
         };
 
@@ -539,7 +538,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), species);
 
         // update the germplasm
-        species.setUri(extractUriFromResponse(postResult));
+        species.setUri(extractUriFromResponse(postResult).toString());
         species.setName("new alias");
         
         //check that you can update species

@@ -20,7 +20,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.utils.StringURIsListDTO;
-import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.bll.GermplasmLogic;
@@ -829,7 +828,7 @@ public class GermplasmAPI {
     public Response checkGermplasmsExist(
             @ApiParam(value = "list of uris to check for existence") StringURIsListDTO uris
             ) throws Exception {
-        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getNonExistingUrisFromString(uris.getUris());
+        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getExistingUrisFromString(uris.getUris());
 
         return new PaginatedListResponse<>(new ArrayList<>(existantUris)).getResponse();
     }

@@ -8,43 +8,33 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.rest.validation.Required;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
-
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
- * A basic GetDTO which extends the {@link ExperimentDTO} and which add the conversion from an {@link ExperimentModel} to a {@link ExperimentGetDTO}
+ * A basic GetDTO for Experiments, does not simply extend ExperimentDTO as over there, the organizations, facilities and Projects are lists of URIs,
+ * here they are NamedResourceDTOs.
  *
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
 public class ExperimentGetDTO {
-
     
     @JsonProperty("uri")
     protected URI uri;
@@ -72,12 +62,12 @@ public class ExperimentGetDTO {
     
     @JsonProperty("objective")
     protected String objective;
-    
+
+    @JsonProperty("alternative_name")
+    private String alternativeName;
+
     @JsonProperty("species")
     protected List<URI> species = new ArrayList<>();
-//
-//    @JsonProperty("variables")
-//    protected List<URI> variables = new ArrayList<>();
     
     @JsonProperty("factors") 
     protected List<URI> factors = new ArrayList<>();
@@ -102,6 +92,9 @@ public class ExperimentGetDTO {
 
     @JsonProperty("is_public")
     protected Boolean isPublic;
+
+    @JsonProperty("funding")
+    protected List<URI> funding = new ArrayList<>();
 
     public URI getUri() {
         return uri;
@@ -242,14 +235,6 @@ public class ExperimentGetDTO {
     public void setFacilities(List<NamedResourceDTO<FacilityModel>> facilities) {
         this.facilities = facilities;
     }
-//
-//    public List<URI> getVariables() {
-//        return variables;
-//    }
-//
-//    public void setVariables(List<URI> variables) {
-//        this.variables = variables;
-//    }
 
     public List<URI> getFactors() {
         return factors;
@@ -257,6 +242,22 @@ public class ExperimentGetDTO {
 
     public void setFactors(List<URI> factors) {
         this.factors = factors;
+    }
+
+    public List<URI> getFunding() {
+        return funding;
+    }
+
+    public void setFunding(List<URI> funding) {
+        this.funding = funding;
+    }
+
+    public String getAlternativeName() {
+        return alternativeName;
+    }
+
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
     }
 
     public static ExperimentGetDTO fromModel(ExperimentModel model) {
@@ -275,7 +276,7 @@ public class ExperimentGetDTO {
         dto.setObjective(model.getObjective());
         dto.setDescription(model.getDescription());
         dto.setIsPublic(model.getIsPublic());
-//        dto.setVariables(model.getVariables());
+        dto.setAlternativeName(model.getAlternativeName());
 
         if (model.getEndDate() != null) {
             dto.setEndDate(model.getEndDate());
@@ -286,6 +287,7 @@ public class ExperimentGetDTO {
         dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
         dto.setSpecies(SPARQLResourceModel.getUriList(model.getSpecies()));
         dto.setFactors(SPARQLResourceModel.getUriList(model.getFactors()));
+        dto.setFunding(SPARQLResourceModel.getUriList(model.getFunding()));
 
         List<NamedResourceDTO<OrganizationModel>> organizationsDTO = new ArrayList<>();
         model.getOrganizations().forEach((orga) -> {

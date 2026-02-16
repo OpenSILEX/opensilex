@@ -54,6 +54,12 @@ public class ExperimentGetListDTO {
     @JsonProperty("facilities")
     protected List<URI> facilities = new ArrayList<>();
 
+    @JsonProperty("funding")
+    protected List<URI> funding = new ArrayList<>();
+
+    @JsonProperty("alternative_name")
+    private String alternativeName;
+
     public URI getUri() {
         return uri;
     }
@@ -126,6 +132,22 @@ public class ExperimentGetListDTO {
         this.facilities = facilities;
     }
 
+    public List<URI> getFunding() {
+        return funding;
+    }
+
+    public void setFunding(List<URI> funding) {
+        this.funding = funding;
+    }
+
+    public String getAlternativeName() {
+        return alternativeName;
+    }
+
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
+    }
+
     public static ExperimentGetListDTO fromModel(ExperimentModel model) {
 
         ExperimentGetListDTO dto = new ExperimentGetListDTO();
@@ -139,6 +161,8 @@ public class ExperimentGetListDTO {
         dto.setDescription(model.getDescription());
         dto.setSpecies(SPARQLResourceModel.getUriList(model.getSpecies()));
         dto.setFacilities(SPARQLResourceModel.getUriList(model.getFacilities()));
+        dto.setFunding(SPARQLResourceModel.getUriList(model.getFunding()));
+        dto.setAlternativeName(model.getAlternativeName());
 
         return dto;
     }

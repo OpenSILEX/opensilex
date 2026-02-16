@@ -60,7 +60,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
                     ExperimentAPI.class.getMethod(
                             "searchExperiments",
                             String.class, Integer.class, Boolean.class, List.class, List.class,
-                            List.class, Boolean.class, List.class, List.class, int.class, int.class),
+                            List.class, Boolean.class, List.class, List.class, List.class, int.class, int.class),
                     searchPath
             );
             create = new ServiceDescription(

@@ -132,6 +132,20 @@
                   ></opensilex-FormSelector>
                 </opensilex-FilterField>
               </div>
+
+              <!-- funding -->
+              <div>
+                <opensilex-FilterField>
+                  <opensilex-FundingSelector
+                  label="ExperimentList.filter-funding"
+                  placeholder="ExperimentList.filter-funding-placeholder"
+                  :multiple="true"
+                  :funding.sync="filter.funding"
+                  class="searchFilter"
+                ></opensilex-FundingSelector>
+                </opensilex-FilterField>
+              </div>
+
             </template>
           </opensilex-SearchFilterField>
         </div>
@@ -174,13 +188,26 @@
         </b-dropdown>
       </template>
       <template v-slot:cell(name)="{ data }">
-        <opensilex-UriLink
-          :uri="data.item.uri"
-          :value="data.item.name"
-          :to="{
-            path: '/experiment/details/' + encodeURIComponent(data.item.uri),
-          }"
-        ></opensilex-UriLink>
+        <div class="uri-alt-container">
+          <div class="uri-texts">
+            <opensilex-UriLink
+              :uri="data.item.uri"
+              :value="data.item.name"
+              :to="{ path: '/experiment/details/' + encodeURIComponent(data.item.uri) }"
+            ></opensilex-UriLink>
+            <span class="alt-label">{{ data.item.alternative_name }}</span>
+          </div>
+          <div class="uri-badges">
+            <img
+              v-for="fundingUri in data.item.funding.slice(0, 3)"
+              :key="fundingUri"
+              :src="$opensilex.getResourceURI('images/' + $opensilex.getShortUri(fundingUri), ['png','svg','jpg'])"
+              class="funding-badge"
+              :title="fundingUri"
+            >
+          </div>
+        </div>
+
       </template>
 
       <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
@@ -307,6 +334,7 @@ export default class ExperimentList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("projectSelector") readonly projectSelector!: any;
+  @Ref("fundingSelector") readonly fundingSelector!: any;
 
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
@@ -318,7 +346,6 @@ export default class ExperimentList extends Vue {
   refresh() {
     this.updateSelectedExperiment();
     this.tableRef.changeCurrentPage(1);
-    
   }
 
   filter = {
@@ -329,6 +356,7 @@ export default class ExperimentList extends Vue {
     yearFilter: undefined,
     state: "",
     facilities: [],
+    funding: [],
   };
 
 
@@ -341,7 +369,8 @@ export default class ExperimentList extends Vue {
       yearFilter: undefined,
       state: "",
       facilities: [],
-    };   
+      funding: [],
+    };
     this.refresh();
   }
 
@@ -391,6 +420,7 @@ export default class ExperimentList extends Vue {
         this.filter.projects, // projects
         isPublic, // isPublic
         this.filter.facilities,
+        this.filter.funding, // funding
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -511,6 +541,8 @@ export default class ExperimentList extends Vue {
         key: "name",
         label: "component.common.name",
         sortable: true,
+        thStyle: { width: '1%' },
+        tdClass: 'text-nowrap'
       },
       {
         key: "start_date",
@@ -608,6 +640,40 @@ export default class ExperimentList extends Vue {
   display: inline-block;
   max-width: 40vw;
 }
+
+.funding-badge {
+  width: 24px;
+  height: auto;
+  margin-right: 4px;
+}
+
+
+.uri-alt-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uri-texts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* force same left edge */
+}
+
+.uri-texts > * {
+  margin: 0; /* kill any weird margins */
+}
+
+.alt-label {
+  margin-top: 2px; /* optional spacing */
+  font-size: 0.9em;
+}
+
+
+
+.experimentsCheckboxMarginHighSize {
+  margin-left: 15px
+}
 </style>
 
 <i18n>
@@ -628,6 +694,8 @@ en:
     filter-state-placeholder: Select an experiment state
     filter-factors-categories: Factors categories
     filter-factors-categories-placeholder: Select one or more categories
+    filter-funding: Funding
+    filter-funding-placeholder: Select an experiment funding
     selected: Selected experiments
     selected-all: All experiments
 
@@ -648,6 +716,8 @@ fr:
     filter-state-placeholder: Sélectionner un état
     filter-factors-categories: Categories de facteurs
     filter-factors-categories-placeholder: Sélectionner une ou plusieurs categories
+    filter-funding: Financeur
+    filter-funding-placeholder: Sélectionner un financeur
     selected: Expérimentations selectionnées
     selected-all: Toutes les expérimentations
 

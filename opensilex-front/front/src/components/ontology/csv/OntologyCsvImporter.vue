@@ -262,6 +262,7 @@ export default class OntologyCsvImporter extends Vue {
             OntologyCsvImporter.loadErrorType("alreadyExistingURIErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("duplicateURIErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("invalidRowSizeErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("duplicateHeaderErrors", errors, errorsByRowIndex);
 
             let generalErrors: CsvError = {
                 index: "Erreurs générales",
@@ -300,6 +301,15 @@ export default class OntologyCsvImporter extends Vue {
                     generalErrors.firstErrorType = "missingRequiredValueErrors";
                 }
             }
+
+          if (Object.keys(errors.invalidDuplicateHeaderByIndexes).length > 0) {
+            let duplicateHeadersList = Object.values(errors.invalidDuplicateHeaderByIndexes);
+            generalErrors.list.invalidHeaderURIs = duplicateHeadersList;
+            generalErrors.listSize = generalErrors.listSize + 1;
+            if (!generalErrors.firstErrorType) {
+              generalErrors.firstErrorType = "duplicateHeaderErrors";
+            }
+          }
 
             if (generalErrors.firstErrorType) {
                 generalErrors.listSize--;
@@ -344,9 +354,9 @@ export default class OntologyCsvImporter extends Vue {
                     {header: validationError}
                 );
             case "missingRequiredValueErrors":
-                return this.$t(
+              return this.$t(
                     "OntologyCsvImporter.validationErrorMissingRequiredMessage",
-                    validationError
+                  {header: validationError.header, message: validationError.message}
                 );
             case "duplicateURIErrors":
                 return this.$t(
@@ -370,11 +380,16 @@ export default class OntologyCsvImporter extends Vue {
                     "OntologyCsvImporter.missingToValue",
                     validationError
                 );
-            default:
+          case "duplicateHeaderErrors":
                 return this.$t(
-                    "OntologyCsvImporter.validationErrorMessage",
+                    "OntologyCsvImporter.duplicateHeaderErrorMessage",
                     validationError
                 );
+          default:
+            return this.$t(
+              "OntologyCsvImporter.validationErrorMessage",
+              validationError
+            );
         }
     }
 
@@ -481,6 +496,7 @@ en:
         missingHeaders: Missing column headers
         emptyHeaders: Header with empty column
         invalidHeaderURIs: Invalid header URI
+        duplicateHeaderErrorMessage: An extra text based header is duplicated
         datatypeErrors: Data type error
         uriNotFoundErrors: URI not found
         invalidURIErrors: Invalid URI
@@ -523,6 +539,7 @@ fr:
         missingHeaders: En-tête de colonne manquant
         emptyHeaders: En-tête avec une ou plusieurs colonne(s) vide(s)
         invalidHeaderURIs: URI d'en-tête invalide
+        duplicateHeaderErrorMessage: An extra text based header is duplicated Un En-tête texte extra est dupliqué
         datatypeErrors: Type de donnée invalide
         uriNotFoundErrors: URI non trouvée
         invalidURIErrors: URI invalide

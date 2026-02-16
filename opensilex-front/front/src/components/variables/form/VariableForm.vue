@@ -204,7 +204,7 @@
                 <div class="col-lg-6" id="v-step-alt">
                     <opensilex-InputForm
                         :value.sync="form.alternative_name"
-                        label="VariableForm.altName"
+                        label="component.common.altName"
                         type="text"
                     ></opensilex-InputForm>
                 </div>
@@ -793,7 +793,7 @@ export default class VariableForm extends Vue {
             },
             {
                 target: "#v-step-alt",
-                header: { title: this.$i18n.t("VariableForm.altName")},
+                header: { title: this.$i18n.t("component.common.altName")},
                 content: this.$i18n.t("VariableForm.tutorial.altName"),
                 params: {placement: "left"},
             },
@@ -852,7 +852,6 @@ en:
         variable: The variable
         add: Add variable
         edit: Edit variable
-        altName: Alternative name
         entity-help: "Observed entity or event. e.g : Leaf, canopy, wind"
         entity-placeholder: Search and select an entity
         interestEntity-label: Entity of interest
@@ -944,7 +943,6 @@ fr:
         variable: La variable
         add: Ajouter une variable
         edit: Éditer une variable
-        altName: Nom alternatif
         entity-help: "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
         entity-placeholder: Rechercher et sélectionner une entité
         interestEntity-label: Entité d'intérêt

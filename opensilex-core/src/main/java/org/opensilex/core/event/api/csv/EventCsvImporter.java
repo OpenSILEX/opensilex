@@ -1,14 +1,10 @@
 package org.opensilex.core.event.api.csv;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
-import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
 import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
@@ -23,12 +19,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class EventCsvImporter extends AbstractCsvImporter<EventModel> {
 
-    private final EventDAO<EventModel, EventSearchFilter> eventDao;
 
     /**
      * @param sparql     SPARQL service
@@ -41,12 +35,11 @@ public class EventCsvImporter extends AbstractCsvImporter<EventModel> {
                 EventModel.class,
                 sparql.getDefaultGraphURI(EventModel.class),
                 EventModel::new,
-                user.getUri()
+                user.getUri(),
+                Collections.emptySet()
         );
         Objects.requireNonNull(user);
         Objects.requireNonNull(mongoDB);
-
-        eventDao = new EventDAO<>(sparql, mongoDB, EventModel.class);
 
     }
 
@@ -57,7 +50,7 @@ public class EventCsvImporter extends AbstractCsvImporter<EventModel> {
      * Same for Instants failing to parse, an error will have already been added for this
      */
     @Override
-    protected void readRelations(int rowIdx, String[] row, CsvHeader csvHeader, EventModel model, ClassModel classModel, CsvOwlRestrictionValidator restrictionValidator) {
+    protected void readRelations(int rowIdx, String[] row, CsvHeader csvHeader, EventModel model, ClassModel classModel, CsvOwlRestrictionValidator restrictionValidator) throws Exception{
         super.readRelations(rowIdx, row, csvHeader, model, classModel, restrictionValidator);
 
         List<SPARQLModelRelation> relations = model.getRelations();

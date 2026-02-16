@@ -53,6 +53,10 @@
               label="component.common.name"
               :value="experiment.name"
             ></opensilex-StringView>
+            <opensilex-StringView
+              label="component.common.altName"
+              :value="experiment.alternative_name"
+            ></opensilex-StringView>
             <div class="static-field">
               <span class="field-view-title">{{
                 $t("component.common.state")
@@ -105,6 +109,23 @@
               :lastUpdatedDate="experiment.last_updated_date" 
             ></opensilex-MetadataView>
           </template>
+          
+          <template v-slot:footer v-if="experiment.funding">
+            <div 
+              :label="$t('component.experiment.funding')"
+              :value="experiment.funding"
+              class="text-right"
+              >
+              <img
+                v-for="fundingUri in experiment.funding.slice(0, 3)"
+                :key="fundingUri"
+                v-bind:src="$opensilex.getResourceURI('images/'+fundingUri, ['png', 'svg', 'jpg'])"
+                class="funding-tag"
+                :title="fundingUri"
+                >
+            </div>
+          </template>
+
         </opensilex-Card>
       </div>
 
@@ -503,4 +524,15 @@ export default class ExperimentDetail extends Vue {
 </script>
 
 <style scoped lang="scss">
+.funding-tag {
+  margin: 0 5px;
+  width: clamp(20px, 45px, 60px);
+  border-radius: 50%;
+  transition: box-shadow 0.6s ease-in-out;
+}
+
+.funding-tag:hover {
+  box-shadow: 0 0 15px #00A3A6;
+}
+
 </style>

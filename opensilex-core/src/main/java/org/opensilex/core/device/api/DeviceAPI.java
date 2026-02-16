@@ -1091,7 +1091,7 @@ public class DeviceAPI {
         // it will still always be included in facilities that used to have it
 
         //First fetch the correct LocationObservations, whose Location's 'to' field is our Facility
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
         LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
         locationObservationSearchFilter.setTo(facilityUri);
         final int pageSizePerIter = 50;
@@ -1111,7 +1111,6 @@ public class DeviceAPI {
         }
 
         //Then use the feature of interests to run a Device search
-        //TODO MAX if an object of an other type like OS is moved to same facility will this next line throw an exception?
         List<DeviceModel> results = dao.getDevicesByURI(featuresOfInterest, currentUser);
 
         if (results == null) {

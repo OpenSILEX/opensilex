@@ -32,6 +32,7 @@
                         uriExample="ScientificObjectCSVImporter.uri-example"
                         typeHelp="ScientificObjectCSVImporter.type-help"
                         typeExample="ScientificObjectCSVImporter.type-example"
+                        :extraHeadersAndDescriptions="moveDescriptionGeneratorsPerMoveHeader"
                     ></opensilex-OntologyCsvTemplateGenerator>
                 </b-col>
             </template>
@@ -47,12 +48,15 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Store} from "vuex";
 import OntologyCsvImporter from '../ontology/csv/OntologyCsvImporter.vue';
 import OntologyCsvTemplateGenerator from "../ontology/csv/OntologyCsvTemplateGenerator.vue";
+import {DescriptionGeneratorInformation} from "../../components/ontology/csv/OntologyCsvTemplateGenerator.vue";
+import GenerateEventTemplate from "../../components/events/form/csv/GenerateEventTemplate.vue";
 
 @Component
 export default class ScientificObjectCSVImporter extends Vue {
     $opensilex: OpenSilexVuePlugin;
     $store: Store<any>;
     $router: VueRouter;
+
 
     @Ref("importForm") readonly importForm!: OntologyCsvImporter;
     @Ref("templateGenerator") readonly templateGenerator!: OntologyCsvTemplateGenerator;
@@ -62,6 +66,12 @@ export default class ScientificObjectCSVImporter extends Vue {
         default: undefined
     })
     experimentURI;
+
+    private readonly moveDescriptionGeneratorsPerMoveHeader: Map<string, DescriptionGeneratorInformation> = new Map<string, DescriptionGeneratorInformation>([
+      ["start_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.startHelp", required: false, example: "component.events.start-example"}],
+      ["end_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.endHelp", required: false, example: "component.events.start-example"}],
+      ...GenerateEventTemplate.MOVE_DESCRIPTION_GENERATOR_BY_HEADER
+    ]);
 
     get user() {
         return this.$store.state.user;

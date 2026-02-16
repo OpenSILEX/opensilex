@@ -1,0 +1,11 @@
+uri,type,rdfs:label,start_date_of_Location,end_date_of_Location,from,to,coordinates,x,y,z,textualPosition
+column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description
+test:id/os_import_location_coords_1 ,vocabulary:Sample,os_import_location_coords_1,,2026-01-11T03:03:03Z,,,POINT(30 30 30),,,,
+test:id/os_import_location_xyz_2 ,vocabulary:Sample,os_import_location_xyz_2,,2026-01-11T03:03:03Z,,,,30,30,30,Brian is in kitchen
+test:id/os_import_no_location1,vocabulary:Sample,os_import_no_location1,,,,,,,,,
+test:id/os_import_location_coords_2 ,vocabulary:Sample,os_import_location_coords_2,,2026-01-11T03:03:03Z,,,POINT(90 90 90),,,,
+test:id/os_import_location_xyz1 ,vocabulary:Sample,os_import_location_xyz1,,2026-01-11T03:03:03Z,,,,90,90,90,
+test:id/os_import_location_fromTo1 ,vocabulary:Sample,os_import_location_fromTo1,,2026-01-11T03:03:03Z,,test:id/organization/facility.facility2,,,,,
+test:id/os_import_no_location2,vocabulary:Sample,os_import_no_location2,,,,,,,,,
+test:id/os_import_no_location3,vocabulary:Sample,os_import_no_location3,,,,,,,,,
+test:id/os_import_location_fromTo2,vocabulary:Sample,os_import_location_fromTo2,,2026-01-11T03:03:03Z,test:id/organization/facility.facility2,test:id/organization/facility.facility1,,,,,

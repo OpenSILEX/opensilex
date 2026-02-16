@@ -348,6 +348,7 @@ export default class FacilitiesView extends Vue {
             null, // projects
             null, // isPublic
             this.displayableFacilities.map(facility => facility.uri), // facilities
+            null, // funding
             null,
             0,
             0

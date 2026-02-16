@@ -12,7 +12,7 @@
       <button
         type="button"
         class="btn greenThemeColor"
-        v-on:click="hide(false)"
+        v-on:click="hide()"
       >{{ $t('component.common.close') }}</button>
         </template>
 
@@ -52,6 +52,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../../../lib";
 import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
+import OntologyCsvTemplateGenerator, {DescriptionGeneratorInformation} from "../../../ontology/csv/OntologyCsvTemplateGenerator.vue";
 
 @Component
 export default class GenerateEventTemplate extends Vue {
@@ -66,6 +67,18 @@ export default class GenerateEventTemplate extends Vue {
     requiredField: boolean = false;
     separator = ",";
     types: Array<string> = [];
+
+    //A Map of the infos required to make a description per move specific header
+    // (keep it in a map so no future developers can mess up the order across headers-descriptions)
+    static readonly MOVE_DESCRIPTION_GENERATOR_BY_HEADER: Map<string, DescriptionGeneratorInformation> = new Map<string, DescriptionGeneratorInformation>([
+      ["from", {propertyTranslationKey: "component.common.geometry.from-help", required: false, example: "component.common.geometry.from-placeholder"}],
+      ["to", {propertyTranslationKey: "component.common.geometry.to-help", required: false, example: "component.common.geometry.to-placeholder"}],
+      ["coordinates", {propertyTranslationKey: "component.common.geometry.geometry-help", required: false, example: "component.common.geometry.coordinates-placeholder"}],
+      ["x", {propertyTranslationKey: "component.common.geometry.x-help", required: false, example: "component.common.geometry.x-placeholder"}],
+      ["y", {propertyTranslationKey: "component.common.geometry.y-help", required: false, example: "component.common.geometry.y-placeholder"}],
+      ["z", {propertyTranslationKey: "component.common.geometry.z-help", required: false, example: "component.common.geometry.z-placeholder"}],
+      ["textualPosition", {propertyTranslationKey: "component.common.geometry.textual-position-help", required: false, example: "component.common.geometry.textual-position-placeholder"}]
+    ]);
 
     @Ref("validatorRefTemplate") readonly validatorRefTemplate!: any;
     @Ref("soModalRef") readonly soModalRef!: any;
@@ -134,21 +147,6 @@ export default class GenerateEventTemplate extends Vue {
         return parts.join('');
     }
 
-    private getPropertyDescription(propertyTranslationKey: string, required: boolean, example?: string): string {
-
-        let parts = Array.of(
-            this.$t(propertyTranslationKey),
-            "\n",
-            this.$t("OntologyCsvTemplateGenerator.required"),
-            " : ",
-            (required) ? this.$t("component.common.yes") : this.$t("component.common.no"),
-            ". ",
-            (example && example.length > 0) ? "Ex : " + this.$t(example) : ""
-        )
-
-        return parts.join('');
-    }
-
     getTypesPromises() {
         let promises = [];
 
@@ -200,29 +198,22 @@ export default class GenerateEventTemplate extends Vue {
       ];
 
       let headersDescription = [
-            this.getPropertyDescription("Event.uri-help", false, "Event.uri-example"),
-            this.getPropertyDescription("Event.type-help", false, "Event.type-example"),
-            this.getPropertyDescription("Event.is-instant-help", true, "Event.is-instant-example"),
-            this.getPropertyDescription("Event.start-help", false, "Event.start-example"),
-            this.getPropertyDescription("Event.end-help", false, "Event.start-example"),
-            this.getPropertyDescription("Event.target-help", true, "Event.targets-example"),
-            this.getPropertyDescription("component.common.description", false),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"Event.uri-help", false, "Event.uri-example"),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"Event.type-help", false, "Event.type-example"),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"Event.is-instant-help", true, "Event.is-instant-example"),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"Event.start-help", false, "component.events.start-example"),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"Event.end-help", false, "component.events.start-example"),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"Event.target-help", true, "Event.targets-example"),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n,"component.common.description", false),
         ];
 
         if (this.generateMoveTemplate()) {
             managedProperties.push(this.$opensilex.Oeev.FROM, this.$opensilex.Oeev.TO);
 
-            headers.push("from", "to", "coordinates", "x", "y", "z", "textualPosition");
+            headers.push(...Array.from(GenerateEventTemplate.MOVE_DESCRIPTION_GENERATOR_BY_HEADER.keys()));
 
-            headersDescription.push(
-                this.getPropertyDescription("Position.from-help", false, "Position.from-placeholder"),
-                this.getPropertyDescription("Position.to-help", false, "Position.to-placeholder"),
-                this.getPropertyDescription("Position.coordinates-help", true, "Position.coordinates-placeholder"),
-                this.getPropertyDescription("Position.x-help", false, "Position.x-placeholder"),
-                this.getPropertyDescription("Position.y-help", false, "Position.y-placeholder"),
-                this.getPropertyDescription("Position.z-help", false, "Position.z-placeholder"),
-                this.getPropertyDescription("Position.textual-position-help", false, "Position.textual-position-placeholder"),
-            );
+            Array.from(GenerateEventTemplate.MOVE_DESCRIPTION_GENERATOR_BY_HEADER.values()).forEach(e=>headersDescription.push(OntologyCsvTemplateGenerator.getPropertyDescriptionFromInfoObject(this.$i18n, e)));
+
         }
 
         // exclude managed properties -> ensure that no property is present twice into header

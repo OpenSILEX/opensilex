@@ -13,9 +13,10 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
     private URI featureOfInterest;
     private Instant startDate;
     private Instant endDate;
-    private boolean hasGeometry;
+    private Boolean hasGeometry;
     private Geometry intersection;
     private URI to;
+    private List<URI> moveUris;
 
     public List<URI> getObservationCollectionList() {
         return observationCollectionList;
@@ -58,6 +59,9 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
     }
 
     public boolean isHasGeometry() {
+        if(hasGeometry == null){
+            return false;
+        }
         return hasGeometry;
     }
 
@@ -79,5 +83,13 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setTo(URI to) {
         this.to = to;
+    }
+
+    public List<URI> getMoveUris() {
+        return moveUris;
+    }
+
+    public void setMoveUris(List<URI> moveUris) {
+        this.moveUris = moveUris;
     }
 }

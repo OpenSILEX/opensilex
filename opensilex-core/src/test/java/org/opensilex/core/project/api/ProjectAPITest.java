@@ -24,8 +24,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * @author Julien BONNEFONT
@@ -34,15 +33,20 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
     protected static String path = "/core/projects";
 
-    protected String uriPath = path + "/{uri}";
+    protected static String uriPath = path + "/{uri}";
     protected String searchPath = path;
     public static final ServiceDescription create;
+    public static final ServiceDescription get;
 
     static {
         try {
             create = new ServiceDescription(
                     ProjectAPI.class.getMethod("createProject", ProjectCreationDTO.class),
                     path
+            );
+            get = new ServiceDescription(
+                    ProjectAPI.class.getMethod("getProject", URI.class),
+                    uriPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -163,6 +167,38 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         assertFalse(xps.isEmpty());
     }
+
+    /**
+     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
+     * final uri should be http://myuri/é
+     */
+    @Test
+    public void testUriEncoding() throws Exception {
+        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        URI decodedURI = URI.create("http://myuri/é");
+
+        ProjectCreationDTO creationDto = getCreationDTO();
+        creationDto.setUri(uriWithSpecialChar);
+
+        URI createdURI = new UserCallBuilder(ProjectAPITest.create)
+                .setBody(creationDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI),
+                org.opensilex.sparql.deserializer.SPARQLDeserializers.compareURIs(decodedURI, createdURI));
+
+        ProjectCreationDTO dtoFromApi = new UserCallBuilder(ProjectAPITest.get)
+                .addPathTemplateParam("uri", uriWithSpecialChar)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<ProjectCreationDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        assertNotNull("get service should retrieve URI even if we get with http://myuri/%C3%A9 ", dtoFromApi);
+        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()),
+                org.opensilex.sparql.deserializer.SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
+    }
+
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

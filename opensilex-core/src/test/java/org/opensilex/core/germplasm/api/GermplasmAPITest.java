@@ -643,7 +643,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
      */
     @Test
     public void testUriEncoding() throws Exception {
-        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        String uriWithSpecialChar = "http://myuri/%C3%A9";
         URI decodedURI = URI.create("http://myuri/é");
 
         GermplasmCreationDTO creationDto = getCreationSpeciesDTO();

@@ -114,6 +114,7 @@ import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import Foaf from "@/ontologies/Foaf";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -206,6 +207,10 @@ export default class GlobalUriSearchResult extends Vue {
     return this.$opensilex.Oeev.checkURIs(this.type, "http://www.w3.org/ns/oa#Annotation");
   }
 
+  private isPerson(){
+    return this.$opensilex.Oeev.checkURIs(this.type, Foaf.PERSON_TYPE_URI);
+  }
+
   private getEventPromise(): Promise<HttpResponse<OpenSilexResponse>> {
     if (this.isMove()) {
       return this.eventsService.getMoveEvent(this.uri);
@@ -240,6 +245,10 @@ export default class GlobalUriSearchResult extends Vue {
     //If type is a germplasm group then build path manually
     if(this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
       return "/germplasm/group?selected="+ encodeURIComponent(this.uri);
+    }
+    //If type is a person then build path manually, elements can't be selected in persons table so we just go to table
+    if(this.isPerson()){
+      return "/persons";
     }
     //Check if type is one of the wierd other components on variables page that doesn't have its own page (Entities, etc...)
     formattedPath = this.$opensilex.getVariableComponentPath(this.type, this.uri);

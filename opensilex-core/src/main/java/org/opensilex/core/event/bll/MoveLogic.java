@@ -162,6 +162,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     public ListWithPagination<MoveModel> searchMovesWithLocationObservation(MoveSearchFilter filter) throws Exception {
         //Get moves
         ListWithPagination<MoveModel> moves = dao.search(filter);
+        if(CollectionUtils.isEmpty(moves.getList())){
+            return moves;
+        }
         //Get locations
         List<LocationObservationModel> correspondingLocObs =
                 getMovesCorrespondingLocationObservationModels(
@@ -741,6 +744,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             List<URI> modelUris,
             LocationObservationLogic locObsLogic
     ){
+        if(CollectionUtils.isEmpty(modelUris)){
+            return Collections.emptyList();
+        }
         LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
         locationObservationSearchFilter.setMoveUris(modelUris);
         locationObservationSearchFilter.setPageSize(ScientificObjectCsvImporterLogic.LOCATION_FETCHING_PAGE_SIZE);

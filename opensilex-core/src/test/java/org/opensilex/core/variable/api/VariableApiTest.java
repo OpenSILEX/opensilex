@@ -60,7 +60,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         germplasm = GermplasmAPITest.getCreationSpeciesDTO();
         final Response postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), germplasm);
         assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
-        germplasm.setUri(extractUriFromResponse(postGermplasmResult));
+        germplasm.setUri(extractUriFromResponse(postGermplasmResult).toString());
     }
 
     public VariableCreationDTO getCreationDto() throws Exception {
@@ -239,8 +239,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getUnit(), dtoFromDb.getUnit().getUri()));
     }
 
-    private final static URI GERMPLASM_URI_1 = URI.create("test:species_testCreateWithSpeciesOK_1");
-    private final static URI GERMPLASM_URI_2 = URI.create("test:species_testCreateWithSpeciesOK_2");
+    private final static String GERMPLASM_URI_1 = "test:species_testCreateWithSpeciesOK_1";
+    private final static String GERMPLASM_URI_2 = "test:species_testCreateWithSpeciesOK_2";
 
     @Test
     /**
@@ -264,7 +264,10 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         // create variable with species -> should be CREATED
         VariableCreationDTO dto = getCreationDto();
         dto.setUri(URI.create("test:variable_testCreateWithSpeciesOK"));
-        dto.setSpecies(Arrays.asList(species1.getUri(), species2.getUri()));
+        dto.setSpecies(Arrays.asList(
+                URI.create(species1.getUri()),
+                URI.create(species2.getUri()))
+        );
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -279,9 +282,9 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         assertEquals(
                 Sets.newHashSet(
-                        SPARQLDeserializers.formatURI(species1.getUri()),
-                        SPARQLDeserializers.formatURI(species2.getUri())),
-                dtoFromDb.getSpecies().stream().map(speciesDTO -> SPARQLDeserializers.formatURI(speciesDTO.getUri())).collect(Collectors.toSet())
+                        SPARQLDeserializers.getExpandedURI(species1.getUri()),
+                        SPARQLDeserializers.getExpandedURI(species2.getUri())),
+                dtoFromDb.getSpecies().stream().map(speciesDTO -> SPARQLDeserializers.getExpandedURI(speciesDTO.getUri())).collect(Collectors.toSet())
         );
 
     }
@@ -309,7 +312,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         GermplasmCreationDTO speciesOfVariety = new GermplasmCreationDTO();
         speciesOfVariety.setName("speciesOfVariety");
         speciesOfVariety.setRdfType(URI.create(Oeso.Species.getURI()));
-        speciesOfVariety.setUri(URI.create("test:speciesOfVariety"));
+        speciesOfVariety.setUri("test:speciesOfVariety");
 
         // ensure species was created
         Response postSpeciesResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), speciesOfVariety);
@@ -318,8 +321,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         GermplasmCreationDTO variety = new GermplasmCreationDTO();
         variety.setName("variety");
         variety.setRdfType(URI.create(Oeso.Germplasm.toString()));
-        variety.setUri(URI.create("test:test_variety"));
-        variety.setSpecies(speciesOfVariety.getUri());
+        variety.setUri("test:test_variety");
+        variety.setSpecies(URI.create(speciesOfVariety.getUri()));
 
         // ensure variety was created
         Response postVarietyResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), variety);
@@ -327,7 +330,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // create variable with variety -> should fail, since variable expect species, not variety
         VariableCreationDTO dto = getCreationDto();
-        dto.setSpecies(Arrays.asList(variety.getUri()));
+        dto.setSpecies(Arrays.asList(URI.create(variety.getUri())));
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());

@@ -14,7 +14,7 @@ import org.bson.Document;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.api.CsvImportDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;

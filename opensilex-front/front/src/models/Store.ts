@@ -1,12 +1,12 @@
- 
-import {User} from './User' 
-import {Menu} from './Menu';
-import {OpenSilexRouter} from './OpenSilexRouter';
+
+import { User } from './User'
+import { Menu } from './Menu';
+import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
-import {AuthenticationService} from 'opensilex-security/index';
-import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
-import { createStore } from 'vuex'; 
-import { App } from 'vue';
+import { AuthenticationService } from 'opensilex-security/index';
+import { FrontConfigDTO, UserFrontConfigDTO } from "../lib";
+import { createStore } from 'vuex';
+import { App, markRaw } from 'vue';
 
 // Vue.use(VueRouter)
 
@@ -57,21 +57,21 @@ let renewTokenOnEvent = function (event) {
     return;
   }
 
-  if($opensilex) {
+  if ($opensilex) {
     console.log("opensilex plugin trouvé")
-  $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService")
-    .renewToken()
-    .then((http) => {
-      console.debug("Token renewed", http.response.result.token);
-      console.log("🍅 current User : ", currentUser)
-      console.log("🍅 token set : " , http.response.result.token)
-      currentUser.setToken(http.response.result.token);
-      $opensilex.$store.commit("login", currentUser);
-    })
-    .catch(console.error);
-} else {
-  console.log("OPENSILEX PLUGIN not found")
-}
+    $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService")
+      .renewToken()
+      .then((http) => {
+        console.debug("Token renewed", http.response.result.token);
+        console.log("🍅 current User : ", currentUser)
+        console.log("🍅 token set : ", http.response.result.token)
+        currentUser.setToken(http.response.result.token);
+        $opensilex.$store.commit("login", currentUser);
+      })
+      .catch(console.error);
+  } else {
+    console.log("OPENSILEX PLUGIN not found")
+  }
 }
 
 
@@ -91,18 +91,30 @@ let defaultUserConfig: UserFrontConfigDTO = {
   userIsAnonymous: true
 };
 
-let computePage = function(router) {
+const computePage = function (router) {
+  if (!router || !router.currentRoute) {
+    return {};
+  }
+
+  const currentRoute = router.currentRoute.value;
+
+  if (!currentRoute) {
+    return {};
+  }
+
   let queryParams = new URLSearchParams(window.location.search);
   let queryValues = {};
   queryParams.forEach((value, key) => {
     queryValues[key] = value;
   });
+
   let realRoute: any = {};
-  for (let i in router.currentRoute) {
+
+  for (let i in currentRoute) {
     if (i == "query") {
       realRoute.query = queryValues;
     } else {
-      realRoute[i] = router.currentRoute[i];
+      realRoute[i] = currentRoute[i];
     }
   }
   return realRoute;
@@ -187,7 +199,7 @@ let store = createStore({
 
       currentUser = user;
       state.user = user;
-  
+
 
       if (expireTimeout != undefined) {
         console.debug("Clear token timeout");
@@ -233,7 +245,7 @@ let store = createStore({
           state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
         }
       }
-      
+
     },
     logout(state) {
       // console.debug("Logout");
@@ -261,10 +273,10 @@ let store = createStore({
       const opensilexPlugin = (this as any).$opensilex;
 
       if (opensilexPlugin) {
-        
-          opensilexPlugin.clearCookie();
+
+        opensilexPlugin.clearCookie();
       } else {
-          console.error("OpenSilexVuePlugin n'est pas initialisé dans le store.");
+        console.error("OpenSilexVuePlugin n'est pas initialisé dans le store.");
       }
 
 
@@ -279,7 +291,9 @@ let store = createStore({
     },
     setConfig(state, args: { config: FrontConfigDTO, app: App }) {
       state.config = args.config;
-      state.openSilexRouter = new OpenSilexRouter(args.config.pathPrefix, args.app);
+      // Use markRaw to prevent Vue from making the router instance deeply reactive
+      // This preserves the internal structure (Ref) of router.currentRoute
+      state.openSilexRouter = markRaw(new OpenSilexRouter(args.config.pathPrefix, args.app));
       state.openSilexRouter.setConfig(args.config);
     },
     setUserConfig(state, userConfig: UserFrontConfigDTO) {
@@ -302,30 +316,30 @@ let store = createStore({
       }
     },
     toggleMenu(state) {
-      setTimeout(function() {
-        if (typeof(Event) === 'function') {
+      setTimeout(function () {
+        if (typeof (Event) === 'function') {
           // modern browsers
           window.dispatchEvent(new Event('resize'));
         } else {
           // for IE and other old browsers
           // causes deprecation warning on modern browsers
-          var evt = window.document.createEvent('UIEvents'); 
-          evt.initUIEvent('resize', true, false, window, 0); 
+          var evt = window.document.createEvent('UIEvents');
+          evt.initUIEvent('resize', true, false, window, 0);
           window.dispatchEvent(evt);
         }
       }, 500); // trigger the resize event to resize Highcharts container
       state.menuVisible = !state.menuVisible;
     },
     toggleMenuOnSelect(state) {
-      setTimeout(function() {
-        if (typeof(Event) === 'function') {
+      setTimeout(function () {
+        if (typeof (Event) === 'function') {
           // modern browsers
           window.dispatchEvent(new Event('resize'));
         } else {
           // for IE and other old browsers
           // causes deprecation warning on modern browsers
-          var evt = window.document.createEvent('UIEvents'); 
-          evt.initUIEvent('resize', true, false, window, 0); 
+          var evt = window.document.createEvent('UIEvents');
+          evt.initUIEvent('resize', true, false, window, 0);
           window.dispatchEvent(evt);
         }
       }, 500); // trigger the resize event to resize Highcharts container
@@ -353,7 +367,7 @@ let store = createStore({
         state.previousPage.push(state.previousPageCandidate);
       }
       state.previousPageCandidate = null;
-    }, 
+    },
     storeReturnPage(state, router) {
       state.previousPage.push(computePage(router));
     },

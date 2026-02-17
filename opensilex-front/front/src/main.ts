@@ -10,7 +10,7 @@ const DEV_BASE_API_PATH = "http://localhost:8666/rest";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 
-import { createApp,  ref, reactive, computed  } from "vue";
+import { createApp, ref, reactive, computed } from "vue";
 import { createI18n } from 'vue-i18n';
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import ToastContainer from './components/common/toastContainer.vue';
-import { create, NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace, NTag, DataTableRowKey, NDrawer, NDrawerContent, NForm, NFormItem, NSwitch, NCheckbox, NCollapse, NCollapseItem, NDivider  } from 'naive-ui';
+import { create, NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace, NTag, DataTableRowKey, NDrawer, NDrawerContent, NForm, NFormItem, NSwitch, NCheckbox, NCollapse, NCollapseItem, NDivider } from 'naive-ui';
 import vue3Tour from 'vue3-tour';
 import 'vue3-tour/dist/vue3-tour.css';
 
@@ -39,7 +39,7 @@ const naive = create({
 const i18n = createI18n({
   fallbackLocale: 'en',
   locale: lang,
-  
+
   messages: {
     en,
     fr
@@ -59,12 +59,12 @@ const i18n = createI18n({
   numberFormats: {
     "en": {
       decimal: {
-        style: 'decimal',  
+        style: 'decimal',
       },
     },
     "fr": {
       decimal: {
-        style: 'decimal' 
+        style: 'decimal'
       },
     }
   }
@@ -128,7 +128,7 @@ import store from './models/Store'
 
 // Local imports
 // console.debug("Import local files...");
-import {FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO, UserFrontConfigDTO} from './lib'
+import { FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO, UserFrontConfigDTO } from './lib'
 import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
@@ -265,129 +265,132 @@ $opensilex.loadModules([
   // "opensilex-dataverse"
 ]).then(() => {
   // Not seems mandatory in vue 3, need to test when component are loaded from other modules
-    // Get OpenSilex configuration
-    // console.debug("Start loading configuration...");
-    let loadConfigFromOSVuePlugin = $opensilex.getConfig()
-    // loadConfigFromOSVuePlugin;
-    const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
-    vueJsService.getConfig().then((configResponse) => {
-      const config: FrontConfigDTO = configResponse.response.result;
-      $opensilex.setConfig(config);
+  // Get OpenSilex configuration
+  // console.debug("Start loading configuration...");
+  let loadConfigFromOSVuePlugin = $opensilex.getConfig()
+  // loadConfigFromOSVuePlugin;
+  const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
+  vueJsService.getConfig().then((configResponse) => {
+    const config: FrontConfigDTO = configResponse.response.result;
+    $opensilex.setConfig(config);
 
-      store.commit("setConfig", { config, app });
-      // console.debug("Configuration loaded", config);
+    store.commit("setConfig", { config, app });
+    // console.debug("Configuration loaded", config);
 
-      // Define user
-      // console.debug("Define current user...");
-      let user: User | undefined = undefined;
-      if (urlParams.has("token")) {
-        let token = urlParams.get("token");
-        // console.debug("Try to load user from URL token...");
-        if (token != null) {
-          user = User.fromToken(token);
-          $opensilex.setCookieValue(user);
-          // console.debug("User successfully loaded from URL token !");
+    // Define user
+    // console.debug("Define current user...");
+    let user: User | undefined = undefined;
+    if (urlParams.has("token")) {
+      let token = urlParams.get("token");
+      // console.debug("Try to load user from URL token...");
+      if (token != null) {
+        user = User.fromToken(token);
+        $opensilex.setCookieValue(user);
+        // console.debug("User successfully loaded from URL token !");
+      }
+    }
+
+    if (user == undefined) {
+      user = $opensilex.loadUserFromCookie();
+    }
+
+    // Set language
+    if (!user.isLoggedIn()) {
+      // console.debug("User is ANONYMOUS !");
+      // i18n.locale = lang;
+    } else {
+      // console.debug("User is:", user.getEmail());
+      // i18n.locale = user.getLocale() || lang;
+    }
+    // Init user in store
+    store.commit("login", user);
+
+
+    // Load user-specific configuration
+    vueJsService.getUserConfig()
+      .then(function (userConfigResponse) {
+        const userConfig: UserFrontConfigDTO = userConfigResponse.response.result;
+
+        store.commit("setUserConfig", userConfig);
+
+        let baseURL = window.location.href.split(/[?#]/)[0];
+
+        // If user is anonymous in the API but logged in according to the cookie, we must force the logout
+        if (userConfig.userIsAnonymous && user.isLoggedIn()) {
+          console.debug("User should be anonymous, force logout");
+          store.commit("logout");
+          window.location = baseURL;
         }
-      }
 
-      if (user == undefined) {
-        user = $opensilex.loadUserFromCookie();
-      }
+        const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
+        if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
+          console.debug("Identify user with OpenID Connect");
+          authService.authenticateOpenID(urlParams.get("code"))
+            .then((http) => {
+              let user = User.fromToken(http.response.result.token);
+              $opensilex.setCookieValue(user);
+              window.location = baseURL.slice(0, -7);
+            }).catch(manageError);
+        } else if (baseURL.endsWith("/app/saml") && urlParams.has("token")) {
+          console.debug("Authenticate user through SAML");
+          let user = User.fromToken(urlParams.get("token"));
+          $opensilex.setCookieValue(user);
+          window.location = baseURL.slice(0, -5);
+        } else {
+          let themePromise: Promise<any> = loadTheme(vueJsService, config);
 
-      // Set language
-      if (!user.isLoggedIn()) {
-        // console.debug("User is ANONYMOUS !");
-        // i18n.locale = lang;
-      } else {
-        // console.debug("User is:", user.getEmail());
-        // i18n.locale = user.getLocale() || lang;
-      }
-      // Init user in store
-      store.commit("login", user);
+          themePromise
+            .then(() => {
+              // Load only necessary component if application is embed in an iframe
+              let embed = urlParams.has('embed');
+
+              if (embed) {
+                // console.debug("Application is embed");
+              } else {
+                // console.debug("Application is not embed");
+              }
+
+              // Init routing
+              store.commit("resetRouter");
+              let router: Router = store.state.openSilexRouter.getRouter();
+
+              // Register router so components can access it during loading
+              app.use(router);
+
+              // Initialise main layout components from configuration
+              let modulesToLoad: ModuleComponentDefinition[] = [
+                ModuleComponentDefinition.fromString(config.homeComponent),
+                ModuleComponentDefinition.fromString(config.notFoundComponent)
+              ];
+
+              if (!embed) {
+                modulesToLoad = modulesToLoad.concat([
+                  ModuleComponentDefinition.fromString(config.footerComponent),
+                  ModuleComponentDefinition.fromString(config.headerComponent),
+                  ModuleComponentDefinition.fromString(config.loginComponent),
+                  ModuleComponentDefinition.fromString(config.menuComponent)
+                ]);
+              } else {
+                console.log("Application is embed");
+                console.debug("Application is embed");
+              }
+
+              Promise.all([
+                $opensilex.loadVersionInfo(),
+                $opensilex.loadFactorCategories(),
+                $opensilex.loadDataTypes(),
+                $opensilex.loadVariableDataTypes(),
+                $opensilex.loadNameSpaces(),
+                $opensilex.loadObjectTypes(),
+                $opensilex.loadComponentModules(modulesToLoad),
+                router.isReady()
+              ]).then(() => {
+                app.mount('#app');
 
 
-      // Load user-specific configuration
-      vueJsService.getUserConfig()
-        .then(function (userConfigResponse) {
-          const userConfig: UserFrontConfigDTO = userConfigResponse.response.result;
-
-          store.commit("setUserConfig", userConfig);
-
-          let baseURL = window.location.href.split(/[?#]/)[0];
-
-          // If user is anonymous in the API but logged in according to the cookie, we must force the logout
-          if (userConfig.userIsAnonymous && user.isLoggedIn()) {
-            console.debug("User should be anonymous, force logout");
-            store.commit("logout");
-            window.location = baseURL;
-          }
-
-          const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
-          if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
-            console.debug("Identify user with OpenID Connect");
-            authService.authenticateOpenID(urlParams.get("code"))
-              .then((http) => {
-                let user = User.fromToken(http.response.result.token);
-                $opensilex.setCookieValue(user);
-                window.location = baseURL.slice(0, -7);
               }).catch(manageError);
-          } else if (baseURL.endsWith("/app/saml") && urlParams.has("token")) {
-            console.debug("Authenticate user through SAML");
-            let user = User.fromToken(urlParams.get("token"));
-            $opensilex.setCookieValue(user);
-            window.location = baseURL.slice(0, -5);
-          } else {
-            let themePromise: Promise<any> = loadTheme(vueJsService, config);
-
-            themePromise
-              .then(() => {
-                // Load only necessary component if application is embed in an iframe
-                let embed = urlParams.has('embed');
-
-                if (embed) {
-                  // console.debug("Application is embed");
-                } else {
-                  // console.debug("Application is not embed");
-                }
-
-                // Init routing
-                store.commit("resetRouter");
-                let router: Router = store.state.openSilexRouter.getRouter();
-                app.use(router);
-                 // Initialise main layout components from configuration
-                let modulesToLoad: ModuleComponentDefinition[] = [
-                  ModuleComponentDefinition.fromString(config.homeComponent),
-                  ModuleComponentDefinition.fromString(config.notFoundComponent)
-                ];
-
-                if (!embed) {
-                  modulesToLoad = modulesToLoad.concat([
-                    ModuleComponentDefinition.fromString(config.footerComponent),
-                    ModuleComponentDefinition.fromString(config.headerComponent),
-                    ModuleComponentDefinition.fromString(config.loginComponent),
-                    ModuleComponentDefinition.fromString(config.menuComponent)
-                  ]);
-                } else {
-                  console.log("Application is embed");
-                  console.debug("Application is embed");
-                }
-                
-                 Promise.all([
-                  $opensilex.loadVersionInfo(),
-                  $opensilex.loadFactorCategories(),
-                  $opensilex.loadDataTypes(),
-                  $opensilex.loadVariableDataTypes(),
-                  $opensilex.loadNameSpaces(),
-                  $opensilex.loadObjectTypes(),
-                  $opensilex.loadComponentModules(modulesToLoad),
-                  router.isReady()
-                ]).then(() => {
-                  app.mount('#app');
-
-
-                }).catch(manageError);
-              }).catch(manageError);
-          }
+            }).catch(manageError);
+        }
       }).catch(manageError);
-    }).catch(manageError);
   }).catch(manageError);
+}).catch(manageError);

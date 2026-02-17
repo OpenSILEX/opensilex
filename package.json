@@ -36,6 +36,7 @@
         "vue3-tour": "^1.0.3",
         "vuex": "4.1.0",
         "whatwg-fetch": "3.6.20",
+        "wkt": "^0.1.1",
         "yup": "^1.7.0"
     },
     "devDependencies": {

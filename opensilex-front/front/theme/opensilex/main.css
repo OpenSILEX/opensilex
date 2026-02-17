@@ -573,6 +573,16 @@ body.modal-open {
     color: red;
     transition: 0.5s
 }
+
+/* La modale de confirmation doit être au-dessus d'une modale déjà ouverte dans le contexte de modales superposées  */
+/* Au-dessus des n-modal Naive */
+.delete-confirm-modal {
+    z-index: 10050 !important;
+  }
+  .modal-backdrop.delete-confirm-backdrop {
+    z-index: 10040 !important;
+  }
+  
 /********************************
 * 
 ********************************/

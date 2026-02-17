@@ -605,7 +605,39 @@
             }
         },
         "events":{
-            "details": "Voir les détails de l'évènement"
+            "details": "Voir les détails de l'évènement",
+            "is-instant": "Événement instantané",
+            "start": "Début",
+            "end": "Fin",
+            "name": "L'événement",
+            "add": "Ajouter un événement",
+            "add-multiple": "Ajouter des événements",
+            "edit": "Éditer un événement",
+            "uri-help": "URI de l'évenement (auto-générée si vide)",
+            "uri-example": "os-event:trouble1",
+            "type-placeholder": "Selectionner un type d'événement",
+            "type-help": "URI du type d'événement",
+            "type-example": "oeev:Trouble",
+            "description": "Description de l'événement",
+            "start-help": "Début de l'événement, uniquement si celui-ci n'est pas instantané",
+            "start-example": "2019-09-08T13:00:00+01:00",
+            "targets": "Concerne",
+            "targets-help": "Objet(s) concerné(s) sont \"Appareils\" et \"Objets scientifiques\"",
+            "target-help": "URI de l'objet concerné par l'évènement (Doit exister).",
+            "targets-example": "os-so:plant1",
+            "uri-error": "Création annulée, URI non trouvée - {error}",
+            "end-help": "Fin de l'événement, requis si celui-ci est instantané",
+            "list-title": "Événements",
+            "is-instant-help": "Indique si l'évenement est instantané ou non",
+            "is-instant-example": "vrai ou faux",
+            "event": "Évenement",
+            "creator": "Créateur",
+            "publisher": "Publieur",
+            "datePublication": "Publié",
+            "lastUpdateDate": "Modifié",
+            "specific-properties": "Propriétés spécifiques",
+            "multiple-insert": "événement(s) enregistré(s)",
+            "move-multiple-insert": "déplacement(s) enregistré(s)"
         },
         "sharedResourceInstances": {
             "selector-placeholder":"Choisir une source",
@@ -650,6 +682,7 @@
             "record_author": "Saisie par",
             "organizations": "Organisations",
             "facilities": "Installations techniques",
+            "filter-label-placeholder": "Saisir un nom",
             "contacts": "Contacts",
             "add": "Ajouter une expérimentation",
             "update": "Modifier l'expérimentation",
@@ -863,6 +896,7 @@
             "delete": "Supprimer l'organisation"
         },
         "site": {
+            "description": "Gérer et configurer les sites",
             "update": "Modifier le site",
             "delete": "Supprimer le site"
 

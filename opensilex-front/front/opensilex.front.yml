@@ -60,8 +60,8 @@ menu:
           credentials:
             - organization-access
           icon: bi#bi-geo-alt
-          title: SiteView.title
-          description: SiteView.description
+          title: component.common.organization.sites
+          description: component.site.description
       - id: persons
         label: component.menu.security.persons
         route:
@@ -307,8 +307,8 @@ routes:
   # - path: /organization/details/:uri
   #   component: opensilex-OrganizationDetailView
   #   icon: ik#ik-globe
-  # - path: /organization/site/details/:uri
-  #   component: opensilex-SiteView
+  - path: /organization/site/details/:uri
+    component: opensilex-SiteDetailView
   # - path: /experiment/details/:uri
   #   component: opensilex-ExperimentView
   #   rdfType: vocabulary:Experiment

@@ -171,7 +171,7 @@
           <opensilex-UriLink
             :uri="data.item.uri"
             :value="data.item.name"
-            :to="{ path: '/project/details/' + encodeURIComponent(data.item.uri) }",
+            :to="{ path: '/project/details/' + encodeURIComponent(data.item.uri) }"
             :allowCopy= "true"
           />
         </template>

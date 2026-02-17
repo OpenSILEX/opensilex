@@ -12,7 +12,7 @@
     <!-- Modal Bootstrap 5 -->
     <teleport to="body">
     <div
-      class="modal fade"
+      class="modal fade delete-confirm-modal"
       tabindex="-1"
       ref="modalRef"
       aria-labelledby="deleteModalLabel"
@@ -78,6 +78,19 @@ onMounted(() => {
 
 function openModal() {
   modalInstance?.show()
+
+  setTimeout(() => {
+    // force z-index modal au dessus pour les modales supperpo
+    if (modalRef.value) (modalRef.value as any).style.zIndex = '10050'
+
+    // force z-index du backdrop Bootstrap (celui créé en dernier)
+    const backdrops = document.querySelectorAll('.modal-backdrop')
+    const last = backdrops[backdrops.length - 1] as HTMLElement | undefined
+    if (last) {
+      last.classList.add('delete-confirm-backdrop')
+      last.style.zIndex = '10040'
+    }
+  })
 }
 
 function closeModal() {

@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, nextTick } from 'vue'
+import { ref, watch, computed, onMounted, nextTick, useAttrs } from 'vue'
 import { NTreeSelect } from 'naive-ui'
 import { debounce } from 'lodash-es'
 
@@ -76,6 +76,18 @@ const emit = defineEmits<{
   (e: 'enterKey', value: KeyboardEvent): void
 }>()
 
+const attrs = useAttrs()
+
+// filterable: si l’appelant le force via $attrs, il gagne.
+// sinon: filterable seulement si searchMethod
+const isFilterable = computed(() => {
+  const attrVal = (attrs as any).filterable
+  if (typeof attrVal === 'boolean') return attrVal
+  if (attrVal === '' || attrVal === 'true') return true
+  if (attrVal === 'false') return false
+  return !!props.searchMethod
+})
+
 // state
 const treeref = ref<InstanceType<typeof NTreeSelect> | null>(null)
 const options = ref<TreeOpt[]>([])                 // options Naive {key,label}
@@ -107,7 +119,7 @@ const treeSelectBindings = computed(() => ({
   checkable: props.checkable,
   options: options.value,
   clearable: true,
-  filterable: !!props.searchMethod,
+  filterable: isFilterable.value,
   disabled: props.disabled,
   placeholder: props.placeholder,
   value: value.value,
@@ -272,9 +284,11 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   emit('resultCount', resultCount.value)
 }
 const debounceSearch = debounce(runSearch, 250)
-function onSearchChange(q: string) { 
-  console.log('[CTS] pattern ->', q)
-  debounceSearch(q) }
+
+// si pas de searchMethod: Naive filtre localement -> ne rien faire
+function onSearchChange(q: string) {
+  if (props.searchMethod) debounceSearch(q)
+}
 
 function handleFocus() {
   // if (!options.value.length) runSearch('.*')

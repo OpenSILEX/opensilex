@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { NDataTable, NPagination } from 'naive-ui';
 import { onMounted, useSlots } from 'vue';
@@ -184,14 +184,29 @@ function getCellTemplateName(key: string) {
 
 // Colonnes avec option de tri
 const normalizedFields = computed(() =>
-  props.fields.map((field: any) => ({
-    key: field.key,
-    title: field.label,
-    isSelect: field.isSelect,
-    sorter: field.sortable || false,
-    render: props.customRenderers[field.key] || undefined,
-  }))
-);
+  (props.fields || []).map((field: any) => {
+    const key = field.key
+    const slotName = `cell(${key})`
+
+    return {
+      key,
+      title: field.label,
+      isSelect: field.isSelect,
+      sorter: field.sortable || false,
+
+      // priorité :
+      // 1) customRenderers prop
+      // 2) slot cell(key)
+      // 3) fallback: affichage brut de row[key]
+      render:
+        props.customRenderers?.[key] ||
+        (slots[slotName]
+          ? (row: any) => slots[slotName]?.({ data: { item: row } })
+          : (row: any) => row?.[key])
+    }
+  })
+)
+
 
 
 watch(() => props.items, () => {

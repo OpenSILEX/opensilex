@@ -58,13 +58,9 @@ let renewTokenOnEvent = function (event) {
   }
 
   if($opensilex) {
-    console.log("opensilex plugin trouvé")
   $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService")
     .renewToken()
     .then((http) => {
-      console.debug("Token renewed", http.response.result.token);
-      console.log("🍅 current User : ", currentUser)
-      console.log("🍅 token set : " , http.response.result.token)
       currentUser.setToken(http.response.result.token);
       $opensilex.$store.commit("login", currentUser);
     })

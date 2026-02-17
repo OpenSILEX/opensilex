@@ -12,6 +12,7 @@
             <!-- v-bind="$attrs" -->
           <opensilex-CustomTreeselect
             ref="customTreeselect"
+            v-bind="$attrs"
             v-model:selected="selectedProxy"
             :searchMethod="searchMethod"
             :resultLimit="resultLimit"

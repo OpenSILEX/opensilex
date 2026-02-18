@@ -36,6 +36,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -79,7 +80,7 @@ public class GermplasmLogic {
      * @return updated or created germplasm as {@link List<GermplasmModel>}
      */
     public List<GermplasmModel> upsert(List<GermplasmModel> germplasmModels) throws Exception {
-        Collection<URI> existingUris = getNonExistingUris(germplasmModels.stream()
+        Collection<URI> existingUris = getExistingUris(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
                 .toList());
 
@@ -129,7 +130,7 @@ public class GermplasmLogic {
         if (germplasmModel.getUri() == null){
             throw new BadRequestException("Germplasm URI cannot be null for update.");
         }
-        if (getNonExistingUris(List.of(germplasmModel.getUri())).isEmpty()){
+        if (getExistingUris(List.of(germplasmModel.getUri())).isEmpty()){
             throw new NotFoundException(String.format("Germplasm URI %s not found.", germplasmModel.getUri()));
         }
         var multipleErrorObjectList = checkBeforeCreateOrUpdate(Collections.singletonList(germplasmModel), true);
@@ -262,7 +263,7 @@ public class GermplasmLogic {
                     MultipleErrorObjectList<MultipleCreateUpdateErrorObject,
                     GermplasmModel> errors) throws Exception {
 
-        Collection<URI> existingUris = getNonExistingUris(germplasmModels.stream()
+        Collection<URI> existingUris = getExistingUris(germplasmModels.stream()
                 .map(SPARQLResourceModel::getUri)
                 .toList());
 
@@ -512,12 +513,26 @@ public class GermplasmLogic {
     /**
      * @return the uris of already existing germplasms. If Uris are not valid, they are ignored.
      */
-    public Collection<URI> getNonExistingUris(List<URI> uris) throws Exception {
+    public Collection<URI> getExistingUris(List<URI> uris) throws Exception {
         //sort uris to keep only well formatted ones
         List<URI> validUris = uris.stream()
                 .filter(uri -> uri != null && !uri.toString().isBlank() && URIDeserializer.validateURI(uri.toString()))
                 .toList();
         return dao.checkExistence(validUris);
+    }
+
+    /**
+     * @return the uris of already existing germplasms. If Uris are not valid or not parsable, they are ignored.
+     * @see GermplasmLogic#getExistingUris(List)
+     */
+    public Collection<URI> getExistingUrisFromString(List<String> uris) throws Exception {
+        List<URI> parsedUris = new ArrayList<>();
+        for (String uri : uris) {
+            try {
+                parsedUris.add(new URI(uri));
+            } catch (URISyntaxException ignoredException) {}
+        }
+        return getExistingUris(parsedUris);
     }
 
     //#region private methods

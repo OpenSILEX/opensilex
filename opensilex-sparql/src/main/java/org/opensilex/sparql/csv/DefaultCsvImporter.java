@@ -14,6 +14,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.function.Supplier;
 
 /**
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
 public class DefaultCsvImporter<T  extends SPARQLResourceModel & ClassURIGenerator> extends AbstractCsvImporter<T>{
 
     public DefaultCsvImporter(SPARQLService sparql, Class<T> objectClass, Supplier<T> objectConstructor, URI publisher) throws SPARQLException {
-        super(sparql, objectClass, sparql.getDefaultGraphURI(objectClass), objectConstructor, publisher);
+        super(sparql, objectClass, sparql.getDefaultGraphURI(objectClass), objectConstructor, publisher, Collections.emptySet());
     }
 
 

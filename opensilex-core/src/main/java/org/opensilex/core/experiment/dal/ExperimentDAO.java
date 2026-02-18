@@ -228,9 +228,9 @@ public class ExperimentDAO {
 
     private SparqlSchema<ExperimentModel> getSparqlSchema(boolean fetchProjects, boolean fetchScientificSupervisors, boolean fetchTechnicalSupervisors) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
         List<SparqlSchemaSimpleNode<?>> childrenOfRoot = new ArrayList<>(List.of(
+                new SparqlSchemaSimpleNode<>(FundingModel.class, ExperimentModel.FUNDING_FIELD),
                 new SparqlSchemaSimpleNode<>(FacilityModel.class, ExperimentModel.FACILITY_FIELD),
-                new SparqlSchemaSimpleNode<>(SpeciesModel.class, ExperimentModel.SPECIES_FIELD),
-                new SparqlSchemaSimpleNode<>(FundingModel.class, ExperimentModel.FUNDING_FIELD)
+                new SparqlSchemaSimpleNode<>(SpeciesModel.class, ExperimentModel.SPECIES_FIELD)
         ));
         if(fetchProjects){
             childrenOfRoot.add(new SparqlSchemaSimpleNode<>(ProjectModel.class, ExperimentModel.PROJECT_URI_FIELD));
@@ -282,9 +282,19 @@ public class ExperimentDAO {
         }
     }
 
+    /**
+     * Applies the regex on any field we want to include, name and altLabel at the time of writing this.
+     *
+     * @param select , the Select request we are adding the filter to.
+     * @param name pattern to apply on name field and altLabel field.
+     */
     private void appendRegexLabelFilter(SelectBuilder select, String name) {
         if (!StringUtils.isEmpty(name)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name));
+            select.addFilter(
+                    SPARQLQueryHelper.or(
+                            SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name),
+                            SPARQLQueryHelper.regexFilter(ExperimentModel.ALTERNATIVE_NAME_FIELD_NAME, name)
+                    ));
         }
     }
 

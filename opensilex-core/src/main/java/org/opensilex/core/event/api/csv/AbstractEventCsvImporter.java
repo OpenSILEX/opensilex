@@ -5,11 +5,17 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.event.bll.EventLogic;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -69,8 +75,9 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
     protected final OntologyDAO ontologyDAO;
 
     private final AccountModel user;
+    private final EventLogic<EventModel, EventSearchFilter> eventLogic;
 
-    protected AbstractEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, AccountModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+    protected AbstractEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, AccountModel user, MongoDBService mongo) throws SPARQLException, SPARQLDeserializerNotFoundException {
         this.ontologyDAO = ontologyDAO;
         this.file = file;
         this.user = user;
@@ -80,6 +87,8 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 .getClassAnalyzer()
                 .getManagedProperties().stream().map(property -> URIDeserializer.formatURIAsStr(property.getURI()))
                 .collect(Collectors.toSet());
+
+        eventLogic = new EventLogic<>(sparql, mongo, user, EventModel.class);
     }
 
 
@@ -366,7 +375,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
      * @param rowIndex the row index into the file
      * @param colIndex the current col index into the row
      */
-    protected void readCommonsProps(T model , String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException{
+    protected void readCommonsProps(T model , String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException, SPARQLException {
 
         if(row.length < getHeader().size()){
 
@@ -397,18 +406,24 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         }
 
         String start = row[colIndex.getAndIncrement()];
-        if(! StringUtils.isEmpty(start)) {
-            InstantModel startModel = new InstantModel();
-            try{
-                startModel.setDateTimeStamp(OffsetDateTime.parse(start));
-                model.setStart(startModel);
-            }catch (DateTimeParseException e){
-                CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, start,"start");
-                validation.addInvalidValueError(cell);
-            }
+        try{
+            eventLogic.applyValueOnStartField(start, model);
+        } catch(BadRequestException | DateTimeParseException e){
+            CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start, EventModel.START_FIELD);
+            cell.setMessage(e.getMessage());
+            validation.addInvalidDateErrors(cell);
         }
 
         String end = row[colIndex.getAndIncrement()];
+        try{
+            eventLogic.applyValueOnEndField(start, model);
+        } catch(BadRequestException | DateTimeParseException e){
+            CSVCell cell = new CSVCell(rowIndex,colIndex.get(), end, EventModel.END_FIELD);
+            cell.setMessage(e.getMessage());
+            validation.addInvalidDateErrors(cell);
+        }
+
+        //Some extra validations to do if end was empty
         if (StringUtils.isEmpty(end)) {
 
             if(model.getIsInstant() == null || model.getIsInstant()){
@@ -419,24 +434,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-2, start,"start");
                 validation.addMissingRequiredValue(cell);
             } 
-        } else {
-            InstantModel endModel = new InstantModel();
-            try {
-                endModel.setDateTimeStamp(OffsetDateTime.parse(end));
-                model.setEnd(endModel);
-            }catch (DateTimeParseException e){
-                CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
-                validation.addInvalidValueError(cell);
-            }
-        }
-
-        // End & start comparison
-        if (model.getStart() != null && model.getEnd() != null) {
-            if (model.getStart().getDateTimeStamp().isAfter(model.getEnd().getDateTimeStamp())) {
-                CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start, EventModel.START_FIELD);
-                cell.setMessage("EventCsvForm.invalidDate");
-                validation.addInvalidDateErrors(cell);
-            }
         }
 
         String target = row[colIndex.getAndIncrement()];

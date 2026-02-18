@@ -1,5 +1,6 @@
 package org.opensilex.core.location.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -20,6 +21,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +41,10 @@ public class LocationObservationCollectionDAO {
     public URI create(LocationObservationCollectionModel locationObservationCollectionModel) throws Exception {
         sparql.create(locationObservationCollectionModel);
         return locationObservationCollectionModel.getUri();
+    }
+
+    public void createList(List<LocationObservationCollectionModel> locObsCollectionModels) throws Exception {
+        sparql.create(locObsCollectionModels);
     }
 
     public LocationObservationCollectionModel get(URI collectionURI) throws Exception {
@@ -128,8 +134,9 @@ public class LocationObservationCollectionDAO {
                     return resourceModel;
                 },
                 sparqlResult -> {
-                    LocationObservationCollectionModel collectionModel = new LocationObservationCollectionModel();
-                    collectionModel.setFeatureOfInterest(URI.create(sparqlResult.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                    LocationObservationCollectionModel collectionModel = new LocationObservationCollectionModel(
+                            URI.create(sparqlResult.getStringValue(SPARQLResourceModel.URI_FIELD))
+                    );
                     collectionModel.setUri(URI.create(sparqlResult.getStringValue(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD)));
                     return collectionModel;
                 }
@@ -140,8 +147,20 @@ public class LocationObservationCollectionDAO {
         sparql.delete(LocationObservationCollectionModel.class, collectionURI);
     }
 
-    public List<SPARQLResult> validateUniquenessObservationCollection(URI featureOfInterest) throws SPARQLException {
-        SelectBuilder select = new SelectBuilder().addWhere(makeVar(LocationObservationCollectionModel.GRAPH), SOSA.hasFeatureOfInterest, SPARQLDeserializers.nodeURI(featureOfInterest));
+    public void deleteMany(List<URI> collectionUris) throws Exception {
+        sparql.delete(LocationObservationCollectionModel.class, collectionUris);
+    }
+
+    public List<SPARQLResult> validateUniquenessObservationCollection(List<URI> featuresOfInterest) throws Exception {
+        if(CollectionUtils.isEmpty(featuresOfInterest)){
+            throw new Exception("you are trying to filter featuresOfInterest by a list of size 0!");
+        }
+        Var locationVar = makeVar(LocationObservationCollectionModel.GRAPH);
+        Var featureOfInterestVar = makeVar(LocationObservationCollectionModel.FEATURE_OF_INTEREST_FIELD);
+
+        SelectBuilder select = new SelectBuilder().addVar(locationVar).addWhere(locationVar, SOSA.hasFeatureOfInterest, featureOfInterestVar)
+                .addFilter(SPARQLQueryHelper.inURIFilter(featureOfInterestVar, featuresOfInterest));
+
 
         return sparql.executeSelectQuery(select);
     }

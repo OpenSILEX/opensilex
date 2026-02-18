@@ -1275,7 +1275,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         //build params
         ArrayList<URI> propsList= new ArrayList<>();
-        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
         propsList.add(new URI("vocabulary:hasFactorLevel"));
         propsList.add(new URI("vocabulary:hasGermplasm"));
         propsList.add(new URI("vocabulary:hasReplication"));

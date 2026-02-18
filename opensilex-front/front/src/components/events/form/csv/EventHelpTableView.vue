@@ -18,12 +18,12 @@
                         <b-th class="required uri-field">{{ $t("Event.target") }}</b-th>
                         <b-th>{{ $t("component.common.description") }}</b-th>
 
-                        <b-th class="uri-field" v-if="isMove">{{ $t("Position.from") }}</b-th>
-                        <b-th class="uri-field" v-if="isMove">{{ $t("Position.to") }}</b-th>
-                        <b-th v-if="isMove">{{ $t("Position.coordinates") }}</b-th>
-                        <b-th v-if="isMove">{{ $t("Position.x") }}</b-th>
-                        <b-th v-if="isMove">{{ $t("Position.y") }}</b-th>
-                        <b-th v-if="isMove">{{ $t("Position.z") }}</b-th>
+                        <b-th class="uri-field" v-if="isMove">{{ $t("component.common.geometry.from") }}</b-th>
+                        <b-th class="uri-field" v-if="isMove">{{ $t("component.common.geometry.too") }}</b-th>
+                        <b-th v-if="isMove">{{ $t("component.common.geometry.coordinates") }}</b-th>
+                        <b-th v-if="isMove">{{ $t("component.common.geometry.x") }}</b-th>
+                        <b-th v-if="isMove">{{ $t("component.common.geometry.y") }}</b-th>
+                        <b-th v-if="isMove">{{ $t("component.common.geometry.z") }}</b-th>
                     </b-tr>
                 </b-thead>
                 <b-tbody>
@@ -49,12 +49,12 @@
                         <b-td>{{ $t("MoveHelpTableView.target-help") }}</b-td>
                         <b-td>{{ $t("component.common.description") }}</b-td>
 
-                        <b-td>{{ $t("Position.from-help") }}</b-td>
-                        <b-td>{{ $t("Position.to-help") }}</b-td>
-                        <b-td>{{ $t("Position.coordinates-help") }}</b-td>
-                        <b-td>{{ $t("Position.x-help") }}</b-td>
-                        <b-td>{{ $t("Position.y-help") }}</b-td>
-                        <b-td>{{ $t("Position.z-help") }}</b-td>
+                        <b-td>{{ $t("component.common.geometry.from-help") }}</b-td>
+                        <b-td>{{ $t("component.common.geometry.to-help") }}</b-td>
+                        <b-td>{{ $t("component.common.geometry.geometry-help") }}</b-td>
+                        <b-td>{{ $t("component.common.geometry.x-help") }}</b-td>
+                        <b-td>{{ $t("component.common.geometry.y-help") }}</b-td>
+                        <b-td>{{ $t("component.common.geometry.z-help") }}</b-td>
                     </b-tr>
 
                     <b-tr class="alert alert-info">

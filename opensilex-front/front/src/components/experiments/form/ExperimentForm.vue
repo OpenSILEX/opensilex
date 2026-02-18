@@ -56,6 +56,7 @@ export default class ExperimentForm extends Vue {
       funding: [],
       variables: [],
       sensors: [],
+      alternative_name:""
     };
   }
 

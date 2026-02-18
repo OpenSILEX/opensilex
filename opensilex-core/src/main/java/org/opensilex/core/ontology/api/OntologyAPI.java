@@ -8,7 +8,7 @@ package org.opensilex.core.ontology.api;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.BooleanUtils;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;

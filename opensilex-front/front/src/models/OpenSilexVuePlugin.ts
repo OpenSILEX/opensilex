@@ -1,9 +1,9 @@
-import {Container} from 'inversify';
-import {VueJsOntologyExtensionService} from './../lib/api/vueJsOntologyExtension.service';
-import {SystemService} from '../../../../opensilex-core/front/src/lib/api/system.service';
-import {useCookies} from 'vue3-cookies';
+import { Container } from 'inversify';
+import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
+import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
+import { useCookies } from 'vue3-cookies';
 import VueI18n from 'vue-i18n';
-import {Store} from 'vuex';
+import { Store } from 'vuex';
 import {
     ApiServiceBinder,
     FrontConfigDTO,
@@ -23,17 +23,17 @@ import Oeev from '../ontologies/Oeev';
 import Time from '../ontologies/Time';
 import Rdfs from '../ontologies/Rdfs';
 
-import {ModuleComponentDefinition} from './ModuleComponentDefinition';
+import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
-import {UploadFileBody} from './UploadFileBody';
-import {User} from './User';
-import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
-import {ServiceBinder} from "../services/ServiceBinder";
-import {OntologyService, VariableDatatypeDTO, VariablesService} from 'opensilex-core/index';
+import { UploadFileBody } from './UploadFileBody';
+import { User } from './User';
+import { ResourceDagDTO } from "opensilex-core/model/resourceDagDTO";
+import { ServiceBinder } from "../services/ServiceBinder";
+import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
-import HttpResponse, {OpenSilexResponse} from "../lib/HttpResponse";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
+import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import { useI18n } from 'vue-i18n'
 
@@ -66,7 +66,7 @@ export default class OpenSilexVuePlugin {
     private baseApi: string;
     private config: FrontConfigDTO;
     private themeConfig: ThemeConfigDTO;
-    private app : App;
+    private app: App;
     private toastManager: any = null;
 
     public $store: Store<any>;
@@ -154,32 +154,32 @@ export default class OpenSilexVuePlugin {
      * @param context , uri of the containg experiment, null if no experiment
      * @param objectsPath , the pre-calculated uri to path map to search in
      */
-    getTargetPath(uri: string, context: string, objectPath : string) : string {
-        if(! objectPath){
+    getTargetPath(uri: string, context: string, objectPath: string): string {
+        if (!objectPath) {
             return "";
         }
 
         let osPath = objectPath.replace(':uri', encodeURIComponent(uri))
 
         // pass encoded experiment inside OS path URL,
-        if(context && context.length > 0){
+        if (context && context.length > 0) {
             console.log("😄 ", osPath)
             osPath = osPath.replace(':xpUri', encodeURIComponent(context));
             return osPath.replace(':experiment', encodeURIComponent(context));
-        }else{ // no experiment passed
+        } else { // no experiment passed
             console.log("😁", osPath)
             return osPath.replace(':experiment', "");
         }
     }
 
-     /**
-     *
-     * @param type
-     * @param uri
-     * @return path if the type is an Entity, Entity of Interest, Characteristic, Method, Unit or Group of Variables, null otherwise
-     *
-     */
-     getVariableComponentPath(type: string, uri:string): string{
+    /**
+    *
+    * @param type
+    * @param uri
+    * @return path if the type is an Entity, Entity of Interest, Characteristic, Method, Unit or Group of Variables, null otherwise
+    *
+    */
+    getVariableComponentPath(type: string, uri: string): string {
 
         const paths = {
             [Oeso.ENTITY_TYPE_URI]: "Entity",
@@ -202,7 +202,7 @@ export default class OpenSilexVuePlugin {
      * @param isProperty the uri does not correspond to a class model but a property
      *
      */
-    getVocabularyPath(uri: string, rootClassUri: string, isProperty: boolean): string{
+    getVocabularyPath(uri: string, rootClassUri: string, isProperty: boolean): string {
 
         const paths = {
             [Oeso.SCIENTIFIC_OBJECT_TYPE_URI]: "scientific-object-types",
@@ -218,8 +218,8 @@ export default class OpenSilexVuePlugin {
     }
 
 
- 
-    
+
+
 
     /**
      * Creates strings of format 'name (type)', places them in a uri to result map with vue.set
@@ -227,7 +227,7 @@ export default class OpenSilexVuePlugin {
      * @param objectsToLoad , the uris of ontology objects that we want to create labels for
      * @param context , experimental context
      */
-    loadOntologyLabelsWithType(objectsToLoad: Array<string>, context: string, uriResultMap : {[x: string]:string}, ontologyService: OntologyService):  Promise<void | HttpResponse<OpenSilexResponse<NamedResourceDTO[]>>>{
+    loadOntologyLabelsWithType(objectsToLoad: Array<string>, context: string, uriResultMap: { [x: string]: string }, ontologyService: OntologyService): Promise<void | HttpResponse<OpenSilexResponse<NamedResourceDTO[]>>> {
         return ontologyService
             .getURILabelsList(objectsToLoad, context, true)
             .then((httpObj) => {
@@ -441,11 +441,12 @@ export default class OpenSilexVuePlugin {
 
     public loadModule(name) {
         if (window[name]) return window[name];
-        // console.debug("Load module", name);
+        console.debug("Load module", name);
         this.showLoader();
         let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
         let cssURI = this.baseApi + "/vuejs/extension/css/" + name + ".css";
         let self = this;
+        console.debug("Load module", url);
 
         const link = document.createElement('link');
         link.setAttribute("rel", "stylesheet");
@@ -467,24 +468,24 @@ export default class OpenSilexVuePlugin {
                 // - Les modules (par exemple le fichier index.ts de opensilex-security) a un export par défaut sous forme d'un plugin Vue (avec une méthode install())
                 // - Dans la méthode loadModule(), donc ici, on crée une balise <script> qui a comme attribut src le lien vers le fichier JS du module
                 // - Lors de l'événement load, on récupère `window[name].default` qui est censé correspondre à l'export par défaut du composant
-            
+
                 // const plugin = window[name]?.default;
                 const plugin = window[name];
 
                 // Vue.use(plugin);
 
 
-                 // Vérification si le plugin est valide pour Vue 3
-            // if (plugin && (typeof plugin.install === 'function')) {
+                // Vérification si le plugin est valide pour Vue 3
+                // if (plugin && (typeof plugin.install === 'function')) {
                 if (plugin) {
 
-                this.app.use(plugin);
-                resolve(plugin);
-            } else {
-                console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
-                reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
-            }
-        
+                    this.app.use(plugin);
+                    resolve(plugin);
+                } else {
+                    console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
+                    reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
+                }
+
 
             });
             script.addEventListener('error', () => {
@@ -680,34 +681,34 @@ export default class OpenSilexVuePlugin {
 
     public setToastManager(manager: any) {
         this.toastManager = manager;
-      }
-    
-      public showToast(message: string, options?: { variant?: string; autoHideDelay?: number }) {
+    }
+
+    public showToast(message: string, options?: { variant?: string; autoHideDelay?: number }) {
         if (!this.toastManager || typeof this.toastManager.addToast !== 'function') {
-          console.error("ToastManager not initialized");
-          return;
+            console.error("ToastManager not initialized");
+            return;
         }
-    
+
         const { variant = 'info', autoHideDelay = 3000 } = options || {};
         this.toastManager.addToast(message, variant, autoHideDelay);
-      }
-    
-      public showSuccessToast(message: string) {
+    }
+
+    public showSuccessToast(message: string) {
         this.showToast(message, { variant: "success", autoHideDelay: 4500 });
-      }
-    
-      public showErrorToast(message: string) {
+    }
+
+    public showErrorToast(message: string) {
         this.showToast(message, { variant: "danger", autoHideDelay: 5000 });
-      }
-    
-      public showInfoToast(message: string) {
+    }
+
+    public showInfoToast(message: string) {
         this.showToast(message, { variant: "info", autoHideDelay: 8000 });
-      }
-    
-      public showWarningToast(message: string) {
+    }
+
+    public showWarningToast(message: string) {
         this.showToast(message, { variant: "warning", autoHideDelay: 3000 });
-      }
-    
+    }
+
 
     private computeToastID(message: string, options: any): string {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
@@ -761,7 +762,7 @@ export default class OpenSilexVuePlugin {
         }
 
         resourceTree.children.forEach(child => {
-            if(!buildOptions.nodesToIgnoreList || !buildOptions.nodesToIgnoreList.includes(this.getLongUri(child.uri))){
+            if (!buildOptions.nodesToIgnoreList || !buildOptions.nodesToIgnoreList.includes(this.getLongUri(child.uri))) {
                 let subOption = this.buildTreeOptions(child, buildOptions, disableChildren);
                 if (!subOption.isDisabled || subOption.children) {
                     option.children.push(subOption);
@@ -1048,7 +1049,7 @@ export default class OpenSilexVuePlugin {
         return new Promise((resolve, reject) => {
             let promise = fetch(url, options)
                 .then((response) => {
-                    return response.json().then(data => ({metadata: {status: response.status}, result: data.result}))
+                    return response.json().then(data => ({ metadata: { status: response.status }, result: data.result }))
                 })
 
             promise
@@ -1234,7 +1235,7 @@ export default class OpenSilexVuePlugin {
                     }
                     divPreview.appendChild(error.appendChild(content));
                 }
-                let blob = new Blob([file as BlobPart], {type: type});
+                let blob = new Blob([file as BlobPart], { type: type });
 
                 if (type != null) {
                     let url = URL.createObjectURL(blob);
@@ -1317,27 +1318,27 @@ export default class OpenSilexVuePlugin {
      * @returns The label of the variable datatype.
      */
     public getVariableDatatypeLabel(uri: string): string {
-    if (!uri) return '';
+        if (!uri) return '';
 
-    const found = this.variableDatatypes?.find((elem: any) => elem.uri === uri);
-    const key = found?.name;
-    if (!key) return uri;
+        const found = this.variableDatatypes?.find((elem: any) => elem.uri === uri);
+        const key = found?.name;
+        if (!key) return uri;
 
-    // récupérer l'instance i18n
-    const i18nAny: any = (this as any).$i18n ?? (this as any).i18n?.global;
-    const translated = i18nAny ? i18nAny.t(key) : key;
+        // récupérer l'instance i18n
+        const i18nAny: any = (this as any).$i18n ?? (this as any).i18n?.global;
+        const translated = i18nAny ? i18nAny.t(key) : key;
 
-    const label = String(translated);
-    return label ? label.charAt(0).toUpperCase() + label.slice(1) : uri;
-}
+        const label = String(translated);
+        return label ? label.charAt(0).toUpperCase() + label.slice(1) : uri;
+    }
 
-// public getVariableDatatypeLabel(uri: string): string {
-//     if (!uri) {
-//         return undefined;
-//     }
-//     let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
-//     return label.charAt(0).toUpperCase() + label.slice(1);
-// }
+    // public getVariableDatatypeLabel(uri: string): string {
+    //     if (!uri) {
+    //         return undefined;
+    //     }
+    //     let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
+    //     return label.charAt(0).toUpperCase() + label.slice(1);
+    // }
 
     /**
      * It loads the variable data types from the server and stores them in the variableDatatypes variable

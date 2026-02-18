@@ -1,8 +1,8 @@
 import { User } from './User';
-import { App, defineAsyncComponent } from 'vue';
+import { App, defineAsyncComponent, markRaw } from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
-import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
-import {useStore} from 'vuex';
+import { MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO } from '../lib';
+import { useStore } from 'vuex';
 import { createRouter, createWebHistory, NavigationGuardNext, type Router, type RouteRecordRaw } from 'vue-router';
 
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
@@ -16,25 +16,26 @@ export class OpenSilexRouter {
     private router: Router;
     private pathPrefix: string
     private PUBLIC_ROUTE: string = "public";
-    private sectionAttributes : any = {};
-    private app : App;
+    private sectionAttributes: any = {};
+    private app: App;
     private $opensilex: OpenSilexVuePlugin;
 
     constructor(pathPrefix: string, app: App) {
         this.pathPrefix = pathPrefix;
         this.app = app;
         this.$opensilex = this.app.config.globalProperties.$opensilex;
-        this.router = this.createRouter(User.ANONYMOUS());
+        // Mark router as raw to prevent Vue from unwrapping its internal refs
+        this.router = markRaw(this.createRouter(User.ANONYMOUS()));
     }
-    
+
     public getSectionAttributes() {
         return this.sectionAttributes;
     }
-    
+
     public getMenu() {
         return this.menu;
     }
-    
+
     public setConfig(config: FrontConfigDTO) {
         this.frontConfig = config;
     }
@@ -49,15 +50,15 @@ export class OpenSilexRouter {
 
     private createRouter(user: User) {
         let routes: Array<RouteRecordRaw> = this.computeMenuRoutes(user);
-    
+
         this.router = createRouter({
             history: createWebHistory(this.pathPrefix + "/app"),
             routes: routes,
         });
 
         // Add this line to handle navigation errors
-        this.router.onError((handler)=>{
-            console.error('Navigation error:', handler); 
+        this.router.onError((handler) => {
+            console.error('Navigation error:', handler);
         });
 
         this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
@@ -72,20 +73,20 @@ export class OpenSilexRouter {
 
             // si deja log et veut aller sur /app : renvoi sur /dash
             if (isLoggedIn && to.path === '/' && !redirectTo) {
-                return next({ path: '/dash', query: { redirect: redirectTo } }); 
+                return next({ path: '/dash', query: { redirect: redirectTo } });
             }
 
             // a la premiere co, au moment ou l'utilisateur se log et viens donc bien de /app : 
-                // redirect soit sur /dash si pas d'historique, 
-                // sinon renvoi sur la derniere page consulté
-                if (isLoggedIn && to.path === '/' && redirectTo) {
-                    return next({ path: redirectTo });
-                }
-                
-                // Vérification pour éviter la redirection infinie
-                if (to.path === from.path) {
-                    return next(); 
-                }
+            // redirect soit sur /dash si pas d'historique, 
+            // sinon renvoi sur la derniere page consulté
+            if (isLoggedIn && to.path === '/' && redirectTo) {
+                return next({ path: redirectTo });
+            }
+
+            // Vérification pour éviter la redirection infinie
+            if (to.path === from.path) {
+                return next();
+            }
             next(); // aucun des cas ? on laisse passer
         });
 
@@ -96,36 +97,62 @@ export class OpenSilexRouter {
             }
         })
 
-        return this.router; 
-    }
-    
-    public resetRouter(user: User) {
-        const newRouter = this.createRouter(user);
-        this.router = newRouter;
-        return this.router
+        return this.router;
     }
 
-    public computeMenuRoutes(user: User) {
-    
-        const routes: Array<any> = [];
-        const $opensilex: OpenSilexVuePlugin = this.$opensilex;
+    public resetRouter(user: User) {
+        // Navigate to default route BEFORE removing routes
+        // Navigate to default route BEFORE removing routes
+        // This ensures router.currentRoute.value remains valid during the reset
+        // preventing DevTools errors when inspecting the router
+        if (this.router.currentRoute.value && this.router.currentRoute.value.name !== 'default') {
+            this.router.replace('/').catch(() => { });
+        }
+
+        // Instead of creating a new router, update routes dynamically
+        // First, remove all existing routes except the base ones
+        const currentRoutes = this.router.getRoutes();
+
+        // Clear dynamic routes (keep only the initial routes)
+        currentRoutes.forEach(route => {
+            if (route.name && route.name !== 'default' && route.name !== 'NotFound') {
+                this.router.removeRoute(route.name);
+            }
+        });
+
+        // Compute new routes based on user permissions
+        const newRoutes = this.computeMenuRoutes(user);
+
+        // Add new routes to the existing router
+        newRoutes.forEach(route => {
+            // Skip routes that are already registered (default, NotFound)
+            if (!this.router.hasRoute(route.name)) {
+                this.router.addRoute(route);
+            }
+        });
+
+        return this.router;
+    }
+
+    public computeMenuRoutes(user: User): Array<RouteRecordRaw> {
+        const routes: Array<RouteRecordRaw> = [];
         const frontConfig = this.frontConfig;
-    
-        // Updated loadComponent function using dynamic imports
+
+        // Function to load components asynchronously
         const loadComponent = (componentId: string) => {
-            return  () => this.getComponentImport(componentId) 
+            return () => this.getComponentImport(componentId);
         };
-    
-        // 📌 Routes générales depuis frontConfig
+
+        // 📌 General routes from frontConfig
         if (frontConfig) {
-            // Route par défaut
+            // Default route
             routes.push({
                 path: "/",
-                name : "default",
+                name: "default",
                 component: loadComponent(frontConfig.loginComponent),
                 meta: { public: true }
             });
-    
+
             for (const routeConfig of frontConfig.routes) {
                 routes.push({
                     path: routeConfig.path,
@@ -134,12 +161,11 @@ export class OpenSilexRouter {
                 });
             }
         }
-    
-        // 📌 Routes dynamiques depuis le menu utilisateur
+
+        // 📌 Dynamic routes from user menu
         if (this.userFrontConfig) {
-            this.menu = this.buildMenu(this.userFrontConfig.menu, routes, user);
-    
-            const addMenuRoutes = (menuItems: any[]) => {
+            this.menu = this.buildMenu(this.userFrontConfig.menu, user);
+            const addMenuRoutes = (menuItems: Array<MenuItemDTO>) => {
                 menuItems.forEach(item => {
                     if (item.route) {
                         routes.push({
@@ -148,16 +174,15 @@ export class OpenSilexRouter {
                             component: loadComponent(item.route.component),
                         });
                     }
-                    if (item.children?.length) {
+                    if (item.children && item.children.length > 0) {
                         addMenuRoutes(item.children);
                     }
                 });
             };
-    
             addMenuRoutes(this.userFrontConfig.menu);
         }
-    
-        // 📌 Route "catch-all" (404)
+
+        // 📌 Catch-all route (404)
         if (frontConfig?.notFoundComponent) {
             routes.push({
                 path: "/:catchAll(.*)",
@@ -172,10 +197,10 @@ export class OpenSilexRouter {
     private async getComponentImport(componentId: string): Promise<any> {
         try {
             let componentDef = ModuleComponentDefinition.fromString(componentId);
-            
+
             // Load the component module using your existing method
             await this.$opensilex.loadComponentModule(componentDef);
-            
+
             // Get the component from the app
             let component = this.app.component(componentDef.getId());
             if (component) {
@@ -189,12 +214,12 @@ export class OpenSilexRouter {
             }
         } catch (error) {
             console.error(`Error loading component ${componentId}:`, error);
-            
+
             // Return a fallback component or rethrow
             if (this.frontConfig?.notFoundComponent && componentId !== this.frontConfig.notFoundComponent) {
                 return this.getComponentImport(this.frontConfig.notFoundComponent);
             }
-            
+
             // Return a minimal error component as last resort
             return {
                 template: `<div class="error-component">
@@ -206,29 +231,19 @@ export class OpenSilexRouter {
         }
     }
 
- 
 
     public refresh() {
         this.router.go(0);
     }
 
-    private buildMenu(items: Array<MenuItemDTO>, routes: Array<any>, user: User) {
-        let $opensilex: OpenSilexVuePlugin = this.app["$opensilex"];
+    private buildMenu(items: Array<MenuItemDTO>, user: User): Array<MenuItemDTO> {
         let menu: Array<MenuItemDTO> = [];
-        
-        for (let i in items) {
-            let item: MenuItemDTO = items[i];
 
+        for (const item of items) {
             if (item.route) {
                 let route = item.route;
                 menu.push(item);
-                
-                // Updated to use the new import method
-                routes.push({
-                    path: route.path,
-                    component:  () => this.getComponentImport(route.component)
-                });
-                
+                // Note: route registration is now handled in computeMenuRoutes
                 this.sectionAttributes[route.path] = {
                     icon: route.icon,
                     title: route.title,
@@ -237,16 +252,17 @@ export class OpenSilexRouter {
             }
 
             let childItems: Array<MenuItemDTO> = [];
-            if (item.children.length > 0) {
-                childItems = this.buildMenu(item.children, routes, user);
+            if (item.children && item.children.length > 0) {
+                childItems = this.buildMenu(item.children, user);
             }
 
             if (!item.route && childItems.length > 0) {
-                item.children = childItems;
-                menu.push(item);
+                // Create a new item to avoid mutating the original
+                const newItem = { ...item };
+                newItem.children = childItems;
+                menu.push(newItem);
             }
         }
-
         return menu;
     }
 }

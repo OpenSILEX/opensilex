@@ -1,25 +1,24 @@
-package org.opensilex.migration;
+package org.opensilex.migration.one_point_five_ALL;
 
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.RDF;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 import org.opensilex.utils.ListWithPagination;
@@ -30,37 +29,60 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexModuleUpdate {
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
-    private OpenSilex opensilex;
+public class FacilitiesLinkToVariablesAndDevicesMigration {
+
     private SPARQLService sparql;
     private MongoDBService mongodb;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger;
 
-    @Override
-    public String getDescription() {
-        return "Gets all facilities, to then fetch all data on these facilities, to finally be able to add the facilities-variables and facilities-devices links.";
+    protected static String DESCRIPTION = "Gets all facilities, to then fetch all data on these facilities, to finally be able to add the facilities-variables and facilities-devices links.";
+
+    public FacilitiesLinkToVariablesAndDevicesMigration(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
+        this.sparql = sparql;
+        this.mongodb = mongodb;
+        this.logger = logger;
     }
 
-    @Override
-    public void setOpensilex(OpenSilex opensilex) {
-        this.opensilex = opensilex;
+    /**
+     * Checks if this migration was most likely already run. Does this by checking if any Facilities have devices or variables.
+     * If they do not then we suppose that migration has not been done. It would technically be possible that it could have been done if
+     * no data has a Facility as target, but the migration just wouldn't do anything in this case.
+     * @return true if any Facility has a device or variable.
+     */
+    protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
+        //TODO MAX untested, also can i simply replace these things with an AskBuilder? probably shpuld do that
+        SelectBuilder hasDeviceSelect = new SelectBuilder();
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var deviceVar = makeVar("device");
+        Var typeVar = makeVar("type");
+
+        hasDeviceSelect.addVar(uriVar);
+        hasDeviceSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
+        hasDeviceSelect.addWhere(uriVar, RDF.type, typeVar);
+        hasDeviceSelect.addWhere(uriVar, Oeso.hasDevice, deviceVar);
+
+        boolean aFacilityDoesHaveDevices = !sparql.executeSelectQueryAsStream(hasDeviceSelect).toList().isEmpty();
+        //If we have OS locations, no need to check for devices, we can leave
+        if(aFacilityDoesHaveDevices){
+            return true;
+        }
+
+        //Else do same check for devices
+        SelectBuilder hasVariableSelect = new SelectBuilder();
+        Var variableVar = makeVar("variable");
+
+        hasVariableSelect.addVar(uriVar);
+        hasVariableSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
+        hasVariableSelect.addWhere(uriVar, RDF.type, typeVar);
+        hasVariableSelect.addWhere(uriVar, Oeso.hasVariable, variableVar);
+
+        return !sparql.executeSelectQueryAsStream(hasVariableSelect).toList().isEmpty();
     }
 
-    @Override
-    public OffsetDateTime getDate() {
-        return OffsetDateTime.now();
-    }
-
-    @Override
-    public void execute() throws OpensilexModuleUpdateException {
-
-        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        sparql = factory.provide();
-        mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+    protected void execute() throws OpensilexModuleUpdateException {
 
         FacilityDAO facilityDAO = new FacilityDAO(sparql);
         DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
@@ -71,11 +93,9 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
             mongodb.startTransaction();
 
             // 1 Get all facilities
-
             List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
 
             // 2 Get all data that has for target these facilities
-
             List<DataModel> dataWithFacilitiesAsTargets = new ArrayList<>();
 
             DataSearchFilter dataSearchFilter = new DataSearchFilter();

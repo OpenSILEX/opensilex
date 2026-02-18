@@ -9,23 +9,17 @@
  *
  */
 
-package org.opensilex.migration;
+package org.opensilex.migration.one_point_five_ALL;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.E_NotExists;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
@@ -66,7 +60,7 @@ import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
-public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel implements OpenSilexModuleUpdate {
+public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel {
 
     private OpenSilex opensilex;
     private SPARQLService sparql;
@@ -77,22 +71,12 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
     //Because the old geospatial position attribute of ScientificObjects had no date associated to it, we take some random one
     private static final String defaultDateISOString = "2017-05-19T00:00:00Z";
 
-    @Override
-    public String getDescription() {
-        return "In MongoDB, get scientific objects from the Geospatial and Move collections to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each scientific objects with location. ";
-    }
+    public static String DESCRIPTION = "Update ScientificObjects and Devices to use the new Location system. Do this by reading old Moves (includes the isHosted property for ScientificObjects as a move was created for each isHosted) and geospatial mongo collection.";
 
-    @Override
     public void setOpensilex(OpenSilex opensilex) {
         this.opensilex = opensilex;
     }
 
-    @Override
-    public OffsetDateTime getDate() {
-        return OffsetDateTime.now();
-    }
-
-    @Override
     public void execute() throws OpensilexModuleUpdateException {
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         sparql = factory.provide();

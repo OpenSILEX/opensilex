@@ -9,7 +9,7 @@
  *
  */
 
- package org.opensilex.migration;
+ package org.opensilex.migration.one_point_five_ALL;
 
  import com.mongodb.client.MongoCollection;
  import com.mongodb.client.MongoDatabase;
@@ -64,29 +64,19 @@
 
  import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
- public class UpdateFacilitiesWithLocationObservationCollectionModel implements OpenSilexModuleUpdate {
+ public class UpdateFacilitiesWithLocationObservationCollectionModel {
 
      private OpenSilex opensilex;
      private SPARQLService sparql;
      private MongoDBService mongodb;
      private final Logger logger = LoggerFactory.getLogger(getClass());
 
-     @Override
-     public String getDescription() {
-         return "In MongoDB, get facilities from the Geospatial Collection to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each Site with address or with geometry. ";
-     }
+     public static String DESCRIPTION = "In MongoDB, get facilities from the Geospatial Collection to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each Site with address or with geometry. ";
 
-     @Override
      public void setOpensilex(OpenSilex opensilex) {
          this.opensilex = opensilex;
      }
 
-     @Override
-     public OffsetDateTime getDate() {
-         return OffsetDateTime.now();
-     }
-
-     @Override
      public void execute() throws OpensilexModuleUpdateException {
 
          SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);

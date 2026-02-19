@@ -128,6 +128,7 @@ public class GermplasmCreationDTO {
         this.uri = uri;
     }
 
+    @JsonProperty("rdf_type")
     public URI getRdfType() {
         return rdf_type;
     }

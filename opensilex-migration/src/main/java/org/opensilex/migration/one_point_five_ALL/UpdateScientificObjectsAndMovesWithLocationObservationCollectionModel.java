@@ -20,7 +20,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
-import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -43,13 +42,9 @@ import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -62,10 +57,9 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel {
 
-    private OpenSilex opensilex;
     private SPARQLService sparql;
     private MongoDBService mongodb;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger;
 
     private static final String OLD_MOVE_COLLECTION = "move";
     //Because the old geospatial position attribute of ScientificObjects had no date associated to it, we take some random one
@@ -73,26 +67,14 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
     public static String DESCRIPTION = "Update ScientificObjects and Devices to use the new Location system. Do this by reading old Moves (includes the isHosted property for ScientificObjects as a move was created for each isHosted) and geospatial mongo collection.";
 
-    public void setOpensilex(OpenSilex opensilex) {
-        this.opensilex = opensilex;
+    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
+        this.sparql = sparql;
+        this.mongodb = mongodb;
+        this.logger = logger;
     }
 
-    public void execute() throws OpensilexModuleUpdateException {
-        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        sparql = factory.provide();
-        mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-
+    public void execute() throws Exception {
         try {
-            //Before starting the migration, check if any ScientificObject is already a featureOfInterest of a LocationObservationCollection.
-            //If it is, then it means this migration has already been run so we leave immediately.
-            if(wasMigrationPreviouslyRun()){
-                logger.warn("It looks like this migration has already been performed. If this is not the case contact the Opensilex Team!");
-                return;
-            }
-
-            sparql.startTransaction();
-            mongodb.startTransaction();
-
             //1 - For every existing ScientificObject  URI fetch all old GeospatialModels, create new LocationObservationModels,
             //placed in a Map of Format URI -> List(LocationObservationModels)
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURIFromGeospatial = makeNewLocationObservationsFromGeospatialModels();
@@ -108,18 +90,9 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             //6 - Complete location observation models for each SO and insert to Location collection
             setObservationCollectionAndMoveUrisAndInsertLocationObservations(locationObservationsPerURI, soCollectionMap, newMoves);
 
-            sparql.commitTransaction();
-            mongodb.commitTransaction();
-            logger.info("Migration successfully completed");
-
         } catch (Exception e) {
-            try {
-                sparql.rollbackTransaction();
-                mongodb.rollbackTransaction();
-                logger.error("Error while migrating scientific object locations. No changes were saved on databases", e);
-            } catch (Exception exception) {
-                throw new OpensilexModuleUpdateException("Error while migrating scientific object locations. No changes were saved on databases", exception);
-            }
+            logger.warn("Something went wrong in the UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel part of the migration!");
+            throw e;
         }
     }
 
@@ -127,7 +100,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      * Checks if this migration was most likely already run. Does this by looking to see if any OS is already a feature of interest of a LocationObservationCollection.
      * @return true if any OS's are feature of interest, false if nay
      */
-    private boolean wasMigrationPreviouslyRun() throws SPARQLException {
+    protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
         SelectBuilder osLocationSelect = new SelectBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var collectionVar = makeVar("collection");

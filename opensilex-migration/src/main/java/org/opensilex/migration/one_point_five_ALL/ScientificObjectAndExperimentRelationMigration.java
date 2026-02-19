@@ -5,14 +5,12 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.migration.DatabaseMigrationModuleUpdate;
-import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import org.slf4j.Logger;
 
 /**
  * @author dnooka / Max
@@ -25,9 +23,11 @@ public class ScientificObjectAndExperimentRelationMigration {
     protected static String DESCRIPTION = "Scientific Objects created from XP will have a relation: participatesIn an XP in the XP context";
 
     private final SPARQLService sparql;
+    private final Logger logger;
 
-    public ScientificObjectAndExperimentRelationMigration(SPARQLService sparql){
+    public ScientificObjectAndExperimentRelationMigration(SPARQLService sparql, Logger logger) {
         this.sparql = sparql;
+        this.logger = logger;
     }
 
     /**
@@ -62,10 +62,14 @@ public class ScientificObjectAndExperimentRelationMigration {
     }
 
     protected void execute() throws SPARQLException {
-
-        UpdateBuilder updateQuery = new UpdateBuilder()
-                .addInsert(GRAPH_VAR, SO_VAR, Oeso.participatesIn, GRAPH_VAR)
-                .addWhere(buildWhere());
-        sparql.executeUpdateQuery(updateQuery);
+        try{
+            UpdateBuilder updateQuery = new UpdateBuilder()
+                    .addInsert(GRAPH_VAR, SO_VAR, Oeso.participatesIn, GRAPH_VAR)
+                    .addWhere(buildWhere());
+            sparql.executeUpdateQuery(updateQuery);
+        }catch(SPARQLException e){
+            logger.warn("Something went wrong in the ScientificObjectAndExperimentRelationMigration part of the migration!");
+            throw e;
+        }
     }
 }

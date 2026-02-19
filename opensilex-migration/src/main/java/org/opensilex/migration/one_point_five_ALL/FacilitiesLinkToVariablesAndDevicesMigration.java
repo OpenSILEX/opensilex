@@ -3,13 +3,11 @@ package org.opensilex.migration.one_point_five_ALL;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
-import org.opensilex.OpenSilex;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -17,16 +15,10 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.update.OpenSilexModuleUpdate;
-import org.opensilex.update.OpensilexModuleUpdateException;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +26,8 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class FacilitiesLinkToVariablesAndDevicesMigration {
 
-    private SPARQLService sparql;
-    private MongoDBService mongodb;
+    private final SPARQLService sparql;
+    private final MongoDBService mongodb;
     private final Logger logger;
 
     protected static String DESCRIPTION = "Gets all facilities, to then fetch all data on these facilities, to finally be able to add the facilities-variables and facilities-devices links.";
@@ -82,15 +74,13 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
         return !sparql.executeSelectQueryAsStream(hasVariableSelect).toList().isEmpty();
     }
 
-    protected void execute() throws OpensilexModuleUpdateException {
+    protected void execute() throws Exception {
 
         FacilityDAO facilityDAO = new FacilityDAO(sparql);
         DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
         DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, mongodb, null);
 
         try {
-            sparql.startTransaction();
-            mongodb.startTransaction();
 
             // 1 Get all facilities
             List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
@@ -120,18 +110,9 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
             List<FacilityModel> facilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(dataWithFacilitiesAsTargets);
             facilityDAO.updateMany(facilitiesToUpdate);
 
-            sparql.commitTransaction();
-            mongodb.commitTransaction();
-            logger.info("Migration successfully completed");
-
         } catch (Exception e){
-            try {
-                sparql.rollbackTransaction();
-                mongodb.rollbackTransaction();
-                logger.error("Error while migrating facilities. No changes were saved on the databases", e);
-            } catch (Exception exception) {
-                throw new OpensilexModuleUpdateException("Error while migrating facilities. No changes were saved on the databases", exception);
-            }
+            logger.warn("Something went wrong in the FacilitiesLinkToVariablesAndDevicesMigration part of the migration!");
+            throw e;
         }
     }
 

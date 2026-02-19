@@ -27,7 +27,6 @@
  import org.apache.jena.sparql.expr.Expr;
  import org.apache.jena.vocabulary.RDF;
  import org.apache.jena.vocabulary.RDFS;
- import org.opensilex.OpenSilex;
  import org.opensilex.core.external.geocoding.GeocodingService;
  import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
  import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -49,16 +48,11 @@
  import org.opensilex.sparql.model.SPARQLResourceModel;
  import org.opensilex.sparql.service.SPARQLQueryHelper;
  import org.opensilex.sparql.service.SPARQLService;
- import org.opensilex.sparql.service.SPARQLServiceFactory;
  import org.opensilex.sparql.utils.Ontology;
- import org.opensilex.update.OpenSilexModuleUpdate;
  import org.opensilex.update.OpensilexModuleUpdateException;
  import org.slf4j.Logger;
- import org.slf4j.LoggerFactory;
-
  import java.net.URI;
  import java.time.Instant;
- import java.time.OffsetDateTime;
  import java.util.*;
  import java.util.stream.Collectors;
 
@@ -66,27 +60,40 @@
 
  public class UpdateFacilitiesWithLocationObservationCollectionModel {
 
-     private OpenSilex opensilex;
-     private SPARQLService sparql;
-     private MongoDBService mongodb;
-     private final Logger logger = LoggerFactory.getLogger(getClass());
+     private final SPARQLService sparql;
+     private final MongoDBService mongodb;
+     private final Logger logger;
 
      public static String DESCRIPTION = "In MongoDB, get facilities from the Geospatial Collection to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each Site with address or with geometry. ";
 
-     public void setOpensilex(OpenSilex opensilex) {
-         this.opensilex = opensilex;
+     public UpdateFacilitiesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
+         this.sparql = sparql;
+         this.mongodb = mongodb;
+         this.logger = logger;
      }
 
-     public void execute() throws OpensilexModuleUpdateException {
+     /**
+      * Checks if this migration was most likely already run. Does this by looking to see if any Facility is already a feature of interest of a LocationObservationCollection.
+      * @return true if any Facility is feature of interest, false if nay
+      */
+     protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
+         //TODO MAX untested and can i use AskBuilder
+         SelectBuilder facilityLocationSelect = new SelectBuilder();
+         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+         Var collectionVar = makeVar("collection");
+         Var typeVar = makeVar("type");
 
-         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-         sparql = factory.provide();
-         mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+         facilityLocationSelect.addVar(uriVar);
+         facilityLocationSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
+         facilityLocationSelect.addWhere(uriVar, RDF.type, typeVar);
+         facilityLocationSelect.addWhere(collectionVar, RDF.type, SOSA.ObservationCollection);
+         facilityLocationSelect.addWhere(collectionVar, SOSA.hasFeatureOfInterest, uriVar);
 
+         return !sparql.executeSelectQueryAsStream(facilityLocationSelect).toList().isEmpty();
+     }
+
+     public void execute() throws Exception {
          try {
-             sparql.startTransaction();
-             mongodb.startTransaction();
-
              // 1 Mongo : get all facilities with geometry or address geometry
              List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();
              // 2 RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
@@ -95,19 +102,9 @@
              Map<URI, FacilityAddressModel> facilityAddressMap = sparqlgetAddressToFacilityList(facilityPositionList);
              // 3 Mongo : update facility geometry in geospatial collection and copy in location collection
              mongoFacilitiesFromGeospatialToLocationCollection(facilityPositionList,facilityCollectionMap, facilityAddressMap);
-
-             sparql.commitTransaction();
-             mongodb.commitTransaction();
-             logger.info("Migration successfully completed");
-
          } catch (Exception e){
-             try {
-                 sparql.rollbackTransaction();
-                 mongodb.rollbackTransaction();
-                 logger.error("error while migrate facility locations. No changes was saved on databases", e);
-             } catch (Exception exception) {
-                 throw new OpensilexModuleUpdateException("error while migrate facility locations. No changes was saved on databases", exception);
-             }
+             logger.warn("Something went wrong in the UpdateFacilitiesWithLocationObservationCollectionModel part of the migration!");
+             throw e;
          }
      }
 
@@ -155,9 +152,6 @@
 
 
      private Map<URI,URI> sparqlAddObservationCollectionToFacilityList(List<GeospatialModel> facilityPositionList) throws OpensilexModuleUpdateException {
-
-         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-         sparql = factory.provide();
 
          Map<URI,URI> facilityCollectionMap;
 

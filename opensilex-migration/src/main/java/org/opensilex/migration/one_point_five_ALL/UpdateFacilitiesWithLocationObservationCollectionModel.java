@@ -27,6 +27,7 @@
  import org.apache.jena.sparql.expr.Expr;
  import org.apache.jena.vocabulary.RDF;
  import org.apache.jena.vocabulary.RDFS;
+ import org.bson.Document;
  import org.opensilex.core.external.geocoding.GeocodingService;
  import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
  import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -94,25 +95,43 @@
 
      public void execute() throws Exception {
          try {
-             // 1 Mongo : get all facilities with geometry or address geometry
+             // 1 - Mongo : get all facilities with geometry or address geometry
              List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();
-             // 2 RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
+             // 2 - RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
              Map<URI,URI> facilityCollectionMap = sparqlAddObservationCollectionToFacilityList(facilityPositionList);
-             // 3 RDF4J : get facility addresses
+             // 3 - RDF4J : get facility addresses
              Map<URI, FacilityAddressModel> facilityAddressMap = sparqlgetAddressToFacilityList(facilityPositionList);
-             // 3 Mongo : update facility geometry in geospatial collection and copy in location collection
+             // 4 - Mongo : update facility geometry in geospatial collection and copy in location collection
              mongoFacilitiesFromGeospatialToLocationCollection(facilityPositionList,facilityCollectionMap, facilityAddressMap);
+             //5 - Deletions: delete Documents from Geospatial collection that have for rdfType any subtype of Facility
+             deleteStuff();
          } catch (Exception e){
              logger.warn("Something went wrong in the UpdateFacilitiesWithLocationObservationCollectionModel part of the migration!");
              throw e;
          }
      }
 
+     /**
+      * Delete Documents from Geospatial collection that have for rdfType any subtype of Facility.
+      */
+     private void deleteStuff() throws Exception {
+         //Delete documents from geospatial collection that have for rdfType a subclass of Facility
+         List<URI> facilitySubtypes =  getFacilitySubtypes();
+         Document geospatFilter = new Document();
+         geospatFilter.append(SPARQLResourceModel.TYPE_FIELD, new Document("$in", facilitySubtypes));
+         mongodb.deleteOnCriteria(GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, geospatFilter);
+     }
+
+     private List<URI> getFacilitySubtypes() throws SPARQLException {
+         SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(FacilityModel.TYPE_FIELD), Ontology.subClassAny, Oeso.Facility.asNode()));
+         return sparql.executeSelectQueryAsStream(select).map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(FacilityModel.TYPE_FIELD)))).collect(Collectors.toList());
+     }
+
      private List<GeospatialModel> mongoGetFacilitiesFromGeospatial() throws SPARQLException {
          MongoDatabase db = mongodb.getDatabase();
 
-         SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(FacilityModel.TYPE_FIELD), Ontology.subClassAny, Oeso.Facility.asNode()));
-         List<URI> facilityRdfType = sparql.executeSelectQueryAsStream(select).map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(FacilityModel.TYPE_FIELD)))).collect(Collectors.toList());
+         //Get subtypes of Facility
+         List<URI> facilityRdfType = getFacilitySubtypes();
 
          // Get Facilities from Geospatial Collection
          MongoCollection<GeospatialModel> geospatialCollection = db.getCollection(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);

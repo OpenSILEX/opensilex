@@ -15,11 +15,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
+import org.bson.Document;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -90,10 +93,52 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             //6 - Complete location observation models for each SO and insert to Location collection
             setObservationCollectionAndMoveUrisAndInsertLocationObservations(locationObservationsPerURI, soCollectionMap, newMoves);
 
+            //7 - Deletion of old stuff:
+            // Mongo move collection, Oeev:to and Oeev:from for OSs and Devices,
+            // and documents from Geospatial collection that have for rdfType any type that is subclass of ScientificObject
+            deleteStuff();
+
         } catch (Exception e) {
             logger.warn("Something went wrong in the UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel part of the migration!");
             throw e;
         }
+    }
+
+    /**
+     * Deletion of old stuff:
+     *  Mongo move collection, Oeev:to and Oeev:from for OSs and Devices,
+     * and documents from Geospatial collection that have for rdfType any type that is subclass of ScientificObject
+     * (at the time of writing this we can not simply delete entire geospatial collection as Area's still use it)
+     */
+    private void deleteStuff() throws Exception{
+        //From and too in rdf (as they now go in the mongo Location collection)
+        deleteTooAndFromForType(Oeso.ScientificObject);
+        deleteTooAndFromForType(Oeso.Device);
+        //Delete the old mongo moves collection
+        MongoDatabase db = mongodb.getDatabase();
+        MongoCollection<?> collection = db.getCollection(OLD_MOVE_COLLECTION, MoveNosqlModel.class);
+        collection.drop();
+        //Delete documents from geospatial collection that have for rdfType a subclass of ScientificObject
+        List<URI> soRdfType =  getOsSubTypes();
+        Document geospatFilter = new Document();
+        geospatFilter.append(SPARQLResourceModel.TYPE_FIELD, new Document("$in", soRdfType));
+        mongodb.deleteOnCriteria(GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, geospatFilter);
+    }
+
+    private void deleteTooAndFromForType(Resource type) throws SPARQLException {
+        Var osVar = makeVar("OS");
+        Var facilityVar = makeVar("facility");
+        Var typeVar = makeVar("type");
+
+        UpdateBuilder deletionBuilder = new UpdateBuilder();
+        deletionBuilder.addDelete(osVar, Oeev.from, facilityVar);
+        deletionBuilder.addDelete(osVar, Oeev.to, facilityVar);
+        deletionBuilder.addWhere(osVar, RDF.type, typeVar);
+        deletionBuilder.addWhere(typeVar, Ontology.subClassAny, type);
+        deletionBuilder.addWhere(osVar, Oeev.from, facilityVar);
+        deletionBuilder.addWhere(osVar, Oeev.to, facilityVar);
+
+        sparql.executeUpdateQuery(deletionBuilder);
     }
 
     /**
@@ -130,6 +175,13 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         return !sparql.executeSelectQueryAsStream(deviceLocationSelect).toList().isEmpty();
     }
 
+    private List<URI> getOsSubTypes() throws SPARQLException {
+        SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, Oeso.ScientificObject.asNode()));
+        return sparql.executeSelectQueryAsStream(select)
+                .map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.TYPE_FIELD))))
+                .collect(Collectors.toList());
+    }
+
     /**
      *
      * @return a Map of format ScientificObjectURI -> List(LocationObservationModel), corresponding to the list of found
@@ -138,10 +190,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      */
     private StringUriMap<List<LocationObservationModel>> makeNewLocationObservationsFromGeospatialModels() throws SPARQLException {
         //Get OS subClasses
-        SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, Oeso.ScientificObject.asNode()));
-        List<URI> soRdfType = sparql.executeSelectQueryAsStream(select)
-                .map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(ScientificObjectModel.TYPE_FIELD))))
-                .collect(Collectors.toList());
+        List<URI> soRdfType =  getOsSubTypes();
 
         MongoDatabase db = mongodb.getDatabase();
 

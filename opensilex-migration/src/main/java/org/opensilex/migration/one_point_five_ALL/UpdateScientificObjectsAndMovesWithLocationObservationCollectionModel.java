@@ -94,7 +94,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             setObservationCollectionAndMoveUrisAndInsertLocationObservations(locationObservationsPerURI, soCollectionMap, newMoves);
 
             //7 - Deletion of old stuff:
-            // Mongo move collection, Oeev:to and Oeev:from for OSs and Devices,
+            // Mongo move collection, Oeev:to and Oeev:from in sparql,
             // and documents from Geospatial collection that have for rdfType any type that is subclass of ScientificObject
             deleteStuff();
 
@@ -106,14 +106,13 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
     /**
      * Deletion of old stuff:
-     *  Mongo move collection, Oeev:to and Oeev:from for OSs and Devices,
+     *  Mongo move collection, Oeev:to and Oeev:from on moves
      * and documents from Geospatial collection that have for rdfType any type that is subclass of ScientificObject
      * (at the time of writing this we can not simply delete entire geospatial collection as Area's still use it)
      */
     private void deleteStuff() throws Exception{
         //From and too in rdf (as they now go in the mongo Location collection)
-        deleteTooAndFromForType(Oeso.ScientificObject);
-        deleteTooAndFromForType(Oeso.Device);
+        deleteTooAndFrom();
         //Delete the old mongo moves collection
         MongoDatabase db = mongodb.getDatabase();
         MongoCollection<?> collection = db.getCollection(OLD_MOVE_COLLECTION, MoveNosqlModel.class);
@@ -125,18 +124,18 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         mongodb.deleteOnCriteria(GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, geospatFilter);
     }
 
-    private void deleteTooAndFromForType(Resource type) throws SPARQLException {
-        Var osVar = makeVar("OS");
-        Var facilityVar = makeVar("facility");
-        Var typeVar = makeVar("type");
+    private void deleteTooAndFrom() throws SPARQLException {
+
+        Var moveVar = makeVar("move");
+        Var fromFacility = makeVar("fromFacility");
+        Var tooFacility = makeVar("tooFacility");
 
         UpdateBuilder deletionBuilder = new UpdateBuilder();
-        deletionBuilder.addDelete(osVar, Oeev.from, facilityVar);
-        deletionBuilder.addDelete(osVar, Oeev.to, facilityVar);
-        deletionBuilder.addWhere(osVar, RDF.type, typeVar);
-        deletionBuilder.addWhere(typeVar, Ontology.subClassAny, type);
-        deletionBuilder.addWhere(osVar, Oeev.from, facilityVar);
-        deletionBuilder.addWhere(osVar, Oeev.to, facilityVar);
+        deletionBuilder.addDelete(moveVar, Oeev.from, fromFacility);
+        deletionBuilder.addDelete(moveVar, Oeev.to, tooFacility);
+        deletionBuilder.addWhere(moveVar, RDF.type, Oeev.Move);
+        deletionBuilder.addOptional(moveVar, Oeev.from, fromFacility);
+        deletionBuilder.addOptional(moveVar, Oeev.to, tooFacility);
 
         sparql.executeUpdateQuery(deletionBuilder);
     }

@@ -371,7 +371,7 @@ export default class ProvenanceDetailsPage extends Vue {
       .deleteProvenance(this.provenance.uri)
       .then(() => {
         let message =
-          this.$i18n.t("ProvenanceView.title") +
+          this.$i18n.t("ProvenanceView.delete-message") +
           " " +
           this.provenance.uri +
           " " +

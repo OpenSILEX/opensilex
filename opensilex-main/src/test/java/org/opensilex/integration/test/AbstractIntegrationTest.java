@@ -334,7 +334,11 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         public void executeCallAndAssertStatus(Response.Status expectedStatus) {
             try (Response response = executeCall()) {
-                assertEquals(expectedStatus.getStatusCode(), response.getStatus());
+                String error = null;
+                if (expectedStatus != null && response.getStatus() != expectedStatus.getStatusCode()) {
+                    error = response.readEntity(String.class);
+                }
+                assertEquals( String.format("assertion error. Response error : \n %s", error), expectedStatus.getStatusCode(), response.getStatus());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -348,7 +352,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         public <T extends JsonResponse<?>> Result<T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
             try (Response response = executeCall()) {
-                assertTrue("request failed with status : "+response.getStatus(), response.getStatus() >= 200 && response.getStatus() < 300);
+                boolean responseOk = response.getStatus() >= 200 && response.getStatus() < 300;
+                String error = null;
+                if ( !responseOk) {
+                    error = response.readEntity(String.class);
+                }
+                assertTrue(String.format("request failed with status : %s \n API error response : %s", response.getStatus(), error), response.getStatus() >= 200 && response.getStatus() < 300);
                 Result<T> result = new Result<>(readResponse(response, typeReference), response);
                 response.close();
                 return result;

@@ -574,7 +574,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         //build params
         ArrayList<URI> propsList= new ArrayList<>();
-        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        //propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
         propsList.add(new URI("vocabulary:hasModel"));
         propsList.add(new URI("vocabulary:startUp"));
         propsList.add(new URI("vocabulary:hasBrand"));

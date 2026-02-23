@@ -139,10 +139,10 @@
                   <opensilex-FundingSelector
                   label="ExperimentList.filter-funding"
                   placeholder="ExperimentList.filter-funding-placeholder"
-                  :multiple="true" 
+                  :multiple="true"
                   :funding.sync="filter.funding"
                   class="searchFilter"
-                ></opensilex-FundingSelector> 
+                ></opensilex-FundingSelector>
                 </opensilex-FilterField>
               </div>
 
@@ -188,20 +188,26 @@
         </b-dropdown>
       </template>
       <template v-slot:cell(name)="{ data }">
-        <opensilex-UriLink
-          :uri="data.item.uri"
-          :value="data.item.name"
-          :to="{
-            path: '/experiment/details/' + encodeURIComponent(data.item.uri),
-          }"
-        ></opensilex-UriLink>
-          <img
-            v-for="fundingUri in data.item.funding.slice(0, 3)"
-            :key="fundingUri"
-            v-bind:src="$opensilex.getResourceURI('images/'+$opensilex.getShortUri(fundingUri), ['png', 'svg', 'jpg'])"
-            class="funding-badge"
-            :title="fundingUri"
-          >
+        <div class="uri-alt-container">
+          <div class="uri-texts">
+            <opensilex-UriLink
+              :uri="data.item.uri"
+              :value="data.item.name"
+              :to="{ path: '/experiment/details/' + encodeURIComponent(data.item.uri) }"
+            ></opensilex-UriLink>
+            <span class="alt-label">{{ data.item.alternative_name }}</span>
+          </div>
+          <div class="uri-badges">
+            <img
+              v-for="fundingUri in data.item.funding.slice(0, 3)"
+              :key="fundingUri"
+              :src="$opensilex.getResourceURI('images/' + $opensilex.getShortUri(fundingUri), ['png','svg','jpg'])"
+              class="funding-badge"
+              :title="fundingUri"
+            >
+          </div>
+        </div>
+
       </template>
 
       <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
@@ -364,7 +370,7 @@ export default class ExperimentList extends Vue {
       state: "",
       facilities: [],
       funding: [],
-    };   
+    };
     this.refresh();
   }
 
@@ -535,6 +541,8 @@ export default class ExperimentList extends Vue {
         key: "name",
         label: "component.common.name",
         sortable: true,
+        thStyle: { width: '1%' },
+        tdClass: 'text-nowrap'
       },
       {
         key: "start_date",
@@ -634,10 +642,38 @@ export default class ExperimentList extends Vue {
 }
 
 .funding-badge {
-  max-width: 22px;
-  margin: 0 2px;
+  width: 24px;
+  height: auto;
+  margin-right: 4px;
 }
 
+
+.uri-alt-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uri-texts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* force same left edge */
+}
+
+.uri-texts > * {
+  margin: 0; /* kill any weird margins */
+}
+
+.alt-label {
+  margin-top: 2px; /* optional spacing */
+  font-size: 0.9em;
+}
+
+
+
+.experimentsCheckboxMarginHighSize {
+  margin-left: 15px
+}
 </style>
 
 <i18n>

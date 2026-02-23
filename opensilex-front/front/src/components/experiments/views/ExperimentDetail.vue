@@ -53,6 +53,10 @@
               label="component.common.name"
               :value="experiment.name"
             ></opensilex-StringView>
+            <opensilex-StringView
+              label="component.common.altName"
+              :value="experiment.alternative_name"
+            ></opensilex-StringView>
             <div class="static-field">
               <span class="field-view-title">{{
                 $t("component.common.state")

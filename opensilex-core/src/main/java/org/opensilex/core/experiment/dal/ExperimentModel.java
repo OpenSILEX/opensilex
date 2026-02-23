@@ -7,6 +7,7 @@
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.experiment.dal.FundingModel;
 import org.opensilex.core.ontology.Oeso;
@@ -149,6 +150,13 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     List<FundingModel> funding;
     public static final String FUNDING_FIELD = "funding";
 
+    @SPARQLProperty(
+            ontology = SKOS.class,
+            property = "altLabel"
+    )
+    private String alternativeName;
+    public static final String ALTERNATIVE_NAME_FIELD_NAME = "alternativeName";
+
     public List<ProjectModel> getProjects() {
         return projects;
     }
@@ -268,4 +276,8 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     public void setFunding(List<FundingModel> funding) {
         this.funding = funding;
     }
+
+    public String getAlternativeName() { return alternativeName; }
+
+    public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
 }

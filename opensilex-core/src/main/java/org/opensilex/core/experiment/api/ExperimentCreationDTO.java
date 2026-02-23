@@ -35,6 +35,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setObjective(getObjective());
         model.setDescription(getDescription());
         model.setIsPublic(isPublic);
+        model.setAlternativeName(getAlternativeName());
 
         // No species at experiment creation
         model.setSpecies(null);

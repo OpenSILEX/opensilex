@@ -12,25 +12,39 @@
 package org.opensilex.core.event.bll;
 
 import com.apicatalog.jsonld.StringUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
-import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.rdf4j.query.algebra.Move;
+import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.location.dal.LocationObservationSearchFilter;
+import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.utils.ApiUtils;
+import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -59,6 +73,118 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     //#region PUBLIC METHODS
+
+    /**
+     * If the moves LocationObservation is null then we create an empty one with an empty Location inside it.
+     *
+     * @param model the Move for whom we want to get or create its LocationObservation.
+     * @param experimentUri If the move is being performed in the scope of an experiment then we can set the LocationObservation's
+     *                      experiment field upon creation. Null is considered as a global scope.
+     * @return the corresponding created or gotten LocationModel
+     */
+    public static LocationModel getOrCreateMovesLocationObservation(MoveModel model, URI experimentUri){
+        LocationModel locationModel;
+        if(model.getLocationObservation() == null){
+            locationModel = new LocationModel();
+            LocationObservationModel locationObservationModel = new LocationObservationModel();
+            locationObservationModel.setLocation(locationModel);
+            locationObservationModel.setExperimentUri(experimentUri);
+            model.setLocationObservation(locationObservationModel);
+        }else{
+            locationModel = model.getLocationObservation().getLocation();
+        }
+        return locationModel;
+    }
+
+    /**
+     *
+     * @param targets the target URIs for whom we want to fetch all moves
+     * @param experimentUri can be null, if it is not null then we exclude moves whose locations were not recorded in this Experiment
+     * @return A StringUriMap with OS URIs as keys, and it's corresponding oldest move as values.
+     */
+    public StringUriMap<MoveModel> getInitialMovesWithLocationPerTarget(List<URI> targets, URI experimentUri) throws Exception{
+        StringUriMap<List<MoveModel>> allMovesPerTarget = getMovesWithLocationPerTarget(targets, experimentUri);
+        StringUriMap<MoveModel> result = new StringUriMap<>();
+        allMovesPerTarget.forEach((targetUriAsString,  moveModels) -> {
+            MoveModel mostAncientMove = moveModels.get(0);//Normally can't fail as previous operation ensures there will be at least 1 move
+            //Just need to look at endDate as that is the obligatory one
+            for(int currentMovesIndex = 1; currentMovesIndex < moveModels.size(); currentMovesIndex++){
+                MoveModel nextMove = moveModels.get(currentMovesIndex);
+                if(nextMove.getEnd().getDateTimeStamp().isBefore(mostAncientMove.getEnd().getDateTimeStamp())){
+                    mostAncientMove = nextMove;
+                }
+            }
+            result.put(URI.create(targetUriAsString), mostAncientMove);
+        });
+        return result;
+    }
+
+    /**
+     *
+     * @param targets the target URIs for whom we want to fetch all moves
+     * @param experimentUri can be null, if it is not null then we exclude moves whose locations were not recorded in this Experiment
+     * @return A StringUriMap with OS URIs as keys, and it's corresponding list of moves as values.
+     */
+    public StringUriMap<List<MoveModel>> getMovesWithLocationPerTarget(List<URI> targets, URI experimentUri) throws Exception {
+        MoveSearchFilter moveSearchFilter = new MoveSearchFilter();
+        moveSearchFilter
+                .setType(URI.create(Oeev.Move.getURI()))
+                .setTargets(targets);
+        moveSearchFilter.setPageSize(0);
+        List<MoveModel> allExistingMoves = searchMovesWithLocationObservation(moveSearchFilter).getList();
+
+        //Remove any moves that don't have a location or have a location that doesn't belong in this experiment
+        if(experimentUri != null){
+            allExistingMoves = allExistingMoves.stream().filter(move ->
+                    move.getLocationObservation() != null && move.getLocationObservation().getExperimentUri() != null && SPARQLDeserializers.compareURIs(move.getLocationObservation().getExperimentUri(), experimentUri)
+            ).toList();
+        }
+
+        //Map to check every Location, at the end we'll get a map of OS ShortUriString -> List<Moves>, if a target has
+        //Multiple Moves then we know we need to handle separately by checking dates.
+        StringUriMap<List<MoveModel>> visitedMovesPerTargets = new StringUriMap<>();
+        allExistingMoves
+                .stream()
+                .forEach(existingMove ->{
+                    //We know move targets can't be null as we did a search filtering by target
+                    List<MoveModel> movesForTarget = visitedMovesPerTargets.computeIfAbsent(existingMove.getTargets().get(0), (key)-> new ArrayList<>());
+                    movesForTarget.add(existingMove);
+                });
+        return visitedMovesPerTargets;
+    }
+
+    /**
+     * Separate function as the main api usage of search is converted into a EventDTO,
+     * so no need for Location information in the main case
+     * @param filter the search filter to search moves by.
+     * @return A list of MoveModels with their LocationObservation's filled
+     */
+    public ListWithPagination<MoveModel> searchMovesWithLocationObservation(MoveSearchFilter filter) throws Exception {
+        //Get moves
+        ListWithPagination<MoveModel> moves = dao.search(filter);
+        if(CollectionUtils.isEmpty(moves.getList())){
+            return moves;
+        }
+        //Get locations
+        List<LocationObservationModel> correspondingLocObs =
+                getMovesCorrespondingLocationObservationModels(
+                        moves
+                                .getList()
+                                .stream()
+                                .map(MoveModel::getUri).toList(),
+                        new LocationObservationLogic(mongodb.getServiceV2(), sparql)
+                );
+        //Associate locations to moves
+        StringUriMap<LocationObservationModel> locationPerMoveUri = new StringUriMap<>();
+        for(LocationObservationModel locObsModel : correspondingLocObs){
+            locationPerMoveUri.put(locObsModel.getMoveUri(), locObsModel);
+        }
+        for(MoveModel move : moves.getList()){
+            move.setLocationObservation(locationPerMoveUri.get(move.getUri()));
+        }
+        return moves;
+    }
+
     @Override
     public void updateModel(MoveModel model) throws Exception{
         check(Collections.singletonList(model), false);
@@ -67,8 +193,16 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     }
 
     @Override
-    public void delete(URI uri) throws Exception{
+    public void updateModels(List<MoveModel> models) throws Exception{
+        if(CollectionUtils.isEmpty(models)){
+            return;
+        }
+        check(models, false);
+        ApiUtils.wrapWithTransaction(session -> updateExistingMovesNoTransaction(models, session), this.clientSession, sparql, mongodb);
+    }
 
+    @Override
+    public void delete(URI uri) throws Exception{
         ApiUtils.wrapWithTransaction(
                 session ->{
                     deleteNoTransaction(uri, session);
@@ -78,7 +212,22 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                 sparql,
                 mongodb
         );
+    }
 
+    @Override
+    public void deleteList(List<URI> uris) throws Exception{
+        if(CollectionUtils.isEmpty(uris)){
+            return;
+        }
+        ApiUtils.wrapWithTransaction(
+                session ->{
+                    deleteListNoTransaction(uris, session);
+                    return 0;
+                },
+                this.clientSession,
+                sparql,
+                mongodb
+        );
     }
 
     @Override
@@ -93,7 +242,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
         if(Objects.nonNull(collectionURI)) {
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
             LocationObservationModel locationObservation = observationLogic.getASpecificLocationObservation(
                     collectionURI,
                     model.getEnd().getDateTimeStamp().toInstant(),
@@ -120,9 +269,9 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         //for each move, get the target collection URI and use move dates to get the specific location
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
 
-        Map<URI, URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(modelList.stream().map(model -> model.getTargets().get(0)).collect(Collectors.toList()));
+        Map<URI, URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionPerFeatureOfInterest(modelList.stream().map(model -> model.getTargets().get(0)).collect(Collectors.toList()));
 
         for (var model : modelList) {
             LocationObservationModel location =  observationLogic.getASpecificLocationObservation(
@@ -144,10 +293,51 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         );
     }
 
+    /**
+     * A specialized faster function to create moves where we know each move has a single target, and it is the first time
+     * creating a move on each target. Will be used to create moves in conjunction with Scientific Objects during CSV import.
+     * Made this specialized function instead of adding a boolean to the main create function as the case seems quite specific to
+     * Moves, no need to pollute EventLogic's create(List) method with an extra boolean.
+     *
+     * @param models the Moves to create
+     * @return the newly inserted Moves with their URI's filled. And their LocationObservations have their newly created
+     * LocationObservationCollection URIs. Handles setting of MoveUri in the LocationObservations.
+     *
+     */
+    public List<MoveModel> createFirstSingleUniqueTargetMoves(List<MoveModel> models) throws Exception {
+        if(CollectionUtils.isEmpty(models)){
+            return models;
+        }
+        //Set publishers and run basic Events check
+        models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
+        check(models, true);
+
+        //Create Location collections if they don't already exist
+        LocationObservationCollectionLogic locObsCollectionLogic = new LocationObservationCollectionLogic(sparql);
+
+        List<URI> allTargets = models.stream().map(model -> model.getTargets().get(0)).toList();
+
+        //Fetch existing collections (can happen if a target already had a location in another experiment)
+        Map<URI, URI> existingCollectionsPerTarget = locObsCollectionLogic.getLocationObservationCollectionPerFeatureOfInterest(allTargets);
+        StringUriMap<URI> locCollectionUriPerTarget = new StringUriMap<>(existingCollectionsPerTarget);
+
+        //Create collections for any target that never had a location
+        List<URI> targetsThatDontHaveCollection = locCollectionUriPerTarget.removeAlreadyPresentKeysFromList(allTargets);
+        if(!CollectionUtils.isEmpty(targetsThatDontHaveCollection)){
+            List<LocationObservationCollectionModel> newlyCreatedCollections = locObsCollectionLogic
+                    .createList(targetsThatDontHaveCollection);
+            //Add the new Target -> collection entries to map
+            for(LocationObservationCollectionModel nextLocObsCollectionModel : newlyCreatedCollections){
+                locCollectionUriPerTarget.put(nextLocObsCollectionModel.getFeatureOfInterest(), nextLocObsCollectionModel.getUri());
+            }
+        }
+
+        //Actually create Moves and Locations
+        return createMoveModelsFromTargetToLocationCollectionMap(models, locCollectionUriPerTarget);
+    }
+
     @Override
     public List<MoveModel> create(List<MoveModel> models, boolean validationOnly) throws Exception {
-        List<LocationObservationModel> locationObservationList = new ArrayList<>();
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
 
         models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
         check(models, true);
@@ -156,77 +346,35 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             return  models;
         }
 
-        for (MoveModel model : models) {
-            //Set event move URI
-            URI uri = model.getUri();
-            if (Objects.isNull(uri)) {
-                //Generate URI manually before insertion as the LocationObservation needs this information.
-                uri = model.generateURI(dao.getGraphAsNode().toString(), model, 0);
-                model.setUri(uri);
-            }
-
-            // build location observations
-            if (Objects.nonNull(model.getLocationObservation())) {
-                model.getTargets().forEach(target -> {
-                    LocationObservationModel locationObservation = new LocationObservationModel();
-                    LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-
-                    try {
-                        //Check if a location collection exists for this target
-                        URI targetCollection = collectionLogic.getLocationObservationCollectionURI(target);
-                        if(Objects.isNull(targetCollection)){
-                            targetCollection = collectionLogic.createLocationObservationCollection(target);
-                        }
-
-                        locationObservation.setMoveUri(model.getUri());
-                        locationObservation.setObservationCollection(targetCollection);
-                        locationObservation.setFeatureOfInterest(target);
-                        locationObservation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
-                        locationObservation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
-                        locationObservation.setLocation(model.getLocationObservation().getLocation());
-
-                        boolean hasGeometry = observationLogic.checkHasGeometry(
-                                model.getLocationObservation(),
-                                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
-                                model.getEnd().getDateTimeStamp().toInstant());
-
-                        locationObservation.setHasGeometry(hasGeometry);
-
-                        locationObservationList.add(locationObservation);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        //Fetch already existing collections
+        LocationObservationCollectionLogic locObsCollectionLogic = new LocationObservationCollectionLogic(sparql);
+        Set<String> uniqueTargets = new HashSet<>();
+        for(MoveModel model : models){
+            for(URI target : model.getTargets()){
+                uniqueTargets.add(SPARQLDeserializers.getShortURI(target));
             }
         }
 
-        return ApiUtils.wrapWithTransaction(session -> createMultipleNoTransaction(models, locationObservationList, session), clientSession, sparql, mongodb);
-    }
+        Map<URI, URI> collectionUriPerTarget = locObsCollectionLogic
+                .getLocationObservationCollectionPerFeatureOfInterest(uniqueTargets.stream().map(URI::create).toList());
 
-    /**
-     *
-     * @param targetUris the uris of targets for whom we want to fetch a LocationObservation
-     * @param endDate Location has to have the most recent date before endDate.
-     * @param intersection only include Locations that are contained in intersection
-     * @return A map of target URI => LocationObservation, the location observation is either the last position, or the
-     * position that corresponds to the passed endDate.
-     */
-    public Map<URI, LocationObservationModel> getTargetWithPosition(
-            List<URI> targetUris,
-            Instant endDate,
-            Geometry intersection
-    ) throws NoSuchElementException, SPARQLException {
+        //Create target->LocationCollectionUri mapping for the already existing collections
+        StringUriMap<URI> locCollectionUriPerTarget = new StringUriMap<>(collectionUriPerTarget);
 
-        LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionList(targetUris);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        //Filter out targets for whom they already have a location collection
+        Set<String> targetsWithExistingCollection = locCollectionUriPerTarget.keySet();
+        uniqueTargets.removeAll(targetsWithExistingCollection);
 
-        return locationObservationLogic.generateModelObservationCollectionMap(
-                targetCollectionMap,
-                Objects.nonNull(endDate) ? endDate : Instant.now(),
-                true,
-                intersection
-        );
+        //Now create collections for these and add to mapping
+        if(!CollectionUtils.isEmpty(uniqueTargets)){
+            List<LocationObservationCollectionModel> newlyCreatedCollections = locObsCollectionLogic
+                    .createList(uniqueTargets.stream().map(URI::create).toList());
+            for(LocationObservationCollectionModel nextNewCollection : newlyCreatedCollections){
+                locCollectionUriPerTarget.put(nextNewCollection.getFeatureOfInterest(), nextNewCollection.getUri());
+            }
+        }
+
+        return createMoveModelsFromTargetToLocationCollectionMap(models, locCollectionUriPerTarget);
     }
 
     /**
@@ -270,7 +418,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         List<LocationObservationModel> locationHistory;
 
         if (Objects.nonNull(collectionURI)) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
             locationHistory = locationObservationLogic.getLocationsHistory(
                     collectionURI,
                     start != null ? start.toInstant() : null,
@@ -327,7 +475,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(move.getTargets().get(0));
 
         //Get last location
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
         return locationObservationLogic.getASpecificLocationObservation(
                 collectionURI,
                 move.getEnd().getDateTimeStamp().toInstant(),
@@ -342,7 +490,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         if (Objects.nonNull(observation)) {
             LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
 
             realModel.getTargets().forEach(target -> {
                 try {
@@ -379,16 +527,190 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         return realModel;
     }
+
+    /**
+     * Sets the string value to be the Facility URI corresponding to the moves too field.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param toString a string value that we know is supposed to be uri
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnTooField(String toString, LocationModel movesLocation) throws URISyntaxException, InvalidValueException, SPARQLException {
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(toString)) {
+            movesLocation.setTo(new URI(toString));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets the string value to be the Facility URI corresponding to the moves from field.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param fromString a string value that we know is supposed to be uri
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnFromField(String fromString, LocationModel movesLocation) throws URISyntaxException {
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(fromString)) {
+            movesLocation.setFrom(new URI(fromString));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Tries to convert the string wkt into a Geometry object, so we can set this to be Location's geometry field.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param geometryString expected in wkt format
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnGeometryField(String geometryString, LocationModel movesLocation) throws ParseException, JsonProcessingException{
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(geometryString)){
+            movesLocation.setGeometry( GeospatialDAO.wktToGeometry(geometryString));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets the string value to be the Location's x value of the passed Move.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param xString a string value representing x
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnXField(String xString, LocationModel movesLocation) {
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(xString)) {
+            movesLocation.setX(xString);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets the string value to be the Location's y value of the passed Move.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param yString a string value representing y
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnYField(String yString, LocationModel movesLocation) {
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(yString)) {
+            movesLocation.setY(yString);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets the string value to be the Location's z value of the passed Move.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param zString a string value representing z
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnZField(String zString, LocationModel movesLocation) {
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(zString)) {
+            movesLocation.setZ(zString);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets the string value to be the Location's textual value of the passed Move.
+     * Handles creation of Location and LocationObservation models if not yet present.
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param textual a string value representing the textual location (example : Brian is in the kitchen)
+     * @param movesLocation the LocationModel that will be associated to Move
+     * @return true if value was not empty, false otherwise
+     */
+    public boolean applyValueOnTextualField(String textual, LocationModel movesLocation) {
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(textual)) {
+            movesLocation.setTextualPosition(textual);
+            return true;
+        }
+        return false;
+    }
+
     //#endregion
 
     //#region PRIVATE METHODS
+    private List<MoveModel> createMoveModelsFromTargetToLocationCollectionMap(List<MoveModel> models, StringUriMap<URI> locCollectionUriPerTarget) throws Exception {
+        List<LocationObservationModel> locationObservationList = new ArrayList<>();
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        for (MoveModel model : models) {
+            //Set event move URI
+            URI uri = model.getUri();
+            if (Objects.isNull(uri)) {
+                //Generate URI manually before insertion as the LocationObservation needs this information.
+                uri = model.generateURI(dao.getGraphAsNode().toString(), model, 0);
+                model.setUri(uri);
+            }
 
+            // build location observations
+            if (Objects.nonNull(model.getLocationObservation())) {
+                model.getTargets().forEach(target -> {
+                    LocationObservationModel locationObservation = new LocationObservationModel();
+
+                    try {
+                        //Get corresponding collection uri from passed mapping
+                        URI targetCollection = locCollectionUriPerTarget.get(target);
+
+                        locationObservation.setMoveUri(model.getUri());
+                        locationObservation.setObservationCollection(targetCollection);
+                        locationObservation.setFeatureOfInterest(target);
+                        locationObservation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+                        locationObservation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
+                        locationObservation.setLocation(model.getLocationObservation().getLocation());
+                        locationObservation.setExperimentUri(model.getLocationObservation().getExperimentUri());
+
+                        boolean hasGeometry = observationLogic.checkHasGeometry(
+                                model.getLocationObservation(),
+                                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
+                                model.getEnd().getDateTimeStamp().toInstant());
+
+                        locationObservation.setHasGeometry(hasGeometry);
+
+                        locationObservationList.add(locationObservation);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
+        return ApiUtils.wrapWithTransaction(session -> createMultipleNoTransaction(models, locationObservationList, session), clientSession, sparql, mongodb);
+    }
+
+    private void deleteListNoTransaction(List<URI> uris, ClientSession session) throws Exception{
+        //Delete associated Location Observations
+        LocationObservationLogic locObsLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        List<LocationObservationModel> allExistingLocObs = getMovesCorrespondingLocationObservationModels(uris, locObsLogic);
+        locObsLogic.deleteList(session, allExistingLocObs);
+        //Delete actual moves
+        dao.deleteMany(uris);
+    }
 
     private List<MoveModel> createMultipleNoTransaction(List<MoveModel> models, List<LocationObservationModel> locations, ClientSession clientSech) throws Exception {
         //insert into sparql graph and nosql
         dao.create(models);
         if (!locations.isEmpty()) {
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
             observationLogic.createLocationObservations(clientSech, locations, sparql, currentUser);
         }
         return models;
@@ -400,7 +722,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
         observationLogic.deleteASpecificLocationObservation(
                 session,
                 collectionURI,
@@ -411,11 +733,92 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         dao.delete(uri);
     }
 
+    /**
+     * We know that every move has 1 Location observation, this function fetches each one for each passed move.
+     *
+     * @param modelUris the move models uris we need Location observations for
+     * @param locObsLogic location observation logic object
+     * @return
+     */
+    private List<LocationObservationModel> getMovesCorrespondingLocationObservationModels(
+            List<URI> modelUris,
+            LocationObservationLogic locObsLogic
+    ){
+        if(CollectionUtils.isEmpty(modelUris)){
+            return Collections.emptyList();
+        }
+        LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
+        locationObservationSearchFilter.setMoveUris(modelUris);
+        locationObservationSearchFilter.setPageSize(ScientificObjectCsvImporterLogic.LOCATION_FETCHING_PAGE_SIZE);
+        List<LocationObservationModel> allExistingLocObs = new ArrayList<>();
+        int currentPage = 0;
+
+        //Do it page by page, unless there's something i'm missing you cant just do a standard non paginated search with the MongoReadWriteDao
+        boolean doContinue = true;
+        while(doContinue){
+            locationObservationSearchFilter.setPage(currentPage);
+            List<LocationObservationModel> nextExistingLocObs = locObsLogic
+                    .searchLocationObservations(locationObservationSearchFilter).getList();
+            allExistingLocObs.addAll(nextExistingLocObs);
+            doContinue = nextExistingLocObs.size() == ScientificObjectCsvImporterLogic.LOCATION_FETCHING_PAGE_SIZE;
+            currentPage++;
+        }
+        return allExistingLocObs;
+    }
+
+    /**
+     *
+     * @param models new versions of models we are updating, these models must be existing, no handling of deletes or creates in this method
+     * @param session Client session
+     * @return the list of newly updated moves
+     * @throws Exception if some sparql error happens
+     */
+    private List<MoveModel> updateExistingMovesNoTransaction(List<MoveModel> models, ClientSession session) throws Exception{
+        LocationObservationLogic locObsLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        List<LocationObservationModel> allExistingLocObs = getMovesCorrespondingLocationObservationModels(models.stream().map(MoveModel::getUri).toList(), locObsLogic);
+
+        StringUriMap<LocationObservationModel> locObsByMoveUri = new StringUriMap<>();
+        for(LocationObservationModel locObsModel : allExistingLocObs){
+            locObsByMoveUri.put(locObsModel.getMoveUri(), locObsModel);
+        }
+
+        List<LocationObservationModel> finalLocationsToUpdate = new ArrayList<>();
+        for(MoveModel model : models){
+            LocationObservationModel existingLocObsModel = locObsByMoveUri.get(model.getUri());
+            applyLocObsFieldsToSetFromMove(model, existingLocObsModel.getObservationCollection(), locObsLogic);
+            model.getLocationObservation().setUri(existingLocObsModel.getUri());
+            finalLocationsToUpdate.add(model.getLocationObservation());
+        }
+
+        //update location observations in mongo
+        locObsLogic.updateList(session, finalLocationsToUpdate);
+
+        //update Moves
+        dao.updateModels(models);
+        return models;
+    }
+
+    private void applyLocObsFieldsToSetFromMove(MoveModel model, URI collectionURI, LocationObservationLogic observationLogic){
+        LocationObservationModel newLocation = model.getLocationObservation();
+
+        boolean hasGeometry = observationLogic.checkHasGeometry(
+                newLocation,
+                Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
+                model.getEnd().getDateTimeStamp().toInstant());
+
+        newLocation.setMoveUri(model.getUri());
+        newLocation.setObservationCollection(collectionURI);
+        newLocation.setFeatureOfInterest(model.getTargets().get(0));
+        newLocation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
+        newLocation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
+        newLocation.setHasGeometry(hasGeometry);
+    }
+
     private MoveModel updateMoveNoTransaction(MoveModel model, ClientSession session) throws Exception {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2());
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
         LocationObservationModel observation = observationLogic.getASpecificLocationObservation(collectionURI, model.getLocationObservation().getEndDate(), model.getLocationObservation().getStartDate());
 
         // the new move event has no data model in mongodb, so we need to delete the old if exists
@@ -423,26 +826,14 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
             if (Objects.nonNull(observation)) {
                 observationLogic.deleteASpecificLocationObservation(session, collectionURI,observation.getEndDate(),Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
                 //if the feature of interest doesn't have location observations, delete the collection
-                int count = observationLogic.countLocationsForURI(collectionURI);
+                int count = observationLogic.countLocationsForCollectionURI(collectionURI);
                 if(count == 0){
                     collectionLogic.deleteLocationObservationCollection(collectionURI);
                 }
             }
         } else {
-            LocationObservationModel newLocation = model.getLocationObservation();
-
-            boolean hasGeometry = observationLogic.checkHasGeometry(
-                    newLocation,
-                    Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null,
-                    model.getEnd().getDateTimeStamp().toInstant());
-
-            newLocation.setObservationCollection(collectionURI);
-            newLocation.setFeatureOfInterest(model.getTargets().get(0));
-            newLocation.setStartDate(Objects.nonNull(model.getStart()) ? model.getStart().getDateTimeStamp().toInstant() : null);
-            newLocation.setEndDate(model.getEnd().getDateTimeStamp().toInstant());
-            newLocation.setHasGeometry(hasGeometry);
-
-            observationLogic.updateASpecificLocationObservation(session,observation, newLocation);
+            applyLocObsFieldsToSetFromMove(model, collectionURI, observationLogic);
+            observationLogic.updateASpecificLocationObservation(session,observation, model.getLocationObservation());
         }
 
         dao.update(model);

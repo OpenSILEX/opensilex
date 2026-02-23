@@ -34,7 +34,7 @@
             :required="fromRequired"
             @select="updateRequiredProps()"
             @clear="updateRequiredProps()"
-            helpMessage="LocationForm.from-help"
+            helpMessage="component.common.geometry.from-help"
           ></opensilex-FacilitySelector>
         </div>
         <div class="col-lg-5">
@@ -45,7 +45,7 @@
             :required="toRequired"
             @select="updateRequiredProps()"
             @clear="updateRequiredProps()"
-            helpMessage="LocationForm.to-help"
+            helpMessage="component.common.geometry.to-help"
           ></opensilex-FacilitySelector>
         </div>
       </div>
@@ -71,8 +71,8 @@
           <opensilex-InputForm
             :value.sync="form.x"
             label="component.common.geometry.x"
-            helpMessage="LocationForm.x-help"
-            placeholder="LocationForm.x-placeholder"
+            helpMessage="component.common.geometry.x-help"
+            placeholder="component.common.geometry.x-placeholder"
             type="text"
           ></opensilex-InputForm>
         </div>
@@ -81,8 +81,8 @@
           <opensilex-InputForm
             :value.sync="form.y"
             label="component.common.geometry.y"
-            helpMessage="LocationForm.y-help"
-            placeholder="LocationForm.y-placeholder"
+            helpMessage="component.common.geometry.y-help"
+            placeholder="component.common.geometry.y-placeholder"
             type="text"
           ></opensilex-InputForm>
         </div>
@@ -91,8 +91,8 @@
           <opensilex-InputForm
             :value.sync="form.z"
             label="component.common.geometry.z"
-            helpMessage="LocationForm.z-help"
-            placeholder="LocationForm.z-placeholder"
+            helpMessage="component.common.geometry.z-help"
+            placeholder="component.common.geometry.z-placeholder"
             type="text"
           ></opensilex-InputForm>
         </div>
@@ -104,8 +104,8 @@
           <opensilex-TextAreaForm
             :value.sync="form.text"
             label="component.common.geometry.textual-position"
-            helpMessage="LocationForm.textual-position-help"
-            placeholder="LocationForm.textual-position-placeholder"
+            helpMessage="component.common.geometry.textual-position-help"
+            placeholder="component.common.geometry.textual-position-placeholder"
             @keydown.native.enter.stop
           ></opensilex-TextAreaForm>
         </div>
@@ -225,38 +225,14 @@ en:
     LocationForm:
         update: Update location,
         positionTitle: Position,
-        x-help: "1th dimension of a custom coordinate system"
-        x-placeholder: "A or 10 or 10.5"
-        y-help: "2nd dimension of a custom coordinate system"
-        y-placeholder: "A or 10 or 10.5"
-        z-placeholder: "A or 10 or 10.5"
-        z-help: "3rd dimension of a custom coordinate system"
-        textual-position-placeholder: Beside the left door
-        textual-position-help: Description of the position with text
         from: From
-        from-placeholder: dev-infra:greenHouseA
-        from-help: "Starting facility URI (The facility must exists)."
         to: To
-        to-placeholder: dev-infra:greenHouseB
-        to-help: "Arrival facility URI (The facility must exists)."
 
 fr:
     LocationForm:
         update: Modifier la localisation
         positionTitle: Position
-        x-help: "1ère dimension d'un système de coordonnées"
-        x-placeholder: "A ou 10 ou 10,5"
-        y-help: "2ème dimension d'un système de coordonnées"
-        y-placeholder: "A ou 10 ou 10,5"
-        z-placeholder: "A ou 10 ou 10,5"
-        z-help: "3ème dimension d'un système de coordonnées"
-        textual-position-placeholder: "à côté de la porte gauche"
-        textual-position-help: Description textuelle de la position
         from: De
-        from-placeholder: dev-infra:serreA
-        from-help: "URI de l'installation environnementale de départ (L'installation doit exister)."
         to: Vers
-        to-placeholder: dev-infra:serreB
-        to-help: "URI de l'installation environnementale d'arrivée (L'installation doit exister)."
 
 </i18n>

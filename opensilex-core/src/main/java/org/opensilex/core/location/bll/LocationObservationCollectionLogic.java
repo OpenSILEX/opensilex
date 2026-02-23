@@ -21,6 +21,7 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,14 +40,24 @@ public class LocationObservationCollectionLogic {
 
     //#region public
     public URI createLocationObservationCollection(URI featureOfInterest) throws Exception {
-        //TODO MAX so as soon as we try to add a new location via this function an error will be thrown?? If so make  a getOrCreateNew, if i do this start by verifying all usages of this function to make sure no logic was added
-        checkUniqueObservationCollection(featureOfInterest);
-
-        LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel();
-
-        locationObservationCollectionModel.setFeatureOfInterest(featureOfInterest);
-
+        checkUniqueObservationCollection(Collections.singletonList(featureOfInterest));
+        LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel(featureOfInterest);
         return locationObservationCollectionDAO.create(locationObservationCollectionModel);
+    }
+
+    /**
+     * DOES NOT CURRENTLY CHECK UNIQUENESS
+     *
+     * @param featuresOfInterest the URIs for whom we want to create a new LocObsCollection for
+     * @return the newly created Collections with their URIs filled
+     */
+    public List<LocationObservationCollectionModel> createList(List<URI> featuresOfInterest) throws Exception {
+        checkUniqueObservationCollection(featuresOfInterest);
+        List<LocationObservationCollectionModel> collectionModels = featuresOfInterest
+                .stream()
+                .map(LocationObservationCollectionModel::new).toList();
+        locationObservationCollectionDAO.createList(collectionModels);
+        return collectionModels;
     }
 
     public URI getLocationObservationCollectionURI(URI featureOfInterest) {
@@ -62,7 +73,7 @@ public class LocationObservationCollectionLogic {
      * @param featureOfInterests the uris of elements we want LocationCollections for
      * @return the LocationCollection uri of each featureOfInterest, in a Map of FeatureOfInterestURI => LocationCollectionURI
      */
-    public Map<URI, URI> getLocationObservationCollectionList(List<URI> featureOfInterests) throws SPARQLException {
+    public Map<URI, URI> getLocationObservationCollectionPerFeatureOfInterest(List<URI> featureOfInterests) throws SPARQLException {
         return locationObservationCollectionDAO.getCollections(featureOfInterests);
     }
 
@@ -77,17 +88,21 @@ public class LocationObservationCollectionLogic {
     public void deleteLocationObservationCollection(URI collectionURI) throws Exception {
         locationObservationCollectionDAO.delete(collectionURI);
     }
+
+    public void deleteMany(List<URI> collectionUris) throws Exception {
+        locationObservationCollectionDAO.deleteMany(collectionUris);
+    }
     //#endregion
 
     //#region private
-    private void checkUniqueObservationCollection(URI featureOfInterest) {
+    private void checkUniqueObservationCollection(List<URI> featuresOfInterest) {
         try {
-            List<SPARQLResult> result = locationObservationCollectionDAO.validateUniquenessObservationCollection(featureOfInterest);
+            List<SPARQLResult> result = locationObservationCollectionDAO.validateUniquenessObservationCollection(featuresOfInterest);
 
             if (result.size() > 1) {
-                throw new BadRequestException("Invalid observation collection model : observation collection must be unique for each feature of interest");
+                throw new BadRequestException("Invalid observation collection model : each observation collection must be unique for each feature of interest");
             }
-        } catch (SPARQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unexpected error when checking location collection", e);
         }
     }

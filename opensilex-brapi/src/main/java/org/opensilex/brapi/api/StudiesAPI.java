@@ -320,7 +320,7 @@ public class StudiesAPI extends BrapiCall {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()

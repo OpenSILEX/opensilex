@@ -199,8 +199,8 @@ public class FacilityLogic {
 
         List<FacilityModel> facilityList = facilityDAO.minimalSearch(facilitySearchfilter, organizationsAndSites).getList();
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-        return locationObservationLogic.generateModelObservationCollectionMap(
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                 facilityList,
                 (FacilityModel model)-> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
                 Objects.nonNull(endDate) ? endDate : Instant.now(),
@@ -247,7 +247,7 @@ public class FacilityLogic {
             }
 
             //Update "hasGeometry" of location linked to the facility (as "to")
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
             if(collectionUri != null) {
                 locationObservationLogic.updateAssociatedLocationModel(session, existingModel.getUri(), collectionUri);
             }
@@ -299,9 +299,9 @@ public class FacilityLogic {
      * @return The Location Observation model
      */
     public LocationObservationModel getLastFacilityLocationModel(FacilityModel facilityModel) {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
 
-        List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
+        List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservations(
                 Collections.singletonList(facilityModel.getLocationObservationCollection().getUri()),
                 false,
                 Instant.now(),
@@ -461,7 +461,7 @@ public class FacilityLogic {
      * @throws Exception
      */
     private URI createFacilityLocations(ClientSession session, FacilityModel facility, List<LocationObservationModel> locationObservationModels) throws Exception {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
         List<LocationObservationModel> locations = new ArrayList<>();
 
         if (Objects.isNull(locationObservationModels) && Objects.nonNull(facility.getAddress())) {
@@ -484,8 +484,8 @@ public class FacilityLogic {
 
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
         //Delete existing
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-        locationObservationLogic.deleteLocationObservations(session, existingModel.getLocationObservationCollection().getUri());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        locationObservationLogic.deleteEveryLocationObservationInCollection(session, existingModel.getLocationObservationCollection().getUri());
 
         //Create new locations
         List<LocationObservationModel> locations = new ArrayList<>();
@@ -506,13 +506,12 @@ public class FacilityLogic {
     private LocationObservationModel convertFacilityAddressToLocationObservation(FacilityModel facilityModel) {
         Geometry geometry = convertAddressToGeometry(facilityModel);
         if (Objects.isNull(geometry)) {
-            //TODO MAX ASK IS THIS NORMAL, should we throw an error instead
             return null;
         }
 
         LocationObservationModel locationObservationModel = new LocationObservationModel();
         locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null,null,null, null, null, null));
-        //Location needs a date to not fail TODO MAX Ask: in location validations we say the dates must not be null, yet elsewhere in the code it is expected and written in comments  that when location comes from an address date is null. See LocationObservationLogic.updateAssociatedLocationModel
+        //Location needs a date to not fail
         locationObservationModel.setEndDate(Instant.now());
         return locationObservationModel;
     }
@@ -526,11 +525,11 @@ public class FacilityLogic {
 
     private void deleteFacilityLocations(ClientSession session, FacilityModel facility) {
         if (facility.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
             try {
-                locationObservationLogic.deleteLocationObservations(session, facility.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteEveryLocationObservationInCollection(session, facility.getLocationObservationCollection().getUri());
                 locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
             } catch (Exception e) {
                 throw new NotFoundURIException("Invalid or unknown URI ", facility.getLocationObservationCollection().getUri());

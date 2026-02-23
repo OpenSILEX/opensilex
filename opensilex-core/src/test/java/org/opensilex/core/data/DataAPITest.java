@@ -21,8 +21,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.annotation.api.AnnotationAPI;
-import org.opensilex.core.annotation.api.AnnotationCreationDTO;
 import org.opensilex.core.annotation.api.AnnotationGetDTO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.data.api.*;
@@ -49,7 +47,6 @@ import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.JsonResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.DateFormat;
@@ -74,7 +71,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static junit.framework.TestCase.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -163,7 +161,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private static FacilityModel facilityVarsDevicesImport2;
 
     private static final ServiceDescription getByUri;
-    private static final ServiceDescription create;
+    public static final ServiceDescription create;
 
     static {
         try {
@@ -390,6 +388,19 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         dataDTO.setDate(date);
 
         return dataDTO;
+    }
+
+    public static DataCreationDTO getCreationDataDTO(URI variable) throws Exception {
+        URI provenanceUri = createOneProvenance("DataAPITest");
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenanceUri);
+
+        DataCreationDTO dto = new  DataCreationDTO();
+        dto.setDate("2025-03-06");
+        dto.setProvenance(provenanceModel);
+        dto.setVariable(variable);
+        dto.setValue(5.56);
+        return dto;
     }
 
     private FileDataBodyPart getImportFileBodyPart(Path filePath) throws IOException {
@@ -1081,10 +1092,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         URI createdURI = new UserCallBuilder(create)
                 .setBody(Collections.singletonList(creationDTO))
                 .buildAdmin()
-                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<URI>>() {
-                })
-                .getDeserializedResponse()
-                .getResult()
+                .executeCallAndReturnUriList()
                 .get(0);
         assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI), SPARQLDeserializers.compareURIs(decodedURI, createdURI));
 

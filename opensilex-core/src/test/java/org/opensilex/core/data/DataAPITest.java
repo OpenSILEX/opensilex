@@ -47,7 +47,6 @@ import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.DateFormatters;

@@ -9,9 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.DataAPITest;
-import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCreationDTO;
-import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
@@ -27,7 +25,6 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.core.Response;

@@ -35,15 +35,13 @@ public class ScientificObjectAndExperimentRelationMigration {
      * @return true if participatesIn was found on any ScientificObject
      */
     protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
-        //TODO MAX untested, also can i simply replace these things with an AskBuilder? probably shpuld do that
-        SelectBuilder participatesInSelect = new SelectBuilder();
+        AskBuilder participatesInSelect = new AskBuilder();
 
-        participatesInSelect.addVar(SO_VAR);
         participatesInSelect.addWhere(TYPE_VAR, Ontology.subClassAny, Oeso.ScientificObject);
         participatesInSelect.addWhere(SO_VAR, RDF.type, TYPE_VAR);
         participatesInSelect.addWhere(SO_VAR, Oeso.participatesIn, GRAPH_VAR);
 
-        return !sparql.executeSelectQueryAsStream(participatesInSelect).toList().isEmpty();
+        return sparql.executeAskQuery(participatesInSelect);
     }
 
     private WhereBuilder buildWhere() throws SPARQLException {

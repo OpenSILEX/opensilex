@@ -14,11 +14,11 @@ package org.opensilex.migration.one_point_five_ALL;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
@@ -145,33 +145,31 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      * @return true if any OS's are feature of interest, false if nay
      */
     protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
-        SelectBuilder osLocationSelect = new SelectBuilder();
+        AskBuilder osLocationSelect = new AskBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var collectionVar = makeVar("collection");
         Var typeVar = makeVar("type");
 
-        osLocationSelect.addVar(uriVar);
         osLocationSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
         osLocationSelect.addWhere(uriVar, RDF.type, typeVar);
         osLocationSelect.addWhere(collectionVar, RDF.type, SOSA.ObservationCollection);
         osLocationSelect.addWhere(collectionVar, SOSA.hasFeatureOfInterest, uriVar);
 
-        boolean doHaveOSLocations = !sparql.executeSelectQueryAsStream(osLocationSelect).toList().isEmpty();
+        boolean doHaveOSLocations = sparql.executeAskQuery(osLocationSelect);
         //If we have OS locations, no need to check for devices, we can leave
         if(doHaveOSLocations){
             return true;
         }
 
         //Else do same check for devices
-        SelectBuilder deviceLocationSelect = new SelectBuilder();
+        AskBuilder deviceLocationSelect = new AskBuilder();
 
-        deviceLocationSelect.addVar(uriVar);
         deviceLocationSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Device);
         deviceLocationSelect.addWhere(uriVar, RDF.type, typeVar);
         deviceLocationSelect.addWhere(collectionVar, RDF.type, SOSA.ObservationCollection);
         deviceLocationSelect.addWhere(collectionVar, SOSA.hasFeatureOfInterest, uriVar);
 
-        return !sparql.executeSelectQueryAsStream(deviceLocationSelect).toList().isEmpty();
+        return  sparql.executeAskQuery(deviceLocationSelect);
     }
 
     private List<URI> getOsSubTypes() throws SPARQLException {

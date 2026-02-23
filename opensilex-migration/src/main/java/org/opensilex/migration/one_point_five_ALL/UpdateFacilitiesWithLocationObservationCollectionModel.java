@@ -15,10 +15,7 @@
  import com.mongodb.client.MongoDatabase;
  import com.mongodb.client.model.Filters;
  import com.mongodb.client.model.geojson.Geometry;
- import org.apache.jena.arq.querybuilder.ExprFactory;
- import org.apache.jena.arq.querybuilder.SelectBuilder;
- import org.apache.jena.arq.querybuilder.UpdateBuilder;
- import org.apache.jena.arq.querybuilder.WhereBuilder;
+ import org.apache.jena.arq.querybuilder.*;
  import org.apache.jena.graph.Node;
  import org.apache.jena.graph.NodeFactory;
  import org.apache.jena.sparql.core.TriplePath;
@@ -78,19 +75,17 @@
       * @return true if any Facility is feature of interest, false if nay
       */
      protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
-         //TODO MAX untested and can i use AskBuilder
-         SelectBuilder facilityLocationSelect = new SelectBuilder();
+         AskBuilder facilityLocationSelect = new AskBuilder();
          Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
          Var collectionVar = makeVar("collection");
          Var typeVar = makeVar("type");
 
-         facilityLocationSelect.addVar(uriVar);
          facilityLocationSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
          facilityLocationSelect.addWhere(uriVar, RDF.type, typeVar);
          facilityLocationSelect.addWhere(collectionVar, RDF.type, SOSA.ObservationCollection);
          facilityLocationSelect.addWhere(collectionVar, SOSA.hasFeatureOfInterest, uriVar);
 
-         return !sparql.executeSelectQueryAsStream(facilityLocationSelect).toList().isEmpty();
+         return sparql.executeAskQuery(facilityLocationSelect);
      }
 
      public void execute() throws Exception {

@@ -1,6 +1,6 @@
 package org.opensilex.migration.one_point_five_ALL;
 
-import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.data.bll.DataLogic;
@@ -45,33 +45,30 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
      * @return true if any Facility has a device or variable.
      */
     protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
-        //TODO MAX untested, also can i simply replace these things with an AskBuilder? probably shpuld do that
-        SelectBuilder hasDeviceSelect = new SelectBuilder();
+        AskBuilder hasDeviceSelect = new AskBuilder();
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var deviceVar = makeVar("device");
         Var typeVar = makeVar("type");
 
-        hasDeviceSelect.addVar(uriVar);
         hasDeviceSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
         hasDeviceSelect.addWhere(uriVar, RDF.type, typeVar);
         hasDeviceSelect.addWhere(uriVar, Oeso.hasDevice, deviceVar);
 
-        boolean aFacilityDoesHaveDevices = !sparql.executeSelectQueryAsStream(hasDeviceSelect).toList().isEmpty();
+        boolean aFacilityDoesHaveDevices = sparql.executeAskQuery(hasDeviceSelect);
         //If we have OS locations, no need to check for devices, we can leave
         if(aFacilityDoesHaveDevices){
             return true;
         }
 
         //Else do same check for devices
-        SelectBuilder hasVariableSelect = new SelectBuilder();
+        AskBuilder hasVariableSelect = new AskBuilder();
         Var variableVar = makeVar("variable");
 
-        hasVariableSelect.addVar(uriVar);
         hasVariableSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
         hasVariableSelect.addWhere(uriVar, RDF.type, typeVar);
         hasVariableSelect.addWhere(uriVar, Oeso.hasVariable, variableVar);
 
-        return !sparql.executeSelectQueryAsStream(hasVariableSelect).toList().isEmpty();
+        return sparql.executeAskQuery(hasVariableSelect);
     }
 
     protected void execute() throws Exception {

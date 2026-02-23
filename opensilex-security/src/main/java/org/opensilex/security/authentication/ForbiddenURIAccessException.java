@@ -16,7 +16,7 @@ import java.util.Collection;
 public class ForbiddenURIAccessException extends WebApplicationException {
 
     public ForbiddenURIAccessException(URI uri) {
-        super("Forbidden access to URI: " + uri);
+        throw new ForbiddenURIAccessException(uri, "");
     }
 
     public ForbiddenURIAccessException(URI uri, String message) {

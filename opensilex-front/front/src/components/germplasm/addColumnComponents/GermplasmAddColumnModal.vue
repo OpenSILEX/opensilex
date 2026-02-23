@@ -71,7 +71,7 @@ export default class GermplasmAddColumnModal extends Vue {
   existingRdfAttributesStringRule:string;
 
   get pickedExisting(): boolean {
-    return !!this.chosenPropertyUri;
+    return this.chosenPropertyUri !== "";
   }
 
   /**

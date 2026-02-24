@@ -118,7 +118,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     protected long getLinkedDataNb(URI uri, AccountModel currentUser) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
-        dataSearchFilter.setUri(uri);
+        dataSearchFilter.setVariables(List.of(uri));
         dataSearchFilter.setUser(currentUser);
         return new DataLogic(sparql, nosql, fs, user).countData(dataSearchFilter);
     }

@@ -328,17 +328,28 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
 
         /**
-         * Executes the call and asserts that the response status matches the expected status.
+         * Executes the call and asserts that the response status matches the expected status. Display response error in case of failure.
          * @param expectedStatus the expected status of the response
          * @throws RuntimeException if there is an error executing the call or if the response status does not match the expected status
          */
         public void executeCallAndAssertStatus(Response.Status expectedStatus) {
+            executeCallAndAssertStatus(null, expectedStatus);
+        }
+
+        /**
+         * Executes the call and asserts that the response status matches the expected status. Display response error in case of failure.
+         * @param assertionErrorMessage the message to display if the assertion fails
+         * @param expectedStatus the expected status of the response
+         * @throws RuntimeException if there is an error executing the call or if the response status does not match the expected status
+         */
+        public void executeCallAndAssertStatus(String assertionErrorMessage, Response.Status expectedStatus) {
             try (Response response = executeCall()) {
-                String error = null;
+                String requestError = null;
                 if (expectedStatus != null && response.getStatus() != expectedStatus.getStatusCode()) {
-                    error = response.readEntity(String.class);
+                    requestError = response.readEntity(String.class);
                 }
-                assertEquals( String.format("assertion error. Response error : \n %s", error), expectedStatus.getStatusCode(), response.getStatus());
+                String messageWithError = String.format("%s \n Response error : \n %s", assertionErrorMessage, requestError);
+                assertEquals(messageWithError , expectedStatus.getStatusCode(), response.getStatus());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -370,9 +381,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @throws Exception if there is an error executing the call or retrieving the URI from the response
          */
         public URI executeCallAndReturnURI() throws Exception {
-            if (Objects.equals(httpMethod, HttpMethod.PUT) ||
-                    Objects.equals(httpMethod, HttpMethod.POST) ||
-                    Objects.equals(httpMethod, HttpMethod.DELETE)) {
+            if (isPostPutOrDeleteCall()) {
                 Result<ObjectUriResponse> response = executeCallAndDeserialize(new TypeReference<>() {
                 });
                 return URI.create(response.getDeserializedResponse().getResult());
@@ -381,6 +390,29 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 });
                 return readResponse.getDeserializedResponse().getResult().getUri();
             }
+        }
+
+        /**
+         * Executes the call and returns the list of URI from the response.
+         * @return the list of URI from the response
+         * @throws Exception if there is an error executing the call or retrieving the list of URI
+         */
+        public List<URI> executeCallAndReturnUriList() throws Exception {
+            if (isPostPutOrDeleteCall()){
+                Result<PaginatedListResponse<URI>> response = executeCallAndDeserialize(new TypeReference<PaginatedListResponse<URI>>() {
+                });
+                return response.getDeserializedResponse().getResult();
+            } else {
+                Result<DeserializedResponse<List<UriResourceDTO>>> readResponse = executeCallAndDeserialize(new TypeReference<>() {
+                });
+                return readResponse.getDeserializedResponse().getResult().stream().map(UriResourceDTO::getUri).collect(Collectors.toList());
+            }
+        }
+
+        private boolean isPostPutOrDeleteCall() {
+            return Objects.equals(httpMethod, HttpMethod.PUT) ||
+                    Objects.equals(httpMethod, HttpMethod.POST) ||
+                    Objects.equals(httpMethod, HttpMethod.DELETE);
         }
 
         /**

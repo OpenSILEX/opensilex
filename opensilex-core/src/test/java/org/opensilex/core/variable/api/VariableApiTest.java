@@ -452,6 +452,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         DataCreationDTO dataDTO = DataAPITest.getCreationDataDTO(createdVariableUri);
 
+        //TODO MAX this was also failing locally
         new UserCallBuilder(DataAPITest.create)
                 .setBody(Collections.singletonList(dataDTO))
                 .buildAdmin()

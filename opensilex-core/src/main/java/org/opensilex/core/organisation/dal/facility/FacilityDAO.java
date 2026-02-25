@@ -66,23 +66,32 @@ public class FacilityDAO {
         return sparql.getByURI(FacilityModel.class, uri, lang);
     }
 
+    /**
+     *
+     * @param filter to keep only facilities that validate criteria.
+     * @param organizationsAndSites to restrict visibility to certain facilities (user search rights).
+     * @param nodesToFetch if NULL then a default schema getting everything we could possibly need will be used,
+     *                     else fetch only the specified nodes
+     * @return a ListWithPagination of the Facilities
+     */
     public ListWithPagination<FacilityModel> search(
             FacilitySearchFilter filter,
-            FacilityLogic.FacilitySearchRights organizationsAndSites
+            FacilityLogic.FacilitySearchRights organizationsAndSites,
+            List<SparqlSchemaSimpleNode<?>> nodesToFetch
     ) throws Exception {
         filter.validate();
 
         SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
                 sparql,
                 FacilityModel.class,
-                List.of(
+                (nodesToFetch == null ? List.of(
                         new SparqlSchemaSimpleNode<>(OrganizationModel.class, FacilityModel.ORGANIZATION_FIELD),
                         new SparqlSchemaSimpleNode<>(SiteModel.class, FacilityModel.SITE_FIELD),
                         new SparqlSchemaSimpleNode<>(VariablesGroupModel.class, FacilityModel.VARIABLE_GROUPS_FIELD),
                         new SparqlSchemaSimpleNode<>(FacilityAddressModel.class, FacilityModel.ADDRESS_FIELD),
                         new SparqlSchemaSimpleNode<>(VariableModel.class, FacilityModel.VARIABLES_FIELD),
                         new SparqlSchemaSimpleNode<>(DeviceModel.class, FacilityModel.DEVICES_FIELD)
-                ),
+                ) : nodesToFetch),
                 true
         );
 

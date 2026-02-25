@@ -508,6 +508,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         dtoWithNoTargetAndXp.setTarget(null);
         dtoWithNoTargetAndXp.setProvenance(provenanceWithoutXP);
         postResultData = getJsonPostResponseAsAdmin(target(CREATE_PATH), List.of(dtoWithNoTargetAndXp));
+        //TODO MAX this was also failing locally
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
 
         // test without OS inside an experiment

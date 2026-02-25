@@ -25,7 +25,10 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.utils.ApiUtils;
@@ -33,6 +36,7 @@ import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -48,6 +52,7 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -115,7 +120,12 @@ public class DataLogic {
      * @throws Exception
      */
     public List<FacilityModel> handleExtractionOfFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        //Before doing anything create a list of all occurring targets in the data models, if this list is empty then leave
+        List<URI> targets = dataModels.stream().map(DataModel::getTarget).filter(Objects::nonNull).toList();
+        if(CollectionUtils.isEmpty(targets)) {
+            return Collections.emptyList();
+        }
+
         //Maps to remember which facilities have which variables and devices
         //, we will update the facilities all together at the end
         StringUriMap<Set<String>> variablesPerFacility = new StringUriMap<>();
@@ -130,12 +140,21 @@ public class DataLogic {
         // not throw an error when some uris are not a subtype of Facility, unlike the sparql service loadListByURIs which
         //uses Values clause.
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
-        List<FacilityModel> foundFacilities = facilityLogic.getList(dataModels.stream().map(DataModel::getTarget).toList(), user);
+        List<FacilityModel> foundFacilities = facilityLogic.getList(
+                targets,
+                user,
+                List.of(
+                    new SparqlSchemaSimpleNode<>(VariableModel.class, FacilityModel.VARIABLES_FIELD),
+                    new SparqlSchemaSimpleNode<>(DeviceModel.class, FacilityModel.DEVICES_FIELD)
+                )
+        );
 
         for(FacilityModel facilityModel: foundFacilities){
             facilityPerUri.put(facilityModel.getUri(), facilityModel);
         }
 
+        //Device Dao to verify if an Agent is a Device
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         //Iterate over DataModels to save variables and devices
         for (DataModel dataModel : dataModels) {
             FacilityModel facilityModel = facilityPerUri.get(dataModel.getTarget());

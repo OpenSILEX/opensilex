@@ -703,14 +703,6 @@ public class ScientificObjectLogic {
         // search objects according filtering and selected uris, fetch os factors
         ListWithPagination<ScientificObjectModel> objects = dao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD));
 
-        // compute URI list in order to call getGeometryByUris()
-        List<URI> objectsUris;
-        if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
-            objectsUris = searchFilter.getUris();
-        } else {
-            objectsUris = objects.getList().stream().map(ScientificObjectModel::getUri).collect(Collectors.toList());
-        }
-
         CsvExporter<ScientificObjectModel> csvExporter = new ScientificObjectCsvExporter(
                 sparql,
                 objects.getList(),

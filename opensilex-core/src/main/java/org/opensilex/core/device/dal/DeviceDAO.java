@@ -342,19 +342,20 @@ public class DeviceDAO {
         // test if device in provenances
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
         int provCount = provenanceDAO.count(null, null, null, null, null, null, deviceURI);
+        String message = "Device can't be deleted : %d %s are linked to it.";
         if(provCount > 0) {
-            throw new ForbiddenURIAccessException(deviceURI, provCount+" provenance(s)");
+            throw new ForbiddenURIAccessException(deviceURI, String.format(message, provCount, "provenance(s)"));
         }
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null, null);
         if(dataCount > 0){
-            throw new ForbiddenURIAccessException(deviceURI, dataCount+" data");
+            throw new ForbiddenURIAccessException(deviceURI, String.format(message, dataCount, "data(s)"));
         }  
         
         int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null);
         if(dataFileCount > 0) {
-            throw new ForbiddenURIAccessException(deviceURI, dataFileCount + " datafile(s)");
+            throw new ForbiddenURIAccessException(deviceURI, String.format(message, dataFileCount, "data file(s)"));
         }
 
         deleteVariableLinks(deviceURI);

@@ -42,6 +42,10 @@ public class StringUriMap <T> {
         return map.values();
     }
 
+    public T getOrDefault(URI uriKey, T defaultValue){
+        return map.getOrDefault(convertUriToStringCommonFormat(uriKey), defaultValue);
+    }
+
     /**
      * To be used to cut out any URIs that are already keys in the map from a list of URIs
      *

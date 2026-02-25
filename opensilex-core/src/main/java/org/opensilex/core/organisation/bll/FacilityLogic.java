@@ -140,9 +140,12 @@ public class FacilityLogic {
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
     public List<FacilityModel> getList(List<URI> uris, AccountModel user) throws Exception {
-        return search(new FacilitySearchFilter()
+        FacilitySearchFilter filter = new FacilitySearchFilter()
                 .setUser(user)
-                .setFacilities(uris)).getList();
+                .setFacilities(uris);
+        //As we are getting by uris set maximum pageSize to be size of uris
+        filter.setPageSize(uris.size());
+        return search(filter).getList();
     }
 
     /**

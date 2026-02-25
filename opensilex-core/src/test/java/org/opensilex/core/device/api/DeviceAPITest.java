@@ -349,7 +349,6 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         dataDto.setUri(URI.create("dev:data1"));
 
         Response postDataProvResult = getJsonPostResponseAsAdmin(target(dataPath), Collections.singletonList(dataDto));
-        //TODO MAX this was also failing lcoally
         assertEquals(Response.Status.CREATED.getStatusCode(),postDataProvResult.getStatus());
 
         final Response delResult = getDeleteByUriResponse(target(deletePath), deviceDto.getUri().toString());

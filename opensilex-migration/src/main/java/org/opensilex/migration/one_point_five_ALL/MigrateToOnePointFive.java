@@ -56,11 +56,11 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                             sciObjAndXpLinkMigration.wasMigrationPreviouslyRun() ||
                             facilitiesLocationsMigration.wasMigrationPreviouslyRun()
             ){
-                logger.warn("It looks like this migration has already been performed. If this is not the case contact the Opensilex Team!");
+                logger.warn("It looks like this migration has already been performed. If this is not the case contact the Opensilex Team! No changes saved on the database.");
                 return;
             }
         }catch(Exception e){
-            logger.error("Something went wrong during verification that migration was not already run, the error was: {}", e.getMessage());
+            logger.error(" No changes saved on the database. Something went wrong during verification that migration was not already run, the error was: {}", e.getMessage());
             return;
         }
         //Execute them

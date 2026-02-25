@@ -41,16 +41,17 @@
                             </b-form-group>
                             <b-card-text>
                                 <ul>
-                                    <li
-                                            v-for="externalOntologyRef in externalOntologiesRefs"
-                                            :key="externalOntologyRef.name"
-                                    >
+                                    <li 
+                                        v-for="externalOntologyRef in externalOntologiesRefs"
+                                        :key="externalOntologyRef.name">
                                         <a
-                                                target="_blank"
-                                                v-bind:title="externalOntologyRef.name"
-                                                v-bind:href="externalOntologyRef.link"
-                                                v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
-                                        >{{ externalOntologyRef.name }}</a>
+                                            target="_blank"
+                                            :title="externalOntologyRef.name"
+                                            :href="externalOntologyRef.link"
+                                            v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
+                                            >
+                                            {{ externalOntologyRef.name }}
+                                        </a>
                                     </li>
                                 </ul>
                             </b-card-text>
@@ -199,11 +200,14 @@ import HttpResponse from "../../../lib/HttpResponse";
         ontologiesToSelect: string[];
 
         get externalOntologiesRefs(): any[] {
-            if (this.ontologiesToSelect) {
-                return ExternalOntologies.getExternalOntologiesReferences(this.ontologiesToSelect);
-            } else {
-                return [];
-            }
+            if (!this.ontologiesToSelect) return [];
+
+            return ExternalOntologies
+                .getExternalOntologiesReferences(this.ontologiesToSelect)
+                .map(ref => ({
+                ...ref,
+                description: this.$t(ref.description)
+                }));
         }
 
         isAgroportalReachable: boolean = false;

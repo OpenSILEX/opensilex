@@ -8,12 +8,16 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -25,6 +29,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ClassUtils;
 
 import java.lang.reflect.Field;
@@ -284,6 +289,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     protected SelectBuilder getSelect() {
 
         Var uriVar = mapper.getURIFieldVar();
+        //Type var to make sure there is at least 1 non-optional triple in the request (was getting a bug otherwise)
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
 
         // copy the initial SELECT and replace vars
         SelectBuilder multivaluedSelect = new SelectBuilder()
@@ -298,6 +305,10 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         } else {
             graphElemGroup = multivaluedSelect.getWhereHandler().getClause();
         }
+
+        //To make sure there is at least one non-optional triple
+        multivaluedSelect.addWhere(typeVar, Ontology.subClassAny, this.mapper.getRDFType().asNode());
+        multivaluedSelect.addWhere(uriVar, RDF.type, typeVar);
 
         // append var and BGP for each multivalued field
         concatVarNameByFields.keySet().forEach(field -> {

@@ -80,7 +80,7 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2024/04/09 | <b> org.opensilex.migration.MongoDbIndexesMigration </b>                                | 1.2.3        |           |
 | 2024/03/20 | <b> org.opensilex.migration.UpdateOntologyContexts </b>                                 | 1.3.0        | 2e4f0cbe  |                                                                            |              |           |
 | 2024/08/07 | <b> org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel </b>      | 1.4.0        | d7ea8504  |
-| 2024/11/04 | <b> org.opensilex.migration.UpdateFacilitiesWithLocationObservationCollectionModel </b> | 1.5.0        |   |
+| 2024/11/04 | <b> org.opensilex.migration.one_point_five_ALL.UpdateFacilitiesWithLocationObservationCollectionModel </b> | 1.5.0        |   |
 
 # Descriptions
 
@@ -208,7 +208,7 @@ This migration refactors site locations with the new location model:
 - In RDF4J, add ObservationCollection properties for each Site with address.
 - In MongoDB, get sites from the Geospatial collection and copy them to the new Location collection with the new model and observationCollection URI.## org.opensilex.migration.UpdateSitesWithLocationObservationCollectionModel
 
-## org.opensilex.migration.UpdateFacilitiesWithLocationObservationCollectionModel
+## org.opensilex.migration.one_point_five_ALL.UpdateFacilitiesWithLocationObservationCollectionModel
 
 ### Description
 This migration refactors facility locations with the new location model:

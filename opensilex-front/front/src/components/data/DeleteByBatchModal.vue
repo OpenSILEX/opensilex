@@ -1,4 +1,5 @@
 <template>
+  <ValidationObserver ref="validatorRef">
   <b-modal
     ref="modal"
     :title="$t('DeleteByBatchModal.title')"
@@ -44,6 +45,7 @@
     </template>
 
   </b-modal>
+  </ValidationObserver>
 </template>
 
 <script lang="ts">
@@ -69,6 +71,7 @@ export default class DeleteByBatchModal extends Vue {
   //#endregion
   //#region: Refs
   @Ref("modal") readonly modal!: any;
+  @Ref("validatorRef") readonly validatorRef!: any;
 
   //#endregion
   //#region: hooks
@@ -89,6 +92,11 @@ export default class DeleteByBatchModal extends Vue {
   }
 
   private async deleteData() {
+  const formIsValid = await this.validatorRef.validate();
+  if ( ! formIsValid ) {
+      return;
+    }
+
     let result = (await this.dataService.deleteDataOnSearch(
       this.experimentUri,
       undefined,

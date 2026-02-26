@@ -9,16 +9,13 @@
  *
  */
 
- package org.opensilex.migration;
+ package org.opensilex.migration.one_point_five_ALL;
 
  import com.mongodb.client.MongoCollection;
  import com.mongodb.client.MongoDatabase;
  import com.mongodb.client.model.Filters;
  import com.mongodb.client.model.geojson.Geometry;
- import org.apache.jena.arq.querybuilder.ExprFactory;
- import org.apache.jena.arq.querybuilder.SelectBuilder;
- import org.apache.jena.arq.querybuilder.UpdateBuilder;
- import org.apache.jena.arq.querybuilder.WhereBuilder;
+ import org.apache.jena.arq.querybuilder.*;
  import org.apache.jena.graph.Node;
  import org.apache.jena.graph.NodeFactory;
  import org.apache.jena.sparql.core.TriplePath;
@@ -27,7 +24,7 @@
  import org.apache.jena.sparql.expr.Expr;
  import org.apache.jena.vocabulary.RDF;
  import org.apache.jena.vocabulary.RDFS;
- import org.opensilex.OpenSilex;
+ import org.bson.Document;
  import org.opensilex.core.external.geocoding.GeocodingService;
  import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
  import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -49,83 +46,87 @@
  import org.opensilex.sparql.model.SPARQLResourceModel;
  import org.opensilex.sparql.service.SPARQLQueryHelper;
  import org.opensilex.sparql.service.SPARQLService;
- import org.opensilex.sparql.service.SPARQLServiceFactory;
  import org.opensilex.sparql.utils.Ontology;
- import org.opensilex.update.OpenSilexModuleUpdate;
  import org.opensilex.update.OpensilexModuleUpdateException;
  import org.slf4j.Logger;
- import org.slf4j.LoggerFactory;
-
  import java.net.URI;
  import java.time.Instant;
- import java.time.OffsetDateTime;
  import java.util.*;
  import java.util.stream.Collectors;
 
  import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
- public class UpdateFacilitiesWithLocationObservationCollectionModel implements OpenSilexModuleUpdate {
+ public class UpdateFacilitiesWithLocationObservationCollectionModel {
 
-     private OpenSilex opensilex;
-     private SPARQLService sparql;
-     private MongoDBService mongodb;
-     private final Logger logger = LoggerFactory.getLogger(getClass());
+     private final SPARQLService sparql;
+     private final MongoDBService mongodb;
+     private final Logger logger;
 
-     @Override
-     public String getDescription() {
-         return "In MongoDB, get facilities from the Geospatial Collection to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each Site with address or with geometry. ";
+     public static String DESCRIPTION = "In MongoDB, get facilities from the Geospatial Collection to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each Site with address or with geometry. ";
+
+     public UpdateFacilitiesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
+         this.sparql = sparql;
+         this.mongodb = mongodb;
+         this.logger = logger;
      }
 
-     @Override
-     public void setOpensilex(OpenSilex opensilex) {
-         this.opensilex = opensilex;
+     /**
+      * Checks if this migration was most likely already run. Does this by looking to see if any Facility is already a feature of interest of a LocationObservationCollection.
+      * @return true if any Facility is feature of interest, false if nay
+      */
+     protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
+         AskBuilder facilityLocationSelect = new AskBuilder();
+         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+         Var collectionVar = makeVar("collection");
+         Var typeVar = makeVar("type");
+
+         facilityLocationSelect.addWhere(typeVar, Ontology.subClassAny, Oeso.Facility);
+         facilityLocationSelect.addWhere(uriVar, RDF.type, typeVar);
+         facilityLocationSelect.addWhere(collectionVar, RDF.type, SOSA.ObservationCollection);
+         facilityLocationSelect.addWhere(collectionVar, SOSA.hasFeatureOfInterest, uriVar);
+
+         return sparql.executeAskQuery(facilityLocationSelect);
      }
 
-     @Override
-     public OffsetDateTime getDate() {
-         return OffsetDateTime.now();
-     }
-
-     @Override
-     public void execute() throws OpensilexModuleUpdateException {
-
-         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-         sparql = factory.provide();
-         mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-
+     public void execute() throws Exception {
          try {
-             sparql.startTransaction();
-             mongodb.startTransaction();
-
-             // 1 Mongo : get all facilities with geometry or address geometry
+             // 1 - Mongo : get all facilities with geometry or address geometry
              List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();
-             // 2 RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
+             // 2 - RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
              Map<URI,URI> facilityCollectionMap = sparqlAddObservationCollectionToFacilityList(facilityPositionList);
-             // 3 RDF4J : get facility addresses
+             // 3 - RDF4J : get facility addresses
              Map<URI, FacilityAddressModel> facilityAddressMap = sparqlgetAddressToFacilityList(facilityPositionList);
-             // 3 Mongo : update facility geometry in geospatial collection and copy in location collection
+             // 4 - Mongo : update facility geometry in geospatial collection and copy in location collection
              mongoFacilitiesFromGeospatialToLocationCollection(facilityPositionList,facilityCollectionMap, facilityAddressMap);
-
-             sparql.commitTransaction();
-             mongodb.commitTransaction();
-             logger.info("Migration successfully completed");
-
+             //5 - Deletions: delete Documents from Geospatial collection that have for rdfType any subtype of Facility
+             deleteStuff();
          } catch (Exception e){
-             try {
-                 sparql.rollbackTransaction();
-                 mongodb.rollbackTransaction();
-                 logger.error("error while migrate facility locations. No changes was saved on databases", e);
-             } catch (Exception exception) {
-                 throw new OpensilexModuleUpdateException("error while migrate facility locations. No changes was saved on databases", exception);
-             }
+             logger.warn("Something went wrong in the UpdateFacilitiesWithLocationObservationCollectionModel part of the migration!");
+             throw e;
          }
+     }
+
+     /**
+      * Delete Documents from Geospatial collection that have for rdfType any subtype of Facility.
+      */
+     private void deleteStuff() throws Exception {
+         //Delete documents from geospatial collection that have for rdfType a subclass of Facility
+         List<URI> facilitySubtypes =  getFacilitySubtypes();
+         Document geospatFilter = new Document();
+         geospatFilter.append(SPARQLResourceModel.TYPE_FIELD, new Document("$in", facilitySubtypes));
+         mongodb.deleteOnCriteria(GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, geospatFilter);
+     }
+
+     private List<URI> getFacilitySubtypes() throws SPARQLException {
+         SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(FacilityModel.TYPE_FIELD), Ontology.subClassAny, Oeso.Facility.asNode()));
+         return sparql.executeSelectQueryAsStream(select).map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(FacilityModel.TYPE_FIELD)))).collect(Collectors.toList());
      }
 
      private List<GeospatialModel> mongoGetFacilitiesFromGeospatial() throws SPARQLException {
          MongoDatabase db = mongodb.getDatabase();
 
-         SelectBuilder select = new SelectBuilder().addWhere(new TriplePath(makeVar(FacilityModel.TYPE_FIELD), Ontology.subClassAny, Oeso.Facility.asNode()));
-         List<URI> facilityRdfType = sparql.executeSelectQueryAsStream(select).map(sparqlResult -> URI.create(SPARQLDeserializers.getExpandedURI(sparqlResult.getStringValue(FacilityModel.TYPE_FIELD)))).collect(Collectors.toList());
+         //Get subtypes of Facility
+         List<URI> facilityRdfType = getFacilitySubtypes();
 
          // Get Facilities from Geospatial Collection
          MongoCollection<GeospatialModel> geospatialCollection = db.getCollection(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
@@ -165,9 +166,6 @@
 
 
      private Map<URI,URI> sparqlAddObservationCollectionToFacilityList(List<GeospatialModel> facilityPositionList) throws OpensilexModuleUpdateException {
-
-         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-         sparql = factory.provide();
 
          Map<URI,URI> facilityCollectionMap;
 

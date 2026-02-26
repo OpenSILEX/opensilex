@@ -80,7 +80,7 @@ public class SparqlSchema<T extends SPARQLResourceModel> {
             return initialSearchResult;
         }
 
-        //If we want to handle relation in root node then handle them here as normally each node fetches relations for its children
+        //If we want to handle relations in root node then handle them here as normally each node fetches relations for its children
         //(Did it that way so we can fetch relations all at once for a same type across multiple fields)
         if(root.isFetchDynamicRelations()){
             HashMap<String, List<SPARQLModelRelation>> relationsPerUri = SparqlSchemaNode.getRelationsAndCreateUriRelationsMap(

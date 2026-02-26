@@ -415,7 +415,6 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
-        try {
             new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session -> {
                 try{
                     metaDataDao.delete(session, uri);
@@ -424,10 +423,6 @@ public class DeviceAPI {
                 return 0;
             });
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-
-        } catch (ForbiddenURIAccessException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, LINKED_DEVICE_ERROR, e.getMessage()).getResponse();
-        }
     }
 
     @POST

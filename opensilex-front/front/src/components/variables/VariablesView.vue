@@ -518,20 +518,13 @@ export default class VariablesView extends Vue {
     }
 
     deleteVariable(uri: string) {
-            this.getCountDataPromise(uri)
-            .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-                let count = http.response.result;
-                if(count > 0){
-                    this.$opensilex.showErrorToast(count + " "+this.$i18n.t("VariableView.associated-data-error"));
-                }else{
-                    this.service.deleteVariable(uri).then(() => {
-                        this.variableList.refresh();
-                        let message = this.$i18n.t("VariableView.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
-                        this.$opensilex.showSuccessToast(message);
-                    }).catch(this.$opensilex.errorHandler);
-                }
-            });
-
+        this.service.deleteVariable(uri)
+        .then(() => {
+            this.variableList.refresh();
+            let message = this.$i18n.t("VariableView.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+        })
+        .catch((error) => this.$opensilex.errorHandler(error));
     }
 
     showVariableDetails(variable) {
@@ -599,7 +592,6 @@ en:
         groupVariableAssociated: Group of associated variables
         add-groupVariable: Add a group of variables
         no-var-provided: No variable provided
-        associated-data-error: Data are associated with this variable
 
 fr:
     VariableView:
@@ -626,7 +618,6 @@ fr:
         groupVariableAssociated: Groupe de variables associées
         add-groupVariable: Ajouter un groupe de variables
         no-var-provided: Aucune variable associée
-        associated-data-error: Données sont associées à cette variable
 
 </i18n>
 

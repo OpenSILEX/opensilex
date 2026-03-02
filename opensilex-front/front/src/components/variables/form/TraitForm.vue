@@ -1,15 +1,13 @@
 <template>
     <ValidationObserver ref="validatorRef">
 
-        <opensilex-InputForm
-            :value.sync="variable.trait"
+        <opensilex-UriForm
+            :editMode="true"
+            :uri.sync="variable.trait"
             label="VariableForm.trait-uri"
-            type="text"
             helpMessage="VariableForm.trait-uri-help"
             placeholder="VariableForm.trait-uri-placeholder"
-            :required.sync="traitRequired"
-            @change="updateTraitRequired"
-        ></opensilex-InputForm>
+        ></opensilex-UriForm>
 
         <opensilex-InputForm
             :value.sync="variable.trait_name"

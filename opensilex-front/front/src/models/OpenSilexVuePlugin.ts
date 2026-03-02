@@ -1457,16 +1457,33 @@ export default class OpenSilexVuePlugin {
         return this.categoriesNameByUri[uri];
     }
 
-    private deepWalkObject(walkProperty: string, object: any, objectToFill: any, walkValidationFunction: Function, workFunction: Function) {
-
-        if (walkValidationFunction(object)) {
-            for (var childObject of object[walkProperty]) {
-                this.deepWalkObject(walkProperty, childObject, objectToFill, walkValidationFunction, workFunction);
-            }
-        } else {
-            workFunction(object, objectToFill);
+    private deepWalkObject(
+        walkProperty: string,
+        object: any,
+        objectToFill: any,
+        walkValidationFunction: Function,
+        workFunction: Function
+      ) {
+        if (object === undefined || object === null) {
+          return;
         }
-    }
+      
+        // On traite le nœud courant (parent OU feuille)
+        workFunction(object, objectToFill);
+      
+        // Puis on descend si nécessaire
+        if (walkValidationFunction(object)) {
+          for (const childObject of (object[walkProperty] || [])) {
+            this.deepWalkObject(
+              walkProperty,
+              childObject,
+              objectToFill,
+              walkValidationFunction,
+              workFunction
+            );
+          }
+        }
+      }      
 
     public loadFactorCategories() {
         return new Promise((resolve, reject) => {

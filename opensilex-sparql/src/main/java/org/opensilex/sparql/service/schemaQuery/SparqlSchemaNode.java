@@ -18,7 +18,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.graph.Node;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;

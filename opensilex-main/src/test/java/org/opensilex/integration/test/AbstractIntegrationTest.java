@@ -348,6 +348,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 if (expectedStatus != null && response.getStatus() != expectedStatus.getStatusCode()) {
                     requestError = response.readEntity(String.class);
                 }
+                assertionErrorMessage = Optional.ofNullable(assertionErrorMessage).orElse("");
                 String messageWithError = String.format("%s \n Response error : \n %s", assertionErrorMessage, requestError);
                 assertEquals(messageWithError , expectedStatus.getStatusCode(), response.getStatus());
             } catch (Exception e) {

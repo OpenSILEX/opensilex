@@ -161,6 +161,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     private static final ServiceDescription getByUri;
     public static final ServiceDescription create;
+    public static final ServiceDescription deleteByCreteria;
 
     static {
         try {
@@ -171,6 +172,10 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
             create = new ServiceDescription(
                     DataAPI.class.getMethod("addListData", List.class),
                     CREATE_PATH
+            );
+            deleteByCreteria = new ServiceDescription(
+                    DataAPI.class.getMethod("deleteDataOnSearch", URI.class, URI.class, URI.class, URI.class, URI.class),
+                    PATH
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -1025,6 +1030,22 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
         Response getResult = getJsonGetByUriResponseAsAdmin(target(URI_PATH), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+
+    @Test
+    public void deleteByBatch() throws Exception {
+        DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_INTEGER, provenanceImportInteger);
+        assertFalse(csvValidationDTO.getDataErrors().hasErrors());
+
+        URI batchURI = csvValidationDTO.getDataErrors().getBatchHistoryUri();
+        new UserCallBuilder(deleteByCreteria)
+                .setParams(Map.of("batch_uri", batchURI))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.OK);
+
+        List<DataGetDTO> importedDataList = getSearchResponseAsDTOList(provenanceImportInteger);
+
+        assertEquals("data should have been deleted", 0, importedDataList.size());
     }
 
     @Test

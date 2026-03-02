@@ -140,7 +140,7 @@ export default class ProvenanceView extends Vue {
       .then(() => {
         this.provList.refresh();
         let message =
-          this.$i18n.t("ProvenanceView.title") +
+          this.$i18n.t("ProvenanceView.delete-message") +
           " " +
           uri +
           " " +
@@ -188,6 +188,7 @@ en:
     activity_type-placeholder: Select a type of activity
     agent_type-placeholder: Select a type of agent
     success-message: Provenance
+    delete-message: Provenance
     associated-data-error: Provenance already associated with data
 
 fr:
@@ -205,6 +206,7 @@ fr:
     activity_type-placeholder: Selectionner un type d'activité
     agent_type-placeholder: Selectionner un type d'agent
     success-message: La provenance
+    delete-message: La provenance
     associated-data-error: Provenance déjà associée à des données
   
 </i18n>

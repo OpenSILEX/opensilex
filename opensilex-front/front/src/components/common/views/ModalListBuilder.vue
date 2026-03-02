@@ -418,6 +418,6 @@ fr:
   ModalListBuilder:
     validate-button: Validez liste
     cancel-button: Annulez modifications
-    validate-explanation: La recherche ne tiendrait compte la liste actuelle que si vous appuyez sur Valider. Appuyez sur Annuler pour voir la liste actuelle qui sera prise en compte.
+    validate-explanation: La recherche ne tiendra compte de la liste actuelle que si vous appuyez sur Valider. Appuyez sur Annuler pour voir la liste actuelle qui sera prise en compte.
 
 </i18n>

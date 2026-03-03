@@ -1,14 +1,14 @@
 <template>
     <div id="v-step-global">
-        <ValidationObserver ref="validatorRef">
+        <ValidationObserver ref="validatorRef" >
             
             <opensilex-Tutorial
                 ref="variableTutorial"
                 :steps="tutorialSteps"
-                @onSkip="continueFormEditing()"
-                @onFinish="continueFormEditing()"
+                @onSkip="onTutorialEnd"
+                @onFinish="onTutorialEnd"
                 :editMode="editMode"
-            ></opensilex-Tutorial>
+            />
 
             <!-- Help message -->
             <div class="divHelpMsg" v-if="!editMode">
@@ -103,6 +103,7 @@
                 <!-- Species -->
                 <div class="col-lg-6" id="v-step-species">
                     <opensilex-SpeciesSelector
+                        ref="speciesSelector"
                         v-if="!isGermplasmMenuExcluded"
                         label="SpeciesSelector.select-multiple"
                         placeholder="SpeciesSelector.select-multiple-placeholder"
@@ -313,11 +314,12 @@ export default class VariableForm extends Vue {
 
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelector") entitySelector!: FormSelector;
+    @Ref("entitySelector") entitySelector!: any;
     @Ref("interestEntitySelector") interestEntitySelector!: any;
     @Ref("characteristicSelector") characteristicSelector!: any;
     @Ref("methodSelector") methodSelector!: any;
     @Ref("unitSelector") unitSelector!: any;
+    @Ref("speciesSelector") speciesSelector!: any;
 
     @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
     @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
@@ -353,11 +355,11 @@ export default class VariableForm extends Vue {
             })
         }
 
-        for(let sample of ["mm","cm","m","km","field","region"]){
-            this.sampleList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." +sample),
-                label: this.$i18n.t("VariableForm.dimension-values." + sample)
-            })
+        for (const sample of ["mm","cm","m","km","field","region"]) {
+        this.sampleList.push({
+            id: sample,
+            label: this.$i18n.t("VariableForm.dimension-values." + sample)
+        });
         }
 
         this.loadDatatypes();
@@ -699,28 +701,69 @@ export default class VariableForm extends Vue {
         );
     }
 
-  get hasLinkedData() {
-    if(! this.form && this.form.linked_data_nb){
-      return true;
-    }else{
-      return this.form.linked_data_nb > 0;
+    get hasLinkedData() {
+        if(! this.form && this.form.linked_data_nb){
+        return true;
+        }else{
+            return this.form.linked_data_nb > 0;
+        }
     }
 
-  }
-
-  beforeDestroy() {
+    beforeDestroy() {
         this.langUnwatcher();
     }
 
-    tutorial() {
+    async tutorial() {
         this.savedVariable = JSON.parse(JSON.stringify(this.form));
+
+        await this.$nextTick();
+
+        this.applyTutorialExample();
+
+        await this.$nextTick();
         this.variableTutorial.start();
     }
 
-    continueFormEditing(){
-        if(this.savedVariable){
-            this.form = JSON.parse(JSON.stringify(this.savedVariable));
-        }
+    applyTutorialExample() {
+        const ex = this.$i18n.t("VariableForm.example") as any;
+
+        const E="__tutorial__:entity";
+        const C="__tutorial__:characteristic";
+        const M="__tutorial__:method";
+        const U="__tutorial__:unit";
+        const S="__tutorial__:species";
+
+        this.form.entity = E;
+        this.form.characteristic = C;
+        this.form.method = M;
+        this.form.unit = U;
+        this.form.species = [S];
+
+        (this.$refs.entitySelector as any).setSelectedNode({ id: E, label: ex.entity });
+        (this.$refs.characteristicSelector as any).setSelectedNode({ id: C, label: ex.characteristic });
+        (this.$refs.methodSelector as any).setSelectedNode({ id: M, label: ex.method });
+        (this.$refs.unitSelector as any).setSelectedNode({ id: U, label: ex.unit });
+        (this.$refs.speciesSelector as any).setSelectedNode({ id: S, label: ex.species });
+
+        this.form.name = ex.name;
+        this.form.alternative_name = ex.altName;
+        this.form.description = ex.description;
+        this.form.datatype = ex.datatype;
+        this.form.time_interval = "month";
+        this.form.sampling_interval = "m";
+    }
+
+    onTutorialEnd() {
+    // reset complet (remet entity/method/... à undefined)
+    Object.assign(this.form, this.getEmptyForm());
+
+    // restaurer ce qui existait avant le tuto
+    if (this.savedVariable) {
+        Object.assign(this.form, this.savedVariable);
+        this.savedVariable = null;
+    }
+
+    this.validatorRef?.reset?.();
     }
 
     get tutorialSteps(): any[] {
@@ -927,7 +970,7 @@ en:
             description: "Finalize the variable with some text description of it."
             species: "Select the species that is associated with this variable. Here rice."
         example:
-            entity: "Seed"
+            entity: "Grain"
             characteristic: "Yield"
             method: "Harvest yield sensor"
             unit: "Kilogram per hectare"

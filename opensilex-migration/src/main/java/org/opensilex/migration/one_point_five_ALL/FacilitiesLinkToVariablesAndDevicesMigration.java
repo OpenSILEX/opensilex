@@ -7,11 +7,15 @@ import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataSearchFilter;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.variable.api.VariableAPI;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -71,6 +75,40 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
         return sparql.executeAskQuery(hasVariableSelect);
     }
 
+    private List<FacilityModel> mergeFacilitiesToUpdateList(List<FacilityModel> newFacilitiesToUpdate, List<FacilityModel> previouslyCalculatedFacilitiesToUpdate){
+        List<FacilityModel> newOnesToAddToResult = new ArrayList<>();
+        for(FacilityModel nextFacility : newFacilitiesToUpdate){
+            FacilityModel matchedFacility =
+                    previouslyCalculatedFacilitiesToUpdate.stream()
+                            .filter(e -> SPARQLDeserializers.compareURIs(e.getUri(), nextFacility.getUri()))
+                            .findFirst()
+                            .orElse(null);
+            if(matchedFacility == null){
+                newOnesToAddToResult.add(nextFacility);
+            }else{
+                //Combine the variables and devices lists
+                List<VariableModel> previousVars = matchedFacility.getVariables();
+                List<VariableModel> newVars = nextFacility.getVariables();
+                for(VariableModel newVar : newVars){
+                    if(previousVars.stream().noneMatch(e -> SPARQLDeserializers.compareURIs(e.getUri(), newVar.getUri()))){
+                        previousVars.add(newVar);
+                    }
+                }
+                List<DeviceModel> previousDevices = matchedFacility.getDevices();
+                List<DeviceModel> newDevices = nextFacility.getDevices();
+                for(DeviceModel newDevice : newDevices){
+                    if(previousDevices.stream().noneMatch(e -> SPARQLDeserializers.compareURIs(e.getUri(), newDevice.getUri()))){
+                        previousDevices.add(newDevice);
+                    }
+                }
+            }
+
+        }
+        previouslyCalculatedFacilitiesToUpdate.addAll(newOnesToAddToResult);
+        return previouslyCalculatedFacilitiesToUpdate;
+
+    }
+
     protected void execute() throws Exception {
 
         FacilityDAO facilityDAO = new FacilityDAO(sparql);
@@ -83,28 +121,29 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
             List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
 
             // 2 Get all data that has for target these facilities
-            List<DataModel> dataWithFacilitiesAsTargets = new ArrayList<>();
+            List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
 
             DataSearchFilter dataSearchFilter = new DataSearchFilter();
             dataSearchFilter.setUser(AccountModel.getSystemUser());
             dataSearchFilter.setTargets(allFacilityUris);
-            dataSearchFilter.setPageSize(5000);
+            dataSearchFilter.setPageSize(20000);
 
             boolean done = false;
             int page = 0;
             while(!done){
                 dataSearchFilter.setPage(page);
                 ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
-                if(nextPage.getTotal() < 5000 || nextPage.getTotal() == 0) {
+                if(nextPage.getList().size() < 20000) {
                     done = true;
                 }
-                dataWithFacilitiesAsTargets.addAll(nextPage.getList());
+                //Save facilities into list instead of data (there should be less and it should take up less memory)
+                List<FacilityModel> nextFacilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(nextPage.getList());
+                facilitiesToUpdate = mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
 
                 page++;
             }
 
-            //3 Extract facilities that need updating witht he same function that's used during data import, then update the facilities
-            List<FacilityModel> facilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(dataWithFacilitiesAsTargets);
+            //3 Extract facilities that need updating with he same function that's used during data import, then update the facilities
             facilityDAO.updateMany(facilitiesToUpdate);
 
         } catch (Exception e){

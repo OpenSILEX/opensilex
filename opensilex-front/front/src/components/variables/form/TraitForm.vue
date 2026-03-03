@@ -15,8 +15,7 @@
             type="text"
             helpMessage="VariableForm.trait-name-help"
             placeholder="VariableForm.trait-name-placeholder"
-            :required.sync="traitRequired"
-            @change="updateTraitRequired"
+            :required="traitRequired"
         ></opensilex-InputForm>
 
     </ValidationObserver>
@@ -36,21 +35,10 @@ export default class TraitForm extends Vue {
 
     @Ref("validatorRef") readonly validatorRef!: any;
 
-    traitRequired: boolean = false;
-
-    created() {
-        this.updateTraitRequired();
-    }
-
-    updateTraitRequired() {
-
-        this.traitRequired = (this.variable.trait && this.variable.trait.length > 0) ||
-            (this.variable.trait_name && this.variable.trait_name.length > 0);
-
-        if(! this.traitRequired){
-            this.variable.trait_name = undefined;
-            this.variable.trait = undefined;
-        }
+    get traitRequired(): boolean {
+        const trait_uri_is_filled = this.variable.trait && this.variable.trait.length >= 0
+        const trait_name_is_filled = this.variable.trait_name && this.variable.trait_name.length >= 0
+        return trait_uri_is_filled || trait_name_is_filled ;
     }
 
     reset() {

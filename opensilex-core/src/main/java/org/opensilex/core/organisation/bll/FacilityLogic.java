@@ -301,6 +301,8 @@ public class FacilityLogic {
     public LocationObservationModel getLastFacilityLocationModel(FacilityModel facilityModel) {
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
 
+        if (facilityModel.getLocationObservationCollection() == null) return null;
+
         List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservations(
                 Collections.singletonList(facilityModel.getLocationObservationCollection().getUri()),
                 false,

@@ -20,7 +20,7 @@
     </ValidationProvider>
     <ValidationProvider
       :name="$t(label)"
-      :rules="'required_if:' + id + ',false|no_spaces|url'"
+      :rules="uriRules"
       v-slot="{ errors }"
     >
       <div v-bind:class="{ errors: errors.length > 0 }">
@@ -39,13 +39,7 @@
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Prop,
-  Model,
-  Provide,
-  PropSync
-} from "vue-property-decorator";
+import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -53,27 +47,40 @@ export default class UriForm extends Vue {
   $opensilex: any;
 
   @PropSync("uri")
-  valueURI: string;
+  valueURI!: string;
 
   @Prop()
-  editMode: boolean;
+  editMode!: boolean;
 
   @Prop()
-  label;
+  label!: string;
 
   @Prop()
-  helpMessage: string;
+  helpMessage!: string;
 
   @Prop()
   placeholder: string;
 
-  @PropSync("generated")
-  uriGenerated;
+  @Prop({ default: false })
+  required!: boolean;
 
-  id: string;
+  @PropSync("generated")
+  uriGenerated!: boolean;
+
+  id!: string;
 
   created() {
     this.id = this.$opensilex.generateID();
+  }
+
+  // règles vee-validate adaptées
+  get uriRules(): string {
+    // si le parent est "required", on force required
+    if (this.required) {
+      return "required|no_spaces|url";
+    }
+    // sinon on garde la logique interne existante
+    return `required_if:${this.id},false|no_spaces|url`;
   }
 }
 </script>

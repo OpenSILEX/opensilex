@@ -120,6 +120,10 @@ public class DXToTSVConverter {
             throw new IllegalArgumentException("Inconsistent y-units found in the input file.");
         }
 
+        if (xunits.isEmpty() || yunits.isEmpty()) {
+            throw new IllegalArgumentException("Missing x-units or y-units in the input file. File is not in expected format.");
+        }
+
         xunit = xunits.get(0);
         yunit = yunits.get(0);
 

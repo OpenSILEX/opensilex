@@ -4,9 +4,10 @@
         <opensilex-UriForm
         :editMode="true"
         :uri.sync="variable.trait"
-        :required="traitRequired"
         label="VariableForm.trait-uri"
         helpMessage="VariableForm.trait-uri-help"
+        placeholder="VariableForm.trait-uri-placeholder"
+        :required="traitRequired"
         />
 
         <opensilex-InputForm
@@ -14,6 +15,7 @@
         label="VariableForm.trait-name"
         type="text"
         helpMessage="VariableForm.trait-name-help"
+        placeholder="VariableForm.trait-name-placeholder"
         :required="traitRequired"
         />
 

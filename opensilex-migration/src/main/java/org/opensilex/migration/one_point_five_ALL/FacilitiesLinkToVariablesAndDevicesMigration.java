@@ -12,7 +12,6 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -142,7 +141,7 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
                     done = true;
                 }
                 //Save facilities into list instead of data (there should be less and it should take up less memory)
-                List<FacilityModel> nextFacilitiesToUpdate = dataLogic.handleExtractionOfFacilitiesToUpdate(nextPage.getList());
+                List<FacilityModel> nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(nextPage.getList());
                 facilitiesToUpdate = mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
 
                 page++;

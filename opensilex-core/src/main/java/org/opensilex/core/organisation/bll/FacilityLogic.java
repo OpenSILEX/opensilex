@@ -44,6 +44,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -140,24 +141,51 @@ public class FacilityLogic {
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
     public List<FacilityModel> getList(List<URI> uris, AccountModel user) throws Exception {
-        return search(new FacilitySearchFilter()
+        FacilitySearchFilter filter = new FacilitySearchFilter()
                 .setUser(user)
-                .setFacilities(uris)).getList();
+                .setFacilities(uris);
+        //As we are getting by uris set maximum pageSize to be size of uris
+        filter.setPageSize(uris.size());
+        return search(filter).getList();
     }
 
     /**
-     * Search the facilities among the ones accessible to the user.
+     * Does same thing as other getList function but allows minimal fetching of embedded objects by specifying which child nodes we need
+     */
+    public List<FacilityModel> getList(List<URI> uris, AccountModel user, List<SparqlSchemaSimpleNode<?>> nodesToFetch) throws Exception {
+        FacilitySearchFilter filter = new FacilitySearchFilter()
+                .setUser(user)
+                .setFacilities(uris);
+        //As we are getting by uris set maximum pageSize to be size of uris
+        filter.setPageSize(uris.size());
+        return search(filter, nodesToFetch).getList();
+    }
+
+    /**
+     * Search the facilities among the ones accessible to the user. Will use a genric schema to gets most field values.
+     * Consider using other search function with Nodes to specify if you barely need any information inside the facilities.
      *
      * @param filter The search filters
      * @return The list of facilities
      */
     public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter) throws Exception {
+        return search(filter, null);
+    }
+
+    /**
+     * Search the facilities among the ones accessible to the user.
+     *
+     * @param nodesToFetch to get only a specified amount of information from embedded objects, otherwise a generic schema is used.
+     * @param filter The search filters
+     * @return The list of facilities
+     */
+    public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, List<SparqlSchemaSimpleNode<?>> nodesToFetch) throws Exception {
         try {
             filter.validate();
 
             FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
-            return facilityDAO.search(filter, organizationsAndSites);
+            return facilityDAO.search(filter, organizationsAndSites, nodesToFetch);
         } catch (Exception e) {
             throw new InvalidValueException(e.getMessage());
         }

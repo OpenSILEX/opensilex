@@ -123,7 +123,8 @@ public class DataLogic {
         //Before doing anything create a list of all occurring targets in the data models, if this list is empty then leave
         List<URI> targets = dataModels.stream().map(DataModel::getTarget).filter(Objects::nonNull).toList();
         if(CollectionUtils.isEmpty(targets)) {
-            return Collections.emptyList();
+            //Return empty initialized list in case we want to add to it later (Collections.emptyList is immutable)
+            return new ArrayList<>();
         }
 
         //Maps to remember which facilities have which variables and devices
@@ -132,8 +133,8 @@ public class DataLogic {
         StringUriMap<Set<String>> devicesPerFacility = new StringUriMap<>();
         //Map to remember facility uris that have already come up
         StringUriMap<FacilityModel> facilityPerUri =  new StringUriMap<>();
-        //Set of device type uris encountered (fast faster access after 1 check)
-        Set<String> encounteredDeviceTypes = new HashSet<>();
+        //Set of uris we have already checked isDeviceType or not(fast faster access after 1 check)
+        Set<String> encounteredTestedIsDeviceTypes = new HashSet<>();
 
         //Start by fetching any targets that are Facilities, along with their variables and devices,
         // use FacilityLogic.getList as this goes via SparqlSchemaSearch and uses a Filters.in for the uris which does
@@ -192,10 +193,11 @@ public class DataLogic {
                 for(ProvEntityModel provEntityModel : provWasAssociatedWith){
                     if(provEntityModel.getType() != null){
                         String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
-                        if(!encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
-                            encounteredDeviceTypes.add(deviceUriString);
+                        if(!encounteredTestedIsDeviceTypes.contains(deviceUriString) && deviceDAO.isDeviceType(provEntityModel.getType() )){
                             devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
                         }
+                        //Add to encounteredTestedIsDeviceTypes regardless of if it was indeed a Device type or not, so we do not recheck this device type
+                        encounteredTestedIsDeviceTypes.add(deviceUriString);
                     }
                 }
 
@@ -223,6 +225,9 @@ public class DataLogic {
                         })
                         .collect(Collectors.toList())
                 );
+            }else{
+                //else set to a new initialized list so we can add to it later if need be
+                nextFacility.setVariables(new ArrayList<>());
             }
             if(!CollectionUtils.isEmpty(devicesPerFacility.get(facilityUri))){
                 nextFacility.setDevices(devicesPerFacility.get(facilityUri).stream()
@@ -233,6 +238,9 @@ public class DataLogic {
                         })
                         .collect(Collectors.toList())
                 );
+            }else{
+                //else set to a new initialized list so we can add to it later if need be
+                nextFacility.setDevices(new ArrayList<>());
             }
             facilitiesToUpdate.add(nextFacility);
         }

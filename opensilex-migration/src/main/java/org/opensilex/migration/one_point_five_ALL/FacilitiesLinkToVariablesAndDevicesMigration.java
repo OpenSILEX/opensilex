@@ -1,5 +1,6 @@
 package org.opensilex.migration.one_point_five_ALL;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
@@ -119,6 +120,10 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
 
             // 1 Get all facilities
             List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
+
+            if(CollectionUtils.isEmpty(allFacilityUris)){
+                return;
+            }
 
             // 2 Get all data that has for target these facilities
             List<FacilityModel> facilitiesToUpdate = new ArrayList<>();

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="allowCopy" class="static-field">
-      <span class="field-view-title">{{ $t(label) }}</span>
+      <span :class="['field-view-title', customClass]">{{ $t(label) }}</span>
       <span>
         <a 
           href="#"
@@ -23,7 +23,7 @@
       </span>
     </div>
     <div v-else class="static-field">
-      <span class="field-view-title">{{ $t(label) }}</span>
+      <span :class="['field-view-title', customClass]">{{ $t(label) }}</span>
       <span class="static-field-line capitalize-first-letter">
         <slot>{{ value }}</slot>
       </span>
@@ -65,6 +65,9 @@ export default class UriLink extends Vue {
 
   @Prop()
   copyValue: string;
+
+  @Prop({ default: '' })
+  customClass: string;
 
   copyURI(value) {
     copy(value);
@@ -137,4 +140,5 @@ a span{
 .uri:hover {
   color: #212121;
 }
+
 </style>

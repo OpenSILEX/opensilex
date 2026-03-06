@@ -158,6 +158,8 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
 
   //public Methods
   public showCreateForm() {
+    this.editMode = false;
+    this.termIsSelected = false;
     this.checkAgroportalReachable();
     this.wizardRef.showCreateForm();
   }

@@ -181,6 +181,8 @@ export default class AgroportalSearchFormPart extends Vue {
   //#region Public methods for wizard form
   public reset() {
     this.uriGenerated = true;
+    this.selectedTerm = null;
+    this.text = "";
     return this.validatorRef.reset();
   }
 

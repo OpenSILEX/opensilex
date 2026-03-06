@@ -14,11 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -64,18 +66,32 @@ public class FacilityDAO {
         return sparql.getByURI(FacilityModel.class, uri, lang);
     }
 
-    public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, FacilityLogic.FacilitySearchRights organizationsAndSites) throws Exception {
+    /**
+     *
+     * @param filter to keep only facilities that validate criteria.
+     * @param organizationsAndSites to restrict visibility to certain facilities (user search rights).
+     * @param nodesToFetch if NULL then a default schema getting everything we could possibly need will be used,
+     *                     else fetch only the specified nodes
+     * @return a ListWithPagination of the Facilities
+     */
+    public ListWithPagination<FacilityModel> search(
+            FacilitySearchFilter filter,
+            FacilityLogic.FacilitySearchRights organizationsAndSites,
+            List<SparqlSchemaSimpleNode<?>> nodesToFetch
+    ) throws Exception {
         filter.validate();
 
         SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
                 sparql,
                 FacilityModel.class,
-                List.of(
+                (nodesToFetch == null ? List.of(
                         new SparqlSchemaSimpleNode<>(OrganizationModel.class, FacilityModel.ORGANIZATION_FIELD),
                         new SparqlSchemaSimpleNode<>(SiteModel.class, FacilityModel.SITE_FIELD),
                         new SparqlSchemaSimpleNode<>(VariablesGroupModel.class, FacilityModel.VARIABLE_GROUPS_FIELD),
-                        new SparqlSchemaSimpleNode<>(FacilityAddressModel.class, FacilityModel.ADDRESS_FIELD)
-                ),
+                        new SparqlSchemaSimpleNode<>(FacilityAddressModel.class, FacilityModel.ADDRESS_FIELD),
+                        new SparqlSchemaSimpleNode<>(VariableModel.class, FacilityModel.VARIABLES_FIELD),
+                        new SparqlSchemaSimpleNode<>(DeviceModel.class, FacilityModel.DEVICES_FIELD)
+                ) : nodesToFetch),
                 true
         );
 

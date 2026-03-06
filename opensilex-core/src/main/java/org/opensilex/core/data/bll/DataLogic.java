@@ -29,6 +29,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.utils.ApiUtils;
+import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -40,11 +41,13 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoSearchQuery;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -100,6 +103,112 @@ public class DataLogic {
 
     //#endregion
     //#region PUBLIC METHODS
+
+    /**
+     * Looks at each of the data targets to see if they are facilities,
+     * if so we might need to update their variables and devices if they were not already present
+     *
+     * Note method is public as it is also used in FacilitiesLinkToVariablesAndDevicesMigration
+     *
+     * @param dataModels to look in
+     * @return a list of facilities that we will need to update with the added variables and devices
+     * @throws Exception
+     */
+    public List<FacilityModel> getFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
+        //Before doing anything create a list of all occurring targets in the data models, if this list is empty then leave
+        List<URI> targets = dataModels.stream().map(DataModel::getTarget).filter(Objects::nonNull).toList();
+        if(CollectionUtils.isEmpty(targets)) {
+            //Return empty initialized list in case we want to add to it later (Collections.emptyList is immutable)
+            return new ArrayList<>();
+        }
+
+        //Maps to remember which facilities have which variables and devices
+        //, we will update the facilities all together at the end
+        StringUriMap<Set<String>> variablesPerFacility = new StringUriMap<>();
+        StringUriMap<Set<String>> devicesPerFacility = new StringUriMap<>();
+        //Map to remember facility uris that have already come up
+        StringUriMap<FacilityModel> facilityPerUri =  new StringUriMap<>();
+        //Set of uris we have already checked isDeviceType or not(fast faster access after 1 check)
+        Set<String> encounteredTestedIsDeviceTypes = new HashSet<>();
+
+        //Start by fetching any targets that are Facilities, along with their variables and devices,
+        // use FacilityLogic.getList as this goes via SparqlSchemaSearch and uses a Filters.in for the uris which does
+        // not throw an error when some uris are not a subtype of Facility, unlike the sparql service loadListByURIs which
+        //uses Values clause.
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        List<FacilityModel> foundFacilities = facilityLogic.getList(
+                targets,
+                user,
+                List.of(
+                    new SparqlSchemaSimpleNode<>(VariableModel.class, FacilityModel.VARIABLES_FIELD),
+                    new SparqlSchemaSimpleNode<>(DeviceModel.class, FacilityModel.DEVICES_FIELD)
+                )
+        );
+
+        for(FacilityModel facilityModel: foundFacilities){
+            facilityPerUri.put(facilityModel.getUri(), facilityModel);
+        }
+
+        //Device Dao to verify if an Agent is a Device
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        //Iterate over DataModels to save variables and devices
+        for (DataModel dataModel : dataModels) {
+            FacilityModel facilityModel = facilityPerUri.get(dataModel.getTarget());
+            //If facility is null then it means target was not a facility, continue
+            if(facilityModel == null){
+                continue;
+            }
+            URI facilityUri = facilityModel.getUri();
+
+            // Add variable to this facility
+            addVariableToFacilityFromData(dataModel, variablesPerFacility, facilityUri, facilityModel);
+            //Add devices to this facility
+            addDevicesToFacilityFromData(dataModel, devicesPerFacility, facilityUri, facilityModel, encounteredTestedIsDeviceTypes, deviceDAO);
+        }
+
+        //Iterate over the encountered facilities to prepare update of their variables and devices
+        List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
+        for(FacilityModel nextFacility : facilityPerUri.values()){
+
+            Set<String> variablesForNextFacility = variablesPerFacility.get(nextFacility.getUri());
+            Set<String> devicesForNextFacility = devicesPerFacility.get(nextFacility.getUri());
+            //Only add this facility to the update list if the number of variables or devices has changed
+            if(collectionsAreBothNullOrSameSize(nextFacility.getVariables(), variablesForNextFacility)
+                    &&
+                    collectionsAreBothNullOrSameSize(nextFacility.getDevices(), devicesForNextFacility)
+            ){
+                continue;
+            }
+            if(!CollectionUtils.isEmpty(variablesForNextFacility)){
+                nextFacility.setVariables(variablesForNextFacility.stream()
+                        .map(variableUri -> {
+                            VariableModel variable = new VariableModel();
+                            variable.setUri(URI.create(variableUri));
+                            return variable;
+                        })
+                        .collect(Collectors.toList())
+                );
+            }else{
+                //else set to a new initialized list so we can add to it later if need be
+                nextFacility.setVariables(new ArrayList<>());
+            }
+            if(!CollectionUtils.isEmpty(devicesForNextFacility)){
+                nextFacility.setDevices(devicesForNextFacility.stream()
+                        .map(deviceUri -> {
+                            DeviceModel device = new DeviceModel();
+                            device.setUri(URI.create(deviceUri));
+                            return device;
+                        })
+                        .collect(Collectors.toList())
+                );
+            }else{
+                //else set to a new initialized list so we can add to it later if need be
+                nextFacility.setDevices(new ArrayList<>());
+            }
+            facilitiesToUpdate.add(nextFacility);
+        }
+        return facilitiesToUpdate;
+    }
 
     public DataModel get(URI uri) throws NoSQLInvalidURIException {
         return dao.get(uri);
@@ -546,6 +655,68 @@ public class DataLogic {
 
     //#region PRIVATE METHODS
 
+    /**
+     * If the FacilityModel does not already have the variable found in the DataModel, then this adds it and updates
+     * the passed variablesForFacility Map.
+     */
+    private void addVariableToFacilityFromData(
+            DataModel dataModel,
+            StringUriMap<Set<String>> variablesPerFacility,
+            URI facilityUri,
+            FacilityModel facilityModel
+    ){
+        Set<String> variablesForFacility = variablesPerFacility.getOrDefault(
+                facilityUri,
+                (!CollectionUtils.isEmpty(facilityModel.getVariables()) ?
+                        facilityModel.getVariables().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
+                                .collect(Collectors.toSet())
+                        : new HashSet<>()
+                )
+        );
+        boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(dataModel.getVariable()));
+        if(addedVar){
+            variablesPerFacility.put(facilityUri, variablesForFacility);
+        }
+    }
+
+    /**
+     * If the FacilityModel does not already have each Device found in the DataModel, then this adds it and updates
+     * the passed devicesPerFacility Map.
+     */
+    private void addDevicesToFacilityFromData(
+            DataModel dataModel,
+            StringUriMap<Set<String>> devicesPerFacility,
+            URI facilityUri,
+            FacilityModel facilityModel,
+            Set<String> encounteredTestedIsDeviceTypes,
+            DeviceDAO deviceDAO
+    ) throws SPARQLException {
+        DataProvenanceModel dataProvenanceModel = dataModel.getProvenance();
+        Set<String> devicesForFacility = devicesPerFacility.getOrDefault(
+                facilityUri,
+                (!CollectionUtils.isEmpty(facilityModel.getDevices()) ?
+                        facilityModel.getDevices().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
+                                .collect(Collectors.toSet())
+                        : new HashSet<>()
+                )
+        );
+        List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
+        if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
+            for(ProvEntityModel provEntityModel : provWasAssociatedWith){
+                if(provEntityModel.getType() != null){
+                    String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
+                    if(!encounteredTestedIsDeviceTypes.contains(deviceUriString) && deviceDAO.isDeviceType(provEntityModel.getType() )){
+                        devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
+                    }
+                    //Add to encounteredTestedIsDeviceTypes regardless of if it was indeed a Device type or not, so we do not recheck this device type
+                    encounteredTestedIsDeviceTypes.add(deviceUriString);
+                }
+            }
+
+            devicesPerFacility.put(facilityUri, devicesForFacility);
+        }
+    }
+
     public List<VariableModel> getUsedVariablesByFilter(DataSearchFilter filter) throws Exception {
         Set<URI> variableURIs = new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, filter));
         String userLanguage = null;
@@ -569,7 +740,7 @@ public class DataLogic {
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
         //Extract facilities to update
-        List<FacilityModel> facilitiesToUpdate = handleExtractionOfFacilitiesToUpdate(models);
+        List<FacilityModel> facilitiesToUpdate = getFacilitiesToUpdate(models);
 
         DataPostInsert postInsert;
         if (!csvImport) {
@@ -610,115 +781,6 @@ public class DataLogic {
         return models.stream()
                 .map(MongoModel::getUri)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Looks at each of the data targets to see if they are facilities,
-     * if so we might need to update their variables and devices if they were not already present
-     *
-     * Note method is public as it is also used in FacilitiesLinkToVariablesAndDevicesMigration
-     *
-     * @param dataModels to look in
-     * @return a list of facilities that we will need to update with the added variables and devices
-     * @throws Exception
-     */
-    public List<FacilityModel> handleExtractionOfFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-        //Maps to remember which facilities have which variables and devices
-        //, we will update the facilities all together at the end
-        Map<String, Set<String>> variablesPerFacility = new HashMap<>();
-        Map<String, Set<String>> devicesPerFacility = new HashMap<>();
-        //Map to remember facility uris that have already come up
-        Map<String, FacilityModel> facilityPerUri =  new HashMap<>();
-        //Set of device type uris encountered (fast faster access after 1 check)
-        Set<String> encounteredDeviceTypes = new HashSet<>();
-
-        //Iterate over data models to save variables and devices if the target is a facility
-        for (DataModel model : dataModels) {
-
-            if (model.getTarget() != null) {
-                String facilityUriString = SPARQLDeserializers.getShortURI(model.getTarget());
-                FacilityModel matchedFacility = facilityPerUri.get(facilityUriString);
-                if(matchedFacility == null){
-                    matchedFacility = sparql.getByURI(FacilityModel.class, model.getTarget(), null);
-                    if(matchedFacility == null){
-                        continue;
-                    }
-                    facilityPerUri.put(facilityUriString, matchedFacility);
-                }
-                // Add variable to this facility
-                Set<String> variablesForFacility = variablesPerFacility.getOrDefault(
-                        facilityUriString,
-                        (!CollectionUtils.isEmpty(matchedFacility.getVariables()) ?
-                                matchedFacility.getVariables().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
-                                        .collect(Collectors.toSet())
-                                : new HashSet<>()
-                        )
-                );
-                boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(model.getVariable()));
-                if(addedVar){
-                    variablesPerFacility.put(facilityUriString, variablesForFacility);
-                }
-                //Add devices to this facility
-                DataProvenanceModel dataProvenanceModel = model.getProvenance();
-                Set<String> devicesForFacility = devicesPerFacility.getOrDefault(
-                        facilityUriString,
-                        (!CollectionUtils.isEmpty(matchedFacility.getDevices()) ?
-                                matchedFacility.getDevices().stream().map(e -> SPARQLDeserializers.getShortURI(e.getUri()))
-                                        .collect(Collectors.toSet())
-                                : new HashSet<>()
-                        )
-                );
-                List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
-                if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
-                    for(ProvEntityModel provEntityModel : provWasAssociatedWith){
-                        if(provEntityModel.getType() != null){
-                            String deviceUriString = SPARQLDeserializers.getShortURI(provEntityModel.getType());
-                            if(encounteredDeviceTypes.contains(deviceUriString) || deviceDAO.isDeviceType(provEntityModel.getType() )){
-                                encounteredDeviceTypes.add(deviceUriString);
-                                devicesForFacility.add(SPARQLDeserializers.getShortURI(provEntityModel.getUri()));
-                            }
-                        }
-                    }
-
-                    devicesPerFacility.put(facilityUriString, devicesForFacility);
-                }
-            }
-        }
-        //Iterate over the encountered facilities to prepare update of their variables and devices
-        List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
-        for(String facilityUri : facilityPerUri.keySet()){
-            FacilityModel nextFacility = facilityPerUri.get(facilityUri);
-            //Only add this facility to the update list if the number of variables or devices has changed
-            if(collectionsAreBothNullOrSameSize(nextFacility.getVariables(), variablesPerFacility.get(facilityUri))
-                    &&
-                collectionsAreBothNullOrSameSize(nextFacility.getDevices(), devicesPerFacility.get(facilityUri))
-            ){
-                continue;
-            }
-            if(!CollectionUtils.isEmpty(variablesPerFacility.get(facilityUri))){
-                nextFacility.setVariables(variablesPerFacility.get(facilityUri).stream()
-                        .map(variableUri -> {
-                            VariableModel variable = new VariableModel();
-                            variable.setUri(URI.create(variableUri));
-                            return variable;
-                        })
-                        .collect(Collectors.toList())
-                );
-            }
-            if(!CollectionUtils.isEmpty(devicesPerFacility.get(facilityUri))){
-                nextFacility.setDevices(devicesPerFacility.get(facilityUri).stream()
-                        .map(deviceUri -> {
-                            DeviceModel device = new DeviceModel();
-                            device.setUri(URI.create(deviceUri));
-                            return device;
-                        })
-                        .collect(Collectors.toList())
-                );
-            }
-            facilitiesToUpdate.add(nextFacility);
-        }
-        return facilitiesToUpdate;
     }
 
     private <T extends SPARQLResourceModel> boolean  collectionsAreBothNullOrSameSize(List<T> models, Set<String> uris){

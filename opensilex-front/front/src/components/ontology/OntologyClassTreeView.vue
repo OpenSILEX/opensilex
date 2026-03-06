@@ -2,8 +2,8 @@
     <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
         <template v-slot:node="{ node }">
       <span class="item-icon">
-        <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
-                        :icon="classesParametersByURI[node.data.uri].icon"/>
+        <opensilex-Icon v-if="getIcon(node.data.uri)"
+                        :icon="getIcon(node.data.uri)"/>
       </span>&nbsp;
             <strong v-if="node.data.selected">{{ node.title }}</strong>
             <span v-if="!node.data.selected">{{ node.title }}</span>
@@ -59,6 +59,8 @@ export default class OntologyClassTreeView extends Vue {
     public nodes = [];
 
     public selected = null;
+
+    const PARAMETER_URI_SUFFIX = "owl-vue-extension"
 
     created() {
         this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
@@ -170,7 +172,14 @@ export default class OntologyClassTreeView extends Vue {
     }
 
     isManagedClass(rdfClassURI) {
-        return !!this.classesParametersByURI[rdfClassURI];
+        return !!this.classesParametersByURI[rdfClassURI+PARAMETER_URI_SUFFIX];
+    }
+
+    getIcon(uri){
+        if (! this.classesParametersByURI[uri+PARAMETER_URI_SUFFIX] ){
+            return null
+        }
+        this.classesParametersByURI[uri+PARAMETER_URI_SUFFIX].icon
     }
 }
 </script>

@@ -59,6 +59,7 @@ public class VueOwlExtensionDAO {
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
+            throw ex;
         }
     }
 

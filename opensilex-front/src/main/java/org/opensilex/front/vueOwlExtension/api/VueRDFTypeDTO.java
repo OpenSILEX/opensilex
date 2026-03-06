@@ -7,7 +7,6 @@ package org.opensilex.front.vueOwlExtension.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -17,7 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -129,7 +127,8 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
     @JsonIgnore
     public VueClassExtensionModel getExtClassModel() {
         VueClassExtensionModel model = new VueClassExtensionModel();
-        model.setUri(getUri());
+        String uri = String.format("%s/owl-vue-extension", getUri());
+        model.setUri(URI.create(uri));
         model.setIcon(getIcon());
         model.setIsAbstractClass(getIsAbstract());
         return model;

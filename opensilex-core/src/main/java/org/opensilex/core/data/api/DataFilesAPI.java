@@ -1031,7 +1031,7 @@ public class DataFilesAPI {
                     }
 
                     // DX files can be exported to DX or TSV
-                    if (fileExtension.equalsIgnoreCase("dx")) {
+                    if (fileExtension.equalsIgnoreCase("dx") || fileExtension.equalsIgnoreCase("jdx")) {
                         if (!(format.equalsIgnoreCase("dx") || format.equalsIgnoreCase("tsv"))) {
                             throw new IllegalArgumentException("DX files can only be exported to DX or TSV: " + filePath);
                         }

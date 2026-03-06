@@ -28,8 +28,9 @@ import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -209,13 +210,16 @@ public class BrAPIv1ObservationDTO {
         if (dataModel.getValue() != null) {
             this.setValue(dataModel.getValue().toString());
         }
-        List<SPARQLNamedResourceModel> uriLabels = ontologyDAO.getURILabels(List.of(dataModel.getTarget()), currentUser.getLanguage(), expeModel.getUri());
+        List<SPARQLNamedResourceModel> uriLabels = new ArrayList<>();
+        if (Objects.nonNull(dataModel.getTarget())){
+            uriLabels = ontologyDAO.getURILabels(List.of(dataModel.getTarget()), currentUser.getLanguage(), expeModel.getUri());
+        }
         if (!uriLabels.isEmpty() && SPARQLModule.getOntologyStoreInstance().classExist(
                 uriLabels.get(0).getType(), new URI(Oeso.ScientificObject.getURI())
         )){
             ScientificObjectModel objectModel = scientificObjectLogic.getObjectByURI(dataModel.getTarget(), expeModel.getUri(), currentUser);
-            List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
-            if (germplasms.size() >= 1){
+            List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().toList();
+            if (!germplasms.isEmpty()){
                 GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser, false);
                 if (SPARQLDeserializers.compareURIs(germplasmModel.getType(), BrAPIv1AccessionWarning.ACCESSION_URI)) {
                     this.setGermplasmDbId(germplasmModel.getUri().toString());

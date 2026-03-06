@@ -15,6 +15,7 @@
  import com.mongodb.client.MongoDatabase;
  import com.mongodb.client.model.Filters;
  import com.mongodb.client.model.geojson.Geometry;
+ import org.apache.commons.collections4.CollectionUtils;
  import org.apache.jena.arq.querybuilder.*;
  import org.apache.jena.graph.Node;
  import org.apache.jena.graph.NodeFactory;
@@ -92,6 +93,9 @@
          try {
              // 1 - Mongo : get all facilities with geometry or address geometry
              List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();
+             if(CollectionUtils.isEmpty(facilityPositionList)){
+                 return;
+             }
              // 2 - RDF4J : add observation collection to facilities with address or with geometry (mongo - geospatial)
              Map<URI,URI> facilityCollectionMap = sparqlAddObservationCollectionToFacilityList(facilityPositionList);
              // 3 - RDF4J : get facility addresses

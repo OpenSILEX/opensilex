@@ -537,13 +537,14 @@ export default class ScientificObjectVisualizationTab extends Vue {
     var annotations = [];
 
     for (let point of cleanData) {
-      if (Array.isArray(point.data.provenance.prov_used) && point.data.provenance.prov_used.length > 0) {
-        const annotations = await this.getAnnotations(point.data.provenance.prov_used[0].uri);
+      const provusedUri = this.getProvUsedUri(point.data);
+      if (provusedUri) {
+        const annotations = await this.getAnnotations(provusedUri);
         imageData.push({
           ...point,
           title: "I",
           prov_used: point.data.provenance.prov_used,
-          imageURI: point.data.provenance.prov_used[0].uri,
+          imageURI: provusedUri,
           color: annotations.length > 0 ? "#FF0000" : undefined
         });
       }
@@ -553,6 +554,10 @@ export default class ScientificObjectVisualizationTab extends Vue {
       cleanData,
       imageData
     };
+  }
+
+  private getProvUsedUri(data) {
+    return data?.provenance?.prov_used[0]?.uri;
   }
 
   getAnnotations(uri: string): Promise<Array<AnnotationGetDTO>> {

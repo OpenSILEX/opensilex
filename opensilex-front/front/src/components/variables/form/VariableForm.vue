@@ -653,10 +653,13 @@ export default class VariableForm extends Vue {
         let uriFilled = (form.trait && form.trait.length > 0);
         let nameFilled = (form.trait_name && form.trait_name.length > 0);
 
-        // is both name and uri are filled or empty, then update current variable
+        // if both name and uri are filled or empty, then update current variable
         if(uriFilled == nameFilled){
             this.form.trait = form.trait;
             this.form.trait_name = form.trait_name;
+            if(!uriFilled && ! nameFilled){
+                this.form.trait = null;
+            }
         }
     }
 

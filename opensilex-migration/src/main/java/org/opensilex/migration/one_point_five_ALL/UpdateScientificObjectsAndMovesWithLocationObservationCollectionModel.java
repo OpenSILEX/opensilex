@@ -88,6 +88,9 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
             //4 - Make new Location Observations for old existing Moves, combine them with locationObservationsPerURIFromGeospatial and return all in a new Map
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURI = makeLocationObservationsFromExistingMoves(locationObservationsPerURIFromGeospatial, moveDetailsList);
+            if(locationObservationsPerURI.isEmpty()){
+                return;
+            }
             //5 - Add collections for each OS that has at least one LocationObservation. Return in a Map of format OS URI -> ObservationCOLLECTION URI
             StringUriMap<URI> soCollectionMap = sparqlAddLocationCollection(locationObservationsPerURI);
             //6 - Complete location observation models for each SO and insert to Location collection

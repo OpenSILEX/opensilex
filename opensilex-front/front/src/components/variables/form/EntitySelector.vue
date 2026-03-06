@@ -60,6 +60,18 @@ export default class EntitySelector extends Vue {
 
   @Ref("formSelector") readonly formSelector!: FormSelector;
 
+  setSelectedNode(node: { id: string; label: string }) {
+    this.tutorialLabels[node.id] = node.label;
+    this.formSelector.select(node);
+  }
+
+  private tutorialLabels: Record<string, string> = {};
+
+
+  refresh() {
+    this.formSelector.refresh();
+  }
+
   @Watch("sharedResourceInstance")
   onSriChange() {
     this.formSelector.refresh()
@@ -72,12 +84,15 @@ export default class EntitySelector extends Vue {
   }
 
   loadEntities(entities): Promise<Array<EntityGetDTO>> {
+    if (Array.isArray(entities) && entities.length === 1 && String(entities[0]).startsWith("__tutorial__:")) {
+      const uri = String(entities[0]);
+      return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
+    }
+
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
       .getEntitiesByURIs(entities, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
+      .then(http => http.response.result)
+      .catch(this.$opensilex.errorHandler);
   }
 
   searchEntities(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {

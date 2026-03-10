@@ -59,7 +59,7 @@ export default class UriForm extends Vue {
   helpMessage!: string;
 
   @Prop()
-  placeholder: string;
+  placeholder!: string;
 
   @Prop({ default: false })
   required!: boolean;
@@ -73,14 +73,16 @@ export default class UriForm extends Vue {
     this.id = this.$opensilex.generateID();
   }
 
-  // règles vee-validate adaptées
   get uriRules(): string {
-    // si le parent est "required", on force required
-    if (this.required) {
-      return "required|no_spaces|url";
+    const baseRules = "no_spaces|url";
+
+    // En mode édition, pas de checkbox "auto-générer"
+    if (this.editMode) {
+      return this.required ? `required|${baseRules}` : baseRules;
     }
-    // sinon on garde la logique interne existante
-    return `required_if:${this.id},false|no_spaces|url`;
+
+    // En mode normal, si auto-généré => pas requis
+    return this.uriGenerated ? baseRules : `required|${baseRules}`;
   }
 }
 </script>

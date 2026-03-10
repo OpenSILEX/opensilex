@@ -20,3 +20,4 @@ kotlin.log
 opensilex-main/dependency-reduced-pom.xml
 opensilex-front/front/src/opensilex.dev.ts 
 sonarqube_reports_log/*
+opensilex-doc/src/main/resources/api_versions_diff/swagger-diff.jar

@@ -54,6 +54,18 @@ First you need to have this software installed :
 - [docker 27.1.1+](https://docs.docker.com/engine/install/)
 - [docker compose plugin 2.33.1+](https://docs.docker.com/compose/install/)
 
+
+
+In this README, if you want to use your own databases, we recommend the docker installation for RDF4J and MongoDB. Here
+are the minimum versions supported by OpenSILEX :
+
+- RDF4J
+  - Minimum : 5.0+
+  - Recommended : 5.3+
+- MongoDB 
+  - Minimum : 4.4+
+  - Recommended : 7.0+
+
 Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation where your specific user must have read and write permissions.
 
 For installation instructions, follow the [installation documentation](opensilex-doc/src/main/resources/installation/development.md) steps.

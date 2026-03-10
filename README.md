@@ -61,10 +61,10 @@ are the minimum versions supported by OpenSILEX :
 
 - RDF4J
   - Minimum : 5.0+
-  - Recommended : 5.3+
+  - [Recommended : 5.2+](https://rdf4j.org/release-notes/)
 - MongoDB 
   - Minimum : 4.4+
-  - Recommended : 7.0+
+  - [Recommended : 7.0+](https://www.mongodb.com/legal/support-policy/lifecyclesrd)
 
 Note: the `<BASE_DIR>` variable referenced in this documentation is the root folder of your installation where your specific user must have read and write permissions.
 

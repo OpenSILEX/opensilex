@@ -33,21 +33,24 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                 FacilitiesLinkToVariablesAndDevicesMigration.DESCRIPTION +
                 UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel.DESCRIPTION +
                 ScientificObjectAndExperimentRelationMigration.DESCRIPTION +
-                UpdateFacilitiesWithLocationObservationCollectionModel.DESCRIPTION;
+                UpdateFacilitiesWithLocationObservationCollectionModel.DESCRIPTION +
+                ChangeTypeParametersUri.DESCRIPTION;
     }
 
     @Override
     public void execute() throws OpensilexModuleUpdateException {
+        
         //Initialize services
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-        Logger logger = LoggerFactory.getLogger(getClass());
+        Logger logger = LoggerFactory.getLogger(MigrateToOnePointFive.class);
         //Initialize the sub-part migration classes
         FacilitiesLinkToVariablesAndDevicesMigration facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb, logger);
         UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb, logger);
         ScientificObjectAndExperimentRelationMigration sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql, logger);
         UpdateFacilitiesWithLocationObservationCollectionModel facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb, logger);
+        ChangeTypeParametersUri changeTypeParametersUri = new ChangeTypeParametersUri(sparql);
         //Check migration has not already been run by checking each sub-migration
         try{
             if(
@@ -72,6 +75,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             sciObjsAndMovesLocationMigration.execute();
             sciObjAndXpLinkMigration.execute();
             facilitiesLocationsMigration.execute();
+            changeTypeParametersUri.execute();
 
             sparql.commitTransaction();
             mongodb.commitTransaction();
@@ -80,9 +84,10 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             try {
                 sparql.rollbackTransaction();
                 mongodb.rollbackTransaction();
-                logger.error("Error while migrating too 1.5. No changes were saved on the databases", e);
+                logger.error("Error while migrating to 1.5. No changes were saved on the databases");
+                throw e;
             } catch (Exception exception) {
-                throw new OpensilexModuleUpdateException("Error while migrating too 1.5. No changes were saved on the databases", exception);
+                throw new OpensilexModuleUpdateException("Error while migrating to 1.5. No changes were saved on the databases", exception);
             }
         }
 

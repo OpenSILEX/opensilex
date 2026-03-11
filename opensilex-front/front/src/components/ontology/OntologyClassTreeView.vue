@@ -60,7 +60,7 @@ export default class OntologyClassTreeView extends Vue {
 
     public selected = null;
 
-    const PARAMETER_URI_SUFFIX = "owl-vue-extension"
+    private PARAMETER_URI_SUFFIX = "/owl-vue-extension"
 
     created() {
         this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
@@ -172,14 +172,14 @@ export default class OntologyClassTreeView extends Vue {
     }
 
     isManagedClass(rdfClassURI) {
-        return !!this.classesParametersByURI[rdfClassURI+PARAMETER_URI_SUFFIX];
+        return !!this.classesParametersByURI[rdfClassURI+this.PARAMETER_URI_SUFFIX];
     }
 
     getIcon(uri){
-        if (! this.classesParametersByURI[uri+PARAMETER_URI_SUFFIX] ){
+        if (! this.classesParametersByURI[uri+this.PARAMETER_URI_SUFFIX] ){
             return null
         }
-        this.classesParametersByURI[uri+PARAMETER_URI_SUFFIX].icon
+        this.classesParametersByURI[uri+this.PARAMETER_URI_SUFFIX].icon
     }
 }
 </script>

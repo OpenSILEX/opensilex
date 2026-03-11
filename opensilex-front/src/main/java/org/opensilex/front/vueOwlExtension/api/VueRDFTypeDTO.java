@@ -23,6 +23,8 @@ import java.util.List;
  */
 public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
 
+    public static final String URI_SUFFIX = "/owl-vue-extension";
+
     @JsonProperty("is_abstract")
     protected boolean isAbstract;
 
@@ -127,7 +129,7 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
     @JsonIgnore
     public VueClassExtensionModel getExtClassModel() {
         VueClassExtensionModel model = new VueClassExtensionModel();
-        String uri = String.format("%s/owl-vue-extension", getUri());
+        String uri = getUri().toString().concat(URI_SUFFIX);
         model.setUri(URI.create(uri));
         model.setIcon(getIcon());
         model.setIsAbstractClass(getIsAbstract());

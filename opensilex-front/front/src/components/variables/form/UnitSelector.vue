@@ -56,6 +56,8 @@ export default class UnitSelector extends Vue {
 
   @Ref("formSelector") readonly formSelector!: FormSelector;
 
+  private tutorialLabels: Record<string, string> = {};
+
   @Watch("sharedResourceInstance")
   onSriChange() {
     this.formSelector.refresh();
@@ -67,13 +69,26 @@ export default class UnitSelector extends Vue {
       : "component.unit.form.selector.placeholder";
   }
 
+  setSelectedNode(node: { id: string; label: string }) {
+    this.tutorialLabels[node.id] = node.label;
+    this.formSelector.select(node);
+  }
+
+  clearSelection() {
+    if ((this.formSelector as any).clear) (this.formSelector as any).clear();
+    else this.unitURI = this.multiple ? [] : undefined;
+  }
+
   loadUnits(units): Promise<Array<UnitGetDTO>> {
+    if (Array.isArray(units) && units.length === 1 && String(units[0]).startsWith("__tutorial__:")) {
+      const uri = String(units[0]);
+      return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
+    }
+
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
       .getUnitsByURIs(units, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
+      .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => http.response.result)
+      .catch(this.$opensilex.errorHandler);
   }
 
   searchUnits(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>> {

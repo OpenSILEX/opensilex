@@ -66,6 +66,19 @@ export default class MethodSelector extends Vue {
     this.formSelector.refresh();
   }
 
+  private tutorialLabels: Record<string, string> = {};
+
+  setSelectedNode(node: { id: string; label: string }) {
+    this.tutorialLabels[node.id] = node.label;
+    this.formSelector.select(node);
+  }
+
+  clearSelection() {
+    if ((this.formSelector as any).clear) (this.formSelector as any).clear();
+    else this.methodURI = this.multiple ? [] : undefined;
+  }
+
+
   get placeholder() {
     return this.multiple
       ? "component.method.form.selector.placeholder-multiple"
@@ -73,12 +86,15 @@ export default class MethodSelector extends Vue {
   }
 
   loadMethods(methods): Promise<Array<MethodGetDTO>> {
-    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getMethodsByURIs(methods, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
+    if (Array.isArray(methods) && methods.length === 1 && String(methods[0]).startsWith("__tutorial__:")) {
+    const uri = String(methods[0]);
+    return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
+  }
+
+  return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+    .getMethodsByURIs(methods, this.sharedResourceInstance)
+    .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => http.response.result)
+    .catch(this.$opensilex.errorHandler);
   }
 
   searchMethods(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>> {

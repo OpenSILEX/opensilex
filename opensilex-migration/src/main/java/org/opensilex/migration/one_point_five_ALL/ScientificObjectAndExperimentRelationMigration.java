@@ -1,0 +1,73 @@
+package org.opensilex.migration.one_point_five_ALL;
+
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.vocabulary.RDF;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
+import org.slf4j.Logger;
+
+/**
+ * @author dnooka / Max
+ */
+public class ScientificObjectAndExperimentRelationMigration {
+
+    private static final Node SO_VAR = NodeFactory.createVariable("scientificObj");
+    private static final Node GRAPH_VAR = NodeFactory.createVariable("graph");
+    private static final Node TYPE_VAR = NodeFactory.createVariable("type");
+    protected static String DESCRIPTION = "Scientific Objects created from XP will have a relation: participatesIn an XP in the XP context";
+
+    private final SPARQLService sparql;
+    private final Logger logger;
+
+    public ScientificObjectAndExperimentRelationMigration(SPARQLService sparql, Logger logger) {
+        this.sparql = sparql;
+        this.logger = logger;
+    }
+
+    /**
+     * Checks if this migration was most likely already run. Does this by checking if any participatesIn relations already exist on ScientificObjects
+     * @return true if participatesIn was found on any ScientificObject
+     */
+    protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
+        AskBuilder participatesInSelect = new AskBuilder();
+
+        participatesInSelect.addWhere(TYPE_VAR, Ontology.subClassAny, Oeso.ScientificObject);
+        participatesInSelect.addWhere(SO_VAR, RDF.type, TYPE_VAR);
+        participatesInSelect.addWhere(SO_VAR, Oeso.participatesIn, GRAPH_VAR);
+
+        return sparql.executeAskQuery(participatesInSelect);
+    }
+
+    private WhereBuilder buildWhere() throws SPARQLException {
+
+        Node scientificObjectClass = NodeFactory.createURI(Oeso.ScientificObject.getURI());
+        Node defaultOsGraph = sparql.getDefaultGraph(ScientificObjectModel.class);
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+        // build where clause to get all SOs which are present in XP context to migrate the existing SOs with a link to XP
+        return new WhereBuilder()
+                .addWhere(TYPE_VAR, Ontology.subClassAny, scientificObjectClass)
+                .addGraph(GRAPH_VAR, new WhereBuilder()
+                        .addWhere(SO_VAR, RDF.type, TYPE_VAR)
+                .addFilter(exprFactory.not(exprFactory.eq(GRAPH_VAR, defaultOsGraph))));
+
+    }
+
+    protected void execute() throws SPARQLException {
+        try{
+            UpdateBuilder updateQuery = new UpdateBuilder()
+                    .addInsert(GRAPH_VAR, SO_VAR, Oeso.participatesIn, GRAPH_VAR)
+                    .addWhere(buildWhere());
+            sparql.executeUpdateQuery(updateQuery);
+        }catch(SPARQLException e){
+            logger.warn("Something went wrong in the ScientificObjectAndExperimentRelationMigration part of the migration!");
+            throw e;
+        }
+    }
+}

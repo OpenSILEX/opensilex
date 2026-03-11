@@ -61,6 +61,19 @@ export default class CharacteristicSelector extends Vue {
 
   @Ref("formSelector") readonly formSelector!: FormSelector;
 
+  private tutorialLabels: Record<string, string> = {};
+
+  setSelectedNode(node: { id: string; label: string }) {
+    this.tutorialLabels[node.id] = node.label;
+    this.formSelector.select(node);
+  }
+
+  clearSelection() {
+    if ((this.formSelector as any).clear) (this.formSelector as any).clear();
+    else this.characteristicURI = this.multiple ? [] : undefined;
+  }
+
+
   @Watch("sharedResourceInstance")
   onSriChange() {
     this.formSelector.refresh();
@@ -73,12 +86,15 @@ export default class CharacteristicSelector extends Vue {
   }
 
   loadCharacteristics(characteristics): Promise<Array<CharacteristicGetDTO>> {
+    if (Array.isArray(characteristics) && characteristics.length === 1 && String(characteristics[0]).startsWith("__tutorial__:")) {
+      const uri = String(characteristics[0]);
+      return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
+    }
+
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
       .getCharacteristicsByURIs(characteristics, this.sharedResourceInstance)
-      .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler)
+      .then(http => http.response.result)
+      .catch(this.$opensilex.errorHandler);
   }
 
   searchCharacteristics(name, page, pageSize): Promise<HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>> {

@@ -192,7 +192,7 @@ en:
 fr:
   AgroportalCreateFormPart:
     uri-help: >
-      Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez
+      Décocher si vous souhaitez ajouter un concept à partir d'une ontologie existante ou si vous souhaitez
       spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée.
     tutorial:
       step-uri:

@@ -1,25 +1,23 @@
 <template>
     <ValidationObserver ref="validatorRef">
 
-        <opensilex-InputForm
-            :value.sync="variable.trait"
-            label="VariableForm.trait-uri"
-            type="text"
-            helpMessage="VariableForm.trait-uri-help"
-            placeholder="VariableForm.trait-uri-placeholder"
-            :required.sync="traitRequired"
-            @change="updateTraitRequired"
-        ></opensilex-InputForm>
+        <opensilex-UriForm
+        :editMode="true"
+        :uri.sync="variable.trait"
+        label="VariableForm.trait-uri"
+        helpMessage="VariableForm.trait-uri-help"
+        placeholder="VariableForm.trait-uri-placeholder"
+        :required="traitRequired"
+        />
 
         <opensilex-InputForm
-            :value.sync="variable.trait_name"
-            label="VariableForm.trait-name"
-            type="text"
-            helpMessage="VariableForm.trait-name-help"
-            placeholder="VariableForm.trait-name-placeholder"
-            :required.sync="traitRequired"
-            @change="updateTraitRequired"
-        ></opensilex-InputForm>
+        :value.sync="variable.trait_name"
+        label="VariableForm.trait-name"
+        type="text"
+        helpMessage="VariableForm.trait-name-help"
+        placeholder="VariableForm.trait-name-placeholder"
+        :required="traitRequired"
+        />
 
     </ValidationObserver>
 
@@ -38,21 +36,10 @@ export default class TraitForm extends Vue {
 
     @Ref("validatorRef") readonly validatorRef!: any;
 
-    traitRequired: boolean = false;
-
-    created() {
-        this.updateTraitRequired();
-    }
-
-    updateTraitRequired() {
-
-        this.traitRequired = (this.variable.trait && this.variable.trait.length > 0) ||
-            (this.variable.trait_name && this.variable.trait_name.length > 0);
-
-        if(! this.traitRequired){
-            this.variable.trait_name = undefined;
-            this.variable.trait = undefined;
-        }
+    get traitRequired(): boolean {
+    const trait = (this.variable.trait || "").trim();
+    const name = (this.variable.trait_name || "").trim();
+    return trait.length > 0 || name.length > 0;
     }
 
     reset() {

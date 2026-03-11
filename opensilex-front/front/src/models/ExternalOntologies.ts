@@ -1,7 +1,7 @@
 export class ExternalOntologies {
 
     static AGROPORTAL: string = "http://agroportal.lirmm.fr/";
-    static AGROVOC: string = "http://agrovoc.uniroma2.it/agrovoc/agrovoc/en/";
+    static AGROVOC: string = "https://agrovoc.fao.org/fr";
     static BIOPORTAL: string = "https://ncbo.bioontology.org/";
     static CROP_ONTOLOGY: string = "https://www.cropontology.org/";
     static PLANT_ONTOLOGY: string = "https://www.ebi.ac.uk/ols/ontologies/po";
@@ -19,7 +19,7 @@ export class ExternalOntologies {
             description: "component.ontology.externalOntologies.agroportal"
         }],
         [ExternalOntologies.AGROVOC, {
-            link: "http://agrovoc.uniroma2.it/agrovoc/agrovoc/en/",
+            link: "https://agrovoc.fao.org/fr",
             name: "AGROVOC",
             description: "component.ontology.externalOntologies.agrovoc"
         }],

@@ -30,7 +30,7 @@ export default class UriView extends Vue {
   title: string;
 
   @Prop({ default: '' })
-customClass: string;
+  customClass: string;
 
 
   copy = copy;
@@ -42,8 +42,5 @@ customClass: string;
   word-wrap: normal;
 }
 
-.specificProperties {
-  min-width: 250px
-}
 </style>
 

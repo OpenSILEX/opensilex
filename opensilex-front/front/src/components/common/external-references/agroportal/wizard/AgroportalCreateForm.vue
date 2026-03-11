@@ -157,10 +157,13 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   //#endregion
 
   //public Methods
+  /**
+   * Shows the create form, jumps to second step if Agroportal is unreachable
+   */
   public showCreateForm() {
     this.editMode = false;
     this.termIsSelected = false;
-    this.checkAgroportalReachable();
+    this.checkAgroportalReachableAndSkipIfElse();
     this.wizardRef.showCreateForm();
   }
 
@@ -171,7 +174,7 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
   //#endregion
 
   //#region Private methods
-  private checkAgroportalReachable() {
+  private checkAgroportalReachableAndSkipIfElse() {
     return this.agroportalService.pingAgroportal().then((http) => {
       if (http && http.response) {
         let isReachable = http.response.result;
@@ -179,15 +182,12 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
           this.wizardRef.skipStep();
         }
       }
-    }).catch(this.agroportalErrorHandler);
+    }).catch(this.agroportalPingErrorHandler);
   }
 
-  private agroportalErrorHandler(error: HttpResponse) {
-    if (error.status === 503) {
-      this.wizardRef.skipStep();
-      return;
-    }
-    this.$opensilex.errorHandler(error);
+  private agroportalPingErrorHandler(error: HttpResponse) {
+    //If we get some error just skip
+    this.wizardRef.skipStep();
   }
 
   private getEmptyForm(): BaseExternalReferencesDTO {

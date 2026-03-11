@@ -93,16 +93,19 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
      *      ?uriToDelete rdf:type  <http://prefix/vocabulary/owl-vue-extension#ClassExtension>.
      *      ?uriToDelete  <http://prefix/vocabulary/owl-vue-extension#hasIcon> ?icon.
      *      ?uriToDelete <http://prefix/vocabulary/owl-vue-extension#isAbstractClass> ?isAbstract.
+     *      ?fromOwlClass <http://prefix/vocabulary/owl-vue-extension#fromOwlClass> ?uriToDelete.
      * }
      * INSERT {
      *     ?uriToCreate rdf:type  <http://prefix/vocabulary/owl-vue-extension#ClassExtension>.
      *     ?uriToCreate  <http://prefix/vocabulary/owl-vue-extension#hasIcon> ?icon.
      *     ?uriToCreate <http://prefix/vocabulary/owl-vue-extension#isAbstractClass> ?isAbstract.
+     *     ?fromOwlClass <http://prefix/vocabulary/owl-vue-extension#fromOwlClass> ?uriToInsert.
      * }
      * WHERE {
      *      ?uriToDelete rdf:type <http://prefix/vocabulary/owl-vue-extension#ClassExtension> .
      *      OPTIONAL { ?uriToDelete  <http://prefix/vocabulary/owl-vue-extension#hasIcon> ?icon. }
      *      OPTIONAL { ?uriToDelete <http://prefix/vocabulary/owl-vue-extension#isAbstractClass> ?isAbstract. }
+     *      OPTIONAL { ?fromOwlClass <http://prefix/vocabulary/owl-vue-extension#fromOwlClass> ?uriToDelete. }
      *      BIND (URI(CONCAT(STR(?uriToDelete), "/owl-vue-extension"))AS ?uriToCreate)
      *      FILTER (!STRENDS(STR(?uriToDelete), "/owl-vue-extension"))
      * }
@@ -113,11 +116,13 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
         Var uriToInsertVar = makeVar("uriToInsert");
         Var iconVar = makeVar("icon");
         Var isAbstractVar = makeVar("isAbstract");
+        Var fromOwlClassVar = makeVar("fromOwlClass");
 
         Node classExtensionType = VueOwlExtension.ClassExtension.asNode();
         Node rdfTypeUri = RDF.type.asNode();
         Node hasIconUri = VueOwlExtension.hasIcon.asNode();
         Node isAbstractClassUri = VueOwlExtension.isAbstractClass.asNode();
+        Node fromOwlClassUri = VueOwlExtension.fromOwlClass.asNode();
         Node UriSuffixStrinfNode = NodeFactory.createLiteralString(VueRDFTypeDTO.URI_SUFFIX);
 
         ExprFactory factory = new ExprFactory();
@@ -133,12 +138,15 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
                 .addDelete(uriToDeleteVar, rdfTypeUri, classExtensionType)
                 .addDelete(uriToDeleteVar, hasIconUri, iconVar)
                 .addDelete(uriToDeleteVar, isAbstractClassUri, isAbstractVar)
+                .addDelete(fromOwlClassVar, fromOwlClassUri, uriToDeleteVar)
                 .addInsert(uriToInsertVar, rdfTypeUri, classExtensionType)
                 .addInsert(uriToInsertVar, hasIconUri, iconVar)
                 .addInsert(uriToInsertVar, isAbstractClassUri, isAbstractVar)
+                .addInsert(fromOwlClassVar, fromOwlClassUri, uriToInsertVar)
                 .addWhere(uriToDeleteVar, rdfTypeUri, classExtensionType)
                 .addOptional(uriToDeleteVar, hasIconUri, iconVar)
                 .addOptional(uriToDeleteVar, isAbstractClassUri, isAbstractVar)
+                .addOptional(fromOwlClassVar, fromOwlClassUri, uriToDeleteVar)
                 .addBind(uriBindExpr, uriToInsertVar)
                 .addFilter(filterUriIsNotAlreadyUpdatedExpr);
     }

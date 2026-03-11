@@ -9,11 +9,12 @@
     propertiesDescription="FactorCategoryTypes.propertiesDescription"
     propertiesURI="/factor-category-types/properties"
     :withProperties="false"
+    :canDeleteType="false"
   ></opensilex-OntologyTypesView>
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 
 @Component

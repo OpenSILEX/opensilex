@@ -23,10 +23,10 @@
                 :small="true"
             ></opensilex-AddChildButton>
             <opensilex-DeleteButton
-                v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+                v-if="isManagedClass(node.data.uri) && user.isAdmin() && canDeleteType"
                 @click="$emit('deleteRDFType' ,node.data)"
                 label="OntologyClassTreeView.delete"
-                :small="true"
+                :small="true"               
             ></opensilex-DeleteButton>
         </template>
     </opensilex-TreeView>
@@ -62,6 +62,9 @@ export default class OntologyClassTreeView extends Vue {
     @Prop()
     rdfType;
 
+    @Prop({ type: Boolean, default: false })
+    canDeleteType!: boolean;
+    
     public nodes = [];
 
     public selected = null;

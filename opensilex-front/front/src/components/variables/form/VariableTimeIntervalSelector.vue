@@ -1,5 +1,6 @@
 <template>
     <opensilex-FormSelector
+        ref="formSelector"
         :label="label"
         :selected.sync="timeIntervalURI"
         :options="periodList"
@@ -9,13 +10,15 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import FormSelector from "../../common/forms/FormSelector.vue";
 
 @Component
 export default class VariableTimeIntervalSelector extends Vue {
     $opensilex: any;
     $store: any;
+    @Ref("formSelector") readonly formSelector!: FormSelector;
 
     @PropSync("timeinterval")
     timeIntervalURI;
@@ -36,15 +39,25 @@ export default class VariableTimeIntervalSelector extends Vue {
         this.loadTimeInterval();
     }
 
+
+    setSelectedNode(node: { id: string; label: string }) {
+        this.tutorialLabels[node.id] = node.label;
+        this.formSelector.select(node);
+    }
+
+    private tutorialLabels: Record<string, string> = {};
+
+
+    refresh() {
+        this.formSelector.refresh();
+    }
+
     loadTimeInterval() {
-        let period = ["millisecond","second","minute","hour","day","week","month","unique"];
-        this.periodList = [];
-        for(let value of period){
-            this.periodList.push({
-                id: value.charAt(0).toUpperCase() + value.slice(1),
-                label: this.$i18n.t("VariableForm.dimension-values." + value)
-            })
-        }
+        const periods = ["millisecond","second","minute","hour","day","week","month","unique"];
+        this.periodList = periods.map(value => ({
+            id: value,
+            label: this.$i18n.t("VariableForm.dimension-values." + value)
+        }));
     }
 
     onEnter() {

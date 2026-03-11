@@ -542,8 +542,9 @@ export default class DataFilesList extends Vue {
                     undefined,
                     null
                 ).then((http: HttpResponse<OpenSilexResponse<any>>) => {
-                this.$opensilex.showSuccessToast(this.$i18n.t("DataFilesList.upload-success-message"));
-                console.debug("Datafile created", http.response);
+                  if (http && http.status === 200) {
+                    this.$opensilex.showSuccessToast(this.$i18n.t("DataFilesList.upload-success-message"));
+                  }
                 })
                 .catch((error) => {
                   if (error.status == 500) {
@@ -572,8 +573,9 @@ export default class DataFilesList extends Vue {
                 exportList,
                 this.lang
             ).then((http: HttpResponse<OpenSilexResponse<any>>) => {
-            this.$opensilex.showSuccessToast(this.$i18n.t("DataFilesList.upload-success-message"));
-            console.debug("Datafile created", http.response);
+              if (http && http.status === 200) {
+                this.$opensilex.showSuccessToast(this.$i18n.t("DataFilesList.upload-success-message"));
+              }
             })
             .catch((error) => {
               if (error.status == 500) {

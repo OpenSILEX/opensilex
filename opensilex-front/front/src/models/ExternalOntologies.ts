@@ -1,7 +1,7 @@
 export class ExternalOntologies {
 
     static AGROPORTAL: string = "http://agroportal.lirmm.fr/";
-    static AGROVOC: string = "http://agrovoc.uniroma2.it/agrovoc/agrovoc/en/";
+    static AGROVOC: string = "https://agrovoc.fao.org/fr";
     static BIOPORTAL: string = "https://ncbo.bioontology.org/";
     static CROP_ONTOLOGY: string = "https://www.cropontology.org/";
     static PLANT_ONTOLOGY: string = "https://www.ebi.ac.uk/ols/ontologies/po";
@@ -20,7 +20,7 @@ export class ExternalOntologies {
             and orientation of the platform. AgroPortal already offers a robust and stable reference repository highly valuable for the agronomic domain.`
         }],
         [ExternalOntologies.AGROVOC, {
-            link: "http://agrovoc.uniroma2.it/agrovoc/agrovoc/en/",
+            link: "https://agrovoc.fao.org/fr",
             name: "AGROVOC",
             description: `AGROVOC is a controlled vocabulary covering all areas of interest of the Food and
         Agriculture Organization (FAO) of the United Nations, including food, nutrition, agriculture, forestry,

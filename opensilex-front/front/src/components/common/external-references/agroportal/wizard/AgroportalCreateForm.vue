@@ -161,6 +161,8 @@ export default class AgroportalCreateForm<T extends BaseExternalReferencesDTO> e
    * Shows the create form, jumps to second step if Agroportal is unreachable
    */
   public showCreateForm() {
+    this.editMode = false;
+    this.termIsSelected = false;
     this.checkAgroportalReachableAndSkipIfElse();
     this.wizardRef.showCreateForm();
   }

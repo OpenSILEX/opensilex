@@ -38,7 +38,6 @@
                 <opensilex-OntologyClassTreeView
                     ref="classesTree"
                     :rdfType="rdfType"
-                    :canDeleteType="canDeleteType"
                     @selectionChange="selected = $event"
                     @editClass="showEditForm($event)"
                     @createChildClass="showCreateForm($event)"
@@ -90,9 +89,6 @@ export default class OntologyClassView extends Vue {
 
     @Prop()
     icon;
-
-    @Prop({ type: Boolean, default: false })
-    canDeleteType!: boolean;
 
     selected = null;
 

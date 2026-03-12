@@ -10,12 +10,6 @@
         </template>
 
         <template v-slot:buttons="{ node }">
-            <opensilex-EditButton
-                v-if="isManagedClass(node.data.uri) && user.isAdmin()"
-                @click="$emit('editClass' ,node.data)"
-                label="OntologyClassTreeView.edit"
-                :small="true"
-            ></opensilex-EditButton>
             <opensilex-AddChildButton
                 v-if="user.isAdmin()"
                 @click="$emit('createChildClass' ,node.data.uri)"
@@ -23,10 +17,10 @@
                 :small="true"
             ></opensilex-AddChildButton>
             <opensilex-DeleteButton
-                v-if="isManagedClass(node.data.uri) && user.isAdmin() && canDeleteType"
+                v-if="isManagedClass(node.data.uri) && user.isAdmin()"
                 @click="$emit('deleteRDFType' ,node.data)"
                 label="OntologyClassTreeView.delete"
-                :small="true"               
+                :small="true"
             ></opensilex-DeleteButton>
         </template>
     </opensilex-TreeView>
@@ -62,9 +56,6 @@ export default class OntologyClassTreeView extends Vue {
     @Prop()
     rdfType;
 
-    @Prop({ type: Boolean, default: false })
-    canDeleteType!: boolean;
-    
     public nodes = [];
 
     public selected = null;

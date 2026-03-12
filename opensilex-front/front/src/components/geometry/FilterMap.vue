@@ -318,8 +318,8 @@ export default class FilterMap extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
               res.forEach(element => {
-                if (element.geometry != null) {
-                  element.geometry.properties = {
+                if (element.location !== null && element.location.geojson !== null) {
+                  element.location.geojson.properties = {
                     uri: element.uri,
                     name: element.name,
                     type: element.rdf_type,
@@ -330,12 +330,12 @@ export default class FilterMap extends Vue {
                   let inserted = false;
                   this.featureOS.forEach(item => {
                     if (item[0].properties.type == element.rdf_type) {
-                      item.push(element.geometry);
+                      item.push(element.location.geojson);
                       inserted = true;
                     }
                   });
                   if (!inserted) {
-                    this.featureOS.push([element.geometry]);
+                    this.featureOS.push([element.location.geojson]);
                   }
                 }
               });

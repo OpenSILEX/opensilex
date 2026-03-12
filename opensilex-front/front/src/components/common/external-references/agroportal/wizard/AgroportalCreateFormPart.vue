@@ -12,6 +12,7 @@
         <div class="agroportalCreateForm">
           <!-- URI -->
           <opensilex-UriForm
+              class="v-step-uri"
               :uri.sync="formDto.uri"
               label="component.common.uri"
               :generated.sync="uriGenerated"

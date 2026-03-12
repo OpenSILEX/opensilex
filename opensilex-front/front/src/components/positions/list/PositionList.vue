@@ -1,20 +1,5 @@
 <template>
     <div>
-        <opensilex-PageActions class="pageActions">
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="Move.add"
-                @click="showForm"
-                class="createButton"
-            ></opensilex-CreateButton>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="OntologyCsvImporter.import"
-                @click="showCsvForm"
-                class="createButton"
-            ></opensilex-CreateButton>
-        </opensilex-PageActions>
     
     <div class="card">
         <opensilex-PageContent v-if="renderComponent">

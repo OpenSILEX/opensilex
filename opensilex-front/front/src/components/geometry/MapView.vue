@@ -1437,7 +1437,7 @@ export default class MapView extends Vue {
             else{
               res.forEach((element :any) => {
                 if (element.location !== null && element.location.geojson !== null) {
-                  element.location.geojson.geometry.properties = {
+                  element.location.geojson.properties = {
                     creation_date: element.creation_date,
                     destruction_date:element.destruction_date,
                     uri: element.uri,
@@ -1449,12 +1449,12 @@ export default class MapView extends Vue {
                   let inserted = false;
                   this.featuresOS.forEach((item) => {
                     if (item[0].properties.type === element.rdf_type) {
-                      item.push(element.location.geojson.geometry);
+                      item.push(element.location.geojson);
                       inserted = true;
                     }
                   });
                   if (!inserted) {
-                    this.featuresOS.push([element.location.geojson.geometry]);
+                    this.featuresOS.push([element.location.geojson]);
                   }
                 }
               });

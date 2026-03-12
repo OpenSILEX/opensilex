@@ -114,7 +114,7 @@ import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
-import Foaf from "@/ontologies/Foaf";
+import Foaf from "../../ontologies/Foaf";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {

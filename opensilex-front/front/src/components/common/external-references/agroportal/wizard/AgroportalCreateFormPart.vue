@@ -12,7 +12,6 @@
         <div class="agroportalCreateForm">
           <!-- URI -->
           <opensilex-UriForm
-              class="v-step-uri"
               :uri.sync="formDto.uri"
               label="component.common.uri"
               :generated.sync="uriGenerated"
@@ -128,10 +127,7 @@ export default class AgroportalCreateFormPart extends Vue {
   //#endregion
 
   //#region Computed
-  get uriFormIsInEditMode(){
-    if(this.props && this.props.didSelectTerm){
-      return true;
-    }
+  get uriFormIsInEditMode() {
     return this.editMode;
   }
   //#endregion

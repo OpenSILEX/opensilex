@@ -25,7 +25,7 @@
         ></opensilex-UriView>
 
         <opensilex-Button
-          v-if="!isBatch && (isSubTypeOfEvent || this.dataDto.uri)"
+          v-if="!isBatch && (isAnnotation() || isSubTypeOfEvent() || (this.dataDto && this.dataDto.uri))"
           :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"
@@ -83,11 +83,19 @@
 
     <!-- Event details -->
     <opensilex-EventModalView
-      v-if="isSubTypeOfEvent"
+      v-if="isSubTypeOfEvent()"
       modalSize="lg"
       ref="eventModalView"
       :static="false"
     ></opensilex-EventModalView>
+
+    <!-- Modal pour afficher les détails de l'annotation -->
+    <opensilex-AnnotationDetails
+      v-if="isAnnotation()"
+      :value="isAnnotationModalVisible"
+      :annotationDetails="annotationDetails"
+      @close="isAnnotationModalVisible = false"
+    />
   </div>
 </template>
 
@@ -104,6 +112,9 @@ import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
 import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import Foaf from "../../ontologies/Foaf";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -119,6 +130,9 @@ export default class GlobalUriSearchResult extends Vue {
   private ontologyService: OntologyService;
   private dataService: DataService;
   private eventsService: EventsService;
+  private annotationService: AnnotationsService;
+  private isAnnotationModalVisible = false;
+  private annotationDetails: AnnotationGetDTO | null = null;
   //#endregion
 
   //#region: hooks
@@ -127,6 +141,7 @@ export default class GlobalUriSearchResult extends Vue {
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.dataService = this.$opensilex.getService("opensilex.DataService");
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+    this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
   }
 
   //#endregion
@@ -139,6 +154,11 @@ export default class GlobalUriSearchResult extends Vue {
       let http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> = await this.getEventPromise();
       await this.eventModalView.show(http);
       return;
+    }
+    //If the result is an Annotation
+    if(this.isAnnotation()){
+      this.annotationDetails = (await this.annotationService.getAnnotation(this.searchResult.uri)).response.result;
+      this.isAnnotationModalVisible = true;
     }
 
     //If the result is a data or datafile
@@ -180,6 +200,15 @@ export default class GlobalUriSearchResult extends Vue {
         }
       }
     }
+    return false;
+  }
+
+  private isAnnotation(){
+    return this.$opensilex.Oeev.checkURIs(this.type, "http://www.w3.org/ns/oa#Annotation");
+  }
+
+  private isPerson(){
+    return this.$opensilex.Oeev.checkURIs(this.type, Foaf.PERSON_TYPE_URI);
   }
 
   private getEventPromise(): Promise<HttpResponse<OpenSilexResponse>> {
@@ -216,6 +245,10 @@ export default class GlobalUriSearchResult extends Vue {
     //If type is a germplasm group then build path manually
     if(this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
       return "/germplasm/group?selected="+ encodeURIComponent(this.uri);
+    }
+    //If type is a person then build path manually, elements can't be selected in persons table so we just go to table
+    if(this.isPerson()){
+      return "/persons";
     }
     //Check if type is one of the wierd other components on variables page that doesn't have its own page (Entities, etc...)
     formattedPath = this.$opensilex.getVariableComponentPath(this.type, this.uri);
@@ -307,7 +340,8 @@ export default class GlobalUriSearchResult extends Vue {
     return this.searchResult.data_dto !== null ||
       this.searchResult.datafile_dto !== null ||
       this.isSubTypeOfEvent() ||
-      this.searchResult.is_batch_history;
+      this.searchResult.is_batch_history ||
+      this.isAnnotation();
   }
 
   get isData(): boolean{

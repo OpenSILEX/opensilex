@@ -9,24 +9,12 @@
         </template>
 
         <template v-slot:buttons="{ node }">
-            <opensilex-EditButton
-                v-if="user.isAdmin()"
-                @click="$emit('editProperty' ,node.data)"
-                label="OntologyPropertyTreeView.edit"
-                :small="true"
-            ></opensilex-EditButton>
             <opensilex-AddChildButton
                 v-if="user.isAdmin()"
                 @click="$emit('createChildProperty' ,node.data.uri)"
                 label="OntologyPropertyTreeView.add-child"
                 :small="true"
             ></opensilex-AddChildButton>
-            <opensilex-DeleteButton
-                v-if="user.isAdmin()"
-                @click="$emit('deleteProperty' ,node.data)"
-                label="OntologyPropertyTreeView.delete"
-                :small="true"
-            ></opensilex-DeleteButton>
         </template>
     </opensilex-TreeView>
 </template>

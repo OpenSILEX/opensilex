@@ -154,7 +154,7 @@ export default class DocumentTabList extends Vue {
     {
       key: "authors",
       label: "DocumentTabList.author",
-      sortable: true
+      sortable: false
     },
     {
       key: "date",

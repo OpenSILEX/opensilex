@@ -110,6 +110,20 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
     private List<ProjectModel> relatedProjects;
     public static final String  RELATED_PROJECTS_FIELD = "relatedProjects";
 
+    /**
+     * This field is currently not used for CRUD operations. It is here only to prevent other ProjectModels from losing
+     * this ProjectModel as a related project during an update operation. We do this by setting inverse = true and
+     * ignoreUpdateIfNull = true, and this field will always be null.
+     */
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasRelatedProject",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    private List<ProjectModel> inverseRelatedProjects;
+
     public String getShortname() {
         return shortname;
     }
@@ -196,6 +210,20 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
 
     public void setScientificContacts(List<PersonModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
+    }
+
+    /**
+     * Getter for inverseRelatedProjects, currently never used but has to exist to prevent compilation errors.
+     */
+    public List<ProjectModel> getInverseRelatedProjects() {
+        return inverseRelatedProjects;
+    }
+
+    /**
+     * Setter for inverseRelatedProjects, currently never used but has to exist to prevent compilation errors.
+     */
+    public void setInverseRelatedProjects(List<ProjectModel> inverseRelatedProjects) {
+        this.inverseRelatedProjects = inverseRelatedProjects;
     }
 
     @Override

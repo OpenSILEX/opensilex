@@ -91,7 +91,7 @@ public class LocationAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
         List<LocationObservationDTO> results = new ArrayList<>();
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollectionURI(featureOfInterest);
@@ -129,14 +129,14 @@ public class LocationAPI {
     ) throws Exception {
         try {
             LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
             List<LocationObservationDTO> locationObservationDTOList = new ArrayList<>();
 
             Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> modelCollectionMap = observationCollectionLogic.getLocationObservationCollectionListByType(targetType);
 
             if(!modelCollectionMap.isEmpty()) {
                 //for each target uri, get the mongoDB Model location linked (in a current extent)
-                List<LocationObservationModel> targetLocationList = locationObservationLogic.getLastLocationObservation(
+                List<LocationObservationModel> targetLocationList = locationObservationLogic.getLastLocationObservations(
                         modelCollectionMap.values().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()),
                         true,
                         endDate != null ? Instant.parse(endDate) : Instant.now(),
@@ -180,10 +180,10 @@ public class LocationAPI {
     public Response countLocations(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI featureOfInterest) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollectionURI(featureOfInterest);
-        int locationsCount = locationObservationLogic.countLocationsForURI(collectionURI);
+        int locationsCount = locationObservationLogic.countLocationsForCollectionURI(collectionURI);
 
         return new SingleObjectResponse<>(locationsCount).getResponse();
     }

@@ -920,8 +920,8 @@ public class ScientificObjectDAO {
             //set Location Collection
             String collectionURI = result.getStringValue(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
             if(collectionURI != null){
-                LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel();
-                locationObservationCollectionModel.setFeatureOfInterest(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                LocationObservationCollectionModel locationObservationCollectionModel = new LocationObservationCollectionModel(
+                        uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
                 locationObservationCollectionModel.setUri(uriDeserializer.fromString(collectionURI));
                 model.setLocationObservationCollection(locationObservationCollectionModel);
             }

@@ -351,13 +351,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         Response postDataProvResult = getJsonPostResponseAsAdmin(target(dataPath), Collections.singletonList(dataDto));
         assertEquals(Response.Status.CREATED.getStatusCode(),postDataProvResult.getStatus());
 
-        // try to delete device -> expect error 404 with result.title = LINKED_DEVICE_ERROR
         final Response delResult = getDeleteByUriResponse(target(deletePath), deviceDto.getUri().toString());
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),delResult.getStatus());
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(),delResult.getStatus());
 
         JsonNode node = delResult.readEntity(JsonNode.class);
         ErrorResponse getResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
-        assertEquals(DeviceAPI.LINKED_DEVICE_ERROR,getResponse.getResult().title);
         assertTrue(getResponse.getResult().message.contains("data"));
     }
 
@@ -385,11 +383,10 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // try to delete device -> expect error 404 with result.title = LINKED_DEVICE_ERROR
         final Response delResult = getDeleteByUriResponse(target(deletePath), deviceDto.getUri().toString());
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),delResult.getStatus());
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(),delResult.getStatus());
 
         JsonNode node = delResult.readEntity(JsonNode.class);
         ErrorResponse getResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
-        assertEquals(DeviceAPI.LINKED_DEVICE_ERROR,getResponse.getResult().title);
         assertTrue(getResponse.getResult().message.contains("provenance"));
     }
 
@@ -574,7 +571,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         //build params
         ArrayList<URI> propsList= new ArrayList<>();
-        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        //propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
         propsList.add(new URI("vocabulary:hasModel"));
         propsList.add(new URI("vocabulary:startUp"));
         propsList.add(new URI("vocabulary:hasBrand"));

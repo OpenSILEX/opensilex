@@ -18,6 +18,7 @@ import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.client.WebTarget;
@@ -60,7 +61,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
                     ExperimentAPI.class.getMethod(
                             "searchExperiments",
                             String.class, Integer.class, Boolean.class, List.class, List.class,
-                            List.class, Boolean.class, List.class, List.class, int.class, int.class),
+                            List.class, Boolean.class, List.class, List.class, List.class, int.class, int.class),
                     searchPath
             );
             create = new ServiceDescription(
@@ -402,6 +403,37 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
     }
 
     //#endregion
+
+    /**
+     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
+     * final uri should be http://myuri/é
+     */
+    @Test
+    public void testUriEncoding() throws Exception {
+        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        URI decodedURI = URI.create("http://myuri/é");
+
+        ExperimentCreationDTO creationDto = getCreationDTO();
+        creationDto.setUri(uriWithSpecialChar);
+
+        URI createdURI = new UserCallBuilder(ExperimentAPITest.create)
+                .setBody(creationDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI),
+                org.opensilex.sparql.deserializer.SPARQLDeserializers.compareURIs(decodedURI, createdURI));
+
+        ExperimentGetDTO dtoFromApi = new UserCallBuilder(ExperimentAPITest.get)
+                .addPathTemplateParam("uri", uriWithSpecialChar)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        assertNotNull("get service should retrieve URI even if we get with http://myuri/%C3%A9 ", dtoFromApi);
+        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()), SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
+    }
+
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

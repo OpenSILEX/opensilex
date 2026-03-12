@@ -38,6 +38,13 @@
       :multiple="true"
     ></opensilex-GroupSelector>
 
+    <opensilex-FundingSelector
+      label="component.experiment.funding"
+      :funding.sync="experiment.funding"
+      :multiple="true"
+      helpMessage="ExperimentForm.funding"
+    ></opensilex-FundingSelector>
+
     <opensilex-CheckboxForm
       :value.sync="form.is_public"
       label="component.experiment.public-label"
@@ -78,8 +85,10 @@ en:
   ExperimentForm:
     scientificSupervisors: Experiment supervisor(s). Only persons existing in the system. If unavailable in the predefined list, persons can be added from the Users menu, prior to the new experiment creation. 
     technicalSupervisors: Technicians and scientists (including phd students, interns, etc.) involved in the experiment implementation
+    funding: Select the experiment's funding, only the first three selected will be displayed in the logos
 fr:
   ExperimentForm:
     scientificSupervisors: Responsables de l'expérimentation. Uniquement les personnes existant dans le système. Si elles ne sont pas disponibles dans la liste prédéfinie, les personnes peuvent être ajoutées à partir du menu Utilisateurs, avant la création de la nouvelle expérimentation. 
     technicalSupervisors: Techniciens et scientifiques (y compris les doctorants, stagiaires, etc.) participant à la mise en œuvre de l'expérience.
+    funding: Sélectionnez les financements de l'expérience, seuls les trois premiers sélectionnés seront affichés dans les logos
 </i18n>

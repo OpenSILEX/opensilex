@@ -353,6 +353,11 @@ OESO</rdfs:label>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Method"/>
     </owl:ObjectProperty>
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasFunding -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFunding">
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+    </owl:ObjectProperty>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasParentGermplasm -->
@@ -994,21 +999,6 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="fr">support financier</rdfs:label>
     </owl:DatatypeProperty>
 
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasGeometry -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGeometry">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:label xml:lang="fr">Géométrie</rdfs:label>
-        <rdfs:label xml:lang="en">Geometry</rdfs:label>
-        <rdfs:comment xml:lang="fr">Coordonnées géospatiales de l'objet, au format WKT</rdfs:comment>
-        <rdfs:comment xml:lang="en">Geospatial coordinates of the object, in WKT format</rdfs:comment>
-    </owl:DatatypeProperty>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasId -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasId">
@@ -1016,12 +1006,9 @@ OESO</rdfs:label>
         <rdfs:range rdf:resource="xsd:string"/>
     </owl:DatatypeProperty>
 
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasKeyword -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasKeyword"/>
-
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasModel -->
@@ -2269,6 +2256,13 @@ OESO</rdfs:label>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFunding"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">3</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasObjective"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
@@ -2327,6 +2321,13 @@ OESO</rdfs:label>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2004/02/skos/core#altLabel"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
@@ -2500,6 +2501,15 @@ OESO</rdfs:label>
     </owl:Class>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Funding -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Funding">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
+        <rdfs:comment xml:lang="fr">Au sens le plus strict, mise à disposition de fonds non conditionnée à un retour sur investissement ou à un remboursement. Au sens large, toute mise à disposition de fonds, analogue à un financement, qui peut ou non appeler un retour sur investissement ou un remboursement.</rdfs:comment>
+        <rdfs:comment xml:lang="en">In the strictest sense, the provision of funds without requirement of return or reimbursement. In a broad sense, any provision of funds, similar to financing, which may or may not involve an expectation of return or repayment.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Financeur</rdfs:label>
+        <rdfs:label xml:lang="en">Funding</rdfs:label>
+    </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
 
@@ -2980,20 +2990,6 @@ OESO</rdfs:label>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isHosted"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-         <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGeometry"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="xsd:string"/>
-            </owl:Restriction>
-         </rdfs:subClassOf>
     </owl:Class>
 
 
@@ -3373,6 +3369,40 @@ OESO</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ademe -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ademe">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+        <rdfs:label xml:lang="en">ADEME</rdfs:label>
+    </owl:NamedIndividual>
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#inrae -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrae">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+        <rdfs:label xml:lang="en">INRAE</rdfs:label>
+    </owl:NamedIndividual>
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#anr -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#anr">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+        <rdfs:label xml:lang="en">ANR</rdfs:label>
+    </owl:NamedIndividual>
+    
+        <!-- http://www.opensilex.org/vocabulary/oeso#fdf -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#fdf">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+        <rdfs:label xml:lang="en">Ferments du Futur</rdfs:label>
+    </owl:NamedIndividual>
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#eu -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#eu">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Funding"/>
+        <rdfs:label xml:lang="en">European Union</rdfs:label>
+    </owl:NamedIndividual>
 
 
     <!-- http://www.opensilex.org/vocabulary/owl-vue-extension#ClassExtension -->
@@ -5303,6 +5333,12 @@ Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:label xml:lang="en">Scientific object</rdfs:label>
         <rdfs:label xml:lang="fr">Objet scientifique</rdfs:label>
     </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGeometry">
+            <rdfs:label xml:lang="fr">Géométrie</rdfs:label>
+            <rdfs:label xml:lang="en">Geometry</rdfs:label>
+            <rdfs:comment xml:lang="fr">Coordonnées géospatiales de l'objet, au format WKT</rdfs:comment>
+            <rdfs:comment xml:lang="en">Geospatial coordinates of the object, in WKT format</rdfs:comment>
+    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#SensingDevice">
         <rdfs:label xml:lang="en">SensingDevice</rdfs:label>
         <rdfs:label xml:lang="fr">Capteur</rdfs:label>
@@ -5641,4 +5677,3 @@ Used in OpenSILEX for group things</rdfs:comment>
 
 
 <!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
-

@@ -105,6 +105,8 @@ public class Oeso {
     public static final Property hasCampaign = Ontology.property(NS, "hasCampaign");
     public static final Property isPublic = Ontology.property(NS, "isPublic");
     public static final Property participatesIn = Ontology.property(NS, "participatesIn");
+    public static final Property hasFunding = Ontology.property(NS, "hasFunding");
+    public static final Resource Funding = Ontology.resource(NS, "Funding");
 
     // ---- ORGANIZATIONS AND INSTALLATION, FACILITY
     public static final Resource Facility = Ontology.resource(NS, "Facility");
@@ -112,7 +114,7 @@ public class Oeso {
     public static final Property isHosted = Ontology.property(NS, "isHosted");
     public static final Property containsFacility = Ontology.property(NS, "containsFacility");
     public static final Property withinSite = Ontology.property(NS, "withinSite");
-    public static final Property hasGeometry = Ontology.property(NS, "hasGeometry");
+    public static final Resource hasGeometry = Ontology.resource(NS, "hasGeometry");
     public static final Property hasVariablesGroup = Ontology.property(NS, "hasVariablesGroup");
     public static final Property hasVariable = Ontology.property(NS, "hasVariable");
     public static final Property hasDevice = Ontology.property(NS, "hasDevice");

@@ -8,13 +8,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.data.DataAPITest;
+import org.opensilex.core.data.api.DataCreationDTO;
+import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -36,13 +41,31 @@ import static org.junit.Assert.assertNotNull;
  */
 public class VariableApiTest extends AbstractMongoIntegrationTest {
 
-    public String path = VariableAPI.PATH;
+    public static String path = VariableAPI.PATH;
 
-    public String getByUriPath = path + "/{uri}";
+    public static String uriPath = path + "/{uri}";
     public String searchPath = path;
     public String createPath = path ;
     public String updatePath = path ;
     public String deletePath = path + "/{uri}";
+
+    private static final ServiceDescription delete;
+    private static final ServiceDescription create;
+
+    static {
+        try {
+            delete = new ServiceDescription(
+                    VariableAPI.class.getMethod("deleteVariable", URI.class),
+                    uriPath
+            );
+            create = new ServiceDescription(
+                    VariableAPI.class.getMethod("createVariable", VariableCreationDTO.class),
+                    path
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private GermplasmCreationDTO germplasm;
     private EntityCreationDTO entity;
@@ -60,7 +83,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         germplasm = GermplasmAPITest.getCreationSpeciesDTO();
         final Response postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), germplasm);
         assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
-        germplasm.setUri(extractUriFromResponse(postGermplasmResult));
+        germplasm.setUri(extractUriFromResponse(postGermplasmResult).toString());
     }
 
     public VariableCreationDTO getCreationDto() throws Exception {
@@ -110,7 +133,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testCreateGetAndDelete() throws Exception {
-        super.testCreateGetAndDelete(createPath, getByUriPath, deletePath, getCreationDto());
+        super.testCreateGetAndDelete(createPath, uriPath, deletePath, getCreationDto());
     }
 
     @Test
@@ -168,7 +191,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.Variable + "/58165");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), Oeso.Variable + "/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -194,7 +217,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -218,7 +241,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -239,8 +262,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getUnit(), dtoFromDb.getUnit().getUri()));
     }
 
-    private final static URI GERMPLASM_URI_1 = URI.create("test:species_testCreateWithSpeciesOK_1");
-    private final static URI GERMPLASM_URI_2 = URI.create("test:species_testCreateWithSpeciesOK_2");
+    private final static String GERMPLASM_URI_1 = "test:species_testCreateWithSpeciesOK_1";
+    private final static String GERMPLASM_URI_2 = "test:species_testCreateWithSpeciesOK_2";
 
     @Test
     /**
@@ -264,12 +287,15 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         // create variable with species -> should be CREATED
         VariableCreationDTO dto = getCreationDto();
         dto.setUri(URI.create("test:variable_testCreateWithSpeciesOK"));
-        dto.setSpecies(Arrays.asList(species1.getUri(), species2.getUri()));
+        dto.setSpecies(Arrays.asList(
+                URI.create(species1.getUri()),
+                URI.create(species2.getUri()))
+        );
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), dto.getUri().toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -279,9 +305,9 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         assertEquals(
                 Sets.newHashSet(
-                        SPARQLDeserializers.formatURI(species1.getUri()),
-                        SPARQLDeserializers.formatURI(species2.getUri())),
-                dtoFromDb.getSpecies().stream().map(speciesDTO -> SPARQLDeserializers.formatURI(speciesDTO.getUri())).collect(Collectors.toSet())
+                        SPARQLDeserializers.getExpandedURI(species1.getUri()),
+                        SPARQLDeserializers.getExpandedURI(species2.getUri())),
+                dtoFromDb.getSpecies().stream().map(speciesDTO -> SPARQLDeserializers.getExpandedURI(speciesDTO.getUri())).collect(Collectors.toSet())
         );
 
     }
@@ -309,7 +335,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         GermplasmCreationDTO speciesOfVariety = new GermplasmCreationDTO();
         speciesOfVariety.setName("speciesOfVariety");
         speciesOfVariety.setRdfType(URI.create(Oeso.Species.getURI()));
-        speciesOfVariety.setUri(URI.create("test:speciesOfVariety"));
+        speciesOfVariety.setUri("test:speciesOfVariety");
 
         // ensure species was created
         Response postSpeciesResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), speciesOfVariety);
@@ -318,8 +344,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         GermplasmCreationDTO variety = new GermplasmCreationDTO();
         variety.setName("variety");
         variety.setRdfType(URI.create(Oeso.Germplasm.toString()));
-        variety.setUri(URI.create("test:test_variety"));
-        variety.setSpecies(speciesOfVariety.getUri());
+        variety.setUri("test:test_variety");
+        variety.setSpecies(URI.create(speciesOfVariety.getUri()));
 
         // ensure variety was created
         Response postVarietyResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), variety);
@@ -327,7 +353,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // create variable with variety -> should fail, since variable expect species, not variety
         VariableCreationDTO dto = getCreationDto();
-        dto.setSpecies(Arrays.asList(variety.getUri()));
+        dto.setSpecies(Arrays.asList(URI.create(variety.getUri())));
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
@@ -417,6 +443,26 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
     }
 
+    @Test
+    public void deleteReturn403ResponseIfVariableIsLinkedToDatas() throws Exception {
+        URI createdVariableUri = new UserCallBuilder(create)
+                .setBody(getCreationDto())
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        DataCreationDTO dataDTO = DataAPITest.getCreationDataDTO(createdVariableUri);
+
+        new UserCallBuilder(DataAPITest.create)
+                .setBody(Collections.singletonList(dataDTO))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        new UserCallBuilder(delete)
+                .setUriInPath(createdVariableUri)
+                .buildAdmin()
+                .executeCallAndAssertStatus("variable should not be deleted as it is linked with a data", Response.Status.FORBIDDEN);
+    }
+
 
 
     @Override
@@ -429,4 +475,11 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         );
     }
 
+    @Override
+    protected List<String> getCollectionsToClearNames() {
+        return List.of(
+                DataDaoV2.COLLECTION_NAME,
+                ProvenanceDAO.PROVENANCE_COLLECTION_NAME
+        );
+    }
 }

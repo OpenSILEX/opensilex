@@ -12,7 +12,6 @@
 package org.opensilex.core.scientificObject.bll;
 
 
-import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.graph.Node;
 import org.geojson.GeoJsonObject;
@@ -27,14 +26,12 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.*;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.fs.service.FileStorageService;
@@ -46,14 +43,11 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.csv.export.CsvExporter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -80,6 +74,8 @@ public class ScientificObjectLogic {
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
     public static final String DELETE_ERROR_TITLE ="Scientific object can't be deleted";
+    public static final String FORBIDDEN_MOVE_DELETE_ERROR_MESSAGE = "The location information for %s can't be deleted as it has more than one";
+    public static final String FORBIDDEN_MOVE_UPDATE_ERROR_MESSAGE = "The location information for %s can't be updated as it has more than one";
 
     /**
      * Name of the parameter used into translate-key about scientific object deletion error.
@@ -190,7 +186,7 @@ public class ScientificObjectLogic {
         });
     }
 
-    public void create(List<ScientificObjectModel> models, URI contextURI) throws Exception {
+    public void createWithNoValidations(List<ScientificObjectModel> models, URI contextURI) throws Exception {
         Objects.requireNonNull(contextURI);
 
         boolean useDefaultGraph = SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI);
@@ -223,15 +219,31 @@ public class ScientificObjectLogic {
 
         List<ScientificObjectModel> soList = searchByURIs(contextURI, objectsURI, currentUser,false);
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
 
-        return locationObservationLogic.generateModelObservationCollectionMap(
-                soList,
-                (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
+        //Make a new list of OS's that do have a LocationObservationCollection for fetching of LocationObservations
+        List<ScientificObjectModel> sciObjsToFetchLocationsFor = new ArrayList<>();
+        Map<ScientificObjectModel, LocationObservationModel> result = new HashMap<>();
+
+        for (ScientificObjectModel so : soList) {
+            if(so.getLocationObservationCollection() != null){
+                sciObjsToFetchLocationsFor.add(so);
+            }else{
+                result.put(so, null);
+            }
+        }
+
+        Map<ScientificObjectModel, LocationObservationModel> scientificObjectsWithLocations = locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
+                sciObjsToFetchLocationsFor,
+                (ScientificObjectModel model) -> model.getLocationObservationCollection().getUri(),
                 Instant.now(),
                 null,
                 null
         );
+
+        result.putAll(scientificObjectsWithLocations);
+
+        return result;
     }
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {
@@ -412,13 +424,18 @@ public class ScientificObjectLogic {
      * @return Get the last location of each scientific object in an experiment
      * @throws Exception
      */
-    public Map<ScientificObjectModel, LocationObservationModel> getSOWithPosition(URI contextURI, String startDate, String endDate, AccountModel currentUser) throws Exception {
+    public Map<ScientificObjectModel, LocationObservationModel> getSOWithPosition(
+            URI contextURI,
+            String startDate,
+            String endDate,
+            AccountModel currentUser
+    ) throws Exception {
         validateContextAccess(contextURI, currentUser);
         Map<ScientificObjectModel, LocationObservationModel> soAndLocationsMap = new HashMap<>();
         List<ScientificObjectModel> soList = dao.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage());
 
         if(!CollectionUtils.isEmpty(soList)) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
 
             //Parse endDate or try to parse experiment's endDate if it was null, use current date if both of those things were null
             Instant end;
@@ -430,7 +447,7 @@ public class ScientificObjectLogic {
                 end = Instant.parse(endDate);
             }
 
-            soAndLocationsMap = locationObservationLogic.generateModelObservationCollectionMap(
+            soAndLocationsMap = locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                     soList,
                     (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
                     end,
@@ -446,8 +463,8 @@ public class ScientificObjectLogic {
         LocationObservationModel soLastLocation = new LocationObservationModel();
 
         if(Objects.nonNull(model.getLocationObservationCollection())){
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
-            List<LocationObservationModel> locationList = locationObservationLogic.getLastLocationObservation(Collections.singletonList(model.getLocationObservationCollection().getUri()),false, Instant.now(),null);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+            List<LocationObservationModel> locationList = locationObservationLogic.getLastLocationObservations(Collections.singletonList(model.getLocationObservationCollection().getUri()),false, Instant.now(),null);
             if(!CollectionUtils.isEmpty(locationList)){
                 soLastLocation = locationList.get(0);
             }
@@ -458,7 +475,7 @@ public class ScientificObjectLogic {
     public Map<URI, LocationObservationModel> getLastLocationByExperiment(Map<ScientificObjectModel, ExperimentModel> soXpMap) {
         //for each XP get last location of the SO with XP date
         Map<URI, LocationObservationModel> xpLocationMap = new HashMap<>();
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
 
         List<LocationObservationCollectionModel> collectionModelList = soXpMap.keySet().stream()
                 .map(ScientificObjectModel::getLocationObservationCollection)
@@ -467,7 +484,7 @@ public class ScientificObjectLogic {
 
         if(!CollectionUtils.isEmpty(collectionModelList)) {
             soXpMap.forEach((so,xp) ->{
-                List<LocationObservationModel> lastLocation = locationObservationLogic.getLastLocationObservation(
+                List<LocationObservationModel> lastLocation = locationObservationLogic.getLastLocationObservations(
                         Collections.singletonList(so.getLocationObservationCollection().getUri()),
                         false,
                         Objects.nonNull(xp.getEndDate()) ? xp.getEndDate().atStartOfDay(ZoneId.systemDefault()).toInstant() : Instant.now(),
@@ -543,14 +560,14 @@ public class ScientificObjectLogic {
      * @param context to update in (an experiment or global)
      * @throws Exception
      */
-    public void updateMultipleSOAndMoves(List<ScientificObjectModel> models, AccountModel currentUser, Node context, boolean isGlobalContext) throws Exception{
+    public void updateMultiple(List<ScientificObjectModel> models, AccountModel currentUser, Node context, boolean isGlobalContext) throws Exception{
+
         new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
 
             //Fetch children so we can replace them
             Map<URI, List<URI>> oldChildrenPerOSUri = new HashMap<>();
 
             //Do a loop on models to update moves and to fetch children if we are in an experiment
-            //TODO optimization? is it possible to not update the moves one by one?
             for (ScientificObjectModel model : models) {
                 //Only fetch children if we are in an experiment
                 if(!isGlobalContext){
@@ -559,9 +576,6 @@ public class ScientificObjectLogic {
                         oldChildrenPerOSUri.put(model.getUri(), childrenURIs);
                     }
                 }
-                //Always update move
-                //TODO MAX the old updateMove method used old target positions and things, i may have to do something different just comment out for now
-                //updateMove(model, currentUser, context, session);
             }
 
             //Perform the actual update of OS's
@@ -680,7 +694,6 @@ public class ScientificObjectLogic {
     }
 
     public byte[] exportScientificObjects(ScientificObjectExportDTO searchFilter, AccountModel currentUser) throws Exception {
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
         validateContextAccess(searchFilter.getExperiment(), currentUser);
@@ -690,27 +703,12 @@ public class ScientificObjectLogic {
         // search objects according filtering and selected uris, fetch os factors
         ListWithPagination<ScientificObjectModel> objects = dao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD));
 
-        // compute URI list in order to call getGeometryByUris()
-        List<URI> objectsUris;
-        if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
-            objectsUris = searchFilter.getUris();
-        } else {
-            objectsUris = objects.getList().stream().map(ScientificObjectModel::getUri).collect(Collectors.toList());
-        }
-
-        // get geometry of objects
-        HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(searchFilter.getExperiment(), objectsUris);
-
-        // get last location of objects
-        Map<URI, URI> arrivalFacilityByOs = moveLogic.getLastLocations(objectsUris.stream(), objects.getList().size());
-
         CsvExporter<ScientificObjectModel> csvExporter = new ScientificObjectCsvExporter(
                 sparql,
                 objects.getList(),
                 searchFilter.getExperiment(),
                 currentUser.getLanguage(),
-                arrivalFacilityByOs,
-                geospatialMap
+                moveLogic
         );
 
         return csvExporter.exportCSV();
@@ -754,96 +752,6 @@ public class ScientificObjectLogic {
             String errorMsg = String.format(NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG, name, graph, alreadyExistingOs);
             throw new DuplicateNameException(errorMsg,name);
         }
-    }
-
-    /**
-     * Check into objectGraph if it exists any object with a name corresponding with a name from objects, throw {@link DuplicateNameListException} if so
-     *
-     * @param objects objects to check (need to have a non-null {@link SPARQLNamedResourceModel#getName()}
-     * @param objectGraph graph into checking of duplicate name is done
-     *
-     * @throws DuplicateNameListException if at least one object from objects use a {@link SPARQLNamedResourceModel#getName()} already used by another object into objectGraph.
-     * The exception has the {@link DuplicateNameListException#getExistingUriByName()} method which return association between existing name and uri.
-     * @throws SPARQLException If some error is encountered during SPARQL query execution
-     * @throws IllegalArgumentException if objects is null or empty or if objectGraph is null
-     *
-     * @apiNote This method performs a SPARQL request with a VALUES clause on each object name
-     * A large collection of object could lead to a too big SPARQL query, which may be un-parsable or too slow.
-     * Try to split your object' names verification, into multiple call to this method, if you have too much object to handle.
-     *
-     * The produced query looks like : <br>
-     *
-     * <pre>
-     * {@code
-     *
-     * SELECT  ?uri ?name
-     * WHERE
-     * {
-     *     ?rdfType  rdfs:subClassOf*  vocabulary:ScientificObject
-     *     GRAPH <http://opensilex.dev/id/experiment/experiment1> {
-     *           ?uri  a           ?rdfType ;
-     *                 rdfs:label  ?name
-     *     }
-     *     VALUES ?name { "name_1" "name_2"  "name_k"}
-     * }
-     * }</pre>
-     */
-    public void checkUniqueNameByGraph(List<ScientificObjectModel> objects, URI objectGraph) throws DuplicateNameListException, SPARQLException {
-        Objects.requireNonNull(objectGraph);
-
-        // unique name restriction only apply on some experiment graph
-        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraphURI)){
-            return;
-        }
-
-        if(CollectionUtils.isEmpty(objects)){
-            throw new IllegalArgumentException("objects is null or empty");
-        }
-
-        checkLocalDuplicates(objects);
-
-        Map<String,URI> existingUriByName = dao.checkUniqueNameByGraph(objects, objectGraph);
-
-        if(existingUriByName!=null && !existingUriByName.isEmpty()){
-            throw new DuplicateNameListException(existingUriByName);
-        }
-    }
-
-    public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
-        List<URI> targets = new ArrayList<>();
-        targets.add(object.getUri());
-        facilityMoveEvent.setTargets(targets);
-
-        facilityMoveEvent.setIsInstant(true);
-
-        boolean hasFacility = false;
-        for (SPARQLModelRelation relation : object.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
-                FacilityModel infraModel = new FacilityModel();
-                infraModel.setUri(new URI(relation.getValue()));
-                facilityMoveEvent.getLocationObservation().getLocation().setTo(infraModel.getUri());
-                hasFacility = true;
-            } else if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasCreationDate.getURI())) {
-                InstantModel end = new InstantModel();
-                SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
-                LocalDate date = dateDeserializer.fromString(relation.getValue());
-                end.setDateTimeStamp(OffsetDateTime.of(date, LocalTime.MIN, ZoneOffset.UTC));
-                facilityMoveEvent.setEnd(end);
-            }
-        }
-
-        InstantModel end = facilityMoveEvent.getEnd();
-        if (end != null) {
-            if (end.getDateTimeStamp() == null) {
-                end.setDateTimeStamp(OffsetDateTime.now());
-            }
-        } else if (hasFacility) {
-            end = new InstantModel();
-            end.setDateTimeStamp(OffsetDateTime.now());
-            facilityMoveEvent.setEnd(end);
-        }
-
-        return hasFacility;
     }
 
     public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {

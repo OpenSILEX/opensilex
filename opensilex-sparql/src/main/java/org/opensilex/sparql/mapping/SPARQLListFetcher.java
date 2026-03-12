@@ -8,12 +8,16 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -25,6 +29,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ClassUtils;
 
 import java.lang.reflect.Field;
@@ -83,6 +88,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      * List of setters, in the same order as concatVarNameByFields
      */
     private final List<Method> listSetters;
+
+    /**
+     * List of getters, in the same order as concatVarNameByFields
+     */
+    private final List<Method> listGetters;
 
     /**
      * Associate to each concat var name, the corresponding {@link SPARQLDeserializer}
@@ -144,6 +154,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
         // build list Deserializer and setter method in order to update each model
         listSetters = new ArrayList<>(concatVarNameByFields.size());
+        listGetters = new ArrayList<>(concatVarNameByFields.size());
         deserializersByConcatFields = new HashMap<>();
         objectMappersByConcatVarName = new HashMap<>();
 
@@ -152,6 +163,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             String concatFieldName = entry.getValue();
 
             listSetters.add(mapper.classAnalyzer.getSetterFromField(field));
+            listGetters.add(mapper.classAnalyzer.getGetterFromField(field));
             Class<?> listGenericType = ClassUtils.getGenericTypeFromField(field);
 
             try {
@@ -174,7 +186,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      * @throws IllegalArgumentException if {@link SPARQLListFetcher#results} contains two models with the same URI.
      *                                  This exception if throw because the two SPARQL query used to match list attributes must work on the same unique results
      */
-    public void updateModels() throws SPARQLException {
+    public void updateModels() throws Exception {
 
         if (CollectionUtils.isEmpty(results)) {
             return;
@@ -193,6 +205,18 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                 throw new IllegalArgumentException(String.format("Multiple results with the same URI (%s) at index %d", modelURI, i));
             }
             modelsByUris.put(modelURI, model);
+
+            // initialize list properties with empty list
+            int fieldIndex = 0;
+            for (String concatFieldName : concatVarNameByFields.values()) {
+                var valueForTheModel  = listGetters.get(fieldIndex).invoke(model);
+                if (valueForTheModel == null) {
+                    Method setter = listSetters.get(fieldIndex);
+                    setter.invoke(model, Collections.emptyList());
+                }
+                fieldIndex++;
+            }
+
             i++;
         }
 
@@ -265,6 +289,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     protected SelectBuilder getSelect() {
 
         Var uriVar = mapper.getURIFieldVar();
+        //Type var to make sure there is at least 1 non-optional triple in the request (was getting a bug otherwise)
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
 
         // copy the initial SELECT and replace vars
         SelectBuilder multivaluedSelect = new SelectBuilder()
@@ -279,6 +305,10 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         } else {
             graphElemGroup = multivaluedSelect.getWhereHandler().getClause();
         }
+
+        //To make sure there is at least one non-optional triple
+        multivaluedSelect.addWhere(typeVar, Ontology.subClassAny, this.mapper.getRDFType().asNode());
+        multivaluedSelect.addWhere(uriVar, RDF.type, typeVar);
 
         // append var and BGP for each multivalued field
         concatVarNameByFields.keySet().forEach(field -> {

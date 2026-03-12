@@ -2,6 +2,7 @@ package org.opensilex.sparql.csv.export;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
@@ -46,7 +47,7 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
     }
 
     @Override
-    public byte[] exportCSV() throws IOException, SPARQLException {
+    public byte[] exportCSV() throws Exception {
         CsvExportOption<T> exportOptions = getExportOptions();
         CsvExportHeader header = getHeader(exportOptions);
 
@@ -85,8 +86,8 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
         Set<String> columns;
 
         // use provided column
-        if (!options.columns.isEmpty()) {
-            columns = options.columns
+        if (!options.getUriColumnsAsStrings().isEmpty()) {
+            columns = options.getUriColumnsAsStrings()
                     .stream()
                     .map(SPARQLDeserializers::formatURI)
                     .collect(Collectors.toSet());
@@ -98,8 +99,13 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
             columns = SPARQLModule.getOntologyStoreInstance().getOwlRestrictionsUris(options.classURI, true);
         }
 
-        exportHeader.setColumns(columns);
-        exportHeader.setColumnNames(getHeaderNames(columns, options.lang));
+        //Add the extra string columns to uri ones for columns, and add the same thing to names
+        Set<String> columnsToUse = new LinkedHashSet<>(columns);
+        columnsToUse.addAll(options.getExtraColumns());
+        exportHeader.setColumns(columnsToUse);
+        List<String> headerNamesToUse = getHeaderNames(columns, options.lang);
+        headerNamesToUse.addAll(options.getExtraColumns());
+        exportHeader.setColumnNames(headerNamesToUse);
 
         return exportHeader;
     }
@@ -147,7 +153,7 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
         writer.writeNext(headerLine);
     }
 
-    private void writeBody(CsvExportHeader header, CsvExportOption<T> options, CSVWriter writer) {
+    private void writeBody(CsvExportHeader header, CsvExportOption<T> options, CSVWriter writer) throws Exception {
 
         String[] lineBuffer = new String[header.getColumns().size() + COLUMN_OFFSET];
 
@@ -174,8 +180,23 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
         }
     }
 
+    /**
+     * Writes the value of an extra String column by reading model, only the extenders of this class will know how to do
+     * this, so this method is one to Override else it will do nothing
+     *
+     * @param colIdx the column index corresponding to this column
+     * @param column The non URI type column for whom we want to fill
+     * @param object The object being used to fetch some value from to fill
+     * @param lineBuffer The current future CSV line we are filling
+     */
+    protected void writeExtraStringColumnValue(int colIdx, String column, T object, String[] lineBuffer) throws Exception{}
 
-    private void writeRelations(int colIdx, String column, T object, String[] lineBuffer, StringBuilder cellBuffer) {
+    private void writeRelations(int colIdx, String column, T object, String[] lineBuffer, StringBuilder cellBuffer) throws Exception {
+        //If the column is an extra String Column then we can call the specialized function to handle it and leave this function
+        if(getExportOptions().getExtraColumns().contains(column)) {
+            writeExtraStringColumnValue(colIdx, column, object, lineBuffer);
+            return;
+        }
 
         Function<T, String> customValueGenerator = customRelationWriterByProperty.get(column);
         if (customValueGenerator != null) {

@@ -8,11 +8,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.event.bll.MoveLogic;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.MoveSearchFilter;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -21,15 +28,20 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVValidationModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
+import org.opensilex.utils.ListWithPagination;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -38,6 +50,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH;
@@ -47,11 +60,27 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private ExperimentModel experiment;
     private ExperimentModel experiment2;
+    private FacilityModel facility1;
+    private FacilityModel facility2;
     private static AccountModel user;
 
     private static final Path CSV_FILES_DIR = Paths.get("src","test","resources","scientificObject","csv");
 
     private static FileStorageService fs;
+
+    private static final URI osUriWithLocationWithCoordinates1 = URI.create("test:id/os_import_location_coords_1");
+    private static final URI osUriWithLocationWithCoordinates2 = URI.create("test:id/os_import_location_coords_2");
+    private static final URI osUriWithLocationXYZ1 = URI.create("test:id/os_import_location_xyz1");
+    private static final URI osUriWithLocationXYZ2 = URI.create("test:id/os_import_location_xyz_2");
+    private static final URI osUriWithLocationFromToo1 = URI.create("test:id/os_import_location_fromTo1");
+    private static final URI osUriWithLocationFromToo2 = URI.create("test:id/os_import_location_fromTo2");
+    private static final URI osUriWithNoLocation1 = URI.create("test:id/os_import_no_location1");
+    private static final URI osUriWithNoLocation2 = URI.create("test:id/os_import_no_location2");
+    private static final URI osUriWithNoLocation3 = URI.create("test:id/os_import_no_location3");
+    private static final String facility1Name = "facility1";
+    private static final String facility2Name = "facility2";
+    private static final String osWithLocationsImportCsvFilename1 = "os_import_location_create.csv";
+    private static final String osWithLocationsImportCsvFilename2 = "os_import_location_new_experiment.csv";
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -75,6 +104,17 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         getSparqlService().create(experiment);
         getSparqlService().create(experiment2);
 
+        //Create facilities if they haven't already
+        facility1 = new FacilityModel();
+        facility1.setName(facility1Name);
+        facility2 = new FacilityModel();
+        facility2.setName(facility2Name);
+        facility1.setUri(URI.create("test:id/organization/facility.facility1"));
+        facility2.setUri(URI.create("test:id/organization/facility.facility2"));
+        List<FacilityModel> facilities = Arrays.asList(facility1, facility2);
+        getSparqlService().create(FacilityModel.class,facilities);
+
+
         // load ontology extension used for OS <-> germplasm relation handling
         // indeed this relation is not declared inside opensilex-core package.
         getSparqlService().loadOntology(new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH),
@@ -91,9 +131,16 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
 
-        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user, fs);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user, fs, null);
         File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
         return importer.importCSV(csvFile,false);
+    }
+
+    private CSVValidationModel testValidateImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
+
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user, fs, null);
+        File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
+        return importer.importCSV(csvFile,true);
     }
 
     /**
@@ -141,7 +188,8 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
                 FactorLevelModel.class,
                 GermplasmModel.class,
                 FacilityModel.class,
-                ScientificObjectModel.class
+                ScientificObjectModel.class,
+                MoveModel.class
         );
     }
 
@@ -458,43 +506,320 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     }
 
-
+    //Tests an import of OS's with Locations in an Experiment, with OS's that were already created in this Experiment
+    // Verifies each update case: delete location, update location, create location
     @Test
-    public void testIsHostedInsideExperimentFacilities() throws Exception {
+    public void testImportUpdateWithLocationsSuccess() throws Exception{
 
-        // create facilities associated to the experiment
-        FacilityModel facility1 = new FacilityModel();
-        facility1.setName("facility1");
+        //Import the OS's with their Locations
+        performBasicImportOfOSWithLocations(facility1, facility2, experiment, osWithLocationsImportCsvFilename1);
 
-        FacilityModel facility2 = new FacilityModel();
-        facility2.setName("facility2");
-
-        List<FacilityModel> facilities = Arrays.asList(facility1,facility2);
-        getSparqlService().create(FacilityModel.class,facilities);
-
-        experiment.setFacilities(facilities);
-        getSparqlService().update(experiment);
-
-        // test with valid facility
-        CSVValidationModel validation = testImport("os_import_facility.csv", experiment.getUri(), user);
+        //Now import the csv that should update, delete and create at least 1 location of each type,
+        //(wkt model, custom coordinates or from/too facility
+        CSVValidationModel validation = testImport("os_import_location_update.csv", experiment.getUri(), user);
+        //Verify size and no errors
         Assert.assertFalse(validation.hasErrors());
-        Assert.assertEquals(2, validation.getNbObjectImported());
+        Assert.assertEquals(9, validation.getNbObjectImported());
 
-        // test with facility outside an experiment
-        validation = testImport("os_import_facility.csv", null, user);
-        Assert.assertEquals(0,validation.getNbObjectImported());
-        Assert.assertTrue(validation.hasErrors());
-        Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
+        //Fetch moves for verification of values
+        ListWithPagination<MoveModel> fetchedMoves = fetchAllLocationTestsMoves();
 
-        // test multiple facility -> error
-        validation = testImport("os_import_facility_multiple.csv", experiment.getUri(), user);
-        Assert.assertTrue(validation.hasErrors());
-        Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
+        //Here if it was equal to 9 then we would know the deletes did not work
+        Assert.assertEquals(6, fetchedMoves.getTotal());
 
-        // test with unknown facility from experiment
-        validation = testImport("os_import_facility_unknown.csv", experiment.getUri(), user);
+        //Verify that the creates of the update operation have correct values
+        //verify location content for one of each type (wkt, XYZ and from-too)
+        testEachLocationTypeHasCorrectInformation(
+                osUriWithNoLocation1,
+                osUriWithNoLocation2,
+                osUriWithNoLocation3,
+                facility1,
+                facility2,
+                fetchedMoves,
+                false,
+                false
+        );
+
+        //Verify that the updates of the update operation have correct values
+        //verify location content for one of each type (wkt, XYZ and from-too)
+        testEachLocationTypeHasCorrectInformation(
+                osUriWithLocationWithCoordinates1,
+                osUriWithLocationXYZ2,
+                osUriWithLocationFromToo2,
+                facility1,
+                facility2,
+                fetchedMoves,
+                true,
+                false
+        );
+    }
+
+    //Test some case when a Move has been created in between, these Os imports have to be done globally and not in an experiment as
+    //The global move we create would be ignored when checking if any existing Moves match
+    @Test
+    public void testUpdateLocationWhenMultipleMovesExist() throws Exception {
+        //Perform first import
+        performBasicImportOfOSWithLocations(facility1, facility2, null, osWithLocationsImportCsvFilename1);
+        //Create some extra move on one of the imported OSs with some dates
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), user);
+        MoveModel extraMove = new MoveModel();
+        extraMove.setIsInstant(Boolean.TRUE);
+        InstantModel movesInstantModel = new InstantModel();
+        movesInstantModel.setDateTimeStamp(OffsetDateTime.now());
+        extraMove.setEnd(movesInstantModel);
+        extraMove.setTargets(Collections.singletonList(URI.create("test:id/os_import_location_coords_1")));
+        moveLogic.createNoTransaction(extraMove, null);
+
+        //Case No matching dates, should fail as system doesn't know which move to modify
+        CSVValidationModel validation = testImport("os_update_to_fail_because_no_dates_match.csv", null, user);
         Assert.assertTrue(validation.hasErrors());
-        Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
+        Assert.assertEquals(0, validation.getNbObjectImported());
+
+        //Case 1 move exists with matching dates, we know which move to update so it should pass
+        validation = testImport("os_import_location_update.csv", null, user);
+        //Verify size and no errors
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(9, validation.getNbObjectImported());
+    }
+
+
+    //Tests importing some OS's with locations in a new Experiment,
+    // that were already imported with locations in some other Experiment.
+    // Tests creation, the update cases and the error expected cases.
+    @Test
+    public void testImportWithLocationWithExistingOs() throws Exception{
+
+        //Import OS's in experiment 1
+        performBasicImportOfOSWithLocations(facility1, facility2, experiment, osWithLocationsImportCsvFilename1);
+
+        //Import OS's in experiment 2
+        performBasicImportOfOSWithLocations(facility1, facility2, experiment2, osWithLocationsImportCsvFilename2);
+
+        //Fetch the supposedly created moves to verify some things
+        ListWithPagination<MoveModel> fetchedMoves = fetchAllLocationTestsMoves();
+
+        //Should be 2 times 6 moves
+        Assert.assertEquals(12, fetchedMoves.getTotal());
+        //verify location content for one of each type (wkt, XYZ and from-too)
+        testEachLocationTypeHasCorrectInformation(
+                osUriWithLocationWithCoordinates1,
+                osUriWithLocationXYZ2,
+                osUriWithLocationFromToo2,
+                facility1,
+                facility2,
+                fetchedMoves,
+                false,
+                true
+        );
+
+
+        //Now import the csv that should update, delete and create at least 1 location of each type,
+        //(wkt model, custom coordinates or from/too facility),
+        //In the new Experiment
+        CSVValidationModel newValidation = testImport("os_import_location_new_experiment_update.csv", experiment2.getUri(), user);
+
+        //Verify size and no errors
+        Assert.assertFalse(newValidation.hasErrors());
+        Assert.assertEquals(9, newValidation.getNbObjectImported());
+
+        //Refetched moves for verification of values
+        fetchedMoves = fetchAllLocationTestsMoves();
+
+        Assert.assertEquals(12, fetchedMoves.getTotal());
+
+        //Verify that the creates of the update operation have correct values
+        //verify location content for one of each type (wkt, XYZ and from-too)
+        testEachLocationTypeHasCorrectInformation(
+                osUriWithNoLocation1,
+                osUriWithNoLocation2,
+                osUriWithNoLocation3,
+                facility1,
+                facility2,
+                fetchedMoves,
+                false,
+                true
+        );
+
+        //Verify that the updates of the update operation have correct values
+        //verify location content for one of each type (wkt, XYZ and from-too)
+        testEachLocationTypeHasCorrectInformation(
+                osUriWithLocationWithCoordinates1,
+                osUriWithLocationXYZ2,
+                osUriWithLocationFromToo2,
+                facility1,
+                facility2,
+                fetchedMoves,
+                true,
+                true
+        );
+    }
+
+    //Tests that an import of OS's within an experiment, with locations
+    // Verifies that the location has correct information after import
+    //Also verifies that a single OS with no location thrown in the mix gets created with no location.
+    @Test
+    public void testImportWithLocationsSuccess() throws Exception{
+
+        performBasicImportOfOSWithLocations(facility1, facility2, experiment, osWithLocationsImportCsvFilename1);
+
+        //Fetch the supposedly created moves to verify some things
+        ListWithPagination<MoveModel> fetchedMoves = fetchAllLocationTestsMoves();
+
+        //Verify correct quantity, more than 6 would mean that some OS with no location got given an empty location.
+        Assert.assertEquals(6, fetchedMoves.getTotal());
+        //verify location content for one of each type (wkt, XYZ and from-too)
+        testEachLocationTypeHasCorrectInformation(
+                osUriWithLocationWithCoordinates1,
+                osUriWithLocationXYZ2,
+                osUriWithLocationFromToo2,
+                facility1,
+                facility2,
+                fetchedMoves,
+                false,
+                false
+        );
+    }
+
+    /**
+     * Performs the same every time import of some Os's with a Location,
+     * verifies no errors in csv and correct number of imported items.
+     */
+    private void performBasicImportOfOSWithLocations(
+            FacilityModel facility1,
+            FacilityModel facility2,
+            ExperimentModel experiment,
+            String csvFileName
+    ) throws Exception {
+        if(experiment != null){
+            List<FacilityModel> facilities = Arrays.asList(facility1,facility2);
+
+            experiment.setFacilities(facilities);
+            getSparqlService().update(experiment);
+        }
+
+        //Perform import and verify right size and no errors
+        CSVValidationModel validation = testImport(csvFileName, (experiment != null ?experiment.getUri() : null), user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(9, validation.getNbObjectImported());
+    }
+
+    private ListWithPagination<MoveModel> fetchAllLocationTestsMoves() throws Exception{
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), user);
+        List<URI> importedOSsURIList = Arrays.asList(
+                osUriWithLocationWithCoordinates1,
+                osUriWithLocationWithCoordinates2,
+                osUriWithLocationXYZ1,
+                osUriWithLocationXYZ2,
+                osUriWithLocationFromToo1,
+                osUriWithLocationFromToo2,
+                osUriWithNoLocation1,
+                osUriWithNoLocation2,
+                osUriWithNoLocation3
+        );
+
+        MoveSearchFilter moveSearchFilter = new MoveSearchFilter();
+        moveSearchFilter.setTargets(importedOSsURIList);
+        moveSearchFilter.setType(URI.create(Oeev.Move.getURI()));
+        moveSearchFilter.setPage(0);
+        moveSearchFilter.setPageSize(20);
+        return moveLogic.searchMovesWithLocationObservation(moveSearchFilter);
+    }
+
+    /**
+     * Tests presence of an expected one of each type (wkt, custom xyz, or facility from/too
+     * With the corresponding expected uris for this test
+     *
+     * @param osWithWkt uri of OS that has the wkt expected values
+     * @param osWithCustomXYZ uri of OS that has the XYZ expected values
+     * @param osWithFacilityFromToo uri of OS that has the expected facility values
+     * @param facility1 facility1 model used in some Locations
+     * @param facility2 facility2 model used in some Locations
+     * @param fetchedMoves the fetched Moves that are expected to contain ones that correspond to the URIs
+     * @param forUpdate if not for update then expected numeric values are 50, else it's 150. And the facility from/too values are reversed
+     */
+    private void testEachLocationTypeHasCorrectInformation(
+            URI osWithWkt,
+            URI osWithCustomXYZ,
+            URI osWithFacilityFromToo,
+            FacilityModel facility1,
+            FacilityModel facility2,
+            ListWithPagination<MoveModel> fetchedMoves,
+            boolean forUpdate,
+            boolean inSecondExperiment
+    ){
+        //For wkt coordinates I'm just verifying that the geometry object is not null as I haven't understood how to read inner value simply
+        Assert.assertTrue(
+                fetchedMoves.getList().stream().anyMatch(moveModel -> {
+                    //No match if this isn't the uri we're looking for
+                    if(!SPARQLDeserializers.compareURIs(moveModel.getTargets().get(0), osWithWkt)){
+                        return false;
+                    }
+                    //no match if any of the location stuff is null or if the expected present geometry is null
+                    if(moveModel.getLocationObservation() == null ||
+                            moveModel.getLocationObservation().getLocation() == null ||
+                            moveModel.getLocationObservation().getLocation().getGeometry() == null){
+                        return false;
+                    }
+                    return true;
+                })
+        );
+
+        //Verify a custom coordinates one, this one also has textual position
+        Assert.assertTrue(
+                fetchedMoves.getList().stream().anyMatch(moveModel -> {
+                    //No match if this isn't the uri we're looking for
+                    if(!SPARQLDeserializers.compareURIs(moveModel.getTargets().get(0), osWithCustomXYZ)){
+                        return false;
+                    }
+                    //no match if any of the location stuff is null or if an expected present coordinate is null
+                    if(moveModel.getLocationObservation() == null ||
+                            moveModel.getLocationObservation().getLocation() == null ||
+                            moveModel.getLocationObservation().getLocation().getX() == null){
+                        return false;
+                    }
+                    //Now return true only if the values match
+                    LocationModel foundLocationModel = moveModel.getLocationObservation().getLocation();
+                    if(!forUpdate){
+                        return foundLocationModel.getX().equals(inSecondExperiment? "30" : "50")
+                                && foundLocationModel.getY().equals(inSecondExperiment? "30" : "50")
+                                && foundLocationModel.getZ().equals(inSecondExperiment? "30" : "50")
+                                && foundLocationModel.getTextualPosition().equals("Brian is in kitchen");
+                    }
+                    return foundLocationModel.getX().equals(inSecondExperiment ? "130" : "150")
+                            && foundLocationModel.getY().equals(inSecondExperiment ? "130" : "150")
+                            && foundLocationModel.getZ().equals(inSecondExperiment ? "130" : "150");
+
+
+                })
+        );
+
+        //Verify one with facility information
+        Assert.assertTrue(
+                fetchedMoves.getList().stream().anyMatch(moveModel -> {
+                    //No match if this isn't the uri we're looking for
+                    if(!SPARQLDeserializers.compareURIs(moveModel.getTargets().get(0), osWithFacilityFromToo)){
+                        return false;
+                    }
+                    //no match if any of the location stuff is null or if an expected present facility value is null
+                    if(moveModel.getLocationObservation() == null ||
+                            moveModel.getLocationObservation().getLocation() == null ||
+                            moveModel.getLocationObservation().getLocation().getFrom() == null ||
+                            moveModel.getLocationObservation().getLocation().getTo() == null){
+                        return false;
+                    }
+                    //Now return true only if the values match
+                    LocationModel foundLocationModel = moveModel.getLocationObservation().getLocation();
+                    if(!forUpdate && !inSecondExperiment || forUpdate && inSecondExperiment){
+                        return
+                                SPARQLDeserializers.compareURIs(foundLocationModel.getFrom(), facility1.getUri()) &&
+                                        SPARQLDeserializers.compareURIs(foundLocationModel.getTo(), facility2.getUri());
+                    }
+                    return
+                            SPARQLDeserializers.compareURIs(foundLocationModel.getFrom(), facility2.getUri()) &&
+                                    SPARQLDeserializers.compareURIs(foundLocationModel.getTo(), facility1.getUri());
+
+                })
+        );
     }
 
     @Test
@@ -528,22 +853,18 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
     }
 
     @Test
-    public void testGeometry() throws Exception {
+    public void testInvalidGeometry() throws Exception {
 
         // test with invalid geometry
-        CSVValidationModel validation = testImport("os_import_invalid_geometry.csv", experiment.getUri(), user);
+        CSVValidationModel validation = testImport("os_import_location_invalid_geometry.csv", experiment.getUri(), user);
         Assert.assertTrue(validation.hasErrors());
         Assert.assertFalse(validation.getInvalidValueErrors().isEmpty());
         Assert.assertEquals(2,validation.getInvalidValueErrors().size());
 
-        // test with valid geometry
-        validation = testImport("os_import_geometry.csv", experiment.getUri(), user);
-        Assert.assertFalse(validation.hasErrors());
-        Assert.assertEquals(2, validation.getNbObjectImported());
     }
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Collections.singletonList(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+        return List.of(LocationObservationDAO.LOCATION_COLLECTION_NAME, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
     }
 }

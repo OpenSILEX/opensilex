@@ -18,7 +18,7 @@
               :generated.sync="uriGenerated"
               :required="true"
               helpMessage="AgroportalCreateFormPart.uri-help"
-              :editMode="editMode"
+              :editMode="uriFormIsInEditMode"
           ></opensilex-UriForm>
 
           <!-- Name -->
@@ -63,7 +63,8 @@ export default class AgroportalCreateFormPart extends Vue {
   @Prop()
   private readonly props: {
     namePlaceholder: string,
-    descriptionPlaceholder: string
+    descriptionPlaceholder: string,
+    didSelectTerm: boolean
   };
 
   @PropSync("form")
@@ -126,6 +127,15 @@ export default class AgroportalCreateFormPart extends Vue {
   }
   //#endregion
 
+  //#region Computed
+  get uriFormIsInEditMode(){
+    if(this.props && this.props.didSelectTerm){
+      return true;
+    }
+    return this.editMode;
+  }
+  //#endregion
+
   //#region Tutorial methods
   public startTutorial() {
     this.savedFormBeforeTutorial = JSON.parse(JSON.stringify(this.formDto));
@@ -182,7 +192,7 @@ en:
 fr:
   AgroportalCreateFormPart:
     uri-help: >
-      Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez
+      Décocher si vous souhaitez ajouter un concept à partir d'une ontologie existante ou si vous souhaitez
       spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée.
     tutorial:
       step-uri:

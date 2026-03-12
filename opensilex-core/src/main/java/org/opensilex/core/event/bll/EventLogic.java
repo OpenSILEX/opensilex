@@ -13,6 +13,8 @@ package org.opensilex.core.event.bll;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
@@ -20,13 +22,16 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -34,6 +39,8 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -84,7 +91,7 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
     /**
      *
      * @param models : Events to be created
-     * @return the new models with metadata and uri set, performs che"cks beforehand
+     * @return the new models with metadata and uri set, performs checks beforehand
      * @throws Exception if validation fails
      */
     public List<T> create(List<T> models, boolean validationOnly) throws Exception {
@@ -169,8 +176,17 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
         dao.update(model);
     }
 
+    public void updateModels(List<T> models) throws Exception{
+        check(models, false);
+        dao.updateModels(models);
+    }
+
     public void delete(URI uri) throws Exception{
         dao.delete(uri);
+    }
+
+    public void deleteList(List<URI> uris) throws Exception{
+        dao.deleteMany(uris);
     }
 
     public T get(URI uri) throws Exception {
@@ -185,7 +201,83 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
         return dao.search(filter);
     }
 
+    /**
+     * Tries to parse the String as an Instant, then sets this to be the startDate of Event model.
+     * Handles validation of a previously filled end date being after this start date
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param dateTimeString a string value that we know is supposed to be a dateTime in ISO format
+     * @param model the passed model
+     * @throws DateTimeParseException if something went wrong during parsing of ISO datetime.
+     * @throws BadRequestException if a previously filled end date is earlier than this start.
+     */
+    public void applyValueOnStartField(String dateTimeString, T model) throws DateTimeParseException, BadRequestException {
+        if(!StringUtils.isEmpty(dateTimeString)){
+            InstantModel startModel = new InstantModel();
+            startModel.setDateTimeStamp(OffsetDateTime.parse(dateTimeString));
+            model.setStart(startModel);
+            //Validate dates if the other has been filled
+            if ( model.getEnd() != null) {
+                validateStartAndEndDates(startModel, model.getEnd());
+            }
+        }
+    }
+
+    /**
+     * Tries to parse the String as an Instant, then sets this to be the endDate of Event model.
+     * Handles validation of a previously filled start date being before this end date
+     * This method does NOT interact with database, just effects the model!
+     *
+     * @param dateTimeString a string value that we know is supposed to be a dateTime in ISO format
+     * @param model the passed model
+     * @throws DateTimeParseException if something went wrong during parsing of ISO datetime.
+     * @throws BadRequestException if a previously filled start date is later than this end.
+     */
+    public void applyValueOnEndField(String dateTimeString, T model) throws DateTimeParseException, BadRequestException {
+        if(!StringUtils.isEmpty(dateTimeString)){
+            InstantModel endModel = new InstantModel();
+            endModel.setDateTimeStamp(OffsetDateTime.parse(dateTimeString));
+            model.setEnd(endModel);
+            //Validate dates if the other has been filled
+            if ( model.getStart() != null) {
+                validateStartAndEndDates(model.getStart(), endModel);
+            }
+        }
+    }
+
+    /**
+     * @return true if the two events have same start and end values as each other. False otherwise
+     */
+    public boolean eventsHaveSameDates(T event1, T event2){
+        return doInstantsHaveSameValue(event1.getEnd(), event2.getEnd()) && doInstantsHaveSameValue(event1.getStart(), event2.getStart());
+    }
+
+
     //#endregion
+
+    //#region PRIVATE METHODS
+
+    /**
+     * @return true if they both have same value or are both null. Returns false if they both don't have same value or if
+     * one is null whiles the other is not
+     */
+    private boolean doInstantsHaveSameValue(InstantModel instant1, InstantModel instant2){
+        if(instant1==null && instant2==null){
+            return true;
+        }
+        if(instant1==null || instant2==null){
+            return false;
+        }
+        return instant1.getDateTimeStamp().isEqual(instant2.getDateTimeStamp());
+    }
+
+    private static void validateStartAndEndDates(InstantModel start, InstantModel end) throws BadRequestException{
+        if (start.getDateTimeStamp().isAfter(end.getDateTimeStamp())) {
+            throw new BadRequestException("This start date is after the end date.");
+        }
+    }
+    //#endregion
+
 
     //#region PROTECTED METHODS
     protected void check(List<T> models, boolean checkNewModel) throws Exception {
@@ -224,7 +316,7 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
                 }
             }
 
-            // check if target already exists
+            // check if targets exist
             targetsBuffer.addAll(model.getTargets());
             if (targetsBuffer.size() >= batchSize || i == models.size() - 1) {
                 Set<URI> unknownTargets = new HashSet<>();

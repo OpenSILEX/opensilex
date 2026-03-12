@@ -45,7 +45,7 @@
                         ></opensilex-UriView>
                         <opensilex-StringView label="component.common.name"
                                               :value="variable.name"></opensilex-StringView>
-                        <opensilex-StringView label="VariableForm.altName"
+                        <opensilex-StringView label="component.common.altName"
                                               :value="variable.alternative_name"></opensilex-StringView>
                         <opensilex-TextView label="component.common.description"
                                             :value="variable.description"></opensilex-TextView>

@@ -1030,12 +1030,27 @@ public class DataFilesAPI {
                         throw new IllegalArgumentException("All files must have the same extension. Mismatch found: " + filePath);
                     }
 
-                    if ((fileExtension.equals("dx") && !(format.equals("dx") || format.equals("tsv"))) ||
-                    (fileExtension.equals("csv") && !format.equals("csv"))) {
-                        throw new IllegalArgumentException("Inconsistent download request for files: " + filePath);
+                    // DX files can be exported to DX or TSV
+                    if (fileExtension.equalsIgnoreCase("dx") || fileExtension.equalsIgnoreCase("jdx")) {
+                        if (!(format.equalsIgnoreCase("dx") || format.equalsIgnoreCase("tsv"))) {
+                            throw new IllegalArgumentException("DX files can only be exported to DX or TSV: " + filePath);
+                        }
+                    }
+
+                    // CSV files can only be exported to CSV
+                    else if (fileExtension.equalsIgnoreCase("csv")) {
+                        if (!format.equalsIgnoreCase("csv")) {
+                            throw new IllegalArgumentException("CSV files can only be exported to CSV: " + filePath);
+                        }
+                    }
+
+                    // Any other format cannot be converted to TSV
+                    else {
+                        if (format.equalsIgnoreCase("tsv")) {
+                            throw new IllegalArgumentException("Only DX files can be converted to TSV: " + filePath);
+                        }
                     }
             
-
                     String fileContent = fs.readFile(FS_FILE_PREFIX, filePath);
 
                     //processing for csv files to keep only the first header 

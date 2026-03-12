@@ -9,19 +9,34 @@
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
-    <!-- Label -->
-    <opensilex-InputForm
-      :value.sync="experiment.name"
-      label="component.experiment.label"
-      type="text"
-      :required="true"
-      placeholder="component.experiment.label-placeholder"
-    ></opensilex-InputForm>
+    <div class="row">
+      <!-- Name -->
+      <div class="col-lg-6" id="v-step-name">
+        <!-- Label -->
+        <opensilex-InputForm
+          :value.sync="experiment.name"
+          label="component.experiment.label"
+          type="text"
+          :required="true"
+          placeholder="component.experiment.label-placeholder"
+        ></opensilex-InputForm>
+      </div>
+
+      <!-- AltName -->
+      <div class="col-lg-6" id="v-step-alt">
+        <opensilex-InputForm
+          :value.sync="experiment.alternative_name"
+          label="component.common.altName"
+          type="text"
+        ></opensilex-InputForm>
+      </div>
+
+    </div>
 
     <!-- Period -->
     <opensilex-DateRangePickerForm
-        :start.sync="form.start_date"
-        :end.sync="form.end_date"
+        :start.sync="experiment.start_date"
+        :end.sync="experiment.end_date"
         labelStart="component.common.startDate"
         labelEnd="component.common.endDate"
         :requiredStart="true"

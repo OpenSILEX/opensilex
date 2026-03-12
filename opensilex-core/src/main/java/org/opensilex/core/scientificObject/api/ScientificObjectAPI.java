@@ -27,6 +27,7 @@ import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -494,26 +495,16 @@ public class ScientificObjectAPI {
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-        try {
-            sparql.startTransaction();
-            nosql.startTransaction();
 
-            CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser, fs),
+        CSVValidationModel validationModel = new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session ->{
+            CsvImporter<ScientificObjectModel> cachedCsvImporter = new CachedCsvImporter<>(
+                    new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser, fs, session),
                     descriptionDto.getValidationToken()
             );
 
-            CSVValidationModel validationModel = csvImporter.importCSV(file,false);
-            sparql.commitTransaction();
-            nosql.commitTransaction();
-
-            return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
-
-        }catch (Exception e){
-            sparql.rollbackTransaction();
-            nosql.rollbackTransaction();
-            throw e;
-        }
+            return cachedCsvImporter.importCSV(file,false);
+        });
+        return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
     @POST
@@ -583,7 +574,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
-                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser, fs),
+                new ScientificObjectCsvImporterLogic(sparql, nosql, descriptionDto.getExperiment(), currentUser, fs, null),
                 descriptionDto.getValidationToken()
         );
 

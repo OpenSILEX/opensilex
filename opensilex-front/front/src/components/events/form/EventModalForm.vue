@@ -206,8 +206,7 @@
             type-example: "oeev:Trouble"
             description: Description of the event
             start: Begin
-            start-help: Begin of event, only if the event is not instantaneous
-            start-example: "2019-09-08T13:00:00+01:00"
+            start-help: Beginning of event, only if the event is not instantaneous
             targets: Targets
             targets-help: Object(s) concerned by this function are “Device” and “Scientific Objects” 
             target: Target
@@ -247,7 +246,6 @@
             uri-error: Création annulée, URI non trouvée - {error}
             start: Début
             start-help: Début de l'événement, uniquement si celui-ci n'est pas instantané
-            start-example: 2019-09-08T13:00:00+01:00"
             end: Fin
             end-help: Fin de l'événement, requis si celui-ci est instantané
             list-title: "Événements"

@@ -4,6 +4,7 @@
       hide-footer
       :title="$t('GermplasmTable.addColumn')"
       size="md"
+      @shown="resetModalState"
   >
     <ValidationObserver ref="validatorRef">
         <!-- Existing property -->
@@ -69,8 +70,9 @@ export default class GermplasmAddColumnModal extends Vue {
   @Prop()
   existingRdfAttributesStringRule:string;
 
-  pickedExisting: boolean = false;
-
+  get pickedExisting(): boolean {
+    return this.chosenPropertyUri !== "";
+  }
 
   /**
    * @Pre The uri choice and labels were previously got together so we can assume that the filtered list will always have size 1
@@ -91,17 +93,17 @@ export default class GermplasmAddColumnModal extends Vue {
     }
   }
 
-  selectedExistingProperty(){
-    this.pickedExisting = true;
-
-  }
-  clearedExistingPropertyField(){
-    this.pickedExisting = false;
+  resetModalState() {
+    // values
+    this.chosenPropertyUri = "";
+    this.uncontrolledColName = null;
   }
 
-  show(){
+  show() {
+    this.resetModalState();
     this.colModal.show();
   }
+
   hide(){
     this.colModal.hide();
   }

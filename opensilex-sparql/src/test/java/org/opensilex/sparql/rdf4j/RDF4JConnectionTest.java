@@ -27,11 +27,11 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
      */
     public static final String TEST_NAMESPACE_IN_REPOSITORY = "https://example.org/namespace-in-repository#";
 
-    protected static RDF4JInMemoryServiceFactory factory;
+    protected static RDF4JLMDBServiceFactory factory;
 
     @BeforeClass
     public static void setupSPARQL() throws Exception {
-        factory = new RDF4JInMemoryServiceFactory();
+        factory = new RDF4JLMDBServiceFactory();
         setupTestRepository(factory.getRepository());
         factory.setOpenSilex(opensilex);
         factory.setup();

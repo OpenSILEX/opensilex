@@ -461,7 +461,7 @@ public class EventAPI {
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
+        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null);
 
         return buildCsvResponse(csvImporter, logic, false).getResponse();
     }
@@ -480,7 +480,7 @@ public class EventAPI {
 
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
+        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null);
         return buildCsvResponse(csvImporter, logic, true).getResponse();
     }
 

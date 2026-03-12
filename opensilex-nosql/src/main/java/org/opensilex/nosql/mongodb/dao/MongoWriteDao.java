@@ -5,8 +5,6 @@ import com.mongodb.client.ClientSession;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
-import com.mongodb.client.result.UpdateResult.*;
 import org.opensilex.nosql.exceptions.MongoDbUniqueIndexConstraintViolation;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -114,6 +112,8 @@ public interface MongoWriteDao<T extends MongoModel, F extends MongoSearchFilter
      * @throws MongoException If a MongoDB error occurs.
      */
     void update(ClientSession session, @NotNull T instance) throws MongoException, NoSQLInvalidURIException;
+
+    void updateMany(ClientSession session, @NotNull List<T> instances) throws MongoException, NoSQLInvalidURIException;
 
     /**
      * Delete a model by its URI from the database.

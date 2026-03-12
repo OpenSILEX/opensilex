@@ -14,7 +14,7 @@ import org.bson.Document;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.api.CsvImportDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;
@@ -415,7 +415,6 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
-        try {
             new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session -> {
                 try{
                     metaDataDao.delete(session, uri);
@@ -424,10 +423,6 @@ public class DeviceAPI {
                 return 0;
             });
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-
-        } catch (ForbiddenURIAccessException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, LINKED_DEVICE_ERROR, e.getMessage()).getResponse();
-        }
     }
 
     @POST
@@ -1091,7 +1086,7 @@ public class DeviceAPI {
         // it will still always be included in facilities that used to have it
 
         //First fetch the correct LocationObservations, whose Location's 'to' field is our Facility
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
         LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
         locationObservationSearchFilter.setTo(facilityUri);
         final int pageSizePerIter = 50;
@@ -1111,7 +1106,6 @@ public class DeviceAPI {
         }
 
         //Then use the feature of interests to run a Device search
-        //TODO MAX if an object of an other type like OS is moved to same facility will this next line throw an exception?
         List<DeviceModel> results = dao.getDevicesByURI(featuresOfInterest, currentUser);
 
         if (results == null) {

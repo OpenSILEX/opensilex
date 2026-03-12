@@ -79,6 +79,7 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
             ignoreUpdateIfNull = true
     )
     private List<VariableModel> variables;
+    public static final String VARIABLES_FIELD = "variables";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -87,6 +88,7 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     )
     private List<DeviceModel> devices;
+    public static final String DEVICES_FIELD = "devices";
 
 
     @SPARQLProperty(

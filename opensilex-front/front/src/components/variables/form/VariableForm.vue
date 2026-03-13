@@ -86,7 +86,7 @@
                         :required="true"
                         @select="updateCharacteristic"
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
-                        helpMessage="VariableForm.interestEntity-help"
+                        helpMessage="VariableForm.characteristic-help"
                         :searchMethod="searchCharacteristics"
                         :itemLoadingMethod="loadCharacteristic"
                         :conversionMethod="objectToSelectNode"

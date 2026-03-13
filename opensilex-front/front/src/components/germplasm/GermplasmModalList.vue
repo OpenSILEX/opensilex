@@ -70,11 +70,11 @@ export default class GermplasmModalList extends GermplasmList {
   }
 
   hide(validate: boolean) {
-    let modalRef: any = this.$refs.modalRef;
-    modalRef.hide();
     if (validate) {
       this.$emit("onValidate", this.germplasmSelection.getSelected());
     }
+    let modalRef: any = this.$refs.modalRef;
+    modalRef.hide();
   }
 }
 </script>

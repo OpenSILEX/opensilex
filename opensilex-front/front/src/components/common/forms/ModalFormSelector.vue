@@ -56,15 +56,15 @@
         :objects="objects"
         :devices="devices"
 
-        @onClose="$emit('onClose')"
-        @close='$emit("close")'
+        @onClose="onModalHiddenOrClosed('onClose')"
+        @close="onModalHiddenOrClosed('close')"
         @onValidate="onValidate"
         @shown="onModalSearchShown"
         @clear='$emit("clear")'
         @select="onSelect(conversionMethod($event))"
         @unselect="onModalComponentUnselect(conversionMethod($event))"
         @selectall="onSelectAll"
-        @hide='$emit("hide")'
+        @hide="onModalHiddenOrClosed('hide')"
         class="isModalSearchComponent"
       ></component>
 
@@ -94,9 +94,17 @@ export default class ModalFormSelector extends Vue {
     loading = false;
     detailVisible: boolean = false;
 
-    // confirmed modal selection
+    /**
+     * The last VALIDATED selection, we want to reset to this value if user leaves modal without validating
+     */
     selectedCopie = [];
-    // temporary modal selection
+
+    /**
+     * The current selection, before validation. Will be used to set the real selected values if Validate is called.
+     * WARNING: No need to reset if no validation (User clicks away from modal or hits the close button), as the difference
+     * between selectedTmp and selectedCopie is used to unselect non-validated selected items inside the modal the next time the user
+     * opens it.
+     */
     selectedTmp = [];
 
     firstTimeOpening = false;
@@ -105,8 +113,6 @@ export default class ModalFormSelector extends Vue {
      * Refresh key for the Treeselect component. Used by the {@link refresh} method.
      */
     treeselectRefreshKey: number = 0;
-
-
 
     get hiddenValue() {
       if (this.multiple && Array.isArray(this.selection)) {
@@ -277,13 +283,15 @@ export default class ModalFormSelector extends Vue {
 
     @AsyncComputedProp()
     selectedValues(): Promise<any> {
+      //TODO MAX delete
+      console.debug("going by start of ModalFormSelector.selectedValues, here is this.selection", this.selection);
       return new Promise((resolve, reject) => {
           if (!this.selection || this.selection.length == 0) {
               this.firstTimeOpening = false;
               resolve([]);
-          } else if (this.currentValue) {
+          } /*else if (this.currentValue) {
             resolve(this.currentValue);
-          } else {
+          }*/ else {
             //Set table async view's checked items
             this.$nextTick(()=> {
               //Set selectedTmp and selectedCopie and table async view's initially selected items
@@ -502,7 +510,25 @@ export default class ModalFormSelector extends Vue {
       this.$emit("handlingEnterKey")
     }
 
+    /**
+     * An event handler to perform operations when the user clicks away from modal or hits the close button. We simply set
+     * this.selection to the last validated selected values, selectedCopie. We DO NOT reset selectedTmp as that gets done
+     * automatically upon next modal open, the difference between selectedTmp and selectedCopie is also used to unselect non-validated
+     * items.
+     *
+     * @param eventName name of the event so that we can re-emit it in case the user's of this component need that information.
+     */
+    onModalHiddenOrClosed(eventName:string){
+      /*setTimeout(() => {
+        this.selection = this.selectedCopie.map(value => value.id);
+      }, 400);*/
+      this.selection = this.selectedCopie.map(value => value.id);
+      this.$emit(eventName);
+    }
+
     onValidate() {
+      //TODO MAx delete
+      console.debug("VALIDATING");
       if(this.selectedTmp == null || this.selectedTmp.length == 0) {
         this.loading = false;
       } else {
@@ -534,12 +560,6 @@ export default class ModalFormSelector extends Vue {
       }
       else {
         this.selectedTmp = null;
-      }
-    }
-
-    close(field) {
-      if (field.validator) {
-        this.$nextTick(() => field.validator.validate());
       }
     }
 

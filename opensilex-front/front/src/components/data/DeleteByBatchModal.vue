@@ -20,13 +20,13 @@
     </template>
     <template>
       <!-- Batch URI -->
-      <opensilex-InputForm
-        :value.sync="batchUri"
+      <opensilex-UriForm
+        :editMode="true"
+        :uri.sync="batchUri"
         label="DeleteByBatchModal.batch-uri"
-        type="text"
-        :required="true"
         placeholder="DeleteByBatchModal.batch-placeholder"
-      ></opensilex-InputForm>
+        :required="true"
+        />  
 
     </template>
 
@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import {DataService} from "opensilex-core/api/data.service";
 
 @Component
@@ -66,7 +66,7 @@ export default class DeleteByBatchModal extends Vue {
   $store: any;
   dataService: DataService;
 
-  batchUri: string = "";
+  batchUri: string = null;
 
   //#endregion
   //#region: Refs

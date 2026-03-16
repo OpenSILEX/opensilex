@@ -177,7 +177,7 @@
                         </goals>
                         <configuration>
                             <services>
-                                <param>org.opensilex.front.vueOwlExtension.types.VueOntologyType</param>
+                                <param>org.opensilex.core.ontology.vueOwlExtension.types.VueOntologyType</param>
                             </services>
                         </configuration>
                     </execution>

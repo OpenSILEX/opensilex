@@ -50,7 +50,11 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VueDataTypeDTO, VueJsOntologyExtensionService, VueObjectTypeDTO, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../../lib";
+import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
+import {VueDataTypeDTO} from "opensilex-core/model/vueDataTypeDTO";
+import {VueObjectTypeDTO} from "opensilex-core/model/vueObjectTypeDTO";
+import {VueRDFTypeDTO} from "opensilex-core/model/vueRDFTypeDTO";
+import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {Store} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";

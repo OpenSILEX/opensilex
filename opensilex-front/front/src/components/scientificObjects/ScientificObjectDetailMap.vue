@@ -1,18 +1,18 @@
 <template>
-  <div v-if="propertiesOfSelected && geometryOfSelected && propertiesOfSelected.uri">
+  <div v-if="selected && selected.uri">
     <!-- Name -->
     <span v-if="withBasicProperties" class="field-view-title">{{ $t("component.common.name") }}</span>
     <opensilex-UriLink
-      :to="{ path: '/scientific-objects/details/' + encodeURIComponent(propertiesOfSelected.uri)}"
-      :uri="propertiesOfSelected.uri"
-      :value=" propertiesOfSelected.name + ' (' + ( propertiesOfSelected.rdf_type_name.charAt(0).toUpperCase() + propertiesOfSelected.rdf_type_name.slice(1) ).bold() + ')'"
+      :to="{ path: '/scientific-objects/details/' + encodeURIComponent(selected.uri)}"
+      :uri="selected.uri"
+      :value=" selected.name + ' (' + ( selected.rdf_type_name.charAt(0).toUpperCase() + selected.rdf_type_name.slice(1) ).bold() + ')'"
       target="_blank"
     >
     </opensilex-UriLink>
     <opensilex-OntologyObjectProperties
-      :selected="propertiesOfSelected.OS"
+      :selected="selected"
       :parentType="oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-      :relations="propertiesOfSelected.OS.relations"
+      :relations="selected.relations"
       :ignoredProperties="[oeso.IS_HOSTED]"
       :additionalFieldProps="{ experiment, target: '_blank' }"
       :showIncoming="false"
@@ -20,8 +20,8 @@
     </opensilex-OntologyObjectProperties>
     <!-- Geometry-->
     <opensilex-GeometryCopy
-      v-if="isViewAllInformation"
-      :value="geometryOfSelected"
+      v-if="selected.geometry && isViewAllInformation"
+      :value="selected.geometry"
     ></opensilex-GeometryCopy>
     <p>
       <a v-on:click="isViewAllInformation = !isViewAllInformation">{{
@@ -38,21 +38,16 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../lib";
+import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
+import {ScientificObjectDetailDTO} from "../../../../../opensilex-core/front/src/lib";
 
 @Component
 export default class ScientificObjectDetailMap extends Vue {
   $opensilex: OpenSilexVuePlugin;
   vueService: VueJsOntologyExtensionService;
-
   @Prop()
-  propertiesOfSelected: VueRDFTypePropertyDTO[];
-
-  @Prop()
-  geometryOfSelected: GeoJsonObject;
-
+  selected: ScientificObjectDetailDTO;
   isViewAllInformation: boolean = false;
 
   @Prop({

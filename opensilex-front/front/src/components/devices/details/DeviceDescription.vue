@@ -190,7 +190,7 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import Oeev from "../../../ontologies/Oeev";
-import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import * as http from "http";
 import {DeviceGetDetailsDTO, DevicesService, RDFObjectRelationDTO} from "opensilex-core/index";

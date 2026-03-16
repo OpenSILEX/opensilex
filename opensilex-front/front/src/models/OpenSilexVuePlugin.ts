@@ -1,5 +1,5 @@
 import {Container} from 'inversify';
-import {VueJsOntologyExtensionService} from './../lib/api/vueJsOntologyExtension.service';
+import {VueJsOntologyExtensionService} from '../../../../opensilex-core/front/src/lib/api/vueJsOntologyExtension.service';
 import {SystemService} from '../../../../opensilex-core/front/src/lib/api/system.service';
 import Vue from 'vue';
 import {VueCookies} from 'vue-cookies';
@@ -9,10 +9,10 @@ import {
     ApiServiceBinder,
     FrontConfigDTO,
     IAPIConfiguration,
-    ThemeConfigDTO,
-    VueDataTypeDTO,
-    VueObjectTypeDTO
+    ThemeConfigDTO
 } from '../lib';
+import {VueDataTypeDTO} from "opensilex-core/model/vueDataTypeDTO";
+import {VueObjectTypeDTO} from "opensilex-core/model/vueObjectTypeDTO";
 import IHttpClient from '../lib/IHttpClient';
 import Oeso from '../ontologies/Oeso';
 import Foaf from '../ontologies/Foaf';
@@ -1325,7 +1325,7 @@ export default class OpenSilexVuePlugin {
     public loadDataTypes() {
         return new Promise((resolve, reject) => {
             this.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
-                .getDataTypes()
+                .getDataTypesVue()
                 .then((http) => {
                     this.datatypes = http.response.result;
                     this.datatypesByURI = new Map<string, VueDataTypeDTO>();

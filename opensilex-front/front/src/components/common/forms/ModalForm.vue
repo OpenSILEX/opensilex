@@ -11,7 +11,6 @@
       :static="static"
       no-close-on-backdrop
       no-close-on-esc
-      @keydown.native.enter="validate"
   >
     <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
     <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>

@@ -1,4 +1,4 @@
-import {VueRDFTypePropertyDTO} from "../../../lib";
+import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
 
 export interface MultiValuedRDFObjectRelation{
     property: VueRDFTypePropertyDTO,

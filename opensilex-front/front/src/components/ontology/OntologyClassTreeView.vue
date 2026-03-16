@@ -39,7 +39,7 @@ import Vue from "vue";
 import {OntologyService, ResourceTreeDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Store} from "vuex";
-import {VueJsOntologyExtensionService} from "../../lib";
+import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
 import {Route} from "vue-router";
 
 @Component

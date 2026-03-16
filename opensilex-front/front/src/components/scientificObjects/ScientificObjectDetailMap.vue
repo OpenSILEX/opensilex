@@ -38,7 +38,7 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VueJsOntologyExtensionService} from "../../lib";
+import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {ScientificObjectDetailDTO} from "../../../../../opensilex-core/front/src/lib";
 

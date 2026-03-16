@@ -31,7 +31,7 @@ import {
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
-import {VueRDFTypePropertyDTO} from "../../../lib";
+import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
 
 @Component
 export default class VariablePropertySelector extends Vue {

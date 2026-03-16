@@ -24,7 +24,7 @@
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
     import {EventsService} from "opensilex-core/api/events.service";
-    import {VueJsOntologyExtensionService} from "../../../lib";
+    import {VueJsOntologyExtensionService} from "opensilex-core/index";
     import EventForm from "./EventForm.vue";
     import {EventCreationDTO} from 'opensilex-core/index';
     import {EventUpdateDTO} from "opensilex-core/model/eventUpdateDTO";

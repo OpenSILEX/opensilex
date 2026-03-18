@@ -87,7 +87,7 @@ public class VueOwlExtensionDAO {
 
         Objects.requireNonNull(classURI);
 
-        VueClassExtensionModel extensionModel = sparql.getByURI(VueClassExtensionModel.class, classURI, null);
+        VueClassExtensionModel extensionModel = getExtensionClass(classURI, null);
         if(extensionModel == null){
             throw new DisplayableBadRequestException(
                     OntologyDAO.CLASS_DELETION_ERROR_KEY,
@@ -99,7 +99,7 @@ public class VueOwlExtensionDAO {
         sparql.startTransaction();
         try {
             ontologyDAO.deleteClass(classURI);
-            sparql.delete(VueClassExtensionModel.class, classURI);
+            sparql.delete(VueClassExtensionModel.class, extensionModel.getUri());
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

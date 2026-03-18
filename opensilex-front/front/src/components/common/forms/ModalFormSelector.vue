@@ -289,9 +289,9 @@ export default class ModalFormSelector extends Vue {
           if (!this.selection || this.selection.length == 0) {
               this.firstTimeOpening = false;
               resolve([]);
-          } /*else if (this.currentValue) {
+          } else if (this.currentValue) {
             resolve(this.currentValue);
-          }*/ else {
+          } else {
             //Set table async view's checked items
             this.$nextTick(()=> {
               //Set selectedTmp and selectedCopie and table async view's initially selected items
@@ -381,9 +381,20 @@ export default class ModalFormSelector extends Vue {
       this.selectedTmp = [];
     }
 
-    clearIfNeeded(values) {
+  /**
+   * Function ALWAYS gets called when treeselect value changes, either via selecting/deslecting elements inside modal,
+   * OR by hitting the "clear all" button represented by the 'X' in the field
+   *
+   */
+  clearIfNeeded(values) {
+      //If selectedTmp is undefined or empty, then it means we got to this point by the user deselecting stuff
+      // Do not clear all so that the cancel button still works.
+      if(!this.selectedTmp || this.selectedTmp.length === 0){
+        return
+      }
+      //Else we got here by the user hitting the clear-all button
       if (this.multiple) {
-        if (values.length == 0) {
+        if (values.length == 0 && this.selectedTmp.length > 0) {
           this.selection.splice(0, this.selection.length);
           this.clearSelectedModal();
           this.$emit("clear");
@@ -395,13 +406,14 @@ export default class ModalFormSelector extends Vue {
         this.$emit("clear");
         return;
       }
-      if (this.multiple) {
+      //TODO MAX delete? doesnt seem to have broken anything, pretty sure we were just resetting slection to the same value as it was
+      /*if (this.multiple) {
         let newValues = [];
         for (let i in values) {
           newValues.push(values[i].id);
         }
         this.selection = newValues;
-      }
+      }*/
       this.refreshModalSearch();
     }
 
@@ -519,11 +531,28 @@ export default class ModalFormSelector extends Vue {
      * @param eventName name of the event so that we can re-emit it in case the user's of this component need that information.
      */
     onModalHiddenOrClosed(eventName:string){
-      /*setTimeout(() => {
-        this.selection = this.selectedCopie.map(value => value.id);
-      }, 400);*/
-      this.selection = this.selectedCopie.map(value => value.id);
-      this.$emit(eventName);
+      //TODO MAX no need for this wierd timeout thing?
+      setTimeout(() => {
+        //If selected copy is empty or undefined, then simply clear slectedTmp and unselect everything in modal
+        if(!this.selectedCopie || this.selectedCopie.length === 0){
+          this.selection = [];
+          this.selectedTmp = [];
+          this.searchModal.setInitiallySelectedItems([]);
+        }else{
+          this.selection = this.selectedCopie.map(value => value.id);
+          //TODO MAX will this work, were guna try azlso resetiing selectedTmp, if i do this i believe im guna have to add a manual resetting of TableAsyncView as there will non longer be a diff between tmp and copie upon next modal open. I want to try this as stuff is not disapearing immediatly
+          this.selectedTmp = this.selectedCopie.map(e=>e);
+          console.debug("Value of selectedCopy upon modal hide or close : ", JSON.stringify(this.selectedCopie));
+          /*let selectedForTableAsyncView = {};
+          console.debug("In onHiddenOrClosed, here is selectedCopie: ", this.selectedCopie);
+          this.selectedTmp.forEach(e => selectedForTableAsyncView[e.id]=e.id);
+          console.debug("Abnd here is tableAsyncVals :", selectedForTableAsyncView);*/
+          this.searchModal.setInitiallySelectedItems(this.selectedCopie.map(e=>{let obj = {}; obj["uri"] = e.id; return obj}));
+        }
+        this.$emit(eventName);
+      }, 400);
+      //this.selection = this.selectedCopie.map(value => value.id);
+      //this.$emit(eventName);
     }
 
     onValidate() {

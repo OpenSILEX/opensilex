@@ -394,7 +394,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   }
 
   setInitiallySelectedItems(initiallySelectedItems:Array<any>):void{
-    if(Array.isArray(initiallySelectedItems) && initiallySelectedItems.length != 0){
+    if(Array.isArray(initiallySelectedItems)){
       //set initially selected items
       this.selectedItems = [];
       initiallySelectedItems.map(e=>

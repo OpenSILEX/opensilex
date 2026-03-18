@@ -128,10 +128,7 @@ export default class AgroportalCreateFormPart extends Vue {
   //#endregion
 
   //#region Computed
-  get uriFormIsInEditMode(){
-    if(this.props && this.props.didSelectTerm){
-      return true;
-    }
+  get uriFormIsInEditMode() {
     return this.editMode;
   }
   //#endregion

@@ -211,7 +211,7 @@ export default class DataFilesList extends Vue {
       {
         key: "format",
         label: "DataFilesList.format",
-        sortable: true,
+        sortable: false,
       },
       {
         key: "filename",

@@ -116,7 +116,7 @@ public class VueOwlExtensionAPI {
 
             ClassModel classModel = dto.toModel(currentUser.getLanguage());
             classModel.setPublisher(currentUser.getUri());
-            VueClassExtensionModel classExtModel = dto.getExtClassModel();
+            VueClassExtensionModel classExtModel = getExtClassModel(dto, classModel);
             dao.createExtendedClass(classModel, classExtModel);
             SPARQLModule.getOntologyStoreInstance().reload();
 
@@ -143,11 +143,19 @@ public class VueOwlExtensionAPI {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
         ClassModel classModel = dto.toModel(currentUser.getLanguage());
-        VueClassExtensionModel classExtModel = dto.getExtClassModel();
+        VueClassExtensionModel classExtModel = getExtClassModel(dto, classModel);
         dao.updateExtendedClass(classModel, classExtModel);
         SPARQLModule.getOntologyStoreInstance().reload();
 
         return new CreatedUriResponse(classModel.getUri()).getResponse();
+    }
+
+    private VueClassExtensionModel getExtClassModel(VueRDFTypeDTO dto, ClassModel classModel) {
+        VueClassExtensionModel extModel = new VueClassExtensionModel();
+        extModel.setExtendedClass(classModel.getUri());
+        extModel.setIsAbstractClass(dto.getIsAbstract());
+        extModel.setIcon(dto.getIcon());
+        return extModel;
     }
 
     @PUT

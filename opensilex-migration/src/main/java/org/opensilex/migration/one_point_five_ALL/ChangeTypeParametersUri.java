@@ -19,7 +19,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.vueOwlExtension.VueOwlExtension;
-import org.opensilex.core.ontology.vueOwlExtension.api.VueRDFTypeDTO;
+import org.opensilex.core.ontology.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -123,7 +123,7 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
         Node hasIconUri = VueOwlExtension.hasIcon.asNode();
         Node isAbstractClassUri = VueOwlExtension.isAbstractClass.asNode();
         Node fromOwlClassUri = VueOwlExtension.fromOwlClass.asNode();
-        Node UriSuffixStrinfNode = NodeFactory.createLiteralString(VueRDFTypeDTO.URI_SUFFIX);
+        Node UriSuffixStrinfNode = NodeFactory.createLiteralString(VueOwlExtensionDAO.URI_SUFFIX);
 
         ExprFactory factory = new ExprFactory();
         Expr strUriExpr = factory.str(uriToDeleteVar);

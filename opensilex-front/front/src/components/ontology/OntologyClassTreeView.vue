@@ -102,7 +102,7 @@ export default class OntologyClassTreeView extends Vue {
         return this.resourceTree;
     }
 
-    classesParametersByURI = {};
+    classesParametersByClasseURI = {};
 
     refresh(selection, nameFilter) {
 
@@ -111,9 +111,9 @@ export default class OntologyClassTreeView extends Vue {
             this.vueJsOntologyService.getRDFTypesParameters()
         ]).then(results => {
             let classesParameters = results[1].response.result;
-            this.classesParametersByURI = {};
+            this.classesParametersByClasseURI = {};
             for (let i in classesParameters) {
-                this.classesParametersByURI[classesParameters[i].uri] = classesParameters[i];
+                this.classesParametersByClasseURI[classesParameters[i].extendedClass] = classesParameters[i];
             }
 
             if (results[0].response.result.length > 0) {
@@ -172,14 +172,14 @@ export default class OntologyClassTreeView extends Vue {
     }
 
     isManagedClass(rdfClassURI) {
-        return !!this.classesParametersByURI[rdfClassURI+this.PARAMETER_URI_SUFFIX];
+        return !!this.classesParametersByClasseURI[rdfClassURI];
     }
 
     getIcon(uri){
-        if (! this.classesParametersByURI[uri+this.PARAMETER_URI_SUFFIX] ){
+        if (! this.classesParametersByClasseURI[uri] ){
             return null
         }
-        this.classesParametersByURI[uri+this.PARAMETER_URI_SUFFIX].icon
+        this.classesParametersByClasseURI[uri].icon
     }
 }
 </script>

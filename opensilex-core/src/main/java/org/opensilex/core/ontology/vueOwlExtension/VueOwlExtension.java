@@ -60,5 +60,6 @@ public class VueOwlExtension {
     public static final Property hasInputComponent = Ontology.property(NS, "hasInputComponent");
     public static final Property hasViewComponent = Ontology.property(NS, "hasViewComponent");
     public static final Property hasDisplayOrder = Ontology.property(NS, "hasDisplayOrder");
+    public static final Property hasVueExtensionClassModel = Ontology.property(NS, "hasVueExtensionClassModel");
 
 }

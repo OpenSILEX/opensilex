@@ -214,7 +214,7 @@ public class VueOwlExtensionAPI {
         VueOwlExtensionDAO daoExt = new VueOwlExtensionDAO(sparql);
 
         ClassModel classModel = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
-        VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, classModel.getUri(), currentUser.getLanguage());
+        VueClassExtensionModel modelExt = daoExt.getExtensionClass(classModel.getUri(), currentUser.getLanguage());
 
         VueRDFTypeDTO vueRDFTypeDTO = new VueRDFTypeDTO(classModel, modelExt);
         if (Objects.nonNull(classModel.getPublisher())) {

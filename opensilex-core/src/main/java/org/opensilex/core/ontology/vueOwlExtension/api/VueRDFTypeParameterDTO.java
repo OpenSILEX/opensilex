@@ -32,6 +32,8 @@ public class VueRDFTypeParameterDTO {
 
     protected String icon;
 
+    protected URI extendedClass;
+
     public URI getUri() {
         return uri;
     }
@@ -56,11 +58,16 @@ public class VueRDFTypeParameterDTO {
         this.icon = icon;
     }
 
+    public void setExtendedClass(URI extendedClass) { this.extendedClass = extendedClass; }
+
+    public URI getExtendedClass() {return extendedClass;}
+
     public static VueRDFTypeParameterDTO getDTOFromModel(VueClassExtensionModel model) {
         VueRDFTypeParameterDTO dto = new VueRDFTypeParameterDTO();
         dto.setUri(model.getUri());
         dto.setIcon(model.getIcon());
         dto.setIsAbstract(model.getIsAbstractClass());
+        dto.setExtendedClass(model.getExtendedClass());
         
         return dto;
     }

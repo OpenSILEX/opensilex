@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
  */
 public class VueOwlExtensionDAO {
 
+    public static final String URI_SUFFIX = "/owl-vue-extension";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(VueOwlExtensionDAO.class);
 
     private final SPARQLService sparql;
@@ -53,7 +55,7 @@ public class VueOwlExtensionDAO {
         try {
             sparql.startTransaction();
             ontologyDAO.create(instance);
-            sparql.create(instanceExtension,false, false); // reuse the same URI as the ClassModel -> no need to check URI
+            sparql.create(instanceExtension,true, false);
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
@@ -65,7 +67,6 @@ public class VueOwlExtensionDAO {
             sparql.startTransaction();
             ontologyDAO.update(instance);
             sparql.update(instanceExtension);
-
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

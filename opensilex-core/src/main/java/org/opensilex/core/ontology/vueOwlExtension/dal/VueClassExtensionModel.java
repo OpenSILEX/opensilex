@@ -15,11 +15,14 @@
  */
 package org.opensilex.core.ontology.vueOwlExtension.dal;
 
+import java.net.URI;
 import java.util.List;
 import org.opensilex.core.ontology.vueOwlExtension.VueOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import static org.opensilex.sparql.ontology.dal.OntologyDAO.CUSTOM_TYPES_AND_PROPERTIES_GRAPH;
 
@@ -33,7 +36,7 @@ import static org.opensilex.sparql.ontology.dal.OntologyDAO.CUSTOM_TYPES_AND_PRO
         graph = CUSTOM_TYPES_AND_PROPERTIES_GRAPH,
         allowBlankNode = true
 )
-public class VueClassExtensionModel extends SPARQLResourceModel {
+public class VueClassExtensionModel extends SPARQLResourceModel implements ClassURIGenerator<VueClassExtensionModel> {
 
     @SPARQLProperty(
             ontology = VueOwlExtension.class,
@@ -55,6 +58,14 @@ public class VueClassExtensionModel extends SPARQLResourceModel {
     )
     protected List<VueClassPropertyExtensionModel> properties;
 
+    @SPARQLProperty(
+            ontology = VueOwlExtension.class,
+            property = "hasVueExtensionClassModel",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    protected URI extendedClass;
+
     public Boolean getIsAbstractClass() {
         return isAbstractClass == null ? false : isAbstractClass;
     }
@@ -71,12 +82,22 @@ public class VueClassExtensionModel extends SPARQLResourceModel {
         this.icon = icon;
     }
 
-    public List<VueClassPropertyExtensionModel> getProperties() {
-        return properties;
-    }
+    public List<VueClassPropertyExtensionModel> getProperties() { return properties; }
 
     public void setProperties(List<VueClassPropertyExtensionModel> properties) {
         this.properties = properties;
     }
 
+    public URI getExtendedClass() { return extendedClass; }
+
+    public void setExtendedClass(URI extendedClass) { this.extendedClass = extendedClass; }
+
+
+    @Override
+    public String[] getInstancePathSegments(VueClassExtensionModel instance) {
+        return new String[]{
+                instance.getExtendedClass().toString(),
+                VueOwlExtensionDAO.URI_SUFFIX
+        };
+    }
 }

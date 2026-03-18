@@ -17,6 +17,7 @@ package org.opensilex.core.ontology.vueOwlExtension.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.ontology.vueOwlExtension.VueOwlExtension;
 import org.opensilex.core.ontology.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.core.ontology.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.core.ontology.vueOwlExtension.types.VueOntologyType;
@@ -107,6 +108,17 @@ public class VueOwlExtensionDAO {
 
     public List<VueClassExtensionModel> getExtendedClasses(String lang) throws Exception {
         return sparql.search(VueClassExtensionModel.class, lang);
+    }
+
+    /**
+     * @return the extension class associated with {@code extendedClassURI} or null if not found
+     * @throws Exception
+     */
+    public VueClassExtensionModel getExtensionClass(URI extendedClassURI, String lang) throws Exception {
+        return sparql.getByUniquePropertyValue(VueClassExtensionModel.class,
+                lang,
+                VueOwlExtension.hasVueExtensionClassModel,
+                extendedClassURI);
     }
 
     private static List<VueOntologyDataType> dataTypes;

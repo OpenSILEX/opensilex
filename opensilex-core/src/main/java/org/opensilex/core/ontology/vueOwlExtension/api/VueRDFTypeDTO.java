@@ -15,10 +15,10 @@
  */
 package org.opensilex.core.ontology.vueOwlExtension.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.core.ontology.vueOwlExtension.dal.VueClassExtensionModel;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 
@@ -47,6 +47,9 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
     @JsonProperty("properties_order")
     protected List<URI> propertiesOrder;
 
+    @ValidURI
+    protected URI classExtensionUri;
+
     public boolean getIsAbstract() {
         return isAbstract;
     }
@@ -63,11 +66,16 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
         this.icon = icon;
     }
 
+    public URI getClassExtensionUri() { return this.classExtensionUri; }
+
+    public void setClassExtensionUri(URI classExtensionUri) { this.classExtensionUri = classExtensionUri; }
+
     public VueRDFTypeDTO(ClassModel classModel, VueClassExtensionModel modelExt){
         super(classModel);
         if (modelExt != null) {
             setIsAbstract(modelExt.getIsAbstractClass());
             setIcon(modelExt.getIcon());
+            classExtensionUri = modelExt.getUri();
         } else {
             setIsAbstract(false);
         }

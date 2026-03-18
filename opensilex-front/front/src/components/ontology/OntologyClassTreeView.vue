@@ -179,7 +179,7 @@ export default class OntologyClassTreeView extends Vue {
         if (! this.classesParametersByClasseURI[uri] ){
             return null
         }
-        this.classesParametersByClasseURI[uri].icon
+        return this.classesParametersByClasseURI[uri].icon
     }
 }
 </script>

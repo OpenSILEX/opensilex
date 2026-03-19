@@ -11,7 +11,7 @@
       :experiment="experimentUri"
       @clear="refreshGermplasmSelector"
       :limit="4"
-      @hide='onHide'
+      @hide='$emit("hideSelector")'
       @shown='$emit("shownSelector")'
       class="searchFilter"
   ></opensilex-ModalFormSelector>
@@ -57,13 +57,6 @@ export default class GermplasmSelectorWithFilter extends Vue {
 
   refreshGermplasmSelector() {
     this.germplasmSelector.refreshModalSearch();
-  }
-
-  onHide(){
-    //TODO MAX delete, entire function ? it didnt exist befor e
-    console.debug("Hideing slector");
-    //this.refreshGermplasmSelector();
-    this.$emit("hideSelector");
   }
 
 }

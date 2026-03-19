@@ -283,8 +283,6 @@ export default class ModalFormSelector extends Vue {
 
     @AsyncComputedProp()
     selectedValues(): Promise<any> {
-      //TODO MAX delete
-      console.debug("going by start of ModalFormSelector.selectedValues, here is this.selection", this.selection);
       return new Promise((resolve, reject) => {
           if (!this.selection || this.selection.length == 0) {
               this.firstTimeOpening = false;
@@ -406,15 +404,7 @@ export default class ModalFormSelector extends Vue {
         this.$emit("clear");
         return;
       }
-      //TODO MAX delete? doesnt seem to have broken anything, pretty sure we were just resetting slection to the same value as it was
-      /*if (this.multiple) {
-        let newValues = [];
-        for (let i in values) {
-          newValues.push(values[i].id);
-        }
-        this.selection = newValues;
-      }*/
-      this.refreshModalSearch();
+
     }
 
     created() {
@@ -523,41 +513,27 @@ export default class ModalFormSelector extends Vue {
     }
 
     /**
-     * An event handler to perform operations when the user clicks away from modal or hits the close button. We simply set
-     * this.selection to the last validated selected values, selectedCopie. We DO NOT reset selectedTmp as that gets done
-     * automatically upon next modal open, the difference between selectedTmp and selectedCopie is also used to unselect non-validated
-     * items.
+     * An event handler to perform operations when the user clicks away from modal or hits the close button.
+     * Sets this.selection and selectedTmp to the last validated value (selectedCopie) handles the syncronization of this
+     * information in modal component by calling setInitiallySelectedItems
      *
      * @param eventName name of the event so that we can re-emit it in case the user's of this component need that information.
      */
     onModalHiddenOrClosed(eventName:string){
-      //TODO MAX no need for this wierd timeout thing?
-      setTimeout(() => {
-        //If selected copy is empty or undefined, then simply clear slectedTmp and unselect everything in modal
-        if(!this.selectedCopie || this.selectedCopie.length === 0){
-          this.selection = [];
-          this.selectedTmp = [];
-          this.searchModal.setInitiallySelectedItems([]);
-        }else{
-          this.selection = this.selectedCopie.map(value => value.id);
-          //TODO MAX will this work, were guna try azlso resetiing selectedTmp, if i do this i believe im guna have to add a manual resetting of TableAsyncView as there will non longer be a diff between tmp and copie upon next modal open. I want to try this as stuff is not disapearing immediatly
-          this.selectedTmp = this.selectedCopie.map(e=>e);
-          console.debug("Value of selectedCopy upon modal hide or close : ", JSON.stringify(this.selectedCopie));
-          /*let selectedForTableAsyncView = {};
-          console.debug("In onHiddenOrClosed, here is selectedCopie: ", this.selectedCopie);
-          this.selectedTmp.forEach(e => selectedForTableAsyncView[e.id]=e.id);
-          console.debug("Abnd here is tableAsyncVals :", selectedForTableAsyncView);*/
-          this.searchModal.setInitiallySelectedItems(this.selectedCopie.map(e=>{let obj = {}; obj["uri"] = e.id; return obj}));
-        }
-        this.$emit(eventName);
-      }, 400);
-      //this.selection = this.selectedCopie.map(value => value.id);
-      //this.$emit(eventName);
+      //If selected copy is empty or undefined, then simply clear slectedTmp and unselect everything in modal
+      if(!this.selectedCopie || this.selectedCopie.length === 0){
+        this.selection = [];
+        this.selectedTmp = [];
+        this.searchModal.setInitiallySelectedItems([]);
+      }else{
+        this.selection = this.selectedCopie.map(value => value.id);
+        this.selectedTmp = this.selectedCopie.map(e=>e);
+        this.searchModal.setInitiallySelectedItems(this.selectedCopie.map(e=>{let obj = {}; obj["uri"] = e.id; return obj}));
+      }
+      this.$emit(eventName);
     }
 
     onValidate() {
-      //TODO MAx delete
-      console.debug("VALIDATING");
       if(this.selectedTmp == null || this.selectedTmp.length == 0) {
         this.loading = false;
       } else {

@@ -490,8 +490,6 @@ export default class GermplasmList extends Vue {
     @Ref("speciesSelector") readonly speciesSelector!: any;
 
   refresh() {
-    //TODO MAX delete
-    console.debug("refrecshing germplasmList")
     this.tableRef.selectAll = false;
     this.updateSelectedGermplasm()
     this.tableRef.changeCurrentPage(1);

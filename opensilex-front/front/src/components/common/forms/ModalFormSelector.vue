@@ -381,8 +381,10 @@ export default class ModalFormSelector extends Vue {
 
   /**
    * Function ALWAYS gets called when treeselect value changes, either via selecting/deslecting elements inside modal,
-   * OR by hitting the "clear all" button represented by the 'X' in the field
-   *
+   * OR by hitting the "clear all" button represented by the 'X' in the field.
+   * We identify if the action was a clear-all with the 'X' by looking if SelectedTmp still has values, in the case where
+   * it is indeed a clear-all, then we hard-clear by calling this.clearSelectedModal , otherwise we do nothing (so that the cancel
+   * button will still re-add all the elements the user removed before deciding to cancel)
    */
   clearIfNeeded(values) {
       //If selectedTmp is undefined or empty, then it means we got to this point by the user deselecting stuff

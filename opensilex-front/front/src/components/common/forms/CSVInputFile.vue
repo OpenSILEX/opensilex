@@ -151,13 +151,19 @@ export default class CSVInputFile extends Vue {
                                         this.headersExactMatch
                                 )
                         ) {
-                            this.errors.push(
-                                    this.$i18n.t('CSVInputFile.wrongColumns') + ": [" +
-                                    this.headersExactMatch.toString() +
-                                    "] " + this.$i18n.t('CSVInputFile.isExpected') + ". [" +
-                                    objectToCheck +
-                                    "] " + this.$i18n.t('CSVInputFile.found') + "."
-                            );
+                          let finalErrorMessage = this.$i18n.t('CSVInputFile.wrongColumns') + ": [" +
+                            this.headersExactMatch.toString() +
+                            "] " + this.$i18n.t('CSVInputFile.isExpected');
+                          //Only push found columns if size > 1, because a user can potentialy save some other file,
+                          //like a json as a .csv, in this case then a fake csv with a single cell containing whole json will be registered
+                          //making the error message unreadable
+                          if(objectToCheck.length > 1){
+                            finalErrorMessage += ". [" +
+                              objectToCheck +
+                              "] " + this.$i18n.t('CSVInputFile.found') + "."
+                          }
+
+                          this.errors.push(finalErrorMessage);
                         }
                     }
                 }

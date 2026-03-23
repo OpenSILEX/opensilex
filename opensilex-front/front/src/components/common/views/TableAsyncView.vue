@@ -553,7 +553,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   // function that display only the selected elements
   clickOnlySelected(){
     this.onlySelected = !this.onlySelected;
-    this.currentPage = 1;
+    this.pageChange(1);
     this.tableRef.refresh();
   }
 

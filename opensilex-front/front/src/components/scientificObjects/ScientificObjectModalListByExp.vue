@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" size="xl" :static="true" @shown="$emit('shown')">
+  <b-modal ref="modalRef" size="xl" :static="true" @shown="$emit('shown')" @hide='$emit("hide")'>
     <template v-slot:modal-title>
       <i class="ik ik-search mr-1"></i>
       {{ $t('component.project.filter-description') }}
@@ -183,6 +183,13 @@ export default class ScientificObjectModalListByExp extends ScientificObjectModa
   }
   setInitiallySelectedItems(initiallySelectedItems:Array<any>){
     this.soList.setInitiallySelectedItems(initiallySelectedItems);
+  }
+  hide(validate: boolean) {
+    if (validate) {
+      this.$emit("onValidate", this.soList.getSelected());
+    }
+    let modalRef: any = this.$refs.modalRef;
+    modalRef.hide();
   }
 }
 </script>

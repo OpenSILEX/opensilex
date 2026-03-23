@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" size="xl" :static="true">
+  <b-modal ref="modalRef" size="xl" :static="true" @hide='$emit("hide")'>
 
     <template v-slot:modal-title>
       <i class="ik ik-search mr-1"></i>
@@ -55,13 +55,17 @@ export default class ProjectModalList extends Vue {
     modalRef.show();
   }
 
+  setInitiallySelectedItems(initiallySelectedItems:Array<any>){
+    this.projectSelection.setInitiallySelectedItems(initiallySelectedItems);
+  }
+
   hide(validate: boolean) {
-    let modalRef: any = this.$refs.modalRef;
-    modalRef.hide();
 
     if (validate) {
       this.$emit("onValidate", this.projectSelection.getSelected());
     }
+    let modalRef: any = this.$refs.modalRef;
+    modalRef.hide();
   }
    refresh() {
     this.projectSelection.refresh();

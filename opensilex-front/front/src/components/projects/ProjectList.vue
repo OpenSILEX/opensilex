@@ -378,6 +378,10 @@ export default class ProjectList extends Vue {
     this.documentForm.showCreateForm();
   }
 
+  setInitiallySelectedItems(initiallySelectedItems:any){
+    this.tableRef.setInitiallySelectedItems(initiallySelectedItems);
+  }
+
   initForm() {
     let targetURI = [];
     for (let select of this.tableRef.getSelected()) {

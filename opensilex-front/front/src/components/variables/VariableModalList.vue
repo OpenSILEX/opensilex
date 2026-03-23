@@ -80,13 +80,14 @@ export default class VariableModalList extends Vue {
   }
 
   hide(validate: boolean) {
-    this.modalRef.hide();
 
     if (validate) {
       this.$emit("onValidate", this.variableSelection.getSelected());
     } else {
       this.$emit("onClose");
     }
+
+    this.modalRef.hide();
   }
 
   refresh() {

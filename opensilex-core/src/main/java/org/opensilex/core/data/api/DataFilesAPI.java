@@ -1149,5 +1149,37 @@ public class DataFilesAPI {
         });        
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
+
+          /**
+     * Returns the filepath corresponding to the URI given.
+     *
+     * @param uri
+     * @param response
+     * @return The filepath or null with a 404 status if it doesn't exists
+     */
+    @ApiProtected
+    @GET
+    @Path("{uri}/path")
+    @ApiOperation(value = "Get a datafile path")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve filepath")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatafilePath(
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
+            @Context HttpServletRequest context
+    ) throws Exception {
+        try {
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            DataFileModel description = dao.get(uri);
+
+            java.nio.file.Path filePath = Paths.get(description.getPath());
+            return new SingleObjectResponse<>(filePath).getResponse();
+            
+        } catch (NoSQLInvalidURIException e) {
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
+        }
+    }
 }
 

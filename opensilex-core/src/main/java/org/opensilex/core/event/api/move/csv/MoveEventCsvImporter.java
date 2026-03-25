@@ -84,7 +84,9 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
             if(!tryToApplyValueOnGenericEventField(correspondingHeader, model, rowIndex, i, nextValue)){
                 //If value didn't apply to generic event field then try Move fields
-                anyMoveFieldNonNull = anyMoveFieldNonNull || applyValueOnMoveSpecificField(correspondingHeader, movesLocation, rowIndex, i, nextValue);
+                //Make sure operation is performed before setting value of anyMoveFieldNonNull (order of stuff in Or statement was creating a bug)
+                boolean nextValueWasAppliedOnSomeMoveField = applyValueOnMoveSpecificField(correspondingHeader, movesLocation, rowIndex, i, nextValue);
+                anyMoveFieldNonNull = anyMoveFieldNonNull || nextValueWasAppliedOnSomeMoveField;
             }
         }
         //Now that we've finished reading row we can check which of end or start is required and relook if they were passed or not

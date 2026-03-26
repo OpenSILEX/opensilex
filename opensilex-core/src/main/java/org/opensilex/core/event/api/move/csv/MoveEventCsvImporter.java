@@ -110,7 +110,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
                 movesLocation.getTo()
         );
         if(potentialFromTooErrorMsg != null){
-            CSVCell cell = new CSVCell(rowIndex,getIndexForColumn(LocationModel.TO_FIELD, headerByColIndex), movesLocation.getTo().toString(), LocationModel.TO_FIELD);
+            CSVCell cell = new CSVCell(rowIndex,getIndexForColumn(LocationModel.TO_FIELD, headerByColIndex), (movesLocation.getTo() == null? "No too value" : movesLocation.getTo().toString()), LocationModel.TO_FIELD);
             cell.setMessage(potentialFromTooErrorMsg);
             if(potentialFromTooErrorMsg.equals(LocationLogic.FROM_BUT_NO_TOO_ERROR_MSG)){
                 validation.addMissingRequiredValue(cell);

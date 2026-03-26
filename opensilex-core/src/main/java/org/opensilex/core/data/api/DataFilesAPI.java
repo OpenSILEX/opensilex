@@ -1162,13 +1162,13 @@ public class DataFilesAPI {
     @Path("{uri}/path")
     @ApiOperation(value = "Get a datafile path")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve filepath")
+        @ApiResponse(code = 200, message = "Retrieve filepath"),
         @ApiResponse(code = 404, message = "uri not found")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatafilePath(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         try {
             DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);

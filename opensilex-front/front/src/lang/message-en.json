@@ -197,6 +197,7 @@
             "addDocument": "Add document",
             "warningInstruction" : "Experimental feature",
             "organization": {
+                "description": "Manage and configure organizations",
                 "site": "Site",
                 "sites": "Sites"
             }
@@ -931,6 +932,14 @@
             "finish" : "Finish",
             "label": "Explain me by example",
             "name": "Form Tutorial"
+        },
+        "system": {
+            "title": "System",
+            "description": "Informations about information systeme"
+        },
+        "packages": {
+            "title": "Packages",
+            "description": "Set of packages that allows access to the webservice"
         }
     },
     "credential-groups": {

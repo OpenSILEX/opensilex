@@ -198,6 +198,7 @@
             "addDocument": "Ajouter un document",
             "warningInstruction" : "Fonctionnalité expérimentale",
             "organization": {
+                "description": "Gérer et configurer les organisations",
                 "site": "Site",
                 "sites": "Sites"
             }
@@ -988,6 +989,14 @@
             "finish" : "Fin",
             "label": "Expliquez moi avec un exemple",
             "name": "Tutoriel du formulaire"
+        },
+        "system": {
+            "title": "Système",
+            "description": "Informations à propos du système d'information"
+        },
+        "packages": {
+            "title": "Librairies",
+            "description": "Ensemble de bibliothèque logicielles qui permet l'accès au webservice"
         }
     },
     "credential-groups": {

@@ -1126,7 +1126,7 @@ test:vue3:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/vue3"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "vue3/main"
+    - if: $CI_COMMIT_BRANCH == "vue3/ci-cd"
       when: on_success
   needs:
     - test:vue3:build

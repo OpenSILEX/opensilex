@@ -14,6 +14,32 @@
                 "semicolon" : "Semicolon (;)",
                 "tab" : "Tab (\\t)"
             },
+            "geometry": {
+                "geometry-title": "Geospatial coordinates",
+                "geometry-help": "Geospatial coordinates in WKT format",
+                "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
+                "x": "X",
+                "y": "Y",
+                "z": "Z",
+                "textual-position": "Textual position",
+                "from": "From",
+                "too": "Too",
+                "coordinates": "Coordinates",
+                "from-help": "Starting facility URI (The facility must exist, and the 'to' field must be filled).",
+                "to-help": "Arrival facility URI (The facility must exist).",
+                "x-help": "1th dimension of a custom coordinate system",
+                "y-help": "2nd dimension of a custom coordinate system",
+                "z-help": "3rd dimension of a custom coordinate system",
+                "textual-position-help": "Description of the position with text",
+                "x-placeholder": "A or 10 or 10.5",
+                "y-placeholder": "A or 10 or 10.5",
+                "z-placeholder": "A or 10 or 10.5",
+                "textual-position-placeholder": "Beside the left door",
+                "from-placeholder": "dev-infra:greenHouseA",
+                "to-placeholder": "dev-infra:greenHouseB",
+                "coordinates-placeholder": "POINT Z(1 1 80)"
+            },
+            "altName": "Alternative name",
             "month": "month",
             "months": "months",
             "day":"day",
@@ -71,9 +97,6 @@
             "species":"Species",
             "period":"Period",
             "year":"Year",
-            "geometry": "Geospatial coordinates",
-            "geometry-help": "Geospatial coordinates in WKT format",
-            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",
@@ -104,6 +127,7 @@
                 "cancel": "Cancel"
             },
             "delete-confirmation": "This action is final, are you sure you want to delete this item?",
+            "delete-datafile-confirmation": "Warning: This action is final and will delete the file declaration and the file itself. Are you sure you want to delete this item?",
             "success": {
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
@@ -432,7 +456,7 @@
                 "groupVariable": "Group of variables",
                 "groupVariableAssociated": "Group of associated variables",
                 "add-groupVariable": "Add a group of variables",
-                "edit": "Edit a group of variables"            
+                "edit": "Edit a group of variables"
             },
             "timeInterval" : {
                 "time-interval":"Time interval",
@@ -441,10 +465,10 @@
             "samplingInterval" : {
                 "sampling-interval": "Sample interval",
                 "sampling-interval-placeholder": "Select an interval",
-                "sampling-interval-help": "Granularity of sampling"       
+                "sampling-interval-help": "Granularity of sampling"
             },
             "dataType" : {
-                "data-type": "Data type", 
+                "data-type": "Data type",
                 "datatype-placeholder": "Select a datatype",
                 "datatype-help": "Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable)."
             },
@@ -452,15 +476,15 @@
             "altName": "Alternative name",
             "title": "Variables",
             "type": "Variable",
-            "description" : "Manage and configure variables, entities, characteristics, methods and units",   
-            "placeholder-multiple": "Select one or more variables", 
+            "description" : "Manage and configure variables, entities, characteristics, methods and units",
+            "placeholder-multiple": "Select one or more variables",
             "linked-object-error" : "{uri} can't be deleted : used by variables {variable}",
             "add": "Add variable",
             "edit": "Edit variable",
             "no-var-provided": "No variable provided",
             "associated-data-error": "Data are associated with this variable",
             "trait-button": "Trait already existing in an ontology",
-            "trait-button-help": "Add a trait (entity and characteristic) already existing in an ontology", 
+            "trait-button-help": "Add a trait (entity and characteristic) already existing in an ontology",
             "visualization": "Device associated Data Visualization",
             "dimensionValues" : {
                 "unique": "Unique measurement",
@@ -775,7 +799,8 @@
             },
             "errors": {
                 "associated-data": "The experiment can't be deleted since there are some associated data"
-            }
+            },
+            "funding": "Funding"
         },
         "germplasms": {
             "errors": {
@@ -796,6 +821,10 @@
                     "used-in-experiment" :"The object {scientific_object} can't be deleted since it's involved in some experiments. You must delete the object from the experiment first",
                     "has-child" :"The object {scientific_object} can't be deleted since it has some child. You must delete them first (It may sound cruel but it has to be)"
                 }
+            },
+            "geometry" : {
+                "startHelp" : "The moment where this object began to have this position.",
+                "endHelp" : "The moment where this object no longer had this position.\nREQUIRED IF any location field's are filled."
             }
         },
         "skos": {
@@ -881,6 +910,18 @@
                         "has-children" : "The property {property} has sub-properties. You must delete them first"
                     }
                 }
+            },
+            "externalOntologies" : {
+                "agroportal": "AgroPortal project is based on five driving agronomic use cases which participate in the design and orientation of the platform. AgroPortal already offers a robust and stable reference repository highly valuable for the agronomic domain.",
+                "agrovoc": "AGROVOC is a controlled vocabulary covering all areas of interest of the Food and Agriculture Organization (FAO) of the United Nations, including food, nutrition, agriculture, forestry, fisheries, scientific and common names of animals and plants, environment, biological notions, techniques of plant cultivation and more.. It is published by FAO and edited by a community of experts.",
+                "bioportal": "The goal of the National Center for Biomedical Ontology is to support biomedical researchers in their knowledge-intensive work, by providing online tools and a Web portal enabling them to access, review, and integrate disparate ontological resources in all aspects of biomedical investigation and clinical practice. A major focus of our work involves the use of biomedical ontologies to aid in the management and analysis of data derived from complex experiments.",
+                "crop": "The Crop Ontology (CO) current objective is to compile validated concepts along with their inter-relationships on anatomy, structure and phenotype of Crops, on trait measurement and methods as well as on Germplasm with the multi-crop passport terms. The concepts of the CO are being used to curate agronomic databases and describe the data.",
+                "plant": "The Plant Ontology is a structured vocabulary and database resource that links plant anatomy, morphology and growth and development to plant genomics data.",
+                "planteome": "Research engine project brings an integrated approach of adopting common annotation standards and a set of reference ontologies for Plants.",
+                "uo": "Metrical units for use in conjunction with the Phenotype And Trait Ontology (PATO)",
+                "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
+                "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
+                "xsd": "Discover XML schema languages."
             }
         },
         "tutorial": {
@@ -889,7 +930,7 @@
             "previous" : "Previous",
             "finish" : "Finish",
             "label": "Explain me by example",
-            "name": "Form Tutorial"    
+            "name": "Form Tutorial"
         }
     },
     "credential-groups": {

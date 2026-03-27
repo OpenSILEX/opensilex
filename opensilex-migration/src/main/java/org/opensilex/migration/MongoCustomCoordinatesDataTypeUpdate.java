@@ -7,7 +7,6 @@ import com.mongodb.client.result.UpdateResult;
 import org.apache.jena.atlas.json.JSON;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -21,7 +20,7 @@ import java.util.Objects;
 
 /**
  * <pre>
- * Performs an update on the {@link MoveEventNoSqlDao#COLLECTION_NAME} collection
+ * Performs an update on the move collection
  * after change on data-scheme of the {@link org.opensilex.core.event.dal.move.PositionModel}.
  * For any model of {@link MoveNosqlModel} each nested position must be updated.
  *
@@ -37,6 +36,11 @@ import java.util.Objects;
 public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModuleUpdate {
 
     private static final String POSITION_PATH = "targetPositions.position.";
+    //Only the collection name from MoveEventNoSqlDao was being used so we can just use that directly
+    private static final String MOVE_COLLECTION_NAME = "move";
+
+
+
     @Override
     public String getDescription() {
         return "Update custom coordinates datatype (`integer` -> `String`) into MongoDB moves collection";
@@ -84,7 +88,7 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
         // check collection existence
         boolean collectionExist = false;
         for (String collectionName : mongodb.getDatabase().listCollectionNames()) {
-            if(collectionName.equals(MoveEventNoSqlDao.COLLECTION_NAME)){
+            if(collectionName.equals(MOVE_COLLECTION_NAME)){
                 collectionExist = true;
                 break;
             }
@@ -94,7 +98,7 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
             return;
         }
 
-        MongoCollection<?> moveCollection = mongodb.getDatabase().getCollection(MoveEventNoSqlDao.COLLECTION_NAME);
+        MongoCollection<?> moveCollection = mongodb.getDatabase().getCollection(MOVE_COLLECTION_NAME);
 
         // use a session in order to handle transaction
         // required since an update which apply on multiple document must be executed

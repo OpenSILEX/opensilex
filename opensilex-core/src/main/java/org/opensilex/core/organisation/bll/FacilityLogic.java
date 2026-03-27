@@ -44,8 +44,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.utils.ListWithPagination;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -54,11 +54,11 @@ import java.util.stream.Collectors;
 
 public class FacilityLogic {
 
-    private SPARQLService sparql;
-    private MongoDBServiceV2 mongodb;
-    private FacilityDAO facilityDAO;
-    private OrganizationDAO organizationDAO;
-    private SiteLogic siteLogic;
+    private final SPARQLService sparql;
+    private final MongoDBServiceV2 mongodb;
+    private final FacilityDAO facilityDAO;
+    private final OrganizationDAO organizationDAO;
+    private final SiteLogic siteLogic;
     private final GeocodingService geocodingService;
 
 
@@ -124,7 +124,7 @@ public class FacilityLogic {
             validateFacilityAccess(uri, user);
             return facilityDAO.get(uri, user.getLanguage());
         } catch (ForbiddenURIAccessException exception) {
-            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri.toString());
+            throw new ForbiddenURIAccessException(uri, "You don't have the rights to access this facility : " + uri);
         } catch (Exception e) {
             throw new NotFoundURIException(uri);
         }
@@ -132,7 +132,8 @@ public class FacilityLogic {
 
     /**
      * Gets a list of facilities by URI. Shorthand for calling {@link #search(FacilitySearchFilter)} with the
-     * {@link FacilitySearchFilter#setFacilities(List)} filter.
+     * {@link FacilitySearchFilter#setFacilities(List)} filter. WARNING if some uris are not found then no Exception is thrown
+     * This method simply returns any uris that ARE found.
      *
      * @param uris The URI of the facilities
      * @param user The current user
@@ -140,24 +141,51 @@ public class FacilityLogic {
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
     public List<FacilityModel> getList(List<URI> uris, AccountModel user) throws Exception {
-        return search(new FacilitySearchFilter()
+        FacilitySearchFilter filter = new FacilitySearchFilter()
                 .setUser(user)
-                .setFacilities(uris)).getList();
+                .setFacilities(uris);
+        //As we are getting by uris set maximum pageSize to be size of uris
+        filter.setPageSize(uris.size());
+        return search(filter).getList();
     }
 
     /**
-     * Search the facilities among the ones accessible to the user.
+     * Does same thing as other getList function but allows minimal fetching of embedded objects by specifying which child nodes we need
+     */
+    public List<FacilityModel> getList(List<URI> uris, AccountModel user, List<SparqlSchemaSimpleNode<?>> nodesToFetch) throws Exception {
+        FacilitySearchFilter filter = new FacilitySearchFilter()
+                .setUser(user)
+                .setFacilities(uris);
+        //As we are getting by uris set maximum pageSize to be size of uris
+        filter.setPageSize(uris.size());
+        return search(filter, nodesToFetch).getList();
+    }
+
+    /**
+     * Search the facilities among the ones accessible to the user. Will use a genric schema to gets most field values.
+     * Consider using other search function with Nodes to specify if you barely need any information inside the facilities.
      *
      * @param filter The search filters
      * @return The list of facilities
      */
     public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter) throws Exception {
+        return search(filter, null);
+    }
+
+    /**
+     * Search the facilities among the ones accessible to the user.
+     *
+     * @param nodesToFetch to get only a specified amount of information from embedded objects, otherwise a generic schema is used.
+     * @param filter The search filters
+     * @return The list of facilities
+     */
+    public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, List<SparqlSchemaSimpleNode<?>> nodesToFetch) throws Exception {
         try {
             filter.validate();
 
             FacilitySearchRights organizationsAndSites = calculateUserSearchRights(filter);
 
-            return facilityDAO.search(filter, organizationsAndSites);
+            return facilityDAO.search(filter, organizationsAndSites, nodesToFetch);
         } catch (Exception e) {
             throw new InvalidValueException(e.getMessage());
         }
@@ -199,11 +227,13 @@ public class FacilityLogic {
 
         List<FacilityModel> facilityList = facilityDAO.minimalSearch(facilitySearchfilter, organizationsAndSites).getList();
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-        return locationObservationLogic.generateModelObservationCollectionMap(
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                 facilityList,
-                FacilityModel::getLocationObservationCollection,
-                Objects.nonNull(endDate) ? endDate : Instant.now()
+                (FacilityModel model)-> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
+                Objects.nonNull(endDate) ? endDate : Instant.now(),
+                true,
+                null
         );
     }
 
@@ -231,14 +261,23 @@ public class FacilityLogic {
         new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
             facilityDAO.update(instance);
 
+            URI collectionUri;
             if(Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())){
                 if(Objects.nonNull(existingModel.getLocationObservationCollection())){
                     updateFacilityLocations(session, instance, existingModel, locations);
+                    collectionUri = existingModel.getLocationObservationCollection().getUri();
                 }else{
-                    createFacilityLocations(session, instance, locations);
+                    collectionUri = createFacilityLocations(session, instance, locations);
                 }
             }else{
+                collectionUri = existingModel.getLocationObservationCollection() == null ? null : existingModel.getLocationObservationCollection().getUri();
                 deleteFacilityLocations(session, instance);
+            }
+
+            //Update "hasGeometry" of location linked to the facility (as "to")
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+            if(collectionUri != null) {
+                locationObservationLogic.updateAssociatedLocationModel(session, existingModel.getUri(), collectionUri);
             }
 
             return null;
@@ -246,6 +285,16 @@ public class FacilityLogic {
 
         organizationDAO.invalidateCache();
         return instance;
+    }
+
+    /**
+     * Updates many facilities, will NOT affect their locations.
+     *
+     * @param facilities
+     * @throws Exception
+     */
+    public void updateMany(List<FacilityModel> facilities) throws Exception {
+        facilityDAO.updateMany(facilities);
     }
 
     /**
@@ -278,12 +327,15 @@ public class FacilityLogic {
      * @return The Location Observation model
      */
     public LocationObservationModel getLastFacilityLocationModel(FacilityModel facilityModel) {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
 
-        List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservation(
-                Collections.singletonList(facilityModel.getLocationObservationCollection()),
+        if (facilityModel.getLocationObservationCollection() == null) return null;
+
+        List<LocationObservationModel> lastLocationByFacility = locationObservationLogic.getLastLocationObservations(
+                Collections.singletonList(facilityModel.getLocationObservationCollection().getUri()),
                 false,
-                Instant.now()
+                Instant.now(),
+                null
         );
 
         if (lastLocationByFacility.isEmpty()) {
@@ -292,6 +344,8 @@ public class FacilityLogic {
             return lastLocationByFacility.get(0);
         }
     }
+
+
     //#endregion
 
     //region Search rights
@@ -428,21 +482,26 @@ public class FacilityLogic {
         }
     }
 
-    private void createFacilityLocations(ClientSession session, FacilityModel facility, List<LocationObservationModel> locationObservationModels) throws Exception {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+    /**
+     *
+     * @param session client session
+     * @param facility that is being created
+     * @param locationObservationModels The LocationObservation's that will go in the new LocationCollection
+     * @return URI of the new observation collection, null if an address failed to convert
+     * @throws Exception
+     */
+    private URI createFacilityLocations(ClientSession session, FacilityModel facility, List<LocationObservationModel> locationObservationModels) throws Exception {
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
         List<LocationObservationModel> locations = new ArrayList<>();
 
         if (Objects.isNull(locationObservationModels) && Objects.nonNull(facility.getAddress())) {
-            Geometry geometry = convertAddressToGeometry(facility);
-            if (Objects.isNull(geometry)) {
-                return;
+            LocationObservationModel locationObservationModel = convertFacilityAddressToLocationObservation(facility);
+            if(locationObservationModel == null){
+                return null;
             }
-            LocationObservationModel locationObservationModel = new LocationObservationModel();
-            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
 
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
         //Create the LocationObservationCollection
@@ -450,32 +509,41 @@ public class FacilityLogic {
         URI locationObservationCollectionUri = locationObservationCollectionLogic.createLocationObservationCollection(facility.getUri());
         //Create LocationObservations
         locationObservationLogic.createLocationObservations(session, locationObservationCollectionUri, facility.getUri(), locations, true);
+        return locationObservationCollectionUri;
     }
 
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
         //Delete existing
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
-        locationObservationLogic.deleteLocationObservations(session, existingModel.getLocationObservationCollection().getUri());
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        locationObservationLogic.deleteEveryLocationObservationInCollection(session, existingModel.getLocationObservationCollection().getUri());
 
         //Create new locations
         List<LocationObservationModel> locations = new ArrayList<>();
 
         if ((Objects.isNull(locationObservationModels) || locationObservationModels.isEmpty()) && !Objects.isNull(instance.getAddress())) {
-            Geometry geometry = convertAddressToGeometry(instance);
-            if (Objects.isNull(geometry)) {
+            LocationObservationModel locationObservationModel = convertFacilityAddressToLocationObservation(instance);
+            if(locationObservationModel == null){
                 return;
             }
-
-            LocationObservationModel locationObservationModel = new LocationObservationModel();
-            locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null, null, null, null));
-
             locations.add(locationObservationModel);
         } else {
-            locationObservationModels.forEach(location -> locationObservationLogic.validateDates(location.getEndDate(), location.getStartDate()));
             locations = locationObservationModels;
         }
 
         locationObservationLogic.createLocationObservations(session, existingModel.getLocationObservationCollection().getUri(), existingModel.getUri(), locations, true);
+    }
+
+    private LocationObservationModel convertFacilityAddressToLocationObservation(FacilityModel facilityModel) {
+        Geometry geometry = convertAddressToGeometry(facilityModel);
+        if (Objects.isNull(geometry)) {
+            return null;
+        }
+
+        LocationObservationModel locationObservationModel = new LocationObservationModel();
+        locationObservationModel.setLocation(LocationLogic.buildLocationModel(geometry, null,null,null, null, null, null));
+        //Location needs a date to not fail
+        locationObservationModel.setEndDate(Instant.now());
+        return locationObservationModel;
     }
 
     private Geometry convertAddressToGeometry(FacilityModel facility) {
@@ -487,11 +555,11 @@ public class FacilityLogic {
 
     private void deleteFacilityLocations(ClientSession session, FacilityModel facility) {
         if (facility.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
             try {
-                locationObservationLogic.deleteLocationObservations(session, facility.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteEveryLocationObservationInCollection(session, facility.getLocationObservationCollection().getUri());
                 locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
             } catch (Exception e) {
                 throw new NotFoundURIException("Invalid or unknown URI ", facility.getLocationObservationCollection().getUri());
@@ -499,5 +567,6 @@ public class FacilityLogic {
         }
     }
     //#endregion
+
 }
 

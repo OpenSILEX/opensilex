@@ -9,8 +9,6 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
@@ -72,8 +70,7 @@ public class ScientificObjectDaoTest extends AbstractMongoIntegrationTest {
         s3.setFactorLevels(Arrays.asList(f1, f2, f3));
         sparql.create(ScientificObjectModel.class, Arrays.asList(s1, s2, s3));
 
-        MongoDBService mongo = openSilexTestEnv.getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE,MongoDBService.class);
-        dao = new ScientificObjectDAO(sparql,mongo);
+        dao = new ScientificObjectDAO(sparql);
     }
 
     @Test
@@ -203,7 +200,7 @@ public class ScientificObjectDaoTest extends AbstractMongoIntegrationTest {
         URI xpUri = xp.getUri();
         sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),modelWithXp);
 
-        dao.create(xpUri, xp, modelWithXp.getType(), null, modelWithXp.getName(), null, AccountModel.getAnonymous());
+        dao.create(SPARQLDeserializers.nodeURI(xpUri), modelWithXp);
 
         boolean doesSOParticipatesInXP = sparql.executeAskQuery(new AskBuilder()
                 .addWhere(SPARQLDeserializers.nodeURI(modelWithXp.getUri()), Oeso.participatesIn, SPARQLDeserializers.nodeURI(xpUri)));

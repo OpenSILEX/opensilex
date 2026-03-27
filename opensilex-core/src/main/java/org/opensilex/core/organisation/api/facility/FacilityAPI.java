@@ -16,6 +16,7 @@
 package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
@@ -105,7 +106,7 @@ public class FacilityAPI {
 
             List<LocationObservationModel> locations = new ArrayList<>();
 
-            if (!dto.getLocations().isEmpty()) {
+            if (!CollectionUtils.isEmpty(dto.getLocations())) {
                 locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
             }
 
@@ -383,4 +384,5 @@ public class FacilityAPI {
         }
         return filter;
     }
+
 }

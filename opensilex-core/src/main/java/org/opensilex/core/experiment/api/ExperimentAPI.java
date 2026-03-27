@@ -29,6 +29,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.FundingModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
@@ -40,7 +41,7 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
@@ -252,6 +253,7 @@ public class ExperimentAPI {
      * @param projects
      * @param isPublic
      * @param facilities
+     * @param funding   the name of the experiment's funding
      * @param orderByList
      * @param page
      * @param pageSize
@@ -276,6 +278,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
             @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
             @ApiParam(value = "Search by involved facilities") @QueryParam("facilities") List<URI> facilities,
+            @ApiParam(value = "Search by funding", example = "anr") @QueryParam("funding") List<URI> funding,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -291,13 +294,14 @@ public class ExperimentAPI {
                 .setProjects(projects)
                 .setPublic(isPublic)
                 .setFacilities(facilities)
+                .setFunding(funding)
                 .setUser(currentUser);
 
         filter.setOrderByList(orderByList)
                 .setPage(page)
                 .setPageSize(pageSize);
 
-        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
+        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter, false, false, false);
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = resultList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);
@@ -852,7 +856,7 @@ public class ExperimentAPI {
 
     private DataCSVValidationModel validateWholeCSV(URI experimentURI, ProvenanceModel provenance, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectLogic scientificObjectLogic = new ScientificObjectLogic(sparql, nosql,fs);
 
         Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
@@ -921,7 +925,7 @@ public class ExperimentAPI {
                 boolean validateCSVRow = false;
                 while ((values = csvReader.parseNext()) != null) {
                     try {
-                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType, duplicateDataByIndex);
+                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectLogic, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType, duplicateDataByIndex);
                     } catch (CSVDataTypeException e) {
                         csvValidation.addInvalidDataTypeError(e.getCsvCell());
                     }
@@ -950,7 +954,7 @@ public class ExperimentAPI {
             DataCSVValidationModel csvValidation, 
             Map<Integer, String> headerByIndex, 
             URI experimentURI, 
-            ScientificObjectDAO scientificObjectDAO, 
+            ScientificObjectLogic scientificObjectLogic,
             Map<String, ScientificObjectModel> nameURIScientificObjects, 
             List<String> scientificObjectsNotInXp, 
             HashMap<URI, URI> mapVariableUriDataType, 
@@ -970,7 +974,7 @@ public class ExperimentAPI {
                 } else {
                     // test not in uri list
                     if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-                            object = getObjectByNameOrURI(scientificObjectDAO, experimentURI, objectNameOrUri);
+                            object = getObjectByNameOrURI(scientificObjectLogic, experimentURI, objectNameOrUri);
                         }
                     if (object == null) {
                         scientificObjectsNotInXp.add(objectNameOrUri);
@@ -1037,23 +1041,23 @@ public class ExperimentAPI {
         return validRow;
     }
 
-    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
+    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectLogic scientificObjectLogic, URI contextUri, String nameOrUri) {
         ScientificObjectModel object = null;
         try {
-            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
+            object = testNameOrURI(scientificObjectLogic, contextUri, nameOrUri);
         } catch (Exception ex) {
         }
         return object;
     }
 
-    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
+    private ScientificObjectModel testNameOrURI(ScientificObjectLogic scientificObjectLogic, URI contextUri, String nameOrUri) throws Exception {
         ScientificObjectModel object;
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 
-            object = scientificObjectDAO.getObjectByURI(objectUri,contextUri,null);
+            object = scientificObjectLogic.getObjectByURI(objectUri,contextUri,currentUser);
         } else {
-                object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
+                object = scientificObjectLogic.getByNameAndContext(nameOrUri, contextUri);
             }
 
         return object;
@@ -1153,6 +1157,39 @@ public class ExperimentAPI {
                     "Unknown experiment URIs"
             ).getResponse();
         }
+    }
+
+    @GET
+    @Path("/funding")
+    @ApiOperation("Search funding")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return funding", response = FundingGetDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchFunding(
+            @ApiParam(value = "Funding name regex pattern", example = "anr") @QueryParam("name") String namePattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+
+        ListWithPagination<FundingModel> resultList = dao.searchFunding(
+                namePattern,
+                currentUser.getLanguage(),
+                orderByList,
+                page,
+                pageSize
+        );
+
+        ListWithPagination<FundingGetDTO> resultDTOList = resultList.convert(
+                FundingGetDTO.class,
+                FundingGetDTO::new
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
 }

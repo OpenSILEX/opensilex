@@ -28,7 +28,7 @@ public class EmbedMongoClient {
     public static final int MONGO_PORT = 28018;
     public static final String MONGO_HOST = "localhost";
     public static final String REPLICA_SET_NAME = "rs0";
-    public static final Version MONGOD_VERSION = Version.V6_0_2;
+    public static final Version MONGOD_VERSION = Version.V7_0_12;
     public static final Boolean SILENT_OUTPUT = true;
 
     private static EmbedMongoClient INSTANCE;

@@ -1,18 +1,14 @@
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.geojson.Geometry;
-import com.mongodb.client.model.geojson.Point;
 import com.univocity.parsers.csv.CsvParser;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.*;
-import org.locationtech.jts.io.ParseException;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
@@ -20,7 +16,9 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.scientificObject.dal.*;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 
@@ -29,6 +27,7 @@ import static org.opensilex.sparql.csv.AbstractCsvImporter.CSV_URI_KEY;
 
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.export.CsvExporter;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -85,20 +84,17 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
     private static SPARQLService sparql;
     private static MongoDBService mongodb;
     private static ScientificObjectDAO dao;
-    private static GeospatialDAO geospatialDAO;
-
 
     public static final String RDFS_LABEL = URIDeserializer.formatURIAsStr(RDFS.label.getURI());
-    public static final String GEOMETRY = URIDeserializer.formatURIAsStr(Oeso.hasGeometry.getURI());
 
     @BeforeClass
     public static void beforeTest() throws Exception {
 
         sparql = newSparqlService();
         mongodb = getMongoDBService();
+        FileStorageService fs = getFs();
 
-        dao = new ScientificObjectDAO(sparql, mongodb);
-        geospatialDAO = new GeospatialDAO(mongodb);
+        dao = new ScientificObjectDAO(sparql);
 
         experiment = new ExperimentModel();
         experiment.setName("test_os_csv_export");
@@ -153,7 +149,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 OpenSilex.getResourceAsStream(EXPORT_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
         // load object with CSV import for testing purpose
-        ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(sparql, getMongoDBService(), experiment.getUri(), user);
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(sparql, getMongoDBService(), experiment.getUri(), user, fs, null);
         File csvFile = CSV_FILES_DIR.resolve("os_export_test_file.csv").toFile();
 
         CSVValidationModel validation = importer.importCSV(csvFile, false);
@@ -165,11 +161,10 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
 
     private void assertCSV(List<ScientificObjectModel> models,
                            URI graph,
-                           Map<String, Geometry> geometryMap,
                            List<String> expectedColumns,
                            Consumer<String[]> rowAssertion,
                            Map<String, Consumer<String>> assertByProperty
-    ) throws IOException, SPARQLException {
+    ) throws Exception {
 
         // Export CSV according the provided objects
         CsvExporter<ScientificObjectModel> exporter = new ScientificObjectCsvExporter(
@@ -177,8 +172,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 models,
                 graph,
                 user.getLanguage(),
-                Collections.emptyMap(),
-                geometryMap
+                new MoveLogic(sparql, mongodb, user)
         );
         byte[] csvRawData = exporter.exportCSV();
 
@@ -241,16 +235,6 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         // check that name is OK
         assertByProperty.put(RDFS_LABEL, name -> Assert.assertTrue(name.startsWith("os_export_test")));
 
-        // check that geometry is OK
-        assertByProperty.put(GEOMETRY, geometry -> {
-            try {
-                Geometry parsedGeometry = GeospatialDAO.wktToGeometry(geometry);
-                Assert.assertTrue(parsedGeometry instanceof Point);
-            } catch (ParseException | JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
         return assertByProperty;
     }
 
@@ -259,22 +243,17 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
 
         // search objects from global graph
         List<ScientificObjectModel> models = dao.search(new ScientificObjectSearchFilter(), Collections.emptyList()).getList();
-        List<URI> uris = models.stream()
-                .map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toList());
-
-        Map<String, Geometry> geospatialMap = geospatialDAO.getGeometryByUris(null, uris);
 
         // ensure that only name,type and geometry are exported
         List<String> expectedColumns = Arrays.asList(
-                CSV_URI_KEY, CSV_TYPE_KEY, RDFS_LABEL, GEOMETRY
+                CSV_URI_KEY, CSV_TYPE_KEY, RDFS_LABEL
         );
-        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(4, row.length));
+        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(3, row.length));
 
         Map<String, Consumer<String>> assertByProperty = getDefaultAssertByProperty(models);
 
         // export objets from global graph and evaluate assertions
-        assertCSV(models, null, geospatialMap, expectedColumns, rowAssertion, assertByProperty);
+        assertCSV(models, null, expectedColumns, rowAssertion, assertByProperty);
     }
 
     @Test
@@ -290,24 +269,20 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 .map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        Map<String, Geometry> geospatialMap = geospatialDAO.getGeometryByUris(experiment.getUri(), uris);
-
         // ensure that only name,type and geometry are exported
         List<String> expectedColumns = Arrays.asList(
                 CSV_URI_KEY, CSV_TYPE_KEY,
                 RDFS.label.getURI(),
-                Oeso.hasGeometry.getURI(),
                 RDFS.comment.getURI(),
                 Oeso.hasCreationDate.getURI(),
                 Oeso.hasDestructionDate.getURI(),
-                Oeso.isHosted.getURI(),
                 Oeso.isPartOf.getURI(),
                 Oeso.hasGermplasm.getURI(),
                 Oeso.hasFactorLevel.getURI(),
                 "vocabulary:customDataPropExport",
                 "vocabulary:customObjectPropExport"
         );
-        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(13, row.length));
+        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(20, row.length));
 
         Map<String, Consumer<String>> assertByProperty = getDefaultAssertByProperty(models);
 
@@ -336,7 +311,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         assertByProperty.put("vocabulary:customObjectPropExport ", relation -> Assert.assertEquals("test:id/device/device_test1",relation));
 
         // export objets from global graph and evaluate assertions
-        assertCSV(models, experiment.getUri(), geospatialMap, expectedColumns, rowAssertion, assertByProperty);
+        assertCSV(models, experiment.getUri(), expectedColumns, rowAssertion, assertByProperty);
     }
 
     @AfterClass

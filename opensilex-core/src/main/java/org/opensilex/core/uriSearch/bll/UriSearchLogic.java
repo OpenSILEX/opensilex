@@ -14,10 +14,12 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetSearchDTO;
 import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.bll.dataImport.BatchHistoryLogic;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.batchHistory.BatchHistoryModel;
 import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeev;
@@ -103,6 +105,12 @@ public class UriSearchLogic {
 
         //If still no matches then search in Data
         result = this.searchInData(uri);
+        if(result != null){
+            return result;
+        }
+
+        //If still no matches then search in BatchHistory
+        result = this.searchInBatchHistory(uri);
         if(result != null){
             return result;
         }
@@ -239,6 +247,26 @@ public class UriSearchLogic {
         //TODO temporary forcing of Provenance type-name and type as this field is currently always empty, done same for Data but is even worse because i couldn't find a Data RdfType, temporary forcing of Type label in front for Data.
         result.setType(URI.create(Oeso.Provenance.getURI()));
         setTypeLabelOfBasicMongoSparqlDTOfromRdfType(result, URI.create(Oeso.Provenance.getURI()));
+
+        return result;
+    }
+
+    private URIGlobalSearchDTO searchInBatchHistory(URI uri) throws Exception{
+        BatchHistoryModel batchHistoryModel = null;
+        try{
+            BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
+            batchHistoryModel = batchHistoryLogic.get(uri);
+        }catch(Exception notFound){
+            return null;
+        }
+
+        URIGlobalSearchDTO result = URIGlobalSearchDTO.fromMongoModel(batchHistoryModel);
+
+        //Set the isBatch boolean
+        result.setBatchHistory(true);
+
+        //prepare publisher info
+        loadPublisherInfoIntoDtoFromMongoModel(batchHistoryModel, result);
 
         return result;
     }

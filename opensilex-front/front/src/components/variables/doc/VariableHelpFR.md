@@ -1,4 +1,4 @@
-# Variable aide
+# Aide aux variables
 
 ## Créer des variables
 
@@ -15,19 +15,19 @@ Chaque champ est écrit en format CamelCase.
 
 **`Entité`**: l’objet qui est ciblé et observé. On trouve par exemple les entités suivantes :
 
-- Canopy
-- Row
-- Plant
-- Stem
-- Leaf
-- Inflorescence (terme générique pour plusieurs espèces (y compris, épis, pointe, panicule, capitule …) peut-être spécialisé en :
-    - Male
-    - Female
+- Canopée
+- Rang
+- Plante
+- Tige
+- Feuille
+- Inflorescence (terme générique pour plusieurs espèces (y compris, épis, pointe, panicule, capitule …)) peut-être spécialisé en :
+    - Mâle
+    - Femelle
 - Un suffixe peut être ajouté pour distinguer une partie seulement de l’entité, par défaut, l’entité entière est observée.
-    - Green
-    - Senescent
-    - DiseaseSpot
-    - Contaminated 
+    - Vert
+    - Sénescent
+    - Tache de maladie
+    - Contaminé 
 
 **`Caractéristique`**: quel type de mesure. C’est la quantité physique mesurée, ou bien la qualité observée sur l’individu. 
 On trouve par exemple les caractéristiques suivantes :    
@@ -35,23 +35,23 @@ On trouve par exemple les caractéristiques suivantes :
 - Radiance
 - Reflectance
 - Transmittance
-- SpectralIndex
-- CoverFraction
-- AreaIndex (Area per ground area : LAI, PAI, GLAI GAI, SAI)
-- AreaDensity (area per canopy volume unit)
-- Height
-- FIPAR
-- FAPAR
+- Indice spectral
+- Fraction de couverture
+- Indice de surface (surface par unité de surface au sol : LAI, PAI, GLAI, GAI, SAI)
+- Densité de surface (surface par unité de volume du couvert)
+- Hauteur
+- FIPAR (Fraction du rayonnement photosynthétiquement actif intercepté)
+- FAPAR (Fraction du rayonnement photosynthétiquement actif absorbé)
 
 
 Un suffixe peut être ajouté pour préciser davantage la mesure : 
 - Pour les `longueurs d’ondes` : on utilise les “nm”. Exemple : _MCARI570nm730nm850nm_
 - Pour les `directions` : les angles sont exprimés en degrés d’angle, chaque direction termine par “deg”. Exemple : _CoverFraction45deg_
-- Par défaut, on mesure une grandeur « moyenne » issue d’un capteur sur l’ensemble de l’entité, si ce n’est pas le cas et qu’il s’agit d’un :
-    - Une médiane : on ajoute Med
-    - Un écart-type : on ajoute Std
-    - D’un indice de confiance sur la qualité de la mesure : Flag
-    
+- Par défaut, on mesure une grandeur « moyenne » issue d’un capteur sur l’ensemble de l’entité, si ce n’est pas le cas un suffix est ajouté à la fin. Les suffixes suivants sont utilisés :
+    - `Med`: lorsqu'il s'agit d'une médiane
+    - `Std`: lorsqu'il s'agit d'un écart type
+    - `Flag`: lorsqu'il s'agit d'un indice de confiance sur la qualité de la mesure
+
     -  <span style="color:red">**REMARQUE**</span> : 
         <p>
         Il ne s’agit pas de variables calculées à partir de la série temporelle (moyenne), 
@@ -67,39 +67,39 @@ Un suffixe peut être ajouté pour préciser davantage la mesure :
 **`Méthode`**: la méthode utilisée pour obtenir l’observation de l’entité, on trouve notamment :
 
 - Calibration pour Radiance et Reflectance et RGB.
-- BandCombination (pour indices de végétation issus de spectroscopie)
-- Height and PointCloud
-    - Manual
-    - Photogrammetry
+- Combinaison de bandes (pour indices de végétation issus de spectroscopie)
+- Hauteur et nuage de points
+    - Mesure manuelle
+    - Photogrammétrie
     - LiDAR
-- AreaIndex
-    - DirectMeasurement
-    - PhysicalModel (Radiative Transfer Model Inversion)
-    - EmpiricalModel
+- Indice de surface
+    - Mesure directe
+    - Modèle physique (inversion de modèles de transfert radiatif)
+    - Modèle empirique
 - FIPAR/FAPAR
-    - DirectMeasurement
-    - ImageSegmentation
-    - GeometricalModel (LiDAR)
-    - PhysicalModel (Radiative Transfer Model Inversion)
-    - EmpiricalModel
+    - Mesure directe
+    - Segmentation d’images
+    - Modèle géométrique (LiDAR)
+    - Modèle physique (inversion de modèles de transfert radiatif)
+    - Modèle empirique
 - ChlorophyllContent/ NitrogenContent/ WaterContent
-    - DirectMeasurement (WetChemistry & Spectrometry & SPAD)
-    - PhysicalModel (Radiative Transfer Model Inversion)
-    - EmpiricalModel
+    - Mesure directe (chimie humide, spectrométrie et SPAD)
+    - Modèle physique (inversion de modèles de transfert radiatif)
+    - Modèle empirique
 
  <span style="color:red">**REMARQUE**</span> : Il est chaudement recommandé de créer de nouvelles méthodes 
  pour expliquer votre façon de faire et ainsi d'avoir le plus de détails possibles.
 
 **`Unité`**: l’unité utilisée pour exprimer la mesure. On préférera les lettres minuscules, 
 sauf quand il est admis d’utiliser des majuscules (degC, degK, …).
-- Kilogram (kg)
-- Gram (g)
-- Meter (m)
-- Centimeter (cm)
-- Unitless (uless)
-- Degree for inclination (deg)
-- DegreeCelsius (degC)
-- DegreeKelvin (degK)
+- Kilogramme (kg)
+- Gramme (g)
+- Mètre (m)
+- Centimètre (cm)
+- Sans unité (adimensionnel)
+- Degré pour l'inclinaison (deg)
+- Degré Celsius (°C)
+- Kelvin (K)
 
 Pour combiner des unités, ajouter “_per_” (abbreviation “p”) . 
 

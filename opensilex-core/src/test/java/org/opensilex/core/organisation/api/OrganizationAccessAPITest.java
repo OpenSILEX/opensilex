@@ -22,6 +22,7 @@ import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAPI;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.api.site.SiteAPI;
 import org.opensilex.core.organisation.api.site.SiteCreationDTO;
 import org.opensilex.core.organisation.api.site.SiteGetListDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -65,24 +66,30 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     public static final String SEARCH_PATH = PATH;
     
     public static final ServiceDescription create;
-
-    static {
-        try {
-            create = new ServiceDescription(
-                OrganizationAPI.class.getMethod("createOrganization", OrganizationCreationDTO.class),
-                    PATH
-            );
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static final ServiceDescription get_site;
 
     // Site API
+
     public static final String SITE_PATH = "/core/sites";
     public static final String SITE_URI_PATH = SITE_PATH + "/{uri}";
     public static final String SITE_SEARCH_PATH = SITE_PATH;
     public static final String SITE_URIS_PATH = SITE_PATH + "/by_uris";
     public static final String SITE_CREATE_PATH = SITE_PATH;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    OrganizationAPI.class.getMethod("createOrganization", OrganizationCreationDTO.class),
+                    PATH
+            );
+            get_site = new ServiceDescription(
+                    SiteAPI.class.getMethod("getSite", URI.class),
+                    SITE_URI_PATH
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private final ProfileAPITest profileAPITest = new ProfileAPITest();
     private final GroupAPITest groupAPITest = new GroupAPITest();
@@ -551,10 +558,11 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
         Response getResponse;
         for (URI forbiddenSiteURI : forbiddenSiteURISet) {
-            getResponse = getJsonGetByUriResponse(target(SITE_URI_PATH), forbiddenSiteURI.toString(), USER_MAIL);
-            assertEquals(forbiddenSiteURI + " should return FORBIDDEN",
-                    Response.Status.FORBIDDEN.getStatusCode(),
-                    getResponse.getStatus());
+            new UserCallBuilder(get_site)
+                    .setUriInPath(forbiddenSiteURI)
+                    .setUserEmail(USER_MAIL)
+                    .build()
+                    .executeCallAndAssertStatus(Response.Status.FORBIDDEN);
         }
     }
 

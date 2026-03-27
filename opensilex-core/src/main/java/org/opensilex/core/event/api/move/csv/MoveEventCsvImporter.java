@@ -1,52 +1,57 @@
 package org.opensilex.core.event.api.move.csv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.model.geojson.Point;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.mongodb.client.ClientSession;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.event.bll.MoveLogic;
+import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
-import org.opensilex.core.event.dal.move.MoveNosqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
-
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
+    public static Set<String> MOVE_SPECIFIC_HEADERS = Set.of(
+            LocationModel.FROM_FIELD,
+            LocationModel.TO_FIELD,
+            LocationModel.GEOMETRY_FIELD,
+            LocationModel.X_FIELD,
+            LocationModel.Y_FIELD,
+            LocationModel.Z_FIELD,
+            LocationModel.TEXTUAL_POSITION_FIELD
+    );
+
     private static final LinkedHashSet<String> MOVE_HEADER = Stream.concat(
                     AbstractEventCsvImporter.EVENT_HEADER.stream(),
-                    Stream.of(
-                        MoveModel.FROM_FIELD,
-                        MoveModel.TO_FIELD,
-                        PositionModel.COORDINATES_FIELD,
-                        PositionModel.X_FIELD,
-                        PositionModel.Y_FIELD,
-                        PositionModel.Z_FIELD,
-                        PositionModel.TEXTUAL_POSITION_FIELD
-                    )
+                    MOVE_SPECIFIC_HEADERS.stream()
             ).collect(Collectors.toCollection(LinkedHashSet::new)
     );
 
-    public MoveEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, AccountModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
-        super(sparql,ontologyDAO,file, user);
+    private final MoveLogic moveLogic;
+
+    public MoveEventCsvImporter(
+            SPARQLService sparql,
+            OntologyDAO ontologyDAO,
+            InputStream file,
+            AccountModel user,
+            MongoDBService mongo,
+            ClientSession session
+    ) throws SPARQLException, SPARQLDeserializerNotFoundException {
+        super(sparql,ontologyDAO,file, user, mongo);
+        moveLogic = new MoveLogic(sparql, mongo, user, session);
     }
 
     @Override
@@ -60,101 +65,100 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
     }
 
     @Override
-    protected void readCommonsProps(MoveModel model, String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException {
+    protected void readCommonsProps(MoveModel model, String[] row, int rowIndex, Map<Integer, String> headerByColIndex) throws Exception {
+        //I don't bother calling super.readCommonProps as there are just a few lines in common at start,
+        // then there are differences
 
-        // first call super method in order to init properties of any Event
-        super.readCommonsProps(model, row, rowIndex, colIndex);
-
-        // then fill move specific properties
+        //If row size is smaller than common header size then append some InvalidValue errors and leave
+        if(!verifyAndHandleNotEnoughRequiredColumnsForRow(row, rowIndex, headerByColIndex)){
+            return;
+        }
 
         boolean anyMoveFieldNonNull = false;
-        MoveNosqlModel noSqlModel = new MoveNosqlModel();
+        LocationModel movesLocation = MoveLogic.getOrCreateMovesLocationObservation(model, null);
 
-        // parse from and to properties
-        String from = row[colIndex.getAndIncrement()];
-        if(!StringUtils.isEmpty(from)) {
-            FacilityModel fromModel = new FacilityModel();
-            fromModel.setUri(new URI(from));
-            model.setFrom(fromModel);
-            anyMoveFieldNonNull = true;
+        //Iterate over row's common props to read and check values
+        for(int i = 0; i < getHeader().size(); i++){
+            String nextValue = row[i];
+            String correspondingHeader = headerByColIndex.get(i);
+
+            if(!tryToApplyValueOnGenericEventField(correspondingHeader, model, rowIndex, i, nextValue)){
+                //If value didn't apply to generic event field then try Move fields
+                anyMoveFieldNonNull = anyMoveFieldNonNull || applyValueOnMoveSpecificField(correspondingHeader, movesLocation, rowIndex, i, nextValue);
+            }
         }
+        //Now that we've finished reading row we can check which of end or start is required and relook if they were passed or not
+        verifyRequiredEndOrStart(model, rowIndex, headerByColIndex);
+        //Likewise check from and too
+        verifyFromAndToo(movesLocation, rowIndex, headerByColIndex);
 
-        String to = row[colIndex.getAndIncrement()];
-        if(!StringUtils.isEmpty(to)) {
-            FacilityModel toModel = new FacilityModel();
-            toModel.setUri(new URI(to));
-            model.setTo(toModel);
-            anyMoveFieldNonNull = true;
-        }
-
-        if(StringUtils.isNotEmpty(from) && StringUtils.isEmpty(to)){
-            CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"To");
-            cell.setMessage("Cannot declare a move with a 'From' value but without a 'To' value.");
+        //Add error if 0 move fields filled
+        if(!anyMoveFieldNonNull){
+            CSVCell cell = new CSVCell(rowIndex, getHeader().size() -1, null,"from, to, x, y, z or positionDescription");
             validation.addMissingRequiredValue(cell);
         }
+    }
 
-        // parse all properties which define a position : point,x,y,z,positionDescription
-        if(!CollectionUtils.isEmpty(model.getTargets())){
-
-            URI targetUri = model.getTargets().get(0);
-            TargetPositionModel itemPositionModel = new TargetPositionModel();
-            itemPositionModel.setTarget(targetUri);
-
-            PositionModel position = new PositionModel();
-            itemPositionModel.setPosition(position);
-            List<TargetPositionModel> itemPositionModels = Collections.singletonList(itemPositionModel);
-            noSqlModel.setTargetPositions(itemPositionModels);
-
-            String coordinates = row[colIndex.getAndIncrement()];
-            if(!StringUtils.isEmpty(coordinates)){
-                try{
-                    position.setCoordinates((Point) GeospatialDAO.wktToGeometry(coordinates));
-                    anyMoveFieldNonNull = true;
-                }catch (ParseException | JsonProcessingException e){
-                    CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, coordinates,"coordinates");
-                    validation.addInvalidValueError(cell);
-                }
-
-            }
-
-            try{
-                String x = row[colIndex.getAndIncrement()];
-                if(!StringUtils.isEmpty(x)){
-                    position.setX(x);
-                    anyMoveFieldNonNull = true;
-                }
-
-                String y = row[colIndex.getAndIncrement()];
-                if(!StringUtils.isEmpty(y)){
-                    position.setY(y);
-                    anyMoveFieldNonNull = true;
-                }
-
-                String z = row[colIndex.getAndIncrement()];
-                if(!StringUtils.isEmpty(z)){
-                    position.setZ(z);
-                    anyMoveFieldNonNull = true;
-                }
-
-            }catch (NumberFormatException e){
-                CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"x y or z");
+    /**
+     * Handles the calling of LocationLogic.validateFromAndTooValuesAndReturnErrorMsg to verify From and Too values
+     */
+    private void verifyFromAndToo(LocationModel movesLocation, int rowIndex, Map<Integer, String> headerByColIndex) throws Exception {
+        String potentialFromTooErrorMsg = LocationLogic.validateFromAndTooValuesAndReturnErrorMsg(
+                movesLocation.getFrom(),
+                movesLocation.getTo()
+        );
+        if(potentialFromTooErrorMsg != null){
+            CSVCell cell = new CSVCell(rowIndex,getIndexForColumn(LocationModel.TO_FIELD, headerByColIndex), movesLocation.getTo().toString(), LocationModel.TO_FIELD);
+            cell.setMessage(potentialFromTooErrorMsg);
+            if(potentialFromTooErrorMsg.equals(LocationLogic.FROM_BUT_NO_TOO_ERROR_MSG)){
                 validation.addMissingRequiredValue(cell);
-            }
-
-            String positionDescription = row[colIndex.get()];
-            if(!StringUtils.isEmpty(positionDescription)){
-                position.setTextualPosition(positionDescription);
-                anyMoveFieldNonNull = true;
-
+            }else {
+                validation.addInvalidValueError(cell);
             }
         }
+    }
 
-        if(anyMoveFieldNonNull){
-            model.setNoSqlModel(noSqlModel);
-        }else {
-            CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"from, to, x, y, z or positionDescription");
-            validation.addMissingRequiredValue(cell);
+    /**
+     * Tries to apply a value onto corresponding field of a LocationModel
+     *
+     * @param header containing the field name we are applying to
+     * @param movesLocation teh LocationModel to apply on
+     * @param rowIndex the current row index for error cell creating
+     * @param colIndex the current column index for error cell creating
+     * @param value the value we are trying to apply on field
+     * @return true if a non-null value was indeed applied to a Move specific field, false otherwise
+     */
+    private boolean applyValueOnMoveSpecificField(String header, LocationModel movesLocation, int rowIndex, int colIndex, String value) throws URISyntaxException, SPARQLException {
+
+        if(header.equals(LocationModel.FROM_FIELD)){
+            return moveLogic.applyValueOnFromField(value, movesLocation);
         }
+        if(header.equals(LocationModel.TO_FIELD)){
+            return moveLogic.applyValueOnTooField(value, movesLocation);
+        }
+        if(header.equals(LocationModel.GEOMETRY_FIELD)){
+            try{
+                return moveLogic.applyValueOnGeometryField(value, movesLocation);
+            } catch (ParseException | JsonProcessingException e){
+                CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
+                validation.addInvalidValueError(cell);
+                //Return true because even if there was a parsing error, a Move field was still present
+                return true;
+            }
+        }
+        if(header.equals(LocationModel.X_FIELD)){
+            return moveLogic.applyValueOnXField(value, movesLocation);
+        }
+        if(header.equals(LocationModel.Y_FIELD)){
+            return moveLogic.applyValueOnYField(value, movesLocation);
+        }
+        if(header.equals(LocationModel.Z_FIELD)){
+            return moveLogic.applyValueOnZField(value, movesLocation);
+        }
+        if(header.equals(LocationModel.TEXTUAL_POSITION_FIELD)){
+            return moveLogic.applyValueOnTextualField(value, movesLocation);
+        }
+        return false;
     }
 
 }

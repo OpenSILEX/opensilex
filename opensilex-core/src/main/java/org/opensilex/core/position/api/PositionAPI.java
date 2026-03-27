@@ -1,12 +1,15 @@
 package org.opensilex.core.position.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoQueryException;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.geojson.GeoJsonObject;
+import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -32,6 +35,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,25 +85,21 @@ public class PositionAPI {
             @ApiParam(value = "Object URI", example = "http://opensilex.dev/plant/plant5841", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
-
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
-        MoveModel moveModel = moveLogic.getLastMoveAfter(
-                uri,
-                time != null ? OffsetDateTime.parse(time) : null
-        );
+        MoveModel moveModel = moveLogic.getLastMoveAfter(uri, time != null ? OffsetDateTime.parse(time) : null);
 
         if (moveModel == null) {
             //if an object has no move,it's not an exception. Just no move is associated with this object
             return new SingleObjectResponse<>(new PositionGetDTO()).getResponse();
         }
         else {
-            PositionModel position = moveLogic.getPosition(uri, moveModel.getUri());
+            LocationObservationModel location = moveLogic.getPosition(moveModel);
 
-            if (moveModel.getTo() == null && moveModel.getFrom() == null && position == null) {
+            if (location == null) {
                 throw new NotFoundURIException("No position found", uri);
             }
-            return new SingleObjectResponse<>(new PositionGetDTO(moveModel, position)).getResponse();
+            return new SingleObjectResponse<>(new PositionGetDTO(moveModel, location)).getResponse();
         }
     }
 
@@ -107,7 +108,7 @@ public class PositionAPI {
     @ApiOperation("Search history of position of an object")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return position list", response = PositionGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return position list", response = MoveGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -119,12 +120,9 @@ public class PositionAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
-        MoveModel moveEvent = moveLogic.getLastMoveAfter(target, null);
-
-        if (moveEvent != null) {
+        try {
             var positionHistory = moveLogic.getPositionsHistory(
                     target,
                     null,
@@ -133,17 +131,12 @@ public class PositionAPI {
                     orderByList,
                     page,
                     pageSize
-            ).convert(PositionGetDTO.class, move -> {
-                try {
-                    return new PositionGetDTO(move, move.getNoSqlModel().getTargetPositions().get(0).getPosition());
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
+            ).convert(MoveGetDTO.class, MoveGetDTO::new);
             return new PaginatedListResponse<>(positionHistory).getResponse();
-        }
 
-        return new PaginatedListResponse<>().getResponse();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @POST
@@ -163,10 +156,8 @@ public class PositionAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
-
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
-        List<MoveNosqlModel> lastTargetPositionList = new ArrayList<>();
-        List<MoveNosqlModel> lastPositionListGeo = new ArrayList<>();
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
 
         try {
             //create search filter
@@ -178,9 +169,13 @@ public class PositionAPI {
                     .setLang(this.currentUser.getLanguage())
                     .setPageSize(pageSize);
 
-
             // search all moves between the start (and end) date of the experiment for an event type (move) and a target type
             ListWithPagination<MoveModel> moveList = moveLogic.search(searchFilter);
+
+            //Leave if no moves were found to prevent unexpected errors
+            if(CollectionUtils.isEmpty(moveList.getList())){
+                return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+            }
             //get last move by unique target uri
              Map<List<URI>,Optional<MoveModel>> uniqueTargetLastMoveList = moveList.getList().stream()
                                                                                     //group by unique target URI
@@ -188,20 +183,25 @@ public class PositionAPI {
                                                                                     // get the last move by the property end
                                                                                     Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
-            //for each unique target uri, get the mongoDB Model move linked (and the target detail?)
-            for (Optional<MoveModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
+            //for each unique target uri, get the mongoDB Model location linked (inside the current extend)
+            Map<URI, LocationObservationModel> targetLocationMap = locationObservationLogic.getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
+                    uniqueTargetLastMoveList.keySet().stream().flatMap(Collection::stream).collect(Collectors.toList()),
+                    endDate != null ? Instant.parse(endDate) : null,
+                    geoJsonToGeometry(geometry));
 
-                MoveNosqlModel lastTargetPosition = moveLogic.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
-                if(lastTargetPosition != null){
-                    lastTargetPositionList.add(lastTargetPosition);
-                }
-            }
-            // Get filtered positions with coordinates not null and inside the current extend
-            lastPositionListGeo = moveLogic.getIntersectPosition(lastTargetPositionList, geoJsonToGeometry(geometry));
+            List<PositionGetDTO> positionList = new ArrayList<>();
+
+            uniqueTargetLastMoveList.forEach((targetList, move) -> {
+                    if(Objects.nonNull(targetLocationMap.get(targetList.get(0)))){
+                        PositionGetDTO positionGetDTO = new PositionGetDTO(move.get(), targetLocationMap.get(targetList.get(0)));
+                        positionList.add(positionGetDTO);
+                    }
+            });
+
+            return new PaginatedListResponse<>(positionList).getResponse();
         }catch (MongoQueryException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }
-       return new PaginatedListResponse<>(lastPositionListGeo).getResponse();
     }
 
     @GET

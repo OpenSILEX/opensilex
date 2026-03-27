@@ -87,6 +87,7 @@ public final class SPARQLClassAnalyzer {
 
     private final List<String> autoUpdateFields = new ArrayList<>();
     private final List<String> autoUpdateListFields = new ArrayList<>();
+    private final List<String> ignoreUpdateIfNullFields = new ArrayList<>();
 
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
@@ -327,6 +328,10 @@ public final class SPARQLClassAnalyzer {
             reverseRelationFields.add(field.getName());
         }
 
+        if (sProperty.ignoreUpdateIfNull()){
+            ignoreUpdateIfNullFields.add(field.getName());
+        }
+
         annotationsByField.put(field.getName(), sProperty);
 
         fieldsByName.put(field.getName(), field);
@@ -521,7 +526,7 @@ public final class SPARQLClassAnalyzer {
         return fieldsByName.get(fieldsBySetter.get(method));
     }
 
-    private Method getGetterFromField(Field field) {
+    public Method getGetterFromField(Field field) {
         return fieldsByGetter.inverse().get(field.getName());
     }
 
@@ -783,6 +788,15 @@ public final class SPARQLClassAnalyzer {
     public List<Field> getAutoUpdateListFields() {
         List<Field> list = new ArrayList<>();
         autoUpdateListFields.forEach((fieldName) -> {
+            list.add(getFieldFromName(fieldName));
+        });
+
+        return list;
+    }
+
+    public List<Field> getIgnorUpdateIfNullFields(){
+        List<Field> list = new ArrayList<>();
+        ignoreUpdateIfNullFields.forEach((fieldName) -> {
             list.add(getFieldFromName(fieldName));
         });
 

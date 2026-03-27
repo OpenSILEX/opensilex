@@ -34,8 +34,11 @@
   - [Default configuration example](#default-configuration-example)
 <!-- TOC -->
 
-OpenSILEX Developer's installation
-=============================================
+# Contributing to OpenSILEX
+
+OpenSILEX is an open source project and we welcome contributions from the community. To contribute to OpenSILEX, please read the [Contributing Guidelines](CONTRIBUTING.md) for detailed instructions on how to get started.
+
+# OpenSILEX Developer's installation
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
@@ -83,6 +86,10 @@ cd opensilex
 cd <BASE_DIR>/opensilex
 mvn install
 ```
+
+If you are running a Ubuntu 22 or more, you may need to install an old version of libssl, see the [common issues documentation : surfire error section](opensilex-doc/src/main/resources/faq/common-issues.md#surfire-error-mvn-clean-install-get-an-error-on-nosql-test-module) for more information.
+
+If you have other errors during the build, check again your installed software versions. If it is all good, take a look at the [common issues documentation](opensilex-doc/src/main/resources/faq/common-issues.md) to see if you can find a solution.
 
 # Create opensilex command alias
 

@@ -11,6 +11,8 @@ import org.bson.conversions.Bson;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 /**
@@ -36,8 +38,11 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
         return uri;
     }
 
+    /**
+     * Set the uri after decoding it with UTF-8 to avoid issues with special characters in the URI (e.g : spaces encoded as %20)
+     */
     public void setUri(URI uri) {
-        this.uri = uri;
+        this.uri = uri == null ? null : URI.create(URLDecoder.decode(uri.toString(), StandardCharsets.UTF_8));
     }
 
     public URI getRdfType() {

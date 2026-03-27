@@ -18,11 +18,11 @@ import org.opensilex.sparql.utils.SHACLTest;
  */
 public class RDF4JSHACLTest extends SHACLTest {
 
-    protected static RDF4JInMemoryServiceFactory factory;
+    protected static RDF4JLMDBServiceFactory factory;
 
     @BeforeClass
     public static void setupSPARQL() throws Exception {
-        factory = new RDF4JInMemoryServiceFactory();
+        factory = new RDF4JLMDBServiceFactory();
         factory.setOpenSilex(opensilex);
         factory.setup();
         factory.startup();

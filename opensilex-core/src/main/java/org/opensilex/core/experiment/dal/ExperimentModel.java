@@ -7,7 +7,9 @@
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
+import org.opensilex.core.experiment.dal.FundingModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -43,7 +45,7 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             property = "hasProject"
     )
     List<ProjectModel> projects;
-    public static final String PROJECT_URI_FIELD = "project";
+    public static final String PROJECT_URI_FIELD = "projects";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -65,14 +67,14 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             property = "hasScientificSupervisor"
     )
     List<PersonModel> scientificSupervisors;
-    public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisor";
+    public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisors";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
     List<PersonModel> technicalSupervisors;
-    public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisor";
+    public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisors";
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
@@ -128,10 +130,7 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     protected Boolean isPublic;
     public static final String IS_PUBLIC_FIELD = "isPublic";
 
-//    @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "measures"
-//    )
+
     List<URI> variables;
     public static final String VARIABLES_FIELD = "variables";
 
@@ -143,6 +142,20 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     List<FactorModel> factors;
     public static final String FACTORS_FIELD = "factors";
     public static final String FACTORS_CATEGORIES_FIELD = "factorsCategories";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasFunding"
+    )
+    List<FundingModel> funding;
+    public static final String FUNDING_FIELD = "funding";
+
+    @SPARQLProperty(
+            ontology = SKOS.class,
+            property = "altLabel"
+    )
+    private String alternativeName;
+    public static final String ALTERNATIVE_NAME_FIELD_NAME = "alternativeName";
 
     public List<ProjectModel> getProjects() {
         return projects;
@@ -255,4 +268,16 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     public void setFactors(List<FactorModel> factors) {
         this.factors = factors;
     }
+
+    public List<FundingModel> getFunding(){
+        return funding;
+    }
+
+    public void setFunding(List<FundingModel> funding) {
+        this.funding = funding;
+    }
+
+    public String getAlternativeName() { return alternativeName; }
+
+    public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
 }

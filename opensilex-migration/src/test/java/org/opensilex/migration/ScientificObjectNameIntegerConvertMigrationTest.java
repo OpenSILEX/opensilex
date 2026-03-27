@@ -21,8 +21,9 @@ import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogic;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.update.OpenSilexModuleUpdate;
@@ -46,6 +47,8 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
     private static final int NB_GOOD_OS = 10;
     private static final int TOTAL_OS_NB = 20;
 
+    protected static FileStorageService fs;
+
     @BeforeClass
     public static void setup() throws Exception {
 
@@ -59,7 +62,7 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
         sparql.create(experiment);
         experimentGraph = NodeFactory.createURI(experiment.getUri().toString());
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql,getMongoDBService());
+        ScientificObjectLogic logic = new ScientificObjectLogic(sparql,getMongoDBService(),getFs());
         URI osType = URI.create(Oeso.ScientificObject.getURI());
 
         // create object which should not be affected by the bug
@@ -71,8 +74,8 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
             model.setType(osType);
             models.add(model);
         }
-        dao.create(models,experiment.getUri());
-        dao.copyIntoGlobalGraph(models.stream()); // good copy method
+        logic.createWithNoValidations(models,experiment.getUri());
+        logic.copyIntoGlobalGraph(models.stream()); // good copy method
 
         // create Object affected by the bug
         models.clear();
@@ -83,7 +86,7 @@ public class ScientificObjectNameIntegerConvertMigrationTest extends AbstractMon
             models.add(model);
         }
         globalObjectGraph = sparql.getDefaultGraph(ScientificObjectModel.class);
-        dao.create(models,experiment.getUri());
+        logic.createWithNoValidations(models,experiment.getUri());
 
         Node typeNode = SPARQLDeserializers.nodeURI(osType.toString());
 

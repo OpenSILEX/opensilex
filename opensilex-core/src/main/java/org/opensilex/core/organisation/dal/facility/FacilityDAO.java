@@ -14,19 +14,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.bll.FacilityLogic;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -60,11 +66,42 @@ public class FacilityDAO {
         return sparql.getByURI(FacilityModel.class, uri, lang);
     }
 
-    public ListWithPagination<FacilityModel> search(FacilitySearchFilter filter, FacilityLogic.FacilitySearchRights organizationsAndSites) throws Exception {
-        return sparql.searchWithPagination(
+    /**
+     *
+     * @param filter to keep only facilities that validate criteria.
+     * @param organizationsAndSites to restrict visibility to certain facilities (user search rights).
+     * @param nodesToFetch if NULL then a default schema getting everything we could possibly need will be used,
+     *                     else fetch only the specified nodes
+     * @return a ListWithPagination of the Facilities
+     */
+    public ListWithPagination<FacilityModel> search(
+            FacilitySearchFilter filter,
+            FacilityLogic.FacilitySearchRights organizationsAndSites,
+            List<SparqlSchemaSimpleNode<?>> nodesToFetch
+    ) throws Exception {
+        filter.validate();
+
+        SparqlSchemaRootNode<FacilityModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
+                FacilityModel.class,
+                (nodesToFetch == null ? List.of(
+                        new SparqlSchemaSimpleNode<>(OrganizationModel.class, FacilityModel.ORGANIZATION_FIELD),
+                        new SparqlSchemaSimpleNode<>(SiteModel.class, FacilityModel.SITE_FIELD),
+                        new SparqlSchemaSimpleNode<>(VariablesGroupModel.class, FacilityModel.VARIABLE_GROUPS_FIELD),
+                        new SparqlSchemaSimpleNode<>(FacilityAddressModel.class, FacilityModel.ADDRESS_FIELD),
+                        new SparqlSchemaSimpleNode<>(VariableModel.class, FacilityModel.VARIABLES_FIELD),
+                        new SparqlSchemaSimpleNode<>(DeviceModel.class, FacilityModel.DEVICES_FIELD)
+                ) : nodesToFetch),
+                true
+        );
+
+        SparqlSchema<FacilityModel> schema = new SparqlSchema<>(rootNode);
+
+        return sparql.searchWithPaginationUsingSchema(
                 FacilityModel.class,
                 filter.getUser().getLanguage(),
                 (select -> filterHandler(select, organizationsAndSites, filter)),
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
@@ -95,6 +132,10 @@ public class FacilityDAO {
         sparql.update(instance);
 
         return instance;
+    }
+
+    public void updateMany(List<FacilityModel> facilities) throws Exception {
+        sparql.update(facilities);
     }
 
     public boolean exists(URI facilityUri) throws SPARQLException {
@@ -137,6 +178,7 @@ public class FacilityDAO {
 
         return sparql.executeAskQuery(ask);
     }
+
     //endregion
 
     //#region private

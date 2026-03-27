@@ -27,7 +27,7 @@ To support SAML authentication, OpenSILEX relies on an external software called 
 which implements the service provider side of the SAML protocol. In addition to configure
 OpenSILEX, you will need to install an Apache2 server with the Shibboleth module to allow for
 SAML authentication. In order to simplify the process, it is heavily recommended to use [OSP
-(OpenSILEX SAML Proxy)](https://forgemia.inra.fr/OpenSILEX/opensilex-saml-proxy), which provides
+(OpenSILEX SAML Proxy)](https://forge.inrae.fr/OpenSILEX/opensilex-saml-proxy), which provides
 a Docker container with Apache2 and Shibboleth, as well as a quick configuration script and a 
 complete documentation. The configuration presented in this document will assume that you use
 OSP, or a similar architecture, as your service provider. Furthermore, it is strongly advised

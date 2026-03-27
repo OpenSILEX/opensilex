@@ -15,6 +15,7 @@ import org.opensilex.server.response.ErrorResponse;
  * @author vmigot
  */
 public class InvalidValueException extends WebApplicationException {
+    private final String message;
 
     /**
      * Exception constructor.
@@ -30,5 +31,13 @@ public class InvalidValueException extends WebApplicationException {
                 .type(MediaType.APPLICATION_JSON)
                 .build()
         );
+        this.message = message;
+    }
+
+    /**
+     * @return the error message included in the JSON payload
+     */
+    public String getErrorMessage() {
+        return message;
     }
 }

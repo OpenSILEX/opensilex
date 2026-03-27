@@ -81,7 +81,7 @@ Maven is a build system and a dependency manager for Java projects.
 
 Git is used for version control.
 
-The code during development is hosted on [INRAE Forgemia](https://forgemia.inra.fr/OpenSILEX/opensilex-dev) and publicly available on [Github](https://github.com/OpenSILEX/opensilex).
+The code during development is hosted on [INRAE Forgemia](https://forge.inrae.fr/OpenSILEX/opensilex-dev) and publicly available on [Github](https://github.com/OpenSILEX/opensilex).
 
 [Install Git 2.40.1+](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 

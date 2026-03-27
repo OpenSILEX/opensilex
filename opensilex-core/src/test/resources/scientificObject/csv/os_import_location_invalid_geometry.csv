@@ -1,0 +1,4 @@
+uri,type,rdfs:label,start_date_of_Location,end_date_of_Location,from,to,coordinates,x,y,z,textualPosition
+column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description,column_description
+test:id/os_import_location_coords_1 ,vocabulary:Sample,os_import_location_coords_1,,2026-01-09T03:03:03Z,,,POINT(53 1,,,,
+test:id/os_import_location_coords_2 ,vocabulary:Sample,os_import_location_coords_2,,2026-01-09T03:03:03Z,,,POINT(8611 795 492 2111),,,,

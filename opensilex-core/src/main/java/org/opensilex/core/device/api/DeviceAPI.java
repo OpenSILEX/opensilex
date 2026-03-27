@@ -14,7 +14,7 @@ import org.bson.Document;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.api.CsvImportDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;
@@ -28,6 +28,9 @@ import org.opensilex.core.device.dal.*;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.location.bll.LocationObservationLogic;
+import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.location.dal.LocationObservationSearchFilter;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -80,8 +83,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.mongodb.client.model.Filters.eq;
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
 
@@ -386,7 +387,7 @@ public class DeviceAPI {
                 newMetaData.setUri(deviceUri);
                 metaDataDao.upsert(session, newMetaData);
             }
-            deviceDAO.update(deviceModel, currentUser);
+            deviceDAO.update(deviceModel);
             return deviceUri;
         });
 
@@ -414,7 +415,6 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         MetaDataDaoV2 metaDataDao = new MetaDataDaoV2(nosql, DeviceAPI.METADATA_COLLECTION_NAME);
-        try {
             new SparqlMongoTransaction(sparql,nosql.getServiceV2()).execute(session -> {
                 try{
                     metaDataDao.delete(session, uri);
@@ -423,10 +423,6 @@ public class DeviceAPI {
                 return 0;
             });
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-
-        } catch (ForbiddenURIAccessException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, LINKED_DEVICE_ERROR, e.getMessage()).getResponse();
-        }
     }
 
     @POST
@@ -787,7 +783,7 @@ public class DeviceAPI {
                 null,
                 variables,
                 provenances,
-                Arrays.asList(uri),
+                Collections.singletonList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -887,7 +883,7 @@ public class DeviceAPI {
                 null,
                 variables,
                 provenances,
-                Arrays.asList(uri),
+                Collections.singletonList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -1085,7 +1081,32 @@ public class DeviceAPI {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
-        List<DeviceModel> results = dao.getDevicesByFacility(facilityUri, currentUser);
+        //TODO these next few lines that call other logic classes should be in a DeviceLogic class in the future
+        //TODO No control on devices being in two facilities at once, plus once a device has been moved somewhere else,
+        // it will still always be included in facilities that used to have it
+
+        //First fetch the correct LocationObservations, whose Location's 'to' field is our Facility
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+        LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
+        locationObservationSearchFilter.setTo(facilityUri);
+        final int pageSizePerIter = 50;
+        int currentPage = 0;
+        boolean done = false;
+        locationObservationSearchFilter.setPageSize(pageSizePerIter);
+        ListWithPagination<LocationObservationModel> nextLot = null;
+        List<URI> featuresOfInterest = new ArrayList<>();
+        while (!done) {
+            locationObservationSearchFilter.setPage(currentPage);
+            nextLot = locationObservationLogic.searchLocationObservations(locationObservationSearchFilter);
+            if(nextLot.getList().size() < pageSizePerIter) {
+                done = true;
+            }
+            featuresOfInterest.addAll(nextLot.getList().stream().map(LocationObservationModel::getFeatureOfInterest).toList());
+            currentPage++;
+        }
+
+        //Then use the feature of interests to run a Device search
+        List<DeviceModel> results = dao.getDevicesByURI(featuresOfInterest, currentUser);
 
         if (results == null) {
             return new PaginatedListResponse<>().getResponse();

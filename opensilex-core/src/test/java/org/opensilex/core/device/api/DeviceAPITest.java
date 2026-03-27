@@ -24,11 +24,12 @@ import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -42,10 +43,7 @@ import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.group.api.GroupAPI;
-import org.opensilex.security.group.api.GroupCreationDTO;
-import org.opensilex.security.group.api.GroupDTO;
-import org.opensilex.security.group.api.GroupUserProfileModificationDTO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
@@ -74,7 +72,6 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author rcolin
@@ -150,10 +147,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
                 .executeCallAndAssertStatus(Response.Status.CREATED);
 
         DeviceCreationDTO dto2 = getCreationDto();
-        dto2.setName("WrongMetadataDevice");
+        dto2.setName("WrongMetadataDevice-softwareType");
         Map<String, String> wrongMetadata = new HashMap<>();
         wrongMetadata.put("no", "nono");
         dto2.setMetadata(wrongMetadata);
+        dto2.setType(URI.create(Oeso.Software.getURI()));
 
         new UserCallBuilder(create)
                 .setBody(dto2)
@@ -171,7 +169,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         assertFalse(foundDevices.isEmpty());
         assertEquals(1, foundDevices.size());
-        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+        assertEquals("name", foundDevices.get(0).name);
 
         //Test search by name
         PaginatedListResponse<DeviceGetDTO> listResponse2 = new UserCallBuilder(search).addParam("name", "name")
@@ -181,7 +179,29 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         foundDevices = listResponse2.getResult();
         assertFalse(foundDevices.isEmpty());
         assertEquals(1, foundDevices.size());
-        assertEquals("name", (!foundDevices.isEmpty() ? foundDevices.get(0).name : "stringToMakeTestFail"));
+        assertEquals("name", foundDevices.get(0).name);
+
+        //Test search by type
+        PaginatedListResponse<DeviceGetDTO> listResponse3 = new UserCallBuilder(search).addParam("rdf_type", Oeso.Software.getURI())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        foundDevices = listResponse3.getResult();
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("WrongMetadataDevice-softwareType", foundDevices.get(0).name);
+
+        //Test search by type with include_subtypes = true
+        PaginatedListResponse<DeviceGetDTO> listResponse4 = new UserCallBuilder(search)
+                .addParam("rdf_type", Oeso.Software.getURI())
+                .addParam("include_subtypes", "true")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {})
+                .getDeserializedResponse();
+        foundDevices = listResponse4.getResult();
+        assertFalse(foundDevices.isEmpty());
+        assertEquals(1, foundDevices.size());
+        assertEquals("WrongMetadataDevice-softwareType", foundDevices.get(0).name);
     }
 
     @Test
@@ -331,13 +351,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         Response postDataProvResult = getJsonPostResponseAsAdmin(target(dataPath), Collections.singletonList(dataDto));
         assertEquals(Response.Status.CREATED.getStatusCode(),postDataProvResult.getStatus());
 
-        // try to delete device -> expect error 404 with result.title = LINKED_DEVICE_ERROR
         final Response delResult = getDeleteByUriResponse(target(deletePath), deviceDto.getUri().toString());
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),delResult.getStatus());
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(),delResult.getStatus());
 
         JsonNode node = delResult.readEntity(JsonNode.class);
         ErrorResponse getResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
-        assertEquals(DeviceAPI.LINKED_DEVICE_ERROR,getResponse.getResult().title);
         assertTrue(getResponse.getResult().message.contains("data"));
     }
 
@@ -365,11 +383,10 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // try to delete device -> expect error 404 with result.title = LINKED_DEVICE_ERROR
         final Response delResult = getDeleteByUriResponse(target(deletePath), deviceDto.getUri().toString());
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),delResult.getStatus());
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(),delResult.getStatus());
 
         JsonNode node = delResult.readEntity(JsonNode.class);
         ErrorResponse getResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
-        assertEquals(DeviceAPI.LINKED_DEVICE_ERROR,getResponse.getResult().title);
         assertTrue(getResponse.getResult().message.contains("provenance"));
     }
 
@@ -443,13 +460,23 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         MoveModel moveModel = new MoveModel();
         moveModel.setType(URI.create(Oeev.Move.getURI()));
         moveModel.setTargets(Arrays.asList(device));
-        moveModel.setFrom(fromFacility);
-        moveModel.setTo(toFacility);
+
+        //Moves now depend on LocationObservations so we first need to make that
+        LocationModel locationModel = new LocationModel();
+        locationModel.setFrom(fromFacility.getUri());
+        locationModel.setTo(toFacility.getUri());
         moveModel.setIsInstant(true);
         InstantModel endInstant = new InstantModel();
         endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
         moveModel.setEnd(endInstant);
-        getSparqlService().create(moveModel);
+
+        LocationObservationModel locationObservationModel = new LocationObservationModel();
+        locationObservationModel.setHasGeometry(false);
+        locationObservationModel.setLocation(locationModel);
+        moveModel.setLocationObservation(locationObservationModel);
+
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), AccountModel.getSystemUser());
+        moveLogic.create(moveModel);
 
         return moveModel;
     }
@@ -544,7 +571,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         //build params
         ArrayList<URI> propsList= new ArrayList<>();
-        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
+        //propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
         propsList.add(new URI("vocabulary:hasModel"));
         propsList.add(new URI("vocabulary:startUp"));
         propsList.add(new URI("vocabulary:hasBrand"));

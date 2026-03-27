@@ -144,7 +144,7 @@ public final class AccountDAO {
         Objects.requireNonNull(instanceURI);
         List<String> predicateUrisToExclude = new ArrayList<>();
         predicateUrisToExclude.add(FOAF.account.getURI());
-        sparql.requireUriIsNotLinkedWithOtherRessourcesInRDF(instanceURI, predicateUrisToExclude);
+        sparql.requireUriIsNotLinkedWithOtherResourcesInRDF(instanceURI, predicateUrisToExclude);
         requireAccountUriIsNotLinkedWithOtherRessourcesInNosql(instanceURI, openSilex);
 
         sparql.delete(AccountModel.class, instanceURI);

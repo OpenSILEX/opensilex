@@ -9,15 +9,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name","is_public","groups",})
 public class GermplasmGetAllDTO {
 
     /**
@@ -61,6 +66,21 @@ public class GermplasmGetAllDTO {
      */
     @JsonProperty("species_name")
     protected String speciesName;
+
+    @JsonProperty("is_public")
+    protected Boolean isPublic;
+
+    @JsonProperty("groups")
+    protected List<URI> groups = new ArrayList<>();
+
+    public List<URI> setGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
+    }
+
 
     public URI getUri() {
         return uri;
@@ -126,6 +146,14 @@ public class GermplasmGetAllDTO {
         this.publicationDate = publicationDate;
     }
 
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     public OffsetDateTime getLastUpdatedDate() {
         return lastUpdatedDate;
     }
@@ -147,6 +175,9 @@ public class GermplasmGetAllDTO {
         dto.setRdfType(model.getType());
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
+        dto.setIsPublic(model.getIsPublic());
+        dto.setGroups(SPARQLResourceModel.getUriList(model.getGroups()));
+
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());

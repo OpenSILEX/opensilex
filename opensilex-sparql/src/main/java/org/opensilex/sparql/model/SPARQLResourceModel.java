@@ -5,24 +5,20 @@
 //******************************************************************************
 package org.opensilex.sparql.model;
 
-import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 import org.apache.jena.rdf.model.Property;
-
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
-import org.opensilex.sparql.annotations.SPARQLTypeRDF;
-import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
+import org.opensilex.sparql.annotations.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.utils.Ontology;
+
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -74,8 +70,11 @@ public class SPARQLResourceModel implements SPARQLModel {
         return uri;
     }
 
+    /**
+     * Set the uri after decoding it with UTF-8 to avoid issues with special characters in the URI (e.g : spaces encoded as %20)
+     */
     public void setUri(URI uri) {
-        this.uri = uri;
+        this.uri = uri == null ? null : URI.create(URLDecoder.decode(uri.toString(), StandardCharsets.UTF_8));
     }
 
     public URI getType() {
@@ -150,6 +149,9 @@ public class SPARQLResourceModel implements SPARQLModel {
             return false;
         }
         final SPARQLResourceModel other = (SPARQLResourceModel) obj;
+        if (this.uri == null || other.uri == null) {
+            return false;
+        }
         return SPARQLDeserializers.compareURIs(this.uri, other.uri);
     }
 
@@ -167,5 +169,15 @@ public class SPARQLResourceModel implements SPARQLModel {
 
         this.relations.add(r);
     }
+
+    public static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
+        if (models == null || models.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return models.stream()
+                .map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
 
 }

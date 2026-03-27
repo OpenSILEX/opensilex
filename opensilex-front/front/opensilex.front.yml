@@ -326,6 +326,8 @@ routes:
   #   component: opensilex-ExperimentView
   # - path: /experiment/factors/:uri
   #   component: opensilex-ExperimentView
+  #  - path: /experiment/datafiles/:uri
+  #    component: opensilex-ExperimentView
 
   # - path: /facility/details/:uri
   #   component: opensilex-FacilityView
@@ -355,7 +357,7 @@ routes:
   - path: /variable/details/:uri
     component: opensilex-VariableView
     credentials: []
-    
+
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
   # - path: /variable/visualization/:uri
@@ -475,10 +477,10 @@ routes:
     component: opensilex-HomeView
     name: HomeView
     icon: fa#hourglass-half
-    credentials: 
+    credentials:
     - private
 
-    
+
   ## Public routes
   - path: /forgot-password
     component: opensilex-ForgotPassword

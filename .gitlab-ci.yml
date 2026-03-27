@@ -65,7 +65,7 @@ variables:
   #EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
   GITLAB_HTTPS: "false"
-  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache 
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
 
   SONAR_MAVEN_SETTINGS: |
       <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
@@ -86,13 +86,13 @@ build-for-sonar:
   variables:
     GIT_DEPTH: "0"
   stage: doc_and_metrics
-  cache: 
+  cache:
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
       - $MAVEN_CACHE_FOLDER
   script:
-    - mkdir -p sonarqube_reports_log 
-    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild 
+    - mkdir -p sonarqube_reports_log
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild
   artifacts:
     paths:
       - sonarqube_reports_log
@@ -118,7 +118,7 @@ sonar-analysis:
   needs:
     - job: build-for-sonar
       artifacts: true
-  cache: 
+  cache:
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
       - "${SONAR_USER_HOME}/cache"
@@ -139,7 +139,7 @@ sonar-analysis:
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
-  
+
 ########################
 ##  CACHE TEMPLATE
 ########################
@@ -231,8 +231,7 @@ sonar-analysis:
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
   tags:
-    - forge_inrae # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
-                # to our instances through SSH.
+    - forge_inrae
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -651,7 +650,7 @@ update:nightly:builds:branch:
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
  
- 
+
 .with_java21: &java21
   variables:
     JAVA_VERSION: 21  
@@ -1099,34 +1098,34 @@ test:temporary3:deploy:
     needs:
         - test:temporary3:build
 
-###################################
-##  temporary4-TEST-BUILD-DEPLOYMENT
-###################################
+#######################################
+##  vue3-TEST-SNAPSHOT-DEPLOYMENT
+#######################################
 
-test:temporary4:build:
-    <<: *build_template_with_opensilex
-    variables:
-        MAVEN_SKIP_TESTS: "true"
-    rules:
-        - if: $CI_COMMIT_BRANCH == "test/temporary4"
+test:vue3:build:
+  <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "vue3/main"
 
-test:temporary4:deploy:
-    <<: *deploy_opensilex_before_script
-    <<: *deploy_opensilex_template
-    variables:
-        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary4"
-        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
-        OPENSILEX_JAR_ADMIN_PORT: 4098
-        OPENSILEX_JAR_PORT: 8098
-        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary4"
-        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-    rules:
-        - if: $CI_COMMIT_BRANCH == "test/temporary4"
-          when: on_success
-    needs:
-        - test:temporary4:build
+test:vue3:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vue3"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4098
+    OPENSILEX_JAR_PORT: 8098
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
+    REMOTE_SERVER_RSYNC_DIR: "mistea/vue3"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "vue3/main"
+      when: on_success
+  needs:
+    - test:vue3:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

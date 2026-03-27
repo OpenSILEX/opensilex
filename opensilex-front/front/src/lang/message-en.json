@@ -14,6 +14,31 @@
                 "semicolon" : "Semicolon (;)",
                 "tab" : "Tab (\\t)"
             },
+            "geometry": {
+                "geometry-title": "Geospatial coordinates",
+                "geometry-help": "Geospatial coordinates in WKT format",
+                "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
+                "x": "X",
+                "y": "Y",
+                "z": "Z",
+                "textual-position": "Textual position",
+                "from": "From",
+                "too": "Too",
+                "coordinates": "Coordinates",
+                "from-help": "Starting facility URI (The facility must exist, and the 'to' field must be filled).",
+                "to-help": "Arrival facility URI (The facility must exist).",
+                "x-help": "1th dimension of a custom coordinate system",
+                "y-help": "2nd dimension of a custom coordinate system",
+                "z-help": "3rd dimension of a custom coordinate system",
+                "textual-position-help": "Description of the position with text",
+                "x-placeholder": "A or 10 or 10.5",
+                "y-placeholder": "A or 10 or 10.5",
+                "z-placeholder": "A or 10 or 10.5",
+                "textual-position-placeholder": "Beside the left door",
+                "from-placeholder": "dev-infra:greenHouseA",
+                "to-placeholder": "dev-infra:greenHouseB",
+                "coordinates-placeholder": "POINT Z(1 1 80)"
+            },
             "month": "month",
             "months": "months",
             "day":"day",
@@ -71,9 +96,6 @@
             "species":"Species",
             "period":"Period",
             "year":"Year",
-            "geometry": "Geospatial coordinates",
-            "geometry-help": "Geospatial coordinates in WKT format",
-            "geometry-address-warning": "The spatial coordinates from this address were not found. Try to update with another address",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",
@@ -173,6 +195,7 @@
             "addDocument": "Add document",
             "warningInstruction" : "Experimental feature",
             "organization": {
+                "description": "Manage and configure organizations",
                 "site": "Site",
                 "sites": "Sites"
             }
@@ -890,6 +913,14 @@
             "finish" : "Finish",
             "label": "Explain me by example",
             "name": "Form Tutorial"    
+        },
+        "system": {
+            "title": "System",
+            "description": "Informations about information systeme"
+        },
+        "packages": {
+            "title": "Packages",
+            "description": "Set of packages that allows access to the webservice"
         }
     },
     "credential-groups": {

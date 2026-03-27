@@ -14,6 +14,31 @@
                 "semicolon" : "Point virgule (;)",
                 "tab" : "Tabulation (\\t)"
             },
+            "geometry": {
+                "geometry": "Coordonnées géospatiales",
+                "geometry-help": "Coordonnées géospatiales au format WKT",
+                "geometry-address-warning": "Les coordonnées spatiales de cette adresse n'ont pas été trouvées. Essayer de mettre à jour avec une autre adresse",
+                "x": "X",
+                "y": "Y",
+                "z": "Z",
+                "textual-position": "Position textuelle",
+                "from": "De",
+                "too": "Vers",
+                "coordinates": "Coordonnées",
+                "from-help": "URI de l'installation environnementale de départ (L'installation doit exister et le champs 'to' doit être remplie).",
+                "to-help": "URI de l'installation environnementale d'arrivée (L'installation doit exister).",
+                "x-help": "1ère dimension d'un système de coordonnées",
+                "y-help": "2ème dimension d'un système de coordonnées",
+                "z-help": "3ème dimension d'un système de coordonnées",
+                "textual-position-help": "Description textuelle de la position",
+                "x-placeholder": "A ou 10 ou 10,5",
+                "y-placeholder": "A ou 10 ou 10,5",
+                "z-placeholder": "A ou 10 ou 10,5",
+                "textual-position-placeholder": "à côté de la porte gauche",
+                "from-placeholder": "dev-infra:serreA",
+                "to-placeholder": "dev-infra:serreB",
+                "coordinates-placeholder": "POINT Z(1 1 80)"
+            },
             "month": "mois",
             "months": "mois",
             "day":"jour",
@@ -71,9 +96,6 @@
             "species":"Espèces",
             "period":"Période",
             "year":"Année",
-            "geometry": "Coordonnées géospatiales",
-            "geometry-help": "Coordonnées géospatiales au format WKT",
-            "geometry-address-warning": "Les coordonnées spatiales de cette adresse n'ont pas été trouvées. Essayer de mettre à jour avec une autre adresse",
             "select-all" : "Sélectionner les elements de toutes les pages",
             "select-allp" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
@@ -174,6 +196,7 @@
             "addDocument": "Ajouter un document",
             "warningInstruction" : "Fonctionnalité expérimentale",
             "organization": {
+                "description": "Gérer et configurer les organisations",
                 "site": "Site",
                 "sites": "Sites"
             }
@@ -947,6 +970,14 @@
             "finish" : "Fin",
             "label": "Expliquez moi avec un exemple",
             "name": "Tutoriel du formulaire"    
+        },
+        "system": {
+            "title": "Système",
+            "description": "Informations à propos du système d'information"
+        },
+        "packages": {
+            "title": "Librairies",
+            "description": "Ensemble de bibliothèque logicielles qui permet l'accès au webservice"
         }
     },
     "credential-groups": {

@@ -173,11 +173,8 @@ sonar-analysis:
   stage: build
   image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION-focal
   script:
-    - /usr/bin/node -v
-    - sudo apt remove -y nodejs
-    - sudo apt autoremove -y
-    - curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash
-    - sudo apt install -y nodejs
+    - curl -fsSL https://deb.nodesource.com/setup_22.x | bash
+    - apt install -y nodejs
     - /usr/bin/node -v
     - node -v
     - mvn clean install $MVN_PROFILE $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION -DskipTests=$MAVEN_SKIP_TESTS

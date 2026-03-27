@@ -63,6 +63,80 @@ variables:
   #EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
   GITLAB_HTTPS: "false"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+
+  SONAR_MAVEN_SETTINGS: |
+      <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                    http://maven.apache.org/xsd/settings-1.0.0.xsd"> 
+        <servers> 
+          <server>
+            <id>ossindex</id>
+            <username>$SONARQUBE_M2_SETTINGS_OSS_INDEX_ACCOUNT</username>
+            <password>$SONARQUBE_M2_SETTINGS_OSS_INDEX_PWD</password>
+          </server> 
+        </servers> 
+      </settings>
+
+build-for-sonar:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: doc_and_metrics
+  cache:
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - $MAVEN_CACHE_FOLDER
+  script:
+    - mkdir -p sonarqube_reports_log
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+      - target
+      - opensilex-release/
+      - "**/target/"
+    expire_in: 2 hour
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+  rules:
+    -   if: $CI_COMMIT_BRANCH == 'develop'
+
+sonar-analysis:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: doc_and_metrics
+  needs:
+    - job: build-for-sonar
+      artifacts: true
+  cache:
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - "${SONAR_USER_HOME}/cache"
+      - sonar-scanner/
+  script:
+    - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=error -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
 
 ########################
 ##  CACHE TEMPLATE
@@ -155,8 +229,7 @@ variables:
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
   tags:
-    - runnermia # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
-                # to our instances through SSH.
+    - forge_inrae
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -576,16 +649,11 @@ update:nightly:builds:branch:
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
  
 
-.with_java11: &java11
-  variables:
-    JAVA_VERSION: 11
-    MVN_PROFILE: "for-java-11" 
-    
 .with_java21: &java21
   variables:
     JAVA_VERSION: 21  
 
-test:build:java11: 
+test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
@@ -1054,33 +1122,33 @@ test:temporary3:deploy:
     - test:temporary3:build
 
 #######################################
-##  TEMPORARY4-TEST-SNAPSHOT-DEPLOYMENT
+##  vue3-TEST-SNAPSHOT-DEPLOYMENT
 #######################################
 
-test:temporary4:build:
+test:vue3:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary4"
+    - if: $CI_COMMIT_BRANCH == "vue3/main"
 
-test:temporary4:deploy:
+test:vue3:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary4"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vue3"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4098
     OPENSILEX_JAR_PORT: 8098
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary4"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/vue3"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary4"
+    - if: $CI_COMMIT_BRANCH == "vue3/main"
       when: on_success
   needs:
-    - test:temporary4:build
+    - test:vue3:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

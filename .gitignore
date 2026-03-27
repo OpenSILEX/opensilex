@@ -12,12 +12,10 @@ opensilex-doc/src/main/resources/generated/
 **/inrae-sixtine
 **/opensilex-data-analysis
 **/*.iml
-opensilex-front/front/src/opensilex.dev.ts
 owasp-dependency-check-logs
 site
 kotlin.log
 opensilex-main/dependency-reduced-pom.xml
-opensilex-front/front/src/opensilex.dev.ts
 sonarqube_reports_log/*
 
 **/opensilex-brapi/dist
@@ -45,3 +43,6 @@ sonarqube_reports_log/*
 **/opensilex-front/src/lib
 **/opensilex-front/types
 opensilex-front/front/src/opensilex.dev.ts
+
+**package-lock.json
+**yarn.lock

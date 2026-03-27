@@ -1114,7 +1114,7 @@ test:vue3:build:
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "vue3/main"
+    - if: $CI_COMMIT_BRANCH == "vue3/ci-cd"
 
 test:vue3:deploy:
   <<: *deploy_opensilex_before_script

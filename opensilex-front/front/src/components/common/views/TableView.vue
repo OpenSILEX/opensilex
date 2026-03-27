@@ -116,8 +116,10 @@ const pageSizeOptions = [
 ];
 
 // Tri
-const sortKey = ref<string | null>(props.defaultSortBy || null);
-const sortOrder = ref<'ascend' | 'descend' | null>('ascend');
+const sortKey = ref<string | null>(props.sortBy || props.defaultSortBy || null);
+const sortOrder = ref<'ascend' | 'descend' | null>(
+  sortKey.value ? (props.sortDesc ? 'descend' : 'ascend') : null
+);
 
 function handleSort({ columnKey, order }: { columnKey: string; order: 'ascend' | 'descend' | false }) {
   sortKey.value = order ? columnKey : null;
@@ -136,18 +138,29 @@ const filteredItems = computed(() => {
     );
   }
 
-  if (sortKey.value && sortOrder.value) {
-    items.sort((a, b) => {
-      const aVal = a[sortKey.value!];
-      const bVal = b[sortKey.value!];
+if (sortKey.value && sortOrder.value) {
+  items.sort((a, b) => {
+    const aVal = a[sortKey.value!];
+    const bVal = b[sortKey.value!];
 
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      if (aVal < bVal) return sortOrder.value === 'ascend' ? -1 : 1;
-      if (aVal > bVal) return sortOrder.value === 'ascend' ? 1 : -1;
-      return 0;
-    });
-  }
+    if (aVal == null) return 1;
+    if (bVal == null) return -1;
+
+    let comparison = 0;
+
+    if (typeof aVal === "string" && typeof bVal === "string") {
+      // permet d'éviter la sensibilité à la casse et d'avoir par exemple ("Zorga" avant "aorga" dans les listes)
+      comparison = aVal.localeCompare(bVal, undefined, {
+        sensitivity: "base",
+      });
+    } else {
+      if (aVal < bVal) comparison = -1;
+      else if (aVal > bVal) comparison = 1;
+    }
+
+    return sortOrder.value === "ascend" ? comparison : -comparison;
+  });
+}
 
   return items;
 });

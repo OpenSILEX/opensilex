@@ -10,14 +10,14 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </span>
 
-      <!-- <span
+      <span
         class="badge bg-secondary copy"
         :title="t('component.copyGeometryGeoJSON')"
-        @click.prevent.stop="copyGeometry(JSON.stringify(value), 'GeoJSON')"
+        @click.prevent.stop="copyGeometry(JSON.geojsonToWKT(value), 'GeoJSON')"
       >
         {{ t('component.geometryGeoJSON') }}
         <opensilex-Icon icon="ik#ik-copy" />
-      </span> -->
+      </span>
     </div>
   </opensilex-StringView>
 </template>
@@ -26,6 +26,7 @@
 import { inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 // import { stringify } from 'wkt'
+import { wktToGeoJSON, geojsonToWKT } from '@terraformer/wkt'
 import copy from 'copy-to-clipboard'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 
@@ -44,8 +45,7 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 function wktValue(geometry: any): string {
   try {
-    // return stringify(geometry)
-    return geometry
+    return geojsonToWKT(geometry)
   } catch {
     return ''
   }

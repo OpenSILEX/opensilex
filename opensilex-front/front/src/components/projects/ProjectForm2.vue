@@ -87,18 +87,18 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-.divHelpMsg {
-  display: flex;
-  background-color: rgba(0, 162, 140, 0.1);
-  border: 1px solid rgba(0, 162, 140, 0.5);
-  border-radius: 5px;
-  padding: 1rem;
-  margin: 0.5rem 0;
-  p {
-    margin: 0;
-    padding: 0;
-  }
-}
+// .divHelpMsg {
+//   display: flex;
+//   background-color: rgba(0, 162, 140, 0.1);
+//   border: 1px solid rgba(0, 162, 140, 0.5);
+//   border-radius: 5px;
+//   padding: 1rem;
+//   margin: 0.5rem 0;
+//   p {
+//     margin: 0;
+//     padding: 0;
+//   }
+// }
 </style>
 
 <i18n>

@@ -12,6 +12,8 @@
           :clearable="false"
           :input-props="{ id: field.id }"
           format="dd/MM/yyyy HH:mm"
+          :update-value-on-close="true"
+          :actions="['now']"
         />
         <n-button
           class="clear-btn"

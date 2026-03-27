@@ -14,25 +14,25 @@
     <div class="row">
       <div class="col-lg-5">
         <opensilex-FacilitySelector
-          label="LocationForm.from"
+          :label="t('LocationForm.from')"
           v-model:facilities="formState.from"
           :multiple="false"
           :required="fromRequired"
           @select="updateRequiredProps"
           @clear="updateRequiredProps"
-          helpMessage="LocationForm.from-help"
+          :helpMessage="t('LocationForm.from-help')"
         />
       </div>
 
       <div class="col-lg-5">
         <opensilex-FacilitySelector
-          label="LocationForm.to"
+          :label="t('LocationForm.to')"
           v-model:facilities="formState.to"
           :multiple="false"
           :required="toRequired"
           @select="updateRequiredProps"
           @clear="updateRequiredProps"
-          helpMessage="LocationForm.to-help"
+          :helpMessage="t('LocationForm.to-help')"
         />
       </div>
     </div>
@@ -48,6 +48,7 @@
             v-model:value="formState.geojson"
             label="component.common.geometry.geometry-title"
             helpMessage="component.common.geometry.geometry-help"
+            :placeholder="t('LocationsForm.geometry')"
             :required="false"
           />
         </div>
@@ -59,8 +60,8 @@
           <opensilex-InputForm
             v-model:value="formState.x"
             label="component.common.geometry.x"
-            helpMessage="LocationForm.x-help"
-            placeholder="LocationForm.x-placeholder"
+            :helpMessage="t('LocationForm.x-help')"
+            :placeholder="t('LocationForm.x-placeholder')"
             type="text"
           />
         </div>
@@ -69,8 +70,8 @@
           <opensilex-InputForm
             v-model:value="formState.y"
             label="component.common.geometry.y"
-            helpMessage="LocationForm.y-help"
-            placeholder="LocationForm.y-placeholder"
+            :helpMessage="t('LocationForm.y-help')"
+            :placeholder="t('LocationForm.y-placeholder')"
             type="text"
           />
         </div>
@@ -79,8 +80,8 @@
           <opensilex-InputForm
             v-model:value="formState.z"
             label="component.common.geometry.z"
-            helpMessage="LocationForm.z-help"
-            placeholder="LocationForm.z-placeholder"
+            :helpMessage="t('LocationForm.z-help')"
+            :placeholder="t('LocationForm.z-placeholder')"
             type="text"
           />
         </div>
@@ -92,8 +93,8 @@
           <opensilex-TextAreaForm
             v-model:value="formState.text"
             label="component.common.geometry.textual-position"
-            helpMessage="LocationForm.textual-position-help"
-            placeholder="LocationForm.textual-position-placeholder"
+            :helpMessage="t('LocationForm.textual-position-help')"
+            :placeholder="t('LocationForm.textual-position-placeholder')"
             @keydown.enter.stop
           />
         </div>
@@ -248,6 +249,7 @@ en:
     to: To
     to-placeholder: dev-infra:greenHouseB
     to-help: "Arrival facility URI (The facility must exists)."
+    geometry: POINT (10 10) or POLYGON((4 5, 0 55, 100 78, 4 5))
 fr:
   LocationForm:
     update: Modifier la localisation
@@ -266,4 +268,5 @@ fr:
     to: Vers
     to-placeholder: dev-infra:serreB
     to-help: "URI de l'installation environnementale d'arrivée (L'installation doit exister)."
+    geometry: POINT (10 10) ou POLYGON((4 5, 0 55, 100 78, 4 5))
 </i18n>

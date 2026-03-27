@@ -3,12 +3,12 @@
     "version": "0.1.0",
     "private": true,
     "type": "module",
-    "license":"AGPL-3.0-only",
+    "license": "AGPL-3.0-only",
     "main": "./dist/mopensilex-front.umd.min.js",
     "module": "./dist/opensilex-front.umd.min.js",
     "exports": {
         ".": {
-        "import": "./dist/opensilex-front.umd.min.js"
+            "import": "./dist/opensilex-front.umd.min.js"
         }
     },
     "scripts": {
@@ -20,6 +20,7 @@
         "check:security": "yarn audit || cd ."
     },
     "dependencies": {
+        "@terraformer/wkt": "^2.2.1",
         "bootstrap": "^5.3.6",
         "bootstrap-icons": "^1.13.1",
         "copy-to-clipboard": "^3.3.3",
@@ -29,11 +30,12 @@
         "vue-router": "^4.5.1",
         "vue3-cookies": "^1.0.6"
     },
-    "peerDependencies":{
+    "peerDependencies": {
         "vue-router": "^4.5.1"
     },
     "devDependencies": {
-        "@intlify/unplugin-vue-i18n": "^6.0.8"
+        "@intlify/unplugin-vue-i18n": "^6.0.8",
+        "@types/terraformer__wkt": "^2.0.3"
     },
     "eslintConfig": {
         "root": true,

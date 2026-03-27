@@ -10,6 +10,7 @@
     @onCreate="(e) => emit('onCreate', e)"
     @onUpdate="(e) => emit('onUpdate', e)"
     :initForm="getEmptyForm"
+    :validateAction="validateFacility"
     modalSize="lg"
   />
 </template>
@@ -101,6 +102,10 @@ function flattenRelations(relations: any[]) {
 
 function showCreateForm() {
   wizardRef.value?.showCreateForm?.()
+}
+
+function validateFacility(form: FacilityCreationDTO) {
+  return Boolean(form.rdf_type && form.name?.trim())
 }
 
 async function showEditForm(uri: string) {

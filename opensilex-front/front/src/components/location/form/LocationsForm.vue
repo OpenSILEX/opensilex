@@ -13,32 +13,44 @@
         v-model:startDate="position.startDate"
         v-model:endDate="position.endDate"
         :start_required="false"
-        :end_required="Boolean(position.geojson) || Boolean(position.startDate)"
+        :end_required="Boolean(position.startDate || position.geojson)"
         v-model:isInstant="currentLocationIsInstant"
         :canBeInstant="true"
+        :enforceInternalRequiredRules="false"
       />
+
+      <div v-if="endDateError" class="field-error mb-2">
+        {{ endDateError }}
+      </div>
 
       <div class="row">
         <!-- Geometry -->
         <div class="col-8">
-          <!-- <opensilex-GeometryForm
+          <opensilex-GeometryForm
             v-model:value="position.geojson"
-            label="component.common.geometry.geometry-title"
+            :label="t('component.common.geometry.geometry-title')"
             :required="Boolean(position.endDate)"
-            placeholder="LocationsForm.geometry"
+            :placeholder="t('LocationsForm.geometry')"
             @onUpdate="checkGeometryNotSaved"
-          /> -->
+          />
+          <div v-if="geometryError" class="field-error mt-1">
+            {{ geometryError }}
+          </div>
         </div>
 
         <!-- Add position -->
-        <div class="col-4" style="padding-top: 25px">
+        <div class="col-4" style="margin-top: 35px">
           <opensilex-AddChildButton
             @click="addPosition"
-            label="LocationsForm.add-position"
+            :label="t('LocationsForm.add-position')"
             :small="true"
           />
           <span> {{ t('LocationsForm.add-position') }}</span>
         </div>
+      </div>
+
+      <div v-if="draftPositionError" class="field-error mt-2">
+        {{ draftPositionError }}
       </div>
     </div>
 
@@ -51,7 +63,6 @@
       <template #cell(endDate)="{ data }">
         <opensilex-DateView :value="data.item.endDate" />
 
-        <!-- Warning iff endDate == 1970 (migration default) -->
         <div
           v-if="data.item.endDate === DEFAULT_DATE"
           class="alert alert-warning mt-2"
@@ -61,9 +72,9 @@
         </div>
       </template>
 
-      <!-- <template #cell(geometry)="{ data }"> -->
-        <!-- <opensilex-GeometryCopy label="" :value="data.item.geojson" /> -->
-      <!-- </template> -->
+      <template #cell(geometry)="{ data }">
+        <opensilex-GeometryCopy label="" :value="data.item.geojson" />
+      </template>
 
       <template #cell(actions)="{ data }">
         <n-button-group size="small">
@@ -75,6 +86,7 @@
           <opensilex-DeleteButton
             @click="deletePosition(data)"
             label="component.common.list.buttons.delete"
+            :small="true"
           />
         </n-button-group>
       </template>
@@ -84,7 +96,7 @@
     <opensilex-WizardForm
       ref="locationFormRef"
       :steps="locationSteps"
-      editTitle="LocationsForm.update"
+      :editTitle="t('LocationsForm.update')"
       icon="ik#ik-globe"
       :static="false"
       :initForm="getEmptyLocationForm"
@@ -112,7 +124,6 @@ const props = defineProps<{
   form: FacilityUpdateDTO
 }>()
 
-// v-model replacement of PropSync("form")
 const facility = ref<FacilityUpdateDTO>(props.form)
 watch(
   () => props.form,
@@ -140,27 +151,58 @@ function getPositionEmpty(): LocationObservationDTO {
 const position = ref<LocationObservationDTO>(getPositionEmpty())
 const currentLocationIsInstant = ref(true)
 
-// Table fields
+const endDateError = ref('')
+const geometryError = ref('')
+const draftPositionError = ref('')
+
+// Nettoyage des erreurs au fil de la saisie
+watch(
+  () => position.value.startDate,
+  () => {
+    draftPositionError.value = ''
+    if (position.value.startDate && position.value.endDate) {
+      endDateError.value = ''
+    }
+  }
+)
+
+watch(
+  () => position.value.endDate,
+  (v) => {
+    draftPositionError.value = ''
+    if (v) {
+      endDateError.value = ''
+    }
+  }
+)
+
+watch(
+  () => position.value.geojson,
+  (v) => {
+    draftPositionError.value = ''
+    if (v) {
+      geometryError.value = ''
+    }
+  }
+)
+
 const fields = computed(() => [
-  { key: 'startDate', label: 'component.common.begin', sortable: true },
-  { key: 'endDate', label: 'component.common.end', sortable: true },
-  { key: 'geometry', label: 'component.common.geometry.geometry-title' },
-  { key: 'actions', label: 'component.common.actions' }
+  { key: 'startDate', label: t('component.common.begin'), sortable: true },
+  { key: 'endDate', label: t('component.common.end'), sortable: true },
+  { key: 'geometry', label: t('component.common.geometry.geometry-title') },
+  { key: 'actions', label: t('component.common.actions') }
 ])
 
 const locationSteps = computed(() => [
   {
     component: 'opensilex-LocationForm',
-    title: 'LocationsForm.update' // nécessaire pour WizardForm (sinon t(undefined))
+    title: t('LocationsForm.update')
   }
 ])
 
 const locationFormRef = ref<any>(null)
 const index = ref<number>(-1)
 
-/**
- * Check if endDate & geometry are filled but not "saved" via addPosition.
- */
 function checkGeometryNotSaved() {
   const hasEndDate = !!position.value.endDate
   const hasGeometry = !!position.value.geojson
@@ -170,9 +212,6 @@ function checkGeometryNotSaved() {
   }
 }
 
-/**
- * Simulate validation of addPosition: is the position already in the list.
- */
 function positionIsValid(): boolean {
   const locs = facility.value.locations ?? []
   return locs.some(
@@ -181,17 +220,55 @@ function positionIsValid(): boolean {
 }
 
 function addPosition() {
-  if (position.value.geojson && position.value.endDate) {
-    if (!Array.isArray(facility.value.locations)) facility.value.locations = [] as any
-    facility.value.locations.push({ ...position.value } as any)
-    position.value = getPositionEmpty()
-    emit('positionIsValid')
+  endDateError.value = ''
+  geometryError.value = ''
+  draftPositionError.value = ''
+
+  const hasStart = !!position.value.startDate
+  const hasEnd = !!position.value.endDate
+  const hasGeometry = !!position.value.geojson
+
+  // Rien saisi : on ne fait rien
+  if (!hasStart && !hasEnd && !hasGeometry) {
+    return
   }
+
+  // Si début saisi -> fin obligatoire
+  if (hasStart && !hasEnd) {
+    endDateError.value = t('validations.required_if', {
+      _field_: t('component.common.end') as string
+    }) as string
+    return
+  }
+
+  // Si géométrie saisie -> fin obligatoire
+  if (hasGeometry && !hasEnd) {
+    endDateError.value = t('validations.required_if', {
+      _field_: t('component.common.end') as string
+    }) as string
+    return
+  }
+
+  // Si fin saisie -> géométrie obligatoire
+  if (hasEnd && !hasGeometry) {
+    geometryError.value = t('validations.required_if', {
+      _field_: t('component.common.geometry.geometry-title') as string
+    }) as string
+    return
+  }
+
+  if (!Array.isArray(facility.value.locations)) {
+    facility.value.locations = [] as any
+  }
+
+  facility.value.locations.push({ ...position.value } as any)
+  position.value = getPositionEmpty()
+  currentLocationIsInstant.value = true
+  emit('positionIsValid')
 }
 
 function updatePosition(data: any) {
   index.value = data.index
-  // copie pour éviter la mutation directe
   const form = JSON.parse(JSON.stringify(data.item))
   locationFormRef.value?.showEditForm?.(form)
 }
@@ -223,14 +300,55 @@ function updateLocationForm(form: any) {
   emit('onUpdate')
 }
 
-// Wizard compatibility
 function reset() {
   position.value = getPositionEmpty()
+  currentLocationIsInstant.value = true
+  endDateError.value = ''
+  geometryError.value = ''
+  draftPositionError.value = ''
 }
 
 async function validate() {
-  // À voir si on veut une validation plus stricte : return Boolean(position.value.geojson || position.value.text ...)
-  return true
+  endDateError.value = ''
+  geometryError.value = ''
+  draftPositionError.value = ''
+
+  const hasStart = !!position.value.startDate
+  const hasEnd = !!position.value.endDate
+  const hasGeometry = !!position.value.geojson
+
+  // Cas autorisé : rien n'est saisi
+  if (!hasStart && !hasEnd && !hasGeometry) {
+    return true
+  }
+
+  // Si début saisi -> fin obligatoire
+  if (hasStart && !hasEnd) {
+    endDateError.value = t('validations.required_if', {
+      _field_: t('component.common.end') as string
+    }) as string
+    return false
+  }
+
+  // Si géométrie saisie -> fin obligatoire
+  if (hasGeometry && !hasEnd) {
+    endDateError.value = t('validations.required_if', {
+      _field_: t('component.common.end') as string
+    }) as string
+    return false
+  }
+
+  // Si fin saisie -> géométrie obligatoire
+  if (hasEnd && !hasGeometry) {
+    geometryError.value = t('validations.required_if', {
+      _field_: t('component.common.geometry.geometry-title') as string
+    }) as string
+    return false
+  }
+
+  // Position complète mais non ajoutée à la liste
+  draftPositionError.value = t('LocationsForm.position-not-added')
+  return false
 }
 
 defineExpose({
@@ -239,19 +357,26 @@ defineExpose({
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.field-error {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+</style>
 
 <i18n>
 en:
   LocationsForm:
     positions-geospatial: Geospatial positions
     add-position: Add position
-    geometry:  POINT (10 10)
+    geometry: POINT (10 10) or POLYGON((4 5, 0 55, 100 78, 4 5))
     update: Update the geospatial position
+    position-not-added: The entered position must be added to the list.
 fr:
   LocationsForm:
     positions-geospatial: Positions géospatiales
     add-position: Ajouter une position
-    geometry: POINT (10 10)
+    geometry: POINT (10 10) ou POLYGON((4 5, 0 55, 100 78, 4 5))
     update: Mettre à jour la position géospatiale
+    position-not-added: La position saisie doit être ajoutée à la liste.
 </i18n>

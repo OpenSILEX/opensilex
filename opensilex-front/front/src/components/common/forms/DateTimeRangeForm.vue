@@ -4,7 +4,7 @@
       <div class="col" v-if="canBeInstant">
         <!-- Is instant -->
         <opensilex-FormField
-          :required="true"
+          :required="false"
           label="component.events.is-instant"
           helpMessage="component.events.is-instant-help"
         >
@@ -72,16 +72,18 @@ const props = withDefaults(
     start_required?: boolean
     end_required?: boolean
     canBeInstant?: boolean
+    enforceInternalRequiredRules?: boolean
   }>(),
   {
     canBeInstant: true,
     isInstant: false,
     start_required: false,
-    end_required: false
+    end_required: false,
+    enforceInternalRequiredRules: true
   }
 )
 
-// Local state (replace PropSync)
+// Local state
 const startLocal = ref<string | undefined>(props.startDate)
 const endLocal = ref<string | undefined>(props.endDate)
 const isInstantLocal = ref<boolean>(!!props.isInstant)
@@ -92,8 +94,12 @@ const endRequiredLocal = ref<boolean>(!!props.end_required)
 watch(() => props.startDate, (v) => (startLocal.value = v))
 watch(() => props.endDate, (v) => (endLocal.value = v))
 watch(() => props.isInstant, (v) => (isInstantLocal.value = !!v))
-watch(() => props.start_required, (v) => (startRequiredLocal.value = !!v))
-watch(() => props.end_required, (v) => (endRequiredLocal.value = !!v))
+watch(() => props.start_required, (v) => {
+  startRequiredLocal.value = !!v
+})
+watch(() => props.end_required, (v) => {
+  endRequiredLocal.value = !!v
+})
 
 // emit changes to parent
 watch(startLocal, (v) => emit('update:startDate', v))
@@ -103,7 +109,7 @@ watch(startRequiredLocal, (v) => emit('update:start_required', v))
 watch(endRequiredLocal, (v) => emit('update:end_required', v))
 
 onMounted(() => {
-  if (!props.canBeInstant) {
+  if (!props.canBeInstant && props.enforceInternalRequiredRules) {
     startRequiredLocal.value = true
     emit('update:start_required', true)
   }
@@ -124,9 +130,21 @@ function updateRequiredProps() {
   startLocal.value = normalizeEmpty(startLocal.value)
   endLocal.value = normalizeEmpty(endLocal.value)
 
+  // Mode piloté par le parent
+  if (!props.enforceInternalRequiredRules) {
+    startRequiredLocal.value = !!props.start_required
+    endRequiredLocal.value = !!props.end_required
+
+    // Si instantané, on masque simplement le début
+    if (isInstantLocal.value) {
+      startLocal.value = undefined
+    }
+    return
+  }
+
+  // Mode normal
   if (isInstantLocal.value) {
     endRequiredLocal.value = true
-    // Set startDate to undefined so it can't be falsely taken
     startLocal.value = undefined
   } else {
     const startEmpty = startLocal.value == null

@@ -23,7 +23,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NInput } from 'naive-ui'
-// import { parse, stringify } from 'wkt'
+import { wktToGeoJSON, geojsonToWKT } from '@terraformer/wkt'
 
 const { t } = useI18n()
 
@@ -57,34 +57,34 @@ const isRequired = computed(() => !!props.required)
 const stringValue = ref('')
 
 // keep stringValue in sync with incoming geojson
-// watch(
-//   () => props.value,
-//   (v) => {
-//     if (!v) {
-//       stringValue.value = ''
-//       return
-//     }
-//     try {
-//       stringValue.value = stringify(v)
-//     } catch {
-//       stringValue.value = ''
-//     }
-//   },
-//   { immediate: true, deep: true }
-// )
+watch(
+  () => props.value,
+  (v) => {
+    if (!v) {
+      stringValue.value = ''
+      return
+    }
+    try {
+      stringValue.value = geojsonToWKT(v)
+    } catch {
+      stringValue.value = ''
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 function updateValue(newValue: string) {
   stringValue.value = newValue
 
   // parse WKT -> GeoJSON
-//   try {
-//     const geojson = newValue?.trim() ? parse(newValue) : undefined
-//     emit('update:value', geojson)
-//   } catch {
-//     // si le WKT est invalide, on n’écrase pas la valeur par un parse foireux
-//     // on laisse la validation (rules wkt) gérer l'erreur
-//     emit('update:value', undefined)
-//   }
+  try {
+    const geojson = newValue?.trim() ? wktToGeoJSON(newValue) : undefined
+    emit('update:value', geojson)
+  } catch {
+    // si le WKT est invalide, on n’écrase pas la valeur par un parse
+    // on laisse la validation (rules wkt) gérer l'erreur
+    emit('update:value', undefined)
+  }
 
   emit('onUpdate')
 }

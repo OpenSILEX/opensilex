@@ -29,7 +29,7 @@
       <n-card
         :title="t('FacilitiesModalList.title', [hostNameForTitle])"
         closable
-        style="width: fit-content;"
+        style="width: 65%; height: 90%;"
         @close="show = false"
       >
         <div id="facility-view">
@@ -92,9 +92,9 @@ function showPopup() {
   padding-top: 5%;
 }
 
-.facilities-modal .n-card {
-  width: fit-content;
-}
+// .facilities-modal .n-card {
+//   width: fit-content;
+// }
 </style>
 
 <i18n>

@@ -20,6 +20,9 @@
       :placeholder="t('FacilityForm.form-type-placeholder')"
       @select="(e) => typeSwitch(e.id, false)"
     />
+    <div v-if="typeError" class="field-error">
+      {{ typeError }}
+    </div>
 
     <!-- Name -->
     <opensilex-InputForm
@@ -29,6 +32,9 @@
       :required="true"
       :placeholder="t('FacilityForm.form-name-placeholder')"
     />
+    <div v-if="nameError" class="field-error">
+      {{ nameError }}
+    </div>
 
     <!-- Description -->
     <opensilex-TextAreaForm
@@ -184,7 +190,30 @@ function onAddressToggled() {
 }
 
 function reset() {}
-async function validate() { return true }
+
+
+const nameError = ref('')
+const typeError = ref('')
+
+function validate() {
+  nameError.value = ''
+  typeError.value = ''
+
+  const name = (facility.value.name ?? '').toString().trim()
+  if (!name) {
+    nameError.value = t('validations.required_if', {
+      _field_: t('component.common.name') as string
+    }) as string
+  }
+
+  if (!facility.value.rdf_type) {
+    typeError.value = t('validations.required_if', {
+      _field_: t('FacilityForm.type-label') as string
+    }) as string
+  }
+
+  return !nameError.value && !typeError.value
+}
 
 function typeSwitch(type: string, initialLoad: boolean) {
   ontologyRelationsFormRef.value?.typeSwitch?.(type, initialLoad)
@@ -211,6 +240,7 @@ en:
   FacilityForm:
     toggleAddress: Address
     uri-label: Object URI
+    type-label: Object Type
     form-name-placeholder: Enter object name
     form-type-placeholder: Select object type
 
@@ -218,6 +248,7 @@ fr:
   FacilityForm:
     toggleAddress: Adresse
     uri-label: URI de l'objet
+    type-label: Type de l'objet
     form-name-placeholder: Saisir le nom de l'objet
     form-type-placeholder: Sélectionner le type de l'objet
 </i18n>

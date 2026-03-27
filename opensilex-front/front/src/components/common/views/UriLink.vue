@@ -164,6 +164,7 @@ const handleUriLinkClicked = () => {
   max-width: 400px;
   //  max-width: 100%;
   position: relative;
+  // color: #007969;
 }
 
 .uri > span {

@@ -15,7 +15,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.aggregate.AggCountDistinct;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -51,21 +51,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
     //@todo: remove nosql parameter when experimentDAO can be instanciated with MongoDBServiceV2
     public ListWithPagination<Faidarev1GermplasmModel> faidareSearch(AccountModel user, URI germplasmDbId, String germplasmName, int page, int pageSize, MongoDBService nosql) throws Exception {
-
-        /* Count the number of accessions
-
-        SELECT  (count(distinct *) AS ?count)
-        WHERE
-        { ?uri  rdf:type  vocabulary:Accession}*/
-
-        SelectBuilder accessionsCount = new SelectBuilder();
-
-        Var uriVar = makeVar("uri");
-        Var countVar = makeVar("count");
-
-        accessionsCount.addWhere(uriVar, RDF.type.asNode(), Oeso.Accession.asNode());
-
-        accessionsCount.addVar(new AggCountDistinct().toString(), countVar);
 
         /* Get the user's experimentations
 
@@ -105,12 +90,13 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
 
-        /* Get the accessions with the experimentations the user has access to that they are used in
+        /* Get the species and accessions with the experimentations the user has access to that they are used in
 
         SELECT  ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name (GROUP_CONCAT(DISTINCT ?experiment_uri ; separator=',') AS ?experiment_uri__opensilex__concat)
         WHERE
           { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
-              { ?uri  rdf:type  vocabulary:Accession
+              { ?uri  rdf:type ?type
+                FILTER (?type IN (vocabulary:Species, vocabulary:Accession))
                 OPTIONAL
                   { ?uri  foaf:homepage  ?website}
                 OPTIONAL
@@ -135,7 +121,9 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         final Node germplasmGraph = sparql.getDefaultGraph(GermplasmModel.class);
         SelectBuilder accessions = new SelectBuilder();
 
+        Var uriVar = makeVar("uri");
         accessions.addVar(uriVar);
+        Var typeVar = makeVar("type");
         Var labelVar = makeVar("label");
         accessions.addVar(labelVar);
         Var websiteVar = makeVar("website");
@@ -156,8 +144,14 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         WhereBuilder experimentsWhere = new WhereBuilder().addGraph(experimentUriVar, soVar, Oeso.hasGermplasm.asNode(), uriVar);
         SPARQLQueryHelper.addWhereUriValues(experimentsWhere, experimentUriVar.getVarName(), userExperiments);
 
+        Expr filterExpr = SPARQLQueryHelper.inURIFilter(
+                typeVar,
+                List.of(URI.create(Oeso.Accession.getURI()), URI.create(Oeso.Species.getURI()))
+        );
+
         accessions.addGraph(germplasmGraph, new WhereBuilder()
-                .addWhere(uriVar, RDF.type.asNode(), Oeso.Accession.asNode())
+                .addWhere(uriVar, RDF.type.asNode(), typeVar)
+                .addFilter(filterExpr)
                 .addOptional(uriVar, FOAF.homepage.asNode(), websiteVar)
                 .addOptional(uriVar, Oeso.hasId.asNode(), codeVar)
                 .addOptional(uriVar, Oeso.fromInstitute.asNode(), instituteVar)

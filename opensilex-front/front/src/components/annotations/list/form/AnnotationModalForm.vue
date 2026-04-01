@@ -81,7 +81,7 @@ async function create(annotation: AnnotationCreationDTO) {
     const http = await service.createAnnotation(annotation) as HttpResponse<OpenSilexResponse<string>>;
     const createdUri = http.response.result?.toString?.() ?? (http.response.result as any);
 
-    const msg = `${t('Annotation.name')} ${createdUri} ${t('component.common.success.creation-success-message')}`;
+    const msg = `${t('AnnotationModalForm.name')} ${createdUri} ${t('component.common.success.creation-success-message')}`;
     opensilex.showSuccessToast(msg);
 
     emit('onCreate', String(createdUri));
@@ -99,7 +99,7 @@ async function create(annotation: AnnotationCreationDTO) {
 async function update(annotation: AnnotationUpdateDTO) {
   try {
     await service.updateAnnotation(annotation);
-    const msg = `${t('Annotation.name')} ${annotation.uri} ${t('component.common.success.update-success-message')}`;
+    const msg = `${t('AnnotationModalForm.name')} ${annotation.uri} ${t('component.common.success.update-success-message')}`;
     opensilex.showSuccessToast(msg);
     emit('onUpdate', String(annotation.uri));
     return annotation; // truthy
@@ -121,9 +121,11 @@ en:
     AnnotationModalForm:
         add: Add annotation
         edit: Edit annotation
+        name: The annotation
 
 fr:
     AnnotationModalForm:
         add: Ajouter une annotation
         edit: Éditer l'annotation
+        name: L'annotation
 </i18n>

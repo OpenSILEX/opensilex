@@ -347,6 +347,76 @@ a.external-url-link:hover {
     font-weight: bold;
 }
 
+/************************************
+* Tabs on detail page
+************************************/
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .tab {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active {
+    font-weight: bold;
+    border-bottom-color: #007bff;
+  }
+  
+  .tabBadge {
+      margin-left: .5rem;
+      display: inline-block;
+      min-width: 1.25rem;
+      height: 1.25rem;
+      padding: 0 .35rem;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 1.25rem;
+      text-align: center;
+      color: #fff;
+      background: #00A38D;
+      font-weight: bold;
+    }
+  
+  
+  /********************************
+  * Tabs back-button
+  ********************************/
+  
+  .back-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 4px;
+      padding-right: 3px;
+      padding-bottom: 4px;
+      padding-left: 8px;
+      height: 35px!important;
+      margin-left: 12px;
+      color: #00A28C;
+      font-size: 1.1em;
+  }
+    
+  .back-button:hover {
+      background-color: #00A28C;
+  }
+  
+  .back-button-icon {
+      font-size:130%;
+      font-weight: bolder;
+      color:  #00A28C;
+  }
+    
+  .back-button:hover .back-button-icon {
+      color : #fff;
+  }
+    
+
 /*************************************
 * MAIN NAVIGATION MENU
 *************************************/
@@ -687,74 +757,6 @@ body.modal-open {
   color: #dc3545;
 }
 
-/************************************
-* Tabs on detail page
-************************************/
-
-.tabs {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #dee2e6;
-}
-.tab {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-.tab.active {
-  font-weight: bold;
-  border-bottom-color: #007bff;
-}
-
-.tabBadge {
-    margin-left: .5rem;
-    display: inline-block;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    padding: 0 .35rem;
-    border-radius: 999px;
-    font-size: 12px;
-    line-height: 1.25rem;
-    text-align: center;
-    color: #fff;
-    background: #00A38D;
-  }
-
-
-/********************************
-* Tabs back-button
-********************************/
-
-.back-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 4px;
-    padding-right: 3px;
-    padding-bottom: 4px;
-    padding-left: 8px;
-    height: 35px!important;
-    margin-left: 12px;
-    color: #00A28C;
-    font-size: 1.1em;
-}
-  
-.back-button:hover {
-    background-color: #00A28C;
-}
-
-.back-button-icon {
-    font-size:130%;
-    font-weight: bolder;
-    color:  #00A28C;
-}
-  
-.back-button:hover .back-button-icon {
-    color : #fff;
-}
-  
 
 /********************************
 * SIDEBAR FILTERS

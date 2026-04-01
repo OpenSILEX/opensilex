@@ -137,7 +137,7 @@ menu:
             - provenance-access
           icon: bi#bi-bar-chart-line
           title: component.menu.data.provenance
-          description: ProvenanceView.description
+          description: component.provenance.description
       - id: events
         label: component.menu.events
         route:
@@ -457,13 +457,13 @@ routes:
   - path: /organizations/details/:uri
     component: opensilex-OrganizationDetailView
     credentials: []
-  # - path: /provenances/details/:uri
-  #   component: opensilex-ProvenanceDetailsPage
-  #   credentials: [ ]
-  # - path: /provenances/annotations/:uri
-  #   component: opensilex-ProvenanceDetailsPage
-  # - path: /provenances/documents/:uri
-  #   component: opensilex-ProvenanceDetailsPage
+  - path: /provenances/details/:uri
+    component: opensilex-ProvenanceDetailsPage
+    credentials: []
+  - path: /provenances/annotations/:uri
+    component: opensilex-ProvenanceDetailsPage
+  - path: /provenances/documents/:uri
+    component: opensilex-ProvenanceDetailsPage
 
 
   # Route item example:

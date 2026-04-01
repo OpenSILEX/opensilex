@@ -72,6 +72,7 @@
             "uri": "URI",
             "uri-help-message": "Identifiant uniforme de ressource. Il est autogénéré mais vous pouvez le décocher pour entrer un URI externe",
             "uri-filter-placeholder" : "Saisir un URI",
+            "uri-or-url": "URI ou URL",
             "logout": "Déconnexion",
             "parent": "parent",
             "type": "Type",
@@ -938,6 +939,9 @@
                     "return": "Revenir à la liste des infrastructures"
                 }
             }
+        },
+        "provenance": {
+            "description": "Décrire la provenance de données"
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

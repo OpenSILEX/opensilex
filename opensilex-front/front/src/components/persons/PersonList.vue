@@ -13,25 +13,25 @@
         defaultSortBy="email"
     >
 
-      <template v-slot:cell(last_name)="{data}">
+      <template #cell(last_name)="{data}">
         <opensilex-PersonContact
             :personContact="data.item"
             :customDisplayableName="data.item.last_name"
         ></opensilex-PersonContact>
       </template>
 
-      <template v-slot:cell(orcid)="{data}">
+      <template #cell(orcid)="{data}">
         <opensilex-UriLink
             v-if="data.item.orcid"
             :uri="data.item.orcid"
         />
       </template>
 
-      <template v-slot:cell(email)="{data}">
+      <template #cell(email)="{data}">
         <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
       </template>
 
-      <template v-slot:cell(actions)="{data}">
+      <template #cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
               v-if="person.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
@@ -45,79 +45,77 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
-import Vue from "vue";
+<script setup lang="ts">
+import { computed, inject, ref, onMounted } from "vue";
+import { useStore } from "vuex";
+import { useRoute } from 'vue-router';
 import { SecurityService } from "opensilex-security/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "../../models/Store";
-import {Route} from "vue-router";
+import { onBeforeMount } from 'vue';
 
-@Component
-export default class PersonList extends Vue {
-  $opensilex: OpenSilexVuePlugin;
-  service: SecurityService;
-  $store: OpenSilexStore;
-  $route: Route;
-  $t: any
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
+const service = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const store = useStore() as OpenSilexStore;
+const route = useRoute();
+    
+//#region Data and computed
+const person = computed(() => store.state.user);
+const credentials = computed(() => store.state.credentials);
 
-  fields = [
-    {
-      key: "last_name",
-      label: "component.person.last-name",
-      sortable: true
-    },
-    {
-      key: "first_name",
-      label: "component.person.first-name",
-      sortable: true
-    },
-    {
-      key: "email",
-      label: "component.person.email",
-      sortable: true
-    },
-    {
-      key: "orcid",
-      label: "component.person.orcid"
-    },
-    {
-      key: "affiliation",
-      label: "component.person.affiliation"
-    },
-    {
-      key: "phone_number",
-      label: "component.person.phone_number"
-    },
-    {
-      key: "actions",
-      label: "component.common.actions",
-      class: "table-actions"
+
+let filter = ref("");
+const fields = [
+  {
+    key: "last_name",
+    label: "component.person.last-name",
+    sortable: true
+  },
+  {
+    key: "first_name",
+    label: "component.person.first-name",
+    sortable: true
+  },
+  {
+    key: "email",
+    label: "component.person.email",
+    sortable: true
+  },
+  {
+    key: "orcid",
+    label: "component.person.orcid"
+  },
+  {
+    key: "affiliation",
+    label: "component.person.affiliation"
+  },
+  {
+    key: "phone_number",
+    label: "component.person.phone_number"
+  },
+  {
+    key: "actions",
+    label: "component.common.actions",
+    class: "table-actions"
+  }
+];
+//#endregion
+
+const tableRef = ref();
+
+onMounted(() => {
+  let query: any = route.query;
+  if (query.filter) {
+      filter = decodeURIComponent(query.filter);
     }
-  ];
-  get person() {
-    return this.$store.state.user;
-  }
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-  private filter: any = "";
-  @Ref("tableRef") readonly tableRef!: any;
-  currentURI = null;
-  created() {
-    let query: any = this.$route.query;
-    if (query.filter) {
-      this.filter = decodeURIComponent(query.filter);
-    }
-    this.service = this.$opensilex.getService("opensilex.SecurityService");
+  });
+
+  function refresh() {
+    tableRef.refresh();
   }
 
-  refresh() {
-    this.tableRef.refresh();
-  }
-
-  searchPersons(options) {
-    return this.service
+  function searchPersons(options) {
+    return service
         .searchPersons(
             this.filter,
             false,
@@ -127,12 +125,11 @@ export default class PersonList extends Vue {
         )
   }
 
-  updateFilter() {
+  function updateFilter() {
     this.$opensilex.updateURLParameter("filter", this.filter, "");
     this.refresh();
   }
 
-}
 </script>
 
 <style scoped lang="scss">

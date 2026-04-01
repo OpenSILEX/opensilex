@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <!-- <opensilex-CreateButton
+    <opensilex-CreateButton
       @click="personForm.showCreateForm()"
       label="PersonView.create"
       class="createButton">
-    </opensilex-CreateButton> -->
+    </opensilex-CreateButton>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -20,11 +20,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, getCurrentInstance } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "../../models/Store";
 
+const personForm = ref<any>();
 
-//   @Ref("PersonForm") readonly personForm!: any;
 //   @Ref("personList") readonly personList!: any;
 
 //   get user() {
@@ -34,10 +35,10 @@ import {OpenSilexStore} from "../../models/Store";
 //   get credentials() {
 //     return this.$store.state.credentials;
 //   }
-//   showEditForm(dto){
-//     let copydto = JSON.parse(JSON.stringify(dto));
-//     this.personForm.showEditForm(copydto);
-//   }
+  function showEditForm(dto){
+    // let copydto = JSON.parse(JSON.stringify(dto));
+    // this.personForm.showEditForm(copydto);
+  }
 </script>
 
 <style scoped lang="scss">

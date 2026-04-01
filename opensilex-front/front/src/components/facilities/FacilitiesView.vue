@@ -263,6 +263,7 @@ async function fetchExperiments(): Promise<void> {
     null, // isPublic
     facilitiesUris, // facilities
     null,
+    null,
     0,
     0
   ) as unknown as HttpResponse<OpenSilexResponse<ExperimentGetListDTO[]>>

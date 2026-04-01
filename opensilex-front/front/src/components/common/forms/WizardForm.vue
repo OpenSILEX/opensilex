@@ -67,6 +67,8 @@
       @clear="clearForm"
       @agroportalTermSelected="payload => emit('agroportalTermSelected', payload)"
       @agroportalTermUnselected="() => emit('agroportalTermUnselected')"
+      @geometryIsNotSaved="geometryIsNotSaved"
+      @positionIsValid="positionIsValid"
     >
       <!-- Quand l’étape active expose un slot createAdditionalFields, passe son scope et renvoie au slot du même nom -->
       <template #createAdditionalFields="slotProps">
@@ -108,7 +110,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, inject } from 'vue'
+import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 
@@ -140,9 +143,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'agroportalTermSelected', payload: any): void
   (e: 'agroportalTermUnselected'): void
+  (e: 'onCreate', payload: any): void
+  (e: 'onUpdate', payload: any): void
 }>()
 
 const { t } = useI18n()
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 const visible = ref(false)
 const editMode = ref(false)
@@ -157,6 +163,16 @@ const translatedTitle = computed(() => {
   const key = editMode.value ? props.editTitle : props.createTitle
   return t(key)
 })
+
+const geometryNotSaved = ref(false)
+
+function geometryIsNotSaved() {
+  geometryNotSaved.value = true
+}
+
+function positionIsValid() {
+  geometryNotSaved.value = false
+}
 
 function showCreateForm () {
   form.value = props.initForm()
@@ -226,13 +242,24 @@ async function submitForm () {
   if (!(await validateStep())) return
   if (props.validateAction && !props.validateAction(form.value)) return
 
+  if (geometryNotSaved.value) return
+
   const action = editMode.value ? props.updateAction : props.createAction
   if (!action) return
 
-  const result = await action(form.value)
-  if (result !== false) {
-    // les événements sont émis par le parent (AgroportalCreateForm) si besoin
-    close()
+  try {
+    const result = await action(form.value)
+    if (result !== false) {
+      if (editMode.value) {
+        emit('onUpdate', result)
+      } else {
+        emit('onCreate', result)
+      }
+          // les événements sont émis par le parent (AgroportalCreateForm) si besoin
+      close()
+    }
+  } catch (e) {
+    console.error(e)
   }
 }
 

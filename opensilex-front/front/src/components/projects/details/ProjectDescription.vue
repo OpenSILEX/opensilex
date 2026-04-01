@@ -284,6 +284,7 @@ function loadExperiments(options: any) {
     [uri.value], // projects
     undefined, // isPublic
     undefined,
+    undefined,
     options.orderBy,
     options.currentPage,
     options.pageSize

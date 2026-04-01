@@ -73,7 +73,7 @@
           class="alert alert-warning"
           role="alert"
         >
-          {{ t("component.common.geometry-address-warning") }}
+          {{ t("component.common.geometry.geometry-address-warning") }}
         </div>
 
         <!-- Metadata -->

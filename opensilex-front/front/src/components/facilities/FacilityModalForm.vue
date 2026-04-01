@@ -46,8 +46,8 @@ const props = withDefaults(defineProps<{
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
-const organizationsService = $opensilex.getService<OrganizationsService>('opensilex-core.OrganizationsService')
-const locationsService = $opensilex.getService<LocationsService>('opensilex-core.LocationsService')
+const organizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
+const locationsService = $opensilex.getService<LocationsService>('opensilex.LocationsService')
 
 const wizardRef = ref<any>(null)
 
@@ -141,18 +141,17 @@ async function showEditForm(uri: string) {
 }
 
 async function callOrganizationFacilityCreation(form: FacilityCreationDTO) {
-  ;(form as any).relations = flattenRelations((form as any).relations)
+  (form as any).relations = flattenRelations((form as any).relations)
+
+  const payload = JSON.parse(JSON.stringify(form))
+
   try {
-    await organizationsService.createFacility(form as any)
+    await organizationsService.createFacility(payload as any)
     $opensilex.showSuccessToast(
       `${t('OrganizationFacilityForm.name')} ${form.name} ${t('component.common.success.creation-success-message')}`
     )
   } catch (error: any) {
-    if (error?.status === 409) {
-      $opensilex.errorHandler(error, t('OrganizationFacilityForm.organization-facility-already-exists'))
-    } else {
-      $opensilex.errorHandler(error)
-    }
+    console.error('CREATE FACILITY ERROR PAYLOAD', payload)
     throw error
   }
 }

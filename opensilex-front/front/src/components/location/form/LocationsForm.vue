@@ -45,7 +45,7 @@
             :label="t('LocationsForm.add-position')"
             :small="true"
           />
-          <span> {{ t('LocationsForm.add-position') }}</span>
+          <span>{{ t('LocationsForm.add-position') }}</span>
         </div>
       </div>
 
@@ -62,14 +62,6 @@
 
       <template #cell(endDate)="{ data }">
         <opensilex-DateView :value="data.item.endDate" />
-
-        <div
-          v-if="data.item.endDate === DEFAULT_DATE"
-          class="alert alert-warning mt-2"
-          role="alert"
-        >
-          {{ t('component.facility.warning.facility-default-date') }}
-        </div>
       </template>
 
       <template #cell(geometry)="{ data }">
@@ -125,6 +117,16 @@ const props = defineProps<{
 }>()
 
 const facility = ref<FacilityUpdateDTO>(props.form)
+const position = ref<LocationObservationDTO>(getPositionEmpty())
+const currentLocationIsInstant = ref(true)
+
+const endDateError = ref('')
+const geometryError = ref('')
+const draftPositionError = ref('')
+
+const locationFormRef = ref<any>(null)
+const index = ref<number>(-1)
+
 watch(
   () => props.form,
   (v) => {
@@ -132,28 +134,12 @@ watch(
   },
   { deep: true }
 )
+
 watch(
   facility,
   (v) => emit('update:form', v),
   { deep: true }
 )
-
-const DEFAULT_DATE = '1970-01-01T00:00:00Z'
-
-function getPositionEmpty(): LocationObservationDTO {
-  return {
-    geojson: undefined,
-    startDate: undefined,
-    endDate: undefined
-  } as any
-}
-
-const position = ref<LocationObservationDTO>(getPositionEmpty())
-const currentLocationIsInstant = ref(true)
-
-const endDateError = ref('')
-const geometryError = ref('')
-const draftPositionError = ref('')
 
 // Nettoyage des erreurs au fil de la saisie
 watch(
@@ -200,118 +186,46 @@ const locationSteps = computed(() => [
   }
 ])
 
-const locationFormRef = ref<any>(null)
-const index = ref<number>(-1)
-
-function checkGeometryNotSaved() {
-  const hasEndDate = !!position.value.endDate
-  const hasGeometry = !!position.value.geojson
-
-  if (hasEndDate && hasGeometry && !positionIsValid()) {
-    emit('geometryIsNotSaved')
-  }
+function getPositionEmpty(): LocationObservationDTO {
+  return {
+    geojson: undefined,
+    startDate: undefined,
+    endDate: undefined
+  } as any
 }
 
-function positionIsValid(): boolean {
-  const locs = facility.value.locations ?? []
-  return locs.some(
-    (l: any) => l?.endDate === position.value.endDate && l?.geojson === position.value.geojson
-  )
-}
-
-function addPosition() {
+function clearErrors() {
   endDateError.value = ''
   geometryError.value = ''
   draftPositionError.value = ''
+}
 
-  const hasStart = !!position.value.startDate
-  const hasEnd = !!position.value.endDate
-  const hasGeometry = !!position.value.geojson
-
-  // Rien saisi : on ne fait rien
-  if (!hasStart && !hasEnd && !hasGeometry) {
-    return
-  }
-
-  // Si début saisi -> fin obligatoire
-  if (hasStart && !hasEnd) {
-    endDateError.value = t('validations.required_if', {
-      _field_: t('component.common.end') as string
-    }) as string
-    return
-  }
-
-  // Si géométrie saisie -> fin obligatoire
-  if (hasGeometry && !hasEnd) {
-    endDateError.value = t('validations.required_if', {
-      _field_: t('component.common.end') as string
-    }) as string
-    return
-  }
-
-  // Si fin saisie -> géométrie obligatoire
-  if (hasEnd && !hasGeometry) {
-    geometryError.value = t('validations.required_if', {
-      _field_: t('component.common.geometry.geometry-title') as string
-    }) as string
-    return
-  }
-
+function ensureLocationsArray() {
   if (!Array.isArray(facility.value.locations)) {
     facility.value.locations = [] as any
   }
-
-  facility.value.locations.push({ ...position.value } as any)
-  position.value = getPositionEmpty()
-  currentLocationIsInstant.value = true
-  emit('positionIsValid')
 }
 
-function updatePosition(data: any) {
-  index.value = data.index
-  const form = JSON.parse(JSON.stringify(data.item))
-  locationFormRef.value?.showEditForm?.(form)
+function hasDraftPosition(): boolean {
+  return !!position.value.startDate || !!position.value.endDate || !!position.value.geojson
 }
 
-function deletePosition(data: any) {
+function isDraftComplete(): boolean {
+  return !!position.value.endDate && !!position.value.geojson
+}
+
+function isDraftAlreadySaved(): boolean {
   const locs = facility.value.locations ?? []
-  const i = locs.indexOf(data.item)
-  if (i >= 0) locs.splice(i, 1)
+
+  return locs.some(
+    (location: any) =>
+      location?.endDate === position.value.endDate &&
+      location?.geojson === position.value.geojson
+  )
 }
 
-function getEmptyLocationForm() {
-  return {
-    geojson: position.value.geojson,
-    startDate: position.value.startDate,
-    endDate: position.value.endDate
-  }
-}
-
-function updateLocationForm(form: any) {
-  const i = index.value
-  if (i < 0) return
-  const locs = facility.value.locations ?? []
-  if (!locs[i]) return
-
-  locs[i].geojson = form.geojson
-  locs[i].startDate = form.startDate
-  locs[i].endDate = form.endDate
-
-  emit('onUpdate')
-}
-
-function reset() {
-  position.value = getPositionEmpty()
-  currentLocationIsInstant.value = true
-  endDateError.value = ''
-  geometryError.value = ''
-  draftPositionError.value = ''
-}
-
-async function validate() {
-  endDateError.value = ''
-  geometryError.value = ''
-  draftPositionError.value = ''
+function validateDraftPosition(): boolean {
+  clearErrors()
 
   const hasStart = !!position.value.startDate
   const hasEnd = !!position.value.endDate
@@ -346,9 +260,98 @@ async function validate() {
     return false
   }
 
+  return true
+}
+
+function checkGeometryNotSaved() {
+  const hasEndDate = !!position.value.endDate
+  const hasGeometry = !!position.value.geojson
+
+  if (hasEndDate && hasGeometry && !isDraftAlreadySaved()) {
+    emit('geometryIsNotSaved')
+  }
+}
+
+function addPosition() {
+  if (!validateDraftPosition()) {
+    return
+  }
+
+  // Rien saisi : on ne fait rien
+  if (!hasDraftPosition()) {
+    return
+  }
+
+  ensureLocationsArray()
+  facility.value.locations.push({ ...position.value } as any)
+
+  position.value = getPositionEmpty()
+  currentLocationIsInstant.value = true
+  clearErrors()
+
+  emit('positionIsValid')
+}
+
+function updatePosition(data: any) {
+  index.value = data.index
+  const form = JSON.parse(JSON.stringify(data.item))
+  locationFormRef.value?.showEditForm?.(form)
+}
+
+function deletePosition(data: any) {
+  const locs = facility.value.locations ?? []
+  const i = locs.indexOf(data.item)
+
+  if (i >= 0) {
+    locs.splice(i, 1)
+  }
+}
+
+function getEmptyLocationForm() {
+  return {
+    geojson: position.value.geojson,
+    startDate: position.value.startDate,
+    endDate: position.value.endDate
+  }
+}
+
+function updateLocationForm(form: any) {
+  const i = index.value
+  if (i < 0) return
+
+  const locs = facility.value.locations ?? []
+  if (!locs[i]) return
+
+  locs[i].geojson = form.geojson
+  locs[i].startDate = form.startDate
+  locs[i].endDate = form.endDate
+
+  emit('onUpdate')
+}
+
+function reset() {
+  position.value = getPositionEmpty()
+  currentLocationIsInstant.value = true
+  clearErrors()
+}
+
+async function validate() {
+  if (!validateDraftPosition()) {
+    return false
+  }
+
+  // Cas autorisé : rien n'est saisi
+  if (!hasDraftPosition()) {
+    return true
+  }
+
   // Position complète mais non ajoutée à la liste
-  draftPositionError.value = t('LocationsForm.position-not-added')
-  return false
+  if (isDraftComplete()) {
+    draftPositionError.value = t('LocationsForm.position-not-added')
+    return false
+  }
+
+  return true
 }
 
 defineExpose({

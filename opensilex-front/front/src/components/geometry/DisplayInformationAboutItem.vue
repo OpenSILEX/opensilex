@@ -17,9 +17,10 @@
     <div v-if="(item.properties.nature === 'Scientific Objects') && detailsSO">
       <template v-if="withBasicProperties">
         <opensilex-ScientificObjectDetailMap
-            v-if="item.properties.OS"
+            v-if="item.properties && item.geometry"
             :experiment="experiment"
-            :selected="item.properties.OS"
+            :propertiesOfSelected="item.properties"
+            :geometryOfSelected="item.geometry"
             :withBasicProperties="true"
         ></opensilex-ScientificObjectDetailMap>
       </template>

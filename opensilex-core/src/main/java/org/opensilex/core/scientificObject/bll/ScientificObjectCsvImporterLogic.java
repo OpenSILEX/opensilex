@@ -16,7 +16,6 @@ import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.MoveSearchFilter;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.exception.DuplicateURIListException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -606,24 +605,30 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         // check if there are any duplicate URIs within CSV
         checkLocalDuplicateURIs(restrictionValidator, modelChunk, offset);
 
-        StringUriMap<MoveModel> newMoveToCreatePerOSUri = null;
+        StringUriMap<MoveModel> csvFilledMoves = null;
         StringUriMap<MoveModel> movesPerTargetToTestCollectionDatesFor = new StringUriMap<>();
 
         //Fetch CSV Moves and create a copy, only if there were location columns
         if(restrictionValidator.getValidationModel().getCsvHeader().doesContainExtraStringColumns()){
-            newMoveToCreatePerOSUri = (StringUriMap<MoveModel>) restrictionValidator
+            csvFilledMoves = (StringUriMap<MoveModel>) restrictionValidator
                     .getValidationModel()
                     .getObjectsMetadata()
                     .get(GEOMETRY_STUFF_METADATA_KEY);
 
             //Set csvFilledMoves to empty StingUriMap if it is still null so we can still call .get on it in the case
             //where the columns are present but all empty (all deletes)
-            if(newMoveToCreatePerOSUri == null){
-                newMoveToCreatePerOSUri = new StringUriMap<>();
+            if(csvFilledMoves == null){
+                csvFilledMoves = new StringUriMap<>();
             }
 
-            //We crush into a new map as this new map will potentially have elements removed from it
-            movesPerTargetToTestCollectionDatesFor.crushFromOtherStringUriMap(newMoveToCreatePerOSUri);
+            //Set movesPerTargetToTestCollectionDatesFor to be ones from csvFilledMoves but only ones that concern this chunk
+            //Otherwise we end up checking dates for updatee Moves even though we are supposed to only be checking createe Moves
+            for(ScientificObjectModel sciObj : modelChunk){
+                MoveModel correspondingCsvMove = csvFilledMoves.get(sciObj.getUri());
+                if(correspondingCsvMove != null){
+                    movesPerTargetToTestCollectionDatesFor.put(sciObj.getUri(), csvFilledMoves.get(sciObj.getUri()));
+                }
+            }
         }
 
         //Validations to perform if batch concerns an update
@@ -632,7 +637,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                     restrictionValidator,
                     modelChunk,
                     offset,
-                    newMoveToCreatePerOSUri,
+                    csvFilledMoves,
                     movesPerTargetToTestCollectionDatesFor
             );
         }
@@ -754,7 +759,11 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         }
     }
 
-    //The validations that are performed on updatee Moves
+    /**
+     * Handles validation of an update of Moves. In function of number of existing moves, and the dates, handles removing of elements from
+     * movesPerTargetToTestCollectionDatesFor (we check no crossing over dates within observation collections later, after the calling of this function
+     *
+     */
     private void movesUpdatePartOfCustomBatchValidation(
             CsvOwlRestrictionValidator restrictionValidator,
             List<ScientificObjectModel> modelChunk,

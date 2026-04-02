@@ -200,7 +200,7 @@
           <template v-slot="scope">
             <div class="panel-content">
               <opensilex-DisplayInformationAboutItem
-                :details-s-o="detailsSO"
+                :details-s-o="doHaveScientificObjectDetails"
                 :experiment="experiment"
                 :item="selectedFeatures[0]"
                 :showName="true"
@@ -618,7 +618,7 @@
 
         <template v-slot:row-details="{ data }">
           <opensilex-DisplayInformationAboutItem
-            :details-s-o="detailsSO"
+            :details-s-o="doHaveScientificObjectDetails"
             :experiment="experiment"
             :item="data.item"
           />
@@ -692,8 +692,6 @@ import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisat
   components: {ExperimentDataVisualisation}
 })
 export default class MapView extends Vue {
-
-  //TODO not an ounce of documentation in this component its a pisstake
 
   @Ref("JqxRangeSelector") readonly rangeSelector: any;
   @Ref("mapView") readonly mapView!: any;
@@ -805,7 +803,7 @@ export default class MapView extends Vue {
       label: "actions",
     },
   ];
-  private detailsSO: boolean = false;
+  private doHaveScientificObjectDetails: boolean = false;
 
   ///////////// TOOLS BUTTONS ////////////
   showInstructionMap: boolean = false;
@@ -1475,7 +1473,7 @@ export default class MapView extends Vue {
 
   private scientificObjectsDetails(scientificObjectUri: any) {
     if (scientificObjectUri != undefined) {
-      this.detailsSO = false;
+      this.doHaveScientificObjectDetails = false;
       this.$opensilex.disableLoader();
       this.scientificObjectsService
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
@@ -1484,7 +1482,7 @@ export default class MapView extends Vue {
                 this.selectedFeatures.forEach((item) => {
                   if (item.properties.uri === result.uri) {
                     item.properties.OS = result;
-                    this.detailsSO = true;
+                    this.doHaveScientificObjectDetails = true;
                   }
                 });
           })
@@ -1709,19 +1707,19 @@ export default class MapView extends Vue {
       const res = http.response.result as any;
       res.forEach((element) => {
         //list URI target (Devices) from positions
-        listURIDevices.push(element.targetPositions[0].target);
+        listURIDevices.push(element.location.featureOfInterest);
         //formatting Positions
-        if (element.targetPositions[0].position.coordinates != null) {
-           element = {
+        if (element.location.geojson && element.location.geojson.geometry) {
+          element = {
                geometry: {
-                 coordinates: element.targetPositions[0].position.coordinates.coordinates.values,
+                 coordinates: element.location.geojson.geometry.coordinates,
                  type: 'Point'
                },
                type: "Feature",
                properties: {
-                 uri: element.targetPositions[0].target,
+                 uri: element.location.featureOfInterest,
                  nature: this.deviceLabel,
-                 event: element.uri
+                 event: element.event
                }
              };
            let bool = true;

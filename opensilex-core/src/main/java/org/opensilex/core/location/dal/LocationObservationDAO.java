@@ -59,8 +59,7 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         appendDateFilters(filters,searchQuery);
 
         if (searchQuery.getIntersection() != null) {
-            filters.add(Filters.exists(LocationModel.GEOMETRY_FIELD, true));
-            filters.add(Filters.geoWithin(LocationModel.GEOMETRY_FIELD, searchQuery.getIntersection()));
+            filters.add(Filters.geoWithin(LocationObservationModel.GEOMETRY_FIELD, searchQuery.getIntersection()));
         }
 
         if(Objects.nonNull(searchQuery.getTo())){

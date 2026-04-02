@@ -127,17 +127,6 @@ public class StartServerWithFront {
         return frontBuilder.start();
     }
 
-    private static String getPathEnvKey(Map<String, String> environment) {
-        if (DevModule.isWindows()) {
-            return environment.keySet().stream()
-                    .filter(key -> key.equalsIgnoreCase(PATH_ENV_VAR))
-                    .findFirst()
-                    .orElse(PATH_ENV_VAR);
-        } else {
-            return PATH_ENV_VAR;
-        }
-    }
-
     private static Process createFrontModuleBuilder(String moduleId) throws Exception {
         List<String> args = new ArrayList<>();
         args.add(nodeDirectory.resolve("npm").toFile().getCanonicalPath());
@@ -218,6 +207,25 @@ public class StartServerWithFront {
         return frontBuilder.start();
     }
 
+    /**
+     * Returns the PATH key from an environment variables map. Necessary because Windows has case unsensitive keys,
+     * so we have to check for Path, path or PATH.
+     */
+    private static String getPathEnvKey(Map<String, String> environment) {
+        if (DevModule.isWindows()) {
+            return environment.keySet().stream()
+                    .filter(key -> key.equalsIgnoreCase(PATH_ENV_VAR))
+                    .findFirst()
+                    .orElse(PATH_ENV_VAR);
+        } else {
+            return PATH_ENV_VAR;
+        }
+    }
+
+    /**
+     * Adds the '.node/node' folder to the PATH of a process. That allows the process to access node related commands,
+     * such as npm or npx, as if they were installed globally.
+     */
     private static void addNodePathToEnv(ProcessBuilder processBuilder) {
         var pathEnvKey = getPathEnvKey(processBuilder.environment());
         var path = processBuilder.environment().get(pathEnvKey);

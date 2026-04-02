@@ -1,7 +1,7 @@
 <template>
   <div>
     <opensilex-StringFilter
-        :filter.sync="filter"
+        v-model:filter.sync="filter"
         @update="updateFilter()"
         placeholder="component.person.filter-placeholder"
     ></opensilex-StringFilter>
@@ -52,7 +52,6 @@ import { useRoute } from 'vue-router';
 import { SecurityService } from "opensilex-security/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "../../models/Store";
-import { onBeforeMount } from 'vue';
 
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const service = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -66,38 +65,13 @@ const credentials = computed(() => store.state.credentials);
 
 let filter = ref("");
 const fields = [
-  {
-    key: "last_name",
-    label: "component.person.last-name",
-    sortable: true
-  },
-  {
-    key: "first_name",
-    label: "component.person.first-name",
-    sortable: true
-  },
-  {
-    key: "email",
-    label: "component.person.email",
-    sortable: true
-  },
-  {
-    key: "orcid",
-    label: "component.person.orcid"
-  },
-  {
-    key: "affiliation",
-    label: "component.person.affiliation"
-  },
-  {
-    key: "phone_number",
-    label: "component.person.phone_number"
-  },
-  {
-    key: "actions",
-    label: "component.common.actions",
-    class: "table-actions"
-  }
+  {key: "last_name", label: "component.person.last-name", sortable: true},
+  {key: "first_name", label: "component.person.first-name", sortable: true},
+  {key: "email", label: "component.person.email", sortable: true},
+  {key: "orcid", label: "component.person.orcid"},
+  {key: "affiliation", label: "component.person.affiliation"},
+  {key: "phone_number", label: "component.person.phone_number"},
+  {key: "actions", label: "component.common.actions", class: "table-actions"}
 ];
 //#endregion
 
@@ -106,18 +80,18 @@ const tableRef = ref();
 onMounted(() => {
   let query: any = route.query;
   if (query.filter) {
-      filter = decodeURIComponent(query.filter);
+      filter.value = decodeURIComponent(query.filter);
     }
   });
 
   function refresh() {
-    tableRef.refresh();
+    tableRef.value.refresh();
   }
 
   function searchPersons(options) {
     return service
         .searchPersons(
-            this.filter,
+            filter.value,
             false,
             options.orderBy,
             options.currentPage,
@@ -126,12 +100,8 @@ onMounted(() => {
   }
 
   function updateFilter() {
-    this.$opensilex.updateURLParameter("filter", this.filter, "");
-    this.refresh();
+    $opensilex.updateURLParameter("filter", filter, "");
+    refresh();
   }
 
 </script>
-
-<style scoped lang="scss">
-
-</style>

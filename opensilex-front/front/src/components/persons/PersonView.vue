@@ -52,14 +52,12 @@ const personForm = ref<any>();
 <i18n>
 en:
   PersonView:
-    title: Persons
     description: Manage persons
     create: Add a person
     update: Update a person
 
 fr:
   PersonView:
-    title: Personnes
     description: Gérer les personnes
     create: Ajouter une personne
     update: Modifier une personne

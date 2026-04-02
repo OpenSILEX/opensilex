@@ -70,8 +70,8 @@ menu:
           credentials:
             - person-access
           icon: bi#bi-person
-          title: PersonView.title
-          description: PersonView.description
+          title: component.menu.security.persons
+          description: component.person.description
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:

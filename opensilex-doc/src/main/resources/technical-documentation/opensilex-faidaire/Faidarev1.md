@@ -3,7 +3,7 @@
 | Date       | Author             | OpenSILEX version   | Comment                                     |
 |------------|--------------------|---------------------|---------------------------------------------|
 | 13/02/2023 | Gabriel Besombes   | 1.2.1               | Document creation & mappings                |
-| 31/03/2026 | yvan.roux@inrae.fr | 1.5.0 Freaky Fossil | Germplasm return now species and accessions |
+| 31/03/2026 | yvan.roux@inrae.fr | 1.5.0 Freaky Fossil | Germplasm return now variety and accessions |
 
 
 # Table of contents
@@ -210,7 +210,7 @@ This service should return a list of the available services as well as their dat
 ## Germplasm
 
 
-__Note : only accessions are considered germplasms for BrAPI. However the service will return species and germplasms__
+__Note : only accessions are considered germplasms for BrAPI. However the service will return variety and germplasms__
 
 This is why an error is returned when this notion doesn't exist :
 

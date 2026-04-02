@@ -90,13 +90,13 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
 
-        /* Get the species and accessions with the experimentations the user has access to that they are used in
+        /* Get the varieties and accessions with the experimentations the user has access to that they are used in
 
         SELECT  ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name (GROUP_CONCAT(DISTINCT ?experiment_uri ; separator=',') AS ?experiment_uri__opensilex__concat)
         WHERE
           { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
               { ?uri  rdf:type ?type
-                FILTER (?type IN (vocabulary:Species, vocabulary:Accession))
+                FILTER (?type IN (vocabulary:Variety, vocabulary:Accession))
                 OPTIONAL
                   { ?uri  foaf:homepage  ?website}
                 OPTIONAL
@@ -146,7 +146,7 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
         Expr filterExpr = SPARQLQueryHelper.inURIFilter(
                 typeVar,
-                List.of(URI.create(Oeso.Accession.getURI()), URI.create(Oeso.Species.getURI()))
+                List.of(URI.create(Oeso.Accession.getURI()), URI.create(Oeso.Variety.getURI()))
         );
 
         accessions.addGraph(germplasmGraph, new WhereBuilder()

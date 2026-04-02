@@ -132,7 +132,6 @@ public class StartServerWithFront {
         args.add(nodeDirectory.resolve("npm").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
-        LOGGER.info("Build front " + moduleId + " : " + Arrays.toString(args.toArray()));
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
         addNodePathToEnv(frontBuilder);
 
@@ -203,7 +202,6 @@ public class StartServerWithFront {
         monitor.start();
 
         createConfigMonitor(moduleDirectory, targetDirectory);
-        LOGGER.info("Front builder ready : " + moduleId);
         return frontBuilder.start();
     }
 
@@ -230,7 +228,6 @@ public class StartServerWithFront {
         var pathEnvKey = getPathEnvKey(processBuilder.environment());
         var path = processBuilder.environment().get(pathEnvKey);
         path = nodeDirectory.toAbsolutePath() + File.pathSeparator + path;
-        LOGGER.debug("Updated path : " + path);
         processBuilder.environment().put(pathEnvKey, path);
     }
 

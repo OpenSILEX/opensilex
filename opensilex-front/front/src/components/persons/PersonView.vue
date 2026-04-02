@@ -20,25 +20,23 @@
 </template>
 
 <script setup lang="ts">
+import { useStore } from "vuex";
 import { computed, ref, getCurrentInstance } from "vue";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "../../models/Store";
 
+const store = useStore() as OpenSilexStore;
+
+
 const personForm = ref<any>();
+const personList: any = ref(null);
 
-//   @Ref("personList") readonly personList!: any;
+const user = computed(() => store.state.user)
+const credentials = computed(() => store.state.credentials)
 
-//   get user() {
-//     return this.$store.state.user;
-//   }
-
-//   get credentials() {
-//     return this.$store.state.credentials;
-//   }
-  function showEditForm(dto){
-    // let copydto = JSON.parse(JSON.stringify(dto));
-    // this.personForm.showEditForm(copydto);
-  }
+function showEditForm(dto){
+  let copydto = JSON.parse(JSON.stringify(dto));
+  this.personForm.showEditForm(copydto);
+}
 </script>
 
 <style scoped lang="scss">

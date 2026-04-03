@@ -8,6 +8,8 @@ import { createRouter, createWebHistory, NavigationGuardNext, type Router, type 
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import store from './Store';
 
+const PUBLIC_ROUTE: string = "public";
+
 export class OpenSilexRouter {
 
     private frontConfig: FrontConfigDTO;
@@ -15,7 +17,6 @@ export class OpenSilexRouter {
     private menu: Array<MenuItemDTO> = [];
     private router: Router;
     private pathPrefix: string
-    private PUBLIC_ROUTE: string = "public";
     private sectionAttributes: any = {};
     private app: App;
     private $opensilex: OpenSilexVuePlugin;
@@ -66,9 +67,10 @@ export class OpenSilexRouter {
             const isLoggedIn = store.state.user.loggedIn;
             const redirectTo = to.query.redirect ? to.query.redirect.toString() : undefined;
 
-            // si pas deja log et veut aller sur autre chose que /app : renvoi sur /app
-            if (!isLoggedIn && to.path !== '/') {
-                return next({ path: '/', query: { redirect: to.fullPath } });
+            // si pas deja log et veut aller sur une route non publique
+            if (!isLoggedIn && to.meta[PUBLIC_ROUTE] !== true) {
+                console.log("[router] ==> retour au /")
+                return next({ path: '/' });
             }
 
             // si deja log et veut aller sur /app : renvoi sur /dash
@@ -87,7 +89,8 @@ export class OpenSilexRouter {
             if (to.path === from.path) {
                 return next();
             }
-            next(); // aucun des cas ? on laisse passer
+
+            next(); // On laisse passer
         });
 
         this.router.afterEach((to, from, failure) => {
@@ -158,6 +161,9 @@ export class OpenSilexRouter {
                     path: routeConfig.path,
                     name: routeConfig.name || undefined,
                     component: loadComponent(routeConfig.component),
+                    meta: {
+                        public: routeConfig.credentials?.includes(PUBLIC_ROUTE) === true
+                    }
                 });
             }
         }

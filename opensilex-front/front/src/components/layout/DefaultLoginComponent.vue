@@ -26,7 +26,7 @@
               </div>
                   <div class="carousel-item">
                 <img :src="$opensilex.getResourceURI('images/opensilex-login-bg.png')" class="d-block w-100 h-100" >
-              </div>              
+              </div>
             </div>
 
             <button class="carousel-control-prev" type="button" data-bs-target="#loginImagesCarousel" data-bs-slide="prev">
@@ -40,14 +40,14 @@
 
         <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
           <!-- Language Selector -->
-          <div class="languagesDropdown">            
+          <div class="languagesDropdown">
             <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-globe"></i>
               {{ t("LoginComponent.language." + locale) }}
             <i class="bi bi-chevron-down"></i>
             </button>
             <ul class="dropdown-menu">
-              <li 
+              <li
                 v-for="lang in availableLocales"
                 :key="lang"
                 @click.prevent="setLanguage(lang)"
@@ -80,7 +80,7 @@
                     {{ t('LoginComponent.infoGuest') }}
                   </p>
                 </slot>
-                <button 
+                <button
                   class="btn btn-success greenThemeColor"
                   @click="onLoginAsGuest"
                 >
@@ -133,12 +133,12 @@
                   {{ errors.password }}
                 </div> -->
               </div>
-              
+
 
               <!-- Forgot Password Link -->
-              <a v-if="isResetPassword()" :href="resetPasswordPath">
+              <router-link v-if="isResetPassword()" to="/forgot-password">
                 <span>{{ t("LoginComponent.forgotPassword") }}</span>
-              </a>
+              </router-link>
 
               <!-- Login Button -->
               <div class="sign-btn text-center">
@@ -207,7 +207,7 @@ export default defineComponent({
       throw new Error("L'instance $opensilex est introuvable ...");
     }
 
-    
+
     // Gestion des langues
     const language = ref();
     const { t, locale, availableLocales } = useI18n({
@@ -295,7 +295,7 @@ export default defineComponent({
     // connexion principale 
     const onLogin = async () => {
       $opensilex.showLoader();
-      
+
       try {
         const authService = $opensilex.getService<AuthenticationService>(
           "opensilex-security.AuthenticationService"
@@ -311,7 +311,7 @@ export default defineComponent({
         $opensilex.setCookieValue(user);
         store.commit("login", user);
         store.commit("refresh");
-        
+
 
       } catch (error: any) {
         if (error.status === 403) {
@@ -326,10 +326,10 @@ export default defineComponent({
     };
 
 
-    return { 
+    return {
       t,
       locale,
-      availableLocales, 
+      availableLocales,
       connectAsGuest,
       form,
       versionInfo,
@@ -377,7 +377,7 @@ invalidCredentials
   right: 0;
   height: 100%;
   width: 100%;
-  z-index: 9998; /*behind global toaster box*/ 
+  z-index: 9998; /*behind global toaster box*/
 }
 
 .authentication-form .error-message {
@@ -415,7 +415,7 @@ en:
     language:
       fr: French
       en: English
-    copyright: 
+    copyright:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}
       3: Based on OpenSILEX version {version}
@@ -435,7 +435,7 @@ fr:
     language:
       fr: Français
       en: Anglais
-    copyright: 
+    copyright:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}
       3: Basé sur OpenSILEX version {version}

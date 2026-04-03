@@ -9,6 +9,7 @@ import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import store from './Store';
 
 const PUBLIC_ROUTE: string = "public";
+export const DEFAULT_ROUTE_NAME: string = "default";
 
 export class OpenSilexRouter {
 
@@ -151,9 +152,11 @@ export class OpenSilexRouter {
             // Default route
             routes.push({
                 path: "/",
-                name: "default",
+                name: DEFAULT_ROUTE_NAME,
                 component: loadComponent(frontConfig.loginComponent),
-                meta: { public: true }
+                meta: {
+                    public: true
+                }
             });
 
             for (const routeConfig of frontConfig.routes) {

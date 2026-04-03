@@ -3,7 +3,7 @@
   <div id="page-wrapper" class="customized" v-bind:class="{ wrapper: !$route.meta.public, embed: embed }">
     <opensilex-ToastContainer ref="toastContainer" class="toast-container"></opensilex-ToastContainer>
 
-      <div v-if="isPublicRoute">
+      <div v-if="isLandingPage && !isLoggedIn">
         <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
           <div id="main-content">
             <main class="main-content">
@@ -15,6 +15,23 @@
             </footer>
           </div>
         </section>
+      </div>
+
+      <div v-else-if="isPublicRoute">
+        <div class="wrapper">
+          <component v-bind:is="headerComponent"></component>
+          <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
+            <div id="main-content">
+              <main class="main-content">
+                <router-view />
+              </main>
+
+              <footer v-if="!embed">
+                <component :is="footerComponent"></component>
+              </footer>
+            </div>
+          </section>
+        </div>
       </div>  
           
                 
@@ -85,14 +102,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, inject, getCurrentInstance } from 'vue';
-import { useRoute , useRouter} from 'vue-router';
-import { useStore } from 'vuex';
-import { useI18n } from 'vue-i18n';
-import { Carousel, Dropdown} from "bootstrap";
-import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
-import ToastContainer from './components/common/ToastContainer.vue';
-import { NConfigProvider, useMessage, NMessageProvider } from 'naive-ui';
+import {computed, inject, onMounted, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {useStore} from 'vuex';
+import {useI18n} from 'vue-i18n';
+import {NMessageProvider} from 'naive-ui';
+import {DEFAULT_ROUTE_NAME} from "./models/OpenSilexRouter.ts";
 
 const toastContainer = ref();
 // import 'bootstrap/dist/css/bootstrap.min.css';
@@ -131,6 +146,8 @@ const disconnected = computed(() => store.state.disconnected);
 const user = computed(() => store.state.user);
 const isLoaderVisible = computed(() => store.state.loaderVisible);
 const menuVisible = computed(() => store.state.menuVisible);
+const isLandingPage = computed(() => route.name === DEFAULT_ROUTE_NAME);
+const isLoggedIn = computed(() => store.state.user.loggedIn);
 const isPublicRoute = computed(() => route.meta.public);
 
 // const resolvedHeaderComponent = ref();

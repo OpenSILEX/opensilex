@@ -10,17 +10,17 @@
     :items="uriRelationList"
     :fields="fields"
   >
-    <template v-slot:head(relation)="head">{{ $t(head.label) }}</template>
-    <template v-slot:cell(relation)="cell">
+    <template v-slot:head(relationDtoKey)="head">{{ $t(head.label) }}</template>
+    <template v-slot:cell(relationDtoKey)="cell">
       <opensilex-SkosSelector
-          :labelAsCurrentSelectedRelation="true"
-          :selectedRelation.sync="cell.item.relationDtoKey"
-          @update:selectedRelation="onSelected"
-      ></opensilex-SkosSelector>
+        :labelAsCurrentSelectedRelation="true"
+        :selectedRelation.sync="cell.item.relationDtoKey"
+        @update:selectedRelation="onSelected"
+      />
     </template>
     <template v-slot:head(relationURI)="head">{{ $t(head.label) }}</template>
     <template v-slot:cell(relationURI)="cell">
-      <a :href="cell.value" target="_blank">{{ cell.item.uri }}</a>
+      <a :href="cell.item.uri" target="_blank">{{ cell.item.uri }}</a>
     </template>
     <template v-slot:head(actions)="head">{{ $t(head.label) }}</template>
     <template v-slot:cell(actions)="cell">
@@ -56,7 +56,7 @@ export default class SkosRelationTable extends Vue {
   //#region Data
   private readonly fields: BvTableFieldArray = [
     {
-      key: "relation",
+      key: "relationDtoKey",
       label: "component.skos.relation",
       sortable: true
     },

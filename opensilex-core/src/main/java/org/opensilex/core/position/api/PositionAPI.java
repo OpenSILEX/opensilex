@@ -2,13 +2,16 @@ package org.opensilex.core.position.api;
 
 import com.mongodb.MongoQueryException;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -155,6 +158,7 @@ public class PositionAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
 
         try {
             //create search filter
@@ -168,6 +172,11 @@ public class PositionAPI {
 
             // search all moves between the start (and end) date of the experiment for an event type (move) and a target type
             ListWithPagination<MoveModel> moveList = moveLogic.search(searchFilter);
+
+            //Leave if no moves were found to prevent unexpected errors
+            if(CollectionUtils.isEmpty(moveList.getList())){
+                return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+            }
             //get last move by unique target uri
              Map<List<URI>,Optional<MoveModel>> uniqueTargetLastMoveList = moveList.getList().stream()
                                                                                     //group by unique target URI
@@ -176,14 +185,13 @@ public class PositionAPI {
                                                                                     Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
             //for each unique target uri, get the mongoDB Model location linked (inside the current extend)
-            Map<URI, LocationObservationModel> targetLocationMap = moveLogic.getTargetWithPosition(
+            StringUriMap<LocationObservationModel> targetLocationMap = new StringUriMap<>(locationObservationLogic.getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
                     uniqueTargetLastMoveList.keySet().stream().flatMap(Collection::stream).collect(Collectors.toList()),
                     endDate != null ? Instant.parse(endDate) : null,
-                    geoJsonToGeometry(geometry));
+                    geoJsonToGeometry(geometry)));
 
             List<PositionGetDTO> positionList = new ArrayList<>();
 
-            //
             uniqueTargetLastMoveList.forEach((targetList, move) -> {
                     if(Objects.nonNull(targetLocationMap.get(targetList.get(0)))){
                         PositionGetDTO positionGetDTO = new PositionGetDTO(move.get(), targetLocationMap.get(targetList.get(0)));

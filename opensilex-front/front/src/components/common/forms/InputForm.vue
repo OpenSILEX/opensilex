@@ -6,15 +6,14 @@
     :helpMessage="helpMessage"
     :vid="vid"
   >
-    <template v-slot:field="field">
+    <template v-slot:field="{ id, validate }">
       <b-form-input
         :ref="inputRef"
-        :id="field.id"
+        :id="id"
         :value="stringValue"
-        @update="updateValue($event)"
+        @input="onInput($event, validate)"
+        @blur="onBlur(validate)"
         @change="change"
-        @input="input"
-        @blur="blur"
         @keyup.enter.native="onEnter"
         :disabled="disabled"
         :type="type"
@@ -54,22 +53,32 @@ export default class InputForm extends Vue {
     }
   }
 
-  change(value){
-    this.$emit("change",value);
-  }
-
-  input(value) {
+  async onInput(value, validate) {
+    this.updateValue(value);
     this.$emit("input", value);
+
+    if (validate) {
+      await this.$nextTick();
+      validate(value);
+    }
   }
 
-  blur() {
+  async onBlur(validate) {
     this.$emit("blur");
+
+    if (validate) {
+      await this.$nextTick();
+      validate(this.stringValue);
+    }
+  }
+
+  change(value) {
+    this.$emit("change", value);
   }
 
   onEnter() {
-    this.$emit("handlingEnterKey")
+    this.$emit("handlingEnterKey");
   }
-
   @Prop({
     default: "text"
   })

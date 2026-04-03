@@ -109,16 +109,24 @@ export default class GroupForm extends Vue {
       });
   }
 
+  private toUpdatePayload(form: GroupUpdateDTO) {
+    return {
+      uri: form.uri,
+      name: form.name,
+      description: form.description,
+      user_profiles: (form.user_profiles || []).map(up => ({
+        user_uri: up.user_uri,
+        profile_uri: up.profile_uri
+      }))
+    };
+  }
+
   update(form) {
+    const payload = this.toUpdatePayload(form);
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .updateGroup(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Group updated", uri);
-        this.$opensilex.showSuccessToast(this.$t("component.group.group-updated"));
-        
-      })
+      .updateGroup(payload)
+      .then()
       .catch(this.$opensilex.errorHandler);
   }
 }

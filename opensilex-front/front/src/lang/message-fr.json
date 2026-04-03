@@ -21,8 +21,25 @@
                 "x": "X",
                 "y": "Y",
                 "z": "Z",
-                "textual-position": "Position textuelle"
+                "textual-position": "Position textuelle",
+                "from": "De",
+                "too": "Vers",
+                "coordinates": "Coordonnées",
+                "from-help": "URI de l'installation environnementale de départ (L'installation doit exister et le champs 'to' doit être remplie).",
+                "to-help": "URI de l'installation environnementale d'arrivée (L'installation doit exister).",
+                "x-help": "1ère dimension d'un système de coordonnées",
+                "y-help": "2ème dimension d'un système de coordonnées",
+                "z-help": "3ème dimension d'un système de coordonnées",
+                "textual-position-help": "Description textuelle de la position",
+                "x-placeholder": "A ou 10 ou 10,5",
+                "y-placeholder": "A ou 10 ou 10,5",
+                "z-placeholder": "A ou 10 ou 10,5",
+                "textual-position-placeholder": "à côté de la porte gauche",
+                "from-placeholder": "dev-infra:serreA",
+                "to-placeholder": "dev-infra:serreB",
+                "coordinates-placeholder": "POINT Z(1 1 80)"
             },
+            "altName": "Nom alternatif",
             "month": "mois",
             "months": "mois",
             "day":"jour",
@@ -92,7 +109,8 @@
                 "not-a-valid-uri": "Le format de l'URI n'est pas valide.",
                 "regex": {
                     "invalid-regex" : "Expression régulière invalide : {__regex__}. Les caractères suivants sont interdits : {__forbidden_characters__}"
-                }
+                },
+                "uri-space-error": "L'URI ne peut contenir d'espace vide"
             },
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",
@@ -464,7 +482,8 @@
             }
         },
         "events":{
-            "details": "Voir les détails de l'évènement"
+            "details": "Voir les détails de l'évènement",
+            "start-example": "2019-09-08T13:00:00+01:00"
         },
         "sharedResourceInstances": {
             "selector-placeholder":"Choisir une source",
@@ -508,7 +527,7 @@
             "scientificSupervisors": "Responsables scientifiques",
             "record_author": "Saisie par",
             "organizations": "Organisations",
-            "facilities": "Installations techniques",
+            "facilities": "Installations environnementales",
             "contacts": "Contacts",
             "add": "Ajouter une expérimentation",
             "update": "Modifier l'expérimentation",
@@ -585,7 +604,8 @@
             },
             "errors": {
                 "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
-            }
+            },
+            "funding": "Financeurs"
         },
         "germplasms": {
             "errors": {
@@ -606,6 +626,10 @@
                     "used-in-experiment" :"L'objet scientifique {scientific_object} ne peut être supprimé car il est utilisé dans une expérience. Vous devez supprimer l'objet de l'expérience d'abord",
                     "has-child" :"L'objet scientifique {scientific_object} ne peut être supprimé car il cet objet a des enfants. Vous devez les supprimer d'abord (ça peut paraitre cruel mais il le faut)"
                 }
+            },
+            "geometry" : {
+                "startHelp" : "Le moment à partir duquel l'objet avait cette position.",
+                "endHelp" : "Le moment à partir duquel l'objet n'avait plus cette position. \nOBLIGATOIRE SI au moins un champ de location a été saisie."
             }
         },
         "skos": {
@@ -763,6 +787,18 @@
                         "has-children" : "La propriété {property} possède une ou plusieurs sous-propriétés. Vous devez les supprimer d'abord"
                     }
                 }
+            },
+            "externalOntologies" : {
+                "agroportal": "Le projet AgroPortal repose sur cinq cas d’usage agronomiques majeurs qui participent à la conception et à l’orientation de la plateforme. AgroPortal propose déjà un référentiel robuste et stable, particulièrement précieux pour le domaine agronomique.",
+                "agrovoc": "AGROVOC est un vocabulaire contrôlé couvrant l’ensemble des domaines d’intérêt de l’Organisation des Nations Unies pour l’alimentation et l’agriculture (FAO), notamment l’alimentation, la nutrition, l’agriculture, la foresterie, la pêche, les noms scientifiques et communs des animaux et des plantes, l’environnement, les notions biologiques, les techniques de culture et bien plus encore. Il est publié par la FAO et enrichi par une communauté d’experts.",
+                "bioportal": "L’objectif du National Center for Biomedical Ontology est de soutenir les chercheurs en biomédecine dans leurs travaux intensifs en connaissances, en leur fournissant des outils en ligne et un portail web leur permettant d’accéder, de consulter et d’intégrer des ressources ontologiques hétérogènes dans tous les aspects de la recherche biomédicale et de la pratique clinique. Une part importante de ce travail consiste à utiliser les ontologies biomédicales pour faciliter la gestion et l’analyse de données issues d’expériences complexes.",
+                "crop": "L’objectif actuel de la Crop Ontology (CO) est de compiler des concepts validés ainsi que leurs relations concernant l’anatomie, la structure et les phénotypes des cultures, la mesure des traits et les méthodes associées, ainsi que le germplasm avec des termes passeport multi-cultures. Les concepts de la CO sont utilisés pour documenter des bases de données agronomiques et décrire les données.",
+                "plant": "La Plant Ontology est un vocabulaire structuré et une ressource de base de données reliant l’anatomie, la morphologie, la croissance et le développement des plantes aux données génomiques végétales.",
+                "planteome": "Le projet Planteome propose une approche intégrée fondée sur l’adoption de standards communs d’annotation et d’un ensemble d’ontologies de référence pour les plantes.",
+                "uo": "Unités de mesure destinées à être utilisées conjointement avec la Phenotype And Trait Ontology (PATO).",
+                "om": "L’Ontology of Units of Measure (OM) 2.0 modélise les concepts et relations importants pour la recherche scientifique. Elle met particulièrement l’accent sur les unités, les quantités, les mesures et les dimensions.",
+                "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
+                "xsd": "Découvrez les langages de schémas XML."
             }
         }
     },

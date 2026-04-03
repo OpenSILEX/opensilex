@@ -14,13 +14,20 @@
       v-if="required || rules"
       :name="$t(label)"
       :rules="getRules()"
-      v-slot="{ errors }"
+      v-slot="{ errors, validate }"
       :vid="vid"
     >
       <div v-bind:class="{ errors: errors.length > 0 }">
-        <slot name="field" v-bind:id="id" v-bind:validator="validatorRef"></slot>
+        <slot
+          name="field"
+          v-bind:id="id"
+          v-bind:validator="validatorRef"
+          v-bind:validate="validate"
+        ></slot>
       </div>
-      <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+      <div v-if="errors.length > 0" class="error-message alert alert-danger">
+        {{ errors[0] }}
+      </div>
     </ValidationProvider>
     <slot v-else name="field" v-bind:id="id"></slot>
   </b-form-group>

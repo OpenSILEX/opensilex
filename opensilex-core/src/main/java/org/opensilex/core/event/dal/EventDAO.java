@@ -156,8 +156,16 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         return model;
     }
 
+    public void updateModels(List<T> models) throws Exception{
+        sparql.update(models);
+    }
+
     public void delete(URI uri) throws Exception {
         sparql.delete(EventModel.class, uri);
+    }
+
+    public void deleteMany(List<URI> uris) throws Exception {
+        sparql.delete(graph, clazz, uris);
     }
 
     public T get(URI uri, AccountModel user) throws Exception {

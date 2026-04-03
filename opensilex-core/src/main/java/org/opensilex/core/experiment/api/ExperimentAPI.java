@@ -29,6 +29,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.FundingModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
@@ -252,6 +253,7 @@ public class ExperimentAPI {
      * @param projects
      * @param isPublic
      * @param facilities
+     * @param funding   the name of the experiment's funding
      * @param orderByList
      * @param page
      * @param pageSize
@@ -276,6 +278,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
             @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
             @ApiParam(value = "Search by involved facilities") @QueryParam("facilities") List<URI> facilities,
+            @ApiParam(value = "Search by funding", example = "anr") @QueryParam("funding") List<URI> funding,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -291,6 +294,7 @@ public class ExperimentAPI {
                 .setProjects(projects)
                 .setPublic(isPublic)
                 .setFacilities(facilities)
+                .setFunding(funding)
                 .setUser(currentUser);
 
         filter.setOrderByList(orderByList)
@@ -1153,6 +1157,39 @@ public class ExperimentAPI {
                     "Unknown experiment URIs"
             ).getResponse();
         }
+    }
+
+    @GET
+    @Path("/funding")
+    @ApiOperation("Search funding")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return funding", response = FundingGetDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchFunding(
+            @ApiParam(value = "Funding name regex pattern", example = "anr") @QueryParam("name") String namePattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+
+        ListWithPagination<FundingModel> resultList = dao.searchFunding(
+                namePattern,
+                currentUser.getLanguage(),
+                orderByList,
+                page,
+                pageSize
+        );
+
+        ListWithPagination<FundingGetDTO> resultDTOList = resultList.convert(
+                FundingGetDTO.class,
+                FundingGetDTO::new
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
 }

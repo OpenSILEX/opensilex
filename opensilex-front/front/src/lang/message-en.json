@@ -21,8 +21,25 @@
                 "x": "X",
                 "y": "Y",
                 "z": "Z",
-                "textual-position": "Textual position"
+                "textual-position": "Textual position",
+                "from": "From",
+                "too": "Too",
+                "coordinates": "Coordinates",
+                "from-help": "Starting facility URI (The facility must exist, and the 'to' field must be filled).",
+                "to-help": "Arrival facility URI (The facility must exist).",
+                "x-help": "1th dimension of a custom coordinate system",
+                "y-help": "2nd dimension of a custom coordinate system",
+                "z-help": "3rd dimension of a custom coordinate system",
+                "textual-position-help": "Description of the position with text",
+                "x-placeholder": "A or 10 or 10.5",
+                "y-placeholder": "A or 10 or 10.5",
+                "z-placeholder": "A or 10 or 10.5",
+                "textual-position-placeholder": "Beside the left door",
+                "from-placeholder": "dev-infra:greenHouseA",
+                "to-placeholder": "dev-infra:greenHouseB",
+                "coordinates-placeholder": "POINT Z(1 1 80)"
             },
+            "altName": "Alternative name",
             "month": "month",
             "months": "months",
             "day":"day",
@@ -93,7 +110,8 @@
                 "not-a-valid-uri": "This URI format is not valid.",
                 "regex": {
                     "invalid-regex" : "Invalid regex : {__regex__}. The following characters are forbidden : {__forbidden_characters__}"
-                }
+                },
+                "uri-space-error": "URI cannot contain empty spaces."
             },
             "form-wizard": {
                 "external-ontologies": "(Optional) External ontologies references",
@@ -465,7 +483,8 @@
             }
         },
         "events": {
-            "details": "View event details"
+            "details": "View event details",
+            "start-example": "2019-09-08T13:00:00+01:00"
         },
         "sharedResourceInstances": {
             "selector-placeholder":"Select a source",
@@ -606,7 +625,8 @@
             },
             "errors": {
                 "associated-data": "The experiment can't be deleted since there are some associated data"
-            }
+            },
+            "funding": "Funding"
         },
         "germplasms": {
             "errors": {
@@ -627,6 +647,10 @@
                     "used-in-experiment" :"The object {scientific_object} can't be deleted since it's involved in some experiments. You must delete the object from the experiment first",
                     "has-child" :"The object {scientific_object} can't be deleted since it has some child. You must delete them first (It may sound cruel but it has to be)"
                 }
+            },
+            "geometry" : {
+                "startHelp" : "The moment where this object began to have this position.",
+                "endHelp" : "The moment where this object no longer had this position.\nREQUIRED IF any location field's are filled."
             }
         },
         "skos": {
@@ -711,6 +735,18 @@
                         "has-children" : "The property {property} has sub-properties. You must delete them first"
                     }
                 }
+            },
+            "externalOntologies" : {
+                "agroportal": "AgroPortal project is based on five driving agronomic use cases which participate in the design and orientation of the platform. AgroPortal already offers a robust and stable reference repository highly valuable for the agronomic domain.",
+                "agrovoc": "AGROVOC is a controlled vocabulary covering all areas of interest of the Food and Agriculture Organization (FAO) of the United Nations, including food, nutrition, agriculture, forestry, fisheries, scientific and common names of animals and plants, environment, biological notions, techniques of plant cultivation and more.. It is published by FAO and edited by a community of experts.",
+                "bioportal": "The goal of the National Center for Biomedical Ontology is to support biomedical researchers in their knowledge-intensive work, by providing online tools and a Web portal enabling them to access, review, and integrate disparate ontological resources in all aspects of biomedical investigation and clinical practice. A major focus of our work involves the use of biomedical ontologies to aid in the management and analysis of data derived from complex experiments.",
+                "crop": "The Crop Ontology (CO) current objective is to compile validated concepts along with their inter-relationships on anatomy, structure and phenotype of Crops, on trait measurement and methods as well as on Germplasm with the multi-crop passport terms. The concepts of the CO are being used to curate agronomic databases and describe the data.",
+                "plant": "The Plant Ontology is a structured vocabulary and database resource that links plant anatomy, morphology and growth and development to plant genomics data.",
+                "planteome": "Research engine project brings an integrated approach of adopting common annotation standards and a set of reference ontologies for Plants.",
+                "uo": "Metrical units for use in conjunction with the Phenotype And Trait Ontology (PATO)",
+                "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
+                "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
+                "xsd": "Discover XML schema languages."
             }
         }
     },

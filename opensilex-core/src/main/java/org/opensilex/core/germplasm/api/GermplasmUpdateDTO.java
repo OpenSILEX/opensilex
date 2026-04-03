@@ -8,7 +8,11 @@ package org.opensilex.core.germplasm.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -16,13 +20,12 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Alice Boizet
  */
 public class GermplasmUpdateDTO extends GermplasmCreationDTO {
-    
-    @NotNull
-    @ValidURI
+
     @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     @Override
-    public URI getUri() {
+    @Required
+    public String getUri() {
         return uri;
     }
-    
+
 }

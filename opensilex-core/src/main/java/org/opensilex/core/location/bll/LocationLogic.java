@@ -58,15 +58,33 @@ public class LocationLogic {
         return geocodec.decode(jsonReader, DecoderContext.builder().build());
     }
 
+    public static final String FROM_BUT_NO_TOO_ERROR_MSG =  "Cannot declare a move with a 'From' value but without a 'To' value.";
+    public static final String FROM_TOO_SAME_ERROR_MSG =  "Cannot declare a move with a the same 'From' value and 'To' value.";
+
+    /**
+     * Verifies that they don't have same value, and verifies that too isn't null if from was set.
+     *
+     * @param from facility
+     * @param too facility
+     * @return the String error message or null if no errors
+     */
+    public static String validateFromAndTooValuesAndReturnErrorMsg(URI from, URI too){
+        if (Objects.nonNull(from) && Objects.isNull(too)) {
+            return FROM_BUT_NO_TOO_ERROR_MSG;
+        }
+        if (Objects.nonNull(from) && SPARQLDeserializers.compareURIs(too, from)) {
+            return FROM_TOO_SAME_ERROR_MSG;
+        }
+        return null;
+    }
+
     public static LocationModel buildLocationModel(Geometry geometry, URI from, URI to, String x, String y, String z, String textualPosition) {
         LocationModel locationModel = new LocationModel();
 
         //validate from/to consistency
-        if (Objects.nonNull(from) && Objects.isNull(to)) {
-            throw new BadRequestException("Cannot declare a move with a 'From' value but without a 'To' value.");
-        }
-        if (Objects.nonNull(from) && SPARQLDeserializers.compareURIs(to, from)) {
-            throw new BadRequestException("Cannot declare a move with a the same 'From' value and 'To' value.");
+        String fromTooErrorMsg = validateFromAndTooValuesAndReturnErrorMsg(from, to);
+        if(fromTooErrorMsg != null){
+            throw new BadRequestException(fromTooErrorMsg);
         }
 
         //build LocationModel

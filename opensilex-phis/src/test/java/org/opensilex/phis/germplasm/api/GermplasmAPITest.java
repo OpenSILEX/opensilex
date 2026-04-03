@@ -142,7 +142,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().getName());
-                put("rdf_type", getCreationSpeciesDTO().getType());
+                put("rdf_type", getCreationSpeciesDTO().getRdfType());
             }
         };
 
@@ -170,7 +170,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         final Response postResultVariety = getJsonPostResponseAsAdmin(target(createPath), variety);
         
         // update the variety
-        variety.setUri(extractUriFromResponse(postResultVariety));
+        variety.setUri(extractUriFromResponse(postResultVariety).toString());
         variety.setName("new alias");
         final Response updateResult = getJsonPutResponse(target(updatePath), variety);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -205,7 +205,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                 .buildAdmin()
                 .executeCallAndReturnURI();
 
-        germplasmToUpdateDTO.setUri(createdURI);
+        germplasmToUpdateDTO.setUri(createdURI.toString());
         germplasmToUpdateDTO.setSpecies(null);
         new UserCallBuilder(update)
                 .setBody(germplasmToUpdateDTO)

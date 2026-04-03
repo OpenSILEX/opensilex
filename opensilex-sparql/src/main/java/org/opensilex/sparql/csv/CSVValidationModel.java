@@ -48,6 +48,8 @@ public class CSVValidationModel {
 
     private Map<Integer, String> invalidHeaderURIs = new HashMap<>();
 
+    private Map<Integer, String> invalidDuplicateHeaderByIndex = new HashMap<>();
+
     private Map<Integer, List<CSVDatatypeError>> datatypeErrors = new HashMap<>();
 
     private Map<Integer, List<CSVURINotFoundError>> uriNotFoundErrors = new HashMap<>();
@@ -100,6 +102,10 @@ public class CSVValidationModel {
         return invalidHeaderURIs;
     }
 
+    public Map<Integer, String> getInvalidDuplicateHeaderByIndexes() {
+        return invalidDuplicateHeaderByIndex;
+    }
+
     public Map<Integer, List<CSVCell>> getInvalidValueErrors() {
         return invalidValueErrors;
     }
@@ -149,17 +155,18 @@ public class CSVValidationModel {
     }
 
     public boolean hasErrors() {
-        return getMissingHeaders().size() > 0
-                || getDatatypeErrors().size() > 0
-                || getInvalidDateErrors().size() > 0
-                || getUriNotFoundErrors().size() > 0
-                || getInvalidURIErrors().size() > 0
-                || getMissingRequiredValueErrors().size() > 0
-                || getInvalidHeaderURIs().size() > 0
-                || getInvalidValueErrors().size() > 0
-                || getAlreadyExistingURIErrors().size() > 0
-                || getDuplicateURIErrors().size() > 0
-                || getEmptyHeaders().size() > 0
+        return !getMissingHeaders().isEmpty()
+                || !getDatatypeErrors().isEmpty()
+                || !getInvalidDateErrors().isEmpty()
+                || !getUriNotFoundErrors().isEmpty()
+                || !getInvalidURIErrors().isEmpty()
+                || !getMissingRequiredValueErrors().isEmpty()
+                || !getInvalidHeaderURIs().isEmpty()
+                || !getInvalidDuplicateHeaderByIndexes().isEmpty()
+                || !getInvalidValueErrors().isEmpty()
+                || !getAlreadyExistingURIErrors().isEmpty()
+                || !getDuplicateURIErrors().isEmpty()
+                || !getEmptyHeaders().isEmpty()
                 || ! invalidRowSizeErrors.isEmpty();
     }
 
@@ -169,6 +176,10 @@ public class CSVValidationModel {
 
     public void addInvalidHeaderURI(int i, String invalidURI) {
         invalidHeaderURIs.put(i, invalidURI);
+    }
+
+    public void addInvalidDuplicateHeader(int i, String duplicateHeader){
+        invalidDuplicateHeaderByIndex.put(i, duplicateHeader);
     }
 
     public void addInvalidDatatypeError(CSVCell cell, URI dataType) {
@@ -229,17 +240,13 @@ public class CSVValidationModel {
         }
         objects.add(object);
     }
-    
+
     public List<URI> getObjectNameUris(String name) {
         return uriByNames.get(name);
     }
 
     public boolean containsObject(SPARQLResourceModel object) {
         return objects.contains(object);
-    }
-
-    public void addObjectMetadata(String metadataKey, Object value) {
-        objectsMetadata.put(metadataKey, value);
     }
 
     public Set<Integer> getEmptyHeaders() {

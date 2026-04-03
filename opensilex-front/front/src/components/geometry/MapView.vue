@@ -200,7 +200,7 @@
           <template v-slot="scope">
             <div class="panel-content">
               <opensilex-DisplayInformationAboutItem
-                :details-s-o="detailsSO"
+                :details-s-o="doHaveScientificObjectDetails"
                 :experiment="experiment"
                 :item="selectedFeatures[0]"
                 :showName="true"
@@ -618,7 +618,7 @@
 
         <template v-slot:row-details="{ data }">
           <opensilex-DisplayInformationAboutItem
-            :details-s-o="detailsSO"
+            :details-s-o="doHaveScientificObjectDetails"
             :experiment="experiment"
             :item="data.item"
           />
@@ -692,6 +692,7 @@ import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisat
   components: {ExperimentDataVisualisation}
 })
 export default class MapView extends Vue {
+
   @Ref("JqxRangeSelector") readonly rangeSelector: any;
   @Ref("mapView") readonly mapView!: any;
   @Ref("map") readonly map!: any;
@@ -802,7 +803,7 @@ export default class MapView extends Vue {
       label: "actions",
     },
   ];
-  private detailsSO: boolean = false;
+  private doHaveScientificObjectDetails: boolean = false;
 
   ///////////// TOOLS BUTTONS ////////////
   showInstructionMap: boolean = false;
@@ -1402,7 +1403,21 @@ export default class MapView extends Vue {
           .catch(this.$opensilex.errorHandler)
     }
   }
-  // Recovery SO at the map creation
+  /**
+   * Fetches scientific objects for the current experiment (optionally filtered by date),
+   * extracts their GeoJSON geometries, enriches them with domain metadata,
+   * and groups them by RDF type for map rendering.
+   *
+   * The resulting structure `featuresOS` is an array of GeoJSON feature arrays:
+   * each inner array contains all geometries of the same RDF type.
+   *
+   * This method mutates GeoJSON properties to attach:
+   * - URI, name, RDF type
+   * - creation/destruction dates
+   * - human-readable type labels
+   *
+   * Once processing is complete, map layers are initialized via `initScientificObjects()`.
+   */
   private recoveryScientificObjects(startDate?, endDate?) {
     this.callSO = false;
     this.featuresOS = [];
@@ -1419,8 +1434,8 @@ export default class MapView extends Vue {
             }
             else{
               res.forEach((element :any) => {
-                if (element.geometry !== null) {
-                  element.geometry.properties = {
+                if (element.location !== null && element.location.geojson !== null) {
+                  element.location.geojson.properties = {
                     creation_date: element.creation_date,
                     destruction_date:element.destruction_date,
                     uri: element.uri,
@@ -1432,12 +1447,12 @@ export default class MapView extends Vue {
                   let inserted = false;
                   this.featuresOS.forEach((item) => {
                     if (item[0].properties.type === element.rdf_type) {
-                      item.push(element.geometry);
+                      item.push(element.location.geojson);
                       inserted = true;
                     }
                   });
                   if (!inserted) {
-                    this.featuresOS.push([element.geometry]);
+                    this.featuresOS.push([element.location.geojson]);
                   }
                 }
               });
@@ -1458,7 +1473,7 @@ export default class MapView extends Vue {
 
   private scientificObjectsDetails(scientificObjectUri: any) {
     if (scientificObjectUri != undefined) {
-      this.detailsSO = false;
+      this.doHaveScientificObjectDetails = false;
       this.$opensilex.disableLoader();
       this.scientificObjectsService
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
@@ -1467,7 +1482,7 @@ export default class MapView extends Vue {
                 this.selectedFeatures.forEach((item) => {
                   if (item.properties.uri === result.uri) {
                     item.properties.OS = result;
-                    this.detailsSO = true;
+                    this.doHaveScientificObjectDetails = true;
                   }
                 });
           })
@@ -1692,19 +1707,19 @@ export default class MapView extends Vue {
       const res = http.response.result as any;
       res.forEach((element) => {
         //list URI target (Devices) from positions
-        listURIDevices.push(element.targetPositions[0].target);
+        listURIDevices.push(element.location.featureOfInterest);
         //formatting Positions
-        if (element.targetPositions[0].position.coordinates != null) {
-           element = {
+        if (element.location.geojson && element.location.geojson.geometry) {
+          element = {
                geometry: {
-                 coordinates: element.targetPositions[0].position.coordinates.coordinates.values,
+                 coordinates: element.location.geojson.geometry.coordinates,
                  type: 'Point'
                },
                type: "Feature",
                properties: {
-                 uri: element.targetPositions[0].target,
+                 uri: element.location.featureOfInterest,
                  nature: this.deviceLabel,
-                 event: element.uri
+                 event: element.event
                }
              };
            let bool = true;

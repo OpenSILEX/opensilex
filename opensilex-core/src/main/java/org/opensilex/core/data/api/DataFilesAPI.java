@@ -1030,12 +1030,27 @@ public class DataFilesAPI {
                         throw new IllegalArgumentException("All files must have the same extension. Mismatch found: " + filePath);
                     }
 
-                    if ((fileExtension.equals("dx") && !(format.equals("dx") || format.equals("tsv"))) ||
-                    (fileExtension.equals("csv") && !format.equals("csv"))) {
-                        throw new IllegalArgumentException("Inconsistent download request for files: " + filePath);
+                    // DX files can be exported to DX or TSV
+                    if (fileExtension.equalsIgnoreCase("dx") || fileExtension.equalsIgnoreCase("jdx")) {
+                        if (!(format.equalsIgnoreCase("dx") || format.equalsIgnoreCase("tsv"))) {
+                            throw new IllegalArgumentException("DX files can only be exported to DX or TSV: " + filePath);
+                        }
+                    }
+
+                    // CSV files can only be exported to CSV
+                    else if (fileExtension.equalsIgnoreCase("csv")) {
+                        if (!format.equalsIgnoreCase("csv")) {
+                            throw new IllegalArgumentException("CSV files can only be exported to CSV: " + filePath);
+                        }
+                    }
+
+                    // Any other format cannot be converted to TSV
+                    else {
+                        if (format.equalsIgnoreCase("tsv")) {
+                            throw new IllegalArgumentException("Only DX files can be converted to TSV: " + filePath);
+                        }
                     }
             
-
                     String fileContent = fs.readFile(FS_FILE_PREFIX, filePath);
 
                     //processing for csv files to keep only the first header 
@@ -1133,6 +1148,38 @@ public class DataFilesAPI {
             dao.delete(session, uri);
         });        
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+          /**
+     * Returns the filepath corresponding to the URI given.
+     *
+     * @param uri
+     * @param response
+     * @return The filepath or null with a 404 status if it doesn't exists
+     */
+    @ApiProtected
+    @GET
+    @Path("{uri}/path")
+    @ApiOperation(value = "Get a datafile path")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve filepath"),
+        @ApiResponse(code = 404, message = "uri not found")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatafilePath(
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        try {
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            DataFileModel description = dao.get(uri);
+
+            java.nio.file.Path filePath = Paths.get(description.getPath());
+            return new SingleObjectResponse<>(filePath).getResponse();
+            
+        } catch (NoSQLInvalidURIException e) {
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
+        }
     }
 }
 

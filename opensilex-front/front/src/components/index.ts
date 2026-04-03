@@ -448,6 +448,8 @@ import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
 components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
 import ExperimentDataFiles from './experiments/views/ExperimentDataFiles.vue';
 components["opensilex-ExperimentDataFiles"] = ExperimentDataFiles;
+import FundingSelector from './experiments/FundingSelector.vue';
+components["opensilex-FundingSelector"] = FundingSelector;
 
 
 // Germplasm
@@ -781,10 +783,11 @@ import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
-import GlobalMapView from "./geometry/GlobalMapView.vue";
-components["opensilex-GlobalMapView"] = GlobalMapView;
-import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
-components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
+//Old global map components temporarily hidden so no need
+//import GlobalMapView from "./geometry/GlobalMapView.vue";
+//components["opensilex-GlobalMapView"] = GlobalMapView;
+//import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
+//components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
 
 //LOCATION
 import LocationModalForm from "./location/form/LocationModalForm.vue";

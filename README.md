@@ -34,8 +34,11 @@
   - [Default configuration example](#default-configuration-example)
 <!-- TOC -->
 
-OpenSILEX Developer's installation
-=============================================
+# Contributing to OpenSILEX
+
+OpenSILEX is an open source project and we welcome contributions from the community. To contribute to OpenSILEX, please read the [Contributing Guidelines](CONTRIBUTING.md) for detailed instructions on how to get started.
+
+# OpenSILEX Developer's installation
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 

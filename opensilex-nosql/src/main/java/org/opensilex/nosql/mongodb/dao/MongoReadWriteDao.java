@@ -4,6 +4,7 @@ import com.mongodb.ErrorCategory;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
@@ -374,6 +375,46 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     @Override
     public void update(T instance) throws MongoException, NoSQLInvalidURIException {
         update(null, instance);
+    }
+
+    @Override
+    public void updateMany(ClientSession session, @NotNull List<T> newModels) throws MongoException, NoSQLInvalidURIException{
+        if (newModels == null || newModels.isEmpty()) {
+            return;
+        }
+
+        List<WriteModel<T>> writes = new ArrayList<>(newModels.size());
+
+        for (T model : newModels) {
+            Bson filter = getIdFilter(model.getUri());
+
+            ReplaceOptions options = new ReplaceOptions()
+                    .upsert(false); // IMPORTANT: do NOT insert
+
+            writes.add(new ReplaceOneModel<>(filter, model, options));
+        }
+
+        Instant operationStart = mongoLogger.logOperationStart(
+                "UPDATE_MANY",
+                URI_KEY,
+                newModels.stream().map(T::getUri).toList()
+        );
+
+        BulkWriteResult result = session == null
+                ? collection.bulkWrite(writes, new BulkWriteOptions().ordered(true))
+                : collection.bulkWrite(session, writes, new BulkWriteOptions().ordered(true));
+
+        // Validate that every document was actually replaced
+        if (result.getMatchedCount() != newModels.size()) {
+            throw new NoSQLInvalidURIException(null);
+        }
+
+        mongoLogger.logOperationOk(
+                "UPDATE_MANY",
+                operationStart,
+                URI_KEY,
+                newModels.stream().map(T::getUri).toList()
+        );
     }
 
     /**

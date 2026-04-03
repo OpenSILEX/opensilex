@@ -376,7 +376,7 @@ public class BrAPIv1ObservationUnitDTO {
 
         LocationObservationModel locationObservationModel = null;
         if(model.getLocationObservationCollection() != null){
-            locationObservationModel = observationLogic.getLastLocationObservation(
+            locationObservationModel = observationLogic.getLastLocationObservations(
                     Collections.singletonList(model.getLocationObservationCollection().getUri()),
                     false,
                     null,

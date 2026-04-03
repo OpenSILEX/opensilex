@@ -40,33 +40,46 @@
 
           </template>
 
-                    <template v-slot:body>
-                        <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
-                        ></opensilex-UriView>
-                        <opensilex-StringView label="component.common.name"
-                                              :value="variable.name"></opensilex-StringView>
-                        <opensilex-StringView label="VariableForm.altName"
-                                              :value="variable.alternative_name"></opensilex-StringView>
-                        <opensilex-TextView label="component.common.description"
-                                            :value="variable.description"></opensilex-TextView>
-                        <div
-                            v-if="variable.from_shared_resource_instance"
-                        >
-                          <opensilex-UriView
-                              title="component.sharedResourceInstances.label"
-                              :uri="variable.from_shared_resource_instance.apiUrl"
-                              :value="variable.from_shared_resource_instance.label"
-                          ></opensilex-UriView>
-                        </div>
-                        <opensilex-MetadataView
-                          v-if="variable.publisher && variable.publisher.uri"
-                          :publisher="variable.publisher"
-                          :publicationDate="variable.publication_date"
-                          :lastUpdatedDate="variable.last_updated_date"
-                        >
-                        </opensilex-MetadataView>
-                    </template>
-                </opensilex-Card>
+          <template v-slot:body>
+            <opensilex-UriView 
+              v-if="variable && variable.uri" 
+              :uri="variable.uri"
+            >
+            </opensilex-UriView>
+            <opensilex-StringView 
+              label="component.common.name"
+              :value="variable.name"
+            >
+            </opensilex-StringView>
+            <opensilex-StringView 
+              label="component.common.altName"
+              :value="variable.alternative_name"
+            >
+            </opensilex-StringView>
+            <opensilex-TextView 
+              label="component.common.description"
+              :value="variable.description"
+            >
+            </opensilex-TextView>
+            <div
+              v-if="variable.from_shared_resource_instance"
+            >
+              <opensilex-UriView
+                title="component.sharedResourceInstances.label"
+                :uri="variable.from_shared_resource_instance.apiUrl"
+                :value="variable.from_shared_resource_instance.label"
+              >
+              </opensilex-UriView>
+            </div>
+              <opensilex-MetadataView
+                v-if="variable.publisher && variable.publisher.uri"
+                :publisher="variable.publisher"
+                :publicationDate="variable.publication_date"
+                :lastUpdatedDate="variable.last_updated_date"
+              >
+              </opensilex-MetadataView>
+          </template>
+        </opensilex-Card>
             </b-col>
             <b-col>
                 <opensilex-Card label="VariableDetails.structure" icon="ik#ik-clipboard">
@@ -117,18 +130,35 @@
                           :list="speciesList"
                       ></opensilex-UriListView>
 
-            <opensilex-StringView label="OntologyPropertyForm.data-type"
-                                  :value="$opensilex.getVariableDatatypeLabel(variable.datatype)"></opensilex-StringView>
-            <opensilex-StringView label="VariableForm.time-interval"
-                                  :value="variable.time_interval"></opensilex-StringView>
-            <opensilex-StringView label="VariableForm.sampling-interval"
-                                  :value="variable.sampling_interval"></opensilex-StringView>
+            <opensilex-StringView 
+              label="OntologyPropertyForm.data-type"
+              :value="$opensilex.getVariableDatatypeLabel(variable.datatype)"
+            >
+            </opensilex-StringView>
 
-            <opensilex-UriView v-if="variable && variable.trait" title="VariableForm.trait-uri"
-                               :uri="variable.trait" :url="variable.trait"></opensilex-UriView>
-            <opensilex-StringView v-if="variable && variable.trait"
-                                  label="VariableForm.trait-name"
-                                  :value="variable.trait_name"></opensilex-StringView>
+            <opensilex-StringView
+              label="VariableForm.time-interval"
+              :value="variable.time_interval ? $t('VariableForm.dimension-values.' + variable.time_interval) : undefined"
+            />
+
+            <opensilex-StringView
+              label="VariableForm.sampling-interval"
+              :value="variable.sampling_interval ? $t('VariableForm.dimension-values.' + variable.sampling_interval) : undefined"
+            />
+
+            <opensilex-UriView 
+              v-if="variable && variable.trait" 
+              title="VariableForm.trait-uri"
+              :uri="variable.trait" 
+              :url="variable.trait"
+              >
+            </opensilex-UriView>
+            <opensilex-StringView 
+              v-if="variable && variable.trait"
+              label="VariableForm.trait-name"
+              :value="variable.trait_name"
+            >
+            </opensilex-StringView>
           </template>
         </opensilex-Card>
       </b-col>

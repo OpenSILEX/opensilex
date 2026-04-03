@@ -1,14 +1,14 @@
 <template>
     <div id="v-step-global">
-        <ValidationObserver ref="validatorRef">
+        <ValidationObserver ref="validatorRef" >
             
             <opensilex-Tutorial
                 ref="variableTutorial"
                 :steps="tutorialSteps"
-                @onSkip="continueFormEditing()"
-                @onFinish="continueFormEditing()"
+                @onSkip="onTutorialEnd"
+                @onFinish="onTutorialEnd"
                 :editMode="editMode"
-            ></opensilex-Tutorial>
+            />
 
             <!-- Help message -->
             <div class="divHelpMsg" v-if="!editMode">
@@ -86,7 +86,7 @@
                         :required="true"
                         @select="updateCharacteristic"
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
-                        helpMessage="VariableForm.interestEntity-help"
+                        helpMessage="VariableForm.characteristic-help"
                         :searchMethod="searchCharacteristics"
                         :itemLoadingMethod="loadCharacteristic"
                         :conversionMethod="objectToSelectNode"
@@ -103,6 +103,7 @@
                 <!-- Species -->
                 <div class="col-lg-6" id="v-step-species">
                     <opensilex-SpeciesSelector
+                        ref="speciesSelector"
                         v-if="!isGermplasmMenuExcluded"
                         label="SpeciesSelector.select-multiple"
                         placeholder="SpeciesSelector.select-multiple-placeholder"
@@ -204,7 +205,7 @@
                 <div class="col-lg-6" id="v-step-alt">
                     <opensilex-InputForm
                         :value.sync="form.alternative_name"
-                        label="VariableForm.altName"
+                        label="component.common.altName"
                         type="text"
                     ></opensilex-InputForm>
                 </div>
@@ -226,11 +227,14 @@
 
                 <!-- Time-interval -->
                 <div class="col-lg-6" id="v-step-time-interval">
-                    <opensilex-VariableTimeIntervalSelector
-                        label="VariableForm.time-interval"
-                        :timeinterval.sync="form.time_interval"
-                    >
-                    </opensilex-VariableTimeIntervalSelector>
+                    <opensilex-FormSelector
+                    label="VariableForm.time-interval"
+                    :selected.sync="form.time_interval"
+                    :multiple="false"
+                    :options="periodList"
+                    placeholder="VariableForm.time-interval-placeholder"
+                    helpMessage="VariableForm.time-interval-help"
+                    />
                 </div>
 
                 <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
@@ -313,11 +317,12 @@ export default class VariableForm extends Vue {
 
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelector") entitySelector!: FormSelector;
+    @Ref("entitySelector") entitySelector!: any;
     @Ref("interestEntitySelector") interestEntitySelector!: any;
     @Ref("characteristicSelector") characteristicSelector!: any;
     @Ref("methodSelector") methodSelector!: any;
     @Ref("unitSelector") unitSelector!: any;
+    @Ref("speciesSelector") speciesSelector!: any;
 
     @Ref("entityForm") readonly entityForm!: BaseExternalReferencesForm;
     @Ref("interestEntityForm") readonly interestEntityForm!: BaseExternalReferencesForm;
@@ -346,18 +351,18 @@ export default class VariableForm extends Vue {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
         this.dataService = this.$opensilex.getService("opensilex-core.DataService");
 
-        for(let period of ["millisecond","second","minute","hour","day","week","month","year","unique"]){
-            this.periodList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." +period),
-                label: this.$i18n.t("VariableForm.dimension-values." + period)
-            })
+        for (const period of ["millisecond","second","minute","hour","day","week","month","year","unique"]) {
+        this.periodList.push({
+            id: period,
+            label: this.$i18n.t("VariableForm.dimension-values." + period)
+        });
         }
 
-        for(let sample of ["mm","cm","m","km","field","region"]){
-            this.sampleList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." +sample),
-                label: this.$i18n.t("VariableForm.dimension-values." + sample)
-            })
+        for (const sample of ["mm","cm","m","km","field","region"]) {
+        this.sampleList.push({
+            id: sample,
+            label: this.$i18n.t("VariableForm.dimension-values." + sample)
+        });
         }
 
         this.loadDatatypes();
@@ -651,10 +656,13 @@ export default class VariableForm extends Vue {
         let uriFilled = (form.trait && form.trait.length > 0);
         let nameFilled = (form.trait_name && form.trait_name.length > 0);
 
-        // is both name and uri are filled or empty, then update current variable
+        // if both name and uri are filled or empty, then update current variable
         if(uriFilled == nameFilled){
             this.form.trait = form.trait;
             this.form.trait_name = form.trait_name;
+            if(!uriFilled && ! nameFilled){
+                this.form.trait = null;
+            }
         }
     }
 
@@ -699,28 +707,69 @@ export default class VariableForm extends Vue {
         );
     }
 
-  get hasLinkedData() {
-    if(! this.form && this.form.linked_data_nb){
-      return true;
-    }else{
-      return this.form.linked_data_nb > 0;
+    get hasLinkedData() {
+        if(! this.form && this.form.linked_data_nb){
+        return true;
+        }else{
+            return this.form.linked_data_nb > 0;
+        }
     }
 
-  }
-
-  beforeDestroy() {
+    beforeDestroy() {
         this.langUnwatcher();
     }
 
-    tutorial() {
+    async tutorial() {
         this.savedVariable = JSON.parse(JSON.stringify(this.form));
+
+        await this.$nextTick();
+
+        this.applyTutorialExample();
+
+        await this.$nextTick();
         this.variableTutorial.start();
     }
 
-    continueFormEditing(){
-        if(this.savedVariable){
-            this.form = JSON.parse(JSON.stringify(this.savedVariable));
-        }
+    applyTutorialExample() {
+        const ex = this.$i18n.t("VariableForm.example") as any;
+
+        const E="__tutorial__:entity";
+        const C="__tutorial__:characteristic";
+        const M="__tutorial__:method";
+        const U="__tutorial__:unit";
+        const S="__tutorial__:species";
+
+        this.form.entity = E;
+        this.form.characteristic = C;
+        this.form.method = M;
+        this.form.unit = U;
+        this.form.species = [S];
+
+        (this.$refs.entitySelector as any).setSelectedNode({ id: E, label: ex.entity });
+        (this.$refs.characteristicSelector as any).setSelectedNode({ id: C, label: ex.characteristic });
+        (this.$refs.methodSelector as any).setSelectedNode({ id: M, label: ex.method });
+        (this.$refs.unitSelector as any).setSelectedNode({ id: U, label: ex.unit });
+        (this.$refs.speciesSelector as any).setSelectedNode({ id: S, label: ex.species });
+
+        this.form.name = ex.name;
+        this.form.alternative_name = ex.altName;
+        this.form.description = ex.description;
+        this.form.datatype = ex.datatype;
+        this.form.time_interval = "month";
+        this.form.sampling_interval = "m";
+    }
+
+    onTutorialEnd() {
+    // reset complet (remet entity/method/... à undefined)
+    Object.assign(this.form, this.getEmptyForm());
+
+    // restaurer ce qui existait avant le tuto
+    if (this.savedVariable) {
+        Object.assign(this.form, this.savedVariable);
+        this.savedVariable = null;
+    }
+
+    this.validatorRef?.reset?.();
     }
 
     get tutorialSteps(): any[] {
@@ -793,7 +842,7 @@ export default class VariableForm extends Vue {
             },
             {
                 target: "#v-step-alt",
-                header: { title: this.$i18n.t("VariableForm.altName")},
+                header: { title: this.$i18n.t("component.common.altName")},
                 content: this.$i18n.t("VariableForm.tutorial.altName"),
                 params: {placement: "left"},
             },
@@ -852,7 +901,6 @@ en:
         variable: The variable
         add: Add variable
         edit: Edit variable
-        altName: Alternative name
         entity-help: "Observed entity or event. e.g : Leaf, canopy, wind"
         entity-placeholder: Search and select an entity
         interestEntity-label: Entity of interest
@@ -928,7 +976,7 @@ en:
             description: "Finalize the variable with some text description of it."
             species: "Select the species that is associated with this variable. Here rice."
         example:
-            entity: "Seed"
+            entity: "Grain"
             characteristic: "Yield"
             method: "Harvest yield sensor"
             unit: "Kilogram per hectare"
@@ -944,7 +992,6 @@ fr:
         variable: La variable
         add: Ajouter une variable
         edit: Éditer une variable
-        altName: Nom alternatif
         entity-help: "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
         entity-placeholder: Rechercher et sélectionner une entité
         interestEntity-label: Entité d'intérêt

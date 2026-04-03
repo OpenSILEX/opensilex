@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="row">
-      <div class="col"></div>
+      <div class="col-1"></div>
       <div class="col-8">
         <h3>{{ t("ForgotPasswordComponent.title") }}</h3>
         <br/>
@@ -30,7 +30,7 @@
           <div class="row mb-4">
             <div class="form-group">
               <opensilex-InputForm
-                  :value.sync="email"
+                  v-model:value="email"
                   :label="t('ForgotPasswordComponent.enter-email')"
                   type="email"
                   :required="true"
@@ -39,25 +39,26 @@
               ></opensilex-InputForm>
             </div>
           </div>
+        </div>
 
-          <div class="row">
-            <div class="col">
+        <div class="row">
+          <div class="col">
+            <button
+                class="btn btn-primary"
+                type="submit"
+                v-text="t('ForgotPasswordComponent.reset-password')"
+                @click="resetPasswordByEmail"
+            ></button>
+          </div>
+          <div class="col">
+            <router-link :to="{ path: '/' }"
+            >
               <button
-                  class="btn btn-primary"
-                  type="submit"
-                  v-text="t('ForgotPasswordComponent.reset-password')"
-              ></button>
-            </div>
-            <div class="col">
-              <router-link :to="{ path: '/' }"
+                  class="btn btn-secondary"
+                  v-text="t('ForgotPasswordComponent.returnHome')"
+              ></button
               >
-                <button
-                    class="btn btn-secondary"
-                    v-text="t('ForgotPasswordComponent.returnHome')"
-                ></button
-                >
-              </router-link>
-            </div>
+            </router-link>
           </div>
         </div>
       </div>
@@ -67,7 +68,7 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, inject, ref} from "vue";
+import {computed, defineComponent, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {AuthenticationService} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
@@ -94,22 +95,18 @@ export default defineComponent({
       t,
       user,
       authenticationService,
-      email
+      email,
     };
   },
   methods: {
     async asyncInit($opensilex: OpenSilexVuePlugin) {
       await $opensilex.loadService("opensilex-security.AuthenticationService");
     },
-    onResetPasswordByEmail() {
-      let validatorRef: any = this.validatorRef;
-      validatorRef.validate().then((isValid) => {
-        if (isValid) {
-          this.resetPasswordByEmail();
-        }
-      });
-    },
     resetPasswordByEmail() {
+      if (!this.email) {
+        this.opensilex.showErrorToast(this.t("ForgotPasswordComponent.empty-email"));
+        return;
+      }
       this.authenticationService
           .forgotPassword(this.email)
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
@@ -157,7 +154,8 @@ en:
     step-two: "Our system will send you a temporary link."
     step-three: "Use the link to reset your password."
     service-not-available: Service not available
-    invalid-identifier: Identifiant invalide
+    invalid-identifier: Invalid identifier
+    empty-email: E-mail address cannot be empty
     link-email: An e-mail has been sent to you
     returnHome: return to homepage
 fr:
@@ -171,6 +169,7 @@ fr:
     step-three: "Utilisez le lien pour réinitialiser votre mot de passe."
     service-not-available: Service not available
     invalid-identifier: Identifiant invalide
+    empty-email: L'adresse e-mail ne doit pas être vide
     link-email: Un email vous a été envoyé
     returnHome: Retourner à la page d'accueil
 </i18n>

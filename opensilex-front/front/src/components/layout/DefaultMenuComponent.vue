@@ -30,30 +30,43 @@
                 active: isActive(item),
               }"
             >
-              <a v-if="item.hasChildren()" href="#" @click.prevent="toggle(item)">
+            <a
+              v-if="item.hasChildren()"
+              href="#"
+              @click.prevent="toggle(item)"
+              class="menu-link"
+            >
+              <span class="menu-link-left">
                 <i class="bi" :class="getIcon(item)"></i>
                 <span>{{ t(item.label) }}</span>
-              </a>
+              </span>
+
+              <i class="bi bi-chevron-right submenu-chevron"></i>
+            </a>
               <router-link v-else :to="{ path: item.route.path }">
                 <i class="bi" :class="getIcon(item)"></i>
                 <span>{{ t(item.label) }}</span>
               </router-link>
-              <div class="submenu-content" :class="{ open: item.showChildren }">
-                <span @click="toggleMenuOnSelect">
-                  <router-link
-                    v-for="itemChild in item.children"
-                    :key="itemChild.id"
-                    :class="{
-                      'is-shown': item.showChildren,
-                      active: isActive(itemChild),
-                    }"
-                    class="menu-item"
-                    :to="itemChild.route.path"
-                  >
-                    {{ t(itemChild.label) }}
-                  </router-link>
-                </span>
-              </div>
+              <transition
+                @before-enter="beforeEnter"
+                @enter="enter"
+                @before-leave="beforeLeave"
+                @leave="leave"
+              >
+                <div v-if="item.showChildren" class="submenu-content">
+                  <span @click="toggleMenuOnSelect">
+                    <router-link
+                      v-for="itemChild in item.children"
+                      :key="itemChild.id"
+                      :class="{ active: isActive(itemChild) }"
+                      class="menu-item"
+                      :to="itemChild.route.path"
+                    >
+                      {{ t(itemChild.label) }}
+                    </router-link>
+                  </span>
+                </div>
+              </transition>
             </div>
 
             <div class="nav-item">
@@ -132,9 +145,100 @@ const getIcon = (item: Menu): string => {
 const isActive = (item: Menu): boolean => {
   return item.route && route.path.indexOf(item.route.path) === 0;
 };
+
+const beforeEnter = (el: Element) => {
+  const htmlEl = el as HTMLElement;
+  htmlEl.style.height = "0";
+  htmlEl.style.opacity = "0";
+  htmlEl.style.transform = "translateY(-6px)";
+  htmlEl.style.overflow = "hidden";
+};
+
+const enter = (el: Element) => {
+  const htmlEl = el as HTMLElement;
+
+  htmlEl.style.transition =
+    "height 0.5s ease, opacity 0.5s ease, transform 0.5s ease";
+
+  requestAnimationFrame(() => {
+    htmlEl.style.height = htmlEl.scrollHeight + "px";
+    htmlEl.style.opacity = "1";
+    htmlEl.style.transform = "translateY(0)";
+  });
+
+  const cleanup = (event: TransitionEvent) => {
+    if (event.propertyName !== "height") return;
+    htmlEl.style.height = "auto";
+    htmlEl.style.overflow = "";
+    htmlEl.removeEventListener("transitionend", cleanup);
+  };
+
+  htmlEl.addEventListener("transitionend", cleanup);
+};
+
+const beforeLeave = (el: Element) => {
+  const htmlEl = el as HTMLElement;
+  htmlEl.style.height = htmlEl.scrollHeight + "px";
+  htmlEl.style.opacity = "1";
+  htmlEl.style.transform = "translateY(0)";
+  htmlEl.style.overflow = "hidden";
+};
+
+const leave = (el: Element) => {
+  const htmlEl = el as HTMLElement;
+
+  htmlEl.style.transition =
+    "height 0.5s ease, opacity 0.18s ease, transform 0.18s ease";
+
+  requestAnimationFrame(() => {
+    htmlEl.style.height = "0";
+    htmlEl.style.opacity = "0";
+    htmlEl.style.transform = "translateY(-6px)";
+  });
+};
+
+
 </script>
 
 <style scoped lang="scss">
+
+.menu-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.menu-link-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.submenu-chevron {
+  font-size: 0.7rem !important;
+  opacity: 0.6;
+  margin-right: 15px !important;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.nav-item.open .submenu-chevron {
+  transform: rotate(90deg);
+  opacity: 0.9;
+}
+
+.submenu-content.open {
+  max-height: 500px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.submenu-content {
+  overflow: hidden;
+  will-change: height, opacity, transform;
+}
+
 .hamburger-container {
   position: fixed;
   z-index: 1030;

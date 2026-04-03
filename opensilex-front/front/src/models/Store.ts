@@ -283,6 +283,11 @@ let store = createStore({
         state.openSilexRouter.resetRouter(state.user);
         // console.debug("Reset menu");
         state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+
+        state.openSilexRouter.getRouter().replace({
+          path: "/",
+          query: { redirect: window.location.pathname.replace(state.config.pathPrefix + "/app", "") || "/" }
+        }).catch(() => {});
       }
     },
     setConfig(state, args: { config: FrontConfigDTO, app: App }) {

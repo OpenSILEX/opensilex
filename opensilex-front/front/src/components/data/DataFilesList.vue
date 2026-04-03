@@ -3,9 +3,41 @@
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="searchDatafiles"
+      :countMethod="countDatafiles"
       :fields="fields"
       defaultSortBy="name"
+      :isSelectable="true"
+      labelNumberOfSelectedRow="DataFilesList.selected"
+
     >
+
+      <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+        <b-dropdown
+        dropright
+        class="mb-2 mr-2"
+        :small="true"
+        :text="$t('VariableList.display')">
+
+        <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('DataFilesList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+        <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
+        </b-dropdown>
+
+        <b-dropdown
+            dropright
+            class="mb-2 mr-2"
+            :small="true"
+            :disabled="numberOfSelectedRows == 0"
+            text="actions"
+        >
+
+        <b-dropdown-item-button @click="exportDataFileModal.show()">{{ $t('DataFilesList.export') }}</b-dropdown-item-button>
+        <b-dropdown-item-button
+            v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+            @click="createEvents()">{{$t('Event.add-multiple')}}
+        </b-dropdown-item-button>
+        </b-dropdown>
+      </template>
+
       <!--Target -->
       <template v-slot:cell(target)="{ data }">
           <opensilex-UriLink
@@ -15,6 +47,16 @@
               path: getTargetPath(data.item.target)
             }"
           ></opensilex-UriLink>
+      </template>
+
+      <!-- Format -->
+       <template v-slot:cell(format)="{ data }">
+        <div>{{ data.item.filename.split('.').pop().toUpperCase() }}</div>
+      </template>
+
+      <!-- Filename -->
+       <template v-slot:cell(filename)="{ data }">
+        <div>{{ data.item.filename }}</div>
       </template>
 
        <!-- Type -->
@@ -56,6 +98,16 @@
               label="DataFilesView.details"
               :small="true"
           ></opensilex-DetailButton>
+
+          <opensilex-Button
+            @click="deleteDatafile(data.item.uri)"
+            variant="outline-danger"
+            :small="true"
+            label="DataFilesList.delete"
+            icon="fa#trash-alt"
+          >
+          </opensilex-Button>
+
           </b-button-group>
         </template>
     </opensilex-TableAsyncView>
@@ -69,7 +121,20 @@
       ref="imageModal"
       :fileUrl.sync="imageUrl"
     ></opensilex-ImageModal>
+
+    <opensilex-ExportDataFileModal      
+      ref="exportDataFileModal"
+      @onCreate="exportDataFiles"
+    ></opensilex-ExportDataFileModal>
+
+    <opensilex-EventCsvForm
+      v-if="showEventForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+      ref="eventCsvForm"
+      :targets="selectedUris">
+    </opensilex-EventCsvForm>
+
   </div>
+
 </template>
 
 <script lang="ts">
@@ -78,14 +143,18 @@ import Vue from "vue";
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import {DataService} from "opensilex-core/api/data.service";
+import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 
 @Component
 export default class DataFilesList extends Vue {
   $opensilex: any;
   $store: any;
-  service: any;
+  service: DataService;
   ontologyService: OntologyService;
   routeArr : string[] = this.$route.path.split('/');
+  showEventForm: boolean = false;
+  selectedUris: Array<string> = [];
 
   disabled = false;
   imageUrl = null;
@@ -93,6 +162,7 @@ export default class DataFilesList extends Vue {
   @Prop({
     default: () => {
       return {
+        name: null,
         start_date: null,
         end_date: null,
         rdf_type: null,
@@ -128,12 +198,24 @@ export default class DataFilesList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
   @Ref("imageModal") readonly imageModal!: any;
+  @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
+  @Ref("exportDataFileModal") readonly exportDataFileModal!: any;
 
   get fields() {
     let fields: any = [
       {
         key: "date",
         label: "DataView.list.date",
+        sortable: true,
+      },
+      {
+        key: "format",
+        label: "DataFilesList.format",
+        sortable: false,
+      },
+      {
+        key: "filename",
+        label: "DataFilesList.filename",
         sortable: true,
       },
       {
@@ -193,7 +275,7 @@ export default class DataFilesList extends Vue {
         provenance: result,
         data: item
       }
-      this.dataProvenanceModalView.setProvenance(value);
+      this.dataProvenanceModalView.setProvenanceAndBatch(value);
       this.dataProvenanceModalView.show();
     });    
   }
@@ -240,6 +322,26 @@ export default class DataFilesList extends Vue {
   provenances = {};
   objectsPath = {};
 
+  countDatafiles() {
+    let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+    if (provUris != undefined) {
+      provUris = [provUris];
+    }
+
+    return this.service.countDatafiles(
+      this.filter.scientificObjects,
+      this.filter.devices,
+      this.$opensilex.prepareGetParameter(this.filter.name),
+      this.$opensilex.prepareGetParameter(this.filter.rdf_type),
+      this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
+      this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
+      undefined, // timezone,
+      this.filter.experiments, // experiments
+      provUris, // provenances
+      undefined // metadata
+    );
+  }
+
   searchDatafiles(options) {
     let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
     if (provUris != undefined) {
@@ -248,6 +350,7 @@ export default class DataFilesList extends Vue {
 
     return new Promise((resolve, reject) => {
         this.service.getDataFileDescriptionsByTargets(
+          this.$opensilex.prepareGetParameter(this.filter.name),
           this.$opensilex.prepareGetParameter(this.filter.rdf_type),
           this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
           this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
@@ -353,6 +456,15 @@ export default class DataFilesList extends Vue {
             this.rdf_types[key] = imageType.children[i].name;
             this.images_rdf_types.push(key);
           }
+        } else if (this.$opensilex.Oeso.checkURIs(key, this.$opensilex.Oeso.SPECTRA_TYPE_URI)) {
+          let spectraType = parentType.children[i];
+          this.images_rdf_types.push(spectraType.uri);
+          for (let i = 0; i < spectraType.children.length; i++) {
+            let key = spectraType.children[i].uri;
+            this.rdf_types[key] = spectraType.children[i].name;
+            this.images_rdf_types.push(key);
+          }
+
         } else {
           let subType = parentType.children[i];
           for (let i = 0; i < subType.children.length; i++) {
@@ -385,8 +497,167 @@ export default class DataFilesList extends Vue {
       this.$emit("redirectToDetail")
     }
   }
+
+  resetSelected() {
+        this.tableRef.resetSelected();
+    }
+
+    clickOnlySelected() {
+        this.tableRef.clickOnlySelected();
+    }
+
+    createEvents() {
+        this.showEventForm = true;
+        this.$nextTick(() => {
+            this.updateSelectedUris();
+            this.eventCsvForm.show();
+        });
+    }
+
+    get onlySelected() {
+        return this.tableRef.onlySelected;
+    }
+
+        updateSelectedUris() {
+        this.selectedUris = [];
+        for (let select of this.tableRef.getSelected()) {
+            this.selectedUris.push(select.uri);
+        }
+    }
+
+      get lang() {
+        return this.$store.getters.language;
+    }
+
+    exportDataFiles(format, includeAverage, includeSampleDatetime) {
+        let exportList = this.tableRef.getSelected().map(select => select.uri);
+
+        if(format == "img") {
+            let filenames = this.tableRef.getSelected().map(select => select.filename);
+            for (let i = 0; i < filenames.length; i++) {
+                let path = "/core/datafiles/" + encodeURIComponent(exportList[i]) + "/thumbnail?scaled_width=600&scaled_height=600";
+                this.$opensilex.downloadFilefromService(
+                    path,
+                    filenames[i],
+                    undefined,
+                    null
+                ).then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                  if (http && http.status === 200) {
+                    this.$opensilex.showSuccessToast(this.$i18n.t("DataFilesList.upload-success-message"));
+                  }
+                })
+                .catch((error) => {
+                  if (error.status == 500) {
+                    console.error("DataFile not found", error);
+                    this.$opensilex.errorHandler(
+                      error,
+                      this.$t("DataFileForm.error.datafile-not-found")
+                    );
+                  } else {
+                      this.$opensilex.errorHandler(error);
+                  }
+                });
+        }} else {
+          let today = new Date();
+          //filename example if avg and datetime options are checked : export_datafiles_avg_WithDatetime_2024-11-27 
+          let filename =
+            "export_datafiles" +
+            (includeAverage ? "_avg_" : "_") +
+            (includeSampleDatetime ? "_WithDatetime_" : "_") +
+            this.$opensilex.$dateTimeFormatter.formatISODate(today);
+            let path = "/core/datafiles/export-spectra-files?format=" + format + "&includeAverage=" + includeAverage + "&includeSampleDatetime=" + includeSampleDatetime;
+            return this.$opensilex.downloadFilefromPostService(
+                path,
+                filename,
+                format,
+                exportList,
+                this.lang
+            ).then((http: HttpResponse<OpenSilexResponse<any>>) => {
+              if (http && http.status === 200) {
+                this.$opensilex.showSuccessToast(this.$i18n.t("DataFilesList.upload-success-message"));
+              }
+            })
+            .catch((error) => {
+              if (error.status == 500) {
+                console.error("DataFile not found", error);
+                this.$opensilex.errorHandler(
+                  error,
+                  this.$t("DataFileForm.error.datafile-not-found")
+                );
+              } else {
+                this.$opensilex.errorHandler(error);
+              }
+            });
+          }
+    }
+
+    deleteDatafile(uri: string) {
+      this.$bvModal
+        .msgBoxConfirm(
+          this.$t("component.common.delete-datafile-confirmation").toString(),
+          {
+            cancelTitle: this.$t("component.common.cancel").toString(),
+            okTitle: this.$t("component.common.delete").toString(),
+            okVariant: "danger",
+            centered: true
+          }
+        )
+        .then(confirmation => {
+          if (confirmation) {
+            this.$opensilex
+              .getService("opensilex.DataService")
+              .deleteDatafile(uri)
+              .then(() => {
+                this.tableRef.checkSelectedItems(uri);
+                this.refresh();
+                let message = uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+                this.$opensilex.showSuccessToast(message);
+              })
+              .catch(this.$opensilex.errorHandler);
+          }
+        });
+  }
+
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+  en:
+    DataFilesList:
+      add: Add datafiles
+      format: Format
+      filename: Filename
+      selected: Selected datafiles
+      selected-all: All datafiles
+      export: Export datafiles
+      exportDX: Export DX datafiles to DX datafile
+      exportTSVAVG: Export DX datafiles to TSV datafile with average
+      exportTSV: Export DX datafiles to TSV datafile
+      exportCSV: Export CSV datafiles to CSV datafile
+      exportTSVDATE: Export DX datafiles to TSV datafile with datetime
+      error:
+        datafile-not-found: Datafile not found
+      upload-success-message: File uploaded and processed successfully.
+  
+  fr:
+    DataFilesList:
+      add: Ajouter un fichier de données
+      format: Format
+      filename: Nom du fichier
+      selected: Fichiers de données selectionnés
+      selected-all: Tous les fichiers
+      export: Exporter des fichiers de données
+      exportDX: Export des fichiers de données DX 
+      exportTSVAVG: Export des fichiers de données DX au format TSV avec moyenne 
+      exportTSV: Export des fichiers de données DX au format TSV
+      exportCSV: Export des fichiers de données CSV
+      exportTSVDATE: Export des fichiers de données DX au format TSV avec la date  
+      error:
+        datafile-not-found: Fichiers de données non trouvés
+      upload-success-message: Fichier téléchargé et traité avec succès.
+
+  
+  </i18n>

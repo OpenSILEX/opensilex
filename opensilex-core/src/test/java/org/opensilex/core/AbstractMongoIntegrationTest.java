@@ -10,6 +10,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.nosql.EmbedMongoClient;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -32,6 +33,15 @@ public abstract class AbstractMongoIntegrationTest extends AbstractSecurityInteg
     public static final int MONGO_PORT = 28018;
     public static final String MONGO_DATABASE = "admin";
     public static final String MONGO_HOST = "localhost";
+
+    /*protected static FileStorageService fs;
+    static FileStorageService getFs(){
+
+        if(fs == null){
+            fs = getOpensilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+        }
+        return fs;
+    }*/
 
     /**
      * Type reference for reading results from "create" queries
@@ -82,6 +92,10 @@ public abstract class AbstractMongoIntegrationTest extends AbstractSecurityInteg
 
     protected static MongoDBService getMongoDBService() {
         return getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+    }
+
+    protected static FileStorageService getFs(){
+        return getOpensilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
     }
 
 

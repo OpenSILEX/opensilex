@@ -38,7 +38,7 @@
             <button
                 type="button"
                 class="btn greenThemeColor"
-                v-on:click="hide(false)"
+                v-on:click="hide()"
             >
                 {{ $t('component.common.close') }}
             </button>
@@ -57,6 +57,7 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import { PropertiesByDomainDTO } from 'opensilex-core/index';
 import Rdfs from "../../../ontologies/Rdfs";
 import { createUriListFromGetPropertiesResult, sortProperties } from '../OntologyTools';
+import VueI18n from "vue-i18n";
 
 interface GetTypesPromisesReturnType{
   uri: string,
@@ -71,11 +72,18 @@ interface HeadersAndDescriptions {
   headersDescriptions: Array<string>
 }
 
+//A mini interface to hold all info required to generate a description cell for a header. Used by the static getPropertyDescription function
+export interface DescriptionGeneratorInformation{
+  propertyTranslationKey: string,
+  required: boolean,
+  example?: string
+}
+
 @Component
 export default class OntologyCsvTemplateGenerator extends Vue {
     $opensilex: OpenSilexVuePlugin;
     $store: Store<any>;
-    $t: any;
+    $t: typeof VueI18n.prototype.t;
     $i18n: any;
     $papa: any;
 
@@ -105,6 +113,11 @@ export default class OntologyCsvTemplateGenerator extends Vue {
 
     @Prop()
     typeExample: string;
+
+    //Extra headers and their description generator objects.
+    @Prop()
+    extraHeadersAndDescriptions: Map<string, DescriptionGeneratorInformation>;
+
 
     requiredField: boolean = false;
     separator = ",";
@@ -187,18 +200,22 @@ export default class OntologyCsvTemplateGenerator extends Vue {
         return parts.join('');
     }
 
-    private getPropertyDescription(propertyTranslationKey: string, required: boolean, example?: string): string {
+    public static getPropertyDescription(vueI18n: VueI18n, propertyTranslationKey: string, required: boolean, example?: string): string {
+      return OntologyCsvTemplateGenerator.getPropertyDescriptionFromInfoObject(vueI18n, {propertyTranslationKey: propertyTranslationKey, required: required, example: example});
+    }
+
+    public static getPropertyDescriptionFromInfoObject(vueI18n: VueI18n, propertyDescriptionInfo: DescriptionGeneratorInformation): string {
 
         let parts = Array.of(
-            this.$t(propertyTranslationKey),
+          vueI18n.t(propertyDescriptionInfo.propertyTranslationKey),
             "\n",
-            this.$t("OntologyCsvTemplateGenerator.required"),
+          vueI18n.t("OntologyCsvTemplateGenerator.required"),
             " : ",
-            (required) ? this.$t("component.common.yes") : this.$t("component.common.no"),
+            (propertyDescriptionInfo.required) ? vueI18n.t("component.common.yes") : vueI18n.t("component.common.no"),
             ". ",
             "\n",
-            (example && example.length > 0) ?
-                (this.$t("component.common.example") + " : " + this.$t(example))
+            (propertyDescriptionInfo.example && propertyDescriptionInfo.example.length > 0) ?
+                (vueI18n.t("component.common.example") + " : " + vueI18n.t(propertyDescriptionInfo.example))
                 : ""
         )
 
@@ -287,7 +304,7 @@ export default class OntologyCsvTemplateGenerator extends Vue {
           }
           visitedProperties.add(shortPropertUri);
           //If the property is rdfs:label , insert in third position
-          if(this.$opensilex.checkURIs(typeResultPropertyUri, Rdfs.LABEL)){
+          if(this.$opensilex.compareUris(typeResultPropertyUri, Rdfs.LABEL)){
             let copyOfEndHeaders = headers.slice(2, headers.length);
             let copyOfEndDescriptions = headersDescription.slice(2, headersDescription.length);
             headers = headers.slice(0, 2);
@@ -317,8 +334,8 @@ export default class OntologyCsvTemplateGenerator extends Vue {
 
         let headers = ["uri", "type"];
         let headersDescription = [
-            this.getPropertyDescription(this.uriHelp, false, this.uriExample),
-            this.getPropertyDescription(this.typeHelp, false, this.typeExample),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n, this.uriHelp, false, this.uriExample),
+            OntologyCsvTemplateGenerator.getPropertyDescription(this.$i18n, this.typeHelp, false, this.typeExample),
         ];
 
         //If there is more than one type, or if the single type has no order defined then use the default one
@@ -339,6 +356,13 @@ export default class OntologyCsvTemplateGenerator extends Vue {
               headersDescription.push(this.getCustomPropertyDescription(typeModelInfo.objectProperties.get(e.uri), false));
             }
           })
+        }
+
+        //Insert any extra columns that aren't calculated automatically (example Location fields for ScientificObject import)
+        if(this.extraHeadersAndDescriptions && this.extraHeadersAndDescriptions.size > 0){
+          headers.push(...Array.from(this.extraHeadersAndDescriptions.keys()));
+
+          Array.from(this.extraHeadersAndDescriptions.values()).forEach(e=>headersDescription.push(OntologyCsvTemplateGenerator.getPropertyDescriptionFromInfoObject(this.$i18n, e)));
         }
 
         let data = [headers, headersDescription];

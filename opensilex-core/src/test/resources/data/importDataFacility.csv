@@ -1,0 +1,6 @@
+target,Date,http://opensilex.test/id/variable/artemisia_absinthiumsize
+Target (ex: scientific object) name or URI ,Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD),artemisia_absinthiumsize
+Column data type: Short string,"Date
+Required : yes",Column data type: Decimal number
+http://opensilex.test/id/organization/facility.dataapitest-facilityvarsanddevicesimport,2025-08-21T03:03:03Z,22
+http://opensilex.test/id/organization/facility.dataapitest-facilityvarsanddevicesimport2,2025-08-21T04:03:03Z,23

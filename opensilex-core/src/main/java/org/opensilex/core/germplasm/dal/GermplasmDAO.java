@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -57,15 +58,16 @@ public class GermplasmDAO {
         this(sparql, nosql.getServiceV2());
     }
 
-    public GermplasmModel update(GermplasmModel model) throws Exception {
+    public GermplasmModel update(GermplasmModel model, AccountModel user) throws Exception {
+        //sparqlDAO.validateGermplasmAccess(model.getUri(), user);
         MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
         MetaDataModel attributeModel = model.getMetadata();
 
         if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
-            sparqlDAO.update(model);
+            sparqlDAO.update(model,user);
         } else {
-            new SparqlMongoTransaction(sparql,nosql).execute(session -> {
-                sparqlDAO.update(model);
+            new SparqlMongoTransaction(sparql, nosql).execute(session -> {
+                sparqlDAO.update(model, user);
 
                 if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
                     attributeModel.setUri(model.getUri());
@@ -79,18 +81,81 @@ public class GermplasmDAO {
         return model;
     }
 
+    public List<GermplasmModel> updateList(List<GermplasmModel> models) throws Exception {
+        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+            sparql.update(models);
+            this.upsertMetaData(models, session);
+            return null;
+        });
+        return models;
+    }
+
+    /**
+     * upsert metadata attributes for a list of germplasms. Should be called in a transaction.
+     * @param instanceList list of germplasm models
+     * @param session MongoDB client session
+     */
+    private void upsertMetaData(List<GermplasmModel> instanceList, ClientSession session) throws Exception {
+        if (instanceList.isEmpty()) {
+            return;
+        }
+        for (GermplasmModel model : instanceList) {
+            MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
+            MetaDataModel metadata = model.getMetadata();
+
+            if (((metadata == null || MapUtils.isEmpty(metadata.getAttributes())) && storedAttributes == null)) {
+                return;
+            }
+            if (metadata != null && !MapUtils.isEmpty(metadata.getAttributes())) {
+                model.getMetadata().setUri(model.getUri());
+                metaDataDao.upsert(session, model.getMetadata());
+            } else {
+                metaDataDao.delete(session, model.getUri());
+            }
+        }
+    }
+
     public GermplasmModel create(GermplasmModel model) throws Exception {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
             sparqlDAO.create(model);
             if(model.getMetadata() != null){
                 //Set the metaDataModel's uri to be the same as the device
                 model.getMetadata().setUri(model.getUri());
-                
+
                 metaDataDao.create(session, model.getMetadata());
             }
             return null;
         });
         return model;
+    }
+
+    /**
+     * WARNING, you should check that each germplasm of the list has a URI that doesn't exist in the database BEFORE calling this method.
+     * This method create many germplasms at a time without checking that their URI doesn't already exist to optimise database call.
+     * @param instanceList with every model you need to create
+     */
+    public List<GermplasmModel> createListWithoutUriExistsCheck(List<GermplasmModel> instanceList) throws Exception {
+        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+            sparql.create(sparql.getDefaultGraph(GermplasmModel.class), instanceList, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+            this.createMetaData(instanceList, session);
+            return null;
+        });
+        return instanceList;
+    }
+
+    /**
+     * create metadata attributes for a list of germplasms. Should be called in a transaction.
+     */
+    private void createMetaData(List<GermplasmModel> instanceList, ClientSession session) throws Exception {
+        if (instanceList.isEmpty()) {
+            return;
+        }
+        for (GermplasmModel model : instanceList) {
+            if (model.getMetadata() != null) {
+                model.getMetadata().setUri(model.getUri());
+                metaDataDao.create(session, model.getMetadata());
+            }
+        }
     }
 
     /**
@@ -101,6 +166,7 @@ public class GermplasmDAO {
      * @return GermplasmModel
      */
     public GermplasmModel get(URI uri, AccountModel user, boolean withNested) throws Exception {
+        //sparqlDAO.validateGermplasmAccess(uri, user);
         GermplasmModel germplasm = sparqlDAO.get(uri, user, withNested);
         if (germplasm != null) {
             MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
@@ -112,11 +178,21 @@ public class GermplasmDAO {
     }
 
     /**
-     * @param searchFilter  search filter
-     * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
-     * @param fetchNestedObjects if true, fetch nested objects (parent germplasms)
-     * @return a {@link ListWithPagination} of {@link GermplasmModel}
+     * Paginated search of {@link GermplasmModel} according to the provided criteria, with an option
+     * to filter by metadata and the ability to load nested objects.
+     * <p>
+     * If a metadata filter is provided, the corresponding URIs are extracted
+     * and intersected with the selected URIs. If no results match, an
+     * empty list is returned.
+     * </p>
+     *
+     * @param searchFilter        search criteria (filters, pagination, sorting, access rights)
+     * @param fetchMetadata       {@code true} to retrieve and associate metadata with the results
+     * @param fetchNestedObjects  {@code true} to load nested relationships (e.g., parents)
+     * @return a paginated list of {@link GermplasmModel} matching the criteria
+     * @throws Exception if a SPARQL search or metadata retrieval error occurs
      */
+
     public ListWithPagination<GermplasmModel> search(
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
@@ -148,11 +224,14 @@ public class GermplasmDAO {
 
         searchFilter.setUris(new ArrayList<>(filteredUris));
 
-        ListWithPagination<GermplasmModel> models = sparqlDAO.search(searchFilter, fetchNestedObjects);
+        ListWithPagination<GermplasmModel> models = sparqlDAO.search(
+                searchFilter,
+                fetchNestedObjects
+        );
 
         if (fetchMetadata) {
             // get all Germplasm metadata with one query
-             metaDataDao.getMetaDataAssociatedTo(
+            metaDataDao.getMetaDataAssociatedTo(
                     models.getList(), // get Metadata associated with Germplasm uris
                     GermplasmModel::setMetadata // update Germplasm metadata
             );
@@ -168,13 +247,14 @@ public class GermplasmDAO {
         return sparqlDAO.isGermplasmType(rdfType);
     }
 
-    public void delete(URI uri) throws Exception {
-        
-        new SparqlMongoTransaction(sparql,nosql).execute(session -> {
+    public void delete(URI uri, AccountModel user) throws Exception {
+
+        //sparqlDAO.validateGermplasmAccess(uri, user);
+        new SparqlMongoTransaction(sparql, nosql).execute(session -> {
             if (metaDataDao.exists(uri)) {
                 metaDataDao.delete(session, uri);
             }
-            sparqlDAO.delete(uri);
+            sparqlDAO.delete(uri,user);
             return null;
         });
     }
@@ -223,5 +303,10 @@ public class GermplasmDAO {
         return sparqlDAO.brapiSearch(user, germplasmDbId, germplasmName, germplasmSpecies, page, pageSize);
     }
 
-
+    /**
+     * @return the list of existing URIs in germplasm graph among the given list of URIs
+     */
+    public Collection<URI> checkExistence(List<URI> uris) throws Exception {
+        return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, uris, true);
+    }
 }

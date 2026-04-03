@@ -71,7 +71,7 @@
           </b-col>
 
           <b-col md="6">
-            <div class="selectionTitle"> 
+            <div class="selectionTitle">
               {{ $t("AgroportalSearchFormPart.selected-term") }}
             </div>
             <div class="result">
@@ -457,7 +457,7 @@ en:
           button.
 fr:
   AgroportalMappingFormPart:
-    uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
+    uri-help: "Décocher si vous souhaitez ajouter un concept à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
     ontologies-help: "Vous pouvez chercher des URIs via ces portails:
       <li>
         <ul style=\"list-style-type: none;\"><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://agroportal.lirmm.fr/\">AgroPortal</a></ul>

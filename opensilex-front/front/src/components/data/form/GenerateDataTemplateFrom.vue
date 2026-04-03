@@ -47,7 +47,12 @@
             <opensilex-CheckboxForm
               :value.sync="withRawData"
               title="DataTemplateForm.with-raw-data"
-            ></opensilex-CheckboxForm>            
+            ></opensilex-CheckboxForm>   
+
+            <opensilex-CheckboxForm
+              :value.sync="withProvUsed"
+              title="DataTemplateForm.with-prov-used"
+            ></opensilex-CheckboxForm>           
           </b-col>
           <b-col>
             <opensilex-CSVSelectorInputForm :separator.sync="separator">
@@ -101,6 +106,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   selectedColumns = [];
 
   withRawData = false;
+  withProvUsed = false;
 
   validSelection = true;
 
@@ -108,7 +114,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   readonly targetColumn = "target";
   readonly deviceColumn = "device";
   readonly soColumn = "scientific_object";
-    readonly annotationColumn = "object_annotation";
+  readonly annotationColumn = "object_annotation";
 
   @Prop()
   editMode;
@@ -320,6 +326,16 @@ export default class GenerateDataTemplateFrom extends Vue {
             this.getDataTypeLabel("String"));
         line4.push("annotation-test");
     }
+
+    //column provused
+    if (this.withProvUsed) {
+      line1.push("prov_used");
+      line2.push(this.$t("DataTemplateForm.prov_used"));
+      line3.push(this.$t("DataHelp.column-type-help") +
+        this.$t("DataTemplateForm.type-list") +
+        this.getDataTypeLabel("xsd:string"));
+      line4.push("prov-used-exemple");
+    }
   }
 
   csvExport() {
@@ -385,11 +401,11 @@ export default class GenerateDataTemplateFrom extends Vue {
               }
               let variableHelp = this.$t("DataHelp.column-type-help").toString() +
                   this.$opensilex.getVariableDatatypeLabel(element.datatype);
-              if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+              if (this.$opensilex.compareUris(element.datatype, Xsd.DATE)) {
                 variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
-              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+              } else if (this.$opensilex.compareUris(element.datatype, Xsd.DATETIME)) {
                 variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
-              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
+              } else if (this.$opensilex.compareUris(element.datatype, Xsd.BOOLEAN)) {
                 variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
               }
               line3.push(variableHelp);
@@ -409,6 +425,13 @@ export default class GenerateDataTemplateFrom extends Vue {
             if (this.selectedColumns.includes(this.annotationColumn)) {
                 line1.push(this.annotationColumn);
                 line2.push(this.$t("DataTemplate.annotationHelp"));
+                line3.push(this.$t("DataHelp.column-type-help")+"String");
+            }
+
+            //column prov_used
+            if (this.withProvUsed) {
+                line1.push("prov_used");
+                line2.push(this.$t("DataTemplateForm.prov_used"));
                 line3.push(this.$t("DataHelp.column-type-help")+"String");
             }
 
@@ -467,8 +490,13 @@ en :
       date: "(format: YYYY-MM-DD)"
       boolean: "(format: true/false)"
     variable-not-found-error: Variable not found. Please make sure you have imported it.
+    with-prov-used: "With entity used columns"
+    prov_used: "Entity Used - Datafile URI"
+    prov-used-exemple: "Datafile or Scientific object URI"
   DataTemplate:
     annotationHelp: "Annotation (On the target object)"
+
+
 fr :
   DataTemplateForm:
     help: Le bouton est désactivé si aucune variable n'est sélectionnée
@@ -486,6 +514,10 @@ fr :
       date: "(format: AAAA-MM-JJ)"
       boolean: "(format: true/false)"
     variable-not-found-error: Variable non trouvée. Veuillez verifier que la variable est bien importée.
+    with-prov-used: "Avec colonnes 'prov used'"
+    prov_used: "Entité utilisée - URI d'un fichier de données"
+    prov-used-exemple: "URI d'un fichier de données ou d'un objet scientifique"
   DataTemplate:
     annotationHelp: "Annotation (Sur l'object cible)"
+
  </i18n>

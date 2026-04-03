@@ -225,6 +225,8 @@ components["opensilex-AddressForm"] = AddressForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
+import DateTimeRangeForm from './common/forms/DateTimeRangeForm.vue'
+components["opensilex-DateTimeRangeForm"] = DateTimeRangeForm;
 
 import WizardForm from './common/forms/WizardForm.vue'
 components["opensilex-WizardForm"] = WizardForm;
@@ -280,8 +282,6 @@ import TableView from './common/views/TableView.vue'
 components["opensilex-TableView"] = TableView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
-import DataTableAsyncView from './common/views/DataTableAsyncView.vue'
-components["opensilex-DataTableAsyncView"] = DataTableAsyncView;
 import NbElementPerPageSelector from "./common/views/NbElementPerPageSelector.vue";
 components["opensilex-NbElementPerPageSelector"] = NbElementPerPageSelector;
 import Card from './common/views/Card.vue'
@@ -446,6 +446,10 @@ import ExperimentDataVisualisation from './experiments/ExperimentDataVisualisati
 components["opensilex-ExperimentDataVisualisation"] = ExperimentDataVisualisation;
 import ExperimentsModalList from "./experiments/ExperimentsModalList.vue";
 components["opensilex-ExperimentsModalList"] = ExperimentsModalList;
+import ExperimentDataFiles from './experiments/views/ExperimentDataFiles.vue';
+components["opensilex-ExperimentDataFiles"] = ExperimentDataFiles;
+import FundingSelector from './experiments/FundingSelector.vue';
+components["opensilex-FundingSelector"] = FundingSelector;
 
 
 // Germplasm
@@ -609,7 +613,8 @@ import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
 import VariablePropertySelector from './variables/views/VariablePropertySelector.vue';
 components["opensilex-VariablePropertySelector"] = VariablePropertySelector;
-
+import AssociatedVariablesList from "./variables/AssociatedVariableList.vue";
+components["opensilex-AssociatedVariableList"] = AssociatedVariablesList;
 import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
 components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 import VariableSelector from './variables/views/VariableSelector.vue';
@@ -707,6 +712,8 @@ import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
 components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
+import BatchDetails from './data/BatchDetails.vue';
+components["opensilex-BatchDetails"] = BatchDetails;
 import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';
@@ -735,6 +742,8 @@ import DataList from './data/DataList.vue';
 components["opensilex-DataList"] = DataList;
 import DataFilesList from './data/DataFilesList.vue';
 components["opensilex-DataFilesList"] = DataFilesList;
+import ExportDataFileModal from './data/ExportDataFileModal.vue';
+components["opensilex-ExportDataFileModal"] = ExportDataFileModal;
 
 import DataFilesImagesList from './data/DataFilesImagesList.vue';
 components["opensilex-DataFilesImagesList"] = DataFilesImagesList;
@@ -742,6 +751,10 @@ import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
 import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
+import DeleteByBatchModal from './data/DeleteByBatchModal.vue';
+components["opensilex-DeleteByBatchModal"] = DeleteByBatchModal;
+import DataFileForm from './data/form/DataFileForm.vue';
+components["opensilex-DataFileForm"] = DataFileForm;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';
@@ -770,10 +783,21 @@ import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
-import GlobalMapView from "./geometry/GlobalMapView.vue";
-components["opensilex-GlobalMapView"] = GlobalMapView;
-import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
-components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
+//Old global map components temporarily hidden so no need
+//import GlobalMapView from "./geometry/GlobalMapView.vue";
+//components["opensilex-GlobalMapView"] = GlobalMapView;
+//import GlobalMapMenu from "./geometry/GlobalMapMenu.vue";
+//components["opensilex-GlobalMapMenu"] = GlobalMapMenu;
+
+//LOCATION
+import LocationModalForm from "./location/form/LocationModalForm.vue";
+components["opensilex-LocationModalForm"] = LocationModalForm;
+import LocationForm from "./location/form/LocationForm.vue";
+components["opensilex-LocationForm"] = LocationForm;
+import LocationsForm from "./location/form/LocationsForm.vue";
+components["opensilex-LocationsForm"] = LocationsForm;
+import LocationList from "./location/list/LocationList.vue";
+components["opensilex-LocationList"] = LocationList;
 
 // VISUALIZATION
 
@@ -804,6 +828,8 @@ import AnnotationForm from './annotations/form/AnnotationForm.vue';
 components["opensilex-AnnotationForm"] = AnnotationForm;
 import AnnotationList from './annotations/list/AnnotationList.vue';
 components["opensilex-AnnotationList"] = AnnotationList;
+import AnnotationDetails from './annotations/form/AnnotationDetails.vue';
+components["opensilex-AnnotationDetails"] = AnnotationDetails;
 
 // DEVICES
 import DeviceView from './devices/DeviceView.vue';
@@ -887,10 +913,8 @@ import DataMonitoring from './home/dashboard/DataMonitoring.vue'
 components["opensilex-DataMonitoring"] = DataMonitoring;
 
 // POSITION
-import PositionForm from './positions/form/PositionForm.vue';
-components["opensilex-PositionForm"] = PositionForm;
-import PositionsView from './positions/view/PositionsView.vue';
-components["opensilex-PositionsView"] = PositionsView;
+import PositionView from './positions/view/PositionView.vue';
+components["opensilex-PositionView"] = PositionView;
 import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
 import AssociatedPosition from './positions/list/AssociatedPositionList.vue';

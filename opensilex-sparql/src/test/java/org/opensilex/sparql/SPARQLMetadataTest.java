@@ -1,14 +1,12 @@
 package org.opensilex.sparql;
 
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
+import org.opensilex.sparql.rdf4j.RDF4JLMDBServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
-import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 import java.net.URI;
@@ -27,7 +25,7 @@ public class SPARQLMetadataTest extends AbstractUnitTest {
 
     @BeforeClass
     public static void setupSPARQL() throws Exception {
-        SPARQLServiceFactory factory = new RDF4JInMemoryServiceFactory();
+        SPARQLServiceFactory factory = new RDF4JLMDBServiceFactory();
         factory.setOpenSilex(opensilex);
         factory.setup();
         factory.startup();

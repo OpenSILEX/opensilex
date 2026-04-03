@@ -32,8 +32,9 @@
         lazy="true"
         component="opensilex-SiteForm"
         createTitle="SiteView.create"
-        editTitle="SiteView.update"
+        editTitle="component.site.update"
         icon="ik#ik-map-pin"
+        :initForm="initForm"
         @onCreate="siteList.refresh()"
         @onUpdate="siteList.refresh()"
     ></opensilex-ModalForm>
@@ -84,6 +85,19 @@ export default class SiteView extends Vue {
   }
 
   //#endregion
+  //#region Functions
+  initForm() {
+    return {
+      uri: undefined,
+      rdf_type: undefined,
+      name: undefined,
+      description: undefined,
+      address: undefined,
+      organizations: this.organizationsForFilter,
+      groups: []
+    }
+  }
+  //#endregion
 
 
 }
@@ -103,11 +117,9 @@ en:
     title: "Sites"
     description: "Manage and configure sites"
     create: "Add site"
-    update: "Edit site"
 fr:
   SiteView:
     title: "Sites"
     description: "Gérer et configurer les sites"
     create: "Ajouter un site"
-    update: "Modifier un site"
 </i18n>

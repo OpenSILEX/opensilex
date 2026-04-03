@@ -27,12 +27,22 @@ import java.util.UUID;
 )
 public class LocationObservationCollectionModel  extends SPARQLResourceModel implements ClassURIGenerator<LocationObservationCollectionModel> {
     public static final String GRAPH = "ObservationCollection";
+    public static final String OBSERVATION_COLLECTION_FIELD = "locationObservationCollection";
+    public static final String FEATURE_OF_INTEREST_FIELD = "featureOfInterest";
 
     @SPARQLProperty(
             ontology = SOSA.class,
             property = "hasFeatureOfInterest"
     )
     private URI featureOfInterest;
+
+    public LocationObservationCollectionModel(){
+    }
+
+    public LocationObservationCollectionModel(URI featureOfInterest) {
+        super();
+        this.featureOfInterest = featureOfInterest;
+    }
 
     public URI getFeatureOfInterest() {
         return featureOfInterest;

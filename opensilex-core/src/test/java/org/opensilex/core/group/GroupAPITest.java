@@ -28,6 +28,7 @@ import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
@@ -123,6 +124,45 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
         dto.setUserProfiles(userProfiles);
         return dto;
+    }
+
+    /**
+     * on 15/01/2026 front need an empty list and don't accept null for User profile list
+     */
+    @Test
+    public void groupeWithoutProfileHasEmptyListOfUserProfiles() throws Exception {
+        createTestEnv();
+
+        GroupCreationDTO dto = new GroupCreationDTO();
+        dto.setName("Group without profile");
+        dto.setDescription("Description");
+
+        new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        new UserCallBuilder(create)
+                .setBody(getGroupCreationDTO())
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        PaginatedListResponse<GroupDTO> listResponse = new UserCallBuilder(search)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GroupDTO>>() {})
+                .getDeserializedResponse();
+        List<GroupDTO> groups = listResponse.getResult();
+
+        assertFalse(groups.isEmpty());
+        assertEquals(2, groups.size());
+
+        GroupDTO groupWithoutProfile = groups.stream()
+                .filter(g -> g.getName().equals("Group without profile"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull("Group without profile should be returned by search", groupWithoutProfile);
+        assertNotNull("User profiles list should not be null", groupWithoutProfile.getUserProfiles());
+        assertEquals(0, groupWithoutProfile.getUserProfiles().size());
     }
 
     @Test

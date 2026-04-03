@@ -47,8 +47,20 @@
                     >
                         {{$opensilex.$numberFormatter.formateResponse(dataCount)}}
                     </span>
-                </b-nav-item
-                >
+                </b-nav-item>
+
+                <b-nav-item
+                    :active="isDatafilesTab()"
+                    :to="{ path: '/experiment/datafiles/' + encodeURIComponent(uri) }"
+                >{{ $t("ScientificObjectDataFiles.datafiles") }}
+                    <span
+                        v-if="!datafilesCountIsLoading && datafiles > 0"
+                        class ="tabWithElements"
+                    >
+                        {{$opensilex.$numberFormatter.formateResponse(datafiles)}}
+                    </span>
+                </b-nav-item>
+
                 <b-nav-item
                         :active="isDataVisualisation()"
                         :to="{ path: '/experiment/data-visualisation/' + encodeURIComponent(uri) }"
@@ -86,7 +98,6 @@
                 </b-nav-item>
 
 
-
             </template>
         </opensilex-PageActions>
 
@@ -108,6 +119,13 @@
                         v-else-if="isDataTab()"
                         :uri="uri"
                 ></opensilex-ExperimentData>
+
+                <opensilex-ExperimentDataFiles
+                v-else-if="isDatafilesTab()"
+                :modificationCredentialId="credentials.CREDENTIAL_DATA_MODIFICATION_ID"
+                :uri="uri"
+                ></opensilex-ExperimentDataFiles>
+
                 <opensilex-ExperimentDataVisualisation
                         v-else-if="isDataVisualisation()"
                         :uri="uri"
@@ -134,7 +152,6 @@
                         :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
                         :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
                 ></opensilex-AnnotationList>
-
             </template>
         </opensilex-PageContent>
     </div>
@@ -176,12 +193,14 @@
         factors: number;
         dataCount: number;
         scientificObjects: number;
+        datafiles: number;
 
         annotationsCountIsLoading: boolean = true;
         documentsCountIsLoading: boolean = true;
         factorsCountIsLoading: boolean = true;
         dataCountIsLoading: boolean = true;
         scientificObjectsCountIsLoading: boolean = true;
+        datafilesCountIsLoading: boolean = true;
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
@@ -207,6 +226,7 @@
             this.searchAnnotations();
             this.searchDocuments();
             this.searchData();
+            this.searchDatafiles();
             this.searchFactors();
             this.searchScientificObjects();
         }
@@ -237,6 +257,10 @@
 
         isDataTab() {
             return this.$route.path.startsWith("/experiment/data/");
+        }
+
+        isDatafilesTab() {
+            return this.$route.path.startsWith("/experiment/datafiles/");
         }
 
         isDataVisualisation() {
@@ -282,10 +306,9 @@
             }).catch(this.$opensilex.errorHandler);
         }
 
-      searchData() {
-        // Limit count of data for performance reasons        -->
-
-        return this.$DataService
+        searchData() {
+            // Limit count of data for performance reasons
+            return this.$DataService
             .countData(
                 undefined,
                 undefined,
@@ -301,15 +324,38 @@
                 undefined,
                 undefined,
                 1000,
-                undefined
-            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
-              if (http && http.response) {
-                this.dataCount = http.response.result as number;
-                this.dataCountIsLoading = false;
-                return this.dataCount
-              }
+                undefined,
+                undefined,
+                ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response) {
+                    this.dataCount = http.response.result as number;
+                    this.dataCountIsLoading = false;
+                    return this.dataCount
+                }
             }).catch(this.$opensilex.errorHandler);
-      }
+        }
+        
+        searchDatafiles(){
+            return this.$DataService
+            .countDatafiles(
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    [this.uri],
+                    undefined,
+                    undefined
+            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response) {
+                    this.datafiles = http.response.result as number;
+                    this.datafilesCountIsLoading = false;
+                    return this.datafiles
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
         
         searchFactors(){
             return this.$FactorsService
@@ -338,6 +384,7 @@
                 }
             }).catch(this.$opensilex.errorHandler);
         }
+
     }
 </script>
 

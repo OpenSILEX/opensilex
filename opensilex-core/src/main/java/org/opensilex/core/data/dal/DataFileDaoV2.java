@@ -7,18 +7,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
-
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,6 +81,10 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
             bsonFilters.add(Filters.in(PROVENANCE_URI_FIELD, filter.getProvenances()));
         }
 
+        if (filter.getName() != null && !filter.getName().isEmpty()) {
+            bsonFilters.add(Filters.regex("filename", filter.getName(), "i"));
+        }
+
         if (filter.getStartDate() != null) {
             bsonFilters.add(Filters.gte(DataModel.DATE_FIELD, filter.getStartDate()));
         }
@@ -102,6 +101,10 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
 
         if (filter.getMetadata() != null) {
             filter.getMetadata().forEach((metadataKey, metadataValue) -> bsonFilters.add(Filters.eq(DataModel.METADATA_FIELD + "." + metadataKey, metadataValue)));
+        }
+
+        if (filter.getBatchUri() != null) {
+            bsonFilters.add(Filters.eq(DataModel.BATCH_URI_FIELD, SPARQLDeserializers.getExpandedURI(filter.getBatchUri())));
         }
 
         addProvenanceAgentFilter(bsonFilters, filter);
@@ -157,7 +160,6 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
             // otherwise he/she can see ALL experiments
             bsonFilters.add(NO_EXPERIMENT_FILTER);
         }
-
     }
 
     protected void addProvenanceAgentFilter(List<Bson> bsonFilters, DataFileSearchFilter filter) {

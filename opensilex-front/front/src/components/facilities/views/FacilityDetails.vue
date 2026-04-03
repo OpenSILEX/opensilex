@@ -4,11 +4,15 @@
         <div class="facilityDescription">
             <opensilex-FacilityDescription
               :selected="selected"
-              :devices="devices"
               :withActions="true"
               @onUpdate="refresh"
             >
             </opensilex-FacilityDescription>
+            <opensilex-AssociatedVariableList
+                :variableList="selected.variables"
+                :deviceList="selected.devices"
+                :facilityUri="selected.uri"
+            ></opensilex-AssociatedVariableList>
         </div>
       </div>
 
@@ -26,7 +30,7 @@
 import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { OrganizationGetDTO } from "opensilex-core/index";
+import { FacilityGetDTO } from "opensilex-core/index";
 import { ExperimentGetListDTO } from "opensilex-core/model/experimentGetListDTO";
 import { DeviceGetDTO } from "opensilex-core/model/deviceGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
@@ -39,7 +43,7 @@ import AssociatedExperimentsList from "../../experiments/AssociatedExperimentsLi
 export default class FacilityDetails extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  selected: OrganizationGetDTO = null;
+  selected: FacilityGetDTO = null;
   experiments: Array<ExperimentGetListDTO> = [];
   devices: Array<DeviceGetDTO> = [];
   experimentName: string = "";
@@ -52,6 +56,7 @@ export default class FacilityDetails extends Vue {
   @Ref("organizationFacilityForm") readonly organizationFacilityForm!: any;
   @Ref("experimentsView")
   experimentsView: AssociatedExperimentsList;
+
 
   get user() {
     return this.$store.state.user;
@@ -78,8 +83,8 @@ export default class FacilityDetails extends Vue {
   refresh() {
     this.organizationService
       .getFacility(this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
-        let detailDTO: OrganizationGetDTO = http.response.result;
+      .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+        let detailDTO: FacilityGetDTO = http.response.result;
         this.selected = detailDTO;
 
         this.loadExperiments();
@@ -99,6 +104,7 @@ export default class FacilityDetails extends Vue {
             undefined, // projects
             undefined, // isPublic
             [this.uri],
+            undefined, // funding
             undefined,
             0,
             0)

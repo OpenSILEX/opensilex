@@ -1,5 +1,8 @@
 <!-- TOC -->
 * [Changelog](#changelog)
+  * [[1.5.0] - Freaky Fossil](#150---freaky-fossil)
+    * [Changes and new features](#changes-and-new-features)
+    * [Fixed or optimized](#fixed-or-optimized-)
   * [[1.4.10]](#1410)
     * [Fixed or optimized](#fixed-or-optimized)
   * [[1.4.9]](#149)
@@ -20,8 +23,8 @@
     * [Fixed or optimized](#fixed-or-optimized-8)
   * [[1.4.1]](#141)
     * [Fixed or optimized](#fixed-or-optimized-9)
-  * [[1.4.0]](#140)
-    * [Changes and new features](#changes-and-new-features)
+  * [[1.4.0] - Explosive Emerald](#140---explosive-emerald)
+    * [Changes and new features](#changes-and-new-features-1)
     * [Fixed or optimized](#fixed-or-optimized-10)
     * [Other](#other)
   * [[1.3.5]](#135)
@@ -32,11 +35,11 @@
     * [Fixed](#fixed-2)
   * [[1.3.2]](#132)
     * [Fixed](#fixed-3)
-    * [Changes and new features](#changes-and-new-features-1)
+    * [Changes and new features](#changes-and-new-features-2)
   * [[1.3.1]](#131)
     * [Fixed](#fixed-4)
   * [[1.3.0] - Dizzy Diamond](#130---dizzy-diamond-)
-    * [Changes and new features](#changes-and-new-features-2)
+    * [Changes and new features](#changes-and-new-features-3)
     * [Fixed or optimized](#fixed-or-optimized-11)
   * [[1.2.7]](#127)
     * [Fixed or optimized](#fixed-or-optimized-12)
@@ -49,7 +52,7 @@
     * [Fixed or optimized](#fixed-or-optimized-15)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
-    * [Changes and new features](#changes-and-new-features-3)
+    * [Changes and new features](#changes-and-new-features-4)
     * [Fixed or optimized](#fixed-or-optimized-16)
   * [[1.2.2]](#122)
     * [Fixed](#fixed-5)
@@ -57,13 +60,13 @@
     * [Fixed](#fixed-6)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
-    * [Changes and new features](#changes-and-new-features-4)
+    * [Changes and new features](#changes-and-new-features-5)
     * [Fixed or optimized](#fixed-or-optimized-17)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
-    * [Changes and new features](#changes-and-new-features-5)
+    * [Changes and new features](#changes-and-new-features-6)
     * [Fixed or optimized](#fixed-or-optimized-18)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
     * [Fixed or optimized](#fixed-or-optimized-19)
@@ -130,6 +133,62 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - Freaky Fossil
+
+> Warning : upgrading to this new version requires manual operations.  
+Please follow the [versioning notes](opensilex-doc/src/main/resources/release/1.5.0.md)
+
+### Changes and new features
+
+- (!1418) [Experiment]
+> Added option to create and update Experiments with an alternative name.  
+When searching for an Experiment by name it will also look at the alternative names.  
+Added display of Experiment alternative name in Experiment details, and in the Experiments list.
+- (!1397) [Experiment] Add funding with logo in experiment
+- (!1399) [install] install command now create a RDF4J LMDB repository for more efficient persistent data storing.
+- (!1374) Update dependencies and add sonarcube dependencies
+- (!1395) [device] search device by type and subtypes does not return all devices anymore
+- (!1389) [Moves] Move events now use the same Geospatial ontology as Facilities and Sites.
+- (!1386) [datafiles]
+> You can now link data to a data file upon import by adding a "prov_entity" column to the CSV template.  
+There is now a graphical interface for managing data files from the menu Data -> Datafiles. You can now insert, delete and export data files. A specific process has been developed for spectral data files (DX and CSV), with the possibility to visualize spectra from raw data files of type DX.
+- (!1385) [ScientificObject] Added posibility to perform Scientific Object bulk update import on the global Scientific Object page.
+- (!1370) [Annotations] Applying experimentation rights management on joined annotations.
+- (!1368) [Documents] Applying experimentation rights management on joined documents
+- (!1363) [Germplasm]
+> germplasm import change, it is now possible to update at the same time as we create germplasms.  
+Any error in any germplasm of the list will cause cancellation of any update or creation.
+- (!1379) [facility]
+> Added the hasDevice and hasVariable properties to Facilities.  
+Display of the hasDevice and hasVariable property values in a table on the faility details page.
+- (!1377) [annotation] Updated date format of annotations to YYYY-MM-DD HH:mm:ss.
+- (!1376) [ScientificObject] Scientific Object import change, it is now possible to update multiple scientific objects in an experiment
+- (!1362) [annotation] Updated annotation display, resolved sorting issues and fixed line break behavior in description field.
+- (!1339) [datafiles] Datafiles can now be searched by files name -> 568d15dd7 (PRADO SEBASTIEN)
+- (!1304) [facility] Facilities can now have several locations in time and are displayed on the global map.
+
+### Fixed or optimized 
+
+- (!1384) [germplasm] creation and update by list is now faster.
+- (!1361) [DataFiles]
+> Fixed not being able to see further than the 5th page on some lists.  
+  DataFiles list now uses the same pagination strategy as Data page.  
+  Added filters to the DataFiles count web-service, so that the filters match the search web-service.
+- (!1355) [Data]
+> Massive optimizations to Data insertion and Data validation.  
+A zipped CSV document is now saved in the system after a successful data import, visible only by the user who performed the import.  
+After a successful data import, a "batch uri" is created to represent the imported data, this can be used to filter data or to to delete the imported data.
+- (!1353) [Annotation] Annotation table display updated and Fixed sorting issue
+- (!1354) [GlobalUriSearch] Repaired global uri search for events
+- (!1348) [SchemaSearch]
+> Some search web-services will now be a lot faster thanks to a new "search by schema" feature.  
+  Faster search time for the search experiments service.  
+  Faster search time for the search projects service.  
+  Faster search time for the search facilities service.  
+  Faster search time for the search devices service.  
+  Faster search time for the search user groups service.  
+  Faster search time for the search factor levels service.
+
 ## [1.4.10]
 
 ### Fixed or optimized
@@ -195,7 +254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1334) [GlobalUriSearch] Blocked access to data details if the user shouldn't be able to see them.
 - (!1335) [Datafile] Added support for tiff format images
 
-## [1.4.0]
+## [1.4.0] - Explosive Emerald
 
 > Warning : upgrading to this new version requires manual operations. Please follow the
 > [versioning notes](opensilex-doc/src/main/resources/release/1.4.0.md) 

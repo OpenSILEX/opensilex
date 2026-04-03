@@ -394,7 +394,7 @@ export default class ModalFormSelector extends Vue {
         }
         this.selection = newValues;
       }
-      this.refreshModalSearch();
+
     }
 
     created() {

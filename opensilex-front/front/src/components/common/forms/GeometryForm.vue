@@ -3,14 +3,15 @@
     :rules="isMove ? 'containsPoint|wkt' : 'wkt'"
     :label="label"
     :helpMessage="helpMessage"
-    :isMove="isMove"
     :vid="vid"
+    :required="isRequired"
   >
     <template v-slot:field="field">
       <b-form-input
         :id="field.id"
         :value="stringValue"
-        @update="updateValue($event)"
+        @input="stringValue = $event"
+        @blur="updateValue()"
         :disabled="disabled"
         type="text"
         :required="isRequired"
@@ -24,10 +25,11 @@
 import { Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import { parse, stringify } from "wkt";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GeometryForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("value")
   geoJson: any;
@@ -42,20 +44,35 @@ export default class GeometryForm extends Vue {
 
   @Watch("geoJson")
   onGeoJsonChange(value) {
-    if (value != null) {
-      try {
-        this.stringValue = stringify(value);
-      } catch (error) {
-        this.stringValue = "";
-      }
+    if (!value) {
+      this.stringValue = "";
+      return;
+    }
+
+    try {
+      this.stringValue = stringify(value);
+    } catch (e) {
+      console.warn("Invalid geojson to stringify", e);
     }
   }
 
-  updateValue(newValue) {
-    this.stringValue = newValue;
-    let geoJson = parse(this.stringValue);
-    this.geoJson = geoJson;
+  updateValue() {
+    const geometryValue = (this.stringValue || "").trim();
+    if (!geometryValue) {
+      this.geoJson = undefined;
+      this.$emit("onUpdate");
+      return;
+    }
+
+    try {
+      const parsed = parse(geometryValue);
+      this.geoJson = parsed; // sync que si c'est ok
+      this.$emit("onUpdate");
+    } catch (e) {
+      console.warn(e);
+    }
   }
+
 
   @Prop()
   label: string;

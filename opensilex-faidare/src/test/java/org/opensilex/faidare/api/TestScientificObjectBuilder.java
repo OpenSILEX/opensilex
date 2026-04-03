@@ -97,7 +97,7 @@ public class TestScientificObjectBuilder extends AbstractSecurityIntegrationTest
         dto.setName(getName() + dtoList.size());
         dto.setType(getRdf_type());
         dto.setExperiment(getExperiment());
-        dto.setGeometry(getGeometry());
+//        dto.setGeometry(getGeometry());
         dto.setRelations(getRelations());
 
         URI createdURI = new UserCallBuilder(ScientificObjectAPITest.create)

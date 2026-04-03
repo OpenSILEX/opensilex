@@ -219,7 +219,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     if (!StringUtils.isEmpty(name)) {
                         proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, false, service);
                     } else {
-                        // try to build a proxy object including name with an another SPARQL builder variable binding name
+                        // try to build a proxy object including name with another SPARQL builder variable binding name
                         name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
 
                         if (!StringUtils.isEmpty(name)) {
@@ -281,11 +281,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      * Set an {@link InstantModel} (by using result) as field of the given instance instead of Using {@link SPARQLProxy}
      * @param instance the {@link SPARQLResourceModel} to update
-     * @param field the instance {@link Class} field, which is a sub-type of {@link InstantModel}
+     * @param field the instance {@link Class} field, which is a subtype of {@link InstantModel}
      * @param result the {@link SPARQLResult} which contains value associated to {@link InstantModel#getUri()} and {@link InstantModel#getDateTimeStamp()}
      * @param objURI URI of the {@link InstantModel}
      * @param setter setter from instance {@link Class}, used to set value for field
-     * @throws Exception
      */
     private void buildInstantModelWithoutProxy(T instance, Field field, SPARQLResult result, URI objURI, Method setter) throws Exception {
 
@@ -352,10 +351,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getAskBuilder(graph, lang);
     }
 
-    public AskBuilder getAskBuilder(Node graph, String lang, ThrowingConsumer<AskBuilder,Exception> filterHandler, Map<String, WhereHandler> customHandlerByFields) throws Exception {
-        return classQueryBuilder.getAskBuilder(graph, lang,filterHandler,customHandlerByFields);
-    }
-
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) throws Exception {
         return getSelectBuilder(graph,lang,null,null);
@@ -387,28 +382,19 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getCreateBuilder(graph, instance, blankNode, createExtension);
     }
 
-    public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
-        addCreateBuilder(getDefaultGraph(), instance, create, false,null);
-    }
-
-    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode,BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
-        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode,createExtension);
-    }
-
-    public UpdateBuilder getDeleteBuilder(T instance) throws Exception {
-        return getDeleteBuilder(getDefaultGraph(), instance);
+    /**
+     * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     */
+    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension, List<String> fieldsToExclude) throws Exception {
+        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode,createExtension, fieldsToExclude);
     }
 
     public UpdateBuilder getDeleteBuilder(Node graph, T instance) throws Exception {
         return classQueryBuilder.getDeleteBuilder(graph, instance);
     }
 
-    public void addDeleteBuilder(T instance, UpdateBuilder delete) throws Exception {
-        addDeleteBuilder(getDefaultGraph(), instance, delete);
-    }
-
-    public void addDeleteBuilder(Node graph, T instance, UpdateBuilder delete) throws Exception {
-        classQueryBuilder.addDeleteBuilder(graph, instance, delete);
+    public UpdateBuilder getDeleteBuilderForUpdate(List<T> modelsToDelete, URI graph) throws IllegalAccessException {
+        return classQueryBuilder.getDeleteBuilderForUpdateCases(modelsToDelete, graph);
     }
 
     public URI getURI(Object instance) {
@@ -456,7 +442,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         try {
             return getFieldExprVar(getURIFieldName());
         } catch (SPARQLUnknownFieldException ex) {
-            LOGGER.error("Unknown URI field for a resource, should never happend", ex);
+            LOGGER.error("Unknown URI field for a resource, should never happened", ex);
             return null;
         }
     }
@@ -550,6 +536,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalyzer.getAutoUpdateListFields();
     }
 
+    public List<Field> getIgnoreUpdateIfNullFields() {
+        return classAnalyzer.getIgnorUpdateIfNullFields();
+    }
+
     /**
      *
      * @param subjectGraph graph used to store instance (could be null, the default graph or a given graph)
@@ -614,7 +604,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return getRelationsUrisByMapper(instance, new HashMap<>());
     }
 
-    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) {
         return getRelationsUrisByMapper(instance, existingMap, false);
     }
 
@@ -623,7 +613,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     }
 
-    public  Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public  Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) {
         return getRelationsUrisByMapper(instance, existingMap, true);
     }
 
@@ -728,65 +718,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return statementCount > 0;
     }
 
-    public void updateInstanceFromOldValues(T oldInstance, T newInstance) throws Exception {
-        if (newInstance.getType() == null) {
-            newInstance.setType(oldInstance.getType());
-        }
-
-        if (oldInstance.getPublisher() != null && newInstance.getPublisher() == null) {
-            newInstance.setPublisher(oldInstance.getPublisher());
-        }
-
-        if (Objects.isNull(newInstance.getPublicationDate())) {
-            newInstance.setPublicationDate(oldInstance.getPublicationDate());
-        }
-
-        newInstance.setLastUpdateDate(OffsetDateTime.now());
-
-        for (Field field : classAnalyzer.getDataPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getObjectPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getLabelPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getDataListPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
-
-        for (Field field : classAnalyzer.getObjectListPropertyFields()) {
-            Object oldFieldValue = classAnalyzer.getFieldValue(field, oldInstance);
-            Object newFieldValue = classAnalyzer.getFieldValue(field, newInstance);
-
-            if (newFieldValue == null && classAnalyzer.isNullIgnorableUpdateField(field)) {
-                classAnalyzer.getSetterFromField(field).invoke(newInstance, oldFieldValue);
-            }
-        }
+    public Object getFieldValue(T instance, Field field) {
+        return classAnalyzer.getFieldValue(field, instance);
     }
 
     public SPARQLClassAnalyzer getClassAnalyzer() {

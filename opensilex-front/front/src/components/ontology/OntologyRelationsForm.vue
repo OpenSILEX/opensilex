@@ -153,7 +153,7 @@ export default class OntologyRelationsForm extends Vue {
           for(let propertiesByDomainDTO of this.propertiesByDomainHierarchy){
             let propsOfDomainsUris: Array<string> = createUriListFromGetPropertiesResult(propertiesByDomainDTO.properties, this.$opensilex);
             propsOfDomainsUris.forEach(propertyUri => {
-              let filteredByCurrentProperty = properties.filter(e => this.$opensilex.checkURIs(e.uri, propertyUri));
+              let filteredByCurrentProperty = properties.filter(e => this.$opensilex.compareUris(e.uri, propertyUri));
               if(filteredByCurrentProperty.length === 1){
                 newPropertyOrder.push(filteredByCurrentProperty[0]);
               }

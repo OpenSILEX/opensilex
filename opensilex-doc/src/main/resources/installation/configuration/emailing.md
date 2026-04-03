@@ -89,4 +89,4 @@ When a user forgets their password, they can request a password reset through th
 4. **Email Sending**: EmailService uses the configured SMTP settings to send the email
 
 
-For common issues see [this documentation](../faq/emailing.md)
+For common issues see [this documentation](/src/main/resources/faq/emailing.md)

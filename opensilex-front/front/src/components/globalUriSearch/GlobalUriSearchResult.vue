@@ -25,7 +25,7 @@
         ></opensilex-UriView>
 
         <opensilex-Button
-          v-if="dataDto.uri"
+          v-if="!isBatch && (isAnnotation() || isSubTypeOfEvent() || (this.dataDto && this.dataDto.uri))"
           :small="true"
           @click="handleSeeDetails"
           label="GlobalUriSearch.seeDetails"
@@ -46,14 +46,18 @@
       ></opensilex-StringView>
       <!-- Type -->
       <opensilex-TypeView
-        v-if="!isData"
-        :type="type"
-        :typeLabel="typeName"
-        :copyableTypeUri="true"
+        v-if="isData"
+        :typeLabel="$t('GlobalUriSearch.dataTypeName')"
+      ></opensilex-TypeView>
+      <opensilex-TypeView
+        v-else-if="isBatch"
+        :typeLabel="$t('GlobalUriSearch.batchTypeName')"
       ></opensilex-TypeView>
       <opensilex-TypeView
         v-else
-        :typeLabel="$t('GlobalUriSearch.dataTypeName')"
+        :type="type"
+        :typeLabel="typeName"
+        :copyableTypeUri="true"
       ></opensilex-TypeView>
       <!-- rdfsComment -->
       <opensilex-TextView
@@ -73,23 +77,32 @@
 
     <!-- Data details -->
     <opensilex-DataProvenanceModalView
-      v-if="hasNoDetailsPage"
+      v-if="dataDto"
       ref="dataProvenanceModalView"
     ></opensilex-DataProvenanceModalView>
 
     <!-- Event details -->
     <opensilex-EventModalView
+      v-if="isSubTypeOfEvent()"
       modalSize="lg"
       ref="eventModalView"
       :static="false"
     ></opensilex-EventModalView>
+
+    <!-- Modal pour afficher les détails de l'annotation -->
+    <opensilex-AnnotationDetails
+      v-if="isAnnotation()"
+      :value="isAnnotationModalVisible"
+      :annotationDetails="annotationDetails"
+      @close="isAnnotationModalVisible = false"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { URIGlobalSearchDTO , DataGetSearchDTO, ProvenanceGetDTO, UserGetDTO, DataFileGetDTO, MoveDetailsDTO, EventDetailsDTO} from "opensilex-core/index";
+import { URIGlobalSearchDTO , DataGetSearchDTO, UserGetDTO, DataFileGetDTO, EventDetailsDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Prop, Ref} from "vue-property-decorator";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -99,6 +112,9 @@ import {DataService} from "opensilex-core/api/data.service";
 import DataProvenanceModalView from "../data/DataProvenanceModalView.vue";
 import {EventsService} from "opensilex-core/api/events.service";
 import EventModalView from "../events/view/EventModalView.vue";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import Foaf from "../../ontologies/Foaf";
 
 @Component
 export default class GlobalUriSearchResult extends Vue {
@@ -114,6 +130,9 @@ export default class GlobalUriSearchResult extends Vue {
   private ontologyService: OntologyService;
   private dataService: DataService;
   private eventsService: EventsService;
+  private annotationService: AnnotationsService;
+  private isAnnotationModalVisible = false;
+  private annotationDetails: AnnotationGetDTO | null = null;
   //#endregion
 
   //#region: hooks
@@ -122,6 +141,7 @@ export default class GlobalUriSearchResult extends Vue {
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.dataService = this.$opensilex.getService("opensilex.DataService");
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+    this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
   }
 
   //#endregion
@@ -135,17 +155,30 @@ export default class GlobalUriSearchResult extends Vue {
       await this.eventModalView.show(http);
       return;
     }
+    //If the result is an Annotation
+    if(this.isAnnotation()){
+      this.annotationDetails = (await this.annotationService.getAnnotation(this.searchResult.uri)).response.result;
+      this.isAnnotationModalVisible = true;
+    }
 
     //If the result is a data or datafile
-    this.getProvenance(this.dataDto.provenance.uri)
-      .then(result => {
-        let value = {
-          provenance: result,
-          data: this.dataDto
-        }
-        this.dataProvenanceModalView.setProvenance(value);
-        this.dataProvenanceModalView.show();
-      });
+    try {
+      const provenanceSearchResult = await this.$opensilex.getProvenance(this.dataDto.provenance.uri, this.dataService);
+      //Only get Batch if it is data
+      let batchSearchResult = null;
+      if(this.isData){
+        batchSearchResult = await this.$opensilex.getBatch(this.searchResult.data_dto.batchUri, this.dataService);
+      }
+      const value = {
+        provenance: provenanceSearchResult,
+        data: this.dataDto,
+        batch: batchSearchResult
+      };
+      this.dataProvenanceModalView.setProvenanceAndBatch(value);
+      this.dataProvenanceModalView.show();
+    } catch (error) {
+      console.error("Failed to fetch provenance or Batch:", error);
+    }
 
   }
   //#endregion
@@ -158,15 +191,6 @@ export default class GlobalUriSearchResult extends Vue {
   //#endregion
 
   //#region: private functions
-  private getProvenance(uri) {
-    if (uri != undefined) {
-      return this.dataService
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
-    }
-  }
 
   private isSubTypeOfEvent(){
     if(this.searchResult.super_types){
@@ -176,6 +200,15 @@ export default class GlobalUriSearchResult extends Vue {
         }
       }
     }
+    return false;
+  }
+
+  private isAnnotation(){
+    return this.$opensilex.Oeev.checkURIs(this.type, "http://www.w3.org/ns/oa#Annotation");
+  }
+
+  private isPerson(){
+    return this.$opensilex.Oeev.checkURIs(this.type, Foaf.PERSON_TYPE_URI);
   }
 
   private getEventPromise(): Promise<HttpResponse<OpenSilexResponse>> {
@@ -210,8 +243,12 @@ export default class GlobalUriSearchResult extends Vue {
       return formattedPath;
     }
     //If type is a germplasm group then build path manually
-    if(this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
+    if(this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.GERMPLASM_GROUP_TYPE_URI)){
       return "/germplasm/group?selected="+ encodeURIComponent(this.uri);
+    }
+    //If type is a person then build path manually, elements can't be selected in persons table so we just go to table
+    if(this.isPerson()){
+      return "/persons";
     }
     //Check if type is one of the wierd other components on variables page that doesn't have its own page (Entities, etc...)
     formattedPath = this.$opensilex.getVariableComponentPath(this.type, this.uri);
@@ -223,7 +260,7 @@ export default class GlobalUriSearchResult extends Vue {
         //Pass factor as uri to getTargetPath if the uri was a FactorLevel (to navigate to its parent Factor)
         //Only pass context if we the type is factor or factor level, only things inside experiments that we can navigate to for now.
         //Errors get created otherwise as the context will always be the global graph instead of an xp
-        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.checkURIs(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), (this.isFactorLevelOrFactor() ? this.context : undefined), unformattedPath);
+        formattedPath = this.$opensilex.getTargetPath((this.$opensilex.compareUris(this.type, this.$opensilex.Oeso.FACTOR_LEVEL_URI) ? this.factorUri : this.uri), (this.isFactorLevelOrFactor() ? this.context : undefined), unformattedPath);
     }else if(this.searchResult.root_class !== null){
       return this.$opensilex.getVocabularyPath(this.uri, this.searchResult.root_class, this.searchResult.is_property);
     }
@@ -302,11 +339,17 @@ export default class GlobalUriSearchResult extends Vue {
   get hasNoDetailsPage(): boolean{
     return this.searchResult.data_dto !== null ||
       this.searchResult.datafile_dto !== null ||
-      this.isSubTypeOfEvent();
+      this.isSubTypeOfEvent() ||
+      this.searchResult.is_batch_history ||
+      this.isAnnotation();
   }
 
   get isData(): boolean{
     return this.searchResult.data_dto !== null;
+  }
+
+  get isBatch() : boolean{
+    return this.searchResult.is_batch_history;
   }
 
   //#endregion
@@ -355,11 +398,13 @@ en:
     seeDetails: See details
     dataTypeName: Data
     comment: Description
+    batchTypeName: Batch of data
 
 fr:
   GlobalUriSearch:
     seeDetails: Voir détails
     dataTypeName: Donnée
     comment: Description
+    batchTypeName: Batch de données
 
 </i18n>

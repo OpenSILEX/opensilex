@@ -20,15 +20,6 @@
         </opensilex-Button>
 
         <opensilex-Button
-            v-b-toggle.advanced-options
-            icon="ik#ik-filter"
-            :small="true"
-            variant="outline-secondary"
-            class="agroportalSearchBarBtn"
-        >
-        </opensilex-Button>
-
-        <opensilex-Button
             icon="ik#ik-search"
             :small="true"
             variant="outline-secondary"
@@ -40,8 +31,7 @@
     </b-input-group>
 
     <!-- Advanced options -->
-    <b-collapse id="advanced-options">
-      <b-row align-v="center">
+      <b-row align-v="center" id="advanced-options">
         <b-col sm="8">
           <opensilex-FormSelector
               ref="soSelector"
@@ -64,8 +54,6 @@
           </b-form-checkbox>
         </b-col>
       </b-row>
-    </b-collapse>
-
   </div>
 </template>
 
@@ -116,13 +104,14 @@ export default class AgroportalSearch extends Vue {
   }
 
   private searchOntologies(searchQuery, _page, _pageSize):
-      Promise<HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>> {
+    Promise<HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>> {
+
+    const normalizedQuery = (searchQuery ?? "").toString().toLowerCase();
+
     return this.$opensilex
-        .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
-        .getAgroportalOntologies(searchQuery, undefined)
-        .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => {
-          return http;
-        });
+      .getService<AgroportalAPIService>("opensilex.AgroportalAPIService")
+      .getAgroportalOntologies(normalizedQuery, undefined)
+      .then((http: HttpResponse<OpenSilexResponse<Array<OntologyAgroportalDTO>>>) => http);
   }
 
   private ontologyToSelectNode(dto: OntologyAgroportalDTO): SelectableItem {

@@ -15,8 +15,12 @@ import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import org.geojson.GeoJsonObject;
+import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.annotation.api.AnnotationAPITest;
+import org.opensilex.core.annotation.api.AnnotationCreationDTO;
+import org.opensilex.core.annotation.api.AnnotationGetDTO;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.ontology.Oeso;
@@ -33,6 +37,7 @@ import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
@@ -195,7 +200,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testSearchIntersectsAreaErrorGeometry() throws Exception {
         Response responseFail = createDefaultAreaWithError();
-        assertEquals(responseFail.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), responseFail.getStatus());
     }
 
     @Test
@@ -260,5 +265,35 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         exportCallBuilder.setParams(paramsGJson);
         exportCall = exportCallBuilder.buildAdmin();
         exportCall.executeCall();
+    }
+
+    /**
+     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
+     * final uri should be http://myuri/é
+     */
+    @Test
+    public void testUriEncoding() throws Exception {
+        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        URI decodedURI = URI.create("http://myuri/é");
+
+        AreaCreationDTO creationDto = getCreationDTO(false);
+        creationDto.setUri(uriWithSpecialChar);
+
+        URI createdURI = new UserCallBuilder(create)
+                .setBody(creationDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI), SPARQLDeserializers.compareURIs(decodedURI, createdURI));
+
+
+        AreaGetDTO dtoFromApi = new UserCallBuilder(getByUri)
+                .addPathTemplateParam("uri", uriWithSpecialChar)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<AreaGetDTO>>() {} )
+                .getDeserializedResponse()
+                .getResult();
+
+        Assert.assertNotNull("get service should retrieve URI even if we get with http://myuri/%C3%A9 ", dtoFromApi);
+        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()), SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
     }
 }

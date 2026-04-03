@@ -30,11 +30,11 @@ export function sortProperties(properties: Array<VueRDFTypePropertyDTO>, typeMod
         }
 
         // always put name (rdfs:label) in first
-        if (opensilex.checkURIs(property1, opensilex.Rdfs.LABEL)) {
+        if (opensilex.compareUris(property1, opensilex.Rdfs.LABEL)) {
             return -1;
         }
 
-        if (opensilex.checkURIs(property2, opensilex.Rdfs.LABEL)) {
+        if (opensilex.compareUris(property2, opensilex.Rdfs.LABEL)) {
             return 1;
         }
 

@@ -64,6 +64,12 @@ public abstract class ExperimentDTO {
     @JsonProperty("is_public")
     protected Boolean isPublic;
 
+    @JsonProperty("funding")
+    protected List<URI> funding = new ArrayList<>();
+
+    @JsonProperty("alternative_name")
+    private String alternativeName;
+
     public URI getUri() {
         return uri;
     }
@@ -195,5 +201,22 @@ public abstract class ExperimentDTO {
     public ExperimentDTO setFactors(List<URI> factors) {
         this.factors = factors;
         return this;
+    }
+
+    public List<URI> getFunding() {
+        return funding;
+    }
+
+    public ExperimentDTO setFunding(List<URI> funding) {
+        this.funding = funding;
+        return this;
+    }
+
+    public String getAlternativeName() {
+        return alternativeName;
+    }
+
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
     }
 }

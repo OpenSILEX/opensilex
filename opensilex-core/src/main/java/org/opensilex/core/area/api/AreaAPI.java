@@ -26,6 +26,7 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -34,7 +35,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
@@ -114,15 +114,13 @@ public class AreaAPI {
     public Response createArea(
             @ApiParam("Area description") @NotNull @Valid AreaCreationDTO areaDTO
     ) throws Exception {
-        AreaDAO dao = new AreaDAO(sparql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        EventLogic<EventModel, EventSearchFilter> eventLogic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
-        GeospatialModel geospatialModel = new GeospatialModel();
-        URI areaURI;
 
-        nosql.startTransaction();
-        sparql.startTransaction();
-        try {
+        return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session ->{
+            AreaDAO dao = new AreaDAO(sparql);
+            GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+            EventLogic<EventModel, EventSearchFilter> eventLogic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
+            GeospatialModel geospatialModel = new GeospatialModel();
+            URI areaURI;
             if (!areaDTO.isStructuralArea){
 
                 //RdfType for area and geospatial is equal temporal area
@@ -153,24 +151,8 @@ public class AreaAPI {
             geospatialModel.setName(areaDTO.getName());
             geospatialModel.setGeometry(geoJsonToGeometry(areaDTO.getGeometry()));
             geoDAO.create(geospatialModel);
-
-            sparql.commitTransaction();
-            nosql.commitTransaction();
-
             return new CreatedUriResponse(areaURI).getResponse();
-        } catch (MongoWriteException | CodecConfigurationException mongoException) {
-            try {
-                sparql.rollbackTransaction(mongoException);
-                nosql.rollbackTransaction();
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
-            }
-            throw mongoException;
-        } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
-            nosql.rollbackTransaction();
-            throw ex;
-        }
+        });
     }
 
     /**

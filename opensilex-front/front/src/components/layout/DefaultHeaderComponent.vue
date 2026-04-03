@@ -67,10 +67,10 @@
         </div>
         <!--Uri global search-->
         <opensilex-Button
-          @click="EventBus.$emit('uriGlobalSearch')"
+          @click="$emit('uriGlobalSearch')"
           :label="$t('component.header.uriSearchHoverMessage')"
           class="burgerMenu-searchIcon ik ik-search"
-          :class="{ 'selected-searchicon': uriSearchBoxVisible }"
+          :class="{ 'selected-searchicon': searchBoxIsActive }"
           icon="ik-search"
         ></opensilex-Button>
         <div>
@@ -126,9 +126,9 @@
             <!--Uri global search-->
             <b-button
               class="searchicon"
-              :class="{ 'selected-searchicon': uriSearchBoxVisible }"
+              :class="{ 'selected-searchicon': searchBoxIsActive }"
               :title="$t('component.header.uriSearchHoverMessage')"
-              @click="EventBus.$emit('uriGlobalSearch')"
+              @click="$emit('uriGlobalSearch')"
             >
               URI
               <i class="icon ik ik-search"></i>
@@ -168,6 +168,7 @@
             >
               <template v-slot:button-content>
                 <i class="icon ik ik-user userIcon"></i>
+                <div class="user-name">{{ userNameHeader }}</div>
               </template>
               <b-dropdown-item href="#" @click.prevent="logout">
                 <i class="ik ik-log-out dropdown-icon"></i>
@@ -189,7 +190,6 @@ import Vue from "vue";
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 import store from "../../models/Store";
-import {EventBus} from "../../main";
 
 
 @Component
@@ -203,19 +203,14 @@ export default class DefaultHeaderComponent extends Vue {
   title: any;
   description: any;
 
-  get EventBus(){
-    return EventBus;
-  }
+  @Prop()
+  searchBoxIsActive: boolean;
 
   /**
    * Return the current connected user
    */
   get user() {
     return this.$store.state.user;
-  }
-
-  get uriSearchBoxVisible(){
-    return this.$store.state.uriSearchBoxVisible;
   }
 
   /**
@@ -293,6 +288,19 @@ export default class DefaultHeaderComponent extends Vue {
 
     return this.$opensilex.getConfig().versionLabel.toLowerCase();
   }
+
+  /**
+   * Return either the email or the first letter of first name and the last nale for the current user
+  */
+  get userNameHeader() {
+    let userInfo = this.$store.state.user;
+    if (!userInfo.getLastName()){
+      return userInfo.getEmail();
+    } else {
+      return userInfo.getFirstName().replaceAll(' ', '').substring(0, 1).toUpperCase() + '. ' + userInfo.getLastName();
+    }
+  }
+
 
   /**
    * Set the current i18n language
@@ -527,6 +535,13 @@ export default class DefaultHeaderComponent extends Vue {
   vertical-align: middle;
   margin: -2px 0 0 12px
 }
+
+.user-name{
+  font-weight: bold;
+  padding: 0 20px;
+  color: #525252; 
+}
+
 
 @media only screen and (min-width: 1380px) {
   .top-menu {

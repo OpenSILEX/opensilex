@@ -7,6 +7,12 @@ package org.opensilex.sparql.deserializer;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
+import org.opensilex.OpenSilex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -14,19 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.Property;
-import org.opensilex.OpenSilex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  * @author vincent
@@ -55,9 +49,6 @@ public class SPARQLDeserializers {
         datatypeClassMap.put(XSDDatatype.XSDnonNegativeInteger.getURI(), Integer.class);
         datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
         datatypeClassMap.put(XSDDatatype.XSDnonPositiveInteger.getURI(), Integer.class);
-        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
-        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
-        datatypeClassMap.put(XSDDatatype.XSDpositiveInteger.getURI(), Integer.class);
         datatypeClassMap.put(XSDDatatype.XSDlong.getURI(), Long.class);
         datatypeClassMap.put(XSDDatatype.XSDunsignedLong.getURI(), Long.class);
         datatypeClassMap.put(XSDDatatype.XSDshort.getURI(), Short.class);
@@ -229,6 +220,7 @@ public class SPARQLDeserializers {
         }
     }
 
+
     public static Node[] nodeListURIAsArray(Collection<URI> uris) throws Exception {
         SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
 
@@ -254,5 +246,9 @@ public class SPARQLDeserializers {
 
     public static boolean compareURIs(URI uri1, String uri2) {
         return getExpandedURI(uri1).equals(getExpandedURI(uri2));
+    }
+
+    public static boolean containsURI(Collection<URI> uris, URI uri) {
+        return uris.stream().anyMatch(u -> compareURIs(u, uri));
     }
 }

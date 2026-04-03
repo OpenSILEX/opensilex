@@ -1,20 +1,5 @@
 <template>
     <div>
-        <opensilex-PageActions class="pageActions">
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="Move.add"
-                @click="showForm"
-                class="createButton"
-            ></opensilex-CreateButton>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="OntologyCsvImporter.import"
-                @click="showCsvForm"
-                class="createButton"
-            ></opensilex-CreateButton>
-        </opensilex-PageActions>
     
     <div class="card">
         <opensilex-PageContent v-if="renderComponent">
@@ -29,11 +14,7 @@
                         :isSelectable="isSelectable">
 
                         <template v-slot:cell(end)="{data}">
-                          <opensilex-UriLink
-                                v-if="data.item.move_time"
-                                :value="new Date(data.item.move_time).toLocaleString()"
-                                @click="showEventView(data.item)"
-                          ></opensilex-UriLink>
+                          <opensilex-DateView :value="data.item.end"></opensilex-DateView>
                         </template>
 
                         <template v-slot:cell(actions)="{data}">
@@ -46,12 +27,12 @@
                                 ></opensilex-DetailButton>
                                 <opensilex-EditButton
                                     v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                                    @click="editEvent(data.item.event)"
+                                    @click="editEvent(data.item.uri)"
                                     :small="true"
                                 ></opensilex-EditButton>
                                 <opensilex-DeleteButton
                                     v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                                    @click="deleteEvent(data.item.event)"
+                                    @click="deleteEvent(data.item.uri)"
                                     label="EventForm.delete"
                                     :small="true"
                                 ></opensilex-DeleteButton>
@@ -60,18 +41,18 @@
 
                         <template v-slot:row-details="{ data }">
                           <ul>
-                            <li v-if="data.item.to">
+                            <li v-if="data.item.location.to">
                               <opensilex-UriLink
-                                  :uri="data.item.to.uri"
-                                  :value="data.item.to.name"
-                                  :to="{ path:'/facility/details/'+ encodeURIComponent(data.item.to.uri),}"
+                                  :uri="data.item.location.to"
+                                  :value="data.item.location.to"
+                                  :to="{ path:'/facility/details/'+ encodeURIComponent(data.item.location.to),}"
                                   target="_blank"
                               ></opensilex-UriLink>
                             </li>
-                            <li v-if="data.item.position && (data.item.position.x || data.item.position.y || data.item.position.z)">{{customCoordinatesText(data.item.position)}}</li>
-                            <li v-if="data.item.position && data.item.position.text">{{data.item.position.text}}</li>
-                            <li v-if="data.item.position && data.item.position.point">
-                              <opensilex-GeometryCopy label="" :value="data.item.position.point">
+                            <li v-if="data.item.location && (data.item.location.x || data.item.location.y || data.item.location.z)">{{customCoordinatesText(data.item.location)}}</li>
+                            <li v-if="data.item.location && data.item.location.text">{{data.item.location.text}}</li>
+                            <li v-if="data.item.location && data.item.location.geojson">
+                              <opensilex-GeometryCopy label="" :value="data.item.location.geojson">
                               </opensilex-GeometryCopy>
                             </li>
                           </ul>
@@ -124,6 +105,7 @@ import EventModalForm from "../../events/form/EventModalForm.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import { MoveDetailsDTO } from 'opensilex-core/index';
 import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
+import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
 
 @Component
 export default class PositionList extends Vue {
@@ -166,8 +148,6 @@ export default class PositionList extends Vue {
 
     @Prop({default: false})
     displayTitle: boolean;
-
-    selectedEvent = {};
 
     @Prop()
     target;
@@ -263,53 +243,35 @@ export default class PositionList extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
-
-    private getEventPromise(position): Promise<HttpResponse<OpenSilexResponse<MoveDetailsDTO>>> {
-        return this.$eventService.getMoveEvent(position.event);
-    }
-
-    async showEventView(position) {
-      let http: HttpResponse<OpenSilexResponse<EventDetailsDTO>> = await this.getEventPromise(position);
-      await this.eventModalView.show(http);
-    }
     showDetails(data) {
-      if (!data.detailsShowing) {
-        data.toggleDetails();
-      } else {
-        data.toggleDetails();
-      }
+      data.toggleDetails();
     }
     editEvent(uri) {
         this.modalForm.showEditForm(uri, this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
 
-    getItemsToDisplay(targets) {
-        return targets.slice(0, 3);
-    }
+    customCoordinatesText(location: LocationObservationDTO): string {
 
-
-    customCoordinatesText(position: any): string {
-
-        if (!position) {
+        if (!location) {
             return undefined;
         }
 
         let customCoordinates = "";
 
-        if (position.x) {
-            customCoordinates += "X : " + position.x;
+        if (location.x) {
+            customCoordinates += "X : " + location.x;
         }
-        if (position.y) {
+        if (location.y) {
             if (customCoordinates.length > 0) {
                 customCoordinates += ", ";
             }
-            customCoordinates += "Y : " + position.y;
+            customCoordinates += "Y : " + location.y;
         }
-        if (position.z) {
+        if (location.z) {
             if (customCoordinates.length > 0) {
                 customCoordinates += ", ";
             }
-            customCoordinates += "Z : " + position.z;
+            customCoordinates += "Z : " + location.z;
         }
 
         if (customCoordinates.length == 0) {
@@ -320,10 +282,6 @@ export default class PositionList extends Vue {
 
     onImport(response) {
         this.refresh();
-    }
-
-    getGeometryView(point) {
-        return stringify(point);
     }
 
 }

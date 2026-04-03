@@ -30,11 +30,13 @@
     </template>
     <b-form ref="formRef" v-if="form">
       <form-wizard
+        v-if="startIndex !== null"
         title
         subtitle
         ref="wizardRef"
         shape="square"
         :class="{'single-wizard' : steps.length == 1}"
+        :start-index="startIndex"
         color="#00a38d"
         @on-change="onChange"
       >
@@ -49,6 +51,8 @@
             @clear="clearForm"
             @agroportalTermSelected="agroportalTermSelected"
             @agroportalTermUnselected="agroportalTermUnselected"
+            @geometryIsNotSaved="geometryIsNotSaved"
+            @positionIsValid="positionIsValid"
           >
             <template v-for="slot of step.slots" v-slot:[slot]="scope">
               <slot :name="slot" v-bind="scope"></slot>
@@ -70,7 +74,7 @@
                   id="btn-finish"
                   class="greenThemeColor"
                   variant="success"
-                  v-if="!isBlockingStep && steps[props.activeTabIndex].finish"
+                  v-if="!isBlockingStep && steps[props.activeTabIndex] && steps[props.activeTabIndex].finish"
                   @click="validate(props)"
               >{{getStepBtnFinishTitle(props)}}</b-button>
 
@@ -102,6 +106,8 @@
 <script lang="ts">
 import {Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import VueI18n from "vue-i18n";
 
 export interface WizardFormStep {
   component: string,
@@ -117,6 +123,7 @@ export interface WizardFormStep {
 @Component
 export default class WizardForm extends Vue {
   $opensilex: any;
+  $i18n: VueI18n;
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("wizardRef") readonly wizardRef!: any;
@@ -163,6 +170,18 @@ export default class WizardForm extends Vue {
   @Prop()
   nextStepAction: Function;
 
+  @Prop({ default: 0 })
+  startingIndexWhenEditMode: number;
+
+  private geometryNotSaved: boolean = false;
+
+  private geometryIsNotSaved() {
+    this.geometryNotSaved = true;
+  }
+
+  private positionIsValid() {
+    this.geometryNotSaved = false;
+  }
 
   agroportalTermSelected(){
     this.$emit("agroportalTermSelected")
@@ -179,10 +198,11 @@ export default class WizardForm extends Vue {
   @Prop()
   validateAction: (form: unknown) => boolean;
 
-  getStepBtnFinishTitle(props) {
-    return (this.steps[props.activeTabIndex].finish)
-        ? this.$t(this.steps[props.activeTabIndex].finish)
-        : this.$t('component.common.form-wizard.finish');
+  getStepBtnFinishTitle(props){
+    if(this.steps[props.activeTabIndex] && this.steps[props.activeTabIndex].finish){
+      return this.$t(this.steps[props.activeTabIndex].finish);
+    }
+    return this.$t('component.common.form-wizard.finish');
   }
 
   getStepBtnPreviousTitle(props) {
@@ -307,6 +327,13 @@ export default class WizardForm extends Vue {
     this.validateStep(props).then(isValid => {
       if (isValid) {
 
+        if(this.geometryNotSaved){
+          this.$opensilex.showInfoToast(
+            this.$i18n.t("OrganizationFacilityForm.geometryIsNotSaved")
+          );
+          return; // stop the validation if a geometry is completed but not saved
+        } 
+
         if (this.validateAction) {
           if (!this.validateAction(this.form)) {
             return false;
@@ -368,6 +395,15 @@ export default class WizardForm extends Vue {
     return !!(this.$refs["step" + this.currentStepIndex]
         ?.[0]
         ?.startTutorial);
+  }
+
+  get startIndex(): number | null {
+    if (!this.steps || this.steps.length === 0) return null;
+
+    if (this.editMode) {
+      return this.startingIndexWhenEditMode;
+    }
+    return 0;
   }
 
   startTutorial() {

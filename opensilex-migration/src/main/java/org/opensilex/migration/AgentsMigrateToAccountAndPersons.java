@@ -4,6 +4,7 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
@@ -125,7 +126,7 @@ public class AgentsMigrateToAccountAndPersons implements OpenSilexModuleUpdate {
                     .addOptional(userUriVar, SecurityOntology.hasLanguage.asNode(), languageVar);
             //Bind function of the where clause
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-            Expr expr = exprFactory.iri(new ExprFactory().concat(new ExprFactory().str(userUriVar.asNode()), "/Person"));
+            Expr expr = exprFactory.iri(new ExprFactory().concat(new ExprFactory().str(NodeFactory.createVariable(userUriVar.getVarName())), "/Person"));
             where.addBind(expr, personUriVar);
             //Add the where clause with the graph
             query.addGraph(usersGraphNode, where);

@@ -10,6 +10,7 @@ stages:
   - test
   - deploy
   - release
+  - doc_and_metrics
 
 ########################
 ##GLOBAL VARIABLES
@@ -32,6 +33,7 @@ variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
+  SONAR_OPTIONS: "-Dsonar.projectKey=$SONARQUBE_OPENSILEX_PROJECT_KEY -Dsonar.projectName=$SONARQUBE_OPENSILEX_PROJECT_NAME -Dsonar.host.url=$SONARQUBE_URL -Dsonar.token=$SONARQUBE_TOKEN -Dhttp.keepAlive=true -Dhttp.connection.timeout=6000000 -Dhttp.socket.timeout=6000000"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.9.9
   # DEFAULT SERVER JAVA VERSION
@@ -63,7 +65,81 @@ variables:
   #EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
   GITLAB_HTTPS: "false"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache 
 
+  SONAR_MAVEN_SETTINGS: |
+      <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                    http://maven.apache.org/xsd/settings-1.0.0.xsd"> 
+        <servers> 
+          <server>
+            <id>ossindex</id>
+            <username>$SONARQUBE_M2_SETTINGS_OSS_INDEX_ACCOUNT</username>
+            <password>$SONARQUBE_M2_SETTINGS_OSS_INDEX_PWD</password>
+          </server> 
+        </servers> 
+      </settings>
+
+build-for-sonar:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: doc_and_metrics
+  cache: 
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - $MAVEN_CACHE_FOLDER
+  script:
+    - mkdir -p sonarqube_reports_log 
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild 
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+      - target
+      - opensilex-release/
+      - "**/target/"
+    expire_in: 2 hour
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+  rules:
+    -   if: $CI_COMMIT_BRANCH == 'develop'
+
+sonar-analysis:
+  image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+  variables:
+    GIT_DEPTH: "0"
+  stage: doc_and_metrics
+  needs:
+    - job: build-for-sonar
+      artifacts: true
+  cache: 
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - "${SONAR_USER_HOME}/cache"
+      - sonar-scanner/
+  script:
+    - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=error -e --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS verify -Dnvd.api.key=$NVD_API_KEY -DskipFrontBuild -pl '!opensilex-dev-tools' -Pwith-security-check -Pwith-test-report
+    - mvn --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS org.sonarsource.scanner.maven:sonar-maven-plugin:sonar $SONAR_OPTIONS -pl '!opensilex-dev-tools'
+  artifacts:
+    paths:
+      - sonarqube_reports_log
+  before_script:
+    - mkdir -p $CI_PROJECT_DIR/.m2
+    - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+    - more $CI_PROJECT_DIR/.m2/settings.xml
+    - mkdir -p .mvn
+    - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+    - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+  
 ########################
 ##  CACHE TEMPLATE
 ########################
@@ -143,7 +219,7 @@ variables:
     ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
     ##
     - mkdir -p ${HOME}/.ssh && touch ${HOME}/.ssh/known_hosts
-    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts
+    - ssh-keyscan -H "$REMOTE_SERVER_IP" >> ${HOME}/.ssh/known_hosts || (echo "[ERROR] Can't connect to $REMOTE_SERVER_IP on port 22 with SSH;" ; exit 1)
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ${HOME}/.ssh/config
     - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
     - chmod 600 ${HOME}/.ssh/id_rsa
@@ -156,7 +232,7 @@ variables:
   stage: deploy
   tags:
     - forge_inrae # for now only the MIA 1-4 runners work correctly for deploying instances. Runners 5-8 fail to connect
-    # to our instances through SSH.
+                # to our instances through SSH.
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
@@ -281,8 +357,8 @@ merge-request:check:
     - >-
       CC_REGEX="^(Draft: )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([[:alnum:]._-]+\))?(!)?: ([[:alnum:]])+([[:space:][:print:]]*)"
     - if [[ ! "$CI_MERGE_REQUEST_TITLE" =~ "$CC_REGEX" ]]; then
-    -   echo 'The merge request title must respect the Conventional Commit naming convention. Please see
-      https://www.conventionalcommits.org/en/v1.0.0/ for more information.'
+    -   echo 'The merge request title must respect the Conventional Commit naming convention. Please see 
+        https://www.conventionalcommits.org/en/v1.0.0/ for more information.'
     -   exit 1
     - fi
     # query the merge request description to extract changelog and ignore-changelog fields
@@ -296,8 +372,8 @@ merge-request:check:
     -   echo "$ERROR - $ERROR_DESCRIPTION"
     -   if [[ "$ERROR" == "invalid_token" ]]; then
     -     echo "About the error ; the token used to query the Gitlab API from the job has maybe expired. In that case,
-      please create a new Personnal Access Token (PAT) in your Gitlab account and copy the value into the
-      JOB_API_TOKEN variable in the project CI/CD settings."
+          please create a new Personnal Access Token (PAT) in your Gitlab account and copy the value into the 
+          JOB_API_TOKEN variable in the project CI/CD settings."
     -   fi
     -   exit 1
     - fi
@@ -311,13 +387,13 @@ merge-request:check:
     # check that the changelog entry is empty when ignore-changelog is set to true
     - if [[ ${#CHANGELOG} -gt 0 && "$IGNORE_CHANGELOG" == "true" ]]; then
     -   echo 'Changelog description is not empty while "ignore-changelog" is set to "true". This is an
-      undefined behaviour ;  either remove the changelog description or set "ignore-changelog" to "false" to resolve
-      it, then retry this job.'
+        undefined behaviour ;  either remove the changelog description or set "ignore-changelog" to "false" to resolve
+        it, then retry this job.'
     -   exit 1
     # check that the changelog entry is not empty when ignore-changelog is not set to true
     - elif [[ ${#CHANGELOG} -eq 0 && "$IGNORE_CHANGELOG" != "true" ]]; then
     -   echo 'Changelog description is empty while "ignore-changelog" is set to "false". Please fill the
-      changelog description or set "ignore-changelog" to "true", then retry this job.'
+        changelog description or set "ignore-changelog" to "true", then retry this job.'
     -   exit 1
     - fi
   rules:
@@ -573,22 +649,12 @@ update:nightly:builds:branch:
   rules:
     - if: $NIGHTLY_BUILD == "true"
 
-  ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
-
-
-.with_java11: &java11
-  variables:
-    JAVA_VERSION: 11
-    MVN_PROFILE: "for-java-11"
-
+##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
+ 
+ 
 .with_java21: &java21
   variables:
-    JAVA_VERSION: 21
-
-test:build:java11:
-  <<: *java11
-  <<: *test_build_on_schedules
-
+    JAVA_VERSION: 21  
 
 test:build:java21:
   <<: *java21
@@ -602,26 +668,67 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
-pages:
-  <<: *test_build_on_schedules
-  script:
-    - ln -s $JAVA_HOME java.home
-    - mkdir logs
-    - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
-    - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
-    - mkdir public
-    - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
-  artifacts:
-    paths:
-      - public
-      - logs
-    when: always
-  rules:
-    - if: $NIGHTLY_BUILD == "true"
-  allow_failure: true
+pages:site:
+    stage: doc_and_metrics
+    image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+    timeout: 2h
+    before_script:
+        - mkdir -p $CI_PROJECT_DIR/.m2
+        - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+        - more $CI_PROJECT_DIR/.m2/settings.xml
+        - mkdir -p .mvn
+        - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+        - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+    script:
+        - mkdir site_public
+        - |
+            mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
+                install site $MAVEN_OPTS_SCHUEDULES \
+                -DskipFrontBuild \
+                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
+                -Pwith-security-check \
+                -Pwith-test-report
+        - mv $CI_PROJECT_DIR/site/* site_public
+    artifacts:
+        paths:
+            - site_public
+        when: always
+    rules:
+        - if: $CI_COMMIT_BRANCH == "develop"
 
+pages:specifications:
+    stage: doc_and_metrics
+    image: node:20.19.6-alpine3.22
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications
+        - npm install
+        - npm run docs:build
+        - mkdir -p $CI_PROJECT_DIR/specs_public
+        - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications/.vitepress/dist/* $CI_PROJECT_DIR/specs_public/
+    artifacts:
+        paths:
+            - specs_public
+        when: always
+    rules:
+        - if: $CI_COMMIT_BRANCH == "develop"
+
+pages:
+    stage: doc_and_metrics
+    needs:
+        -   job: pages:site
+            artifacts: true
+        -   job: pages:specifications
+            artifacts: true
+    script:
+        - mkdir -p public/specifications
+        - cp -r site_public/* public/
+        - cp -r specs_public/* public/specifications/
+        - ls -R public
+    artifacts:
+        paths:
+            - public
+    rules:
+        - if: $CI_COMMIT_BRANCH == "develop"
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################
@@ -726,92 +833,6 @@ test:yvan:deploy:
   needs:
     - test:yvan:build
 
-###################################
-##  VALENTIN-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:valentin:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/valentin"
-
-test:valentin:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/valentin"
-    INSTANCE_CONFIGURATION_FILE_NAME: "valentin.opensilex.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4096
-    OPENSILEX_JAR_PORT: 8096
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/valentin"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/valentin"
-      when: on_success
-  needs:
-    - test:valentin:build
-
-###################################
-##  DHRUTHI-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:dhruthi:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
-
-test:dhruthi:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
-    INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4091
-    OPENSILEX_JAR_PORT: 8091
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/dhruthi"
-      when: on_success
-  needs:
-    - test:dhruthi:build
-
-###################################
-##  JONATHAN-TEST-BUILD-DEPLOYMENT-FROM-SIDURI-TEAM
-###################################
-
-test:jonathan:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/jonathan"
-
-test:jonathan:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/jonathan_siduri"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4091
-    OPENSILEX_JAR_PORT: 8091
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/jonathan_siduri"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/jonathan"
-      when: on_success
-  needs:
-    - test:jonathan:build
 
 ######################################
 ##  OPTIMIZATION-TEST-BUILD-DEPLOYMENT
@@ -870,35 +891,6 @@ test:sebastien:deploy:
       when: on_success
   needs:
     - test:sebastien:build
-
-###################################
-##  TEMP2-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:temporary2:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary2"
-
-test:temporary2:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary2"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4100
-    OPENSILEX_JAR_PORT: 8100
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary2"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary2"
-      when: on_success
-  needs:
-    - test:temporary2:build
 
 ###################################
 ##  LYDIA-TEST-BUILD-DEPLOYMENT
@@ -963,35 +955,6 @@ test:renaud:deploy:
     - test:renaud:build
 
 ###################################
-## TEMPORARY-TEST-BUILD-DEPLOYMENT
-###################################
-
-test:temporary1:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary1"
-
-test:temporary1:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary1"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4092
-    OPENSILEX_JAR_PORT: 8092
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary1"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary1"
-      when: on_success
-  needs:
-    - test:temporary1:build
-
-###################################
 ##  EMILIE-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
@@ -1020,67 +983,150 @@ test:emilie:deploy:
   needs:
     - test:emilie:build
 
-# ##########################################
-# ##  BUILD & DEPLOY FOR PARTNERS TEAMS
-# ##########################################
+###################################
+##  SAML-test-BUILD-DEPLOYMENT
+###################################
+
+test:samltest:build:
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/samltest"
+
+test:samltest:deploy:
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/dhruthi"
+        INSTANCE_CONFIGURATION_FILE_NAME: "dhruthi.test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4096
+        OPENSILEX_JAR_PORT: 8096
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/dhruthi"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/samltest"
+          when: on_success
+    needs:
+        - test:samltest:build
 
 ###################################
-##  BRICE-TEST-BUILD-DEPLOYMENT
+## temporary1-TEST-BUILD-DEPLOYMENT
+###################################
+
+test:temporary1:build:
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary1"
+
+test:temporary1:deploy:
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary1"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4092
+        OPENSILEX_JAR_PORT: 8092
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary1"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary1"
+          when: on_success
+    needs:
+        - test:temporary1:build
+
+###################################
+## temporary2-TEST-BUILD-DEPLOYMENT
+###################################
+
+test:temporary2:build:
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary2"
+
+test:temporary2:deploy:
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary2"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4091
+        OPENSILEX_JAR_PORT: 8091
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary2"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary2"
+          when: on_success
+    needs:
+        - test:temporary2:build
+
+###################################
+##  temporary3-TEST-BUILD-DEPLOYMENT
+
 ###################################
 
 test:temporary3:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary3"
-
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary3"
 test:temporary3:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/brice"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4090
-    OPENSILEX_JAR_PORT: 8090
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/brice"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary3"
-      when: on_success
-  needs:
-    - test:temporary3:build
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary3"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4090
+        OPENSILEX_JAR_PORT: 8090
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary3"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary3"
+          when: on_success
+    needs:
+        - test:temporary3:build
 
-#######################################
-##  TEMPORARY4-TEST-SNAPSHOT-DEPLOYMENT
-#######################################
+###################################
+##  temporary4-TEST-BUILD-DEPLOYMENT
+###################################
 
 test:temporary4:build:
-  <<: *build_template_with_opensilex
-  variables:
-    MAVEN_SKIP_TESTS: "true"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary4"
+    <<: *build_template_with_opensilex
+    variables:
+        MAVEN_SKIP_TESTS: "true"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary4"
 
 test:temporary4:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary4"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4098
-    OPENSILEX_JAR_PORT: 8098
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/temporary4"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test/temporary4"
-      when: on_success
-  needs:
-    - test:temporary4:build
+    <<: *deploy_opensilex_before_script
+    <<: *deploy_opensilex_template
+    variables:
+        CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary4"
+        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        OPENSILEX_JAR_ADMIN_PORT: 4098
+        OPENSILEX_JAR_PORT: 8098
+        REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+        REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+        REMOTE_SERVER_RSYNC_DIR: "mistea/temporary4"
+        REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "test/temporary4"
+          when: on_success
+    needs:
+        - test:temporary4:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

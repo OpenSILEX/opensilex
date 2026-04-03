@@ -125,7 +125,6 @@ export default class GermplasmView extends Vue {
 <style scoped lang="scss">
 .createButton, .helpButton {
   margin-bottom: 10px;
-  margin-right: 5px;
   margin-top: 5px;
 }
 
@@ -148,7 +147,7 @@ en:
   GermplasmView:
     title: Germplasm 
     description: Manage Genetic Resources Information
-    add: Add germplasm
+    add: Add and modify germplasms
     update: Update Germplasm
     delete: Delete Germplasm
     groupGermplasm: Germplasm Group
@@ -156,7 +155,7 @@ fr:
   GermplasmView:
     title: Ressources Génétiques 
     description: Gérer les informations du matériel génétique
-    add: Ajouter des ressources génétiques
+    add: Ajouter et modifier des ressources génétiques
     update: éditer germplasm
     delete: supprimer germplasm
     groupGermplasm: Groupe de Ressources Génétiques

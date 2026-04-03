@@ -79,10 +79,11 @@ export default class GermplasmSelector extends Vue {
         undefined, //GermplasmGroup?: String
         undefined, //institute?: string
         this.experiment || undefined, //experiment?: string
-          [],
+        [],
         [],
         [],
         undefined, //metadata?: string
+        undefined, //is_public
         [], //orderBy?: Array<string>
         page, //page?: number
         pageSize //pageSize?

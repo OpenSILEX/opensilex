@@ -5,10 +5,15 @@
  */
 package org.opensilex.core.organisation.dal.facility;
 
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.VCARD4;
+import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -46,6 +51,13 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     protected List<FacilityModel> children;
 
     @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    String description;
+    public static final String COMMENT_FIELD = "description";
+
+    @SPARQLProperty(
             ontology = Oeso.class,
             property = "isHosted",
             inverse = true
@@ -62,10 +74,30 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     public static final String SITE_FIELD = "sites";
 
     @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasVariable",
+            ignoreUpdateIfNull = true
+    )
+    private List<VariableModel> variables;
+    public static final String VARIABLES_FIELD = "variables";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDevice",
+            ignoreUpdateIfNull = true
+
+    )
+    private List<DeviceModel> devices;
+    public static final String DEVICES_FIELD = "devices";
+
+
+    @SPARQLProperty(
             ontology = VCARD4.class,
             property = "hasAddress",
             cascadeDelete = true
     )
+
+
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
 
@@ -76,6 +108,22 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     )
     private List<VariablesGroupModel> variableGroups;
     public static final String VARIABLE_GROUPS_FIELD = "variableGroups";
+
+    @SPARQLProperty(
+            ontology = SOSA.class,
+            property = "hasFeatureOfInterest",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    protected LocationObservationCollectionModel locationObservationCollection;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public List<OrganizationModel> getOrganizations() {
         return organizations;
@@ -119,12 +167,37 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
         this.variableGroups = variableGroups;
     }
 
+    public LocationObservationCollectionModel getLocationObservationCollection() {
+        return locationObservationCollection;
+    }
+
+    public void setLocationObservationCollection(LocationObservationCollectionModel locationObservationCollection) {
+        this.locationObservationCollection = locationObservationCollection;
+    }
+
     @Override
     public String[] getInstancePathSegments(SPARQLTreeModel<FacilityModel> instance) {
         return new String[]{
                 FACILITY,
                 instance.getName()
         };
+    }
+
+
+    public List<VariableModel> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<VariableModel> variables) {
+        this.variables = variables;
+    }
+
+    public List<DeviceModel> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<DeviceModel> devices) {
+        this.devices = devices;
     }
 
 }

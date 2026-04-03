@@ -18,8 +18,6 @@ window.Vue = Vue;
 
 Vue.config.productionTip = false;
 
-export const EventBus = new Vue();
-
 // Import and assignation to enable auto rebuild on ws library change
 import * as LATEST_UPDATE from "./opensilex.dev";
 Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
@@ -370,6 +368,12 @@ extend('falsy', {
     message: 'incorrect value'
 });
 
+// To refuse URI that contain spaces
+extend("no_spaces", {
+  validate: (value: string) => !/\s/.test(value || ""),
+  message: () => i18n.t("component.common.errors.uri-space-error") as string
+});
+
 
 let validationTranslations = {
   "validations": validationMessagesEN.messages
@@ -520,7 +524,7 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
 $opensilex.loadModules([
   "opensilex-security",
   "opensilex-core",
-  // "opensilex-dataverse"
+  "opensilex-dataverse"
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");

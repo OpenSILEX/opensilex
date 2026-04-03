@@ -6,7 +6,7 @@ import org.opensilex.core.organisation.api.OrganizationAPI;
 import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
-import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -60,9 +60,8 @@ public class SiteAPI {
     @Inject
     private SPARQLService sparql;
 
-    //TODO: waiting for MongoDBServiceV2 - FacilityDAO in SiteLogic need MongoDBService
     @Inject
-    private MongoDBService nosql;
+    private MongoDBServiceV2 nosql;
 
     @CurrentUser
     AccountModel currentUser;
@@ -178,7 +177,7 @@ public class SiteAPI {
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "A facility with the same URI already exists",
                     e.getMessage()).getResponse();
-        } catch (BadRequestException e){
+        } catch (BadRequestException e) {
             throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }
     }
@@ -203,10 +202,10 @@ public class SiteAPI {
             SiteLogic siteLogic = new SiteLogic(sparql, nosql);
 
             SiteModel siteModel = siteUpdateDTO.newModel();
-            SiteModel updated =  siteLogic.update(siteModel, currentUser);
+            siteLogic.update(siteModel, currentUser);
 
-            return new ObjectUriResponse(Response.Status.OK, updated.getUri()).getResponse();
-        } catch (BadRequestException e){
+            return new ObjectUriResponse(Response.Status.OK, siteModel.getUri()).getResponse();
+        } catch (BadRequestException e) {
             throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }
     }
@@ -242,7 +241,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response =  SiteGetWithGeometryDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetWithGeometryDTO.class, responseContainer = "List")
     })
     public Response getSitesWithLocation() throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);

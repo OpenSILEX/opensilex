@@ -11,133 +11,115 @@
       ></opensilex-GermplasmAddColumnModal>
     </div>
 
-    <b-input-group class="mt-2 mb-2" size="sm">
+    <b-input-group id="tableOptions" class="mt-2 mb-2" size="sm">
       <downloadCsv
-        ref="downloadCsv"
-        class="btn downloadTemplateBtn mb-2 mr-2"
-        :data="[jsonForTemplate]"
-        :advancedOptions="{'header': false}"
-        name="template.csv"
+          ref="downloadCsv"
+          class="btn downloadTemplateBtn mb-2 mr-2"
+          :data="[jsonForTemplate]"
+          :advancedOptions="{'header': false}"
+          name="template.csv"
       >
         {{ $t("GermplasmTable.downloadTemplate") }}
       </downloadCsv>
       <opensilex-CSVInputFile
-        v-on:updated="uploaded"
-        :returnDataAsArrayOfArrays="true"
-        :duplicatableHeaders="existingDuplicatablePropertiesNameList"
-        :headersPresent="['name']"
+          v-on:updated="uploaded"
+          :returnDataAsArrayOfArrays="true"
+          :duplicatableHeaders="existingDuplicatablePropertiesNameList"
+          :headersPresent="['name']"
       >
       </opensilex-CSVInputFile>
       <b-button
-        class="mb-2 mr-2"
-        @click="onResetTableBtnClick"
-        variant="outline-secondary"
-        >{{ $t("GermplasmTable.resetTable") }}</b-button
+          class="mb-2 mr-2"
+          @click="onResetTableBtnClick"
+          variant="outline-secondary"
+      >{{ $t("GermplasmTable.resetTable") }}
+      </b-button
       >
       <b-button class="mb-2 mr-2" @click="onAddRowBtnClick" variant="outline-dark">{{
-        $t("GermplasmTable.addRow")
-      }}</b-button>
+          $t("GermplasmTable.addRow")
+        }}
+      </b-button>
       <b-button
-        class="mb-2 mr-2"
-        @click="onAddColumnBtnClick"
-        variant="outline-dark"
-        >{{ $t("GermplasmTable.addColumn") }}</b-button
-      >
+          class="mb-2 mr-2"
+          @click="onAddColumnBtnClick"
+          variant="outline-dark"
+      >{{ $t("GermplasmTable.addColumn") }}
+      </b-button>
       <b-form-select
-        v-if="this.checkedLines > 0"
-        id="filter"
-        v-model="filter"
-        :options="checkBoxOptions"
-        name="filter"
-        size="sm"
-        @input="onFilterLinesInput()"
+          v-if="this.checkedLines > 0"
+          id="filter"
+          v-model="filter"
+          :options="checkBoxOptions"
+          name="filter"
+          size="sm"
+          @input="onFilterLinesInput()"
       ></b-form-select>
     </b-input-group>
 
-    <b-input-group size="sm">
+    <b-input-group id="tableActions" size="sm">
       <b-button
-        class="mb-2 mr-2 greenThemeColor"
-        @click="onCheckBtnClick()"
-        v-bind:disabled="disableCheck"
-        >{{ $t("GermplasmTable.check") }}</b-button
+          class="mb-2 mr-2 greenThemeColor"
+          @click="onCheckBtnClick()"
+          v-bind:disabled="disableCheck"
+      >{{ $t("GermplasmTable.check") }}
+      </b-button
       >
       <b-button
-        class="mb-2 mr-2"
-        @click="onInsertDataBtnClick"
-        variant="success"
-        v-bind:disabled="disableInsert"
-        >{{ $t("GermplasmTable.insert") }}</b-button
-      >
+          class="mb-2 mr-2"
+          @click="onInsertDataBtnClick"
+          variant="success"
+          v-bind:disabled="disableInsert"
+      >{{ $t("GermplasmTable.insert") }}
+      </b-button>
+      <opensilex-FormInputLabelHelper
+          :helpMessage="$t('GermplasmTable.upsertHelpMessage')"
+      ></opensilex-FormInputLabelHelper>
     </b-input-group>
+
+    <div class="divHelpMsg">
+      <div class="update-status-legend">
+        <div class="icon-and-legend">
+          <div class="update-symbol"></div> {{ $t('GermplasmTable.update-legend') }}
+        </div>
+        |
+        <div class="icon-and-legend">
+          <div class="create-symbol"></div> {{ $t('GermplasmTable.create-legend') }}
+        </div>
+      </div>
+      <div class="validation-status-legend">
+        <div class="icon-and-legend">
+          <div class="valid-legend"></div> {{ $t('GermplasmTable.valid-legend') }}
+        </div>
+        |
+        <div class="icon-and-legend">
+          <div class="invalid-legend"></div> {{ $t('GermplasmTable.invalid-legend') }}
+        </div>
+      </div>
+    </div>
 
     <div ref="table"></div>
 
     <b-modal
-      id="progressModal"
-      size="lg"
-      :no-close-on-backdrop="true"
-      :no-close-on-esc="true"
-      hide-header
-      @shown="onProgressmodalShown"
-    >
-      <b-alert ref="progressAlert" variant="light" show>
-        {{ this.max }} {{ $t("GermplasmTable.progressTitle") }}
-        <b-progress :max="max" show-progress animated>
-          <b-progress-bar :value="progressValue" :max="max" variant="info">
-            <strong> {{ $t("GermplasmTable.progressValue") }}  {{ progressValue }} / {{ max }}</strong>
-          </b-progress-bar>
-        </b-progress>
-      </b-alert>
-      <b-alert variant="primary" :show="infoMessage">{{
-        this.summary
-      }}</b-alert>
-      <b-alert variant="danger" :show="alertEmptyTable">{{
-        $t("GermplasmTable.emptyMessage")
-      }}</b-alert>
-      <b-alert
-        v-if="onlyChecking"
-        variant="warning"
-        :show="onlyChecking && !alertEmptyTable"
-        >{{ $t("GermplasmTable.infoProposeInsertion") }}</b-alert
-      >
-      <template v-slot:modal-footer>
-        <b-button
-          v-if="onlyChecking && !alertEmptyTable"
-          class="mb-2 mr-2"
-          @click="onPorgressModalInsertBtnClick()"
-          variant="success"
-          >{{ $t("GermplasmTable.insert") }}</b-button
-        >
-        <b-button
-          v-bind:disabled="disableCloseButton"
-          class="mb-2 mr-2 greenThemeColor"
-          @click="$bvModal.hide('progressModal')"
-          >{{ $t("GermplasmTable.close") }}</b-button
-        >
-      </template>
-    </b-modal>
+        :no-close-on-backdrop="true"
+        :no-close-on-esc="true"
+        @hidden="onNewColsModalHidden"
+        ref="newcolsModal"
+        centered
+        hide-footer
 
-    <b-modal
-      :no-close-on-backdrop="true"
-      :no-close-on-esc="true"
-      @hidden="onNewColsModalHidden"
-      ref="newcolsModal"
-      centered
-      hide-footer
-   
-      :title="$t('GermplasmTable.newColumns')"
+        :title="$t('GermplasmTable.newColumns')"
     >
       <b-form-group
-        :label="$t('GermplasmTable.newColumnsHelp')"
-        v-slot="{ ariaDescribedby }"
+          :label="$t('GermplasmTable.newColumnsHelp')"
+          v-slot="{ ariaDescribedby }"
       >
         <b-form-checkbox
-          v-for="columnCheckboxData in newColumnModalCheckboxData"
-          v-model="newColumnsselected"
-          :key="columnCheckboxData.value"
-          :value="columnCheckboxData.value"
-          :aria-describedby="ariaDescribedby"
-          :name="columnCheckboxData.name"
+            v-for="columnCheckboxData in newColumnModalCheckboxData"
+            v-model="newColumnsselected"
+            :key="columnCheckboxData.value"
+            :value="columnCheckboxData.value"
+            :aria-describedby="ariaDescribedby"
+            :name="columnCheckboxData.name"
         >
           {{ columnCheckboxData.name }}
         </b-form-checkbox>
@@ -152,32 +134,45 @@
       </b-form-checkbox>
 
       <b-button
-        type="button"
-        class="btn greenThemeColor loadCsvButton"
-        v-on:click="addNewColumns()"
+          type="button"
+          class="btn greenThemeColor loadCsvButton"
+          v-on:click="addNewColumns()"
       >
         {{ $t('component.common.ok') }}
       </b-button>
       <b-button
-        type="button"
-        class="btn loadCsvButton"
-        v-on:click="addNewColumnsCancel()"
+          type="button"
+          class="btn loadCsvButton"
+          v-on:click="addNewColumnsCancel()"
       >
         {{ $t('component.common.cancel') }}
       </b-button>
 
     </b-modal>
+
+    <b-modal
+        ref="errorDetailsModal"
+        centered
+        hide-footer
+        :title="$t('GermplasmTable.errorModalTitle')"
+    >
+      <ul>
+        <li v-for="error in errorsToShowInModal" :key="error.length">
+          {{ error }}
+        </li>
+      </ul>
+    </b-modal>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-// @ts-ignore
-import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import {Component, Vue, Watch, Ref} from "vue-property-decorator";
+import {GermplasmCreationDTO, GermplasmService} from "opensilex-core/index";
+
+//@ts-ignore
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
-// @ts-ignore
+
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
@@ -189,6 +184,11 @@ import {OpenSilexStore} from "../../models/Store";
 import VueI18n from "vue-i18n";
 import {User} from "../../models/User";
 import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
+import {MultipleErrorDTO} from "opensilex-core/model/multipleErrorDTO";
+import {URIsListPostDTO} from "opensilex-core/model/uRIsListPostDTO";
+import GermplasmTableDataRow from "./GermplasmTableDataRow";
+import FormInputLabelHelper from "../common/forms/FormInputLabelHelper.vue";
+import { helpers } from "@turf/turf";
 
 export interface NewColumnCheckboxData {
   value: string,
@@ -205,7 +205,6 @@ export default class GermplasmTable extends Vue {
   $store: OpenSilexStore;
   $router: VueRouter;
   $t: typeof VueI18n.prototype.t;
-  $i18n: VueI18n;
   service: GermplasmService;
   //#endregion
 
@@ -221,29 +220,16 @@ export default class GermplasmTable extends Vue {
   //#endregion
 
   //#region Refs
-  @Ref("progressModal") readonly progressModal!: any;
-  @Ref("progressBar") readonly progressBar!: any;
   @Ref("colModal") readonly colModal!: any;
   @Ref("table") readonly table!: any;
   @Ref("newcolsModal") readonly newcolsModal!: any;
   @Ref("helpModal") readonly helpModal!: any;
+  @Ref("errorDetailsModal") readonly errorDetailsModal!: any;
   //#endregion
 
   //#region Data
   onlyChecking: boolean = true;
   suppColumnsNames: Array<string>;
-  $bvModal: any;
-
-  // Progress Modal
-  private errorNumber: number = 0;
-  private okNumber: number = 0;
-  private emptyLines: number = 0;
-  private summary: string = "";
-  private progressValue = 0;
-  private max = 0;
-  private infoMessage: boolean = false;
-  private alertEmptyTable: boolean = false;
-  private disableCloseButton: boolean = true;
 
   private newColumns: string[] = [];
   private newColumnsselected: string[] = []; // Must be an array reference!
@@ -255,20 +241,23 @@ export default class GermplasmTable extends Vue {
    * The values represent the current id for the tabulator, a digit is added each time.
    * Example hasParentGermplasmM0, hasParentGermplasmF1, etc...
    */
-  private addedDuplicatableRdfColumnsToMaxUsedIdMap : Map<string, number> = new Map<string, number>();
+  private addedDuplicatableRdfColumnsToMaxUsedIdMap: Map<string, number> = new Map<string, number>();
 
   private existingDuplicatableRdfAttributesObjects: Array<SelectableItem> = [];
 
-  private existingRdfAttributesStringRule:string = "";
+  private existingRdfAttributesStringRule: string = "";
 
   private existingDuplicatablePropertiesNameList: string[] = [];
 
-  private tabulator:Tabulator = null;
+  private tabulator: Tabulator = null;
 
-  private tableData = [];
-  @Watch("tableData", { deep: true })
-  newData(value: string, oldValue: string) {
-    this.tabulator.replaceData(value);
+  private tableData :Array<GermplasmTableDataRow> = [];
+
+  @Watch("tableData", {deep: true})
+  newData(value: Array<GermplasmTableDataRow>) {
+    this.tabulator.replaceData(value.map(row => {
+      return row.getData();
+    }));
   }
 
   private csvUploadedData = [];
@@ -280,10 +269,15 @@ export default class GermplasmTable extends Vue {
   private jsonForTemplate = [];
 
   private readonly checkBoxOptions = [
-    { text: "See all lines", value: "all" },
-    { text: "See lines with errors", value: "NOK" },
+    { text: this.$t("GermplasmTable.checkBoxOptionsAll"), value: "all" },
+    { text: this.$t("GermplasmTable.checkBoxOptionsAllErrors"), value: "NOK" },
   ];
 
+  /**
+   * Filter which lines are shown in the table.
+   * "all" shows all lines
+   * "NOK" shows only lines with errors.
+   */
   private filter = "all";
 
   private disableInsert: boolean = false;
@@ -291,6 +285,17 @@ export default class GermplasmTable extends Vue {
   private checkedLines: number = 0;
 
   private langUnwatcher;
+
+  private errorsToShowInModal: Array<string> = [];
+
+  /**
+ * Escapes a string so it can safely be used inside a RegExp.
+ * This prevents special regex characters (., *, ?, +, etc.)
+ * from being interpreted as regex operators.
+ */
+  // private escapeRegExp(rawText: string): string {
+  //   return rawText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // }
   //endregion
 
   //#region Computed
@@ -301,40 +306,65 @@ export default class GermplasmTable extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
+
+  /**
+  * Returns the list of duplicatable RDF properties that are NOT yet
+  * present in the Tabulator table.
+  *
+  * A property is considered "already added" if a table column field
+  * exactly matches: <propertyUri><numericIndex>
+  */
+  // get availableDuplicatableRdfAttributesObjects(): Array<SelectableItem> {
+    // Collect all current column field identifiers from the table.
+    // const tableColumnFields: string[] = this.tabulator
+    //   ? this.tabulator.getColumns().map(column => column.getField())
+    //   : this.tableColumns.map(column => column.field);
+
+    // return this.existingDuplicatableRdfAttributesObjects.filter(attribute => {
+    // Build a RegExp that matches ONLY fields corresponding to this exact RDF property, followed by a numeric index.
+      // const exactPropertyFieldRegex = new RegExp("^" + this.escapeRegExp(attribute.id) + "\\d+$");
+      // Keep only properties that are not already used
+      // return !tableColumnFields.some(f => typeof f === "string" && exactPropertyFieldRegex.test(f));
+  //   });
+  // }
   //endregion
 
   //#region Event handlers
   private onAddColumnBtnClick() {
     this.colModal.show();
   }
+
   private onColModalAddExistingColumn(columnName: string, propertyUri: string) {
     this.colModal.hide();
     this.addExistingColumn(columnName, propertyUri, "comment");
   }
+
   private onColModalAddingUncontrolledColumn(columnName: string) {
     this.colModal.hide();
     this.addNonExistingColumn(columnName, "comment");
   }
 
   private onAddRowBtnClick() {
-    let size = this.tabulator.getData().length;
-    this.tabulator.addRow({ rowNumber: size + 1 });
+    const newGermplasm = new GermplasmTableDataRow(this.tableData.length);
+    this.tableData.push(newGermplasm,);
+    this.tabulator.addRow(newGermplasm.getData());
   }
 
   private onCheckBtnClick() {
     this.onlyChecking = true;
-    this.showModal();
     this.tabulator.showColumn("checkingStatus");
     this.tabulator.hideColumn("insertionStatus");
     this.disableInsert = false;
     this.checkedLines++;
+    this.upsertOrCheckData();
   }
 
   private onResetTableBtnClick() {
-    this. updateColumns();
+    this.filter = "all";
+    this.updateColumns();
   }
 
-  private onInsertDataBtnClick(){
+  private onInsertDataBtnClick() {
     this.insertData();
   }
 
@@ -346,38 +376,60 @@ export default class GermplasmTable extends Vue {
     }
   }
 
-  private onProgressmodalShown(){
-    this.insertOrCheckData();
-  }
+  private onNewColsModalHidden() {
+    this.filter = "all";
+    this.tabulator.clearData()
+    this.tableData = []
+    this.tableData = this.csvUploadedData.map((row, index) => {
+      const germplasm = new GermplasmTableDataRow(index, row);
+      return germplasm;
+    });
 
-  private onPorgressModalInsertBtnClick() {
-    this.$bvModal.hide("progressModal");
-    this.insertData();
-  }
-
-  private onNewColsModalHidden(){
-    this.tableData = this.csvUploadedData;
+    this.SetUpdateStatusForEachGermplasm();
   }
 
   private onSelectAllColumnSwitchChange(checked) {
-    this.newColumnsselected = checked ? this.newColumnModalCheckboxData.slice().map( column => column.value) : []
+    this.newColumnsselected = checked ? this.newColumnModalCheckboxData.slice().map(column => column.value) : []
   }
-
   //#endregion
 
   //#region Hooks
   mounted() {
     this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      (lang) => {
-        this.updateColumns();
-      }
+        () => this.$store.getters.language,
+        (lang) => {
+          this.updateColumns();
+        }
     );
     this.updateColumns();
   }
 
   beforeDestroy() {
     this.langUnwatcher();
+  }
+
+  private async created() {
+    this.service = this.$opensilex.getService("opensilex.GermplasmService");
+    //Existing duplicatable rdf property stuff
+    let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
+    let existingProperties: Array<ObjectNamedResourceDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
+      return http.response.result;
+    }).catch(this.$opensilex.errorHandler);
+    this.existingDuplicatablePropertiesNameList = [];
+    existingProperties.forEach(property => {
+          this.existingDuplicatableRdfAttributesObjects.push({
+            id: property.uri,
+            label: property.name
+          });
+          this.existingDuplicatablePropertiesNameList.push(property.name);
+        }
+    );
+    //Add stuff to existing property string rule (to prevent duplicates)
+    if (this.existingRdfAttributesStringRule === "") {
+      this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString();
+    } else {
+      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + this.existingDuplicatablePropertiesNameList.toString();
+    }
   }
   //endregion
 
@@ -400,14 +452,14 @@ export default class GermplasmTable extends Vue {
   private addNewColumns() {
     this.$opensilex.showLoader()
     this.colModal.hide();
-    let addedNonDuplicatableCols : string[] = [];
+    let addedNonDuplicatableCols: string[] = [];
     for (let col of this.newColumns) {
-      if(this.newColumnsselected.includes(col)){
+      if (this.newColumnsselected.includes(col)) {
         let existingProperty = this.tryToGetExistingPropertyFromColumnName(col);
-        if(existingProperty){
+        if (existingProperty) {
           this.addExistingColumn(existingProperty.label, existingProperty.id, existingProperty.id)
-        }else{
-          if(!addedNonDuplicatableCols.includes(col)){
+        } else {
+          if (!addedNonDuplicatableCols.includes(col)) {
             this.addNonExistingColumn(col, col);
             addedNonDuplicatableCols.push(col);
           }
@@ -424,17 +476,16 @@ export default class GermplasmTable extends Vue {
    * Then initialises this.tabulator
    */
   private updateColumns() {
-    console.log(this.$attrs.germplasmType);
     this.suppColumnsNames = [];
 
     let idCol = {
       title: "",
       field: "rowNumber",
       visible: true,
-      formatter: "rownum",
+      formatter: this.idFormatterFunction,
     };
 
-    let statusCol = { title: "status", field: "status", visible: false };
+    let statusCol = {title: "status", field: "status", visible: false};
 
     let uriCol = {
       title: "URI",
@@ -466,24 +517,24 @@ export default class GermplasmTable extends Vue {
     };
     let speciesCol = {
       title:
-        this.$t("GermplasmTable.fromSpecies") +
-        '<span class="requiredOnCondition">*</span>',
+          this.$t("GermplasmTable.fromSpecies") +
+          '<span class="requiredOnCondition">*</span>',
       field: "species",
       visible: true,
       editor: true,
     };
     let varietyCol = {
       title:
-        this.$t("GermplasmTable.fromVariety") +
-        '<span class="requiredOnCondition">*</span>',
+          this.$t("GermplasmTable.fromVariety") +
+          '<span class="requiredOnCondition">*</span>',
       field: "variety",
       visible: true,
       editor: true,
     };
     let accessionCol = {
       title:
-        this.$t("GermplasmTable.fromAccession") +
-        '<span class="requiredOnCondition">*</span>',
+          this.$t("GermplasmTable.fromAccession") +
+          '<span class="requiredOnCondition">*</span>',
       field: "accession",
       visible: true,
       editor: true,
@@ -512,11 +563,25 @@ export default class GermplasmTable extends Vue {
       visible: true,
       editor: true,
     };
+    let isPublicCol = {
+      title:this.$t("GermplasmTable.is_public"),
+      field: "is_public",
+      visible: true,
+      editor: "select",
+      editorParams:{
+        values: {
+          true: "true",
+          false: "false",
+        }
+      }
+    };
     let checkingStatusCol = {
       title: this.$t("GermplasmTable.checkingStatus"),
       field: "checkingStatus",
       visible: false,
       editor: false,
+      minWidth: 400,
+      formatter: this.errorFormaterFunction,
     };
     let insertionStatusCol = {
       title: this.$t("GermplasmTable.insertionStatus"),
@@ -524,7 +589,9 @@ export default class GermplasmTable extends Vue {
       visible: false,
       editor: false,
       minWidth: 400,
+      formatter: this.errorFormaterFunction,
     };
+
 
     if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.SPECIES_TYPE_URI)) {
       this.tableColumns = [
@@ -536,9 +603,10 @@ export default class GermplasmTable extends Vue {
         commentCol,
         checkingStatusCol,
         insertionStatusCol,
+        isPublicCol,
       ];
     } else if (
-      Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)
+        Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)
     ) {
       let codeVar = {
         title: this.$t("GermplasmTable.varietyCode"),
@@ -551,17 +619,18 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
+        checkingStatusCol,
+        insertionStatusCol,
         subtaxaCol,
         codeVar,
         speciesCol,
         instituteCol,
         websiteCol,
         commentCol,
-        checkingStatusCol,
-        insertionStatusCol,
+        isPublicCol,
       ];
     } else if (
-      Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)
+        Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)
     ) {
       let codeAcc = {
         title: this.$t("GermplasmTable.accessionNumber"),
@@ -574,6 +643,8 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
+        checkingStatusCol,
+        insertionStatusCol,
         subtaxaCol,
         codeAcc,
         speciesCol,
@@ -581,8 +652,7 @@ export default class GermplasmTable extends Vue {
         instituteCol,
         websiteCol,
         commentCol,
-        checkingStatusCol,
-        insertionStatusCol,
+        isPublicCol,
       ];
     } else {
       let codeLot = {
@@ -596,6 +666,8 @@ export default class GermplasmTable extends Vue {
         statusCol,
         uriCol,
         labelCol,
+        checkingStatusCol,
+        insertionStatusCol,
         synonymCol,
         codeLot,
         speciesCol,
@@ -605,24 +677,18 @@ export default class GermplasmTable extends Vue {
         websiteCol,
         productionYearCol,
         commentCol,
-        checkingStatusCol,
-        insertionStatusCol,
+        isPublicCol,
       ];
     }
 
-    //Add stuff to existing property string rule (to prevent duplicates)
-    let tableStartingHeaderTitlesFields : string = this.tableColumns.map((col, index)=>{return col.field + ","+ this._removeSpanRequiredBlockFromTitle(col.title)}).toString();
-    if(this.existingRdfAttributesStringRule===""){
-      this.existingRdfAttributesStringRule = "existingProperty:" + tableStartingHeaderTitlesFields;
-    }else{
-      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + tableStartingHeaderTitlesFields;
-    }
-
-    this.tableData = [];
-    this.addInitialXRows(5);
+    //reset existingRdfAttributesStringRule to only contain the basic columns
+    let tableStartingHeaderTitlesFields: string = this.tableColumns.map((col, index) => {
+      return col.field + "," + this._removeSpanRequiredBlockFromTitle(col.title)
+    }).toString();
+    this.existingRdfAttributesStringRule = "existingProperty:" + tableStartingHeaderTitlesFields;
 
     this.tabulator = new Tabulator(this.table, {
-      data: this.tableData, //link data to table
+      data: this.tableData.map(row => row.getData()), //link data to table
       reactiveData: true, //enable data reactivity
       columns: this.tableColumns, //define table columns
       layout: "fitData",
@@ -630,7 +696,6 @@ export default class GermplasmTable extends Vue {
       index: "rowNumber",
       height: "70vh",
       rowFormatter: function (row) {
-        let r = row.getData().status;
         if (row.getData().status == "OK") {
           row.getElement().style.backgroundColor = "#a5e051";
         } else if (row.getData().status == "NOK") {
@@ -643,9 +708,29 @@ export default class GermplasmTable extends Vue {
       this.$opensilex.hideLoader();
     });
 
+    this.tabulator.on("cellEdited", (cell) => {
+      // check if this is the uri column, if so, throw an error if the uri is not unique
+      if (cell.getField() === "uri") {
+        const uri = cell.getValue();
+        const germplasm: GermplasmTableDataRow = this.tableData[cell.getRow().getData().index];
+        if (uri == null || uri === "") {
+          germplasm.setIsUpdate(false);
+          return;
+        } else {
+          this.SetUpdateStatusForEachGermplasm();
+        }
+      }
+    });
+
+    // tabulator initialisation with empty lines when the table is built
+    this.tabulator.on("tableBuilt", () => {
+      this.tableData = [];
+      this.addInitialXRows(5);
+    });
+
     this.jsonForTemplate = [];
     //let jsonHeader = {};
-    for (var i = 1; i < this.tableColumns.length; i++) {
+    for (let i = 1; i < this.tableColumns.length; i++) {
       if (this.tableColumns[i].visible == true) {
         this.jsonForTemplate.push(this.tableColumns[i].field);
       }
@@ -655,17 +740,17 @@ export default class GermplasmTable extends Vue {
     this.disableInsert = false;
   }
 
-  private _removeSpanRequiredBlockFromTitle(title: string): string{
+  private _removeSpanRequiredBlockFromTitle(title: string): string {
     let result = title;
-    if(title.includes("<span")){
+    if (title.includes("<span")) {
       result = result.substring(0, title.indexOf("<span"));
     }
     return result;
   }
 
   private addInitialXRows(X) {
-    for (let i = 1; i < X + 1; i++) {
-      this.tableData.push({ rowNumber: i });
+    for (let i = 0; i < X; i++) {
+      this.tableData.push(new GermplasmTableDataRow(i));
     }
   }
 
@@ -673,11 +758,11 @@ export default class GermplasmTable extends Vue {
    * Generates a new name in function of how many times this rdf column has been added, then adds it.
    */
   private addExistingColumn(columnName: string, propertyUri: string, positionTarget: string) {
-    let currentMaxExcludedIndex : number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(propertyUri);
-    if(currentMaxExcludedIndex == null){
+    let currentMaxExcludedIndex: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(propertyUri);
+    if (currentMaxExcludedIndex == null) {
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.set(propertyUri, 1)
       currentMaxExcludedIndex = 0;
-    }else{
+    } else {
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.set(propertyUri, currentMaxExcludedIndex + 1);
     }
     this.addColumnToTabulator(columnName, propertyUri + currentMaxExcludedIndex, positionTarget);
@@ -693,53 +778,135 @@ export default class GermplasmTable extends Vue {
     this.suppColumnsNames.push(columnName);
   }
 
-  private addColumnToTabulator(columnLabel: string, columnID: string, positionTarget: string){
+  private addColumnToTabulator(columnLabel: string, columnID: string, positionTarget: string) {
     this.tabulator.addColumn(
-        { title: columnLabel, field: columnID, editor: true },
+        {title: columnLabel, field: columnID, editor: true},
         false,
         "comment"
     );
     //this.jsonForTemplate[0][columnID] = null;
     this.jsonForTemplate.push(columnLabel);
-    this.$attrs.downloadCsv;
-  }
-
-  private resetModal() {
-    this.max = 0;
-    this.progressValue = 0;
-    this.errorNumber = 0;
-    this.okNumber = 0;
-    this.emptyLines = 0;
-    this.infoMessage = false;
-    this.alertEmptyTable = false;
-  }
-
-  private showModal() {
-    this.resetModal();
-    this.max = this.tabulator.getData().length;
-    this.$bvModal.show("progressModal");
   }
 
   private insertData() {
     this.onlyChecking = false;
-    this.showModal();
     this.tabulator.hideColumn("checkingStatus");
     this.tabulator.showColumn("insertionStatus");
     this.disableInsert = true;
     this.disableCheck = true;
+    this.upsertOrCheckData();
   }
 
-  private insertOrCheckData() {
-    this.disableCloseButton = true;
+  private async upsertOrCheckData() {
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
+
+    let DTOs: Array<GermplasmCreationDTO> = await this.getDtosFromTableData();
+
+    this.callUpsertService(DTOs)
+        .finally(() => {
+          this.$opensilex.hideLoader()
+          this.$opensilex.disableLoader();
+        })
+  }
+
+  private async callUpsertService(creationDtos: Array<GermplasmCreationDTO>) {
+    return this.service.upsertGermplasms(this.onlyChecking, creationDtos)
+        .then( () => {
+          let successMessage = this.onlyChecking ? this.$t("GermplasmTable.successCheckMessage").toString() : this.$t("GermplasmTable.successUpsertMessage").toString();
+          this.$opensilex.showSuccessToast(successMessage);
+
+          this.setGermplasmsValidationStatus(false);
+          this.filter = "all";
+        })
+        .catch( error => {
+          if (error.response.status < 400 || error.response.status >= 500) {
+            this.$opensilex.showErrorToast(this.$t("GermplasmTable.errorServerMessage").toString());
+            return;
+          }
+
+          let errorMessage = this.onlyChecking ? this.$t("GermplasmTable.errorCheckMessage").toString() : this.$t("GermplasmTable.errorUpsertMessage").toString();
+          this.$opensilex.showErrorToast(errorMessage);
+          let errors: Array<MultipleErrorDTO> = error.response.result.errors;
+
+          if (errors == null) { //if it's not a MultipleErrorResponse (should not happen)
+            this.$opensilex.showErrorToast(this.$t("GermplasmTable.errorServerMessage").toString());
+            return;
+          }
+
+          this.setGermplasmsValidationStatus(true);
+          errors.forEach(errorDto => {
+
+            let errorMessage = errorDto.errors.length > 1 ?
+                this.$t("GermplasmTable.multipleErrorMessage", {count: errorDto.errors.length}).toString() :
+                errorDto.errors[0];
+
+            let rowIndex = errorDto.index;
+            if (rowIndex != null) {
+              const row = this.tableData[rowIndex]
+              row.setErrors(errorDto.errors);
+              row.setCheckingStatus(errorMessage);
+              row.setInsertionStatus(errorMessage);
+            }
+          });
+        })
+  }
+
+  /**
+   * set the update status for each germplasm
+   * This will trigger the rowFormatter to change the color of the row.
+   */
+  private setUpdateStatusForEachGermplasm(existingUris: string[]){
+    this.tableData.forEach((data) => {
+      if (data.getData().uri != null && this.$opensilex.includesUri(existingUris, data.getData().uri)) {
+         data.setIsUpdate(true);
+        } else {
+          data.setIsUpdate(false);
+        }
+    });
+  }
+
+  /**
+   * reset the status of each row to status value. Default is empty string.
+   * This will trigger the rowFormatter to change the color of the row.
+   * @param upsertWasCancelled if true, the insertion status will not be set to success.
+   */
+  private setGermplasmsValidationStatus(upsertWasCancelled: boolean): void {
+    this.tableData.forEach((data) => {
+      data.setIsValidated();
+      data.setInsertionStatus(this.$t(
+          upsertWasCancelled ? "GermplasmTable.cancelledUpsertRowMessage" : "GermplasmTable.successUpsertRowMessage"
+      ).toString());
+      data.setCheckingStatus(this.$t("GermplasmTable.successCheckRowMessage").toString());
+    });
+  }
+
+  private async getExistingGermplasmsUri(): Promise<Array<string>>{
+    let uris: URIsListPostDTO = {
+      uris: this.tableData.map((row) => {
+        return row.getData().uri as string;
+      })
+    }
+    return ( await this.service.checkGermplasmsExist(uris) ).response.result
+  }
+
+  /**
+   * After an API call, this function sets the update status for each germplasm (true or false).
+   */
+  private SetUpdateStatusForEachGermplasm(){
+    this.getExistingGermplasmsUri()
+        .then(uris => {
+          this.setUpdateStatusForEachGermplasm(uris);
+        });
+  }
+
+  private async getDtosFromTableData(): Promise<Array<GermplasmCreationDTO>> {
+    let creationDtos: Array<GermplasmCreationDTO> = [];
+
     let dataToInsert = this.tabulator.getData();
 
-    let promises = [];
-    this.$opensilex.disableLoader();
-
-    let colDefs = this.tabulator.getColumnDefinitions();
-
     for (let idx = 0; idx < dataToInsert.length; idx++) {
-      let form: GermplasmCreationDTO = {
+      let form = {
         rdf_type: null,
         name: null,
         uri: null,
@@ -748,6 +915,7 @@ export default class GermplasmTable extends Vue {
         accession: null,
         institute: null,
         production_year: null,
+        is_public: null,
         description: null,
         code: null,
         synonyms: [],
@@ -765,38 +933,47 @@ export default class GermplasmTable extends Vue {
         form.name = dataToInsert[idx].name;
       }
       if (
-        dataToInsert[idx].species != null &&
-        dataToInsert[idx].species != ""
+          dataToInsert[idx].species != null &&
+          dataToInsert[idx].species != ""
       ) {
         form.species = dataToInsert[idx].species;
       }
       if (
-        dataToInsert[idx].variety != null &&
-        dataToInsert[idx].variety != ""
+          dataToInsert[idx].variety != null &&
+          dataToInsert[idx].variety != ""
       ) {
         form.variety = dataToInsert[idx].variety;
       }
+
+      const isPublicRaw = dataToInsert[idx].is_public;
+
+      if (isPublicRaw === undefined || isPublicRaw === null || isPublicRaw === "") {
+        form.is_public = true;
+      } else {
+        form.is_public = String(isPublicRaw).trim().toLowerCase() === "true";
+      }
+
       if (
-        dataToInsert[idx].accession != null &&
-        dataToInsert[idx].accession != ""
+          dataToInsert[idx].accession != null &&
+          dataToInsert[idx].accession != ""
       ) {
         form.accession = dataToInsert[idx].accession;
       }
       if (
-        dataToInsert[idx].institute != null &&
-        dataToInsert[idx].institute != ""
+          dataToInsert[idx].institute != null &&
+          dataToInsert[idx].institute != ""
       ) {
         form.institute = dataToInsert[idx].institute;
       }
       if (
-        dataToInsert[idx].productionYear != null &&
-        dataToInsert[idx].productionYear != ""
+          dataToInsert[idx].productionYear != null &&
+          dataToInsert[idx].productionYear != ""
       ) {
         form.production_year = dataToInsert[idx].productionYear;
       }
       if (
-        dataToInsert[idx].comment != null &&
-        dataToInsert[idx].comment != ""
+          dataToInsert[idx].comment != null &&
+          dataToInsert[idx].comment != ""
       ) {
         form.description = dataToInsert[idx].comment;
       }
@@ -805,27 +982,27 @@ export default class GermplasmTable extends Vue {
       }
 
       if (
-        dataToInsert[idx].synonyms != null &&
-        dataToInsert[idx].synonyms != ""
+          dataToInsert[idx].synonyms != null &&
+          dataToInsert[idx].synonyms != ""
       ) {
         let stringSynonyms = dataToInsert[idx].synonyms;
         form.synonyms = stringSynonyms.split("|");
       }
 
       if (
-        dataToInsert[idx].website != null &&
-        dataToInsert[idx].website != ""
+          dataToInsert[idx].website != null &&
+          dataToInsert[idx].website != ""
       ) {
         form.website = dataToInsert[idx].website;
       }
 
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.forEach(
-          (currentMaxIndexExcluded, extraRdfAttribute)=>{
-            for(let duplicationIndex: number = 0 ; duplicationIndex<currentMaxIndexExcluded ; duplicationIndex++){
+          (currentMaxIndexExcluded, extraRdfAttribute) => {
+            for (let duplicationIndex: number = 0; duplicationIndex < currentMaxIndexExcluded; duplicationIndex++) {
               let currentTabulatorIdentifier = extraRdfAttribute + duplicationIndex;
               let currentValue = dataToInsert[idx][currentTabulatorIdentifier];
               if (currentValue != null && currentValue != "") {
-                let nextRelationDTO : RDFObjectRelationDTO = {};
+                let nextRelationDTO: RDFObjectRelationDTO = {};
                 nextRelationDTO.inverse = false;
                 nextRelationDTO.value = currentValue;
                 nextRelationDTO.property = extraRdfAttribute;
@@ -835,8 +1012,8 @@ export default class GermplasmTable extends Vue {
           });
 
       if (
-        dataToInsert[idx].subtaxa != null &&
-        dataToInsert[idx].subtaxa != ""
+          dataToInsert[idx].subtaxa != null &&
+          dataToInsert[idx].subtaxa != ""
       ) {
         let stringSynonyms = dataToInsert[idx].subtaxa;
         form.synonyms = stringSynonyms.split("|");
@@ -857,97 +1034,26 @@ export default class GermplasmTable extends Vue {
       }
 
       if (
-        form.name == null &&
-        form.uri == null &&
-        form.species == null &&
-        form.variety == null &&
-        form.accession == null &&
-        form.institute == null &&
-        form.production_year == null &&
-        form.description == null &&
-        form.code == null &&
-        form.synonyms.length == 0 &&
-        form.metadata == null &&
-        (form.relations == null || form.relations.length === 0) &&
-        form.website == null
+          form.name == null &&
+          form.uri == null &&
+          form.species == null &&
+          form.variety == null &&
+          form.accession == null &&
+          form.institute == null &&
+          form.production_year == null &&
+          form.description == null &&
+          form.code == null &&
+          form.synonyms.length == 0 &&
+          form.metadata == null &&
+          (form.relations == null || form.relations.length === 0) &&
+          form.website == null
       ) {
-        this.emptyLines = this.emptyLines + 1;
-        this.progressValue = this.progressValue + 1;
+        continue;
       } else {
-        promises.push(
-          this.callCreateGermplasmService(form, idx + 1, this.onlyChecking)
-        );
+        creationDtos.push(form);
       }
     }
-
-    doAllSequentually(promises).then(() => {
-      if (this.onlyChecking) {
-        this.summary =
-          this.okNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageGermplReady") +
-          ", " +
-          this.errorNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageErrors") +
-          ", " +
-          this.emptyLines +
-          " " +
-          this.$t("GermplasmTable.infoMessageEmptyLines");
-      } else {
-        this.summary =
-          this.okNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageGermplInserted") +
-          ", " +
-          this.errorNumber +
-          " " +
-          this.$t("GermplasmTable.infoMessageErrors") +
-          ", " +
-          this.emptyLines +
-          " " +
-          this.$t("GermplasmTable.infoMessageEmptyLines");
-      }
-      this.tabulator.redraw(true);
-      this.infoMessage = true;
-      this.disableCloseButton = false;
-      this.$opensilex.enableLoader();
-    });
-
-    if (this.emptyLines == this.max) {
-      this.alertEmptyTable = true;
-      this.disableCloseButton = false;
-      this.$opensilex.enableLoader();
-    }
-
-    async function doAllSequentually(fnPromiseArr) {
-      for (let i = 0; i < fnPromiseArr.length; i++) {
-        const val = await fnPromiseArr[i]();
-      }
-    }
-  }
-
-  private async created() {
-    this.service = this.$opensilex.getService("opensilex.GermplasmService");
-    //Existing duplicatable rdf property stuff
-    let ontologyService: OntologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let existingProperties: Array<ObjectNamedResourceDTO> = await ontologyService.getSubPropertiesOf(Oeso.GERMPLASM_TYPE_URI, Oeso.HAS_PARENT_GERMPLASM, false).then(http => {
-      return http.response.result;
-    }).catch(this.$opensilex.errorHandler);
-    this.existingDuplicatablePropertiesNameList = [];
-    existingProperties.forEach(property => {
-          this.existingDuplicatableRdfAttributesObjects.push({
-            id: property.uri,
-            label: property.name});
-            this.existingDuplicatablePropertiesNameList.push(property.name);
-        }
-    );
-    //Add stuff to existing property string rule (to prevent duplicates)
-    if(this.existingRdfAttributesStringRule===""){
-      this.existingRdfAttributesStringRule = "existingProperty:" + this.existingDuplicatablePropertiesNameList.toString();
-    }else{
-      this.existingRdfAttributesStringRule = this.existingRdfAttributesStringRule + "," + this.existingDuplicatablePropertiesNameList.toString();
-    }
+    return creationDtos;
   }
 
   /**
@@ -955,110 +1061,14 @@ export default class GermplasmTable extends Vue {
    * @param columnName
    * white spaces will be ignored (example parentA will be registered as parent A)
    */
-  private tryToGetExistingPropertyFromColumnName(columnName: string): SelectableItem{
-    let filtered:Array<SelectableItem> = this.existingDuplicatableRdfAttributesObjects.filter(
+  private tryToGetExistingPropertyFromColumnName(columnName: string): SelectableItem {
+    let filtered: Array<SelectableItem> = this.existingDuplicatableRdfAttributesObjects.filter(
         e => e.label.toLowerCase().replaceAll(" ", "") == columnName.toLowerCase().replaceAll(" ", "")
     );
-    if(filtered.length>0){
+    if (filtered.length > 0) {
       return filtered[0];
     }
     return null;
-  }
-
-
-  private callCreateGermplasmService(
-    form: GermplasmCreationDTO,
-    index: number,
-    onlyChecking: boolean
-  ) {
-    return () =>
-      new Promise((resolve, reject) => {
-        this.service
-          .createGermplasm(onlyChecking, form)
-          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-            if (onlyChecking) {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  checkingStatus: this.$t(
-                    "GermplasmTable.checkingStatusMessage"
-                  ),
-                  status: "OK",
-                },
-              ]);
-            } else {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  insertionStatus: this.$t(
-                    "GermplasmTable.insertionStatusMessage"
-                  ),
-                  status: "OK",
-                  uri: http.response.result,
-                },
-              ]);
-            }
-
-            let row = this.tabulator.getRow(index);
-            row.reformat();
-            this.okNumber = this.okNumber + 1;
-            this.progressValue = this.progressValue + 1;
-
-            resolve(http);
-          })
-          .catch((error) => {
-            let errorMessage: string;
-            let failure = true;
-            try {
-              if (error.response.result.translationKey) {
-                errorMessage = this.$t(error.response.result.translationKey, error.response.result.translationValues).toString();
-              } else {
-                errorMessage = error.response.result.message;
-              }
-              failure = false;
-            } catch (e1) {
-              failure = true;
-            }
-
-            if (failure) {
-              try {
-                errorMessage =
-                  error.response.metadata.status[0].exception.details;
-              } catch (e2) {
-                if(error.response[0].message.includes("is not a valid URI")){
-                  errorMessage= this.$t("component.common.errors.not-a-valid-uri").toString();
-                } else {
-                  errorMessage = this.$t("component.common.errors.unexpected-error").toString();
-                }
-
-              }
-            }
-
-            if (onlyChecking) {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  checkingStatus: errorMessage,
-                  status: "NOK",
-                },
-              ]);
-            } else {
-              this.tabulator.updateData([
-                {
-                  rowNumber: index,
-                  insertionStatus: errorMessage,
-                  status: "NOK",
-                },
-              ]);
-            }
-
-            let row = this.tabulator.getRow(index);
-            row.reformat();
-            this.errorNumber = this.errorNumber + 1;
-            this.progressValue = this.progressValue + 1;
-            resolve(error);
-          });
-      });
   }
 
   /**
@@ -1070,7 +1080,7 @@ export default class GermplasmTable extends Vue {
       alert(this.$t("GermplasmTable.alertFileSize"));
     } else {
       this.newColumns = [];
-      var uniqueURIs = [];
+      let uniqueURIs = [];
       let insertionOK = true;
 
       let uriColIndex = (data[0] as Array<string>).indexOf("uri");
@@ -1107,7 +1117,7 @@ export default class GermplasmTable extends Vue {
       if (insertionOK) {
         //Prepare pop-up to add any required columns
 
-        let csvColumns : string[] = data[0];
+        let csvColumns: string[] = data[0];
         let tableColNames = [];
 
         for (let colNumber in this.tableColumns) {
@@ -1116,37 +1126,38 @@ export default class GermplasmTable extends Vue {
         let duplicatableProperyOccurencesInCsv: Map<string, number> = new Map<string, number>();
         //Add new column to metadata if it is not already present.
         //If the column is one that can be duplicated, then calculate number of times it comes up
-        for(let csvCol of csvColumns){
+        for (let csvCol of csvColumns) {
           let existingDuplicatableProperty: SelectableItem = this.tryToGetExistingPropertyFromColumnName(csvCol);
-          if(existingDuplicatableProperty){
-            if(duplicatableProperyOccurencesInCsv.has(existingDuplicatableProperty.label)){
+          if (existingDuplicatableProperty) {
+            if (duplicatableProperyOccurencesInCsv.has(existingDuplicatableProperty.label)) {
               duplicatableProperyOccurencesInCsv.set(existingDuplicatableProperty.label, duplicatableProperyOccurencesInCsv.get(existingDuplicatableProperty.label) + 1);
-            }else{
+            } else {
               duplicatableProperyOccurencesInCsv.set(existingDuplicatableProperty.label, 1);
             }
-          }else{
-            if(!tableColNames.includes(csvCol)){
+          } else {
+            if (!tableColNames.includes(csvCol)) {
               this.newColumns.push(csvCol);
-              if(this.newColumnModalCheckboxData.filter((e) => e.value===csvCol).length === 0){
+              if (this.newColumnModalCheckboxData.filter((e) => e.value === csvCol).length === 0) {
                 this.newColumnModalCheckboxData.push({"value": csvCol, "name": csvCol});
               }
             }
           }
         }
         //Calculate the amount of missing columns for the duplicatable ones
-        for(let duplicatablePropertyNameInCsv of duplicatableProperyOccurencesInCsv.keys()){
-          let duplicatableColumn : SelectableItem = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv);
+        for (let duplicatablePropertyNameInCsv of duplicatableProperyOccurencesInCsv.keys()) {
+          let duplicatableColumn: SelectableItem = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv);
           let tableColumnQuantity: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(duplicatableColumn.id);
-          if(!tableColumnQuantity){
+          if (!tableColumnQuantity) {
             tableColumnQuantity = 0;
           }
           let missingColumnQuantity: number = duplicatableProperyOccurencesInCsv.get(duplicatablePropertyNameInCsv) - tableColumnQuantity;
-          if(missingColumnQuantity > 0){
+          if (missingColumnQuantity > 0) {
             this.newColumnModalCheckboxData.push(
-                {"value": duplicatableColumn.label,
+                {
+                  "value": duplicatableColumn.label,
                   "name": duplicatableColumn.label + " (x" + missingColumnQuantity + ")"
                 });
-            for(let index = 0; index < missingColumnQuantity; index++){
+            for (let index = 0; index < missingColumnQuantity; index++) {
               this.newColumns.push(duplicatableColumn.label);
             }
           }
@@ -1154,21 +1165,21 @@ export default class GermplasmTable extends Vue {
 
         //Reconstruct data as a json before sending it to tabulator
         let dataInJsonFormat = [];
-        for(let rowIndex = 1 ; rowIndex<data.length; rowIndex++){
+        for (let rowIndex = 1; rowIndex < data.length-1; rowIndex++) {
           let nextJsonRow = {};
           nextJsonRow["rowNumber"] = rowIndex;
           //Save indexes of duplicatable columns
           let currentDuplicatableColumnsIndexes = {};
-          duplicatableProperyOccurencesInCsv.forEach((value, key)=>{
+          duplicatableProperyOccurencesInCsv.forEach((value, key) => {
             currentDuplicatableColumnsIndexes[this.tryToGetExistingPropertyFromColumnName(key).id] = 0;
           });
-          for(let colIndex in csvColumns){
+          for (let colIndex in csvColumns) {
             let colName = csvColumns[colIndex];
             let existingDuplcatableProperty = this.tryToGetExistingPropertyFromColumnName(colName);
-            if(existingDuplcatableProperty){
+            if (existingDuplcatableProperty) {
               nextJsonRow[existingDuplcatableProperty.id + currentDuplicatableColumnsIndexes[existingDuplcatableProperty.id]] = data[rowIndex][colIndex]
               currentDuplicatableColumnsIndexes[existingDuplcatableProperty.id]++;
-            }else{
+            } else {
               //Note : for now this means that any column that isn't listed as duplicatable will simply be overwritten if there are multiple columns
               nextJsonRow[colName] = data[rowIndex][colIndex]
             }
@@ -1180,11 +1191,55 @@ export default class GermplasmTable extends Vue {
           this.tableData = [];
           this.showSelectNewColumnsPopUp();
         } else {
-          this.tableData = dataInJsonFormat;
+          this.tableData = dataInJsonFormat.map( (row, index) =>  new GermplasmTableDataRow(index, row));
         }
       }
     }
+    this.SetUpdateStatusForEachGermplasm();
   }
+
+  /**
+   * function triggered by the tabulator cell formatter. Allow to open error modal when clicking on the errors cell
+   */
+  private errorFormaterFunction(cell, formatterParams, onRendered) {
+    // Use onRendered to attach the click event listener
+    onRendered(() => {
+      const rowData = this.tableData[cell.getRow().getData().index];
+
+      if ( ! rowData.hasError()){
+        return;
+      }
+
+      const button = cell.getElement().querySelector(".error-log");
+      if (button) {
+        button.addEventListener("click", () => {
+          this.errorsToShowInModal = rowData.getErrors();
+          this.errorDetailsModal.show();
+        });
+      }
+    });
+
+    // Return the button HTML
+    return `<div class="error-log">${cell.getValue()||""}</div>`;
+  }
+
+  /**
+   * function triggered by the tabulator cell formatter. Allow to customize the id column to add the update symbol
+   */
+  private idFormatterFunction(cell, formatterParams, onRendered) {
+    const rowData = this.tableData[cell.getRow().getData().index];
+    let updateSymbol = ``;
+    
+    if(rowData.isUpdate()){
+      updateSymbol = `<div class="update-symbol"></div>`;
+    } else {
+      updateSymbol =  `<div class="create-symbol"></div>`;
+    }
+         
+  return `<div class="id-update-symbol">${rowData.getRowNumber()} ${updateSymbol}</div>`;
+  }
+
+
   //endregion
 
 }
@@ -1219,15 +1274,77 @@ export default class GermplasmTable extends Vue {
 .tabulator .tabulator-table .tabulator-row .tabulator-cell {
   border-right: 1px solid #dee2e6;
   height: 30px;
+  padding: 0em 0.4em;
 }
-
-// .tabulator .tabulator-header .tabulator-row  {
-//   height: 30px;
-// }
 
 .loadCsvButton {
   float: right;
   margin-right: 10px;
+}
+
+.divHelpMsg{
+  flex-direction: column;
+  margin: 0.5rem 0.5rem;
+}
+
+.validation-status-legend, .update-status-legend, .icon-and-legend{
+  display: flex;
+  margin-right: 1rem;
+}
+
+.update-status-legend{
+  margin-bottom: 0.5rem;
+}
+
+.icon-and-legend div{
+  margin-right: 0.5rem;
+}
+
+.valid-legend{
+  width: 4rem;
+  height: 1rem;
+  background-color: #A5E051;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.invalid-legend{
+  width: 4rem;
+  height: 1rem;
+  background-color: #ED6661;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+
+
+</style>
+
+<style lang="scss">
+.error-log{
+  color: blue;
+}
+
+.id-update-symbol{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.update-symbol{
+  width: 1rem;
+  height: 1rem;
+  background-color: #3498db;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.create-symbol{
+  width: 1rem;
+  height: 1rem;
+  background-color: lightgray;
+  border-radius: 50%;
+  margin-left: 0.5rem;
 }
 </style>
 
@@ -1236,24 +1353,29 @@ export default class GermplasmTable extends Vue {
 en:
   GermplasmTable:
     name: Name
-    uri: URI
-    rdfType: Type
-    fromSpecies : Species URI
-    fromVariety : Variety URI
+    fromSpecies: Species URI
+    fromVariety: Variety URI
     fromAccession: Accession URI
     institute: Institute Code
     comment: Comment
     year: ProductionYear
     checkingStatus: Checking status
     insertionStatus: Insertion Status
-    downloadTemplate : Dowload template
-    resetTable : Reset table
-    check : Check
-    insert : Insert
-    progressTitle: lines to scan
-    progressValue: Progress
-    emptyMessage: The table is empty
-    close: Close
+    downloadTemplate: Dowload template
+    resetTable: Reset table
+    check: Check
+    checkBoxOptionsAll: See all lines
+    checkBoxOptionsAllErrors: See lines with errors
+    errorCheckMessage: checking shows some errors, see the table for more details
+    successCheckMessage: germplasms are ready to be inserted and/or updated
+    successCheckRowMessage: ready to be inserted/updated
+    insert: Create / update
+    errorUpsertMessage: insertion/update shows some errors, nothing was inserted nor updated. See the table for more details
+    successUpsertMessage: germplasms inserted and/or updated
+    successUpsertRowMessage : inserted/updated
+    cancelledUpsertRowMessage : insertion/update cancelled
+    errorModalTitle: Germplasm contain following errors
+    multipleErrorMessage: click here to see {count} errors for this germplasm
     addRow: Add Row
     accessionNumber: AccessionNumber
     varietyCode: Variety Code
@@ -1261,79 +1383,70 @@ en:
     synonyms: Synonyms
     subtaxa: Subtaxa
     website: Website
+    is_public: Public
     addColumn: Add column
-    infoSynonyms: To add several synonyms or subtaxa, use | as separator
-    infoAttributes: To add additional information, you can add columns
-    infoLot: You have to fill species, variety or accession
-    infoAccession: You have to fill at least species or variety
-    help: Help
-    infoMessageGermplReady: germplasm ready to be inserted
-    infoMessageErrors: errors
-    infoMessageEmptyLines: empty lines
-    infoMessageGermplInserted: germplasm inserted
-    infoProposeInsertion: Don't forget to click on Insert button in order to finalize germplasm insertion (button below or above the table)
     checkingStatusMessage: ready
     insertionStatusMessage: created
-    filterLines: Filter the lines
-    infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
-    alertDuplicate: The file contains a duplicate name at line
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
     missingName: The name is missing at line
     newColumns: Supplementary columns
     newColumnsHelp: Select the columns to add
-    missingHeader: Uri or name columns missing
     toggleAll: Select all / Unselect all
+    errorServerMessage: A server error occurred, please contact your administrator for more information
+    upsertHelpMessage: creates or updates each germplasm in the list in a single operation (a blue square indicates that the germplasm already exists and will therefore be updated).
+    update-legend: this line will be updated
+    create-legend: this line will be created
+    valid-legend: this line has been validated or inserted/updated successfully
+    invalid-legend: this line has errors
 
 fr:
   GermplasmTable:
     name: Nom
-    uri: URI
-    rdfType: Type
-    fromSpecies : URI de l'espèce
-    fromVariety : URI de variété
+    fromSpecies: URI de l'espèce
+    fromVariety: URI de variété
     fromAccession: URI d'accession
     institute: Code institut
     comment: Commentaire
     year: Année
     checkingStatus: Statut
     insertionStatus: Statut
-    downloadTemplate : Télécharger un gabarit
-    resetTable : Vider tableau
-    check : Valider
-    insert : Insérer
-    progressTitle: lignes à parcourir
-    progressValue: Progression
-    emptyMessage: Le tableau est vide
-    close : Fermer
+    downloadTemplate: Télécharger un gabarit
+    resetTable: Vider tableau
+    check: Valider
+    checkBoxOptionsAll: Visualiser tout
+    checkBoxOptionsAllErrors: Visualiser éléments avec erreurs
+    errorCheckMessage: Des erreurs sont apparues lors de la validation, voir le tableau pour plus de détails
+    successCheckMessage: Les ressources génétiques sont prêts à être insérées
+    successCheckRowMessage: prête à être insérée/modifiée
+    insert: Créer / modifier
+    errorUpsertMessage: Des erreurs sont apparues lors de l'insertion/mise à jour, rien n'a été ni inséré ni mis à jour. Voir le tableau pour plus de détails
+    successUpsertMessage: Les ressources génétiques ont été insérées et/ou mises à jour
+    successUpsertRowMessage: insertion / modification réussie
+    cancelledUpsertRowMessage: insertion / modification annulée
+    errorModalTitle: Erreurs concernant les ressources génétiques
+    multipleErrorMessage: Cliquez ici pour voir {count} erreurs pour cette ressource génétique
     addRow: Ajouter ligne
     accessionNumber: Code Accession
     varietyCode: Code Variété
     lotNumber: Code Lot
     synonyms: Synonymes
-    subtaxa : Subtaxa
+    subtaxa: Subtaxa
     website: Site web
+    is_public : Publique
     addColumn: Ajouter colonne
-    infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
-    infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
-    infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
-    infoAccession: Vous devez renseigner l'espèce ou la variété
-    help: Aide
-    infoMessageGermplReady: ressources génétiques prêtes à être insérées
-    infoMessageErrors: erreurs
-    infoMessageEmptyLines: lignes vides
-    infoMessageGermplInserted: ressources génétiques insérées
-    infoProposeInsertion: N'oubliez pas de cliquer sur le bouton Insérer afin de finaliser l'insertion des ressources (bouton situé ci-dessous ou au-dessus du tableau)
     checkingStatusMessage: validé
     insertionStatusMessage: créé
-    seeErrorLines: See lines
-    seeAll : see all 
-    infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
-    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
+    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
     missingName: Le nom n'est pas renseigné à la ligne
     newColumns: Colonnes additionnelles
     newColumnsHelp: Cochez les colonnes à ajouter
-    missingHeader: Colonne uri ou nom manquant
     toggleAll: Tout sélectionner / Tout désélectionner
+    errorServerMessage: Une erreur serveur est survenue, veuillez contacter votre administrateur pour plus d'informations
+    upsertHelpMessage: crée ou modifie chaque ressource rénétique de la liste en une seule opération (un carré bleu indique que la ressource existe déjà et sera donc mise à jour).
+    update-legend: la ligne sera mise à jour
+    create-legend: la ligne sera créée
+    valid-legend: cette ligne a été validée ou insérée/mise à jour avec succès
+    invalid-legend: cette ligne comporte des erreurs
 </i18n>

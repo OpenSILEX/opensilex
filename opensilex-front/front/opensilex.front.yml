@@ -190,19 +190,19 @@ menu:
       #       route:
       #         path: /users
       #         component: opensilex-AccountView
-  - id: spatial
-    label: component.menu.spatial.label
-    children:
-      - id: map
-        label: component.menu.spatial.map
-        route:
-          path: /global-map
-          component: opensilex-GlobalMapView
-          credentials:
-            - spatial-access
-          icon: fa#fa-earth-africa
-          title: GlobalMapView.title
-          description: GlobalMapView.description
+  #- id: spatial
+   # label: component.menu.spatial.label
+    #children:
+     # - id: map
+      #  label: component.menu.spatial.map
+       # route:
+        #  path: /global-map
+         # component: opensilex-GlobalMapView
+          #credentials:
+           # - spatial-access
+          #icon: fa#fa-earth-africa
+          #title: GlobalMapView.title
+          #description: GlobalMapView.description
   - id: vocabulary
     label: component.menu.vocabulary
     children:
@@ -360,6 +360,8 @@ routes:
     component: opensilex-ExperimentView
   - path: /experiment/factors/:uri
     component: opensilex-ExperimentView
+  - path: /experiment/datafiles/:uri
+    component: opensilex-ExperimentView
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView
@@ -369,6 +371,8 @@ routes:
   - path: /facility/annotations/:uri
     component: opensilex-FacilityView
   - path: /facility/document/:uri
+    component: opensilex-FacilityView
+  - path: /facility/positions/:uri
     component: opensilex-FacilityView
 
   - path: /scientific-object-types/properties

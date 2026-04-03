@@ -20,7 +20,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
@@ -51,6 +50,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.opensilex.sparql.model.SPARQLResourceModel.URI_FIELD;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -86,7 +86,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     private final FileStorageService fs;
     private final AccountModel user;
 
-
     public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         super(VariableModel.class, sparql);
         this.nosql = nosql;
@@ -119,7 +118,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     protected long getLinkedDataNb(URI uri, AccountModel currentUser) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
-        dataSearchFilter.setUri(uri);
+        dataSearchFilter.setVariables(List.of(uri));
         dataSearchFilter.setUser(currentUser);
         return new DataLogic(sparql, nosql, fs, user).countData(dataSearchFilter);
     }
@@ -348,7 +347,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      */
     public Set<URI> getAllDateVariables() throws Exception {
         return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
-            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            Var uriVar = SPARQLQueryHelper.makeVar(URI_FIELD);
             selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
         }));
     }
@@ -363,9 +362,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
         if (!variables.isEmpty()) {
-            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
-                return true;
-            }
+            return variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())));
         }
         return false;
 
@@ -381,7 +378,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     private void addFilter(SelectBuilder select, VariableSearchFilter filter, Map<Expr, Order> orderByExprMap) throws Exception {
 
         ExprFactory exprFactory = select.getExprFactory();
-        Expr uriStrRegex = exprFactory.str(exprFactory.asVar(SPARQLResourceModel.URI_FIELD));
+        Expr uriStrRegex = exprFactory.str(exprFactory.asVar(URI_FIELD));
 
         if (!StringUtils.isEmpty(filter.getNamePattern())) {
 
@@ -425,12 +422,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
 
         if (filter.getIncludedInGroup() != null) {
-            select.addWhere(SPARQLDeserializers.nodeURI(filter.getIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+            select.addWhere(SPARQLDeserializers.nodeURI(filter.getIncludedInGroup()), RDFS.member, makeVar(URI_FIELD));
         }
 
         if (filter.getNotIncludedInGroup() != null) {
             select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(
-                    new WhereBuilder().addWhere(SPARQLDeserializers.nodeURI(filter.getNotIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD))
+                    new WhereBuilder().addWhere(SPARQLDeserializers.nodeURI(filter.getNotIncludedInGroup()), RDFS.member, makeVar(URI_FIELD))
             ));
         }
 
@@ -443,12 +440,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
 
         if (filter.getIncludedUris() != null) {
-            SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, filter.getIncludedUris());
+            SPARQLQueryHelper.addWhereUriValues(select, URI_FIELD, filter.getIncludedUris());
         }
 
         if (!CollectionUtils.isEmpty(filter.getSpecies())) {
             //  add ?uri vocabulary:hasSpecies ?species
-            select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.hasSpecies, makeVar(VariableModel.SPECIES_FIELD_NAME));
+            select.addWhere(makeVar(URI_FIELD), Oeso.hasSpecies, makeVar(VariableModel.SPECIES_FIELD_NAME));
 
             // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
             select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME, filter.getSpecies()));

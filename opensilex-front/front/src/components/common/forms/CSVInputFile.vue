@@ -5,9 +5,6 @@
             }}
         </b-button>
         <slot name="error">
-      <span v-if="errors" class="error-message alert alert-danger mb-2 mr-2">{{
-              this.errors[0]
-          }}</span>
         </slot>
         <b-form-file
                 ref="inputFile"
@@ -75,7 +72,7 @@ export default class CSVInputFile extends Vue {
     //#endregion
 
     //#region Data
-    private errors: any = [];
+    private errors: Array<string> = [];
     private file: any = null;
     //#endregion
 
@@ -103,7 +100,6 @@ export default class CSVInputFile extends Vue {
         this.$nextTick(() => {
             this.readUploadedFileAsText(file).then((text) => {
                 this.file = null;
-                console.debug("Input file text", text);
                 let delimiter = CSV.detect(text.toString());
 
                 //Parsing with header set to false with make result.data be an Array of Arrays instead of an Array of jsons
@@ -112,9 +108,6 @@ export default class CSVInputFile extends Vue {
                     header: !this.returnDataAsArrayOfArrays,
                     delimiter: delimiter,
                 });
-                console.debug("result.data", result.data);
-                console.debug("result.errors", result.errors);
-                console.debug("result.meta", result.meta);
 
                 this.errors = [];
                 if (result.data == null || result.data.length == 0) {
@@ -158,13 +151,19 @@ export default class CSVInputFile extends Vue {
                                         this.headersExactMatch
                                 )
                         ) {
-                            this.errors.push(
-                                    this.$i18n.t('CSVInputFile.wrongColumns') + ": [" +
-                                    this.headersExactMatch.toString() +
-                                    "] " + this.$i18n.t('CSVInputFile.isExpected') + ". [" +
-                                    objectToCheck +
-                                    "] " + this.$i18n.t('CSVInputFile.found') + "."
-                            );
+                          let finalErrorMessage = this.$i18n.t('CSVInputFile.wrongColumns') + ": [" +
+                            this.headersExactMatch.toString() +
+                            "] " + this.$i18n.t('CSVInputFile.isExpected');
+                          //Only push found columns if size > 1, because a user can potentialy save some other file,
+                          //like a json as a .csv, in this case then a fake csv with a single cell containing whole json will be registered
+                          //making the error message unreadable
+                          if(objectToCheck.length > 1){
+                            finalErrorMessage += ". [" +
+                              objectToCheck +
+                              "] " + this.$i18n.t('CSVInputFile.found') + "."
+                          }
+
+                          this.errors.push(finalErrorMessage);
                         }
                     }
                 }
@@ -173,6 +172,8 @@ export default class CSVInputFile extends Vue {
                 if (this.errors.length == 0) {
                     this.data = result.data;
                     this.$emit("updated", result.data);
+                } else {
+                  this.errors.forEach( error => this.$opensilex.showErrorToast(error) );
                 }
                 this.$opensilex.hideLoader();
             });
@@ -188,7 +189,6 @@ export default class CSVInputFile extends Vue {
     }
 
     private async readUploadedFileAsText(inputFile) {
-        console.debug("inputFile", inputFile);
         const temporaryFileReader = new FileReader();
 
         return new Promise((resolve, reject) => {

@@ -15,13 +15,22 @@
       </template>
     </opensilex-PageContent>
 
-
+    <opensilex-ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
+      ref="PersonForm"
+      component="opensilex-PersonForm"
+      createTitle="PersonView.create"
+      editTitle="PersonView.update"
+      icon="ik#ik-user"
+      @onCreate="personList.refresh()"
+      @onUpdate="personList.refresh()"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useStore } from "vuex";
-import { computed, ref, getCurrentInstance } from "vue";
+import { computed, ref } from "vue";
 import {OpenSilexStore} from "../../models/Store";
 
 const store = useStore() as OpenSilexStore;

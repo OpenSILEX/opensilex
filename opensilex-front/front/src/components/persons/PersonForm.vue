@@ -1,0 +1,265 @@
+<template>
+  <b-form>
+    <!-- URI -->
+    <opensilex-UriForm
+        :uri.sync="form.uri"
+        label="component.person.person-uri"
+        helpMessage="component.common.uri-help-message"
+        :editMode="editMode"
+        :generated.sync="uriGenerated"
+    ></opensilex-UriForm>
+
+    <!-- orcid -->
+    <b-form-group>
+      <div>
+        <opensilex-FormInputLabelHelper
+            label="component.person.orcid"
+            helpMessage="component.person.orcid-help-message"
+            class="checkbox">
+        </opensilex-FormInputLabelHelper>
+        <b-input-group>
+          <b-form-input
+              v-model="form.orcid"
+              type="text"
+              :disabled="disable_orcid_field"
+              :placeholder="$t('component.person.orcid-placeholder')"
+          ></b-form-input>
+          <b-input-group-append>
+            <b-button
+                :disabled="! validOrcid"
+                :class=" validOrcid ? 'createButton greenThemeColor' : '' "
+                @click="startOrcidSuggestion()"
+            >
+              {{ $t('component.person.load-orcid-infos') }}
+            </b-button>
+          </b-input-group-append>
+        </b-input-group>
+      </div>
+    </b-form-group>
+
+    <opensilex-OrcidSuggestionModal
+        ref="orcidModalRef"
+        @selectionDone="fillFormWithNoNull"
+    />
+
+    <!-- First name -->
+    <opensilex-InputForm
+        :value.sync="form.first_name"
+        label="component.person.first-name"
+        type="text"
+        :required="true"
+        placeholder="component.person.form-first-name-placeholder"
+    ></opensilex-InputForm>
+
+    <!-- Last name -->
+    <opensilex-InputForm
+        :value.sync="form.last_name"
+        label="component.person.last-name"
+        type="text"
+        :required="true"
+        placeholder="component.person.form-last-name-placeholder"
+    ></opensilex-InputForm>
+
+    <!-- Email -->
+    <opensilex-InputForm
+        :value.sync="form.email"
+        label="component.person.email-address"
+        type="email"
+        rules="email"
+        placeholder="component.person.form-email-placeholder"
+        autocomplete="new-password"
+    ></opensilex-InputForm>
+
+    <!-- affiliation -->
+    <opensilex-InputForm
+        :value.sync="form.affiliation"
+        label="component.person.affiliation"
+        placeholder="component.person.form-affiliation-placeholder"
+        type="text"
+    ></opensilex-InputForm>
+
+    <!-- phone number -->
+    <opensilex-FormField
+        :rules="phoneIsValid ? '' : 'falsy' "
+        label="component.person.phone_number"
+    >
+      <template v-slot:field="field">
+        <vue-tel-input
+            v-model="phone_number"
+            defaultCountry="FR"
+            :onlyCountries="['FR']"
+            validCharactersOnly
+            @validate="validatePhone"
+            @input="updatePhoneNumber"
+        ></vue-tel-input>
+      </template>
+    </opensilex-FormField>
+
+  </b-form>
+</template>
+
+<script setup lang="ts">
+import { computed, inject, ref, onMounted, WritableComputedRef, ComputedRef } from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {SecurityService} from "opensilex-security/api/security.service";
+import {PersonDTO} from "opensilex-security/index";
+import OrcidSuggestionModal from "./OrcidSuggestionModal.vue";
+
+const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+
+
+// const orcidModalRef: OrcidSuggestionModal = ref(null);
+
+let uriGenerated = true;
+
+const props = withDefaults(
+defineProps<{
+  editMode?: boolean;
+  form: PersonDTO;
+}>(),
+{
+  editMode: false,
+  form: () => ({
+    uri: null,
+    email: null,
+    first_name: null,
+    last_name: null,
+    affiliation: null,
+    phone_number: null,
+    orcid: null
+  }),
+}
+);
+
+  const disable_orcid_field: boolean = false
+  const phoneIsValid: boolean = true
+  let formattedPhoneNumber: string = ""
+
+
+  function reset() {
+    this.uriGenerated = true;
+    this.$nextTick(() => {
+      this.disable_orcid_field = this.editMode && this.form.orcid !== null
+      this.formattedPhoneNumber = this.form.phone_number
+    })
+  }
+
+  // necessary because vue-tel-input crash if its v-model value is null
+  const phone_number: WritableComputedRef<string, String> = computed({
+    get: () => formattedPhoneNumber ? formattedPhoneNumber : "",
+    set: (number: string) => formattedPhoneNumber = number != '' ? number : null
+  })
+
+  const validOrcid: ComputedRef<boolean> = computed(() => {
+    //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X. Le tout précédé ou non du nom de domain de orcid
+    //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X ou https://orcid.org/0009-0006-6636-4714 ou https://orcid.org/0009-0006-6636-471X
+    let regexOrcid = /^(https:\/\/orcid.org\/)?([0-9]{4}-){3}[0-9]{3}[0-9X]$/
+    return regexOrcid.test(props.form.orcid)
+  })
+
+
+  function getEmptyForm() {
+    return {
+      uri: null,
+      email: null,
+      first_name: null,
+      last_name: null,
+      affiliation: null,
+      phone_number: null,
+      orcid: null
+    };
+  }
+
+  async function create(form: PersonDTO) {
+    this.showLoader()
+    this.prepareFormBeforeSending(form)
+
+    try {
+      let response = await securityService.createPerson(form)
+      this.$emit("onCreate", form)
+      return response
+    } catch (error) {
+      this.$opensilex.errorHandler(error);
+    } finally {
+      this.hideLoader()
+    }
+
+  }
+
+  async function update(form: PersonDTO) {
+    try {
+      this.showLoader()
+      this.prepareFormBeforeSending(form)
+
+      return await securityService.updatePerson(form)
+    } catch {
+      this.$opensilex.errorHandler
+    } finally {
+      this.hideLoader()
+    }
+
+  }
+
+  function getCompleteUrlOrcid(orcid): string {
+    if (orcid === "") {
+      return null;
+    }
+    //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
+    //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X
+    let regexOrcidWithoutCompleteUrl = /^([0-9]{4}-){3}[0-9]{3}[0-9X]$/
+    if (regexOrcidWithoutCompleteUrl.test(orcid)) {
+      return "https://orcid.org/" + orcid
+    }
+
+    return orcid
+  }
+
+  function replaceEmptyStringByNull(form): void {
+    if (form.email === "") {
+      form.email = null;
+    }
+  }
+
+  function fillFormWithNoNull(person: PersonDTO) {
+    for (const [key, value] of Object.entries(person)) {
+      if (value) {
+        this.form[key] = value
+      }
+    }
+  }
+
+  function startOrcidSuggestion(): void {
+    this.orcidModalRef.startOrcidSuggestion(this.form.orcid)
+  }
+
+
+  function prepareFormBeforeSending(form: PersonDTO){
+    this.replaceEmptyStringByNull(form)
+    form.orcid = this.getCompleteUrlOrcid(form.orcid)
+  }
+
+  function validatePhone(phoneNumber): void{
+    this.phoneIsValid = phoneNumber?.valid
+  }
+
+  function updatePhoneNumber(number: string, phoneObject: any): void{
+    this.form.phone_number = phoneObject.number != "" ? phoneObject.number : null
+  }
+
+  function showLoader() {
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
+  }
+
+  function hideLoader() {
+    this.$opensilex.hideLoader();
+    this.$opensilex.disableLoader();
+  } 
+
+</script>
+
+<style scoped lang="scss">
+
+</style>
+

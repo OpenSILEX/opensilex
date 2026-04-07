@@ -1,24 +1,16 @@
 <template>
   <div class="container-fluid">
-    <div class="row text-end">
-      <!-- Language Selector -->
-      <div class="languagesDropdown">
-        <button class="btn dropdown-toggle p-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="languageDropdown">
-          <i class="bi bi-globe"></i>
-          {{ t("component.header.language." + locale) }}
-          <i class="bi bi-chevron-down"></i>
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-          <li
-              v-for="lang in availableLocales"
-              :key="lang"
-              @click.prevent="setLanguage(lang)"
+    <div class="row">
+      <div class="col text-end">
+        <div class="m-2">
+          <n-dropdown
+              trigger="click"
+              :options="languages"
+              @select="onLanguageSelected"
           >
-            <button class="dropdown-item" @click.prevent="setLanguage(lang)">
-              {{ t("component.header.language." + lang) }}
-            </button>
-          </li>
-        </ul>
+            <n-button><i class="bi bi-globe m-2"></i> {{ t(`component.header.language.${locale}`) }}</n-button>
+          </n-dropdown>
+        </div>
       </div>
     </div>
     <div class="row">
@@ -108,6 +100,11 @@ export default defineComponent({
     const user = computed(() => store.state.user);
     const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
     const email = ref<string>("");
+    const languages = computed(() =>
+        availableLocales.map(l => ({
+          key: l,
+          label: t(`component.header.language.${l}`)
+        })));
 
     return {
       opensilex,
@@ -119,6 +116,7 @@ export default defineComponent({
       user,
       authenticationService,
       email,
+      languages
     };
   },
   methods: {
@@ -158,9 +156,9 @@ export default defineComponent({
             this.$opensilex.hideLoader();
           });
     },
-    setLanguage(lang: string) {
-      this.$i18n.locale = lang;
-      this.$store.commit("lang", lang);
+    onLanguageSelected(newLocale: string) {
+      this.$i18n.locale = newLocale;
+      this.$store.commit("lang", newLocale);
     },
   }
 })

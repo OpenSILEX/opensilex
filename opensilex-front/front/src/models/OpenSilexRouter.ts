@@ -3,7 +3,7 @@ import { App, defineAsyncComponent, markRaw } from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import { MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO } from '../lib';
 import { useStore } from 'vuex';
-import { createRouter, createWebHistory, NavigationGuardNext, type Router, type RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, NavigationGuardNext, RouteLocationNormalized, type Router, type RouteRecordRaw } from 'vue-router';
 
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import store from './Store';
@@ -17,15 +17,22 @@ export class OpenSilexRouter {
     private userFrontConfig: UserFrontConfigDTO;
     private menu: Array<MenuItemDTO> = [];
     private router: Router;
-    private pathPrefix: string
+    private pathPrefix: string;
     private sectionAttributes: any = {};
     private app: App;
     private $opensilex: OpenSilexVuePlugin;
+
+    // Evite plusieurs initialisations simultanées de l'auth
+    private authInitializationPromise: Promise<void> | null = null;
+
+    // Indique si on a déjà tenté d'initialiser l'auth côté router
+    private authInitializationDone: boolean = false;
 
     constructor(pathPrefix: string, app: App) {
         this.pathPrefix = pathPrefix;
         this.app = app;
         this.$opensilex = this.app.config.globalProperties.$opensilex;
+
         // Mark router as raw to prevent Vue from unwrapping its internal refs
         this.router = markRaw(this.createRouter(User.ANONYMOUS()));
     }
@@ -51,7 +58,7 @@ export class OpenSilexRouter {
     }
 
     private createRouter(user: User) {
-        let routes: Array<RouteRecordRaw> = this.computeMenuRoutes(user);
+        const routes: Array<RouteRecordRaw> = this.computeMenuRoutes(user);
 
         this.router = createRouter({
             history: createWebHistory(this.pathPrefix + "/app"),
@@ -60,48 +67,77 @@ export class OpenSilexRouter {
 
         // Add this line to handle navigation errors
         this.router.onError((handler) => {
-            console.error('Navigation error:', handler);
+            console.error("Navigation error:", handler);
         });
 
         this.router.beforeEach(async (to, from, next: NavigationGuardNext) => {
+            try {
+                const isLoggedIn = !!store.state.user.loggedIn;
+                const redirectTo = typeof to.query.redirect === "string"
+                    ? to.query.redirect
+                    : undefined;
 
-            const isLoggedIn = store.state.user.loggedIn;
-            const redirectTo = to.query.redirect ? to.query.redirect.toString() : undefined;
+                const isPublicRoute = this.isPublicRoute(to);
 
-            // si pas deja log et veut aller sur une route non publique
-            if (!isLoggedIn && to.meta[PUBLIC_ROUTE] !== true) {
-                console.log("[router] ==> retour au /")
-                return next({ path: '/' });
-            }
+                /**
+                 * si pas deja log et veut aller sur autre chose que /app : renvoi sur /app
+                 *  n ne bloque que les routes non publiques.
+                 */
+                if (!isLoggedIn && !isPublicRoute) {
+                    return next({ path: "/", query: { redirect: to.fullPath } });
+                }
 
-            // si deja log et veut aller sur /app : renvoi sur /dash
-            if (isLoggedIn && to.path === '/' && !redirectTo) {
-                return next({ path: '/dash', query: { redirect: redirectTo } });
-            }
+                // si deja log et veut aller sur /app : renvoi sur /dash
+                if (isLoggedIn && to.path === "/" && !redirectTo) {
+                    return next({ path: "/dash" });
+                }
 
-            // a la premiere co, au moment ou l'utilisateur se log et viens donc bien de /app : 
-            // redirect soit sur /dash si pas d'historique, 
-            // sinon renvoi sur la derniere page consulté
-            if (isLoggedIn && to.path === '/' && redirectTo) {
-                return next({ path: redirectTo });
-            }
+                /** a la premiere co, au moment ou l'utilisateur se log et viens donc bien de /app :
+                * redirect soit sur /dash si pas d'historique,
+                * sinon renvoi sur la derniere page consulté
+                */
+                if (isLoggedIn && to.path === "/" && redirectTo) {
+                    return next({ path: redirectTo });
+                }
 
-            // Vérification pour éviter la redirection infinie
-            if (to.path === from.path) {
+                // Vérification pour éviter la redirection infinie
                 return next();
-            }
 
-            next(); // On laisse passer
+            } catch (error) {
+                console.error("Router guard error:", error);
+
+                // En cas d'erreur pendant l'initialisation de l'auth,
+                // on redirige proprement vers la page d'entrée.
+                return next({ path: "/" });
+            }
         });
 
         this.router.afterEach((to, from, failure) => {
             if (failure) {
-                console.log("failure");
-                console.log(to, from, failure)
+                console.log(to, from, failure);
             }
-        })
+        });
 
         return this.router;
+    }
+
+    /**
+     * Détermine si une route est publique.
+     * On garde la page "/" comme point d'entrée public.
+     * On gère aussi les routes marquées meta.public = true.
+     */
+    private isPublicRoute(to: RouteLocationNormalized): boolean {
+        if (to.path === "/") {
+            return true;
+        }
+
+        // Une 404 ne doit pas être considérée comme une route publique
+        // dans le cas où l'utilisateur anonyme tente d'accéder à une ancienne route privée.
+        if (to.name === "NotFound") {
+            return false;
+        }
+
+        return to.matched.some(record => record.meta?.public === true);
     }
 
     public resetRouter(user: User) {
@@ -109,9 +145,12 @@ export class OpenSilexRouter {
         // Navigate to default route BEFORE removing routes
         // This ensures router.currentRoute.value remains valid during the reset
         // preventing DevTools errors when inspecting the router
-        if (this.router.currentRoute.value && this.router.currentRoute.value.name !== 'default') {
-            this.router.replace('/').catch(() => { });
-        }
+        //
+        // Ancien comportement volontairement désactivé :
+        // this.router.replace('/').catch(() => {});
+        //
+        // En pratique, cette redirection forcée peut casser l'expérience utilisateur
+        // et provoquer des retours non désirés vers le point d'entrée.
 
         // Instead of creating a new router, update routes dynamically
         // First, remove all existing routes except the base ones
@@ -119,7 +158,7 @@ export class OpenSilexRouter {
 
         // Clear dynamic routes (keep only the initial routes)
         currentRoutes.forEach(route => {
-            if (route.name && route.name !== 'default' && route.name !== 'NotFound') {
+            if (route.name && route.name !== "default" && route.name !== "NotFound") {
                 this.router.removeRoute(route.name);
             }
         });
@@ -130,7 +169,13 @@ export class OpenSilexRouter {
         // Add new routes to the existing router
         newRoutes.forEach(route => {
             // Skip routes that are already registered (default, NotFound)
-            if (!this.router.hasRoute(route.name)) {
+            if (route.name) {
+                if (!this.router.hasRoute(route.name)) {
+                    this.router.addRoute(route);
+                }
+            } else {
+                // Les routes sans nom doivent aussi être ajoutées,
+                // sinon elles seront NotFound
                 this.router.addRoute(route);
             }
         });
@@ -142,9 +187,13 @@ export class OpenSilexRouter {
         const routes: Array<RouteRecordRaw> = [];
         const frontConfig = this.frontConfig;
 
+        // Reset propre des attributs de section avant reconstruction
+        this.sectionAttributes = {};
+        this.menu = [];
+
         // Function to load components asynchronously
         const loadComponent = (componentId: string) => {
-            return () => this.getComponentImport(componentId);
+            return async () => await this.getComponentImport(componentId);
         };
 
         // 📌 General routes from frontConfig
@@ -174,20 +223,23 @@ export class OpenSilexRouter {
         // 📌 Dynamic routes from user menu
         if (this.userFrontConfig) {
             this.menu = this.buildMenu(this.userFrontConfig.menu, user);
+
             const addMenuRoutes = (menuItems: Array<MenuItemDTO>) => {
                 menuItems.forEach(item => {
                     if (item.route) {
                         routes.push({
                             path: item.route.path,
                             name: item.id || undefined,
-                            component: loadComponent(item.route.component),
+                            component: loadComponent(item.route.component)
                         });
                     }
+
                     if (item.children && item.children.length > 0) {
                         addMenuRoutes(item.children);
                     }
                 });
             };
+
             addMenuRoutes(this.userFrontConfig.menu);
         }
 
@@ -196,22 +248,25 @@ export class OpenSilexRouter {
             routes.push({
                 path: "/:catchAll(.*)",
                 name: "NotFound",
-                component: loadComponent(frontConfig.notFoundComponent)
+                component: loadComponent(frontConfig.notFoundComponent),
+                meta: { public: true }
             });
         }
+
         return routes;
     }
 
     // New method using dynamic imports instead of the complex promise-based loader
     private async getComponentImport(componentId: string): Promise<any> {
         try {
-            let componentDef = ModuleComponentDefinition.fromString(componentId);
+            const componentDef = ModuleComponentDefinition.fromString(componentId);
 
             // Load the component module using your existing method
             await this.$opensilex.loadComponentModule(componentDef);
 
             // Get the component from the app
-            let component = this.app.component(componentDef.getId());
+            const component = this.app.component(componentDef.getId());
+
             if (component) {
                 return component;
             } else {
@@ -219,9 +274,10 @@ export class OpenSilexRouter {
                 if (this.frontConfig?.notFoundComponent) {
                     return this.getComponentImport(this.frontConfig.notFoundComponent);
                 }
+
                 throw new Error(`Component ${componentId} not found`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error loading component ${componentId}:`, error);
 
             // Return a fallback component or rethrow
@@ -234,24 +290,24 @@ export class OpenSilexRouter {
                 template: `<div class="error-component">
                     <h3>Component Error</h3>
                     <p>Failed to load component: ${componentId}</p>
-                    <pre>${error.message}</pre>
+                    <pre>${error?.message || error}</pre>
                 </div>`
             };
         }
     }
-
 
     public refresh() {
         this.router.go(0);
     }
 
     private buildMenu(items: Array<MenuItemDTO>, user: User): Array<MenuItemDTO> {
-        let menu: Array<MenuItemDTO> = [];
+        const menu: Array<MenuItemDTO> = [];
 
         for (const item of items) {
             if (item.route) {
-                let route = item.route;
+                const route = item.route;
                 menu.push(item);
+
                 // Note: route registration is now handled in computeMenuRoutes
                 this.sectionAttributes[route.path] = {
                     icon: route.icon,

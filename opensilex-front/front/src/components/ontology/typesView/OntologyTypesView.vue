@@ -35,22 +35,22 @@
       </template>
     </opensilex-PageActions>
 
-    <!--    <opensilex-PageContent>-->
-    <!--      <template v-slot>-->
-    <!--        <opensilex-OntologyClassView-->
-    <!--          v-if="isTypeTab"-->
-    <!--          :rdfType="rdfType"-->
-    <!--          :icon="icon"-->
-    <!--          :title="typeTitle"-->
-    <!--        ></opensilex-OntologyClassView>-->
-    <!--        <opensilex-OntologyPropertyView-->
-    <!--          v-else-if="withProperties"-->
-    <!--          :rdfType="rdfType"-->
-    <!--          :icon="icon"-->
-    <!--          :title="propertiesTitle"-->
-    <!--        />-->
-    <!--      </template>-->
-    <!--    </opensilex-PageContent>-->
+        <opensilex-PageContent>
+          <template v-slot>
+            <opensilex-OntologyClassView
+              v-if="isTypeTab"
+              :rdfType="rdfType"
+              :icon="icon"
+              :title="typeTitle"
+            ></opensilex-OntologyClassView>
+<!--            <opensilex-OntologyPropertyView-->
+<!--              v-else-if="withProperties"-->
+<!--              :rdfType="rdfType"-->
+<!--              :icon="icon"-->
+<!--              :title="propertiesTitle"-->
+<!--            />-->
+          </template>
+        </opensilex-PageContent>
   </div>
 </template>
 

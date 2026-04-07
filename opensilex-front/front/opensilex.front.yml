@@ -182,8 +182,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: ScientificObjectTypes.typeTitle
-          description: ScientificObjectTypes.typeDescription
+          title: component.ontology.typeView.scientificObject.title
+          description: component.ontology.typeView.scientificObject.description
       - id: eventVocabulary
         label: component.menu.eventTypes
         route:
@@ -192,8 +192,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: EventTypes.typeTitle
-          description: EventTypes.typeDescription
+          title: component.ontology.typeView.event.title
+          description: component.ontology.typeView.event.description
       - id: deviceVocabulary
         label: component.menu.deviceTypes
         route:
@@ -202,8 +202,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: DeviceTypes.typeTitle
-          description: DeviceTypes.typeDescription
+          title: component.ontology.typeView.device.title
+          description: component.ontology.typeView.device.description
       - id: organizationVocabulary
         label: component.menu.facilitiesTypes
         route:
@@ -212,8 +212,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: FacilitiesTypes.typeTitle
-          description: FacilitiesTypes.typeDescription
+          title: component.ontology.typeView.facility.title
+          description: component.ontology.typeView.facility.description
       - id: factorCategoryVocabulary
         label: component.menu.factorCategoryTypes
         route:
@@ -222,8 +222,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: FactorCategoryTypes.typeTitle
-          description: FactorCategoryTypes.typeDescription
+          title: component.ontology.typeView.factoryCategory.title
+          description: component.ontology.typeView.factoryCategory.description
       - id: namespacesVocabulary
         label: component.menu.namespaces
         route:
@@ -232,8 +232,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: component.menu.namespaces
-          description: Namespaces.description
+          title: component.ontology.namespace.title
+          description: component.ontology.namespace.description
   - id: configuration
     label: component.menu.configuration
     children:

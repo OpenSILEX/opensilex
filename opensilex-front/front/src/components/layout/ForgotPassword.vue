@@ -1,7 +1,28 @@
 <template>
   <div class="container-fluid">
+    <div class="row text-end">
+      <!-- Language Selector -->
+      <div class="languagesDropdown">
+        <button class="btn dropdown-toggle p-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="languageDropdown">
+          <i class="bi bi-globe"></i>
+          {{ t("component.header.language." + locale) }}
+          <i class="bi bi-chevron-down"></i>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+          <li
+              v-for="lang in availableLocales"
+              :key="lang"
+              @click.prevent="setLanguage(lang)"
+          >
+            <button class="dropdown-item" @click.prevent="setLanguage(lang)">
+              {{ t("component.header.language." + lang) }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
     <div class="row">
-      <div class="col-1"></div>
+      <div class="col"></div>
       <div class="col-8">
         <h3>{{ t("ForgotPasswordComponent.title") }}</h3>
         <br/>
@@ -83,7 +104,7 @@ export default defineComponent({
     const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
     const router = useRouter();
     const store = useStore();
-    const {t} = useI18n();
+    const {t, locale, availableLocales} = useI18n();
     const user = computed(() => store.state.user);
     const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
     const email = ref<string>("");
@@ -93,6 +114,8 @@ export default defineComponent({
       router,
       store,
       t,
+      locale,
+      availableLocales,
       user,
       authenticationService,
       email,
@@ -134,7 +157,11 @@ export default defineComponent({
             }
             this.$opensilex.hideLoader();
           });
-    }
+    },
+    setLanguage(lang: string) {
+      this.$i18n.locale = lang;
+      this.$store.commit("lang", lang);
+    },
   }
 })
 
@@ -157,7 +184,7 @@ en:
     invalid-identifier: Invalid identifier
     empty-email: E-mail address cannot be empty
     link-email: An e-mail has been sent to you
-    returnHome: return to homepage
+    returnHome: Return to homepage
 fr:
   ForgotPasswordComponent:
     title: "Mot de passe oublié ?"

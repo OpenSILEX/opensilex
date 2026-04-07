@@ -8,6 +8,9 @@ import { createRouter, createWebHistory, NavigationGuardNext, RouteLocationNorma
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import store from './Store';
 
+const PUBLIC_ROUTE: string = "public";
+export const DEFAULT_ROUTE_NAME: string = "default";
+
 export class OpenSilexRouter {
 
     private frontConfig: FrontConfigDTO;
@@ -15,7 +18,6 @@ export class OpenSilexRouter {
     private menu: Array<MenuItemDTO> = [];
     private router: Router;
     private pathPrefix: string;
-    private PUBLIC_ROUTE: string = "public";
     private sectionAttributes: any = {};
     private app: App;
     private $opensilex: OpenSilexVuePlugin;
@@ -125,17 +127,16 @@ export class OpenSilexRouter {
      * On gère aussi les routes marquées meta.public = true.
      */
     private isPublicRoute(to: RouteLocationNormalized): boolean {
-        console.log("to : ", to)
         if (to.path === "/") {
             return true;
         }
-    
+
         // Une 404 ne doit pas être considérée comme une route publique
         // dans le cas où l'utilisateur anonyme tente d'accéder à une ancienne route privée.
         if (to.name === "NotFound") {
             return false;
         }
-    
+
         return to.matched.some(record => record.meta?.public === true);
     }
 
@@ -150,21 +151,21 @@ export class OpenSilexRouter {
         //
         // En pratique, cette redirection forcée peut casser l'expérience utilisateur
         // et provoquer des retours non désirés vers le point d'entrée.
-    
+
         // Instead of creating a new router, update routes dynamically
         // First, remove all existing routes except the base ones
         const currentRoutes = this.router.getRoutes();
-    
+
         // Clear dynamic routes (keep only the initial routes)
         currentRoutes.forEach(route => {
             if (route.name && route.name !== "default" && route.name !== "NotFound") {
                 this.router.removeRoute(route.name);
             }
         });
-    
+
         // Compute new routes based on user permissions
         const newRoutes = this.computeMenuRoutes(user);
-    
+
         // Add new routes to the existing router
         newRoutes.forEach(route => {
             // Skip routes that are already registered (default, NotFound)
@@ -178,7 +179,7 @@ export class OpenSilexRouter {
                 this.router.addRoute(route);
             }
         });
-    
+
         return this.router;
     }
 
@@ -200,16 +201,21 @@ export class OpenSilexRouter {
             // Default route
             routes.push({
                 path: "/",
-                name: "default",
+                name: DEFAULT_ROUTE_NAME,
                 component: loadComponent(frontConfig.loginComponent),
-                meta: { public: true }
+                meta: {
+                    public: true
+                }
             });
 
             for (const routeConfig of frontConfig.routes) {
                 routes.push({
                     path: routeConfig.path,
                     name: routeConfig.name || undefined,
-                    component: loadComponent(routeConfig.component)
+                    component: loadComponent(routeConfig.component),
+                    meta: {
+                        public: routeConfig.credentials?.includes(PUBLIC_ROUTE) === true
+                    }
                 });
             }
         }

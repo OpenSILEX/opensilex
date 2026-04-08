@@ -22,13 +22,7 @@ export default defineConfig(({ mode }) => ({
   assetsInclude: ['**/*.md'],
 
   build: {
-    outDir: 'dist',
-    rollupOptions: {
-      external: ['vue'],
-      output: {
-        globals: { vue: 'Vue' },
-      },
-    },
+    outDir: 'dist'
   },
 
   server: {

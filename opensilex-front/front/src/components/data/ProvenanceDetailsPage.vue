@@ -2,6 +2,7 @@
   <div class="container-fluid py-3">
     <opensilex-PageHeader
       icon="fa#seedling"
+      :hasIcon="true"
       :title="name"
       :description="t('ProvenanceDetailsPage.title')"
       class="detail-element-header"

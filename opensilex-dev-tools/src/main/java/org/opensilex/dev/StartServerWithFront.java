@@ -37,8 +37,12 @@ public class StartServerWithFront {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(StartServerWithFront.class);
 
+    private final static String PATH_ENV_VAR = "PATH";
+
     private static Path baseDirectory;
-    private static String nodeBin = "node"; 
+    private static Path nodeDirectory;
+    private static final Path RELATIVE_NODE_DIRECTORY = Path.of("../.node/node");
+    private static String nodeBin = "node";
 
     private static CountDownLatch countDownLatch;
 
@@ -54,6 +58,7 @@ public class StartServerWithFront {
         }
 
         StartServerWithFront.baseDirectory = baseDirectory;
+        StartServerWithFront.nodeDirectory = baseDirectory.resolve(RELATIVE_NODE_DIRECTORY).normalize();
 
         OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory,null);
 
@@ -112,11 +117,11 @@ public class StartServerWithFront {
         createThemeMonitor(moduleDirectory, targetDirectory);
 
         List<String> args = new ArrayList<>();
-        args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
+        args.add(nodeDirectory.resolve("npm").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
+        addNodePathToEnv(frontBuilder);
         frontBuilder.directory(baseDirectory.resolve("../opensilex-front/front").toFile());
         frontBuilder.inheritIO();
         return frontBuilder.start();
@@ -124,11 +129,11 @@ public class StartServerWithFront {
 
     private static Process createFrontModuleBuilder(String moduleId) throws Exception {
         List<String> args = new ArrayList<>();
-        args.add(baseDirectory.resolve("../.node/node/" + nodeBin).toFile().getCanonicalPath());
-        args.add(baseDirectory.resolve("../.node/node/node_modules/npm/bin/npm-cli.js").toFile().getCanonicalPath());
+        args.add(nodeDirectory.resolve("npm").toFile().getCanonicalPath());
         args.add("run");
         args.add("serve");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
+        addNodePathToEnv(frontBuilder);
 
         String modulePath = moduleId;
 
@@ -198,6 +203,32 @@ public class StartServerWithFront {
 
         createConfigMonitor(moduleDirectory, targetDirectory);
         return frontBuilder.start();
+    }
+
+    /**
+     * Returns the PATH key from an environment variables map. Necessary because Windows has case unsensitive keys,
+     * so we have to check for Path, path or PATH.
+     */
+    private static String getPathEnvKey(Map<String, String> environment) {
+        if (DevModule.isWindows()) {
+            return environment.keySet().stream()
+                    .filter(key -> key.equalsIgnoreCase(PATH_ENV_VAR))
+                    .findFirst()
+                    .orElse(PATH_ENV_VAR);
+        } else {
+            return PATH_ENV_VAR;
+        }
+    }
+
+    /**
+     * Adds the '.node/node' folder to the PATH of a process. That allows the process to access node related commands,
+     * such as npm or npx, as if they were installed globally.
+     */
+    private static void addNodePathToEnv(ProcessBuilder processBuilder) {
+        var pathEnvKey = getPathEnvKey(processBuilder.environment());
+        var path = processBuilder.environment().get(pathEnvKey);
+        path = nodeDirectory.toAbsolutePath() + File.pathSeparator + path;
+        processBuilder.environment().put(pathEnvKey, path);
     }
 
     private static void createConfigMonitor(Path moduleDirectory, Path targetDirectory) throws Exception {

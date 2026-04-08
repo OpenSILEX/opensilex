@@ -175,6 +175,7 @@ const pagedItems = computed(() => {
 });
 
 function onRowSelected(keys: any[]) {
+  console.debug("MAX TableView row-selected");
   emit('row-selected', keys[0]);
 }
 

@@ -216,14 +216,17 @@ const fields = computed(() => {
 })
 
 function onFacilitySelected(selected: FacilityGetDTO) {
+  console.debug("MAX selecting Fal in FacilitiesView: ", selected);
   emit('facilitySelected', selected)
 }
 
 function onUpdate() {
+  console.debug("MAX UPDADATE");
   emit('onUpdate')
 }
 
 function onCreate() {
+  //TODO MAX add refresh() to these functions, before FacilityListView was just recieving event then calling refesh on this component. Curretnly cant do that i think because stuff is priovate by default
   emit('onCreate')
 }
 
@@ -293,6 +296,7 @@ function initForm(form: FacilityCreationDTO) {
 }
 
 function editFacility(facility: FacilityGetDTO) {
+  console.debug("MAX Real Edit debug?");
   facilityFormRef.value?.showEditForm?.(facility.uri)
 }
 

@@ -668,33 +668,33 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
-pages:site:
-    stage: doc_and_metrics
-    image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
-    timeout: 2h
-    before_script:
-        - mkdir -p $CI_PROJECT_DIR/.m2
-        - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
-        - more $CI_PROJECT_DIR/.m2/settings.xml
-        - mkdir -p .mvn
-        - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
-        - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
-    script:
-        - mkdir site_public
-        - |
-            mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
-                install site $MAVEN_OPTS_SCHUEDULES \
-                -DskipFrontBuild \
-                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
-                -Pwith-security-check \
-                -Pwith-test-report
-        - mv $CI_PROJECT_DIR/site/* site_public
-    artifacts:
-        paths:
-            - site_public
-        when: always
-    rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+#pages:site:
+#    stage: doc_and_metrics
+#    image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+#    timeout: 2h
+#    before_script:
+#        - mkdir -p $CI_PROJECT_DIR/.m2
+#        - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+#        - more $CI_PROJECT_DIR/.m2/settings.xml
+#        - mkdir -p .mvn
+#        - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+#        - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+#    script:
+#        - mkdir site_public
+#        - |
+#            mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
+#                install site $MAVEN_OPTS_SCHUEDULES \
+#                -DskipFrontBuild \
+#                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
+#                -Pwith-security-check \
+#                -Pwith-test-report
+#        - mv $CI_PROJECT_DIR/site/* site_public
+#    artifacts:
+#        paths:
+#            - site_public
+#        when: always
+#    rules:
+#        - if: $CI_COMMIT_BRANCH == "develop"
 
 pages:specifications:
     stage: doc_and_metrics
@@ -715,13 +715,13 @@ pages:specifications:
 pages:
     stage: doc_and_metrics
     needs:
-        -   job: pages:site
-            artifacts: true
+#        -   job: pages:site
+#            artifacts: true
         -   job: pages:specifications
             artifacts: true
     script:
         - mkdir -p public/specifications
-        - cp -r site_public/* public/
+        - #cp -r site_public/* public/
         - cp -r specs_public/* public/specifications/
         - ls -R public
     artifacts:

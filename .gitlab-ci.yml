@@ -593,7 +593,7 @@ pages:
             artifacts: true
     script:
         - mkdir -p public/specifications
-        - cp -r specs_public/* public/specifications/
+        - cp -r specs_public/* public
         - ls -R public
     artifacts:
         paths:

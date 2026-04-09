@@ -16,10 +16,10 @@ hero:
           link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/
         - theme: alt
           text: code coverage
-          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/dependencies.html
+          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/jacoco-aggregate/index.html
         - theme: alt
           text: dependencies
-          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/jacoco-aggregate/index.html
+          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/dependencies.html
 
 
 features:

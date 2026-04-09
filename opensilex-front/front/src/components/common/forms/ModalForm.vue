@@ -182,6 +182,7 @@ function hide() {
 defineExpose({
   showCreateForm,
   showEditForm,
+  getFormRef,
   hide
 })
 </script>

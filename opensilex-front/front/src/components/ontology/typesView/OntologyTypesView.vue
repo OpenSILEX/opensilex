@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader v-if="isPropertiesType" :icon="icon" :title="propertiesTitle"
+    <opensilex-PageHeader v-if="isPropertiesType" :icon="icon" :hasIcon="true" :title="propertiesTitle"
                           :description="propertiesDescription" class="detail-element-header"></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="false" :tabs="true">
@@ -13,7 +13,7 @@
             {{ t("OntologyTypesView.typeTitle") }}
           </router-link>
           <router-link
-              :to="{path: typeURI}"
+              :to="{path: propertiesURI}"
               :class="['tab', { active: isPropertiesType }]"
               class="tab"
           >
@@ -77,7 +77,7 @@ const route = useRoute();
 const {t} = useI18n();
 
 const isPropertiesType = computed(() => route.path.startsWith(props.propertiesURI));
-const isTypeTab = computed(() => route.path.startsWith(props.typeURI) && !isPropertiesType);
+const isTypeTab = computed(() => route.path.startsWith(props.typeURI) && !isPropertiesType.value);
 </script>
 
 <style scoped lang="scss">

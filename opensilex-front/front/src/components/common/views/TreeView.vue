@@ -35,10 +35,10 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, useSlots, defineExpose, watch, onMounted, h } from 'vue'
-import { NTree } from 'naive-ui'
+import {NTree, TreeOption} from 'naive-ui'
 
 const props = defineProps<{
-  nodes: any[]
+  nodes: TreeOption[]
   noButtons?: boolean
 }>()
 

@@ -9,15 +9,15 @@
           <opensilex-CreateButton
               v-if="user.isAdmin()"
               @click="showCreateForm()"
-              label="OntologyClassView.add"
+              :label="t('OntologyClassView.add')"
               class="createButton">
           </opensilex-CreateButton>
 
           <opensilex-ModalForm
               ref="classForm"
               component="opensilex-OntologyClassForm"
-              createTitle="OntologyClassView.add"
-              editTitle="OntologyClassView.update"
+              :createTitle="t('OntologyClassView.add')"
+              :editTitle="t('OntologyClassView.update')"
               :initForm="initForm"
               @onCreate="refresh()"
               @onUpdate="refresh()"
@@ -30,7 +30,7 @@
         <opensilex-StringFilter
             :filter.sync="nameFilter"
             @update="updateFilter()"
-            placeholder="OntologyClassView.search"
+            :placeholder="t('OntologyClassView.search')"
             :debounce="300"
             :lazy="false"
         ></opensilex-StringFilter>
@@ -66,6 +66,8 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {VueJsOntologyExtensionService} from "../../lib";
 import {useI18n} from "vue-i18n";
+import OntologyClassTreeView from "@/components/ontology/OntologyClassTreeView.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
@@ -78,8 +80,8 @@ const nameFilter = ref("");
 const parentURI = ref("");
 const selected = ref();
 
-const classForm = useTemplateRef("classForm");
-const classesTree = useTemplateRef("classesTree");
+const classForm = useTemplateRef<InstanceType<typeof ModalForm>>("classForm");
+const classesTree = useTemplateRef<InstanceType<typeof OntologyClassTreeView>>("classesTree");
 
 const props = defineProps<{
   rdfType: string,
@@ -106,8 +108,8 @@ function initForm(form) {
 
 function showCreateForm(parentTypeURI?: string) {
   parentURI.value = parentTypeURI;
-  classForm.getFormRef().setParentTypes(classesTree.getTree());
-  classForm.showCreateForm();
+  classForm.value.getFormRef().setParentTypes(classesTree.value.getTree());
+  classForm.value.showCreateForm();
 }
 
 function showEditForm(data) {
@@ -115,8 +117,8 @@ function showEditForm(data) {
       .getRDFType(data.uri, props.rdfType)
       .then(http => {
         let form = http.response.result;
-        classForm.getFormRef().setParentTypes(classesTree.getTree());
-        classForm.showEditForm(form);
+        classForm.value.getFormRef().setParentTypes(classesTree.value.getTree());
+        classForm.value.showEditForm(form);
       }).catch(opensilex.errorHandler);
 }
 

@@ -1,7 +1,7 @@
 <template>
   <opensilex-OntologyTypesView
     :rdfType="opensilex.Oeso.getShortURI(opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)"
-    icon="ik#ik-settings"
+    icon="bi#bi-gear"
     :typeTitle="t('component.ontology.typeView.scientificObject.title')"
     :typeDescription="t('component.ontology.typeView.scientificObject.description')"
     typeURI="/scientific-object-types"

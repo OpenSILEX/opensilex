@@ -8,8 +8,8 @@ hero:
         - theme: brand
           text: Try it on sandbox
           link: https://www.opensilex.org/
-        - theme: Our site
-          text: javadoc
+        - theme: brand
+          text: Our site
           link: https://opensilex.mathnum.inrae.fr/
         - theme: alt
           text: javadoc

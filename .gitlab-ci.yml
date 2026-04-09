@@ -397,24 +397,7 @@ test:opensilex-develop:deploy:
   needs:
     - opensilex-develop:build
 
-# Deployment of the release branch
-test:opensilex-release:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/release"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4081
-    OPENSILEX_JAR_PORT: 8081
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/release"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release"
-      when: on_success
-  needs:
-    - opensilex-release:build
+
 
 #################
 ### CLOSE RELEASE
@@ -550,20 +533,7 @@ opensilex-release:publish:
       artifacts: true
 
 
-# Update nightly builds branch
-update:nightly:builds:branch:
-  stage: build
-  script:
-    - apt update && apt install -y git
-    - git config --global user.name "anonymous"
-    - git config --global user.email "anonymous@opensilex.org"
-    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forge.inrae.fr/OpenSILEX/opensilex-dev.git"
-    - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
-    - git fetch origin
-    - git reset --hard origin/develop
-    - git push -f origin nightly-builds
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+
 
 ###############################################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS

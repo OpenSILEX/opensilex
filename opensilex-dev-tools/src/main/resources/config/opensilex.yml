@@ -42,9 +42,8 @@ phisws:
     infrastructure: opensilex
     
 core:
-    enableOntologyCaching: false
     metrics:
-        enableMetrics: false
+        enableMetrics: true
         system:
             timeBeforeFirstMetric: 1
             delayBetweenMetrics: 30

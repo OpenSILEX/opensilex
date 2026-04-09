@@ -77,7 +77,7 @@
         <module>opensilex-siduri</module>
 
         <!-- Data analysis module -->
-        <!-- <module>opensilex-data-analysis</module> -->
+        <module>opensilex-data-analysis</module>
     </modules>
     
     <dependencies>
@@ -186,11 +186,11 @@
             <version>${revision}</version>
         </dependency> 
 
-        <!-- <dependency>
+        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-data-analysis</artifactId>
             <version>2.6.0</version>
-        </dependency> -->
+        </dependency>
 
     </dependencies>
       

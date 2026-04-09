@@ -74,3 +74,15 @@
 .customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active::after {
     background: #E9173A;
 }
+
+.dashboardCentralLogo{
+  opacity: 0.8;
+  min-height: 35vh;
+  max-height: 80%;
+  max-width: 80%;
+}
+
+#main-menu-navigation .nav-item.active, .customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active {
+    background-color: hsla(181, 100%, 33%, 0.3);
+    font-weight: bold;
+}

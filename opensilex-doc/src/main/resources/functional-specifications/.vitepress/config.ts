@@ -25,7 +25,9 @@ export default defineConfig(
       // vitepress-sidebar plugin options
       documentRootPath: '.',
       collapsed: true,
-      capitalizeFirst: true
+      capitalizeFirst: true,
+      hyphenToSpace: true,
+      underscoreToSpace: true,
     }
   )
 )

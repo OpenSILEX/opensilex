@@ -1514,7 +1514,7 @@ export default class OpenSilexVuePlugin {
     }
 
     iconIDs = [];
-    selectIconIDs = [];
+    selectIconIDs: Array<{id: string, label: string}> = [];
 
     public getIconIDs() {
         return this.iconIDs;

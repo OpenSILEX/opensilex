@@ -24,6 +24,9 @@
               modalSize="lg"
               successMessage="OntologyClassView.the-type"
               :icon="icon"
+              :data="{
+                parentUri: rdfType
+              }"
           ></opensilex-ModalForm>
         </div>
 
@@ -108,7 +111,6 @@ function initForm(form) {
 
 function showCreateForm(parentTypeURI?: string) {
   parentURI.value = parentTypeURI;
-  classForm.value.getFormRef().setParentTypes(classesTree.value.getTree());
   classForm.value.showCreateForm();
 }
 
@@ -117,7 +119,6 @@ function showEditForm(data) {
       .getRDFType(data.uri, props.rdfType)
       .then(http => {
         let form = http.response.result;
-        classForm.value.getFormRef().setParentTypes(classesTree.value.getTree());
         classForm.value.showEditForm(form);
       }).catch(opensilex.errorHandler);
 }

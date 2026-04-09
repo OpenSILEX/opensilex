@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 
-import {computed, inject, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
@@ -133,7 +133,7 @@ function refresh(selection, nameFilter) {
   }).catch(opensilex.errorHandler);
 }
 
-function getTree() {
+function getTree(): Array<ResourceTreeDTO> {
   return resourceTree.value;
 }
 

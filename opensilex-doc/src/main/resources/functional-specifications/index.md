@@ -1,4 +1,4 @@
-wœ---
+---
 layout: doc
 
 sidebar: true

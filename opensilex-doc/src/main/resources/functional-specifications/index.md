@@ -8,8 +8,12 @@ sidebar: true
 
 **rules and definition of core concepts**
 
+*To navigate among concepts use the left sidebar or hit CTRL+K and search among indexed titles*
+
+*Following links could be interesting if you want to develop for or try OpenSILEX*
+
 <div class="actions-container">
-  <a href="https://www.opensilex.org/" class="action-link action-primary">Try it on sandbox</a>
+  <a href="https://www.opensilex.org/" class="action-link action-primary">OpenSILEX sandbox</a>
   <a href="https://opensilex.mathnum.inrae.fr/" class="action-link action-primary">Our site</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/" class="action-link action-secondary">javadoc</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/jacoco-aggregate/index.html" class="action-link action-secondary">code coverage</a>
@@ -86,6 +90,12 @@ This documentation corresponds to Opensilex developement version. It could diffe
   text-decoration: none;
   font-weight: 500;
   display: inline-block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-link:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .action-primary {

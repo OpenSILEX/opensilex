@@ -2,12 +2,24 @@
 layout: home
 
 hero:
-    name: "Opensilex specification"
+    name: "OpenSILEX specification"
     tagline: "rules and definition of core concepts<br/><br/>Use Ctrl + K to search among concepts."
     actions:
         - theme: brand
+          text: Try it on sandbox
+          link: https://www.opensilex.org/
+        - theme: Our site
+          text: javadoc
+          link: https://opensilex.mathnum.inrae.fr/
+        - theme: alt
           text: javadoc
           link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/
+        - theme: alt
+          text: code coverage
+          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/dependencies.html
+        - theme: alt
+          text: dependencies
+          link: https://opensilex.pages-forge.inrae.fr/opensilex-dev/jacoco-aggregate/index.html
 
 
 features:
@@ -23,7 +35,7 @@ features:
     icon: "📊"
     details: "- Datasets<br/>- Data Files<br/>- Provenance<br/>- Events<br/>- Documents"
     
-  - title: "Asministration"
+  - title: "Administration"
     icon: "👥"
     details: "- Accounts<br/>- Groups<br/>- Profiles"
 ---

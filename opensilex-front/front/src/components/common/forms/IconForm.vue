@@ -8,7 +8,7 @@
     <template v-slot:field="field">
       <n-select
         :options="icons"
-        v-model="value"
+        v-model:value="value"
         filterable
       >
       </n-select>
@@ -37,7 +37,7 @@ onMounted(() => {
   }))
 });
 
-const value = defineModel('value');
+const value = defineModel<string>('value');
 
 defineProps<{
   label: string,

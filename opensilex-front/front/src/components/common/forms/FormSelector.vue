@@ -17,6 +17,7 @@
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
+            :checkStrategy="checkStrategy"
             :placeholder="placeholder"
             :disabled="disabled"
             :optionsLoadingMethod="optionsLoadingMethod"
@@ -92,6 +93,7 @@ const props = defineProps<{
   searchMethod?: Function
   multiple?: boolean
   checkable?: boolean
+  checkStrategy?: 'all' | 'child' | 'parent'
   itemLoadingMethod?: Function
   optionsLoadingMethod?: Function
   options?: any[]

@@ -1,7 +1,7 @@
 <template>
   <n-form v-if="form.name_translations">
     <opensilex-InputForm
-        :value.sync="form.uri"
+        v-model:value="form.uri"
         label="component.common.uri"
         type="text"
         rules="url"
@@ -9,37 +9,37 @@
         :required="true"
     ></opensilex-InputForm>
 
-    <!-- Parent -->
     <opensilex-FormSelector
         v-model:selected="form.parent"
         :options="parentOptions"
+        checkStrategy="parent"
         :required="true"
         label="component.common.parent"
     ></opensilex-FormSelector>
 
     <opensilex-InputForm
-        :value.sync="form.name_translations.en"
+        v-model:value="form.name_translations.en"
         :label="t('OntologyClassForm.labelEN')"
         type="text"
         :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-        :value.sync="form.comment_translations.en"
+        v-model:value="form.comment_translations.en"
         :label="t('OntologyClassForm.commentEN')"
         :required="true"
         @keydown.native.enter.stop
     ></opensilex-TextAreaForm>
 
     <opensilex-InputForm
-        :value.sync="form.name_translations.fr"
+        v-model:value="form.name_translations.fr"
         :label="t('OntologyClassForm.labelFR')"
         type="text"
         :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-        :value.sync="form.comment_translations.fr"
+        v-model:value="form.comment_translations.fr"
         :label="t('OntologyClassForm.commentFR')"
         :required="true"
         @keydown.native.enter.stop
@@ -52,7 +52,7 @@
     ></opensilex-CheckboxForm> -->
 
     <opensilex-IconForm
-        :value.sync="form.icon"
+        v-model:value="form.icon"
         :label="t('OntologyClassForm.icon')"
     ></opensilex-IconForm>
   </n-form>
@@ -64,7 +64,7 @@ import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {VueJsOntologyExtensionService} from "@/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NForm} from "naive-ui";
+import {NForm, NTreeSelect} from "naive-ui";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");

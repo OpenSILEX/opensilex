@@ -694,7 +694,7 @@ pages:site:
         paths:
             - site_public
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
 
 pages:specifications:
     stage: doc_and_metrics
@@ -711,7 +711,7 @@ pages:specifications:
             - specs_public
         expire_in: 2 days
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
 
 pages:technical-documentation:
     stage: doc_and_metrics
@@ -728,7 +728,7 @@ pages:technical-documentation:
             - tech_doc_public
         expire_in: 2 days
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
 
 pages:
     stage: doc_and_metrics
@@ -750,7 +750,7 @@ pages:
         paths:
             - public
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################

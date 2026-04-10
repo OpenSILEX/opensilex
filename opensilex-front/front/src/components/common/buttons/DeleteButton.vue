@@ -74,7 +74,7 @@ onMounted(() => {
       keyboard: false,
     })
   }
-})
+});
 
 function openModal() {
   modalInstance?.show()

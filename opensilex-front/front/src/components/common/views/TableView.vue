@@ -40,6 +40,7 @@
         :striped="true"
         :scroll-x="true"
         :row-key="row => row.uri"
+        :row-props="rowProps"
         @update:checked-row-keys="onRowSelected"
         @update:sorter="handleSort"
       >
@@ -73,10 +74,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, h } from 'vue';
+import {ref, computed, watch, h, inject} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { NDataTable, NPagination } from 'naive-ui';
 import { onMounted, useSlots } from 'vue';
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 const slots = useSlots();
 
@@ -100,8 +102,9 @@ const props = defineProps({
 });
 
 
+//Row-selected = with CHECKBOXES , row-clicked = simply clicking on the row
+const emit = defineEmits(['row-selected', 'row-clicked']);
 
-const emit = defineEmits(['row-selected']);
 const { t } = useI18n();
 
 const currentPage = ref(1);
@@ -165,6 +168,22 @@ if (sortKey.value && sortOrder.value) {
   return items;
 });
 
+//#region: Row-clicked handling
+const lastClickedRow = ref(null);
+
+const rowProps = (row: any) => {
+  return {
+    onClick: () => {
+      lastClickedRow.value = row;
+      emit('row-clicked', row);
+    },
+    style: {
+      cursor: 'pointer',
+    }
+  };
+};
+//#endregion
+
 // Pagination
 const computedTotalRows = computed(() => filteredItems.value.length);
 
@@ -175,7 +194,6 @@ const pagedItems = computed(() => {
 });
 
 function onRowSelected(keys: any[]) {
-  console.debug("MAX TableView row-selected");
   emit('row-selected', keys[0]);
 }
 

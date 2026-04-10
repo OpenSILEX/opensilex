@@ -36,12 +36,11 @@ import FacilitiesView from "./FacilitiesView.vue";
 import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
-import {useI18n} from "vue-i18n";
+import {useStore} from "vuex";
 
 //#region: Constants
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
-const $store = inject<any>('$store')!;
+const $store = useStore();
 
 //Services
 const service: OrganizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
@@ -49,12 +48,15 @@ const expService: ExperimentsService = $opensilex.getService("opensilex.Experime
 //#endregion
 
 //#region: Data
-let selectedFacility: FacilityGetDTO = null;
 let experiments: Array<ExperimentGetListDTO> = [];
 //#endregion
 
 //#region: Refs
+//Component refs:
 const facilitiesView = ref<InstanceType<typeof FacilitiesView>|null>(null);
+
+//Value refs
+const selectedFacility = ref<FacilityGetDTO|null>(null);
 //#endregion
 
 //#region: Computed
@@ -63,10 +65,13 @@ const credentials = computed(() => $store.state.credentials);
 //#endregion
 
 //#region: Event Handlers
+/**
+ * Event handler called when a line in Facility table was clicked (Not by clicking a checkbox)
+ */
 function onFacilitySelected(facility: FacilityGetDTO) {
-  console.debug("SELECTING FACILITY, ", facility)
   if (!facility || !facility.uri) {
-    selectedFacility = undefined;
+    selectedFacility.value = undefined;
+
     experiments = [];
     return;
   }
@@ -75,17 +80,15 @@ function onFacilitySelected(facility: FacilityGetDTO) {
 
   service.getFacility(facility.uri)
     .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
-      selectedFacility = http.response.result;
+      selectedFacility.value = http.response.result;
       if(selectedFacility) {
-        //$nextTick(() => {loadExperiments();});
         loadExperiments();
       }
     });
 }
 
 function refresh() {
-  //TODO MAX this line wasnt working i think because private by default
-  //facilitiesView.refresh();
+  facilitiesView.value.refresh();
 }
 //#endregion
 
@@ -100,7 +103,7 @@ function loadExperiments() {
       undefined, // factorCategories
       undefined, // projects
       undefined, // isPublic
-      [selectedFacility.uri],
+      [selectedFacility.value.uri],
       undefined, // funding
       undefined,
       0,

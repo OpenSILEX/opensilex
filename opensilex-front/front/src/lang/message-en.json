@@ -410,7 +410,8 @@
             "description": "Description",
             "select-motivation": "Select a motivation",
             "motivation-help": "Intent or motivation for the creation of the Annotation",
-            "no-motivation": "No motivation found"
+            "no-motivation": "No motivation found",
+            "list-title": "Annotations"
         },
         "variable" : {
             "entity" : {

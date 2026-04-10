@@ -582,7 +582,23 @@ pages:specifications:
     artifacts:
         paths:
             - specs_public
-        expire_in: 30 days
+        expire_in: 2 days
+    rules:
+        - if: $CI_COMMIT_BRANCH == "develop"
+
+pages:technical-documentation:
+    stage: doc_and_metrics
+    image: node:20.19.6-alpine3.22
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/technical-documentation
+        - npm install
+        - npm run docs:build
+        - mkdir -p $CI_PROJECT_DIR/tech_doc_public
+        - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/technical-documentation/.vitepress/dist/* $CI_PROJECT_DIR/tech_doc_public/
+    artifacts:
+        paths:
+            - tech_doc_public
+        expire_in: 2 days
     rules:
         - if: $CI_COMMIT_BRANCH == "develop"
 
@@ -591,9 +607,13 @@ pages:
     needs:
         -   job: pages:specifications
             artifacts: true
+        -   job: pages:technical-documentation
+            artifacts: true
     script:
         - mkdir -p public/specifications
         - cp -r specs_public/* public
+        - mkdir -p public/technical-documentation
+        - cp -r tech_doc_public/* public/technical-documentation
         - ls -R public
     artifacts:
         paths:

@@ -31,12 +31,12 @@
             :icon="icon"
             :title="typeTitle"
         ></opensilex-OntologyClassView>
-        <!--            <opensilex-OntologyPropertyView-->
-        <!--              v-else-if="withProperties"-->
-        <!--              :rdfType="rdfType"-->
-        <!--              :icon="icon"-->
-        <!--              :title="propertiesTitle"-->
-        <!--            />-->
+        <opensilex-OntologyPropertyView
+            v-else-if="withProperties"
+            :rdfType="rdfType"
+            :icon="icon"
+            :title="propertiesTitle"
+        />
       </template>
     </opensilex-PageContent>
   </div>

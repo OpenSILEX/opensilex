@@ -47,7 +47,6 @@ const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
 const route = useRoute();
 const user = computed(() => store.state.user);
-const credentials = computed(() => store.state.credentials);
 
 const nodes = ref([]);
 const selected = ref();

@@ -4,8 +4,8 @@
     <!-- List and create button -->
     <div class="col-md-6">
       <opensilex-Card
-        noHeader
-        noFooter
+          noHeader
+          noFooter
       >
         <template #body>
           <div class="button-zone">

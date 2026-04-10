@@ -14,7 +14,8 @@ perspective. The Business logic section is a very detailed description of the ru
 the feature, but always from a user perspective. Technical details should be in technical documentation, not in specifications.
 
 As this documentation will be published thanks to VitePress, please use inverted quotes for anything including `<` or `>`.
-Common exemples are for `<T>` or `<http://example.org/my-uri>`. Otherwise the VitePress build will fail.
+Common exemples are for `<T>` or `<http://example.org/my-uri>`. Otherwise the VitePress build will fail. Try applying this
+advise for brackets `{` as it sometimes lead to build failure too. To ensure your documentation's vitepress compatibility follow this [simple test](../../technical-documentation/vitepress-doc-publication.md)
 
 These first five paragraphs of this template are to be removed before publishing your specification.
 

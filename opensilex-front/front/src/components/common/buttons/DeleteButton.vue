@@ -1,21 +1,21 @@
 <template>
-    <opensilex-Button
+  <opensilex-Button
       :label="label"
       :small="small"
       :disabled="disabled"
       variant="outline-danger"
       icon="fa#trash-alt"
       @click="openModal"
-    />
+  />
 
-    <!-- Modal Bootstrap 5 -->
-    <teleport to="body">
+  <!-- Modal Bootstrap 5 -->
+  <teleport to="body">
     <div
-      class="modal fade delete-confirm-modal"
-      tabindex="-1"
-      ref="modalRef"
-      aria-labelledby="deleteModalLabel"
-      aria-hidden="true"
+        class="modal fade delete-confirm-modal"
+        tabindex="-1"
+        ref="modalRef"
+        aria-labelledby="deleteModalLabel"
+        aria-hidden="true"
     >
       <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -24,17 +24,17 @@
           </div>
           <div class="modal-footer">
             <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-              @click="closeModal"
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                @click="closeModal"
             >
               {{ t('component.common.cancel') }}
             </button>
             <button
-              type="button"
-              class="btn btn-danger"
-              @click="confirmDelete"
+                type="button"
+                class="btn btn-danger"
+                @click="confirmDelete"
             >
               {{ t('component.common.delete') }}
             </button>
@@ -42,13 +42,13 @@
         </div>
       </div>
     </div>
-    </teleport>
+  </teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Modal } from 'bootstrap'
-import { useI18n } from 'vue-i18n'
+import {ref, onMounted} from 'vue'
+import {Modal} from 'bootstrap'
+import {useI18n} from 'vue-i18n'
 
 const props = defineProps<{
   label: string
@@ -60,7 +60,7 @@ const emit = defineEmits<{
   (e: 'click'): void
 }>()
 
-const { t } = useI18n()
+const {t} = useI18n()
 
 const modalRef = ref<HTMLElement | null>(null)
 let modalInstance: Modal | null = null

@@ -1,5 +1,4 @@
 <template>
-  <div style="background: red; color: white">TEST TREEVIEW</div>
   <!-- <span>titre du premier node {{ nodes[0].title }}</span> -->
   <!-- <p>nodes: {{ nodes }}</p> -->
 
@@ -42,7 +41,10 @@ const props = defineProps<{
   noButtons?: boolean
 }>()
 
-const emit = defineEmits(['select', 'toggle'])
+const emit = defineEmits<{
+  select: [Array<TreeOption>],
+  toggle: [Array<TreeOption>]
+}>()
 const slots = useSlots()
 
 const treeRef = ref<InstanceType<typeof NTree> | null>(null)
@@ -66,18 +68,14 @@ watch(
 )
 
 
-function onSelectItem(keys: string[], options: any) {
+function onSelectItem(keys: string[], options: Array<TreeOption>) {
   selectedKeys.value = keys
-  if (options?.node) {
-    emit('select', options.node)
-  }
+  emit('select', options)
 }
 
-function onToggle(keys: string[], options: any) {
+function onToggle(keys: string[], options: Array<TreeOption>) {
   expandedKeys.value = keys
-  if (options?.node) {
-    emit('toggle', options.node)
-  }
+  emit('toggle', options)
 }
 
 function getSelectedNode() {
@@ -123,9 +121,6 @@ function renderLabel(option: any) {
     ]
   )
 }
-
-
-
 
 defineExpose({
   getSelectedNode

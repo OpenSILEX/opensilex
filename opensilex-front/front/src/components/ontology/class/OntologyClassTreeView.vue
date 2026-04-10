@@ -1,7 +1,7 @@
 <template>
   <opensilex-TreeView
       :nodes="nodes"
-      @select="displayClassDetail($event.data.uri)">
+      @select="displayClassDetail($event[0]?.data?.uri)">
     <template #node="{ node }">
       <span class="item-icon">
         <opensilex-Icon v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon"
@@ -90,12 +90,14 @@ defineExpose({
 })
 
 function displayClassDetail(uri: string) {
+  console.log("OCTreeView.displayClassDetail", uri);
   vueJsOntologyService
       .getRDFTypeProperties(uri, props.rdfType)
       .then(http => {
         selected.value = http.response.result;
         //This updates or adds a url parameter, permitting refresh and navigation to specific elements
         opensilex.updateURLParameter("selected", selected.value.uri);
+        console.log("Selected", selected.value);
         emit('selectionChange', selected.value);
       }).catch(opensilex.errorHandler);
 }
@@ -165,7 +167,7 @@ function dtoToNode(dto: ResourceTreeDTO, selection) {
     isSelected: isSelected,
     isDraggable: false,
     isSelectable: !dto.disabled,
-    prefix: () => icon ? h(FontAwesomeIcon, { icon }) : undefined
+    prefix: () => icon ? h(FontAwesomeIcon, {icon}) : undefined
   };
 }
 

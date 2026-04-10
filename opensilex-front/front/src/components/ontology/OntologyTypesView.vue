@@ -20,37 +20,25 @@
             {{ t("OntologyTypesView.propertiesTitle") }}
           </router-link>
         </nav>
-        <!--        <b-nav-item-->
-        <!--          :active="isTypeTab"-->
-        <!--          :to="{path: typeURI}"-->
-        <!--          >{{ t("OntologyTypesView.typeTitle") }}-->
-        <!--        </b-nav-item>-->
-
-        <!--        <b-nav-item -->
-        <!--          v-if="withProperties"-->
-        <!--          :active="isPropertiesType"-->
-        <!--          :to="{path: propertiesURI}"-->
-        <!--          >{{ t("OntologyTypesView.propertiesTitle") }}-->
-        <!--        </b-nav-item>-->
       </template>
     </opensilex-PageActions>
 
-        <opensilex-PageContent>
-          <template v-slot>
-            <opensilex-OntologyClassView
-              v-if="isTypeTab"
-              :rdfType="rdfType"
-              :icon="icon"
-              :title="typeTitle"
-            ></opensilex-OntologyClassView>
-<!--            <opensilex-OntologyPropertyView-->
-<!--              v-else-if="withProperties"-->
-<!--              :rdfType="rdfType"-->
-<!--              :icon="icon"-->
-<!--              :title="propertiesTitle"-->
-<!--            />-->
-          </template>
-        </opensilex-PageContent>
+    <opensilex-PageContent>
+      <template v-slot>
+        <opensilex-OntologyClassView
+            v-if="isTypeTab"
+            :rdfType="rdfType"
+            :icon="icon"
+            :title="typeTitle"
+        ></opensilex-OntologyClassView>
+        <!--            <opensilex-OntologyPropertyView-->
+        <!--              v-else-if="withProperties"-->
+        <!--              :rdfType="rdfType"-->
+        <!--              :icon="icon"-->
+        <!--              :title="propertiesTitle"-->
+        <!--            />-->
+      </template>
+    </opensilex-PageContent>
   </div>
 </template>
 

@@ -3,51 +3,57 @@
 
     <!-- List and create button -->
     <div class="col-md-6">
-      <b-card>
-        <div class="button-zone">
+      <opensilex-Card
+        noHeader
+        noFooter
+      >
+        <template #body>
+          <div class="button-zone">
 
-          <opensilex-CreateButton
-              v-if="user.isAdmin()"
-              @click="showCreateForm()"
-              :label="t('OntologyClassView.add')"
-              class="createButton">
-          </opensilex-CreateButton>
+            <opensilex-CreateButton
+                v-if="user.isAdmin()"
+                @click="showCreateForm()"
+                :label="t('OntologyClassView.add')"
+                class="createButton">
+            </opensilex-CreateButton>
 
-          <opensilex-ModalForm
-              ref="classForm"
-              component="opensilex-OntologyClassForm"
-              :createTitle="t('OntologyClassView.add')"
-              :editTitle="t('OntologyClassView.update')"
-              :initForm="initForm"
-              @onCreate="refresh()"
-              @onUpdate="refresh()"
-              modalSize="lg"
-              successMessage="OntologyClassView.the-type"
-              :icon="icon"
-              :data="{
+            <opensilex-ModalForm
+                ref="classForm"
+                component="opensilex-OntologyClassForm"
+                :createTitle="t('OntologyClassView.add')"
+                :editTitle="t('OntologyClassView.update')"
+                :initForm="initForm"
+                @onCreate="refresh()"
+                @onUpdate="refresh()"
+                modalSize="lg"
+                successMessage="OntologyClassView.the-type"
+                :icon="icon"
+                :data="{
                 parentUri: rdfType
               }"
-          ></opensilex-ModalForm>
-        </div>
+            ></opensilex-ModalForm>
+          </div>
 
-        <opensilex-StringFilter
-            :filter.sync="nameFilter"
-            @update="updateFilter()"
-            :placeholder="t('OntologyClassView.search')"
-            :debounce="300"
-            :lazy="false"
-        ></opensilex-StringFilter>
+          <opensilex-StringFilter
+              :filter.sync="nameFilter"
+              @update="updateFilter()"
+              :placeholder="t('OntologyClassView.search')"
+              :debounce="300"
+              :lazy="false"
+          ></opensilex-StringFilter>
 
-        <opensilex-OntologyClassTreeView
-            ref="classesTree"
-            :rdfType="rdfType"
-            @selectionChange="selected = $event"
-            @editClass="showEditForm($event)"
-            @createChildClass="showCreateForm($event)"
-            @deleteRDFType="deleteRDFType($event)"
-            class="scrollable-container"
-        ></opensilex-OntologyClassTreeView>
-      </b-card>
+          <opensilex-OntologyClassTreeView
+              ref="classesTree"
+              :rdfType="rdfType"
+              @selectionChange="selected = $event"
+              @editClass="showEditForm($event)"
+              @createChildClass="showCreateForm($event)"
+              @deleteRDFType="deleteRDFType($event)"
+              class="scrollable-container"
+          ></opensilex-OntologyClassTreeView>
+
+        </template>
+      </opensilex-Card>
     </div>
 
     <!-- Détails of selected element from list  -->
@@ -65,11 +71,11 @@
 
 <script setup lang="ts">
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
-import {VueJsOntologyExtensionService} from "../../lib";
+import {VueJsOntologyExtensionService} from "../../../lib";
 import {useI18n} from "vue-i18n";
-import OntologyClassTreeView from "@/components/ontology/OntologyClassTreeView.vue";
+import OntologyClassTreeView from "@/components/ontology/class/OntologyClassTreeView.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")

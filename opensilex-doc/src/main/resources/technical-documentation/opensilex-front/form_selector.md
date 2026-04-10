@@ -19,7 +19,7 @@ The management of global forms is entrusted to a new component structure revolvi
 
 Each child component is responsible for a single task, which should allow for better understanding, maintainability and error handling.
 
-<img alt="FormSelector_architecture.png" src="img/formSelector_architecture.png" width="100%"/>
+<img alt="FormSelector_architecture.png" src="./img/formSelector_architecture.png" width="100%"/>
 
 
 ## Technical specifications

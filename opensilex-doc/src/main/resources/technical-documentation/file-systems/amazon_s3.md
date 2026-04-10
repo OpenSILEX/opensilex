@@ -382,7 +382,7 @@ byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 
 Two configurations are available depending on the chosen S3 file store implementation
 
-<img alt="s3_config_uml_class_diagramm.png" src="s3_config_uml_class_diagramm.png" width="50%"/>
+<img alt="s3_config_uml_class_diagramm.png" src="./s3_config_uml_class_diagramm.png" width="50%"/>
 
 ### S3 Client
 

@@ -30,13 +30,14 @@
 
 <script setup lang="ts">
 
-import {computed, inject, onBeforeUnmount, onMounted, ref, watchEffect} from "vue";
+import {computed, h, inject, onBeforeUnmount, onMounted, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useRoute} from "vue-router";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {VueJsOntologyExtensionService} from "@/lib";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps<{
   rdfType: string
@@ -153,6 +154,7 @@ function dtoToNode(dto: ResourceTreeDTO, selection) {
 
   let isSelected = selected.value && selected.value.uri == dto.uri;
 
+  const icon = classParametersByURI.value[dto.uri]?.icon?.split('#')[1];
   return {
     key: dto.uri,
     title: dto.name,
@@ -162,7 +164,8 @@ function dtoToNode(dto: ResourceTreeDTO, selection) {
     isExpanded: true,
     isSelected: isSelected,
     isDraggable: false,
-    isSelectable: !dto.disabled
+    isSelectable: !dto.disabled,
+    prefix: () => icon ? h(FontAwesomeIcon, { icon }) : undefined
   };
 }
 

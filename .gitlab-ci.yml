@@ -741,11 +741,11 @@ pages:
         -   job: pages:technical-documentation
             artifacts: true
     script:
-        - cp -r site_public/* public/
         - mkdir -p public/specifications
         - cp -r specs_public/* public/specifications/
         - mkdir -p public/technical-documentation
         - cp -r tech_doc_public/* public/technical-documentation
+        - cp -r site_public/* public/
     artifacts:
         paths:
             - public

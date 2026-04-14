@@ -43,7 +43,7 @@
           <opensilex-OntologyPropertyTreeView
               ref="propertiesTree"
               :domain="rdfType"
-              @selectionChange="selected = $event"
+              @selectionChange="onSelectionChanged"
               @editProperty="showEditForm($event)"
               @createChildProperty="showCreateForm($event)"
               @deleteProperty="deleteProperty($event)"
@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, useTemplateRef} from "vue";
+import {computed, inject, ref, useTemplateRef, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
@@ -102,6 +102,10 @@ function initForm(form: RDFPropertyDTO): RDFPropertyDTO {
   }
   form.domain = props.rdfType;
   return form;
+}
+
+function onSelectionChanged(selection: RDFPropertyDTO) {
+  selected.value = selection;
 }
 
 function showCreateForm(parentTypeURI?) {

@@ -48,6 +48,7 @@
             :required="true"
             v-model:selected="form.range"
             :options="dataTypes"
+            :filterable="true"
             :helpMessage="t('OntologyPropertyForm.dataProperty-help')"
         ></opensilex-FormSelector>
 
@@ -57,6 +58,7 @@
             :required="true"
             v-model:selected="form.range"
             :options="objectTypes"
+            :filterable="true"
             :helpMessage="t('OntologyPropertyForm.objectProperty-help')"
         ></opensilex-FormSelector>
 
@@ -66,6 +68,7 @@
             :required="true"
             v-model:selected="form.parent"
             :options="parentOptions"
+            :filterable="true"
             :helpMessage="t('OntologyPropertyForm.parent-help')"
         ></opensilex-FormSelector>
 
@@ -162,19 +165,21 @@ const dataTypes = computed(() => {
 
 const objectTypes = computed(() => {
   let types: Array<{ id: string, label: string }> = [];
-  opensilex.objectTypes.forEach(type => {
-    // try to get translated name
-    let translatedLabel: string = type.rdf_type.name_translations[store.getters.language];
+  opensilex.objectTypes
+      .filter(type => type.name)
+      .forEach(type => {
+        // try to get translated name
+        let translatedLabel: string = type.rdf_type.name_translations[store.getters.language];
 
-    // if no translation found, then use default name
-    if (!translatedLabel || translatedLabel.length == 0) {
-      translatedLabel = type.rdf_type.name;
-    }
-    types.push({
-      id: type.uri,
-      label: translatedLabel
-    });
-  });
+        // if no translation found, then use default name
+        if (!translatedLabel || translatedLabel.length == 0) {
+          translatedLabel = type.rdf_type.name;
+        }
+        types.push({
+          id: type.uri,
+          label: translatedLabel
+        });
+      });
 
   sortTypesByLabel(types);
   return types;

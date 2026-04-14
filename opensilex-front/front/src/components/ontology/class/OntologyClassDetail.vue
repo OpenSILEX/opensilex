@@ -108,67 +108,12 @@
         </div>
 
         <div>
-          <b-table
-              striped
-              hover
-              small
-              responsive
-              :items="properties"
-              :fields="fields"
+          <n-data-table
+              size="small"
+              :data="properties"
+              :columns="fields"
           >
-            <template v-slot:head(name)="data">{{ t(data.label) }}</template>
-            <template v-slot:head(property)="data">{{ t(data.label) }}</template>
-            <template v-slot:head(is_list)="data">{{ t(data.label) }}</template>
-            <template v-slot:head(is_required)="data">{{ t(data.label) }}</template>
-            <template v-slot:head(inherited)="data">{{ t(data.label) }}</template>
-            <template v-slot:head(actions)="data">{{ t(data.label) }}</template>
-
-            <template v-slot:cell(name)="data">
-          <span class="capitalize-first-letter">
-            {{ data.item.name }}
-          </span>
-            </template>
-
-            <template v-slot:cell(property)="data">
-              <opensilex-UriLink
-                  :uri="data.item.uri"
-                  :value="data.item.uri"
-              ></opensilex-UriLink>
-            </template>
-
-            <template v-slot:cell(is_list)="data">
-          <span class="capitalize-first-letter">{{
-              data.item.is_list
-                  ? $t("component.common.yes")
-                  : $t("component.common.no")
-            }}</span>
-            </template>
-            <template v-slot:cell(is_required)="data">
-          <span class="capitalize-first-letter">{{
-              data.item.is_required
-                  ? $t("component.common.yes")
-                  : $t("component.common.no")
-            }}</span>
-            </template>
-            <template v-slot:cell(inherited)="data">
-          <span class="capitalize-first-letter">{{
-              data.item.inherited
-                  ? $t("component.common.yes")
-                  : $t("component.common.no")
-            }}</span>
-            </template>
-
-            <template v-slot:cell(actions)="data">
-              <b-button-group size="sm">
-                <opensilex-DeleteButton
-                    v-if="!data.item.inherited && data.item.is_custom && user.isAdmin()"
-                    @click="deleteClassPropertyRestriction(data.item.uri)"
-                    :label="t('OntologyClassDetail.deleteProperty')"
-                    :small="true"
-                ></opensilex-DeleteButton>
-              </b-button-group>
-            </template>
-          </b-table>
+          </n-data-table>
         </div>
 
         <opensilex-ModalForm
@@ -187,12 +132,15 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, useTemplateRef} from "vue";
+import {computed, h, inject, ref, useTemplateRef, VNodeChild} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
+import {DataTableColumns} from "naive-ui";
+import UriLink from "@/components/common/views/UriLink.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -214,30 +162,38 @@ const emit = defineEmits<{
 const classPropertyForm = useTemplateRef('classPropertyForm');
 const setPropertiesOrderRef = useTemplateRef('setPropertiesOrderRef');
 
-const fields = [
+const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   {
     key: "name",
-    label: "component.common.name",
+    title: t("component.common.name"),
   },
   {
-    key: "property",
-    label: "component.common.uri",
+    key: "uri",
+    title: t("component.common.uri"),
+    render: (data: VueRDFTypePropertyDTO) => h(UriLink, { uri: data.uri, value: data.uri })
   },
   {
     key: "is_required",
-    label: "OntologyClassDetail.required",
+    title: t("OntologyClassDetail.required"),
+    render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_required)
   },
   {
     key: "is_list",
-    label: "OntologyClassDetail.list",
+    title: t("OntologyClassDetail.list"),
+    render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_required)
   },
   {
     key: "inherited",
-    label: "OntologyClassDetail.inherited",
+    title: t("OntologyClassDetail.inherited"),
+    render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_required)
   },
   {
-    label: "component.common.actions",
+    title: t("component.common.actions"),
     key: "actions",
+    render: (data: VueRDFTypePropertyDTO) => h(DeleteButton, {
+      onClick: () => deleteClassPropertyRestriction(data.uri),
+      label: t('OntologyClassDetail.deleteProperty'),
+      small: true })
   },
 ];
 const customPropertyOrder = ref([]);
@@ -280,6 +236,10 @@ const properties = computed<VueRDFTypePropertyDTO[]>(() => {
 
   return allProps;
 });
+
+function renderBool(value: boolean) : VNodeChild {
+  return h('span', value ? t("component.common.yes") : t("component.common.no"));
+}
 
 function addProperty() {
   // get properties, only property which apply on this type

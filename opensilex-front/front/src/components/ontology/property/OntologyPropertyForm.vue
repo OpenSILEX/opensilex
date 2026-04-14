@@ -89,7 +89,7 @@
         v-model:value="form.name_translations.en"
         :label="t('OntologyPropertyForm.labelEN')"
         type="text"
-        :required.sync="enLangRequired"
+        :required="enLangRequired"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
@@ -103,7 +103,7 @@
         v-model:value="form.name_translations.fr"
         :label="t('OntologyPropertyForm.labelFR')"
         type="text"
-        :required.sync="otherLangRequired"
+        :required="otherLangRequired"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm

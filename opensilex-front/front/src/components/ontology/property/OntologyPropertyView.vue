@@ -23,7 +23,6 @@
                 :initForm="initForm"
                 @onCreate="refresh()"
                 @onUpdate="refresh()"
-                modalSize="lg"
                 :successMessage="t('OntologyPropertyView.the-property')"
                 :icon="icon"
                 :data="{

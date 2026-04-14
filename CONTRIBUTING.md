@@ -1,13 +1,14 @@
 # Contributing to OpenSILEX
 
-The project welcomes contributions, large and small, from anyone.
+The project welcomes contributions, large or small, from anyone.
 
-The mailing list for contributing is [opensilex-help@groupe.renater.fr](mailto:opensilex-help@groupe.renater.fr).
+The contact mail for contributing is [opensilex@inrae.fr](mailto:opensilex@inrae.fr).
 
 The GitHub repository is a mirror of the official OpenSILEX repository hosted on a private GitLab instance.
+If you’re from INRAE or another ESR member (institution of higher education and research), you can get access to our
+repository on the [INRAE’s forge](https://forge.inrae.fr/OpenSILEX/), just contact us.
 
 The processes described here are guidelines, rather than fixed requirements.
-
 
 ## Contributions
 
@@ -25,10 +26,11 @@ Java doc is welcomed and other documentation should be located in the `opensilex
 The project uses GitHub issues to track work.  Please create
 a [GitHub issue](https://github.com/OpenSILEX/opensilex/issues) so that we can track a contribution.
 
-As GitHub is not the main repository, please send an email at [opensilex-help@groupe.renater.fr](mailto:opensilex-help@groupe.renater.fr) with a link to the issue you created.
+As GitHub is not the main repository, please send an email at [opensilex@inrae.fr](mailto:opensilex@inrae.fr) with a link to the issue you created.
 
 In order to avoid duplicated work or undesired contributions, we highly recommend to discuss your intended contributions
-by using the mailing list before starting to work on them. You can still create the issue before to describe your intended contribution.
+and send an email to our team ([opensilex@inrae.fr](mailto:opensilex@inrae.fr)) before starting to work on them. You can
+still create the issue before to describe your intended contribution.
 By talking to developers first, you can make sure that your work aligns with other plans, and that the approach is sound.
 
 See [issue exemple #129](https://github.com/OpenSILEX/opensilex/issues/129)
@@ -49,27 +51,26 @@ See [pull request exemple #130](https://github.com/OpenSILEX/opensilex/pull/130)
 
 ### Discussion and Merging
 
-Once the pull request is ready to be reviewed, send again an email to [opensilex-help@groupe.renater.fr](mailto:opensilex-help@groupe.renater.fr)
+Once the pull request is ready to be reviewed, send again an email to [opensilex@inrae.fr](mailto:opensilex@inrae.fr)
 
 A project committer will review the contribution and coordinate any project-wide discussion
 needed. Review and discussion of the pull request itself takes place on
 GitHub. Functional and acceptance tests may be done by the committer.
 
-Please make sur to be up to date with the develop branch before requesting the review.
-Also before requesting the review, please make sure that all tests are passing and project is compiling by running `mvn clean install`.
+Please make sure to be up to date with the develop branch before requesting the review.
+Also before requesting the review, please make sure that all tests are passing and the project is compiling by running `mvn clean install`.
 
 Since GitHub is not the main repository, the final merge will be done by a project committer. In order to do that the committer will
 fetch your branch from your fork and merge it into the main repository. Your fix or feature will then be part of the next release.
 
 ### Code
 
-Code style is about making the code clear for the next person
-who looks at the code.
+Code style is about making the code clear for the next person who looks at the code.
 
 The project prefers code to be formatted in the common java style.
 
 See, for illustration:
-https://google.github.io/styleguide/javaguide.html#s4-formatting
+[code formatting](https://google.github.io/styleguide/javaguide.html#s4-formatting)
 
 For Vue.js components, follow the style guide at:
 [component-guidelines-template.md](opensilex-doc/src/main/resources/vuejs/component-guidelines-template.md)

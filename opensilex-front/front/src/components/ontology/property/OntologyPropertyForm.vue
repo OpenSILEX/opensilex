@@ -205,7 +205,7 @@ const props = withDefaults(defineProps<{
 
 watchEffect(() => {
   if (props.data.domain) {
-    ontologyService.getProperties(props.data.domain, undefined, false).then(http => {
+    ontologyService.getProperties(props.data.domain, undefined, true).then(http => {
       if (http.response.result.length > 0) {
         const dtoList = http.response.result;
         availableParents.value = dtoList;

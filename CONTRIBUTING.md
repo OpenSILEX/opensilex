@@ -39,7 +39,7 @@ Use the issue number (e.g. GH-129) in the pull request title.
 
 To make a contribution:
 
-* On GitHub, fork https://github.com/apache/jena into you GitHub account.
+* On GitHub, fork https://github.com/OpenSILEX/opensilex into you GitHub account.
 * During forking, deselect "Copy the master branch only".
 * Create a branch from **develop** in your fork for the contribution.
 * Make your changes. Include the OpenSILEX header at the top of each file.

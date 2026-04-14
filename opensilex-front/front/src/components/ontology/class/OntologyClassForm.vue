@@ -15,6 +15,7 @@
         checkStrategy="parent"
         :required="true"
         label="component.common.parent"
+        :filterable="true"
     ></opensilex-FormSelector>
 
     <opensilex-InputForm

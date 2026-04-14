@@ -63,7 +63,8 @@ const props = defineProps({
   createAction: Function,
   updateAction: Function,
   successMessage: [String, Function],
-  overrideSuccessMessage: Boolean
+  overrideSuccessMessage: Boolean,
+  initForm: Function
 })
 
 const emit = defineEmits(['hide', 'onCreate', 'onUpdate', 'onSuccess'])
@@ -157,6 +158,9 @@ function showCreateForm(passedForm?: any) {
   editMode.value = false
   nextTick(() => {
     form.value = passedForm ?? getFormRef()?.getEmptyForm?.() ?? {}
+    if (props.initForm) {
+      form.value = props.initForm(form.value)
+    }
     getFormRef()?.reset?.()
     // reconstruire le formulaire pour éviter les champs remplis par des valeurs precedentes
     formRef.value?.restoreValidation?.()

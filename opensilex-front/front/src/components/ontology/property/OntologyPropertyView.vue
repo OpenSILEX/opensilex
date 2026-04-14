@@ -27,7 +27,8 @@
                 :successMessage="t('OntologyPropertyView.the-property')"
                 :icon="icon"
                 :data="{
-                  'domain': rdfType
+                  domain: rdfType,
+                  parentUri: parentURI
                 }"
             ></opensilex-ModalForm>
           </div>
@@ -90,7 +91,8 @@ const props = defineProps<{
   description: string
 }>()
 
-function initForm(form: RDFPropertyDTO) {
+function initForm(form: RDFPropertyDTO): RDFPropertyDTO {
+  console.log("Init form !!", parentURI.value)
   form.parent = parentURI.value;
   if (OWL.hasParent(form.parent)) {
     form.rdf_type = null;
@@ -100,14 +102,12 @@ function initForm(form: RDFPropertyDTO) {
     form.rdf_type = OWL.OBJECT_PROPERTY_URI;
   }
   form.domain = props.rdfType;
+  return form;
 }
 
 function showCreateForm(parentTypeURI?) {
+  console.log("Show create form", parentTypeURI);
   parentURI.value = parentTypeURI;
-  let propertyFormComponent = propertyForm.value.getFormRef();
-  // propertyFormComponent.setParentPropertiesTree(
-  //     propertiesTree.value.getTree()
-  // );
   propertyForm.value.showCreateForm();
 }
 

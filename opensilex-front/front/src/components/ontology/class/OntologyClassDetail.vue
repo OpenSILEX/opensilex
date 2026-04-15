@@ -69,42 +69,34 @@
 
         <!-- Add and set order buttons -->
         <div>
-
-          <b-modal ref="setPropertiesOrderRef" size="md" :static="true">
-            <template v-slot:modal-title>
-              {{ t("OntologyClassDetail.setPropertiesOrder") }}
-            </template>
-
-            <template v-slot:modal-footer>
-              <button
-                  type="button"
-                  class="btn btn-secondary"
-                  v-on:click="setPropertiesOrderRef.hide()"
-              >
-                {{ t("component.common.close") }}
-              </button>
-              <button
-                  type="button"
-                  class="btn greenThemeColor"
-                  v-on:click="setPropertiesOrder()"
-              >
-                {{ t("component.common.validateSelection") }}
-              </button>
+          <opensilex-Modal
+              ref="setPropertiesOrderRef"
+          >
+            <template #header>
+              <h4>
+                {{ t("OntologyClassDetail.setPropertiesOrder") }}
+              </h4>
             </template>
             <p>{{ t("OntologyClassDetail.setPropertiesOrderInfo") }}:</p>
-            <b-list-group>
-              <draggable
-                  v-model="customPropertyOrder"
-              >
-                <b-list-group-item
+            <n-list bordered>
+              <VueDraggable v-model="customPropertyOrder">
+                <n-list-item
                     v-for="element in customPropertyOrder"
                     :key="element.uri"
                 >{{ element.name }}
-                </b-list-group-item
-                >
-              </draggable>
-            </b-list-group>
-          </b-modal>
+                </n-list-item>
+              </VueDraggable>
+            </n-list>
+            <template #footer>
+              <button type="button" class="btn btn-secondary" @click="setPropertiesOrderRef.hide()">
+                {{ t('component.common.close') }}
+              </button>
+
+              <button type="button" class="btn greenThemeColor" @click="setPropertiesOrder()">
+                {{ t("component.common.validateSelection") }}
+              </button>
+            </template>
+          </opensilex-Modal>
         </div>
 
         <div>
@@ -142,10 +134,12 @@ import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
-import {DataTableColumns} from "naive-ui";
+import {DataTableColumns, NList, NListItem} from "naive-ui";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
+import Modal from "@/components/common/views/Modal.vue";
+import {VueDraggable} from "vue-draggable-plus";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -165,7 +159,7 @@ const emit = defineEmits<{
 }>()
 
 const classPropertyForm = useTemplateRef<InstanceType<typeof ModalForm>>('classPropertyForm');
-const setPropertiesOrderRef = useTemplateRef('setPropertiesOrderRef');
+const setPropertiesOrderRef = useTemplateRef<InstanceType<typeof Modal>>('setPropertiesOrderRef');
 
 const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   {
@@ -175,7 +169,7 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   {
     key: "uri",
     title: t("component.common.uri"),
-    render: (data: VueRDFTypePropertyDTO) => h(UriLink, { uri: data.uri, value: data.uri })
+    render: (data: VueRDFTypePropertyDTO) => h(UriLink, {uri: data.uri, value: data.uri})
   },
   {
     key: "is_required",
@@ -198,10 +192,11 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
     render: (data: VueRDFTypePropertyDTO) => h(DeleteButton, {
       onClick: () => deleteClassPropertyRestriction(data.uri),
       label: t('OntologyClassDetail.deleteProperty'),
-      small: true })
+      small: true
+    })
   },
 ];
-const customPropertyOrder = ref([]);
+const customPropertyOrder = ref<Array<VueRDFTypePropertyDTO>>([]);
 
 const properties = computed<VueRDFTypePropertyDTO[]>(() => {
   let allProps: VueRDFTypePropertyDTO[] = props.selected.data_properties.concat(
@@ -242,7 +237,7 @@ const properties = computed<VueRDFTypePropertyDTO[]>(() => {
   return allProps;
 });
 
-function renderBool(value: boolean) : VNodeChild {
+function renderBool(value: boolean): VNodeChild {
   return h('span', value ? t("component.common.yes") : t("component.common.no"));
 }
 
@@ -267,10 +262,9 @@ function setPropertiesOrder() {
     propertiesOrder.push(p.uri);
   }
 
-
-  vueOntologyService.setRDFTypePropertiesOrder(this.selected.uri, propertiesOrder)
+  vueOntologyService.setRDFTypePropertiesOrder(props.selected.uri, propertiesOrder)
       .then(() => {
-        setPropertiesOrderRef.hide();
+        setPropertiesOrderRef.value.hide();
         emit("onDetailChange");
       });
 }
@@ -278,12 +272,12 @@ function setPropertiesOrder() {
 
 function startSetPropertiesOrder() {
   customPropertyOrder.value = [];
-  for (let p of this.properties) {
+  for (let p of properties.value) {
     if (p.uri != "rdfs:label") {
       customPropertyOrder.value.push(p);
     }
   }
-  setPropertiesOrderRef.show();
+  setPropertiesOrderRef.value.show();
 }
 </script>
 

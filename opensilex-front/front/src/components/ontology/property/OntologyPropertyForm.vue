@@ -141,7 +141,7 @@ const rdfTypeByParentURI = ref({});
 const parentOptions = computed(() => {
   if (props.editMode) {
     return opensilex.buildTreeListOptions(availableParents.value, {
-      disableSubTree: props.form.uri
+      disableSubTree: form.value.uri
     });
   } else {
     return opensilex.buildTreeListOptions(availableParents.value);
@@ -185,19 +185,20 @@ const objectTypes = computed(() => {
   return types;
 })
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   editMode: boolean
-  form: any
   data: {
     domain: string
   }
-}>(), {
-  form: {
+}>();
+
+const form = defineModel("form", {
+  default: {
     uri: null,
     rdf_type: OWL.DATATYPE_PROPERTY_URI,
     parent: null,
-    name_translations: {},
-    comment_translations: {},
+    name_translations: {en: null, fr: null},
+    comment_translations: {en: null, fr: null},
     domain: null,
     range: null
   }
@@ -215,8 +216,6 @@ watchEffect(() => {
       }
     })
   }
-  // parentByURI.value = {};
-  // availableParents.value = loadNodesRecursively(nodes);
 });
 
 defineExpose({
@@ -246,24 +245,6 @@ function sortTypesByLabel(types: Array<{ id: string, label: string }>): void {
     }
     return 0;
   });
-}
-
-function loadNodesRecursively(nodes) {
-  let parents = [];
-  for (let i in nodes) {
-    let node = nodes[i];
-    let selectItem: any = {
-      id: node.data.uri,
-      label: node.title
-    };
-    rdfTypeByParentURI.value[node.data.uri] = node.data;
-    if (node.children && node.children.length > 0) {
-      selectItem.children = loadNodesRecursively(node.children);
-    }
-    parents.push(selectItem);
-  }
-
-  return parents;
 }
 
 function computeFormToSend(form) {

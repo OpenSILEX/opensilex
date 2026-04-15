@@ -70,7 +70,7 @@ const props = defineProps({
 const emit = defineEmits(['hide', 'onCreate', 'onUpdate', 'onSuccess'])
 
 const editMode = ref(false)
-const form = ref<Record<string, any>>({})
+const form = ref<Record<string, any>>()
 const rules = ref<Record<string, any>>({})
 const componentRefreshKey = ref(0)
 
@@ -127,7 +127,7 @@ async function validate() {
           emit('onCreate', res)
         }
 
-        modalRef.value?.hide()
+        hide();
         emit('hide')
         emit('onSuccess') // rafraîchir les listes
         console.log('[ModalForm] submit done, res = ', res)

@@ -29,8 +29,8 @@
                 successMessage="OntologyClassView.the-type"
                 :icon="icon"
                 :data="{
-                parentUri: rdfType
-              }"
+                  parentUri: rdfType
+                }"
             ></opensilex-ModalForm>
           </div>
 
@@ -111,8 +111,9 @@ onBeforeUnmount(() => {
   unwatchLang();
 })
 
-function initForm(form) {
+function initForm(form): any {
   form.parent = parentURI.value;
+  return form;
 }
 
 function showCreateForm(parentTypeURI?: string) {
@@ -141,7 +142,7 @@ function deleteRDFType(data) {
 }
 
 function refresh() {
-  classesTree.refresh(selected, nameFilter);
+  classesTree.value.refresh(selected, nameFilter);
 }
 
 function updateFilter() {

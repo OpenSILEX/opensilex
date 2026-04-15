@@ -74,35 +74,32 @@ const service = opensilex.getService<VueJsOntologyExtensionService>("opensilex.V
 const {t} = useI18n();
 
 const availableParents = ref<Array<any>>([]);
-watchEffect(() => {
-  console.log("Parents modified", availableParents.value);
-  console.log("            copy", JSON.parse(JSON.stringify(availableParents.value)));
-})
 
 const parentOptions = computed(() => {
   if (props.editMode) {
     return opensilex.buildTreeListOptions(availableParents.value, {
-      disableSubTree: props.form.uri
+      disableSubTree: form.value.uri
     });
   } else {
     return opensilex.buildTreeListOptions(availableParents.value);
   }
 })
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   editMode: boolean,
-  form: any,
   data: {
     parentUri: string
   }
-}>(), {
-  form: {
+}>();
+
+const form = defineModel("form", {
+  default: {
     uri: null,
     parent: null,
     name: null,
-    name_translations: {},
+    name_translations: {en: null, fr: null},
     comment: null,
-    comment_translations: {},
+    comment_translations: {en: null, fr: null},
     icon: null,
     is_abstract: false
   }
@@ -129,9 +126,9 @@ function getEmptyForm() {
     uri: null,
     parent: null,
     name: null,
-    name_translations: {},
+    name_translations: {en: null, fr: null},
     comment: null,
-    comment_translations: {},
+    comment_translations: {en: null, fr: null},
     icon: null,
     is_abstract: false
   };

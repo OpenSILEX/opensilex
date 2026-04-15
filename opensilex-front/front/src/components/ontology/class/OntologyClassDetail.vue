@@ -180,12 +180,12 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   {
     key: "is_list",
     title: t("OntologyClassDetail.list"),
-    render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_required)
+    render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_list)
   },
   {
     key: "inherited",
     title: t("OntologyClassDetail.inherited"),
-    render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_required)
+    render: (data: VueRDFTypePropertyDTO) => renderBool(data.inherited)
   },
   {
     title: t("component.common.actions"),

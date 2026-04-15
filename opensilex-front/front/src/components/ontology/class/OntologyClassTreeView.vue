@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 
-import {computed, h, inject, onBeforeUnmount, onMounted, ref, watchEffect} from "vue";
+import {computed, h, inject, onBeforeUnmount, onMounted, Ref, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
@@ -108,7 +108,7 @@ const onRootClassChange = watchEffect(() => {
   }
 });
 
-function refresh(selection, nameFilter) {
+function refresh(selection: Ref<any>, nameFilter) {
   Promise.all([
     ontologyService.searchSubClassesOf(props.rdfType, nameFilter, false),
     vueJsOntologyService.getRDFTypesParameters()
@@ -131,7 +131,7 @@ function refresh(selection, nameFilter) {
     }
 
     if (selection) {
-      displayClassDetail(selection.uri);
+      displayClassDetail(selection.value.uri);
     }
   }).catch(opensilex.errorHandler);
 }

@@ -108,7 +108,7 @@ const onRootClassChange = watchEffect(() => {
   }
 });
 
-function refresh(selection: Ref<any>, nameFilter) {
+function refresh(selection: any, nameFilter?: string) {
   Promise.all([
     ontologyService.searchSubClassesOf(props.rdfType, nameFilter, false),
     vueJsOntologyService.getRDFTypesParameters()

@@ -33,7 +33,7 @@
           </div>
 
           <opensilex-StringFilter
-              :filter.sync="nameFilter"
+              v-model:filter="nameFilter"
               @update="updateFilter()"
               :placeholder="t('OntologyPropertyView.search')"
               :debounce="300"

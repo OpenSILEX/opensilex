@@ -35,7 +35,7 @@
           </div>
 
           <opensilex-StringFilter
-              :filter.sync="nameFilter"
+              v-model:filter="nameFilter"
               @update="updateFilter()"
               :placeholder="t('OntologyClassView.search')"
               :debounce="300"
@@ -142,7 +142,7 @@ function deleteRDFType(data) {
 }
 
 function refresh() {
-  classesTree.value.refresh(selected, nameFilter);
+  classesTree.value.refresh(selected.value, nameFilter.value);
 }
 
 function updateFilter() {

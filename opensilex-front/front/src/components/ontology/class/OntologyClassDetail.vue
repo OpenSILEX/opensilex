@@ -83,6 +83,7 @@
                 <n-list-item
                     v-for="element in customPropertyOrder"
                     :key="element.uri"
+                    style="cursor: grab"
                 >{{ element.name }}
                 </n-list-item>
               </VueDraggable>

@@ -69,6 +69,9 @@ const isTypeTab = computed(() => route.path.startsWith(props.typeURI) && !isProp
 </script>
 
 <style scoped lang="scss">
+.tab {
+  text-decoration-line: none;
+}
 
 .active {
   color: #007bff;

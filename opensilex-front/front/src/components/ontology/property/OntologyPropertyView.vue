@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, useTemplateRef, watchEffect} from "vue";
+import {computed, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
@@ -68,7 +68,7 @@ import OWL from "@/ontologies/OWL";
 import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {useI18n} from "vue-i18n";
-import OntologyPropertyForm from "@/components/ontology/property/OntologyPropertyForm.vue";
+import OntologyPropertyTreeView from "@/components/ontology/property/OntologyPropertyTreeView.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService")
@@ -81,7 +81,7 @@ const selected = ref<RDFPropertyGetDTO>();
 const parentURI = ref("");
 
 const propertyForm = useTemplateRef("propertyForm");
-const propertiesTree = useTemplateRef("propertiesTree");
+const propertiesTree = useTemplateRef<InstanceType<typeof OntologyPropertyTreeView>>("propertiesTree");
 
 const props = defineProps<{
   rdfType: string

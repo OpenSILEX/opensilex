@@ -69,7 +69,8 @@ const emit = defineEmits<{
 }>();
 
 defineExpose({
-  getTree
+  getTree,
+  refresh
 })
 
 function getTree() {

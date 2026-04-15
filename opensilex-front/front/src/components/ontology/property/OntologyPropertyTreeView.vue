@@ -1,6 +1,7 @@
 <template>
   <opensilex-TreeView
       :nodes="nodes"
+      defaultExpandAll
       @select="displayPropertyNodeDetail($event[0])">
     <template #buttons="{ node }">
       <opensilex-AddChildButton

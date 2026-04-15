@@ -1,6 +1,7 @@
 <template>
   <opensilex-TreeView
       :nodes="nodes"
+      defaultExpandAll
       @select="displayClassDetail($event[0]?.data?.uri)">
     <template #node="{ node }">
       <span class="item-icon">

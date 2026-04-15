@@ -4,7 +4,6 @@
 
 <n-tree
   ref="treeRef"
-  v-model:expanded-keys="expandedKeys"
   :data="nodeList"
   :show-irrelevant-nodes="false"
   key-field="key"
@@ -13,6 +12,7 @@
   @update:selected-keys="onSelectItem"
   @update:expanded-keys="onToggle"
   :render-label="renderLabel"
+  :default-expand-all="defaultExpandAll"
 >
   <!-- label-field="title" -->
   <!-- Slot label : rendu du node -->
@@ -36,10 +36,13 @@
 import { ref, defineProps, defineEmits, useSlots, defineExpose, watch, onMounted, h } from 'vue'
 import {NTree, TreeOption} from 'naive-ui'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   nodes: TreeOption[]
   noButtons?: boolean
-}>()
+  defaultExpandAll: boolean
+}>(), {
+  defaultExpandAll: false
+})
 
 const emit = defineEmits<{
   select: [Array<TreeOption>],
@@ -49,7 +52,6 @@ const slots = useSlots()
 
 const treeRef = ref<InstanceType<typeof NTree> | null>(null)
 const nodeList = ref(props.nodes || [])
-const expandedKeys = ref<string[]>([])
 const selectedKeys = ref<string[]>([])
 
 onMounted(() => {
@@ -74,7 +76,6 @@ function onSelectItem(keys: string[], options: Array<TreeOption>) {
 }
 
 function onToggle(keys: string[], options: Array<TreeOption>) {
-  expandedKeys.value = keys
   emit('toggle', options)
 }
 

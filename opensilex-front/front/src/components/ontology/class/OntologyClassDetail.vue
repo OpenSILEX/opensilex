@@ -48,7 +48,7 @@
           <div class="col-lg-8">
             <opensilex-Button
                 v-if="user.isAdmin()"
-                @click="addProperty"
+                @click="showClassPropertyForm"
                 class="greenThemeColor addPropertyButton"
                 icon="ik#ik-plus"
                 :small="false"
@@ -124,6 +124,10 @@
             @onCreate="$emit('onDetailChange')"
             @onUpdate="$emit('onDetailChange')"
             :successMessage="t('OntologyClassView.the-type')"
+            :data="{
+              domain: rdfType,
+              classUri: selected.uri
+            }"
         ></opensilex-ModalForm>
       </div>
 
@@ -141,6 +145,7 @@ import {useI18n} from "vue-i18n";
 import {DataTableColumns} from "naive-ui";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -159,7 +164,7 @@ const emit = defineEmits<{
   onDetailChange: []
 }>()
 
-const classPropertyForm = useTemplateRef('classPropertyForm');
+const classPropertyForm = useTemplateRef<InstanceType<typeof ModalForm>>('classPropertyForm');
 const setPropertiesOrderRef = useTemplateRef('setPropertiesOrderRef');
 
 const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
@@ -241,15 +246,8 @@ function renderBool(value: boolean) : VNodeChild {
   return h('span', value ? t("component.common.yes") : t("component.common.no"));
 }
 
-function addProperty() {
-  // get properties, only property which apply on this type
-  ontologyService.getLinkableProperties(props.selected.uri, props.rdfType).then((http) => {
-    let formRef: OntologyClassPropertyForm = classPropertyForm.getFormRef();
-    formRef.setDomain(this.rdfType);
-    formRef.setClassURI(this.selected.uri);
-    formRef.setProperties(http.response.result);
-    classPropertyForm.showCreateForm();
-  });
+function showClassPropertyForm() {
+  classPropertyForm.value.showCreateForm();
 }
 
 function deleteClassPropertyRestriction(propertyURI) {

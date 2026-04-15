@@ -2,7 +2,7 @@
   <n-form>
 
     <opensilex-InputForm
-        :value.sync="rdf_type"
+        v-model:value="data.classUri"
         label="component.common.type"
         type="text"
         :disabled="true"
@@ -10,11 +10,11 @@
 
     <!-- Parent -->
     <opensilex-FormSelector
-        :selected.sync="form.property"
+        v-model:selected="form.property"
         :options="propertiesOptions"
         :required="true"
-        label="OntologyClassPropertyForm.property"
-        helpMessage="OntologyClassPropertyForm.property-help"
+        :label="t('OntologyClassPropertyForm.property')"
+        :helpMessage="t('OntologyClassPropertyForm.property-help')"
         @update:selected="updateIsListProperty"
     ></opensilex-FormSelector>
 
@@ -22,27 +22,29 @@
     <!-- is_required -->
     <opensilex-FormField
         :required="true"
-        label="OntologyClassDetail.required"
-        helpMessage="OntologyClassPropertyForm.required-help"
+        :label="t('OntologyClassPropertyForm.required')"
+        :helpMessage="t('OntologyClassPropertyForm.required-help')"
     >
-      <template v-slot:field="field">
-        <b-form-checkbox
-            v-model="form.is_required" switch
-        ></b-form-checkbox>
+      <template #field>
+        <n-switch
+            v-model:value="form.is_required"
+            size="small"
+        ></n-switch>
       </template>
     </opensilex-FormField>
 
     <!-- is_list -->
     <opensilex-FormField
         :required="true"
-        label="OntologyClassDetail.list"
-        helpMessage="OntologyClassPropertyForm.is-list-help"
+        :label="t('OntologyClassPropertyForm.list')"
+        :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
     >
-      <template v-slot:field="field">
-        <b-form-checkbox
+      <template #field>
+        <n-switch
             :disabled="dataTypeProperties.indexOf(form.property) >= 0"
-            v-model="form.is_list" switch
-        ></b-form-checkbox>
+            v-model:value="form.is_list"
+            size="small"
+        ></n-switch>
       </template>
     </opensilex-FormField>
 
@@ -50,20 +52,20 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
+import {NSwitch} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
 const {t} = useI18n();
 
 const availableProperties = ref();
 const dataTypeProperties = ref([]);
-const rdf_type = ref();
-const domain = ref();
 
 const propertiesOptions = computed(() => {
   return buildTreeListOptions(
@@ -74,7 +76,11 @@ const propertiesOptions = computed(() => {
 
 const props = withDefaults(defineProps<{
   editMode: boolean,
-  form: any
+  form: any,
+  data: {
+    domain: string,
+    classUri: string
+  }
 }>(), {
   form: {
     property: null,
@@ -83,10 +89,14 @@ const props = withDefaults(defineProps<{
   }
 });
 
+watchEffect(() => {
+  ontologyService.getLinkableProperties(props.data.classUri, props.data.domain).then((http) => {
+    setProperties(http.response.result);
+  });
+});
+
 defineExpose({
   getEmptyForm,
-  setClassURI,
-  setDomain,
   create,
   update
 })
@@ -115,14 +125,6 @@ function setProperties(properties: ResourceTreeDTO[]) {
   });
 }
 
-function setClassURI(rdf_type) {
-  this.rdf_type = rdf_type;
-}
-
-function setDomain(domain) {
-  this.domain = domain;
-}
-
 function updateIsListProperty() {
   if (!props.form.property || !dataTypeProperties) {
     return;
@@ -136,15 +138,14 @@ function updateIsListProperty() {
 
 function create(form) {
   let propertyForm = {
-    rdf_type: rdf_type.value,
+    rdf_type: props.data.classUri,
     property: form.property,
     required: form.is_required,
     list: form.is_list,
-    domain: domain.value
+    domain: props.data.domain
   };
 
-  return opensilex
-      .getService<OntologyService>("opensilex.OntologyService")
+  return ontologyService
       .addClassPropertyRestriction(propertyForm)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let msg = t("OntologyClassPropertyForm.link-success-msg", [form.property, form.rdf_type]).toString();
@@ -155,15 +156,14 @@ function create(form) {
 
 function update(form) {
   let propertyForm = {
-    rdf_type: rdf_type.value,
+    rdf_type: props.data.classUri,
     property: form.property,
     required: form.is_required,
     list: form.is_list,
-    domain: domain.value
+    domain: props.data.domain
   };
 
-  return opensilex
-      .getService<OntologyService>("opensilex.OntologyService")
+  return ontologyService
       .updateClassPropertyRestriction(propertyForm)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let msg = t("OntologyClassPropertyForm.link-success-msg", form.property, form.rdf_type).toString();
@@ -193,8 +193,8 @@ function buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
 
   let dataProperty = isDataProperty(resourceTree.uri);
   let propertyType = dataProperty ?
-      t("OntologyPropertyForm.dataProperty") :
-      t("OntologyPropertyForm.objectProperty");
+      t("OntologyClassPropertyForm.dataProperty") :
+      t("OntologyClassPropertyForm.objectProperty");
 
   let option = {
     id: resourceTree.uri,
@@ -233,6 +233,10 @@ en:
     property-help: Select the property to associate to the type. Only properties which are not already associated, are selectable.
     required-help: Check this checkbox to make this property required for the selected type.
     is-list-help: Check this checkbox in order to use multiple values. Currently only object-properties are supported.
+    required: Required
+    list: List of values
+    dataProperty: Data property
+    objectProperty: Object property
 fr:
   OntologyClassPropertyForm:
     property: Propriété
@@ -240,6 +244,8 @@ fr:
     property-help: 'Selectionner la propriété à associer au type. Seul les propriétés qui ne sont pas déjà associées, sont sélectionnables.'
     required-help: Cocher cette case pour rendre cette propriété obligatoire pour le type selectionné
     is-list-help: 'Cocher cette case pour pouvoir utiliser une liste de valeurs. Seul les propriétés "objets" sont supportés.'
-
-
+    required: Obligatoire
+    list: Liste de valeurs
+    dataProperty: Propriété litérale
+    objectProperty: Relation vers un objet
 </i18n>

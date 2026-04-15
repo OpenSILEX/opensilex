@@ -2,7 +2,7 @@
   <div class="row">
 
     <!-- List and create button -->
-    <div class="col-md-6">
+    <div class="col-md-5">
       <opensilex-Card
           noHeader
           noFooter
@@ -57,7 +57,7 @@
     </div>
 
     <!-- Détails of selected element from list  -->
-    <div class="col-md-6 ">
+    <div class="col-md-7 ">
       <div>
         <opensilex-OntologyClassDetail
             :rdfType="rdfType"

@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-5">
       <opensilex-Card
         noHeader
         noFooter
@@ -52,7 +52,7 @@
         </template>
       </opensilex-Card>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-7">
       <opensilex-OntologyPropertyDetail :selected="selected"/>
     </div>
   </div>

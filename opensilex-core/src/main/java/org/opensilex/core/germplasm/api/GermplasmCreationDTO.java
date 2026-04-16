@@ -25,6 +25,7 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.DefaultValue;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -114,7 +115,7 @@ public class GermplasmCreationDTO {
     @JsonProperty("is_public")
     @NotNull
     @ApiModelProperty(value = "boolean", example = "True", required = true)
-    protected Boolean isPublic;
+    protected Boolean isPublic = true;
 
     @JsonProperty("groups")
     @ApiModelProperty(value = "groups", example = "")

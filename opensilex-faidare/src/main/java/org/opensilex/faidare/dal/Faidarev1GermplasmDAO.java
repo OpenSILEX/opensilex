@@ -142,7 +142,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         Var soVar = makeVar("so");
 
         WhereBuilder experimentsWhere = new WhereBuilder().addGraph(experimentUriVar, soVar, Oeso.hasGermplasm.asNode(), uriVar);
-        SPARQLQueryHelper.addWhereUriValues(experimentsWhere, experimentUriVar.getVarName(), userExperiments);
 
         Expr filterExpr = SPARQLQueryHelper.inURIFilter(
                 typeVar,
@@ -168,6 +167,8 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                         new WhereBuilder().addGraph(germplasmGraph, uriVar, RDFS.label.asNode(), labelVar)
                 )
         );
+
+        SPARQLQueryHelper.addWhereUriValues(accessions, experimentUriVar.getVarName(), userExperiments);
 
         SPARQLQueryHelper.appendGroupConcatAggregator(accessions, experimentUriVar, true);
 

@@ -26,7 +26,7 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
     private LocationObservationDTO location;
 
     @Deprecated
-    @ApiModelProperty(notes = "Object geometry. Depreciated : use location instead")
+    @ApiModelProperty("Object geometry. Depreciated : use location instead")
     private GeoJsonObject geometry;
 
     @JsonProperty("creation_date")

@@ -41,7 +41,7 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
         if (experiment != null) {
             // just let the export find which properties are associated to an OS
             customColumns = Collections.emptySet();
-            extraNonUriColumns = ScientificObjectCsvImporterLogic.moveProperties;
+            extraNonUriColumns = ScientificObjectCsvImporterLogic.extraColumns;
         }else{
             // only export name and geometry when out of experimental context
             customColumns = new LinkedHashSet<>();

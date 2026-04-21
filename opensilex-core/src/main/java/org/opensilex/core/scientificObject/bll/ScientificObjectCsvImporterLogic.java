@@ -453,7 +453,9 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 currentMoveModel = new MoveModel();
                 return;
             }
-            var moveCompat = getCompatibilityMoveModel(sciObjModel, geometryMapCompat.get(sciObjModel));
+            var creationDate = Optional.ofNullable(sciObjModel.getRelation(Oeso.hasCreationDate)).map(rel -> LocalDate.parse(rel.getValue())).orElse(null);
+            var moveCompat = scientificObjectLogic.getCompatibilityMoveModel(experiment, creationDate, geometryMapCompat.get(sciObjModel));
+            moveCompat.setTargets(Collections.singletonList(sciObjModel.getUri()));
             movePerScientificObjectUri.put(sciObjModel.getUri(), moveCompat);
             return;
         }
@@ -530,27 +532,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         movePerScientificObjectUri.put(sciObjModel.getUri(), currentMoveModel);
         atLeast1MoveFieldFilledForCurrentRow = false;
         currentMoveModel = new MoveModel();
-    }
-
-    /**
-     * Creates a MoveModel in case the outdated vocabulary:hasGeometry field is used.
-     */
-    @NotNull
-    private MoveModel getCompatibilityMoveModel(ScientificObjectModel sciObjModel, Geometry geometry) {
-        var moveCompat = new MoveModel();
-        var endInstant = new InstantModel();
-        var moveLocations = MoveLogic.getOrCreateMovesLocationObservation(moveCompat, experiment);
-        var creationDate = sciObjModel.getRelation(Oeso.hasCreationDate);
-        var endTime = creationDate != null
-                ? OffsetDateTime.of(LocalDate.parse(creationDate.getValue()), LocalTime.NOON, ZoneOffset.UTC)
-                : OffsetDateTime.now();
-        endInstant.setDateTimeStamp(endTime);
-        moveCompat.setEnd(endInstant);
-        moveCompat.setIsInstant(true);
-        moveLocations.setGeometry(geometry);
-        moveCompat.setTargets(Collections.singletonList(sciObjModel.getUri()));
-        moveCompat.setType(URI.create(Oeev.Move.getURI()));
-        return moveCompat;
     }
 
     private static boolean checkIfSONameIsNull(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx) {

@@ -14,6 +14,8 @@ import java.net.URI;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -38,6 +40,11 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
     @JsonProperty("experiment")
     @ApiModelProperty(value = "Scientific object experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
     private URI experiment;
+
+    @Deprecated
+    @JsonProperty("geometry")
+    @ApiModelProperty(value = "Deprecated. Please use the move property to attach geospatial info to the scientific object.")
+    private GeoJsonObject geometry;
 
     @JsonProperty("move")
     private MoveCreationDTO move;
@@ -71,6 +78,16 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Deprecated
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    @Deprecated
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     public MoveCreationDTO getMove() {

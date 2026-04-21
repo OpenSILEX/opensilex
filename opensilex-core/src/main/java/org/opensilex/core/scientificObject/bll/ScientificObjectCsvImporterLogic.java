@@ -12,6 +12,7 @@ import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
 import org.opensilex.core.event.bll.MoveLogic;
@@ -60,10 +61,10 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -141,12 +142,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     //Store a MoveModel, and the corresponding line index, as we are making our way through a row. Once a new row is reached we
     //can add to the movePerScientificObject map and then reset the currentMoveModel
     private MoveModel currentMoveModel = new MoveModel();
-    /**
-     * Geometry for compatibility. Old CSV formats used a vocabulary:hasGeometry column for adding a geometry property to the
-     * object.
-     */
-    @Deprecated
-    private Geometry currentGeometryCompat = null;
     //Boolean to keep track of if any move field was filled in for this line. This only counts the move specific fields and the event start and end dates
     private boolean atLeast1MoveFieldFilledForCurrentRow = false;
 
@@ -458,19 +453,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 currentMoveModel = new MoveModel();
                 return;
             }
-            var moveCompat = new MoveModel();
-            var endInstant = new InstantModel();
-            var moveLocations = MoveLogic.getOrCreateMovesLocationObservation(moveCompat, experiment);
-            var endTime = sciObjModel.getCreationDate() != null
-                    ? OffsetDateTime.of(sciObjModel.getCreationDate(), LocalTime.NOON, ZoneOffset.UTC)
-                    : OffsetDateTime.now();
-            endInstant.setDateTimeStamp(endTime); //TODO get sciObject start date
-            moveCompat.setEnd(endInstant);
-            moveCompat.setIsInstant(true);
-            moveLocations.setGeometry(geometryMapCompat.get(sciObjModel));
+            var moveCompat = getCompatibilityMoveModel(sciObjModel, geometryMapCompat.get(sciObjModel));
             movePerScientificObjectUri.put(sciObjModel.getUri(), moveCompat);
-            moveCompat.setTargets(Collections.singletonList(sciObjModel.getUri()));
-            moveCompat.setType(URI.create(Oeev.Move.getURI()));
             return;
         }
 
@@ -546,6 +530,27 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         movePerScientificObjectUri.put(sciObjModel.getUri(), currentMoveModel);
         atLeast1MoveFieldFilledForCurrentRow = false;
         currentMoveModel = new MoveModel();
+    }
+
+    /**
+     * Creates a MoveModel in case the outdated vocabulary:hasGeometry field is used.
+     */
+    @NotNull
+    private MoveModel getCompatibilityMoveModel(ScientificObjectModel sciObjModel, Geometry geometry) {
+        var moveCompat = new MoveModel();
+        var endInstant = new InstantModel();
+        var moveLocations = MoveLogic.getOrCreateMovesLocationObservation(moveCompat, experiment);
+        var creationDate = sciObjModel.getRelation(Oeso.hasCreationDate);
+        var endTime = creationDate != null
+                ? OffsetDateTime.of(LocalDate.parse(creationDate.getValue()), LocalTime.NOON, ZoneOffset.UTC)
+                : OffsetDateTime.now();
+        endInstant.setDateTimeStamp(endTime);
+        moveCompat.setEnd(endInstant);
+        moveCompat.setIsInstant(true);
+        moveLocations.setGeometry(geometry);
+        moveCompat.setTargets(Collections.singletonList(sciObjModel.getUri()));
+        moveCompat.setType(URI.create(Oeev.Move.getURI()));
+        return moveCompat;
     }
 
     private static boolean checkIfSONameIsNull(CsvOwlRestrictionValidator validator, ScientificObjectModel model, int totalRowIdx) {

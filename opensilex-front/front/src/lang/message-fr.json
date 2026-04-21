@@ -648,6 +648,7 @@
             "start-help": "Début de l'événement, uniquement si celui-ci n'est pas instantané",
             "start-example": "2019-09-08T13:00:00+01:00",
             "targets": "Concerne",
+            "target": "Cible",
             "targets-help": "Objet(s) concerné(s) sont \"Appareils\" et \"Objets scientifiques\"",
             "target-help": "URI de l'objet concerné par l'évènement (Doit exister).",
             "targets-example": "os-so:plant1",
@@ -926,6 +927,9 @@
             "update": "Modifier l'organisation",
             "delete": "Supprimer l'organisation"
         },
+        "device": {
+            "description": "Gestion des appareils"
+        },
         "site": {
             "description": "Gérer et configurer les sites",
             "update": "Modifier le site",
@@ -1001,6 +1005,10 @@
         "packages": {
             "title": "Librairies",
             "description": "Ensemble de bibliothèque logicielles qui permet l'accès au webservice"
+        },
+        "GDPR": {
+            "title": "RGPD",
+            "title-description": "Politique RGPD"
         }
     },
     "credential-groups": {

@@ -1,76 +1,154 @@
 <template>
-  <Modal ref="modalRef">
+  <n-modal
+    v-model:show="modalShow"
+    preset="card"
+    size="huge"
+    :title="t('DataProvenanceModalView.title')"
+    style="width: 900px; max-width: 95vw"
+  >
     <template #header>
-      <div class="container-fluid w-100">
-        <div class="row w-100 mt-1">
-          <div class="col-10">
-            <h4><opensilex-Icon icon="bi#bi-eye" /></h4>
-          </div>
+      <div class="modalHeader">
+        <div class="modalHeaderLeft">
+          <i>
+            <h4 class="modalTitle">
+              <opensilex-Icon icon="fa#eye" />
+            </h4>
+          </i>
+        </div>
+        <div class="modalHeaderRight">
+          <button
+            type="button"
+            class="closeButton"
+            @click="hide"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
       </div>
     </template>
 
-    <h3>{{ datafile ? t('DataProvenanceModalView.datafile') : t('DataProvenanceModalView.data') }}</h3>
-    <pre>{{ data }}</pre>
-    <h3>Provenance</h3>
-    <pre>{{ provenance }}</pre>
-  </Modal>
+    <div class="modalBody">
+      <h3 v-if="datafile">{{ t('DataProvenanceModalView.datafile') }}</h3>
+      <h3 v-else>{{ t('DataProvenanceModalView.data') }}</h3>
+      <pre>{{ data }}</pre>
+
+      <h3>Provenance</h3>
+      <pre>{{ provenance }}</pre>
+
+      <h3 v-if="batch">Batch</h3>
+      <pre v-if="batch">{{ batch }}</pre>
+    </div>
+
+    <template #action>
+      <div class="modal-footer-right">
+        <n-button class="greenThemeColor" @click="hide">
+          {{ t('component.common.close') }}
+        </n-button>
+      </div>
+    </template>
+  </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import Modal from './../common/views/Modal.vue'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { NModal, NButton } from 'naive-ui'
 
-const props = defineProps({
-  datafile: {
-    type: Boolean,
-    default: false
-  }
-});
+const { t } = useI18n()
 
-// i18n
-const { t } = useI18n();
+const props = withDefaults(defineProps<{
+  datafile?: boolean
+}>(), {
+  datafile: false
+})
 
-// const modalRef = ref<InstanceType<typeof Modal> | null>(null);
-const modalRef = ref<any>(null);
-const data = ref('');
-const provenance = ref('');
+const modalShow = ref(false)
+
+const info = ref<any>(null)
+const data = ref<string | null>(null)
+const provenance = ref<string | null>(null)
+const batch = ref<string | null>(null)
+
+function setProvenanceAndBatch(value: any) {
+  data.value = JSON.stringify(value.data, null, 2)
+  provenance.value = JSON.stringify(value.provenance, null, 2)
+  batch.value = value.batch ? JSON.stringify(value.batch, null, 2) : null
+}
 
 function show() {
-  modalRef.value?.show();
-}
-function hide() {
-  modalRef.value?.hide();
+  modalShow.value = true
 }
 
-function setProvenance(value: { data: any; provenance: any }) {
-  data.value = JSON.stringify(value.data, null, 2);
-  provenance.value = JSON.stringify(value.provenance, null, 2);
+function hide() {
+  modalShow.value = false
 }
 
 defineExpose({
+  setProvenanceAndBatch,
   show,
-  hide,
-  setProvenance
-});
+  hide
+})
 </script>
 
-<i18n>
-fr: 
-  DataProvenanceModalView:
-    data : Donnée
-    datafile : Fichier de données
-
-en: 
-  DataProvenanceModalView:
-    data : Data
-    datafile : Datafile
-</i18n>
-
 <style scoped>
-.modal.show {
-  display: block;
-  background-color: rgba(0, 0, 0, 0.5);
+.modalHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalHeaderLeft {
+  display: flex;
+  align-items: center;
+}
+
+.modalHeaderRight {
+  display: flex;
+  align-items: center;
+}
+
+.modalTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalBody pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modal-footer-right {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
+
+<i18n>
+fr:
+  DataProvenanceModalView:
+    title: Métadonnées du fichier
+    data: Donnée
+    datafile: Fichier de données
+
+en:
+  DataProvenanceModalView:
+    title: File metadata
+    data: Data
+    datafile: Datafile
+</i18n>

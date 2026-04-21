@@ -5,6 +5,8 @@
       :title="name"
       class="detail-element-header"
       description="component.project.project"
+      icon="bi#bi-folder"
+      :hasIcon="true"
     />
 
     <!-- Actions principales -->

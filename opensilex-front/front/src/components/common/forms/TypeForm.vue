@@ -13,10 +13,11 @@
           :multiple="multiple"
           :disabled="disabled"
           :placeholder="t(placeholder || 'component.common.type')"
-          :itemLoadingMethod="loadByUris"
-          :disableBranchNodes="false"
-          :searchMethod="searchTypes"
+          :itemLoadingMethod="props.tree ? undefined : loadByUris"
+          :disableBranchNodes="!selectBranchNodes"
+          :searchMethod="props.tree ? undefined : searchTypes"
           :resultLimit="20"
+          :checkStrategy="checkStrategy"
           @select="validator?.validate(); $emit('select',$event)"
         />
       </div>
@@ -45,6 +46,9 @@ const props = withDefaults(defineProps<{
   rules?: string | Function
   ignoreRoot?: boolean
   unselectableTypes?: string[]
+  tree?: boolean
+  selectBranchNodes?: boolean
+  checkStrategy?: 'all' | 'parent' | 'child'
 }>(), {
   type: undefined,
   required: false,
@@ -52,7 +56,10 @@ const props = withDefaults(defineProps<{
   multiple: false,
   rules: undefined,
   ignoreRoot: true,
-  unselectableTypes: () => []
+  unselectableTypes: () => [],
+  tree: false,
+  selectBranchNodes: false,
+  checkStrategy: 'child'
 })
 
 const emit = defineEmits<{
@@ -88,16 +95,16 @@ function mapTree(nodes: any[]): InputOpt[] {
 async function loadTypes () {
   const toIgnore = (props.unselectableTypes ?? []).map(u => opensilex.getLongUri(u))
 
-const http = await service.getSubClassesOf(
-  props.baseType,
-  props.ignoreRoot
-) as HttpResponse<OpenSilexResponse<ResourceTreeDTO[]>>
+  const http = await service.getSubClassesOf(
+    props.baseType,
+    props.ignoreRoot
+  ) as HttpResponse<OpenSilexResponse<ResourceTreeDTO[]>>
 
   const built = opensilex.buildTreeListOptions(http.response.result, {
     expanded: null,
     disableSubTree: null,
     nodesToIgnoreList: toIgnore,
-    flat: true
+    flat: !props.tree
   })
 
   typesOptions.value = mapTree(built)

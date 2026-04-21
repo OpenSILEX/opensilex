@@ -113,12 +113,8 @@ public class SPARQLResourceModel implements SPARQLModel {
         Optional<SPARQLModelRelation> result = relations.stream().filter((r) -> {
             return SPARQLDeserializers.compareURIs(r.getProperty().getURI(), relation.getURI());
         }).findFirst();
-        
-        if (result.isPresent()) {
-            return result.get();
-        } else {
-            return null;
-        }
+
+        return result.orElse(null);
     }
      public Stream <SPARQLModelRelation> getRelations(Property relation) {
        return  relations.stream().filter((r) -> {

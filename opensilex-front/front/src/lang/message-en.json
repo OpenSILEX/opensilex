@@ -640,6 +640,7 @@
             "description": "Description of the event",
             "start-help": "Begin of event, only if the event is not instantaneous",
             "start-example": "2019-09-08T13:00:00+01:00",
+            "target": "Target",
             "targets": "Targets",
             "targets-help": "Object(s) concerned by this function are \"Device\" and \"Scientific Objects\"",
             "target-help": "Object targeted by the event (Must exist)",
@@ -862,6 +863,9 @@
             "update": "Update organization",
             "delete": "Delete organization"
         },
+        "device": {
+            "description": "Manage Devices"
+        },
         "site": {
             "description": "Manage and configure sites",
             "update": "Update site",
@@ -925,6 +929,10 @@
         "packages": {
             "title": "Packages",
             "description": "Set of packages that allows access to the webservice"
+        },
+        "GDPR": {
+            "title": "GDPR",
+            "title-description": "Privacy policy"
         }
     },
     "credential-groups": {

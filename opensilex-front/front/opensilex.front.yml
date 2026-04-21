@@ -50,8 +50,8 @@ menu:
           credentials:
             - device-access
           icon: bi#bi-thermometer
-          title: Device.title
-          description: Device.description
+          title: component.menu.devices
+          description: component.device.description
       - id: sites
         label: component.menu.site
         route:
@@ -286,8 +286,8 @@ menu:
           path: /gdpr
           component: opensilex-GDPR
           icon: bi#bi-person
-          title: GDPR.title
-          description: GDPR.title-description
+          title: component.GDPR.title
+          description: component.GDPR.title-description
   - id: tools
     label: component.menu.tools.label
     children:
@@ -410,21 +410,21 @@ routes:
     component: opensilex-DocumentDetails
     credentials: []
 
-  # - path: /device/details/:uri
-  #   component: opensilex-DeviceDetails
-  #   rdfType: vocabulary:Device
-  # - path: /device/visualization/:uri
-  #   component: opensilex-DeviceDetails
-  # - path: /device/datafiles/:uri
-  #   component: opensilex-DeviceDetails
-  # - path: /device/documents/:uri
-  #   component: opensilex-DeviceDetails
-  # - path: /device/annotations/:uri
-  #   component: opensilex-DeviceDetails
-  # - path: /device/events/:uri
-  #   component: opensilex-DeviceDetails
-  # - path: /device/positions/:uri
-  #   component: opensilex-DeviceDetails
+  - path: /device/details/:uri
+    component: opensilex-DeviceDetails
+    rdfType: vocabulary:Device
+  - path: /device/visualization/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/datafiles/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/documents/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/annotations/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/events/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/positions/:uri
+    component: opensilex-DeviceDetails
 
   # - path: /area/details/:uri
   #   component: opensilex-AreaDetails

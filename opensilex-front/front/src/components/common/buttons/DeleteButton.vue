@@ -1,5 +1,4 @@
 <template>
-  <div>
     <opensilex-Button
       :label="label"
       :small="small"
@@ -44,7 +43,6 @@
       </div>
     </div>
     </teleport>
-  </div>
 </template>
 
 <script setup lang="ts">

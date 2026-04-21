@@ -26,7 +26,7 @@
               </div>
                   <div class="carousel-item">
                 <img :src="$opensilex.getResourceURI('images/opensilex-login-bg.png')" class="d-block w-100 h-100" >
-              </div>              
+              </div>
             </div>
 
             <button class="carousel-control-prev" type="button" data-bs-target="#loginImagesCarousel" data-bs-slide="prev">
@@ -40,14 +40,14 @@
 
         <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
           <!-- Language Selector -->
-          <div class="languagesDropdown">            
+          <div class="languagesDropdown">
             <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-globe"></i>
               {{ t("LoginComponent.language." + locale) }}
             <i class="bi bi-chevron-down"></i>
             </button>
             <ul class="dropdown-menu">
-              <li 
+              <li
                 v-for="lang in availableLocales"
                 :key="lang"
                 @click.prevent="setLanguage(lang)"
@@ -80,7 +80,7 @@
                     {{ t('LoginComponent.infoGuest') }}
                   </p>
                 </slot>
-                <button 
+                <button
                   class="btn btn-success greenThemeColor"
                   @click="onLoginAsGuest"
                 >
@@ -133,17 +133,17 @@
                   {{ errors.password }}
                 </div> -->
               </div>
-              
+
 
               <!-- Forgot Password Link -->
-              <!-- <a v-if="isResetPassword()" :href="resetPasswordPath">
-                <span>{{ $t("LoginComponent.forgotPassword") }}</span>
-              </a> -->
+              <router-link v-if="isResetPassword()" to="/forgot-password">
+                <span>{{ t("LoginComponent.forgotPassword") }}</span>
+              </router-link>
 
               <!-- Login Button -->
               <div class="sign-btn text-center">
                 <button type="submit" class="btn btn-success greenThemeColor">
-                  {{ $t("component.login.button.login") }}
+                  {{ t("component.login.button.login") }}
                 </button>
               </div>
             </form>
@@ -166,33 +166,33 @@
 </template>
 
 <script lang="ts">
-import Vue, { defineComponent, ref, onMounted, nextTick, inject, computed, watchEffect } from "vue";
+import {computed, defineComponent, inject, nextTick, onMounted, ref} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { User } from "../../models/User";
-import type { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
-import type { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import {User} from "../../models/User";
+import type {AuthenticationService, TokenGetDTO} from "opensilex-security/index";
+import type {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import HttpResponse from "opensilex-security/HttpResponse";
 
-import { FrontConfigDTO } from "../../lib";
-import { SystemService, VersionInfoDTO } from "opensilex-core/index";
-// import VueRouter from 'vue-router';
-import { useI18n } from "vue-i18n";
-import { Carousel, Dropdown} from "bootstrap";
-import { connect } from "http2";
-import { useStore } from "vuex";
-import { useRoute } from 'vue-router'
+import {FrontConfigDTO} from "../../lib";
+import {VersionInfoDTO} from "opensilex-core/index";
+import {useI18n} from "vue-i18n";
+import {Carousel, Dropdown} from "bootstrap";
+import {useStore} from "vuex";
+import {useRoute, useRouter} from 'vue-router'
 
 export default defineComponent({
-    name: 'defaultLoginComponent',
+  name: 'defaultLoginComponent',
   props: {
     $opensilex: OpenSilexVuePlugin
   },
   setup() {
     // injection des dépendances
     const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
+    const router = useRouter();
     const store = useStore();
     const user = computed(() => store.state.user);
     const isLoggedIn = computed(() => store.state.user.loggedIn);
+    const resetPasswordPath = computed(() => router.resolve("/forgot-password").href);
     const route = useRoute();
 
     const form = ref({
@@ -207,7 +207,7 @@ export default defineComponent({
       throw new Error("L'instance $opensilex est introuvable ...");
     }
 
-    
+
     // Gestion des langues
     const language = ref();
     const { t, locale, availableLocales } = useI18n({
@@ -295,7 +295,7 @@ export default defineComponent({
     // connexion principale 
     const onLogin = async () => {
       $opensilex.showLoader();
-      
+
       try {
         const authService = $opensilex.getService<AuthenticationService>(
           "opensilex-security.AuthenticationService"
@@ -311,7 +311,7 @@ export default defineComponent({
         $opensilex.setCookieValue(user);
         store.commit("login", user);
         store.commit("refresh");
-        
+
 
       } catch (error: any) {
         if (error.status === 403) {
@@ -326,14 +326,15 @@ export default defineComponent({
     };
 
 
-    return { 
+    return {
       t,
       locale,
-      availableLocales, 
+      availableLocales,
       connectAsGuest,
       form,
       versionInfo,
       isLoggedIn,
+      resetPasswordPath,
       login,
       onLogin
     };
@@ -353,7 +354,10 @@ export default defineComponent({
         this.form.password = "";
       });
     },
-
+    isResetPassword() {
+      const config = this.$opensilex.getConfig();
+      return config.activateResetPassword;
+    }
   },
 });
 </script>
@@ -373,7 +377,7 @@ invalidCredentials
   right: 0;
   height: 100%;
   width: 100%;
-  z-index: 9998; /*behind global toaster box*/ 
+  z-index: 9998; /*behind global toaster box*/
 }
 
 .authentication-form .error-message {
@@ -411,7 +415,7 @@ en:
     language:
       fr: French
       en: English
-    copyright: 
+    copyright:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}
       3: Based on OpenSILEX version {version}
@@ -431,7 +435,7 @@ fr:
     language:
       fr: Français
       en: Anglais
-    copyright: 
+    copyright:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}
       3: Basé sur OpenSILEX version {version}

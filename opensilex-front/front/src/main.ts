@@ -95,9 +95,15 @@ window.Vue = { createApp, ref, reactive, computed };
 let urlParams = new URLSearchParams(window.location.search);
 
 // Define if script in debug mode
-let isDebug = true;
-let isDevMode = true;
+let isDebug = false;
+let isDevMode = false;
 
+if (import.meta.env.DEV) {
+  isDevMode = true;
+  isDebug = true;
+} else {
+  isDebug = urlParams.has("debug");
+}
 // console.debug("URL parameters", urlParams);
 
 // Initialize logger

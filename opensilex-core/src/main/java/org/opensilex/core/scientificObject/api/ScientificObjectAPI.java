@@ -441,6 +441,11 @@ public class ScientificObjectAPI {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         ScientificObjectModel soModel = scientificObjectDto.newModel();
 
+        if (scientificObjectDto.getGeometry() != null) {
+            throw new BadRequestException("vocabulary:hasGeometry is not supported for scientific object updates. Please" +
+                    " create an new move event instead.");
+        }
+
         try {
             URI soURI = logic.updateScientificObject(
                     soModel,

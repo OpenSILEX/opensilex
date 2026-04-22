@@ -8,6 +8,7 @@ package org.opensilex.core.scientificObject.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -55,6 +56,10 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
     @JsonProperty("factor_level")
     @ApiModelProperty(value = "Scientific object factor levels")
     protected List<NamedResourceDTO<FactorLevelModel>> factorLevels;
+
+    @Deprecated
+    @ApiModelProperty("Object geometry. Depreciated : use location instead")
+    private GeoJsonObject geometry;
 
     protected List<RDFObjectRelationDTO> relations;
 
@@ -124,6 +129,16 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
         this.location = location;
     }
 
+    @Deprecated
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    @Deprecated
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
+    }
+
     @Override
     public void toModel(ScientificObjectModel model) {
         super.toModel(model);
@@ -177,6 +192,8 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
             relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
         }
 
+        setRelations(relationsDTO);
+
         if(model.getFactorLevels() != null){
             for (FactorLevelModel level : model.getFactorLevels()) {
                 SPARQLModelRelation relation = new SPARQLModelRelation();
@@ -185,9 +202,6 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
                 relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
             }
         }
-
-        setRelations(relationsDTO);
-
     }
 
     @Override
@@ -207,6 +221,7 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
         if (Objects.nonNull(lastLocation)) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
+            dto.setGeometry(dto.getLocation().getGeojson());
         }
 
         return dto;

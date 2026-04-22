@@ -5,7 +5,7 @@
 | Date       | Editor(s)                                     | OpenSILEX version | Comment               |
 |------------|-----------------------------------------------|-------------------|-----------------------|
 | 2023-05-23 | Valentin Rigolle <valentin.rigolle@inrae.fr>  | 1.0.0-rc+7.2      | Document creation     |
-| 2026-04-22 | Valentin Rigolle <valentin.rigolle@inrae.fr>  | 1.5.0             | Updated geometry spec |
+| 2026-04-22 | Valentin Rigolle <valentin.rigolle@inrae.fr>  | 1.5.1             | Updated geometry spec |
 
 > This document is incomplete. You can help by expanding it.
 >

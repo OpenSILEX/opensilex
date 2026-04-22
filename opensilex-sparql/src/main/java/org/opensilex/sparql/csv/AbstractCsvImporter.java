@@ -288,8 +288,8 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     T model = getModel(rowIndex, row, csvHeader, validator,localClassesCache);
                     // handle URI generation or association of filled uris to their line index in a Map.
                     // add model in modelChunk List
-                    handleURIMapping(validator, model, rowIndex, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk);
-                    performEndOfRowOperations(rowIndex, model, validator, csvHeader);
+                    var forUpdate = handleURIMapping(validator, model, rowIndex, modelChunkToCreate, modelChunkToUpdate, generatedUrisToIndexesInChunk, filledUrisToIndexesInChunk);
+                    performEndOfRowOperations(rowIndex, model, validator, csvHeader, forUpdate);
                 }
                 rowIndex++;
             }
@@ -333,8 +333,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * <b>override this method</b> to add the models to be updated in the List modelChunkToUpdate and
      * <b>override this method</b> {@link #upsert(CSVValidationModel, List, List)} also for the models in modelChunkToUpdate to be updated
      *
+     * @return true if the model has been marked for update, false otherwise
      */
-    protected void handleURIMapping(
+    protected boolean handleURIMapping(
             CsvOwlRestrictionValidator validator,
             T model,
             int rowIndex,
@@ -351,6 +352,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             // register URI to the set of URI to check
             filledUrisToIndexesInChunk.put(model.getUri().toString(), rowIndex);
         }
+        return false;
     }
 
     protected void checkUrisUniqueness(CsvOwlRestrictionValidator validator, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, List<T> modelChunk) throws SPARQLException {
@@ -794,7 +796,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
     /**
      * An empty function to be overridden, to perform any extra operations once we've finished reading all the cells of a row
      */
-    protected void performEndOfRowOperations(int rowIdx, T model, CsvOwlRestrictionValidator restrictionValidator, CsvHeader csvHeader) {
+    protected void performEndOfRowOperations(int rowIdx, T model, CsvOwlRestrictionValidator restrictionValidator, CsvHeader csvHeader, boolean isForUpdate) {
         //Nothing here, override this method in subclasses to do something
     }
 

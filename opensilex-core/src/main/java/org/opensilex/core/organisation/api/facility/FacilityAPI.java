@@ -201,6 +201,7 @@ public class FacilityAPI {
             if (Objects.nonNull(lastLocationObservation)) {
                 LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(lastLocationObservation);
                 facilityGetDTO.setLastPosition(locationDto);
+                facilityGetDTO.setGeometry(locationDto.getGeojson());
             }
         }
 

@@ -273,7 +273,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     }
 
     @Override
-    protected void handleURIMapping(
+    protected boolean handleURIMapping(
             CsvOwlRestrictionValidator validator,
             ScientificObjectModel model,
             int rowIndex,
@@ -282,7 +282,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             Map<String, Integer> generatedUrisToIndexesInChunk,
             Map<String, Integer> filledUrisToIndexesInChunk
     ) throws SPARQLException {
-        if (checkIfSONameIsNull(validator, model, rowIndex)) return;
+        if (checkIfSONameIsNull(validator, model, rowIndex)) return false;
 
         SPARQLNamedResourceModel alreadyExistingOsWithName = null;
 
@@ -300,7 +300,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             // check existence of a URI (return false/true) in Context
             List<SPARQLResult> result = scientificObjectDAO.checkUriExistInContext(validator, model, rowIndex, rootClassURI, graphNode);
 
-            if (result == null) return;
+            if (result == null) return false;
             String isURIExistInGraphString = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
             boolean isUriExistInGraph = isURIExistInGraphString.equalsIgnoreCase("true");
 
@@ -309,13 +309,14 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 modelChunkToCreate.add(model);
                 // register URI to the set of URIs to create new SOs
                 filledUrisToIndexesInChunk.put(model.getUri().toString(), rowIndex);
+                return false;
             }
 
             // Scenario 3: If the URI entered in CSV does exist in context -> update the SO
             else if (isUriExistInGraph) {
                 modelChunkToUpdate.add(model);
+                return true;
             }
-
         }
         // Scenario 4: If the URI is empty in CSV and there's a SO with the same name in XP -> update the SO
         else if (model.getUri() == null && alreadyExistingOsWithName != null) {
@@ -323,13 +324,16 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             URI alreadyExistingOSUri = alreadyExistingOsWithName.getUri();
             model.setUri(alreadyExistingOSUri);
             modelChunkToUpdate.add(model);
+            return true;
         }
         // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
         else {
             // register URI to the set of URIs to update the existing SOs
             generateLocallyUniqueUri(model, rowIndex, validator.getValidationModel(), generatedUrisToIndexesInChunk);
             modelChunkToCreate.add(model);
+            return false;
         }
+        return false;
     }
 
 
@@ -436,7 +440,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
      * @param header Contains all the information of the csv header, including the important , were there any Location columns question.
      */
     @Override
-    protected void performEndOfRowOperations(int rowIdx, ScientificObjectModel sciObjModel, CsvOwlRestrictionValidator restrictionValidator, CsvHeader header){
+    protected void performEndOfRowOperations(int rowIdx, ScientificObjectModel sciObjModel, CsvOwlRestrictionValidator restrictionValidator, CsvHeader header, boolean isForUpdate){
         StringUriMap<MoveModel> movePerScientificObjectUri = (StringUriMap<MoveModel>) restrictionValidator
                 .getValidationModel()
                 .getObjectsMetadata()
@@ -448,6 +452,14 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 .getOrDefault(Oeso.hasGeometry.getURI(), Collections.emptyMap());
 
         if (geometryMapCompat.containsKey(sciObjModel)) {
+            if (isForUpdate) {
+                var cell = new CsvCellValidationContext(rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, header.size() - 1, "", Oeso.hasGeometry.getURI());
+                cell.setMessage("vocabulary:hasGeometry cannot be used for an update. Please update the object location using a Move event.");
+                restrictionValidator.addInvalidValueError(cell);
+                atLeast1MoveFieldFilledForCurrentRow = false;
+                currentMoveModel = new MoveModel();
+                return;
+            }
             if (atLeast1MoveFieldFilledForCurrentRow) {
                 var cell = new CsvCellValidationContext(rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, header.size() - 1, "", Oeso.hasGeometry.getURI());
                 cell.setMessage("vocabulary:hasGeometry is a compatibility field. It cannot be used along with the Move event model. vocabulary:hasGeometry will be removed in the future ; please only use the Move event model.");

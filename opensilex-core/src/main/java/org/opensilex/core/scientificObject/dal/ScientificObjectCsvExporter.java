@@ -42,7 +42,7 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
 
         if (experiment != null) {
             // just let the export find which properties are associated to an OS
-            customColumns = Collections.singleton(Oeso.hasGeometry.toString());
+            customColumns = Set.of(Oeso.hasGeometry.toString(), Oeso.isHosted.toString());
             extraNonUriColumns = ScientificObjectCsvImporterLogic.extraColumns;
         }else{
             // only export name and geometry when out of experimental context
@@ -159,6 +159,15 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
                 } catch (JsonProcessingException | ParseException e) {
                     return null;
                 }
+            }
+            return null;
+        });
+
+        customRelationWrite(Oeso.isHosted.getURI(), object ->{
+            var move = this.initialMovePerTarget.get(object.getUri());
+            if (move != null) {
+                var facilityUri = move.getLocationObservation().getLocation().getTo();
+                return facilityUri != null ? SPARQLDeserializers.formatURI(facilityUri).toString() : null;
             }
             return null;
         });

@@ -503,7 +503,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         if (geometryMapCompat.containsKey(sciObjModel) || facilityMapCompat.containsKey(sciObjModel)) {
             if (isForUpdate) {
                 var cell = new CsvCellValidationContext(rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, header.size() - 1, "", Oeso.hasGeometry.getURI());
-                cell.setMessage("vocabulary:hasGeometry cannot be used for an update. Please update the object location using a Move event.");
+                cell.setMessage("vocabulary:hasGeometry and vocabulary:isHosted cannot be used for an update. Please update the object location using a Move event.");
                 restrictionValidator.addInvalidValueError(cell);
                 atLeast1MoveFieldFilledForCurrentRow = false;
                 currentMoveModel = new MoveModel();

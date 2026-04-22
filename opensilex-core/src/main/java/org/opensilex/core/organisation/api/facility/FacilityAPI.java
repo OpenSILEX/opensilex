@@ -337,6 +337,10 @@ public class FacilityAPI {
 
         List<LocationObservationModel> locations = new ArrayList<>();
 
+        if (dto.getGeometry() != null) {
+            throw new BadRequestException("`geometry` is a compatibility field and cannot be used to update a facility location. " +
+                    "Please use Move events to update the facility location.");
+        }
         if (Objects.nonNull(dto.getLocations())) {
             locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
         }

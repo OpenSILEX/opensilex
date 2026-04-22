@@ -773,17 +773,18 @@ public class ScientificObjectLogic {
         return dao.getCount(searchFilter);
     }
 
-    public MoveModel getCompatibilityMoveModel(URI experimentURI, LocalDate creationDate, Geometry geometry) {
+    public MoveModel getCompatibilityMoveModel(URI experimentURI, LocalDate creationDate, Geometry geometry, URI facility) {
         var moveCompat = new MoveModel();
         var endInstant = new InstantModel();
-        var moveLocations = MoveLogic.getOrCreateMovesLocationObservation(moveCompat, experimentURI);
+        var moveLocation = MoveLogic.getOrCreateMovesLocationObservation(moveCompat, experimentURI);
         var endTime = creationDate != null
                 ? OffsetDateTime.of(creationDate, LocalTime.NOON, ZoneOffset.UTC)
                 : OffsetDateTime.now();
         endInstant.setDateTimeStamp(endTime);
         moveCompat.setEnd(endInstant);
         moveCompat.setIsInstant(true);
-        moveLocations.setGeometry(geometry);
+        moveLocation.setGeometry(geometry);
+        moveLocation.setTo(facility);
         moveCompat.setType(URI.create(Oeev.Move.getURI()));
         return moveCompat;
     }

@@ -396,7 +396,8 @@ public class ScientificObjectAPI {
             moveModel = soLogic.getCompatibilityMoveModel(
                     scientificObjectDto.getExperiment(),
                     creationDate,
-                    GeospatialDAO.geoJsonToGeometry(scientificObjectDto.getGeometry()));
+                    GeospatialDAO.geoJsonToGeometry(scientificObjectDto.getGeometry()),
+                    null);
         }
         if (scientificObjectDto.getMove() != null) {
             moveModel = scientificObjectDto.getMove().toModel();

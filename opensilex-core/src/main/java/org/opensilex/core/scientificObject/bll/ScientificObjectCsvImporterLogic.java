@@ -12,7 +12,6 @@ import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
 import org.opensilex.core.event.bll.MoveLogic;
@@ -66,9 +65,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -193,7 +189,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             }
         }
         addFactorLevelValidation();
-        addGeometryValidation();
+        addCompatibilityGeometryValidation();
+        addCompatibilityIsHostedValidation();
     }
 
     private void addFactorLevelValidation() throws Exception {
@@ -243,7 +240,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
     }
 
-    private void addGeometryValidation() {
+    private void addCompatibilityGeometryValidation() {
         addCustomValidation(new CustomCsvValidation<>(
                 Oeso.hasGeometry.getURI(),
                 false,
@@ -259,7 +256,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                         Map<SPARQLNamedResourceModel, Geometry> geometryMap = (Map<SPARQLNamedResourceModel, Geometry>) validator
                                 .getValidationModel()
                                 .getObjectsMetadata()
-                                .computeIfAbsent(Oeso.hasGeometry.getURI(), isHosted -> new IdentityHashMap<>());
+                                .computeIfAbsent(Oeso.hasGeometry.getURI(), hasGeometry -> new IdentityHashMap<>());
 
                         geometryMap.put(model, geometry);
 
@@ -270,6 +267,53 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                     }
                 }
         ));
+    }
+
+    private void addCompatibilityIsHostedValidation() throws SPARQLException {
+        // no facility handling outside of experiment
+        // add error if a value is set and no experiment
+        if (experiment == null) {
+            addCustomValidation(new CustomCsvValidation<>(
+                    Oeso.isHosted.getURI(),
+                    false, // bypass default validation (redundant since factor level existence and URI parsing is performed here)
+                    (model, value, validator, validationContextSupplier) -> {
+                        if (!StringUtils.isEmpty(value)) {
+                            CsvCellValidationContext validationContext = validationContextSupplier.get();
+                            validationContext.setMessage("vocabulary:isHosted cannot be used outside of experiment context");
+                            validator.addInvalidValueError(validationContext);
+                        }
+                    }));
+        } else {
+            // compute set of facilities from xp
+            final Set<String> facilities = experimentDAO.getAvailableFacilitiesURIs(experiment)
+                    .collect(Collectors.toSet());
+            final URI isHostedURI = URI.create(Oeso.isHosted.getURI());
+
+            addCustomValidation(new CustomCsvValidation<>(
+                    Oeso.isHosted.getURI(),
+                    false, // bypass default validation (redundant since facility existence and URI parsing is performed here)
+                    (model, value, validator, validationContextSupplier) -> {
+                        if (StringUtils.isEmpty(value)) {
+                            return;
+                        }
+                        String shortValue = URIDeserializer.formatURIAsStr(value);
+                        if (!facilities.contains(shortValue)) {
+                            CsvCellValidationContext validationContext = validationContextSupplier.get();
+                            validationContext.setMessage("Unknown facility from experiment facilities");
+                            validator.addInvalidValueError(validationContext);
+                        }  else {
+                            model.addRelation(experiment, isHostedURI, URI.class, value);
+
+                            // Geometry is collected in order to be inserted by batch inside create() method
+                            Map<SPARQLNamedResourceModel, URI> isHostedMap = (Map<SPARQLNamedResourceModel, URI>) validator
+                                    .getValidationModel()
+                                    .getObjectsMetadata()
+                                    .computeIfAbsent(Oeso.isHosted.getURI(), isHosted -> new IdentityHashMap<>());
+                            isHostedMap.put(model, URI.create(value));
+                        }
+                    }
+            ));
+        }
     }
 
     @Override
@@ -451,7 +495,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 .getObjectsMetadata()
                 .getOrDefault(Oeso.hasGeometry.getURI(), Collections.emptyMap());
 
-        if (geometryMapCompat.containsKey(sciObjModel)) {
+        var facilityMapCompat = (Map<SPARQLNamedResourceModel, URI>) restrictionValidator
+                .getValidationModel()
+                .getObjectsMetadata()
+                .getOrDefault(Oeso.isHosted.getURI(), Collections.emptyMap());
+
+        if (geometryMapCompat.containsKey(sciObjModel) || facilityMapCompat.containsKey(sciObjModel)) {
             if (isForUpdate) {
                 var cell = new CsvCellValidationContext(rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, header.size() - 1, "", Oeso.hasGeometry.getURI());
                 cell.setMessage("vocabulary:hasGeometry cannot be used for an update. Please update the object location using a Move event.");
@@ -469,7 +518,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 return;
             }
             var creationDate = Optional.ofNullable(sciObjModel.getRelation(Oeso.hasCreationDate)).map(rel -> LocalDate.parse(rel.getValue())).orElse(null);
-            var moveCompat = scientificObjectLogic.getCompatibilityMoveModel(experiment, creationDate, geometryMapCompat.get(sciObjModel));
+            var moveCompat = scientificObjectLogic.getCompatibilityMoveModel(experiment, creationDate, geometryMapCompat.get(sciObjModel), facilityMapCompat.get(sciObjModel));
             moveCompat.setTargets(Collections.singletonList(sciObjModel.getUri()));
             movePerScientificObjectUri.put(sciObjModel.getUri(), moveCompat);
             return;
@@ -1106,6 +1155,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private static void cleanValidationModel(CSVValidationModel validation) {
         validation.getObjectsMetadata().remove(GEOMETRY_STUFF_METADATA_KEY);
         validation.getObjectsMetadata().remove(MOVES_TO_UPDATE_INFORMATION_CACHEKEY);
+        validation.getObjectsMetadata().remove(Oeso.hasGeometry.getURI());
+        validation.getObjectsMetadata().remove(Oeso.isHosted.getURI());
     }
 
     private void setExperimentInSOObj(ScientificObjectModel model) {

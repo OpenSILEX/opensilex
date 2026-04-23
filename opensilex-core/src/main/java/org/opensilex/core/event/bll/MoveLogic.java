@@ -710,6 +710,8 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
             moveDTO.setLocation(firstLocationDTO); //first location is set on the base moveDTO
         }
+
+        dtos.addAll(dtosToAddFromMultipleTargetsPositions);
     }
     //#endregion
 

@@ -933,6 +933,71 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         var so = soList.get(0);
         Assert.assertTrue(SPARQLDeserializers.compareURIs(facilityInXP.getUri(), so.getLocation().getTo()));
     }
+
+    @Test
+    public void testCompatibilityHasGeometryWithMoveShouldFail() throws Exception {
+        CSVValidationModel validation = testImport("compatibility/os_import_compat_has_geometry_with_move_should_fail.csv", experiment.getUri(), user);
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertTrue(validation.getInvalidValueErrors().containsKey(3)); // 3 is the index of hasGeometry column
+    }
+
+    @Test
+    public void testCompatibilityIsHostedWithMoveShouldFail() throws Exception {
+        CSVValidationModel validation = testImport("compatibility/os_import_compat_is_hosted_with_move_should_fail.csv", experimentWithFacility.getUri(), user, Map.of(
+                TEMPLATE_FACILITY_URI_PLACEHOLDER, facilityInXP.getUri()
+        ));
+        Assert.assertTrue(validation.hasErrors());
+        Assert.assertTrue(validation.getInvalidValueErrors().containsKey(3)); // 3 is the index of isHosted column
+    }
+
+    @Test
+    public void testCompatibilityReimportHasGeometryShouldFail() throws Exception {
+        CSVValidationModel validation = testImport("compatibility/os_import_compat_has_geometry.csv", experiment.getUri(), user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(1, validation.getNbObjectImported());
+
+
+        var soList = new UserCallBuilder(ScientificObjectAPITest.searchWithGeometry)
+                .addParam("experiment", experiment.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        Assert.assertEquals(1, soList.size());
+        var so = soList.get(0);
+
+        CSVValidationModel reimportValidation = testImport("compatibility/os_reimport_compat_has_geometry_should_fail.csv", experiment.getUri(), user, Map.of(
+                TEMPLATE_URI_PLACEHOLDER, so.getUri()
+        ));
+        Assert.assertTrue(reimportValidation.hasErrors());
+        Assert.assertTrue(reimportValidation.getInvalidValueErrors().containsKey(3)); // 3 is the index of hasGeometry column
+    }
+
+    @Test
+    public void testCompatibilityReimportIsHostedShouldFail() throws Exception {
+        CSVValidationModel validation = testImport("compatibility/os_import_compat_is_hosted.csv", experimentWithFacility.getUri(), user, Map.of(
+                TEMPLATE_FACILITY_URI_PLACEHOLDER, facilityInXP.getUri()
+        ));
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(1, validation.getNbObjectImported());
+
+
+        var soList = new UserCallBuilder(ScientificObjectAPITest.searchWithGeometry)
+                .addParam("experiment", experimentWithFacility.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        Assert.assertEquals(1, soList.size());
+        var so = soList.get(0);
+
+        CSVValidationModel reimportValidation = testImport("compatibility/os_reimport_compat_is_hosted_should_fail.csv", experiment.getUri(), user, Map.of(
+                TEMPLATE_URI_PLACEHOLDER, so.getUri(),
+                TEMPLATE_FACILITY_URI_PLACEHOLDER, facilityInXP.getUri()
+        ));
+        Assert.assertTrue(reimportValidation.hasErrors());
+        Assert.assertTrue(reimportValidation.getInvalidValueErrors().containsKey(3)); // 3 is the index of isHosted column
+    }
     //#endregion
 
     @Override

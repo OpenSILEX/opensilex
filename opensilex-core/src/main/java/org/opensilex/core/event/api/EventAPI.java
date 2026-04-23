@@ -376,6 +376,7 @@ public class EventAPI {
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
             MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+            logic.fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(dtoList);
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
             models = logic.create(models, false);
 

@@ -1,11 +1,15 @@
 package org.opensilex.core.scientificObject.bll;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.riot.Lang;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.geojson.Feature;
+import org.geojson.Point;
+import org.jetbrains.annotations.NotNull;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.event.bll.MoveLogic;
@@ -22,10 +26,15 @@ import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
+import org.opensilex.core.scientificObject.api.ScientificObjectDetailDTO;
+import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -42,17 +51,17 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ListWithPagination;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
 
+import static org.eclipse.rdf4j.model.vocabulary.GEO.Feature;
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH;
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_PATH;
 
@@ -60,8 +69,10 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     private ExperimentModel experiment;
     private ExperimentModel experiment2;
+    private ExperimentModel experimentWithFacility;
     private FacilityModel facility1;
     private FacilityModel facility2;
+    private FacilityModel facilityInXP;
     private static AccountModel user;
 
     private static final Path CSV_FILES_DIR = Paths.get("src","test","resources","scientificObject","csv");
@@ -79,8 +90,15 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
     private static final URI osUriWithNoLocation3 = URI.create("test:id/os_import_no_location3");
     private static final String facility1Name = "facility1";
     private static final String facility2Name = "facility2";
+    private static final String facilityInXPName = "facilityInXP";
     private static final String osWithLocationsImportCsvFilename1 = "os_import_location_create.csv";
     private static final String osWithLocationsImportCsvFilename2 = "os_import_location_new_experiment.csv";
+
+    private static final String TEMPLATE_URI_PLACEHOLDER = "{{uri}}";
+    private static final String TEMPLATE_FACILITY_URI_PLACEHOLDER = "{{facility_uri}}";
+
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -109,11 +127,17 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         facility1.setName(facility1Name);
         facility2 = new FacilityModel();
         facility2.setName(facility2Name);
+        facilityInXP = new FacilityModel();
+        facilityInXP.setName(facilityInXPName);
         facility1.setUri(URI.create("test:id/organization/facility.facility1"));
         facility2.setUri(URI.create("test:id/organization/facility.facility2"));
-        List<FacilityModel> facilities = Arrays.asList(facility1, facility2);
+        facilityInXP.setUri(URI.create("test:id/organization/facility.facilityInXP"));
+        List<FacilityModel> facilities = Arrays.asList(facility1, facility2, facilityInXP);
         getSparqlService().create(FacilityModel.class,facilities);
 
+        experimentWithFacility = initExperimentModel("experiment_with_facility");
+        experimentWithFacility.setFacilities(List.of(facilityInXP));
+        getSparqlService().create(experimentWithFacility);
 
         // load ontology extension used for OS <-> germplasm relation handling
         // indeed this relation is not declared inside opensilex-core package.
@@ -130,17 +154,23 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
     }
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
-
-        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user, fs, null);
-        File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
-        return importer.importCSV(csvFile,false);
+        return testImport(csvFileName, experiment, user, Collections.emptyMap());
     }
 
-    private CSVValidationModel testValidateImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
+    public CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user, @NotNull Map<String, Object> templatePlaceholderValues) throws Exception {
+        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(), getMongoDBService(), experiment, user, fs, null);
 
-        ScientificObjectCsvImporterLogic importer = new ScientificObjectCsvImporterLogic(getSparqlService(),getMongoDBService(),experiment,user, fs, null);
-        File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
-        return importer.importCSV(csvFile,true);
+        // Create a new temporary file to store and replace the placeholder in the file
+        File placeholderCsvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();
+        var csvContent = IOUtils.toString(new FileInputStream(placeholderCsvFile), StandardCharsets.UTF_8);
+        for (var entry : templatePlaceholderValues.entrySet()) {
+            csvContent = csvContent.replace(entry.getKey(), entry.getValue().toString());
+        }
+
+        File csvFile = tmpFolder.newFile();
+        FileUtils.writeStringToFile(csvFile, csvContent, StandardCharsets.UTF_8);
+
+        return importer.importCSV(csvFile, false);
     }
 
     /**
@@ -862,6 +892,47 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         Assert.assertEquals(2,validation.getInvalidValueErrors().size());
 
     }
+
+    //#region Compatibility tests - hasGeometry and isHosted columns
+    @Test
+    public void testCompatibilityHasGeometry() throws Exception {
+        CSVValidationModel validation = testImport("compatibility/os_import_compat_has_geometry.csv", experiment.getUri(), user);
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(1, validation.getNbObjectImported());
+
+        var soList = new UserCallBuilder(ScientificObjectAPITest.searchWithGeometry)
+                .addParam("experiment", experiment.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        Assert.assertEquals(1, soList.size());
+        var so = soList.get(0);
+        Assert.assertEquals(
+                new Point(49, 3),
+                ((Feature) so.getLocation().getGeojson()).getGeometry()
+        );
+    }
+
+    @Test
+    public void testCompatibilityIsHosted() throws Exception {
+        CSVValidationModel validation = testImport("compatibility/os_import_compat_is_hosted.csv", experimentWithFacility.getUri(), user, Map.of(
+                TEMPLATE_FACILITY_URI_PLACEHOLDER, facilityInXP.getUri()
+        ));
+        Assert.assertFalse(validation.hasErrors());
+        Assert.assertEquals(1, validation.getNbObjectImported());
+
+        var soList = new UserCallBuilder(ScientificObjectAPITest.searchWithGeometry)
+                .addParam("experiment", experimentWithFacility.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        Assert.assertEquals(1, soList.size());
+        var so = soList.get(0);
+        Assert.assertTrue(SPARQLDeserializers.compareURIs(facilityInXP.getUri(), so.getLocation().getTo()));
+    }
+    //#endregion
 
     @Override
     protected List<String> getCollectionsToClearNames() {

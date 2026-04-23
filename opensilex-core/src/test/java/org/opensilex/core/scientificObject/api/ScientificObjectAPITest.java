@@ -107,12 +107,14 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
+    public static final String searchWithGeometryPath = path + "/geometry";
 
 
 
     public static final ServiceDescription create;
     public static final ServiceDescription update;
     public static final ServiceDescription getDetail;
+    public static final ServiceDescription searchWithGeometry;
 
     static {
         try {
@@ -127,6 +129,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             getDetail = new ServiceDescription(
                     ScientificObjectAPI.class.getMethod("getScientificObjectDetail", URI.class, URI.class),
                     uriPath
+            );
+            searchWithGeometry = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("searchScientificObjectsWithGeometryListByUris", URI.class, String.class, String.class),
+                    searchWithGeometryPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);

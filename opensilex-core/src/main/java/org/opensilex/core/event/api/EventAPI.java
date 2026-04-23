@@ -379,7 +379,7 @@ public class EventAPI {
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
             models = logic.create(models, false);
 
-            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
+            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {

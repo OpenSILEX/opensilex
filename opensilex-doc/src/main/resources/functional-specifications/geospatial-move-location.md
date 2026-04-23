@@ -127,6 +127,7 @@ When **creating** a move :
 - A move filled with `from` and `to` properties will have the same behaviour as if it was filled with a location containing a `from` and `to` property
 - A move filled with many `targetPositionswill` result in many different moves. If you send a move with 3 `targetPositions`, it will create 3 different moves with the same information. Only information contained in the `targetsPositions` will differ.
 - `x`, `y`, `z`, `point` and `text` properties in `targetPositions.position` are used to fill resprectively `x`, `y`, `z`, `geojson` and `text` properties in the `location` property of the move.
+- A move filled with `from` and `to` and with many `targetPositions` will result in many different moves, each move will have the same `location.from` and `location.to` properties.
 
 **Updating** a move with one of the deprecated properties will result in an error. You can only update a move with the `location` property.
 

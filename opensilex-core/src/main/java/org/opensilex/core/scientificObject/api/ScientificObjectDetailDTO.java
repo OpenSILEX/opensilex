@@ -222,6 +222,9 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
         if (Objects.nonNull(lastLocation)) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(lastLocation));
             dto.setGeometry(dto.getLocation().getGeojson());
+            if (dto.getLocation().getTo() != null) {
+                dto.getRelations().add(new RDFObjectRelationDTO(URI.create(Oeso.isHosted.getURI()), dto.getLocation().getTo().toString(), false));
+            }
         }
 
         return dto;

@@ -299,8 +299,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                             validationContext.setMessage("Unknown facility from experiment facilities");
                             validator.addInvalidValueError(validationContext);
                         }  else {
-                            model.addRelation(experiment, isHostedURI, URI.class, value);
-
                             // Geometry is collected in order to be inserted by batch inside create() method
                             Map<SPARQLNamedResourceModel, URI> isHostedMap = (Map<SPARQLNamedResourceModel, URI>) validator
                                     .getValidationModel()

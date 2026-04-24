@@ -655,12 +655,13 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * In order to keep deprecated properties without relying on them, we need to convert old 'from', 'to' and 'targets_positions' to new property location
      * DTOs with a location will be ignored, no changes will be applied on them.
      * DTOs with multiple targets_positions will be split in many MoveCreationDTOs
+     * this method exists to beceause moveDTO contain deprecated properties for retro compatibility to version 1.4.x purpose
      */
-    public void fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(List<MoveCreationDTO> dtos){
+    public void fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(List<MoveCreationDTO> dtos) {
         // move with multiple targets_positions will be splited in new moves that we will append to the dtos list
         List<MoveCreationDTO> dtosToAddFromMultipleTargetsPositions = new ArrayList<>();
 
-        for ( MoveCreationDTO moveDTO : dtos){
+        for (MoveCreationDTO moveDTO : dtos) {
             if (moveDTO.getLocation() != null) {
                 continue;
             }
@@ -671,40 +672,43 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
             boolean isFirstTargetPosition = true;
             for (TargetPositionCreationDTO targetPositionDTO : moveDTO.getTargetsPositions()) {
+                if (targetPositionDTO.getTarget() == null) {
+                    if ( ! isFirstTargetPosition) {
+                        continue;
+                    }
+                }
+
                 LocationObservationDTO currentLocationDTO = new LocationObservationDTO();
-                if (Objects.nonNull(moveDTO.getFrom()) || Objects.nonNull(moveDTO.getTo())) {
-
-                    if (moveDTO.getTargetsPositions() != null && !moveDTO.getTargetsPositions().isEmpty()) {
-                        currentLocationDTO.setFrom(moveDTO.getFrom());
-                        currentLocationDTO.setTo(moveDTO.getTo());
-                        currentLocationDTO.setFeatureOfInterest(targetPositionDTO.getTarget());
-                        if (Objects.nonNull(targetPositionDTO.getPosition())) {
-                            currentLocationDTO.setX(targetPositionDTO.getPosition().getX());
-                            currentLocationDTO.setY(targetPositionDTO.getPosition().getY());
-                            currentLocationDTO.setZ(targetPositionDTO.getPosition().getZ());
-                            currentLocationDTO.setTextualPosition(targetPositionDTO.getPosition().getDescription());
-                            currentLocationDTO.setGeojson(targetPositionDTO.getPosition().getPoint());
-                        }
+                if (moveDTO.getTargetsPositions() != null && !moveDTO.getTargetsPositions().isEmpty()) {
+                    currentLocationDTO.setFrom(moveDTO.getFrom());
+                    currentLocationDTO.setTo(moveDTO.getTo());
+                    currentLocationDTO.setFeatureOfInterest(targetPositionDTO.getTarget());
+                    if (Objects.nonNull(targetPositionDTO.getPosition())) {
+                        currentLocationDTO.setX(targetPositionDTO.getPosition().getX());
+                        currentLocationDTO.setY(targetPositionDTO.getPosition().getY());
+                        currentLocationDTO.setZ(targetPositionDTO.getPosition().getZ());
+                        currentLocationDTO.setTextualPosition(targetPositionDTO.getPosition().getDescription());
+                        currentLocationDTO.setGeojson(targetPositionDTO.getPosition().getPoint());
                     }
+                }
 
 
-                    if (isFirstTargetPosition){
-                        firstLocationDTO = currentLocationDTO;
-                        isFirstTargetPosition = false;
-                    } else {
-                        // if it is not the first target position, create a new Move and add it to the list
-                        MoveCreationDTO newMoveDTO = new MoveCreationDTO();
-                        newMoveDTO.setTargets(moveDTO.getTargets());
-                        newMoveDTO.setIsInstant(moveDTO.getIsInstant());
-                        newMoveDTO.setStart(moveDTO.getStart());
-                        newMoveDTO.setEnd(moveDTO.getEnd());
-                        newMoveDTO.setDescription(moveDTO.getDescription());
-                        newMoveDTO.setType(moveDTO.getType());
-                        newMoveDTO.setRelations(moveDTO.getRelations());
+                if (isFirstTargetPosition) {
+                    firstLocationDTO = currentLocationDTO;
+                    isFirstTargetPosition = false;
+                } else {
+                    // if it is not the first target position, create a new Move and add it to the list
+                    MoveCreationDTO newMoveDTO = new MoveCreationDTO();
+                    newMoveDTO.setTargets(List.of(currentLocationDTO.getFeatureOfInterest()));
+                    newMoveDTO.setIsInstant(moveDTO.getIsInstant());
+                    newMoveDTO.setStart(moveDTO.getStart());
+                    newMoveDTO.setEnd(moveDTO.getEnd());
+                    newMoveDTO.setDescription(moveDTO.getDescription());
+                    newMoveDTO.setType(moveDTO.getType());
+                    newMoveDTO.setRelations(moveDTO.getRelations());
 
-                        newMoveDTO.setLocation(currentLocationDTO);
-                        dtosToAddFromMultipleTargetsPositions.add(newMoveDTO);
-                    }
+                    newMoveDTO.setLocation(currentLocationDTO);
+                    dtosToAddFromMultipleTargetsPositions.add(newMoveDTO);
                 }
             }
 
@@ -712,6 +716,18 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         }
 
         dtos.addAll(dtosToAddFromMultipleTargetsPositions);
+    }
+
+    /**
+     * @throws BadRequestException if one or many deprecated properties of a moveDTO is filled up
+     * this method exists to beceause moveDTO contain deprecated properties for retro compatibility to version 1.4.x purpose
+     */
+    public void assertNoDeprecatedPropertiesIsFilled(MoveCreationDTO dto) throws BadRequestException{
+        if (dto.getFrom() != null || dto.getTo() != null || dto.getTargetsPositions() != null) {
+            String message = "The properties 'from', 'to' and 'targets_positions' are deprecated, please use 'location' instead. This error concern move with uri : %s";
+            String uri = dto.getUri().toString();
+            throw new BadRequestException(String.format(message, uri));
+        }
     }
     //#endregion
 

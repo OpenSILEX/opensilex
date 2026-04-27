@@ -296,6 +296,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected final String httpMethod;
         protected final MediaType callMediaType;
         protected final List<MediaType> responseMediaTypes;
+        protected final List<Class<?>> targetComponents;
 
         public PublicCall(
                 Map<String, Object> params,
@@ -305,7 +306,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 String pathTemplate,
                 String httpMethod,
                 MediaType callMediaType,
-                List<MediaType> responseMediaTypes
+                List<MediaType> responseMediaTypes,
+                List<Class<?>> targetComponents
         ) {
             this.params = params;
             this.body = body;
@@ -315,6 +317,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             this.httpMethod = httpMethod;
             this.callMediaType = callMediaType;
             this.responseMediaTypes = responseMediaTypes;
+            this.targetComponents = targetComponents;
         }
 
         /**
@@ -433,7 +436,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         protected Invocation.Builder buildRequestBuilder(WebTarget target) {
 
-            Invocation.Builder requestBuilder = target.request(callMediaType);
+            Invocation.Builder requestBuilder = target.request();
 
             requestBuilder.accept(responseMediaTypes.toArray(new MediaType[0]));
 
@@ -450,9 +453,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             if(Objects.equals(httpMethod, HttpMethod.GET)) {
                 return requestBuilder.get();
             } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
-                return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+                return requestBuilder.post(Entity.entity(body, callMediaType));
             } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
-                return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+                return requestBuilder.put(Entity.entity(body, callMediaType));
             } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
                 return requestBuilder.delete();
             } else {
@@ -471,6 +474,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             }
             if (!pathTemplateParams.isEmpty()) {
                 target = target.resolveTemplates(pathTemplateParams);
+            }
+            for (var component : targetComponents) {
+                target = target.register(component);
             }
             return target;
         }
@@ -543,6 +549,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected MediaType callMediaType = MediaType.valueOf(MediaType.APPLICATION_JSON);
         protected List<MediaType> responseMediaTypes = Collections.singletonList(MediaType.valueOf(MediaType.APPLICATION_JSON));
         protected String httpMethod;
+        protected List<Class<?>> targetComponents = new ArrayList<>();
 
         public PublicCallBuilder(ServiceDescription serviceDescription) {
             this.serviceMethod = serviceDescription.getServiceMethod();
@@ -594,6 +601,16 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return self();
         }
 
+        public T setTargetComponents(List<Class<?>> targetComponents) {
+            this.targetComponents = targetComponents;
+            return self();
+        }
+
+        public T addTargetComponent(Class<?> targetComponent) {
+            this.targetComponents.add(targetComponent);
+            return self();
+        }
+
         @SuppressWarnings("unchecked")
         protected T self() {
             return (T) this;
@@ -601,7 +618,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         public PublicCall build() {
             preBuildChecks();
-            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes);
+            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes, targetComponents);
         }
 
         /**

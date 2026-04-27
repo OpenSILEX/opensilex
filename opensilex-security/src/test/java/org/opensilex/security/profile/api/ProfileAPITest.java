@@ -11,6 +11,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -25,13 +26,27 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    public String path = "/security/profiles";
-    public String createPath = path ;
-    public String updatePath = path ;
-    public String getPath = path + "/{uri}";
-    public String deletePath = path + "/{uri}";
-    public String searchPath = path;
-    public String getAllPath = path + "/all";
+    public static final String path = "/security/profiles";
+    public static final String createPath = path ;
+    public static final String updatePath = path ;
+    public static final String getPath = path + "/{uri}";
+    public static final String deletePath = path + "/{uri}";
+    public static final String searchPath = path;
+    public static final String getAllPath = path + "/all";
+
+    public static final ServiceDescription create;
+
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    ProfileAPI.class.getMethod("createProfile", ProfileCreationDTO.class),
+                    createPath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     protected ProfileCreationDTO getProfilCreationDTO() {
 

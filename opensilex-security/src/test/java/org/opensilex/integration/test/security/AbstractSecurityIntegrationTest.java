@@ -708,9 +708,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                 MediaType callMediaType,
                 String httpMethod,
                 List<MediaType> responseMediaTypes,
-                String userPassword
+                String userPassword,
+                List<Class<?>> targetComponents
         ) {
-            super(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes);
+            super(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes, targetComponents);
             this.userEmail = userEmail;
             this.userPassword = userPassword;
         }
@@ -795,7 +796,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                     callMediaType,
                     httpMethod,
                     responseMediaTypes,
-                    userPassword
+                    userPassword,
+                    targetComponents
             );
         }
 
@@ -811,7 +813,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
                     callMediaType,
                     httpMethod,
                     responseMediaTypes,
-                    DEFAULT_SUPER_ADMIN_PASSWORD
+                    DEFAULT_SUPER_ADMIN_PASSWORD,
+                    targetComponents
             );
         }
     }

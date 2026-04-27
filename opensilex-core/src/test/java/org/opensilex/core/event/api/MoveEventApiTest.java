@@ -617,13 +617,54 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void updateMoveWithDeprecatedPropertiesReturnError() throws Exception {
+    public void updateMoveWithDeprecatedPropertiesReturnError() {
         MoveCreationDTO moveDTO = getMoveDTOFilledAsIn1dot4();
         new UserCallBuilder(update)
                 .setBody(List.of(moveDTO))
                 .buildAdmin()
                 .executeCallAndAssertStatus("move with some deprecated properties should return a bad request error", Response.Status.BAD_REQUEST);
 
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void createWithLocationIgnoreDeprecatedProperties() throws Exception {
+        URI moveURI = URI.create("http://my/move/without/deprecated/infos");
+        LocationModel locationModel = new LocationModel();
+        locationModel.setFrom(facilityB.getUri());
+        locationModel.setTo(facilityC.getUri());
+
+        LocationObservationModel locationObservationModel = new LocationObservationModel();
+        locationObservationModel.setHasGeometry(true);
+        locationObservationModel.setLocation(locationModel);
+        locationModel.setX("800");
+        locationModel.setY("800");
+        locationModel.setZ("800");
+
+        MoveCreationDTO moveDTO = getMoveDTOFilledAsIn1dot4();
+        moveDTO.setLocation(LocationObservationDTO.getDTOFromModel(locationObservationModel));
+        moveDTO.setUri(moveURI);
+
+        new UserCallBuilder(create)
+                .setBody(List.of(moveDTO))
+                .buildAdmin()
+                .executeCallAndAssertStatus("move creation with location should ignore deprecated properties and be created successfully", Response.Status.CREATED);
+
+        MoveGetDTO returnedMove = new UserCallBuilder(getByUriList)
+                .addParam("uris", List.of(moveURI))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult()
+                .get(0);
+        assertEquals("move should save the 'X' property from location and not from deprecated property", "800", returnedMove.getLocation().getX());
+        assertEquals("move should save the 'Y' property from location and not from deprecated property", "800", returnedMove.getLocation().getY());
+        assertEquals("move should save the 'Z' property from location and not from deprecated property", "800", returnedMove.getLocation().getZ());
+        assertTrue("move should save the 'from' property from location and not from deprecated property", SPARQLDeserializers.compareURIs(facilityB.getUri(), returnedMove.getLocation().getFrom()));
+        assertTrue("move should save the 'to' property from location and not from deprecated property", SPARQLDeserializers.compareURIs(facilityC.getUri(), returnedMove.getLocation().getTo()));
+        assertEquals("move should save the 'textualPosition' property from location and not from deprecated property", null, returnedMove.getLocation().getTextualPosition());
     }
     //#endregion
 

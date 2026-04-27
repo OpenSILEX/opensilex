@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.JerseyTest;
@@ -568,6 +569,22 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         public T setBody(Object body) {
             this.body = body;
+            return self();
+        }
+
+        /**
+         * Helper method to set a multipart body and the corresponding parameters.
+         *
+         * <ul>
+         *     <li>Sets the body to the given object</li>
+         *     <li>Sets the media type to {@code MediaType.MULTIPART_FORM_DATA_TYPE}</li>
+         *     <li>Adds {@code MultiPartFeature.class} as a target component</li>
+         * </ul>
+         */
+        public T setMultipartBody(Object body) {
+            this.body = body;
+            this.callMediaType = MediaType.MULTIPART_FORM_DATA_TYPE;
+            this.addTargetComponent(MultiPartFeature.class);
             return self();
         }
 

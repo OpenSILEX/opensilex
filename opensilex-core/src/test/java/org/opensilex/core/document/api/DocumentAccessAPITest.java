@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +29,6 @@ import org.opensilex.security.profile.api.ProfileAPITest;
 import org.opensilex.security.profile.api.ProfileCreationDTO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIEquator;
 
@@ -132,9 +130,7 @@ public class DocumentAccessAPITest extends AbstractMongoIntegrationTest {
 
     private URI postMultipart(Object body) throws Exception {
         return new UserCallBuilder(DocumentAPITest.create)
-                .setBody(body)
-                .addTargetComponent(MultiPartFeature.class)
-                .setCallMediaType(MediaType.MULTIPART_FORM_DATA_TYPE)
+                .setMultipartBody(body)
                 .buildAdmin()
                 .executeCallAndReturnURI();
     }

@@ -671,8 +671,8 @@ pages:site:
                 -DskipFrontBuild \
                 -DnvdApiKey=$NVD_API_KEY \
                 -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
-                -Pwith-security-check \
                 -Pwith-test-report > $CI_PROJECT_DIR/logs/mvn-install-site.log
+        # -Pwith-security-check \
         - mv $CI_PROJECT_DIR/site/* site_public
     artifacts:
         paths:

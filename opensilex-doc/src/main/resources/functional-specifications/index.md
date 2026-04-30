@@ -13,12 +13,12 @@ sidebar: true
 *Following links could be interesting if you want to develop for or try OpenSILEX*
 
 <div class="actions-container">
-  <a href="https://www.opensilex.org/" class="action-link action-primary">OpenSILEX sandbox</a>
-  <a href="https://opensilex.mathnum.inrae.fr/" class="action-link action-primary">Our site</a>
+  <a href="https://opensilex.org/sandbox/app/" class="action-link action-primary">OpenSILEX sandbox</a>
+  <a href="https://www.opensilex.org/" class="action-link action-primary">Our site</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/technical-documentation/" class="action-link action-secondary">technical documentation</a>
-  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/" class="action-link action-secondary">javadoc</a>
-  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/jacoco-aggregate/index.html" class="action-link action-secondary">code coverage</a>
-  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/dependencies.html" class="action-link action-secondary">dependencies</a>
+  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/" class="action-link action-secondary">javadoc</a>
+  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/jacoco-aggregate/index.html" class="action-link action-secondary">code coverage</a>
+  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/dependencies.html" class="action-link action-secondary">dependencies</a>
 </div>
 
 ## Features

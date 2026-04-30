@@ -726,11 +726,11 @@ pages:
         -   job: pages:technical-documentation
             artifacts: true
     script:
-        - mkdir -p public/specifications
-        - cp -r specs_public/* public/specifications/
+        - mkdir -p public/maven-report
+        - cp -r site_public/* public/maven-report/
         - mkdir -p public/technical-documentation
         - cp -r tech_doc_public/* public/technical-documentation
-        - cp -r site_public/* public/
+        - cp -r specs_public/* public/
     artifacts:
         paths:
             - public

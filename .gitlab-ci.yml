@@ -660,9 +660,6 @@ test:build:java21:
   <<: *java21
   <<: *test_build_on_schedules
 
-#test:build:java17:
-#  <<: *java17
-#  <<: *test_build_on_schedules
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
@@ -697,9 +694,7 @@ pages:site:
         paths:
             - site_public
             - logs
-        when: always
-    rules:
-        - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
+        when: always 
 
 pages:specifications:
     stage: doc_and_metrics
@@ -755,7 +750,8 @@ pages:
         paths:
             - public
     rules:
-        - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
+        - if: $PAGES_GENERATION == "true"
+
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################

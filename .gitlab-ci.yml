@@ -673,6 +673,7 @@ pages:site:
     image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
     when: always
     timeout: 2h
+    <<: *cache_dependencies
     before_script:
         - mkdir -p $CI_PROJECT_DIR/.m2
         - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
@@ -680,19 +681,22 @@ pages:site:
         - mkdir -p .mvn
         - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
         - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+        - mkdir logs
     script:
         - mkdir site_public
         - |
             mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
                 install site $MAVEN_OPTS_SCHUEDULES \
                 -DskipFrontBuild \
+                -DnvdApiKey=$NVD_API_KEY \
                 -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
                 -Pwith-security-check \
-                -Pwith-test-report
+                -Pwith-test-report > $CI_PROJECT_DIR/logs/mvn-install-site.log
         - mv $CI_PROJECT_DIR/site/* site_public
     artifacts:
         paths:
             - site_public
+            - logs
         when: always
     rules:
         - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"

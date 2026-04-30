@@ -693,6 +693,7 @@ pages:site:
     artifacts:
         paths:
             - site_public
+        when: always
     rules:
         - if: $CI_COMMIT_BRANCH == "feature/yvan/vitepress"
 

@@ -719,15 +719,11 @@ pages:
     stage: doc_and_metrics
     when: always
     needs:
-        -   job: pages:site
-            artifacts: true
         -   job: pages:specifications
             artifacts: true
         -   job: pages:technical-documentation
             artifacts: true
     script:
-        - mkdir -p public/maven-report
-        - cp -r site_public/* public/maven-report/
         - mkdir -p public/technical-documentation
         - cp -r tech_doc_public/* public/technical-documentation
         - cp -r specs_public/* public/

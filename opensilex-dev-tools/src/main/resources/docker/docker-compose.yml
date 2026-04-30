@@ -2,7 +2,7 @@
 services:
    rdf4j:
       container_name: opensilex-rdf4j
-      image: eclipse/rdf4j-workbench:5.2.1-tomcat
+      image: eclipse/rdf4j-workbench:5.3.1-tomcat
       networks:
          - backend
       ports:

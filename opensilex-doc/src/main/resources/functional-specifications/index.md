@@ -15,7 +15,7 @@ sidebar: true
 <div class="actions-container">
   <a href="https://opensilex.org/sandbox/app/" class="action-link action-primary">OpenSILEX sandbox</a>
   <a href="https://www.opensilex.org/" class="action-link action-primary">Our site</a>
-  <a href="/opensilex-dev/technical-documentation/" target="_self" class="action-link action-secondary">technical documentation</a>
+  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/technical-documentation/" target="_self" class="action-link action-secondary">technical documentation</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/" class="action-link action-secondary">javadoc</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/jacoco-aggregate/index.html" class="action-link action-secondary">code coverage</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/dependencies.html" class="action-link action-secondary">dependencies</a>

@@ -670,9 +670,8 @@ pages:site:
                 install site $MAVEN_OPTS_SCHUEDULES \
                 -DskipFrontBuild \
                 -DnvdApiKey=$NVD_API_KEY \
-                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
-                -Pwith-test-report > $CI_PROJECT_DIR/logs/mvn-install-site.log
-        # -Pwith-security-check \
+                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module'  > $CI_PROJECT_DIR/logs/mvn-install-site.log
+        # -Pwith-security-check \ -Pwith-test-report \
         - mv $CI_PROJECT_DIR/site/* site_public
     artifacts:
         paths:

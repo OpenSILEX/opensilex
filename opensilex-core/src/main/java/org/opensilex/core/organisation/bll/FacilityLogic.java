@@ -15,6 +15,7 @@ package org.opensilex.core.organisation.bll;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.location.bll.LocationLogic;
@@ -513,9 +514,9 @@ public class FacilityLogic {
     }
 
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
-        //Delete existing
+        //Delete existing, only delete collection if the locations list is empty or null.
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
-        locationObservationLogic.deleteEveryLocationObservationInCollection(session, existingModel.getLocationObservationCollection().getUri());
+        locationObservationLogic.deleteEveryLocationObservationInCollection(session, existingModel.getLocationObservationCollection().getUri(), CollectionUtils.isEmpty(locationObservationModels));
 
         //Create new locations
         List<LocationObservationModel> locations = new ArrayList<>();
@@ -559,8 +560,7 @@ public class FacilityLogic {
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
             try {
-                locationObservationLogic.deleteEveryLocationObservationInCollection(session, facility.getLocationObservationCollection().getUri());
-                locationObservationCollectionLogic.deleteLocationObservationCollection(facility.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteEveryLocationObservationInCollection(session, facility.getLocationObservationCollection().getUri(), true);
             } catch (Exception e) {
                 throw new NotFoundURIException("Invalid or unknown URI ", facility.getLocationObservationCollection().getUri());
             }

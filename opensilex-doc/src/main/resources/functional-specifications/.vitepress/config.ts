@@ -6,7 +6,7 @@ export default defineConfig(
     {
       title: 'Opensilex specifications',
       description: 'A VitePress Site',
-      base: '/opensilex-dev/specifications/',
+      base: '/opensilex-dev/',
       ignoreDeadLinks: true,
 
       themeConfig: {

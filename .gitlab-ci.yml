@@ -679,6 +679,8 @@ pages:site:
             - site_public
             - logs
         when: always 
+    rules:
+        - if: $PAGES_GENERATION == "true"
 
 pages:specifications:
     stage: doc_and_metrics
@@ -694,6 +696,8 @@ pages:specifications:
         paths:
             - specs_public
         expire_in: 2 days
+    rules:
+        - if: $PAGES_GENERATION == "true"
 
 pages:technical-documentation:
     stage: doc_and_metrics
@@ -709,7 +713,9 @@ pages:technical-documentation:
         paths:
             - tech_doc_public
         expire_in: 2 days
-
+    rules:
+        - if: $PAGES_GENERATION == "true"
+        
 pages:
     stage: doc_and_metrics
     when: always

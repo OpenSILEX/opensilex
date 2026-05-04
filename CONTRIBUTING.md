@@ -73,7 +73,7 @@ See, for illustration:
 [code formatting](https://google.github.io/styleguide/javaguide.html#s4-formatting)
 
 For Vue.js components, follow the style guide at:
-[component-guidelines-template.md](opensilex-doc/src/main/resources/vuejs/component-guidelines-template.md)
+[component-guidelines-template.md](opensilex-doc/src/main/resources/technical-documentation/opensilex-front/component-guidelines-template.md)
 
 The codebase has a long history - not all of it follows this style.
 
@@ -84,7 +84,7 @@ to review.
 
 Not sure to understand the codebase ? Take a look at the documentation. Good starting points are:
 - [OpenSILEX Developer's installation](README.md)
-- [Global architecture](opensilex-doc/src/main/resources/architecture/index.md)
+- [Global architecture](opensilex-doc/src/main/resources/technical-documentation/architecture/README.md)
 
 Not sur about actual rules of a concept (exemple : rules of accounts, of scientific-objects import, ...) ?
-See the [specifications website](https://opensilex.pages-forge.inrae.fr/opensilex-dev/specifications/)
+See the [specifications website](https://opensilex.pages-forge.inrae.fr/opensilex-dev/)

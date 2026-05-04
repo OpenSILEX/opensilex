@@ -71,12 +71,13 @@ From the 1.5.0 version, geospatial information is stored using moves instead of 
 directly. In order to keep the existing infrastructures (e.g. scripts) from breaking, we chose to keep the `geometry`
 parameter and property in some services :
 
-- GET /facility/{uri} : `geometry` contains the same information as `lastPosition.geojson`
-- GET /facilities/with_geometry : no change
-- POST /geometry : The `geometry` parameter creates a move event with the given geometry. The date of the event is
+- GET /facilities : `geometry` contains the same information as `lastPosition.geojson`
+- GET /facilities/{uri} : `geometry` contains the same information as `lastPosition.geojson`
+- GET /facilities/with_location : no change
+- POST /facilities : The `geometry` parameter creates a move event with the given geometry. The date of the event is
   set to the date and time of the request. Using `geometry` together with the new `location` parameter is not allowed
   and returns an error.
-- PUT /geometry : Setting the `geometry` parameter returns an error. To update a facility geospatial information, you
+- PUT /facilities : Setting the `geometry` parameter returns an error. To update a facility geospatial information, you
   should add a new move event of modify the existing ones.
 
 ## Technical specifications

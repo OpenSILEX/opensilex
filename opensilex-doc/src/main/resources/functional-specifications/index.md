@@ -17,8 +17,11 @@ sidebar: true
   <a href="https://www.opensilex.org/" class="action-link action-primary">Our site</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/technical-documentation/" target="_self" class="action-link action-secondary">technical documentation</a>
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/" target="_self" class="action-link action-secondary">javadoc</a>
+<!-- 
+code coverage button is commented until we have a working jacoco report
   <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/jacoco-aggregate/index.html" target="_self" class="action-link action-secondary">code coverage</a>
-  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/dependencies.html" target="_self" class="action-link action-secondary">dependencies</a>
+-->
+  <a href="https://opensilex.pages-forge.inrae.fr/opensilex-dev/maven-report/dependencies.html" class="action-link action-secondary">dependencies</a>
 </div>
 
 ## Features

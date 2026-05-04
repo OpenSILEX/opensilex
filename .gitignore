@@ -23,3 +23,4 @@ sonarqube_reports_log/*
 
 **/package-lock.json
 **/.vitepress/dist/
+**/.vitepress/cache/

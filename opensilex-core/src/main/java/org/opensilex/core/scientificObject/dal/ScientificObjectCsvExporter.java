@@ -42,8 +42,10 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
 
         if (experiment != null) {
             // just let the export find which properties are associated to an OS
-            customColumns = Set.of(Oeso.hasGeometry.toString(), Oeso.isHosted.toString());
-            extraNonUriColumns = ScientificObjectCsvImporterLogic.extraColumns;
+            customColumns = Set.of();
+            extraNonUriColumns = new HashSet<>(ScientificObjectCsvImporterLogic.extraColumns);
+            extraNonUriColumns.add(SPARQLDeserializers.getShortURI(Oeso.isHosted.toString()));
+            extraNonUriColumns.add(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.toString()));
         }else{
             // only export name and geometry when out of experimental context
             customColumns = new LinkedHashSet<>();

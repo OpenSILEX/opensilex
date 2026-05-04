@@ -56,6 +56,9 @@ A highest `layer` application level MAY access lower levels at any depth level.
 +  +---------------------- REST API -----------------------+  +
 +  +-------------------------------------------------------+  +
 +                              ↓                              +
++  +---------------- BUSINESS LOGIC LAYER -----------------+  +
++  +-------------------------------------------------------+  +
++                              ↓                              +
 +  +------------------ DATA ACCESS LAYER ------------------+  +
 +  +-------------------------------------------------------+  +
 +                              ↓                              +
@@ -124,6 +127,10 @@ DATA ACCESS LAYER:
 
 - A `model` class to describe application high level concept.
 - A `data Access Object (DAO)` class to manipulate application `model` classes.
+
+BUSINESS LOGIC LAYER:
+
+- A `Logic` class to define the rules about a concept. For example, it could be minimal information needed or coherency between information when creating a resource. 
 
 REST API:
 

@@ -291,6 +291,7 @@ stop_deploy_opensilex_instance:
   environment:
     name: "$CI_COMMIT_REF_NAME-test"
     url: http://$AUTOGENERATE_ENVIRONMENT_URL
+    action: stop=
   script:
     - echo "Stop with options --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP ${OPENSILEX_STOP_SERVER_OPTS}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "cd ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}; ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar ${OPENSILEX_STOP_SERVER_OPTS} --adminPort=$OPENSILEX_JAR_ADMIN_PORT --host=$REMOTE_SERVER_IP"

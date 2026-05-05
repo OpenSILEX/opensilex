@@ -241,7 +241,7 @@ sonar-analysis:
     - |
       if git ls-remote --exit-code --heads origin release && [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
         echo 'Branch release exists, cannot deploy develop';
-        exit 0;
+        exit 1;
       fi
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forge.inrae.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools

@@ -58,6 +58,7 @@ public class VueClassExtensionModel extends SPARQLResourceModel implements Class
     )
     protected List<VueClassPropertyExtensionModel> properties;
 
+    /** the uri of the class that is documented by this VueClassExtensionModel **/
     @SPARQLProperty(
             ontology = VueOwlExtension.class,
             property = "hasVueExtensionClassModel",

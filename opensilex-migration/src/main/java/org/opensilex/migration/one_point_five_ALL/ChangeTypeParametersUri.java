@@ -38,6 +38,25 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * This migration aims to change uri of type parameters in order to separate them from their associated type.
  * What we call parameter is the subject of type vocabulary:owl-vue-extension#ClassExtension
  * Before, the dynamic type has the same uri as its parameters. After the parameter has as uri [type uri]/owl-vue-extension
+ * @implNote example with a border type with uri vocabulary:border
+ * <pre>
+ * before :
+ * vocabulary:border rdf:type owl:Class
+ * vocabulary:border rdf:type  http://prefix/vocabulary/owl-vue-extension#ClassExtension
+ * vocabulary:border dc:publisher prefix:user/account.myaccount
+ * vocabulary:border http://prefix/vocabulary/owl-vue-extension#hasIcon "myIcon"
+ * vocabulary:border http://prefix/vocabulary/owl-vue-extension#isAbstractClass true
+ *
+ * _________________________________________________________________________________________
+ *
+ * after :
+ * vocabulary:border rdf:type owl:Class
+ * vocabulary:border dc:publisher prefix:user/account.myaccount
+ *
+ * vocabulary:border/owl-vue-extension rdf:type  http://prefix/vocabulary/owl-vue-extension#ClassExtension
+ * vocabulary:border/owl-vue-extension http://prefix/vocabulary/owl-vue-extension#hasIcon "myIcon"
+ * vocabulary:border/owl-vue-extension http://prefix/vocabulary/owl-vue-extension#isAbstractClass true
+ * </pre>
  */
 public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
 
@@ -88,24 +107,25 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
      * @implNote  generated query example : (the filter clause appears only if excludedPredicates is not empty).
      * The last filter clause prevent from updating already updated parameters.
      * <pre>
-     * WITH <http://prefix/set/properties>
+     * WITH http://prefix/set/properties
      * DELETE {
-     *      ?uriToDelete rdf:type  <http://prefix/vocabulary/owl-vue-extension#ClassExtension>.
-     *      ?uriToDelete  <http://prefix/vocabulary/owl-vue-extension#hasIcon> ?icon.
-     *      ?uriToDelete <http://prefix/vocabulary/owl-vue-extension#isAbstractClass> ?isAbstract.
-     *      ?fromOwlClass <http://prefix/vocabulary/owl-vue-extension#fromOwlClass> ?uriToDelete.
+     *      ?uriToDelete rdf:type  http://prefix/vocabulary/owl-vue-extension#ClassExtension.
+     *      ?uriToDelete  http://prefix/vocabulary/owl-vue-extension#hasIcon ?icon.
+     *      ?uriToDelete http://prefix/vocabulary/owl-vue-extension#isAbstractClass ?isAbstract.
+     *      ?fromOwlClass http://prefix/vocabulary/owl-vue-extension#fromOwlClass ?uriToDelete.
      * }
      * INSERT {
-     *     ?uriToCreate rdf:type  <http://prefix/vocabulary/owl-vue-extension#ClassExtension>.
-     *     ?uriToCreate  <http://prefix/vocabulary/owl-vue-extension#hasIcon> ?icon.
-     *     ?uriToCreate <http://prefix/vocabulary/owl-vue-extension#isAbstractClass> ?isAbstract.
-     *     ?fromOwlClass <http://prefix/vocabulary/owl-vue-extension#fromOwlClass> ?uriToInsert.
+     *     ?uriToCreate rdf:type  http://prefix/vocabulary/owl-vue-extension#ClassExtension.
+     *     ?uriToCreate  http://prefix/vocabulary/owl-vue-extension#hasIcon ?icon.
+     *     ?uriToCreate http://prefix/vocabulary/owl-vue-extension#isAbstractClass ?isAbstract.
+     *     ?fromOwlClass http://prefix/vocabulary/owl-vue-extension#fromOwlClass ?uriToInsert.
+     *     ?uriToDelete
      * }
      * WHERE {
-     *      ?uriToDelete rdf:type <http://prefix/vocabulary/owl-vue-extension#ClassExtension> .
-     *      OPTIONAL { ?uriToDelete  <http://prefix/vocabulary/owl-vue-extension#hasIcon> ?icon. }
-     *      OPTIONAL { ?uriToDelete <http://prefix/vocabulary/owl-vue-extension#isAbstractClass> ?isAbstract. }
-     *      OPTIONAL { ?fromOwlClass <http://prefix/vocabulary/owl-vue-extension#fromOwlClass> ?uriToDelete. }
+     *      ?uriToDelete rdf:type http://prefix/vocabulary/owl-vue-extension#ClassExtension .
+     *      OPTIONAL { ?uriToDelete  http://prefix/vocabulary/owl-vue-extension#hasIcon ?icon. }
+     *      OPTIONAL { ?uriToDelete http://prefix/vocabulary/owl-vue-extension#isAbstractClass ?isAbstract. }
+     *      OPTIONAL { ?fromOwlClass http://prefix/vocabulary/owl-vue-extension#fromOwlClass ?uriToDelete. }
      *      BIND (URI(CONCAT(STR(?uriToDelete), "/owl-vue-extension"))AS ?uriToCreate)
      *      FILTER (!STRENDS(STR(?uriToDelete), "/owl-vue-extension"))
      * }
@@ -123,14 +143,15 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
         Node hasIconUri = VueOwlExtension.hasIcon.asNode();
         Node isAbstractClassUri = VueOwlExtension.isAbstractClass.asNode();
         Node fromOwlClassUri = VueOwlExtension.fromOwlClass.asNode();
-        Node UriSuffixStrinfNode = NodeFactory.createLiteralString(VueOwlExtensionDAO.URI_SUFFIX);
+        Node uriSuffixStrinfNode = NodeFactory.createLiteralString(VueOwlExtensionDAO.URI_SUFFIX);
+        Node hasVueExtensionClassNode = VueOwlExtension.hasVueExtensionClassModel.asNode();
 
         ExprFactory factory = new ExprFactory();
         Expr strUriExpr = factory.str(uriToDeleteVar);
-        Expr concatUriExpr = factory.concat(strUriExpr, UriSuffixStrinfNode);
+        Expr concatUriExpr = factory.concat(strUriExpr, uriSuffixStrinfNode);
         Expr uriBindExpr = factory.iri(concatUriExpr);
 
-        Expr strEndsExpr = factory.strends(strUriExpr, UriSuffixStrinfNode);
+        Expr strEndsExpr = factory.strends(strUriExpr, uriSuffixStrinfNode);
         Expr filterUriIsNotAlreadyUpdatedExpr = factory.not(strEndsExpr);
 
         return new UpdateBuilder()
@@ -139,10 +160,13 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
                 .addDelete(uriToDeleteVar, hasIconUri, iconVar)
                 .addDelete(uriToDeleteVar, isAbstractClassUri, isAbstractVar)
                 .addDelete(fromOwlClassVar, fromOwlClassUri, uriToDeleteVar)
+
                 .addInsert(uriToInsertVar, rdfTypeUri, classExtensionType)
                 .addInsert(uriToInsertVar, hasIconUri, iconVar)
                 .addInsert(uriToInsertVar, isAbstractClassUri, isAbstractVar)
                 .addInsert(fromOwlClassVar, fromOwlClassUri, uriToInsertVar)
+                .addInsert(uriToDeleteVar, hasVueExtensionClassNode, uriToInsertVar)
+
                 .addWhere(uriToDeleteVar, rdfTypeUri, classExtensionType)
                 .addOptional(uriToDeleteVar, hasIconUri, iconVar)
                 .addOptional(uriToDeleteVar, isAbstractClassUri, isAbstractVar)

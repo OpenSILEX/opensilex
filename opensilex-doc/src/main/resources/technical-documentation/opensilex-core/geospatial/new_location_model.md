@@ -80,7 +80,7 @@ a facility, X/Y/Z and/or textual position).
 
 However, this model will be adjusted according to the element type.
 
-![SOSA_OpenSilex](png/SOSA_OpenSilex.png)
+![SOSA_OpenSilex](../_imgs/SOSA_OpenSilex.png)
 
 The new model location in MongoDB (location collection) is : 
 
@@ -119,7 +119,7 @@ seems to be slightly more efficient when the number of examined documents exceed
 | 9 000 000       | 2100                      | 2100                                       |
 | 13 000 000      | 3900                      | 4500                                       |
 
-![benchmark_mongo_geometry](png/benchmark_mongo_geometry.png)
+![benchmark_mongo_geometry](../_imgs/benchmark_mongo_geometry.png)
 
 ### Business logic
 
@@ -227,7 +227,7 @@ layered architecture (BLL/DAL).
 Thus, the `LocationObservationCollectionDAO` class only queries the RDF4J database, while the `LocationObservationDAO` 
 class only queries the MongoDB database.
 
-![Diagramme_classe_models_location](png/Diagramme_classe_models_location.png)
+![Diagramme_classe_models_location](../_imgs/Diagramme_classe_models_location.png)
 
 A `LocationAPI` has been created. It could be replaced the `PositionAPI` (if you don't need move details or are remove). For the moment, it has only 3 services:
  - `searchLocationHistory`: gets the location history of a feature of interest. The history can be filtered by date.

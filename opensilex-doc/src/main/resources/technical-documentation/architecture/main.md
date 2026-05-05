@@ -302,21 +302,21 @@ When a method of the configuration proxy instance is called, the following proce
     - return the `JsonNode` value of the current key converted in the specified primitive type or the default value or empty element (0, "", ... depending of the primitive)
 
 - Case Interface:
-    - Interface can not be generic (only List<?> and Map<String, ?> are supported as generic, see below)
+    - Interface can not be generic (only `List<?>` and `Map<String, ?>` are supported as generic, see below)
     - return a new configuration proxy for the `JsonNode` value of the current key 
 
-- Case List<?>:
+- Case `List<?>`:
     - for each `JsonNode` value elements of the current key, load them recursively with the given generic type
-    - return the list of loaded elements or default value if `JsonNode` key doesn't exists or an empty List<?> if no defaults
+    - return the list of loaded elements or default value if `JsonNode` key doesn't exists or an empty `List<?>` if no defaults
 
-- Case Map<String, ?>:
+- Case `Map<String, ?>`:
     - for each pair (sub-key, `JsonNode`) of the current key, load `JsonNode` value recursively with the given generic type
-    - return the map of loaded elements with respective keys or default value if `JsonNode` key doesn't exists or an empty Map<String, ?> if no defaults
+    - return the map of loaded elements with respective keys or default value if `JsonNode` key doesn't exists or an empty `Map<String, ?>` if no defaults
 
-- Case Class<?>:
+- Case `Class<?>`:
     - return the class corresponding to the given class name stored in `JsonNode` value of the current key or the default class or java.lang.Class object
 
-- Case Class<? extends Service>:
+- Case `Class<? extends Service>`:
     - load default service configuration if `@ServiceDefaultDefinition` annotation exists for service class
     - load override service configuration stored in `JsonNode` value of the current key
     - determine service `implementation` class by using override implementation or default implementation or method return type by default
@@ -338,7 +338,7 @@ When a method of the configuration proxy instance is called, the following proce
     - throw InvalidConfigException
 
 - Notes:
-    - Generic types for List<?> and Map<String, ?> can be any type describe in the previous cases recursively.
+    - Generic types for `List<?>` and `Map<String, ?>` can be any type describe in the previous cases recursively.
     - Map key generic parameter must be a String.
     - Methods calls for primitives and interfaces return types will never fails and never return null.
     - During the application startup configuration building process, services are NOT available to be used.

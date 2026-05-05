@@ -254,8 +254,6 @@ This module provide `services` to interact with a triplestore compatible with SP
 
 It use annotations on `models` classes and methods to automatically map Java Object with RDF triples.
 
-For more information on this module see [documentation](sparql.md)
-
 ```
 +------------- opensilex-sparql - SPARQLModule ---------------+
 +                                                             +
@@ -300,8 +298,6 @@ For more information on this module see [documentation](sparql.md)
 This module provide `services` to interact with NoSQL databases.
 
 It actually only implements MongoDB drivers
-
-For more information on this module see [documentation](nosql.md)
 
 ```
 +-------------- opensilex-nosql - NoSQLModule ----------------+
@@ -395,8 +391,6 @@ This module contains REST API and DATA ACCESS LAYER `features` for common concep
 - Experiment
 - Infrastructure
 
-For more information on this module see [documentation](core.md)
-
 ```
 +--------------- opensilex-core - CoreModule -----------------+
 +                                                             +
@@ -429,9 +423,6 @@ This module contains all legacy PHIS services and will not be covered by this do
 ### opensilex-front
 
 This module integrate a Vue.js extensible application for OpenSlex modules.
-
-
-For more information on this module see [documentation](vuejs.md)
 
 ```
 +-------------- opensilex-front - FrontModule ----------------+

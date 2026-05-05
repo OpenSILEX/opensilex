@@ -86,13 +86,13 @@ build-for-sonar:
   variables:
     GIT_DEPTH: "0"
   stage: doc_and_metrics
-  cache: 
+  cache:
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
       - $MAVEN_CACHE_FOLDER
   script:
-    - mkdir -p sonarqube_reports_log 
-    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild 
+    - mkdir -p sonarqube_reports_log
+    - mvn -q --settings $CI_PROJECT_DIR/.m2/settings.xml $MAVEN_CLI_OPTS clean install -DskipFrontBuild
   artifacts:
     paths:
       - sonarqube_reports_log
@@ -118,7 +118,7 @@ sonar-analysis:
   needs:
     - job: build-for-sonar
       artifacts: true
-  cache: 
+  cache:
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
       - "${SONAR_USER_HOME}/cache"
@@ -139,7 +139,7 @@ sonar-analysis:
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
-  
+
 ########################
 ##  CACHE TEMPLATE
 ########################
@@ -241,7 +241,7 @@ sonar-analysis:
     - |
       if git ls-remote --exit-code --heads origin release && [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
         echo 'Branch release exists, cannot deploy develop';
-        exit 0;
+        exit 1;
       fi
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forge.inrae.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
@@ -608,22 +608,6 @@ opensilex-release:publish:
     - job: "opensilex-release:close"
       artifacts: true
 
-
-# Update nightly builds branch
-update:nightly:builds:branch:
-  stage: build
-  script:
-    - apt update && apt install -y git
-    - git config --global user.name "anonymous"
-    - git config --global user.email "anonymous@opensilex.org"
-    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forge.inrae.fr/OpenSILEX/opensilex-dev.git"
-    - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
-    - git fetch origin
-    - git reset --hard origin/develop
-    - git push -f origin nightly-builds
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
-
 ###############################################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
 ###############################################
@@ -660,9 +644,6 @@ test:build:java21:
   <<: *java21
   <<: *test_build_on_schedules
 
-#test:build:java17:
-#  <<: *java17
-#  <<: *test_build_on_schedules
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
@@ -671,7 +652,9 @@ test:build:java21:
 pages:site:
     stage: doc_and_metrics
     image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+    when: always
     timeout: 2h
+    <<: *cache_dependencies
     before_script:
         - mkdir -p $CI_PROJECT_DIR/.m2
         - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
@@ -679,26 +662,29 @@ pages:site:
         - mkdir -p .mvn
         - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
         - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+        - mkdir logs
     script:
         - mkdir site_public
         - |
             mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
                 install site $MAVEN_OPTS_SCHUEDULES \
                 -DskipFrontBuild \
-                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module' \
-                -Pwith-security-check \
-                -Pwith-test-report
+                -DnvdApiKey=$NVD_API_KEY \
+                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module'  > $CI_PROJECT_DIR/logs/mvn-install-site.log
+        # -Pwith-security-check \ -Pwith-test-report \
         - mv $CI_PROJECT_DIR/site/* site_public
     artifacts:
         paths:
             - site_public
-        when: always
+            - logs
+        when: always 
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $PAGES_GENERATION == "true"
 
 pages:specifications:
     stage: doc_and_metrics
     image: node:20.19.6-alpine3.22
+    when: always
     script:
         - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/functional-specifications
         - npm install
@@ -708,27 +694,49 @@ pages:specifications:
     artifacts:
         paths:
             - specs_public
-        when: always
+        expire_in: 2 days
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $PAGES_GENERATION == "true"
 
+pages:technical-documentation:
+    stage: doc_and_metrics
+    image: node:20.19.6-alpine3.22
+    when: always
+    script:
+        - cd $CI_PROJECT_DIR/opensilex-doc/src/main/resources/technical-documentation
+        - npm install
+        - npm run docs:build
+        - mkdir -p $CI_PROJECT_DIR/tech_doc_public
+        - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/technical-documentation/.vitepress/dist/* $CI_PROJECT_DIR/tech_doc_public/
+    artifacts:
+        paths:
+            - tech_doc_public
+        expire_in: 2 days
+    rules:
+        - if: $PAGES_GENERATION == "true"
+        
 pages:
     stage: doc_and_metrics
+    when: always
     needs:
         -   job: pages:site
             artifacts: true
         -   job: pages:specifications
             artifacts: true
+        -   job: pages:technical-documentation
+            artifacts: true
     script:
-        - mkdir -p public/specifications
-        - cp -r site_public/* public/
-        - cp -r specs_public/* public/specifications/
-        - ls -R public
+        - mkdir -p public/maven-report
+        - cp -r site_public/* public/maven-report/
+        - mkdir -p public/technical-documentation
+        - cp -r tech_doc_public/* public/technical-documentation
+        - cp -r specs_public/* public/
     artifacts:
         paths:
             - public
     rules:
-        - if: $CI_COMMIT_BRANCH == "develop"
+        - if: $PAGES_GENERATION == "true"
+
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
 # ##########################################

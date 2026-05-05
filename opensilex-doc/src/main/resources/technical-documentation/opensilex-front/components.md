@@ -759,7 +759,7 @@ Events:
 Identifier: `opensilex-OntologyObjectProperties`
 
 This component is used to render custom properties within description cards. 
-
+```
 | ID                   | Type                        | Default value | Description                                                                     |
 |----------------------|-----------------------------|---------------|---------------------------------------------------------------------------------|
 | selected*            | NamedResourceDTO            |               | Concerned object                                                                |
@@ -768,7 +768,7 @@ This component is used to render custom properties within description cards.
 | ignoredProperties    | Array<string>               | []            | List of properties to ignore during render                                      |
 | additionalFieldProps | { [key: string]: string }   | {}            | Additional props to be passed to the field components                           |
 | showIncoming         | boolean                     | true          | Show or hide the incoming properties (i.e. "Properties targetting this object") |
-
+```
 Example usage (from `ScientificObjectDetailProperties`)
 
 ```vue

@@ -1,32 +1,32 @@
 <template>
-  <opensilex-TreeView
+  <TreeView
       :nodes="nodes"
       defaultExpandAll
       @select="displayClassDetail($event[0]?.data?.uri)">
     <template #node="{ node }">
       <span class="item-icon">
-        <opensilex-Icon v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon"
-                        :icon="classParametersByURI[node.data.uri].icon"/>
+        <Icon v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon"
+              :icon="classParametersByURI[node.data.uri].icon"/>
       </span>&nbsp;
       <strong v-if="node.data.selected">{{ node.title }}</strong>
       <span v-if="!node.data.selected">{{ node.title }}</span>
     </template>
 
     <template #buttons="{ node }">
-      <opensilex-AddChildButton
+      <AddChildButton
           v-if="user.isAdmin()"
           @click="emit('createChildClass' ,node.data.uri)"
           :label="t('OntologyClassTreeView.add-child')"
           :small="true"
-      ></opensilex-AddChildButton>
-      <opensilex-DeleteButton
+      ></AddChildButton>
+      <DeleteButton
           v-if="isManagedClass(node.data.uri) && user.isAdmin()"
-          @click="emit('deleteRDFType' ,node.data)"
+          @click="emit('deleteRDFType', node.data)"
           :label="t('OntologyClassTreeView.delete')"
           :small="true"
-      ></opensilex-DeleteButton>
+      ></DeleteButton>
     </template>
-  </opensilex-TreeView>
+  </TreeView>
 </template>
 
 <script setup lang="ts">
@@ -40,16 +40,34 @@ import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {useI18n} from "vue-i18n";
+import TreeView from "@/components/common/views/TreeView.vue";
+import Icon from "@/components/common/views/Icon.vue";
+import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
+//#region Public
 const props = defineProps<{
   rdfType: string
 }>();
 
+const emit = defineEmits<{
+  selectionChange: [selected: VueRDFTypeDTO],
+  createChildClass: [uri: string],
+  deleteRDFType: [nodeData: any]
+}>()
+
+defineExpose({
+  getTree,
+  refresh
+})
+//#endregion
+
+//#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
 const route = useRoute();
 const user = computed(() => store.state.user);
-const { t } = useI18n();
+const {t} = useI18n();
 
 const nodes = ref([]);
 const selected = ref<VueRDFTypeDTO | undefined>();
@@ -58,6 +76,7 @@ const classParametersByURI = ref({});
 
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
 const vueJsOntologyService = opensilex.getService<VueJsOntologyExtensionService>("opensilex-front.VueJsOntologyExtensionService");
+
 
 onMounted(() => {
   let preselected = route.query.selected;
@@ -78,17 +97,6 @@ const unwatchLang = store.watch(
 
 onBeforeUnmount(() => {
   unwatchLang();
-})
-
-const emit = defineEmits<{
-  selectionChange: [selected: VueRDFTypeDTO],
-  createChildClass: [uri: string],
-  deleteRDFType: [nodeData: any]
-}>()
-
-defineExpose({
-  getTree,
-  refresh
 })
 
 function displayClassDetail(uri: string) {
@@ -176,6 +184,7 @@ function dtoToNode(dto: ResourceTreeDTO, selection) {
 function isManagedClass(rdfClassURI) {
   return !!classParametersByURI.value[rdfClassURI];
 }
+//#endregion
 </script>
 
 <style scoped lang="scss">

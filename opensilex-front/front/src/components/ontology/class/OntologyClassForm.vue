@@ -1,15 +1,15 @@
 <template>
   <n-form v-if="form.name_translations" :rules="rules">
-    <opensilex-InputForm
+    <InputForm
         v-model:value="form.uri"
         label="component.common.uri"
         type="text"
         rules="url"
         :disabled="editMode"
         :required="true"
-    ></opensilex-InputForm>
+    ></InputForm>
 
-    <opensilex-FormSelector
+    <FormSelector
         v-model:selected="form.parent"
         path="parent"
         :options="parentOptions"
@@ -17,35 +17,35 @@
         :required="true"
         label="component.common.parent"
         :filterable="true"
-    ></opensilex-FormSelector>
+    ></FormSelector>
 
-    <opensilex-InputForm
+    <InputForm
         v-model:value="form.name_translations.en"
         :label="t('OntologyClassForm.labelEN')"
         type="text"
         :required="true"
-    ></opensilex-InputForm>
+    ></InputForm>
 
-    <opensilex-TextAreaForm
+    <TextAreaForm
         v-model:value="form.comment_translations.en"
         :label="t('OntologyClassForm.commentEN')"
         :required="true"
         @keydown.native.enter.stop
-    ></opensilex-TextAreaForm>
+    ></TextAreaForm>
 
-    <opensilex-InputForm
+    <InputForm
         v-model:value="form.name_translations.fr"
         :label="t('OntologyClassForm.labelFR')"
         type="text"
         :required="true"
-    ></opensilex-InputForm>
+    ></InputForm>
 
-    <opensilex-TextAreaForm
+    <TextAreaForm
         v-model:value="form.comment_translations.fr"
         :label="t('OntologyClassForm.commentFR')"
         :required="true"
         @keydown.native.enter.stop
-    ></opensilex-TextAreaForm>
+    ></TextAreaForm>
 
     <!-- is abstract -->
     <!-- <opensilex-CheckboxForm
@@ -53,10 +53,10 @@
       title="OntologyClassForm.abstract-type"
     ></opensilex-CheckboxForm> -->
 
-    <opensilex-IconForm
+    <IconForm
         v-model:value="form.icon"
         :label="t('OntologyClassForm.icon')"
-    ></opensilex-IconForm>
+    ></IconForm>
   </n-form>
 </template>
 
@@ -68,24 +68,12 @@ import {VueJsOntologyExtensionService} from "@/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {NForm} from "naive-ui";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
+import IconForm from "@/components/common/forms/IconForm.vue";
 
-const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
-const service = opensilex.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService");
-const {t} = useI18n();
-
-const availableParents = ref<Array<any>>([]);
-
-const parentOptions = computed(() => {
-  if (props.editMode) {
-    return opensilex.buildTreeListOptions(availableParents.value, {
-      disableSubTree: form.value.uri
-    });
-  } else {
-    return opensilex.buildTreeListOptions(availableParents.value);
-  }
-})
-
+//#region Public
 const props = defineProps<{
   editMode: boolean,
   data: {
@@ -106,16 +94,37 @@ const form = defineModel("form", {
   }
 });
 
-const rules = {
-  uri: { required: true},
-  parent: { required: true}
-}
-
 defineExpose({
   getEmptyForm,
   create,
   update
 })
+//#endregion
+
+//#region Private
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
+const service = opensilex.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService");
+const {t} = useI18n();
+
+const availableParents = ref<Array<any>>([]);
+
+const parentOptions = computed(() => {
+  if (props.editMode) {
+    return opensilex.buildTreeListOptions(availableParents.value, {
+      disableSubTree: form.value.uri
+    });
+  } else {
+    return opensilex.buildTreeListOptions(availableParents.value);
+  }
+})
+
+
+const rules = {
+  uri: {required: true},
+  parent: {required: true}
+}
+
 
 watchEffect(() => {
   if (props.data.parentUri) {
@@ -171,6 +180,8 @@ function update(form) {
       })
       .catch(opensilex.errorHandler);
 }
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

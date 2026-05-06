@@ -1,12 +1,12 @@
 <template>
   <n-form>
 
-    <opensilex-InputForm
+    <InputForm
         v-model:value="data.classUri"
         label="component.common.type"
         type="text"
         :disabled="true"
-    ></opensilex-InputForm>
+    ></InputForm>
 
     <!-- Parent -->
     <FormSelector
@@ -20,7 +20,7 @@
 
 
     <!-- is_required -->
-    <opensilex-FormField
+    <FormField
         :required="true"
         :label="t('OntologyClassPropertyForm.required')"
         :helpMessage="t('OntologyClassPropertyForm.required-help')"
@@ -31,10 +31,10 @@
             size="small"
         ></n-switch>
       </template>
-    </opensilex-FormField>
+    </FormField>
 
     <!-- is_list -->
-    <opensilex-FormField
+    <FormField
         :required="true"
         :label="t('OntologyClassPropertyForm.list')"
         :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
@@ -46,7 +46,7 @@
             size="small"
         ></n-switch>
       </template>
-    </opensilex-FormField>
+    </FormField>
 
   </n-form>
 </template>
@@ -60,21 +60,10 @@ import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
 import {NSwitch, NForm} from "naive-ui";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import FormField from "@/components/common/forms/FormField.vue";
 
-const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
-const {t} = useI18n();
-
-const availableProperties = ref();
-const dataTypeProperties = ref([]);
-
-const propertiesOptions = computed(() => {
-  return buildTreeListOptions(
-      availableProperties.value,
-      []
-  );
-})
-
+//#region Public
 const props = withDefaults(defineProps<{
   editMode: boolean,
   form: any,
@@ -90,22 +79,35 @@ const props = withDefaults(defineProps<{
   }
 });
 
+defineExpose({
+  getEmptyForm,
+  create,
+  update
+})
+//#endregion
+
+//#region Private
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
+const {t} = useI18n();
+
+const availableProperties = ref();
+const dataTypeProperties = ref([]);
+
+const propertiesOptions = computed(() => {
+  return buildTreeListOptions(
+      availableProperties.value,
+      []
+  );
+})
+
+
 watchEffect(() => {
   ontologyService.getLinkableProperties(props.data.classUri, props.data.domain).then((http) => {
     setProperties(http.response.result);
   });
 });
 
-defineExpose({
-  getEmptyForm,
-  create,
-  update
-})
-
-function disableIsListCheckBox(): boolean {
-  let dataPropIdx = this.dataTypeProperties.indexOf(this.form.property);
-  return dataPropIdx >= 0;
-}
 
 function getEmptyForm() {
   return {
@@ -220,6 +222,8 @@ function buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
 
   return option;
 }
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Card v-if="selected">
+  <Card v-if="selected">
     <template #header>
       <h3>{{ t("OntologyClassDetail.title") }}</h3>
     </template>
@@ -8,10 +8,10 @@
         <!-- URI -->
         <UriView :uri="selected.uri"></UriView>
         <!-- Name -->
-        <opensilex-StringView
+        <StringView
             label="component.common.name"
             :value="selected.name"
-        ></opensilex-StringView>
+        ></StringView>
         <!-- Description -->
         <TextView
             label="component.common.comment"
@@ -24,13 +24,13 @@
             label="OntologyClassForm.icon"
             :value="selected.icon"
         ></IconView>
-        <opensilex-MetadataView
+        <MetadataView
             v-if="selected.publisher && selected.publisher.uri"
             :publisher="selected.publisher"
             :publicationDate="selected.publicationDate"
             :lastUpdatedDate="selected.lastUpdatedDate"
         >
-        </opensilex-MetadataView>
+        </MetadataView>
       </div>
       <hr>
       <div>
@@ -52,7 +52,7 @@
           </div>
 
           <div class="col-lg-8">
-            <opensilex-Button
+            <Button
                 v-if="user.isAdmin()"
                 @click="showClassPropertyForm"
                 class="greenThemeColor addPropertyButton"
@@ -60,22 +60,22 @@
                 :small="false"
                 :label="t('OntologyClassDetail.addProperty')"
                 helpMessage="OntologyClassDetail.add-property-help"
-            ></opensilex-Button>
+            ></Button>
             &nbsp;
-            <opensilex-Button
+            <Button
                 v-if="user.isAdmin()"
                 @click="startSetPropertiesOrder"
                 class="greenThemeColor"
                 icon="fa#pencil-alt"
                 :small="false"
                 :label="t('OntologyClassDetail.setPropertiesOrder')"
-            ></opensilex-Button>
+            ></Button>
           </div>
         </div>
 
         <!-- Add and set order buttons -->
         <div>
-          <opensilex-Modal
+          <Modal
               ref="setPropertiesOrderRef"
           >
             <template #header>
@@ -103,7 +103,7 @@
                 {{ t("component.common.validateSelection") }}
               </button>
             </template>
-          </opensilex-Modal>
+          </Modal>
         </div>
 
         <div>
@@ -117,7 +117,7 @@
           </n-config-provider>
         </div>
 
-        <opensilex-ModalForm
+        <ModalForm
             ref="classPropertyForm"
             component="opensilex-OntologyClassPropertyForm"
             :createTitle="t('OntologyClassDetail.addProperty')"
@@ -129,11 +129,11 @@
               domain: rdfType,
               classUri: selected.uri
             }"
-        ></opensilex-ModalForm>
+        ></ModalForm>
       </div>
 
     </template>
-  </opensilex-Card>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -152,6 +152,10 @@ import {VueDraggable} from "vue-draggable-plus";
 import IconView from "@/components/common/views/IconView.vue";
 import UriView from "@/components/common/views/UriView.vue";
 import TextView from "@/components/common/views/TextView.vue";
+import Card from "@/components/common/views/Card.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import MetadataView from "@/components/common/views/MetadataView.vue";
+import Button from "@/components/common/buttons/Button.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -181,7 +185,9 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   {
     key: "uri",
     title: t("component.common.uri"),
-    render: (data: VueRDFTypePropertyDTO) => h(UriLink, {uri: data.uri, value: data.uri})
+    // IDE finds a type error here. This is because of vue version mismatch between the global node_modules and the
+    // one in opensilex-front. I don't know how to solve it though.
+    render: (data: VueRDFTypePropertyDTO, _: number) => h(UriLink, {uri: data.uri, value: data.uri})
   },
   {
     key: "is_required",

@@ -3,7 +3,7 @@
 
     <!-- List and create button -->
     <div class="col-md-5">
-      <opensilex-Card
+      <Card
           noHeader
           noFooter
       >
@@ -52,7 +52,7 @@
           ></OntologyClassTreeView>
 
         </template>
-      </opensilex-Card>
+      </Card>
     </div>
 
     <!-- Détails of selected element from list  -->
@@ -72,42 +72,46 @@
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
-import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
 import OntologyClassTreeView from "@/components/ontology/class/OntologyClassTreeView.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import OntologyClassDetail from "@/components/ontology/class/OntologyClassDetail.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
+import Card from "@/components/common/views/Card.vue";
 
+//#region Public
+const props = defineProps<{
+  rdfType: string,
+  title: string,
+  icon: string
+}>();
+//#endregion
+
+//#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
 const {t} = useI18n();
-
-const user = computed(() => store.state.user);
 
 const service = ref<VueJsOntologyExtensionService>();
 const nameFilter = ref<string>("");
 const parentURI = ref<string>("");
 const selected = ref<VueRDFTypeDTO | undefined>();
 
+const user = computed(() => store.state.user);
+
 const classForm = useTemplateRef<InstanceType<typeof ModalForm>>("classForm");
 const classesTree = useTemplateRef<InstanceType<typeof OntologyClassTreeView>>("classesTree");
-
-const props = defineProps<{
-  rdfType: string,
-  title: string,
-  icon: string
-}>();
-
-onMounted(async () => {
-  service.value = opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
-})
 
 const unwatchLang = store.watch(
     () => store.getters.language,
     () => refresh()
 );
+
+onMounted(async () => {
+  service.value = opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
+})
 
 onBeforeUnmount(() => {
   unwatchLang();
@@ -127,15 +131,14 @@ function showEditForm(data) {
   service.value
       .getRDFType(data.uri, props.rdfType)
       .then(http => {
-        let form = http.response.result;
-        classForm.value.showEditForm(form);
+        classForm.value.showEditForm(http.response.result);
       }).catch(opensilex.errorHandler);
 }
 
 function deleteRDFType(data) {
   service.value
       .deleteRDFType(data.uri)
-      .then(http => {
+      .then(_ => {
         let message = t("OntologyClassView.the-type") + " " + data.name + t("component.common.success.delete-success-message");
         opensilex.showSuccessToast(message);
         selected.value = undefined;
@@ -150,6 +153,9 @@ function refresh() {
 function updateFilter() {
   refresh();
 }
+//#endregion
+
+
 </script>
 
 <style scoped lang="scss">
@@ -165,7 +171,6 @@ function updateFilter() {
 }
 
 div.sticky {
-  position: -webkit-sticky; /* Safari */
   position: sticky;
   top: 0;
 }

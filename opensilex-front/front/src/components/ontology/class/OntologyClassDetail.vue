@@ -20,10 +20,10 @@
         <!-- Abstract type -->
         <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.is_abstract"></opensilex-BooleanView> -->
         <!-- Icon identifier -->
-        <opensilex-IconView
+        <IconView
             label="OntologyClassForm.icon"
             :value="selected.icon"
-        ></opensilex-IconView>
+        ></IconView>
         <opensilex-MetadataView
             v-if="selected.publisher && selected.publisher.uri"
             :publisher="selected.publisher"
@@ -36,13 +36,19 @@
       <div>
         <div class="static-field row">
           <div class="col-lg-8">
-                    <span class="field-view-title" style="float: none">
-                    {{ t("OntologyClassDetail.properties") }}
-                    <font-awesome-icon
-                        icon="question-circle"
-                        v-b-tooltip.hover.top="t('OntologyClassDetail.properties-help')"
-                    />
-                </span>
+            <span class="field-view-title" style="float: none">
+              {{ t("OntologyClassDetail.properties") }}
+              <n-tooltip
+                  trigger="hover"
+              >
+                <template #trigger>
+                  <font-awesome-icon
+                      icon="question-circle"
+                  />
+                </template>
+                {{ t("OntologyClassDetail.properties-help") }}
+              </n-tooltip>
+            </span>
           </div>
 
           <div class="col-lg-8">
@@ -135,12 +141,13 @@ import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
-import {DataTableColumns, NList, NListItem} from "naive-ui";
+import {DataTableColumns, NList, NListItem, NTooltip} from "naive-ui";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import Modal from "@/components/common/views/Modal.vue";
 import {VueDraggable} from "vue-draggable-plus";
+import IconView from "@/components/common/views/IconView.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");

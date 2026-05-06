@@ -173,6 +173,16 @@
     <!-- http://xmlns.com/foaf/0.1/Organization -->
 
     <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Organization"/>
+
+    <!-- http://edamontology.org/data_2600 -->
+
+    <owl:Class rdf:about="http://edamontology.org/data_2600">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+        <rdfs:comment xml:lang="en">Primary data about a specific biological pathway or network (the nodes and connections within the pathway or network).</rdfs:comment>
+        <rdfs:label xml:lang="en">Pathway or network</rdfs:label>
+        <rdfs:label xml:lang="fr">Voie ou réseau biologique</rdfs:label>
+    </owl:Class>
+
     
 
 

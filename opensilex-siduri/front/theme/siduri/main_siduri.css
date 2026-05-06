@@ -76,7 +76,7 @@
 }
 
 .dashboardCentralLogo{
-  opacity: 0.8;
+  opacity: 1; 
   min-height: 35vh;
   max-height: 80%;
   max-width: 80%;

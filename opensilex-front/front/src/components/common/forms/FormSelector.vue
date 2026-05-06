@@ -88,7 +88,7 @@ const { t } = useI18n()
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<{
-  path: string
+  path?: string
   selected: string | string[] | undefined
   searchMethod?: Function
   multiple?: boolean

@@ -42,7 +42,7 @@
               :lazy="false"
           ></opensilex-StringFilter>
 
-          <opensilex-OntologyClassTreeView
+          <OntologyClassTreeView
               ref="classesTree"
               :rdfType="rdfType"
               @selectionChange="selected = $event"
@@ -50,7 +50,7 @@
               @createChildClass="showCreateForm($event)"
               @deleteRDFType="deleteRDFType($event)"
               class="scrollable-container"
-          ></opensilex-OntologyClassTreeView>
+          ></OntologyClassTreeView>
 
         </template>
       </opensilex-Card>
@@ -59,7 +59,7 @@
     <!-- Détails of selected element from list  -->
     <div class="col-md-7 ">
       <div>
-        <opensilex-OntologyClassDetail
+        <OntologyClassDetail
             :rdfType="rdfType"
             :selected="selected"
             @onDetailChange="refresh()"
@@ -73,10 +73,11 @@
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
-import {VueJsOntologyExtensionService} from "../../../lib";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import {useI18n} from "vue-i18n";
 import OntologyClassTreeView from "@/components/ontology/class/OntologyClassTreeView.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
+import OntologyClassDetail from "@/components/ontology/class/OntologyClassDetail.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
@@ -85,9 +86,9 @@ const {t} = useI18n();
 const user = computed(() => store.state.user);
 
 const service = ref<VueJsOntologyExtensionService>();
-const nameFilter = ref("");
-const parentURI = ref("");
-const selected = ref();
+const nameFilter = ref<string>("");
+const parentURI = ref<string>("");
+const selected = ref<VueRDFTypeDTO | undefined>();
 
 const classForm = useTemplateRef<InstanceType<typeof ModalForm>>("classForm");
 const classesTree = useTemplateRef<InstanceType<typeof OntologyClassTreeView>>("classesTree");

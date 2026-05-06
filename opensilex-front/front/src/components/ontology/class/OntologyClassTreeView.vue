@@ -31,13 +31,13 @@
 
 <script setup lang="ts">
 
-import {computed, h, inject, onBeforeUnmount, onMounted, Ref, ref, watchEffect} from "vue";
+import {computed, h, inject, onBeforeUnmount, onMounted, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useRoute} from "vue-router";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
-import {VueJsOntologyExtensionService} from "@/lib";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {useI18n} from "vue-i18n";
 
@@ -52,7 +52,7 @@ const user = computed(() => store.state.user);
 const { t } = useI18n();
 
 const nodes = ref([]);
-const selected = ref();
+const selected = ref<VueRDFTypeDTO | undefined>();
 const resourceTree = ref<Array<ResourceTreeDTO>>();
 const classParametersByURI = ref({});
 
@@ -81,7 +81,7 @@ onBeforeUnmount(() => {
 })
 
 const emit = defineEmits<{
-  selectionChange: [selected: any],
+  selectionChange: [selected: VueRDFTypeDTO],
   createChildClass: [uri: string],
   deleteRDFType: [nodeData: any]
 }>()

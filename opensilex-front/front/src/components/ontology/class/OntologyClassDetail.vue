@@ -6,17 +6,17 @@
     <template #body>
       <div>
         <!-- URI -->
-        <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+        <UriView :uri="selected.uri"></UriView>
         <!-- Name -->
         <opensilex-StringView
             label="component.common.name"
             :value="selected.name"
         ></opensilex-StringView>
         <!-- Description -->
-        <opensilex-TextView
+        <TextView
             label="component.common.comment"
             :value="selected.comment"
-        ></opensilex-TextView>
+        ></TextView>
         <!-- Abstract type -->
         <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.is_abstract"></opensilex-BooleanView> -->
         <!-- Icon identifier -->
@@ -107,12 +107,14 @@
         </div>
 
         <div>
-          <n-data-table
-              size="small"
-              :data="properties"
-              :columns="fields"
-          >
-          </n-data-table>
+          <n-config-provider>
+            <n-data-table
+                size="small"
+                :data="properties"
+                :columns="fields"
+            >
+            </n-data-table>
+          </n-config-provider>
         </div>
 
         <opensilex-ModalForm
@@ -139,15 +141,17 @@ import {computed, h, inject, ref, useTemplateRef, VNodeChild} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "@/lib";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
-import {DataTableColumns, NList, NListItem, NTooltip} from "naive-ui";
+import {DataTableColumns, NList, NListItem, NTooltip, NConfigProvider} from "naive-ui";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import Modal from "@/components/common/views/Modal.vue";
 import {VueDraggable} from "vue-draggable-plus";
 import IconView from "@/components/common/views/IconView.vue";
+import UriView from "@/components/common/views/UriView.vue";
+import TextView from "@/components/common/views/TextView.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -158,7 +162,7 @@ const {t} = useI18n();
 const user = computed(() => store.state.user);
 
 const props = defineProps<{
-  selected: any,
+  selected?: VueRDFTypeDTO,
   rdfType: string,
 }>();
 

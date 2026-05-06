@@ -9,14 +9,14 @@
     ></opensilex-InputForm>
 
     <!-- Parent -->
-    <opensilex-FormSelector
+    <FormSelector
         v-model:selected="form.property"
         :options="propertiesOptions"
         :required="true"
         :label="t('OntologyClassPropertyForm.property')"
         :helpMessage="t('OntologyClassPropertyForm.property-help')"
         @update:selected="updateIsListProperty"
-    ></opensilex-FormSelector>
+    ></FormSelector>
 
 
     <!-- is_required -->
@@ -58,7 +58,8 @@ import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
-import {NSwitch} from "naive-ui";
+import {NSwitch, NForm} from "naive-ui";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");

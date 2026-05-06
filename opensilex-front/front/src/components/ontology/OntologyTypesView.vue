@@ -13,6 +13,7 @@
             {{ t("OntologyTypesView.typeTitle") }}
           </router-link>
           <router-link
+              v-if="withProperties"
               :to="{path: propertiesURI}"
               :class="['tab', { active: isPropertiesType }]"
               class="tab"
@@ -58,9 +59,9 @@ const props = withDefaults(defineProps<{
   typeTitle: string,
   typeDescription: string,
   typeURI: string,
-  propertiesTitle: string,
-  propertiesDescription: string,
-  propertiesURI: string,
+  propertiesTitle?: string,
+  propertiesDescription?: string,
+  propertiesURI?: string,
   withProperties?: boolean,
 }>(), {
   withProperties: true

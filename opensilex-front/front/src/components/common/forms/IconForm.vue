@@ -41,11 +41,9 @@ const value = defineModel<string>('value');
 
 defineProps<{
   label: string,
-  helpMessage: string,
-  placeholder: string,
-  required: boolean,
-  disabled: boolean,
-  rules: string | Function
+  helpMessage?: string,
+  required?: boolean,
+  rules?: string | Function
 }>();
 </script>
 

@@ -3,7 +3,7 @@
     <opensilex-PageHeader v-if="isPropertiesType" :icon="icon" :hasIcon="true" :title="propertiesTitle"
                           :description="propertiesDescription" class="detail-element-header"></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="false" :tabs="true">
+    <opensilex-PageActions :returnButton="false">
       <template v-slot>
         <nav class="tabs mb-3">
           <router-link

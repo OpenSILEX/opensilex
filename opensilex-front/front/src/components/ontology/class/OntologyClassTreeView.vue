@@ -16,13 +16,13 @@
       <opensilex-AddChildButton
           v-if="user.isAdmin()"
           @click="emit('createChildClass' ,node.data.uri)"
-          label="OntologyClassTreeView.add-child"
+          :label="t('OntologyClassTreeView.add-child')"
           :small="true"
       ></opensilex-AddChildButton>
       <opensilex-DeleteButton
           v-if="isManagedClass(node.data.uri) && user.isAdmin()"
           @click="emit('deleteRDFType' ,node.data)"
-          label="OntologyClassTreeView.delete"
+          :label="t('OntologyClassTreeView.delete')"
           :small="true"
       ></opensilex-DeleteButton>
     </template>
@@ -39,6 +39,7 @@ import {useRoute} from "vue-router";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {VueJsOntologyExtensionService} from "@/lib";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {useI18n} from "vue-i18n";
 
 const props = defineProps<{
   rdfType: string
@@ -48,6 +49,7 @@ const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
 const route = useRoute();
 const user = computed(() => store.state.user);
+const { t } = useI18n();
 
 const nodes = ref([]);
 const selected = ref();

@@ -1,5 +1,5 @@
 <template>
-  <n-form v-if="form.name_translations">
+  <n-form v-if="form.name_translations" :rules="rules">
     <opensilex-InputForm
         v-model:value="form.uri"
         label="component.common.uri"
@@ -11,6 +11,7 @@
 
     <opensilex-FormSelector
         v-model:selected="form.parent"
+        path="parent"
         :options="parentOptions"
         checkStrategy="parent"
         :required="true"
@@ -60,12 +61,12 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, Ref, ref, watchEffect} from "vue";
+import {computed, inject, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {VueJsOntologyExtensionService} from "@/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NForm, NTreeSelect} from "naive-ui";
+import {NForm} from "naive-ui";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -99,11 +100,16 @@ const form = defineModel("form", {
     name: null,
     name_translations: {en: null, fr: null},
     comment: null,
-    comment_translations: {en: null, fr: null},
+    comment_translations: {en: "", fr: ""},
     icon: null,
     is_abstract: false
   }
 });
+
+const rules = {
+  uri: { required: true},
+  parent: { required: true}
+}
 
 defineExpose({
   getEmptyForm,
@@ -128,7 +134,7 @@ function getEmptyForm() {
     name: null,
     name_translations: {en: null, fr: null},
     comment: null,
-    comment_translations: {en: null, fr: null},
+    comment_translations: {en: "", fr: ""},
     icon: null,
     is_abstract: false
   };

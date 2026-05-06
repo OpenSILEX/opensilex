@@ -1,5 +1,5 @@
 <template>
-  <opensilex-OntologyTypesView
+  <OntologyTypesView
     :rdfType="opensilex.Oeso.getShortURI(opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)"
     icon="bi#bi-gear"
     :typeTitle="t('component.ontology.typeView.scientificObject.title')"
@@ -8,13 +8,14 @@
     :propertiesTitle="t('ScientificObjectTypes.propertiesTitle')"
     :propertiesDescription="t('ScientificObjectTypes.propertiesDescription')"
     propertiesURI="/scientific-object-types/properties"
-  ></opensilex-OntologyTypesView>
+  ></OntologyTypesView>
 </template>
 
 <script setup lang="ts">
 import {inject} from "vue";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
+import OntologyTypesView from "@/components/ontology/OntologyTypesView.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const { t } = useI18n();

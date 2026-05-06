@@ -41,12 +41,15 @@ import UriView from "@/components/common/views/UriView.vue";
 import StringView from "@/components/common/views/StringView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
 
-const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-const {t} = useI18n();
-
+//#region Public
 const props = defineProps<{
   selected: RDFPropertyGetDTO
 }>();
+//#endregion
+
+//#region Private
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const {t} = useI18n();
 
 const typeValue = computed(() => {
   if (OWL.isDatatypeProperty(props.selected.rdf_type)) {
@@ -68,6 +71,7 @@ const rangeValue = computed(() => {
     return props.selected.range_label;
   }
 });
+//#endregion
 </script>
 
 <style scoped lang="scss">

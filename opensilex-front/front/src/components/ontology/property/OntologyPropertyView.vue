@@ -1,21 +1,21 @@
 <template>
   <div class="row">
     <div class="col-md-5">
-      <opensilex-Card
-        noHeader
-        noFooter
+      <Card
+          noHeader
+          noFooter
       >
         <template #body>
           <div class="button-zone">
 
-            <opensilex-CreateButton
+            <CreateButton
                 v-if="user.isAdmin()"
                 @click="showCreateForm()"
                 :label="t('OntologyPropertyView.add')"
                 class="createButton"
-            ></opensilex-CreateButton>
+            ></CreateButton>
 
-            <opensilex-ModalForm
+            <ModalForm
                 ref="propertyForm"
                 component="opensilex-OntologyPropertyForm"
                 :createTitle="t('OntologyPropertyView.add')"
@@ -29,18 +29,18 @@
                   domain: rdfType,
                   parentUri: parentURI
                 }"
-            ></opensilex-ModalForm>
+            ></ModalForm>
           </div>
 
-          <opensilex-StringFilter
+          <StringFilter
               v-model:filter="nameFilter"
               @update="updateFilter()"
               :placeholder="t('OntologyPropertyView.search')"
               :debounce="300"
               :lazy="false"
-          ></opensilex-StringFilter>
+          ></StringFilter>
 
-          <opensilex-OntologyPropertyTreeView
+          <OntologyPropertyTreeView
               ref="propertiesTree"
               :domain="rdfType"
               @selectionChange="onSelectionChanged"
@@ -48,12 +48,12 @@
               @createChildProperty="showCreateForm($event)"
               @deleteProperty="deleteProperty($event)"
               class="scrollable-container"
-          ></opensilex-OntologyPropertyTreeView>
+          ></OntologyPropertyTreeView>
         </template>
-      </opensilex-Card>
+      </Card>
     </div>
     <div class="col-md-7">
-      <opensilex-OntologyPropertyDetail :selected="selected"/>
+      <OntologyPropertyDetail :selected="selected"/>
     </div>
   </div>
 </template>
@@ -69,7 +69,21 @@ import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {useI18n} from "vue-i18n";
 import OntologyPropertyTreeView from "@/components/ontology/property/OntologyPropertyTreeView.vue";
+import Card from "@/components/common/views/Card.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import OntologyPropertyDetail from "@/components/ontology/property/OntologyPropertyDetail.vue";
 
+//#region Public
+const props = defineProps<{
+  rdfType: string
+  title: string
+  icon: string
+}>()
+//#endregion
+
+//#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService")
 const store = useStore();
@@ -83,11 +97,6 @@ const parentURI = ref("");
 const propertyForm = useTemplateRef("propertyForm");
 const propertiesTree = useTemplateRef<InstanceType<typeof OntologyPropertyTreeView>>("propertiesTree");
 
-const props = defineProps<{
-  rdfType: string
-  title: string
-  icon: string
-}>()
 
 function initForm(form: RDFPropertyDTO): RDFPropertyDTO {
   console.log("Init form !!", parentURI.value)
@@ -148,6 +157,8 @@ function refresh() {
 function updateFilter() {
   refresh();
 }
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

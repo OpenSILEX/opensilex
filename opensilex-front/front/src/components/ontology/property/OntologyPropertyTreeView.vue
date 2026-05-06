@@ -1,17 +1,17 @@
 <template>
-  <opensilex-TreeView
+  <TreeView
       :nodes="nodes"
       defaultExpandAll
       @select="displayPropertyNodeDetail($event[0])">
     <template #buttons="{ node }">
-      <opensilex-AddChildButton
+      <AddChildButton
           v-if="user.isAdmin()"
           @click="emit('createChildProperty' ,node.data.uri)"
           :label="t('OntologyPropertyTreeView.add-child')"
           :small="true"
-      ></opensilex-AddChildButton>
+      ></AddChildButton>
     </template>
-  </opensilex-TreeView>
+  </TreeView>
 </template>
 
 <script setup lang="ts">
@@ -25,20 +25,37 @@ import OWL from "@/ontologies/OWL";
 import {useI18n} from "vue-i18n";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
+import TreeView from "@/components/common/views/TreeView.vue";
+import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
+
+//#region Public
+const props = defineProps<{
+  domain: string
+}>()
+
+const emit = defineEmits<{
+  selectionChange: [selected: RDFPropertyGetDTO]
+  createChildProperty: [uri: string]
+}>();
+
+defineExpose({
+  getTree,
+  refresh
+})
+//#endregion
+
+//#region Private
+
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
 const store = useStore();
 const route = useRoute();
 const user = computed(() => store.state.user);
-const { t } = useI18n();
+const {t} = useI18n();
 
 const nodes = ref([]);
-const selected = ref();
-
-const props = defineProps<{
-  domain: string
-}>()
+const selected = ref<RDFPropertyGetDTO | undefined>();
 
 watch(() => props.domain, onDomainChange);
 
@@ -64,15 +81,6 @@ onBeforeUnmount(() => {
   unwatchLang();
 })
 
-const emit = defineEmits<{
-  selectionChange: [selected: RDFPropertyGetDTO]
-  createChildProperty: [uri: string]
-}>();
-
-defineExpose({
-  getTree,
-  refresh
-})
 
 function getTree() {
   return nodes;
@@ -98,7 +106,7 @@ function refresh(nameFilter) {
         } else {
           nodes.value = [];
         }
-        emit("selectionChange", selected);
+        emit("selectionChange", selected.value);
       }).catch(opensilex.errorHandler);
 }
 
@@ -147,9 +155,11 @@ function dtoToNode(dto: ResourceTreeDTO) {
     isSelected: selected.value && selected.value.uri == dto.uri,
     isDraggable: false,
     isSelectable: !dto.disabled,
-    prefix: () => h(FontAwesomeIcon, { icon: getPropertyIcon(dto.rdf_type) })
+    prefix: () => h(FontAwesomeIcon, {icon: getPropertyIcon(dto.rdf_type)})
   };
 }
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

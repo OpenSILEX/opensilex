@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, watch, watchEffect} from "vue";
+import {computed, inject, ref, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
@@ -125,12 +125,40 @@ import {useStore} from "vuex";
 import OWL from "@/ontologies/OWL";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {NForm, NRadio, NRadioGroup} from "naive-ui";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 
+//#region Public
+
+const props = defineProps<{
+  editMode: boolean
+  data: {
+    domain: string
+  }
+}>();
+
+const form = defineModel("form", {
+  default: {
+    uri: null,
+    rdf_type: OWL.DATATYPE_PROPERTY_URI,
+    parent: null,
+    name_translations: {en: null, fr: null},
+    comment_translations: {en: "", fr: ""},
+    domain: null,
+    range: null
+  }
+});
+
+defineExpose({
+  getEmptyForm,
+  create,
+  update
+})
+//#endregion
+
+//#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -189,24 +217,6 @@ const objectTypes = computed(() => {
   return types;
 })
 
-const props = defineProps<{
-  editMode: boolean
-  data: {
-    domain: string
-  }
-}>();
-
-const form = defineModel("form", {
-  default: {
-    uri: null,
-    rdf_type: OWL.DATATYPE_PROPERTY_URI,
-    parent: null,
-    name_translations: {en: null, fr: null},
-    comment_translations: {en: "", fr: ""},
-    domain: null,
-    range: null
-  }
-});
 
 watchEffect(() => {
   if (props.data.domain) {
@@ -222,11 +232,6 @@ watchEffect(() => {
   }
 });
 
-defineExpose({
-  getEmptyForm,
-  create,
-  update
-})
 
 function getEmptyForm() {
   return {
@@ -292,6 +297,8 @@ function update(form) {
       })
       .catch(opensilex.errorHandler);
 }
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

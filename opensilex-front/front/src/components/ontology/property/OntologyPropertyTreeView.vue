@@ -24,6 +24,7 @@ import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import OWL from "@/ontologies/OWL";
 import {useI18n} from "vue-i18n";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -64,7 +65,7 @@ onBeforeUnmount(() => {
 })
 
 const emit = defineEmits<{
-  selectionChange: [selected: any]
+  selectionChange: [selected: RDFPropertyGetDTO]
   createChildProperty: [uri: string]
 }>();
 

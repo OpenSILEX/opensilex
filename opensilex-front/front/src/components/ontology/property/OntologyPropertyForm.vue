@@ -1,13 +1,13 @@
 <template>
   <n-form v-if="form.name_translations">
-    <opensilex-InputForm
+    <InputForm
         v-model:value="form.uri"
         label="component.common.uri"
         type="text"
         rules="url"
         :disabled="editMode"
         :required="true"
-    ></opensilex-InputForm>
+    ></InputForm>
 
     <hr/>
 
@@ -42,7 +42,7 @@
         </n-radio-group>
       </div>
       <div class="col-lg-6">
-        <opensilex-FormSelector
+        <FormSelector
             v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
             :label="t('OntologyPropertyForm.data-type')"
             :required="true"
@@ -50,9 +50,9 @@
             :options="dataTypes"
             :filterable="true"
             :helpMessage="t('OntologyPropertyForm.dataProperty-help')"
-        ></opensilex-FormSelector>
+        ></FormSelector>
 
-        <opensilex-FormSelector
+        <FormSelector
             v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
             :label="t('OntologyPropertyForm.object-type')"
             :required="true"
@@ -60,9 +60,9 @@
             :options="objectTypes"
             :filterable="true"
             :helpMessage="t('OntologyPropertyForm.objectProperty-help')"
-        ></opensilex-FormSelector>
+        ></FormSelector>
 
-        <opensilex-FormSelector
+        <FormSelector
             v-if="form.rdf_type == null"
             :label="t('component.common.parent')"
             :required="true"
@@ -70,48 +70,48 @@
             :options="parentOptions"
             :filterable="true"
             :helpMessage="t('OntologyPropertyForm.parent-help')"
-        ></opensilex-FormSelector>
+        ></FormSelector>
 
-        <opensilex-TypeForm
+        <TypeForm
             v-model:type="form.domain"
             :baseType="data.domain"
-            ignoreRoot="false"
+            :ignoreRoot="false"
             :label="t('OntologyPropertyForm.domain')"
             :helpMessage="t('OntologyPropertyForm.domain-help')"
-        ></opensilex-TypeForm>
+        ></TypeForm>
       </div>
 
     </div>
 
 
     <hr/>
-    <opensilex-InputForm
+    <InputForm
         v-model:value="form.name_translations.en"
         :label="t('OntologyPropertyForm.labelEN')"
         type="text"
         :required="enLangRequired"
-    ></opensilex-InputForm>
+    ></InputForm>
 
-    <opensilex-TextAreaForm
+    <TextAreaForm
         v-model:value="form.comment_translations.en"
         :label="t('OntologyPropertyForm.commentEN')"
         :required="false"
         @keydown.native.enter.stop
-    ></opensilex-TextAreaForm>
+    ></TextAreaForm>
 
-    <opensilex-InputForm
+    <InputForm
         v-model:value="form.name_translations.fr"
         :label="t('OntologyPropertyForm.labelFR')"
         type="text"
         :required="otherLangRequired"
-    ></opensilex-InputForm>
+    ></InputForm>
 
-    <opensilex-TextAreaForm
+    <TextAreaForm
         v-model:value="form.comment_translations.fr"
         :label="t('OntologyPropertyForm.commentFR')"
         :required="false"
         @keydown.native.enter.stop
-    ></opensilex-TextAreaForm>
+    ></TextAreaForm>
 
   </n-form>
 </template>
@@ -126,6 +126,10 @@ import OWL from "@/ontologies/OWL";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {NForm, NRadio, NRadioGroup} from "naive-ui";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
@@ -198,7 +202,7 @@ const form = defineModel("form", {
     rdf_type: OWL.DATATYPE_PROPERTY_URI,
     parent: null,
     name_translations: {en: null, fr: null},
-    comment_translations: {en: null, fr: null},
+    comment_translations: {en: "", fr: ""},
     domain: null,
     range: null
   }
@@ -230,7 +234,7 @@ function getEmptyForm() {
     rdf_type: OWL.DATATYPE_PROPERTY_URI,
     parent: null,
     name_translations: {},
-    comment_translations: {},
+    comment_translations: {en: "", fr: ""},
     domain: null,
     range: null
   };

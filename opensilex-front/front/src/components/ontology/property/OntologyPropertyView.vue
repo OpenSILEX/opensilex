@@ -87,7 +87,6 @@ const props = defineProps<{
   rdfType: string
   title: string
   icon: string
-  description: string
 }>()
 
 function initForm(form: RDFPropertyDTO): RDFPropertyDTO {
@@ -104,7 +103,7 @@ function initForm(form: RDFPropertyDTO): RDFPropertyDTO {
   return form;
 }
 
-function onSelectionChanged(selection: RDFPropertyDTO) {
+function onSelectionChanged(selection: RDFPropertyGetDTO) {
   selected.value = selection;
 }
 

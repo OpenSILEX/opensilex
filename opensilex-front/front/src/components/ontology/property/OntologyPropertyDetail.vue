@@ -1,33 +1,33 @@
 <template>
-  <opensilex-Card
+  <Card
       v-if="selected?.uri"
       :label="t('OntologyPropertyDetail.title')"
       noFooter
   >
     <template #body>
       <!-- URI -->
-      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+      <UriView :uri="selected.uri"></UriView>
       <!-- Type -->
-      <opensilex-StringView :label="t('OntologyPropertyDetail.type')" :value="typeValue"></opensilex-StringView>
+      <StringView :label="t('OntologyPropertyDetail.type')" :value="typeValue"></StringView>
       <!-- Value Type -->
-      <opensilex-StringView :label="t('OntologyPropertyDetail.value-type')" :value="rangeValue"></opensilex-StringView>
+      <StringView :label="t('OntologyPropertyDetail.value-type')" :value="rangeValue"></StringView>
 
       <!-- Domain -->
-      <opensilex-StringView :label="t('OntologyPropertyDetail.domain')" :value="selected.domain_label"></opensilex-StringView>
+      <StringView :label="t('OntologyPropertyDetail.domain')" :value="selected.domain_label"></StringView>
 
       <!-- Name -->
-      <opensilex-StringView :label="t('component.common.name')" :value="selected.name"></opensilex-StringView>
+      <StringView :label="t('component.common.name')" :value="selected.name"></StringView>
       <!-- Comment -->
-      <opensilex-StringView :label="t('component.common.comment')" :value="selected.comment"></opensilex-StringView>
+      <StringView :label="t('component.common.comment')" :value="selected.comment || ''"></StringView>
       <!-- Metadata -->
-      <opensilex-MetadataView
+      <MetadataView
           v-if="selected.publisher && selected.publisher.uri"
           :publisher="selected.publisher"
           :publicationDate="selected.publication_date"
           :lastUpdatedDate="selected.last_updated_date"
-      ></opensilex-MetadataView>
+      ></MetadataView>
     </template>
-  </opensilex-Card>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -36,6 +36,10 @@ import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 import OWL from "@/ontologies/OWL";
 import {useI18n} from "vue-i18n";
+import Card from "@/components/common/views/Card.vue";
+import UriView from "@/components/common/views/UriView.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import MetadataView from "@/components/common/views/MetadataView.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const {t} = useI18n();

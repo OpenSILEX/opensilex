@@ -10,14 +10,14 @@
         <template #body>
           <div class="button-zone">
 
-            <opensilex-CreateButton
+            <CreateButton
                 v-if="user.isAdmin()"
                 @click="showCreateForm()"
                 :label="t('OntologyClassView.add')"
                 class="createButton">
-            </opensilex-CreateButton>
+            </CreateButton>
 
-            <opensilex-ModalForm
+            <ModalForm
                 ref="classForm"
                 component="opensilex-OntologyClassForm"
                 :createTitle="t('OntologyClassView.add')"
@@ -25,22 +25,21 @@
                 :initForm="initForm"
                 @onCreate="refresh()"
                 @onUpdate="refresh()"
-                modalSize="lg"
                 successMessage="OntologyClassView.the-type"
                 :icon="icon"
                 :data="{
                   parentUri: rdfType
                 }"
-            ></opensilex-ModalForm>
+            ></ModalForm>
           </div>
 
-          <opensilex-StringFilter
+          <StringFilter
               v-model:filter="nameFilter"
               @update="updateFilter()"
               :placeholder="t('OntologyClassView.search')"
               :debounce="300"
               :lazy="false"
-          ></opensilex-StringFilter>
+          ></StringFilter>
 
           <OntologyClassTreeView
               ref="classesTree"
@@ -78,6 +77,8 @@ import {useI18n} from "vue-i18n";
 import OntologyClassTreeView from "@/components/ontology/class/OntologyClassTreeView.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import OntologyClassDetail from "@/components/ontology/class/OntologyClassDetail.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();

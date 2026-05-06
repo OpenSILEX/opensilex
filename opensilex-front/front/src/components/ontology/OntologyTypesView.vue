@@ -1,9 +1,9 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader v-if="isPropertiesType" :icon="icon" :hasIcon="true" :title="propertiesTitle"
-                          :description="propertiesDescription" class="detail-element-header"></opensilex-PageHeader>
+    <PageHeader v-if="isPropertiesType" :icon="icon" :hasIcon="true" :title="propertiesTitle"
+                          :description="propertiesDescription" class="detail-element-header"></PageHeader>
 
-    <opensilex-PageActions :returnButton="false">
+    <PageActions :returnButton="false">
       <template v-slot>
         <nav class="tabs mb-3">
           <router-link
@@ -21,24 +21,24 @@
           </router-link>
         </nav>
       </template>
-    </opensilex-PageActions>
+    </PageActions>
 
-    <opensilex-PageContent>
+    <PageContent>
       <template v-slot>
-        <opensilex-OntologyClassView
+        <OntologyClassView
             v-if="isTypeTab"
             :rdfType="rdfType"
             :icon="icon"
             :title="typeTitle"
-        ></opensilex-OntologyClassView>
-        <opensilex-OntologyPropertyView
+        ></OntologyClassView>
+        <OntologyPropertyView
             v-else-if="withProperties"
             :rdfType="rdfType"
             :icon="icon"
             :title="propertiesTitle"
         />
       </template>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -46,6 +46,11 @@
 import {computed} from "vue";
 import {useRoute} from "vue-router";
 import {useI18n} from "vue-i18n";
+import PageHeader from "@/components/layout/PageHeader.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import OntologyClassView from "@/components/ontology/class/OntologyClassView.vue";
+import OntologyPropertyView from "@/components/ontology/property/OntologyPropertyView.vue";
 
 const props = withDefaults(defineProps<{
   rdfType: string,

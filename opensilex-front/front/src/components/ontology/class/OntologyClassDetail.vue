@@ -21,7 +21,7 @@
         <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.is_abstract"></opensilex-BooleanView> -->
         <!-- Icon identifier -->
         <IconView
-            label="OntologyClassForm.icon"
+            :label="t('OntologyClassDetail.icon')"
             :value="selected.icon"
         ></IconView>
         <MetadataView
@@ -325,6 +325,7 @@ en:
   OntologyClassDetail:
     title: Object type detail
     required: Required
+    icon: Icon
     list: List of values
     inherited: Inherited
     properties: Properties
@@ -340,6 +341,7 @@ fr:
   OntologyClassDetail:
     title: Détail du type d'objet
     required: Obligatoire
+    icon: Icône
     list: Liste de valeurs
     inherited: Héritée
     properties: Propriétés

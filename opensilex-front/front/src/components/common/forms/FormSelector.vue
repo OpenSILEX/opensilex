@@ -165,7 +165,7 @@ function updateTotalCount (n: number) { totalCount.value = n }
 function updateResultCount (n: number) { resultCount.value = n }
 
 onMounted(() => {
-  console.log('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
+  console.debug('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
 })
 </script>
 

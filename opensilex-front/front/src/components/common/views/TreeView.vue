@@ -55,15 +55,14 @@ const nodeList = ref(props.nodes || [])
 const selectedKeys = ref<string[]>([])
 
 onMounted(() => {
-  console.log("TreeView mounted")
-  console.log("nodeList au mount :", nodeList.value)
+  console.debug("[TreeView] nodeList au mount :", nodeList.value)
 })
 
 // Dans le watch de props.nodes
 watch(
   () => props.nodes,
   (newVal) => {
-     console.log("[TreeView] Mise à jour des nodes", newVal)
+     console.debug("[TreeView] Mise à jour des nodes", newVal)
     nodeList.value = newVal
   },
   { immediate: true }

@@ -100,14 +100,12 @@ onBeforeUnmount(() => {
 })
 
 function displayClassDetail(uri: string) {
-  console.log("OCTreeView.displayClassDetail", uri);
   vueJsOntologyService
       .getRDFTypeProperties(uri, props.rdfType)
       .then(http => {
         selected.value = http.response.result;
         //This updates or adds a url parameter, permitting refresh and navigation to specific elements
         opensilex.updateURLParameter("selected", selected.value.uri);
-        console.log("Selected", selected.value);
         emit('selectionChange', selected.value);
       }).catch(opensilex.errorHandler);
 }
@@ -118,7 +116,7 @@ const onRootClassChange = watchEffect(() => {
   }
 });
 
-function refresh(selection: any, nameFilter?: string) {
+function refresh(selection: VueRDFTypeDTO, nameFilter?: string) {
   Promise.all([
     ontologyService.searchSubClassesOf(props.rdfType, nameFilter, false),
     vueJsOntologyService.getRDFTypesParameters()
@@ -141,7 +139,7 @@ function refresh(selection: any, nameFilter?: string) {
     }
 
     if (selection) {
-      displayClassDetail(selection.value.uri);
+      displayClassDetail(selection.uri);
     }
   }).catch(opensilex.errorHandler);
 }

@@ -43,6 +43,9 @@ In this case, we can add dynamique types that are subtypes of on of the followin
 
 ## Business logic
 
+### Rights
+Only admin users can create, delete or update dynamique types.
+
 ### Creation
 ⚠️ **WARNING**: When creating type, first check in other ontology if you can find a matching concept with a satisfying definition.
 If you find one then use its URI when creating your type in OpenSILEX.

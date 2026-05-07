@@ -7,9 +7,9 @@
             :globalFilterField="true"
             :filterPlaceholder="t('Namespaces.placeholder')"
             sortBy="prefix">
-          <template v-slot:cell(prefix)="{ data }">{{ data.item.prefix }}</template>
+          <template #cell(prefix)="{ data }">{{ data.item.prefix }}</template>
 
-          <template v-slot:cell(namespaces)="{ data }">
+          <template #cell(namespaces)="{ data }">
             <UriLink
                 :uri="data.item.namespaces"
                 :value="data.item.namespaces"

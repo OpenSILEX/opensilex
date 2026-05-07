@@ -52,6 +52,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * after :
  * vocabulary:border rdf:type owl:Class
  * vocabulary:border dc:publisher prefix:user/account.myaccount
+ * vocabulary:border http://prefix/vocabulary/owl-vue-extension#hasVueExtensionClassMode vocabulary:border/owl-vue-extension
  *
  * vocabulary:border/owl-vue-extension rdf:type  http://prefix/vocabulary/owl-vue-extension#ClassExtension
  * vocabulary:border/owl-vue-extension http://prefix/vocabulary/owl-vue-extension#hasIcon "myIcon"
@@ -119,7 +120,7 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
      *     ?uriToCreate  http://prefix/vocabulary/owl-vue-extension#hasIcon ?icon.
      *     ?uriToCreate http://prefix/vocabulary/owl-vue-extension#isAbstractClass ?isAbstract.
      *     ?fromOwlClass http://prefix/vocabulary/owl-vue-extension#fromOwlClass ?uriToInsert.
-     *     ?uriToDelete
+     *     ?uriToDelete http://prefix/vocabulary/owl-vue-extension#hasVueExtensionClassMode ?uriToCreate
      * }
      * WHERE {
      *      ?uriToDelete rdf:type http://prefix/vocabulary/owl-vue-extension#ClassExtension .

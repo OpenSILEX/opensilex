@@ -38,10 +38,12 @@ front:
     connectAsGuest: true
 
 security:
-    rgpdPdfPath: /home/roux/Téléchargements/_a_garder/test.pdf
+    gdprPdfPathsByLanguages:
+        en: /home/roux/Documents/utile/configs/rgpd_en
+        fr: /home/roux/Documents/utile/configs/rgpd_en
 
-core:
+core :
     agroportal:
-        basePath: "https://agroportal.lirmm.fr"
-        baseAPIPath: "https://data.agroportal.lirmm.fr"
+        basePath: "https://agroportal.eu"
+        baseAPIPath: "https://data.agroportal.eu"
         externalAPIKey: "8bc3c0c9-464a-4bce-a218-a9d43fbf0df8"

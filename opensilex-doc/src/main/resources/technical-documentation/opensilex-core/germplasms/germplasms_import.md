@@ -30,7 +30,7 @@
 ## functional requirements
 
 **functional specification** : to understand the purpose of the feature and its precise rules see relative functional specification file :
-- [germplasms-import.md](../../../functional-specifications/germplasms-import.md)
+- [germplasms-import.md](../../../functional-specifications/germplasm/germplasms-import.md)
 
 ## Non-functional requirements
 

@@ -45,4 +45,4 @@ The business logic is the same as the creation web service, any germplasm presen
 
 ## Documentation
 
-- see the technical document [germplasms_import.md](../technical-documentation/opensilex-core/germplasms/germplasms_import.md)
+- see the technical document [germplasms_import.md](../../technical-documentation/opensilex-core/germplasms/germplasms_import.md)

@@ -202,7 +202,10 @@
                 "description": "Manage and configure organizations",
                 "site": "Site",
                 "sites": "Sites"
-            }
+            },
+            "title": "Title",
+            "date": "Date",
+            "authors": "Authors"
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",

@@ -203,7 +203,10 @@
                 "description": "Gérer et configurer les organisations",
                 "site": "Site",
                 "sites": "Sites"
-            }
+            },
+            "title": "Titre",
+            "date": "Date",
+            "authors": "Auteurs"
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",

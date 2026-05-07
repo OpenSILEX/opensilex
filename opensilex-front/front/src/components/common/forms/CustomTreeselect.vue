@@ -49,7 +49,6 @@ const props = defineProps<{
   searchMethod?: (query: string, offset: number, limit: number) => Promise<any>
   multiple?: boolean
   checkable?: boolean
-  checkStrategy?: 'all' | 'parent' | 'child'
   itemLoadingMethod?: (uris: string[]) => Promise<NamedResourceDTO[]>
   options?: InputOpt[]  
   resultLimit?: number

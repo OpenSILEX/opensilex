@@ -55,7 +55,7 @@ import OntologyRelationsForm from "./OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import Rdfs from "../../ontologies/Rdfs";
-import DC from "@/ontologies/DC";
+import DC from "../../ontologies/DC";
 
 @Component
 /**

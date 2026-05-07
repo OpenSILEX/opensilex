@@ -58,7 +58,7 @@ import { PropertiesByDomainDTO } from 'opensilex-core/index';
 import Rdfs from "../../../ontologies/Rdfs";
 import { createUriListFromGetPropertiesResult, sortProperties } from '../OntologyTools';
 import VueI18n from "vue-i18n";
-import DC from "@/ontologies/DC";
+import DC from "../../../ontologies/DC";
 
 interface GetTypesPromisesReturnType{
   uri: string,

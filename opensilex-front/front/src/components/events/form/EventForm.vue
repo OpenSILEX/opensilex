@@ -101,7 +101,7 @@ import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import {EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index';
 import TypeForm from "../../common/forms/TypeForm.vue";
 import EventModalForm from "./EventModalForm.vue";
-import DC from "@/ontologies/DC";
+import DC from "../../../ontologies/DC";
 
 @Component
 export default class EventForm extends Vue {

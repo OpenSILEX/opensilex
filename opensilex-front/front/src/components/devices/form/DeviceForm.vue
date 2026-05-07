@@ -105,7 +105,7 @@ import {DeviceCreationDTO, DevicesService} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import AttributesTable from "../../common/forms/AttributesTable.vue";
-import DC from "@/ontologies/DC";
+import DC from "../../../ontologies/DC";
 
 @Component
 export default class DeviceForm extends Vue {

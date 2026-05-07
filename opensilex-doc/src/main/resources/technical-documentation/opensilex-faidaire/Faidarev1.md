@@ -8,9 +8,11 @@
 
 # Table of contents
 
+<!-- TOC -->
+* [Table of contents](#table-of-contents)
 * [General description](#general-description)
-* [Special service : GET Faidare Calls](#special-service--get-brapi-calls)
-* [Mapping between Faidare V1.3 concepts and OpenSILEX concepts](#mapping-between-brapi-v13-concepts-and-opensilex-concepts)
+* [Special service : GET Faidare Calls](#special-service--get-faidare-calls)
+* [Mapping between Faidare V1.3 concepts and OpenSILEX concepts](#mapping-between-faidare-v13-concepts-and-opensilex-concepts)
   * [Variables](#variables)
     * [Methods](#methods)
     * [Traits](#traits)
@@ -19,9 +21,9 @@
   * [Studies](#studies)
     * [Contacts](#contacts)
     * [Locations](#locations)
-  * [Observations](#observations)
-  * [ObservationUnit](#observationunit)
+  * [Trials](#trials)
 * [Known issues and limitations](#known-issues-and-limitations)
+<!-- TOC -->
 
 
 # General description
@@ -209,6 +211,7 @@ This service should return a list of the available services as well as their dat
 
 ## Germplasm
 
+Only germplasms that are in an experiment the user has access to, and that are declared public (isPublic = true) will be returned.
 
 __Note : only accessions are considered germplasms for BrAPI. However the service will return variety and germplasms__
 

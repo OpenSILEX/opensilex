@@ -50,7 +50,8 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb, logger);
         ScientificObjectAndExperimentRelationMigration sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql, logger);
         UpdateFacilitiesWithLocationObservationCollectionModel facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb, logger);
-        ChangeTypeParametersUri changeTypeParametersUri = new ChangeTypeParametersUri(sparql);
+        ChangeTypeParametersUri changeTypeParametersUri = new ChangeTypeParametersUri();
+        changeTypeParametersUri.setSparql(sparql);
         //Check migration has not already been run by checking each sub-migration
         try{
             if(

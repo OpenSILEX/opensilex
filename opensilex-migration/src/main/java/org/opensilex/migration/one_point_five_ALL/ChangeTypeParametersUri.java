@@ -61,10 +61,10 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  */
 public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
 
-    public final static String DESCRIPTION = "This migration change the uri of type parameters in order to separate them from their associated type (when mannualy created a type with ontologie API or interface).";
+    public final static String DESCRIPTION = "This migration change the uri of type parameters in order to separate them from their associated type (when manually created a type with ontologie API or interface).";
     private SPARQLService sparql;
 
-    public ChangeTypeParametersUri(SPARQLService sparql) {
+    public void setSparql(SPARQLService sparql) {
         this.sparql = sparql;
     }
 
@@ -104,7 +104,7 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
 
     /**
      * this request update the uri of every types and type parameters by appending "/owl-vue-extension".
-     * return the UpdateBuilder with delete and insert request 
+     * return the UpdateBuilder with delete and insert request
      * @implNote  generated query example : (the filter clause appears only if excludedPredicates is not empty).
      * The last filter clause prevent from updating already updated parameters.
      * <pre>

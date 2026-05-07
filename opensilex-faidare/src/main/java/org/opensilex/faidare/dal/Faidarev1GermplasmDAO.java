@@ -150,7 +150,9 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
         accessions.addGraph(germplasmGraph, new WhereBuilder()
                 .addWhere(uriVar, RDF.type.asNode(), typeVar)
+                .addWhere(uriVar, Oeso.isPublic, true)
                 .addFilter(filterExpr)
+                .addWhere(experimentsWhere)
                 .addOptional(uriVar, FOAF.homepage.asNode(), websiteVar)
                 .addOptional(uriVar, Oeso.hasId.asNode(), codeVar)
                 .addOptional(uriVar, Oeso.fromInstitute.asNode(), instituteVar)
@@ -159,9 +161,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                         new WhereBuilder()
                                 .addWhere(uriVar, Oeso.fromVariety.asNode(), varietyVar)
                                 .addWhere(varietyVar, RDFS.label.asNode(), varietyNameVar)
-                )
-                .addOptional(
-                        experimentsWhere
                 )
                 .addOptional(
                         new WhereBuilder().addGraph(germplasmGraph, uriVar, RDFS.label.asNode(), labelVar)

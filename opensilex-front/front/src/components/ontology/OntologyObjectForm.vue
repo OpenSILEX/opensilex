@@ -55,6 +55,7 @@ import OntologyRelationsForm from "./OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import Rdfs from "../../ontologies/Rdfs";
+import DC from "@/ontologies/DC";
 
 @Component
 /**
@@ -70,7 +71,12 @@ export default class OntologyObjectForm extends Vue {
     @Prop()
     editMode;
 
-    excludedProperties = new Set<string>([Rdfs.getShortURI(Rdfs.LABEL)]);
+    excludedProperties = new Set<string>([
+        Rdfs.getShortURI(Rdfs.LABEL),
+        DC.MODIFIED,
+        DC.ISSUED,
+        DC.PUBLISHER
+    ]);
 
     customComponentProps = new Map<string, Map<string, any>>();
 

@@ -11,6 +11,7 @@
 
 package org.opensilex.migration.one_point_five_ALL;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -37,6 +38,8 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -76,7 +79,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         this.logger = logger;
     }
 
-    public void execute() throws Exception {
+    public void execute(ClientSession session) throws Exception {
         try {
             //1 - For every existing ScientificObject  URI fetch all old GeospatialModels, create new LocationObservationModels,
             //placed in a Map of Format URI -> List(LocationObservationModels)
@@ -94,12 +97,12 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             //5 - Add collections for each OS that has at least one LocationObservation. Return in a Map of format OS URI -> ObservationCOLLECTION URI
             StringUriMap<URI> soCollectionMap = sparqlAddLocationCollection(locationObservationsPerURI);
             //6 - Complete location observation models for each SO and insert to Location collection
-            setObservationCollectionAndMoveUrisAndInsertLocationObservations(locationObservationsPerURI, soCollectionMap, newMoves);
+            setObservationCollectionAndMoveUrisAndInsertLocationObservations(session, locationObservationsPerURI, soCollectionMap, newMoves);
 
             //7 - Deletion of old stuff:
             // Mongo move collection, Oeev:to and Oeev:from in sparql,
             // and documents from Geospatial collection that have for rdfType any type that is subclass of ScientificObject
-            deleteStuff();
+            deleteStuff(session);
 
         } catch (Exception e) {
             logger.warn("Something went wrong in the UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel part of the migration!");
@@ -113,18 +116,20 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      * and documents from Geospatial collection that have for rdfType any type that is subclass of ScientificObject
      * (at the time of writing this we can not simply delete entire geospatial collection as Area's still use it)
      */
-    private void deleteStuff() throws Exception{
+    private void deleteStuff(ClientSession session) throws Exception{
         //From and too in rdf (as they now go in the mongo Location collection)
         deleteTooAndFrom();
         //Delete the old mongo moves collection
-        MongoDatabase db = mongodb.getDatabase();
-        MongoCollection<?> collection = db.getCollection(OLD_MOVE_COLLECTION, MoveNosqlModel.class);
-        collection.drop();
+        MongoReadWriteDao<MoveNosqlModel, MongoSearchFilter> noSqlMoveDao = new MongoReadWriteDao<>(mongodb.getServiceV2(), MoveNosqlModel.class, OLD_MOVE_COLLECTION, OLD_MOVE_COLLECTION);
+        noSqlMoveDao.deleteMany(session, new Document());
+
         //Delete documents from geospatial collection that have for rdfType a subclass of ScientificObject
         List<URI> soRdfType =  getOsSubTypes();
         Document geospatFilter = new Document();
         geospatFilter.append(SPARQLResourceModel.TYPE_FIELD, new Document("$in", soRdfType));
-        mongodb.deleteOnCriteria(GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, geospatFilter);
+        MongoReadWriteDao<GeospatialModel, MongoSearchFilter> geospatDao = new MongoReadWriteDao<>(mongodb.getServiceV2(), GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+        geospatDao.deleteMany(session, geospatFilter);
+
     }
 
     private void deleteTooAndFrom() throws SPARQLException {
@@ -517,7 +522,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         return soCollectionMap;
     }
 
-    private void setObservationCollectionAndMoveUrisAndInsertLocationObservations(StringUriMap<List<LocationObservationModel>> soLocationListMap, StringUriMap<URI> soCollectionMap, List<MoveModel> newMoves ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
+    private void setObservationCollectionAndMoveUrisAndInsertLocationObservations(ClientSession session, StringUriMap<List<LocationObservationModel>> soLocationListMap, StringUriMap<URI> soCollectionMap, List<MoveModel> newMoves ) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
         soLocationListMap.forEach((feature, locationList) -> locationList.forEach(location -> {
@@ -536,7 +541,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         }));
 
         LocationObservationDAO locationObservationDAO = new LocationObservationDAO(mongodb.getServiceV2());
-        locationObservationDAO.create(soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+        locationObservationDAO.create(session, soLocationListMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList()));
 
     }
 }

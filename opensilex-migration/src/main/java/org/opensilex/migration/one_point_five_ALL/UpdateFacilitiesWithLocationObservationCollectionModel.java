@@ -11,6 +11,7 @@
 
  package org.opensilex.migration.one_point_five_ALL;
 
+ import com.mongodb.client.ClientSession;
  import com.mongodb.client.MongoCollection;
  import com.mongodb.client.MongoDatabase;
  import com.mongodb.client.model.Filters;
@@ -40,8 +41,11 @@
  import org.opensilex.core.organisation.dal.OrganizationModel;
  import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
  import org.opensilex.core.organisation.dal.facility.FacilityModel;
+ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
  import org.opensilex.nosql.mongodb.MongoDBService;
  import org.opensilex.nosql.mongodb.MongoModel;
+ import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+ import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
  import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  import org.opensilex.sparql.exceptions.SPARQLException;
  import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -51,6 +55,7 @@
  import org.opensilex.update.OpensilexModuleUpdateException;
  import org.slf4j.Logger;
  import java.net.URI;
+ import java.net.URISyntaxException;
  import java.time.Instant;
  import java.util.*;
  import java.util.stream.Collectors;
@@ -89,7 +94,7 @@
          return sparql.executeAskQuery(facilityLocationSelect);
      }
 
-     public void execute() throws Exception {
+     public void execute(ClientSession session) throws Exception {
          try {
              // 1 - Mongo : get all facilities with geometry or address geometry
              List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();
@@ -101,9 +106,9 @@
              // 3 - RDF4J : get facility addresses
              Map<URI, FacilityAddressModel> facilityAddressMap = sparqlgetAddressToFacilityList(facilityPositionList);
              // 4 - Mongo : update facility geometry in geospatial collection and copy in location collection
-             mongoFacilitiesFromGeospatialToLocationCollection(facilityPositionList,facilityCollectionMap, facilityAddressMap);
+             mongoFacilitiesFromGeospatialToLocationCollection(session, facilityPositionList,facilityCollectionMap, facilityAddressMap);
              //5 - Deletions: delete Documents from Geospatial collection that have for rdfType any subtype of Facility
-             deleteStuff();
+             deleteStuff(session);
          } catch (Exception e){
              logger.warn("Something went wrong in the UpdateFacilitiesWithLocationObservationCollectionModel part of the migration!");
              throw e;
@@ -113,12 +118,14 @@
      /**
       * Delete Documents from Geospatial collection that have for rdfType any subtype of Facility.
       */
-     private void deleteStuff() throws Exception {
+     private void deleteStuff(ClientSession session) throws Exception {
          //Delete documents from geospatial collection that have for rdfType a subclass of Facility
          List<URI> facilitySubtypes =  getFacilitySubtypes();
          Document geospatFilter = new Document();
          geospatFilter.append(SPARQLResourceModel.TYPE_FIELD, new Document("$in", facilitySubtypes));
-         mongodb.deleteOnCriteria(GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, geospatFilter);
+
+         MongoReadWriteDao<GeospatialModel, MongoSearchFilter> geospatDao = new MongoReadWriteDao<>(mongodb.getServiceV2(), GeospatialModel.class, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME, GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+         geospatDao.deleteMany(session, geospatFilter);
      }
 
      private List<URI> getFacilitySubtypes() throws SPARQLException {
@@ -275,7 +282,7 @@
          return facilityAddressMap;
      }
 
-     private void mongoFacilitiesFromGeospatialToLocationCollection(List<GeospatialModel> geospatialFacilityList, Map<URI,URI> facilityCollectionMap, Map<URI, FacilityAddressModel> facilityAddressMap) throws SPARQLException {
+     private void mongoFacilitiesFromGeospatialToLocationCollection(ClientSession session, List<GeospatialModel> geospatialFacilityList, Map<URI,URI> facilityCollectionMap, Map<URI, FacilityAddressModel> facilityAddressMap) throws SPARQLException, NoSQLAlreadyExistingUriException, URISyntaxException {
          MongoCollection<LocationObservationModel> locationCollection = mongodb.getDatabase().getCollection(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationModel.class);
 
          // 1- Check existing locations to avoid duplicates
@@ -334,7 +341,8 @@
 
          // 3- Insert Sites into new location Collection
          if(!locationObservationModelList.isEmpty()){
-             locationCollection.insertMany(locationObservationModelList);
+             LocationObservationDAO locationObservationDAO = new LocationObservationDAO(mongodb.getServiceV2());
+             locationObservationDAO.create(session, locationObservationModelList);
          }
      }
  }

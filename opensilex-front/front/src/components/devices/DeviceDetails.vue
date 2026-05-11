@@ -155,15 +155,13 @@ const tabDefinitions = [
   {
     key: 'events',
     labelKey: 'DeviceDetails.events',
-    // component: () => import('../events/list/EventList.vue'),
-    component: () => import('./DeviceDescription.vue'),
+    component: () => import('../events/list/EventList.vue'),
     refKey: 'eventList'
   },
   {
     key: 'positions',
     labelKey: 'DeviceDetails.positions',
-    // component: () => import('../positions/list/PositionList.vue'),
-    component: () => import('./DeviceDescription.vue'),
+    component: () => import('../positions/list/PositionList.vue'),
     refKey: 'positionList'
   },
   {

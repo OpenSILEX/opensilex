@@ -4,6 +4,8 @@ import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -13,10 +15,7 @@ import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class LocationObservationDAO extends MongoReadWriteDao<LocationObservationModel, LocationObservationSearchFilter> {
     public static final String LOCATION_COLLECTION_NAME = "location";
@@ -28,6 +27,13 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
     //#endregion
 
     //#region public
+
+
+    public static Map<Bson, IndexOptions> getIndexes() {
+        Map<Bson, IndexOptions> indexes = new HashMap<>();
+        indexes.put(Indexes.ascending(LocationObservationModel.FEATURE_OF_INTEREST_FIELD), null);
+        return indexes;
+    }
 
     /**
      *
@@ -59,8 +65,7 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
         appendDateFilters(filters,searchQuery);
 
         if (searchQuery.getIntersection() != null) {
-            filters.add(Filters.exists(LocationModel.GEOMETRY_FIELD, true));
-            filters.add(Filters.geoWithin(LocationModel.GEOMETRY_FIELD, searchQuery.getIntersection()));
+            filters.add(Filters.geoWithin(LocationObservationModel.GEOMETRY_FIELD, searchQuery.getIntersection()));
         }
 
         if(Objects.nonNull(searchQuery.getTo())){

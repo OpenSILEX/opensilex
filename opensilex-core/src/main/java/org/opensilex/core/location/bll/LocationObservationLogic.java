@@ -17,6 +17,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.location.dal.*;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
@@ -474,8 +475,10 @@ public class LocationObservationLogic {
                     optionalIntersection
             );
 
-            Map<URI, LocationObservationModel> locationObservationModelPerLocationObservationCollectionUri = locationObservationModels.stream()
-                    .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()));
+            StringUriMap<LocationObservationModel> locationObservationModelPerLocationObservationCollectionUri = new StringUriMap<>(
+                    locationObservationModels.stream()
+                            .collect(Collectors.toMap(LocationObservationModel::getObservationCollection, Function.identity()))
+            );
 
             locationCollectionURIPerModel.forEach((model, collectionUri) -> {
                 var locationObservation = locationObservationModelPerLocationObservationCollectionUri.get(collectionUri);

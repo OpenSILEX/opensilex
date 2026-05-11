@@ -117,6 +117,29 @@
             />
           </n-form-item>
 
+          <!-- Dynamic selected type properties -->
+          <n-collapse
+            :accordion="false"
+            class="advancedFiltersSearch"
+            v-if="dynamicTypeProperties.length"
+          >
+            <n-collapse-item :title="$t('component.common.type-properties')" name="adv">
+              <n-form-item
+                v-for="property in dynamicTypeProperties"
+                :key="property.uri"
+                :label="property.name ?? property.uri"
+                class="compact-form-item"
+              >
+                <opensilex-StringFilter
+                  v-model:filter="dynamicPropertyFilters[property.uri]"
+                  :placeholder="property.name ?? property.uri"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh"
+                />
+              </n-form-item>
+            </n-collapse-item>
+          </n-collapse>
+
           <!-- Variables -->
           <n-form-item :label="t('DeviceList.filter.variable')">
             <opensilex-VariableSelectorWithFilter
@@ -255,7 +278,7 @@
         createTitle="component.common.addDocument"
         modalSize="lg"
         :initForm="initForm"
-        icon="ik#ik-file-text"
+        icon="bi#bi-file-earmark-text"
       />
 
       <opensilex-DeviceModalForm
@@ -289,7 +312,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
+import type { VueJsOntologyExtensionService, VueRDFTypePropertyDTO } from 'opensilex-core'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
@@ -303,6 +327,8 @@ import {
   NDropdown,
   NSpace,
   NButtonGroup,
+  NCollapse, 
+  NCollapseItem,
   NP
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
@@ -325,6 +351,7 @@ const store = useStore()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const deviceService = $opensilex.getService<DevicesService>('opensilex.DevicesService')
 const organizationService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
+const vueOntologyService = $opensilex.getService<VueJsOntologyExtensionService>('opensilex-front.VueJsOntologyExtensionService')
 
 const tableRef = ref<any>(null)
 const documentFormRef = ref<any>(null)
@@ -332,6 +359,7 @@ const deviceFormRef = ref<any>(null)
 const variableSelectionRef = ref<any>(null)
 const eventCsvFormRef = ref<any>(null)
 const moveCsvFormRef = ref<any>(null)
+const expandedNames = ref<string[]>([])
 
 const selectedUris = ref<string[]>([])
 const filtersCollapsed = ref(true)
@@ -358,6 +386,12 @@ const filter = ref({
   metadataKey: undefined as string | undefined,
   metadataValue: undefined as string | undefined
 })
+
+// propriétés à afficher
+const dynamicTypeProperties = ref<VueRDFTypePropertyDTO[]>([])
+
+// valeurs saisies par l’utilisateur, indexées par URI de propriété
+const dynamicPropertyFilters = ref<Record<string, string | undefined>>({})
 
 const fields = [
   {
@@ -398,7 +432,7 @@ const paginationInfo = computed(() => {
 })
 
 const activeFiltersCount = computed(() => {
-  return [
+  const staticFilters = [
     filter.value.name,
     filter.value.rdf_type,
     filter.value.variable,
@@ -409,7 +443,11 @@ const activeFiltersCount = computed(() => {
     filter.value.model,
     filter.value.metadataKey,
     filter.value.metadataValue
-  ].filter(v => {
+  ]
+
+  const dynamicFilters = Object.values(dynamicPropertyFilters.value)
+
+  return [...staticFilters, ...dynamicFilters].filter(v => {
     if (Array.isArray(v)) return v.length > 0
     return v !== undefined && v !== null && String(v).trim() !== ''
   }).length
@@ -483,6 +521,8 @@ function resetFilters() {
     metadataKey: undefined,
     metadataValue: undefined
   }
+  dynamicTypeProperties.value = []
+  dynamicPropertyFilters.value = {}
 }
 
 function reset() {
@@ -535,6 +575,7 @@ async function searchDevices(options: any) {
     filter.value.model,
     undefined,
     addMetadataFilter(),
+    addDynamicRelationsFilter(),
     options.orderBy,
     options.currentPage,
     options.pageSize
@@ -573,7 +614,8 @@ function updateSelectedUris() {
 }
 
 function initForm() {
-  const targetURI = getSelected().map((select: any) => select.uri)
+  const targetURI: string[] = []
+  for (const select of getSelected()) targetURI.push(select.uri)
 
   return {
     description: {
@@ -593,8 +635,12 @@ function initForm() {
   }
 }
 
+/**
+ * Ouvre le formulaire de création de document en préremplissant les cibles
+ * avec les URI des devices actuellement sélectionnés
+ */
 function createDocument() {
-  documentFormRef.value?.showCreateForm?.()
+  documentFormRef.value?.showCreateForm?.(initForm())
 }
 
 function exportDevices() {
@@ -639,36 +685,137 @@ function linkVariable() {
   })
 }
 
-function editDeviceVar(variableSelected: any[]) {
-  for (const select of getSelected()) {
-    deviceService
-      .getDevice(select.uri)
-      .then((http: any) => {
-        const varList = variableSelected.map((variable: any) => ({
-          property: 'vocabulary:measures',
-          value: variable.uri
-        }))
+/**
+ * Associe les variables sélectionnées à tous les devices actuellement sélectionnés.
+ *
+ * Pour chaque device sélectionné :
+ * - récupère le détail complet du device,
+ * - transforme chaque variable sélectionnée en relation `vocabulary:measures`,
+ * - ajoute ces relations au formulaire du device,
+ * - met à jour le device via l'API,
+ * - émet l'événement `onUpdate`.
+ *
+ * Une fois toutes les mises à jour terminées, affiche le toast de succès puis rafraîchit la liste.
+ */
+async function editDeviceVar(variableSelected: any[]) {
+  try {
+    const selected = getSelected()
 
-        const device: DeviceGetDetailsDTO = http.response.result
-        const form = JSON.parse(JSON.stringify(device))
-        form.relations = form.relations.concat(varList)
+    const updates = selected.map(async (select: any) => {
+      const http: any = await deviceService.getDevice(select.uri)
+      const device: DeviceGetDetailsDTO = http.response.result
 
-        updateVariable(form)
-      })
-      .catch($opensilex.errorHandler)
+      const varList = variableSelected.map((variable: any) => ({
+        property: 'vocabulary:measures',
+        value: variable.uri
+      }))
+
+      const form = JSON.parse(JSON.stringify(device))
+      form.relations = form.relations.concat(varList)
+
+      await deviceService.updateDevice(form)
+      emit('onUpdate', form)
+    })
+
+    await Promise.all(updates)
+
+    const message = t('DeviceList.linkVariableSuccess', {
+      devicesCount: selected.length,
+      variablesCount: variableSelected.length
+    })
+    $opensilex.showSuccessToast(message)
+
+    refresh()
+  } catch (error) {
+    $opensilex.errorHandler(error)
   }
 }
 
-function updateVariable(form: any) {
-  deviceService
-    .updateDevice(form)
-    .then((http: any) => {
-      const uri = http.response.result
-      console.debug('device updated', uri)
-      emit('onUpdate', form)
-    })
-    .catch($opensilex.errorHandler)
+/**
+ * Construit le filtre des relations dynamiques à partir des champs renseignés
+ *
+ * Parcourt les filtres indexés par URI de propriété, ignore les valeurs vides,
+ * puis retourne un JSON au format attendu par la recherche des devices.
+ * Retourne `undefined` si aucun filtre dynamique n'est renseigné.
+ */
+function addDynamicRelationsFilter() {
+  const relations: Record<string, string> = {}
+
+  for (const [propertyUri, value] of Object.entries(dynamicPropertyFilters.value)) {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      relations[propertyUri] = String(value).trim()
+    }
+  }
+
+  return Object.keys(relations).length > 0
+    ? JSON.stringify(relations)
+    : undefined
 }
+
+/**
+ * Charge les propriétés dynamiques associées au type RDF sélectionné.
+ *
+ * Si aucun type n'est sélectionné, la fonction n'a pas lieu d'être et s'arrête,
+ * Sinon, elle récupère les propriétés du type de device choisi,
+ * ne conserve que les propriétés propres au type sélectionné, donc non héritées,
+ * puis les trie selon l'ordre défini par le modèle RDF.
+ *
+ * Les propriétés sans ordre explicite sont placées à la fin et triées par nom,
+ * ou par URI si aucun nom n'est disponible.
+ */
+async function loadDynamicPropertiesForSelectedType(rdfType?: string) {
+  dynamicTypeProperties.value = []
+  dynamicPropertyFilters.value = {}
+
+  if (!rdfType) {
+    return
+  }
+
+  try {
+    const rootDeviceType = $opensilex.Oeso.getShortURI(
+      $opensilex.Oeso.DEVICE_TYPE_URI
+    )
+
+    const http: any = await vueOntologyService.getRDFTypeProperties(
+      rdfType,
+      rootDeviceType
+    )
+
+    const result = http.response.result
+
+    const allProperties: VueRDFTypePropertyDTO[] = [
+      ...(result.data_properties ?? []),
+      ...(result.object_properties ?? [])
+    ]
+
+    dynamicTypeProperties.value = allProperties
+      .filter(property => property.inherited === false)
+      .sort((a, b) => {
+        const order = result.properties_order ?? []
+
+        const aIndex = order.indexOf(a.uri)
+        const bIndex = order.indexOf(b.uri)
+
+        if (aIndex === -1 && bIndex === -1) {
+          return String(a.name ?? a.uri).localeCompare(String(b.name ?? b.uri))
+        }
+
+        if (aIndex === -1) return 1
+        if (bIndex === -1) return -1
+
+        return aIndex - bIndex
+      })
+  } catch (error) {
+    $opensilex.errorHandler(error)
+  }
+}
+
+watch(
+  () => filter.value.rdf_type,
+  async rdfType => {
+    await loadDynamicPropertiesForSelectedType(rdfType)
+  }
+)
 
 function createEvents() {
   showEventForm.value = true
@@ -809,6 +956,10 @@ defineExpose({
 .globalFiltersSearchButton div {
   margin-top: 5px;
 }
+
+.advancedFiltersSearch {
+  margin-bottom: 20px;
+}
 </style>
 
 <i18n>
@@ -837,6 +988,7 @@ en:
     associated-device-error: Device is associated with
     selected-all: All Devices
     add-Move: Move
+    "linkVariableSuccess": "{variablesCount} variable(s) successfully associated to {devicesCount} device(s)"
 
     filter:
       namePattern: Name
@@ -883,6 +1035,7 @@ fr:
     selected-all: Tout les appareils
     add-multiple: Ajouter des événements
     add-Move: Déplacer
+    "linkVariableSuccess": "{variablesCount} variable(s) associée(s) à {devicesCount} device(s) avec succès"
 
     filter:
       namePattern: Nom

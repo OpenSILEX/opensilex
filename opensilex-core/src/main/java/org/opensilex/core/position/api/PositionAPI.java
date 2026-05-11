@@ -11,6 +11,7 @@ import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -184,10 +185,10 @@ public class PositionAPI {
                                                                                     Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
             //for each unique target uri, get the mongoDB Model location linked (inside the current extend)
-            Map<URI, LocationObservationModel> targetLocationMap = locationObservationLogic.getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
+             StringUriMap<LocationObservationModel> targetLocationMap = new StringUriMap<>(locationObservationLogic.getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
                     uniqueTargetLastMoveList.keySet().stream().flatMap(Collection::stream).collect(Collectors.toList()),
                     endDate != null ? Instant.parse(endDate) : null,
-                    geoJsonToGeometry(geometry));
+                    geoJsonToGeometry(geometry)));
 
             List<PositionGetDTO> positionList = new ArrayList<>();
 

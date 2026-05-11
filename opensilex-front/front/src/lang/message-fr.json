@@ -454,7 +454,7 @@
                 "unit-help": "Echelle de la variable ordinale (tel que bon, moyen, mauvais...). ex: kg/m2",
                 "edit": "Modifier une unité"
             },
-            "groupVariable" : {           
+            "groupVariable" : {
                 "groupVariable": "Groupe de variables",
                 "groupVariableAssociated": "Groupe de variables associées",
                 "add-groupVariable": "Ajouter un groupe de variables",
@@ -467,10 +467,10 @@
             "samplingInterval" : {
                 "sampling-interval": "Échantillonnage",
                 "sampling-interval-placeholder": "Sélectionner un intervalle",
-                "sampling-interval-help": "Granularité de l'échantillonage" 
+                "sampling-interval-help": "Granularité de l'échantillonage"
             },
             "dataType" : {
-                "data-type": "Type de donnée", 
+                "data-type": "Type de donnée",
                 "datatype-placeholder": "Sélectionner un type de donnée",
                 "datatype-help": "Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable)."
             },
@@ -969,6 +969,44 @@
                         "has-children" : "La propriété {property} possède une ou plusieurs sous-propriétés. Vous devez les supprimer d'abord"
                     }
                 }
+            },
+            "externalOntologies" : {
+                "agroportal": "Le projet AgroPortal repose sur cinq cas d’usage agronomiques majeurs qui participent à la conception et à l’orientation de la plateforme. AgroPortal propose déjà un référentiel robuste et stable, particulièrement précieux pour le domaine agronomique.",
+                "agrovoc": "AGROVOC est un vocabulaire contrôlé couvrant l’ensemble des domaines d’intérêt de l’Organisation des Nations Unies pour l’alimentation et l’agriculture (FAO), notamment l’alimentation, la nutrition, l’agriculture, la foresterie, la pêche, les noms scientifiques et communs des animaux et des plantes, l’environnement, les notions biologiques, les techniques de culture et bien plus encore. Il est publié par la FAO et enrichi par une communauté d’experts.",
+                "bioportal": "L’objectif du National Center for Biomedical Ontology est de soutenir les chercheurs en biomédecine dans leurs travaux intensifs en connaissances, en leur fournissant des outils en ligne et un portail web leur permettant d’accéder, de consulter et d’intégrer des ressources ontologiques hétérogènes dans tous les aspects de la recherche biomédicale et de la pratique clinique. Une part importante de ce travail consiste à utiliser les ontologies biomédicales pour faciliter la gestion et l’analyse de données issues d’expériences complexes.",
+                "crop": "L’objectif actuel de la Crop Ontology (CO) est de compiler des concepts validés ainsi que leurs relations concernant l’anatomie, la structure et les phénotypes des cultures, la mesure des traits et les méthodes associées, ainsi que le germplasm avec des termes passeport multi-cultures. Les concepts de la CO sont utilisés pour documenter des bases de données agronomiques et décrire les données.",
+                "plant": "La Plant Ontology est un vocabulaire structuré et une ressource de base de données reliant l’anatomie, la morphologie, la croissance et le développement des plantes aux données génomiques végétales.",
+                "planteome": "Le projet Planteome propose une approche intégrée fondée sur l’adoption de standards communs d’annotation et d’un ensemble d’ontologies de référence pour les plantes.",
+                "uo": "Unités de mesure destinées à être utilisées conjointement avec la Phenotype And Trait Ontology (PATO).",
+                "om": "L’Ontology of Units of Measure (OM) 2.0 modélise les concepts et relations importants pour la recherche scientifique. Elle met particulièrement l’accent sur les unités, les quantités, les mesures et les dimensions.",
+                "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
+                "xsd": "Découvrez les langages de schémas XML."
+            },
+            "typeView": {
+                "scientificObject": {
+                    "title": "Types d'objets scientifiques",
+                    "description": "Gérer et configurer les types d'objets scientifiques"
+                },
+                "event": {
+                    "title": "Types d'événements",
+                    "description": "Gérer et configurer les types d'évenements"
+                },
+                "device": {
+                    "title": "Types d'appareils",
+                    "description": "Gérer et configurer les types d'appareil"
+                },
+                "facility": {
+                    "title": "Types d'installations environnementales",
+                    "description": "Gérer et configurer les types d'installations environnementales"
+                },
+                "factoryCategory": {
+                    "title": "Catégories de facteurs",
+                    "description": "Gérer et configurer les catégories de facteurs"
+                }
+            },
+            "namespace": {
+                "title": "Espaces de nom",
+                "description": "Page d'affichage des espaces de nom"
             }
         },
         "tutorial": {
@@ -977,7 +1015,7 @@
             "previous" : "Précédent",
             "finish" : "Fin",
             "label": "Expliquez moi avec un exemple",
-            "name": "Tutoriel du formulaire"    
+            "name": "Tutoriel du formulaire"
         },
         "system": {
             "title": "Système",

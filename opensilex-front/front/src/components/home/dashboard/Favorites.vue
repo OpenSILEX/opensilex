@@ -55,13 +55,11 @@ export const FAVORITE_TYPES = [
 <script setup lang="ts">
 import { ref, onMounted, inject } from "vue";
 import { SecurityService } from "opensilex-security/api/security.service";
-import { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import FavoritesHelp from "./FavoritesHelp.vue";
-import HelpButton from "@/components/HelpButton.vue";
 import Oeso from "../../../ontologies/Oeso";
 import { FavoriteGetDTO } from "opensilex-security/index";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { useI18n } from 'vue-i18n';
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 
 const favorites = ref<FavoriteGetDTO[]>([]);

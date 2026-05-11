@@ -182,8 +182,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: ScientificObjectTypes.typeTitle
-          description: ScientificObjectTypes.typeDescription
+          title: component.ontology.typeView.scientificObject.title
+          description: component.ontology.typeView.scientificObject.description
       - id: eventVocabulary
         label: component.menu.eventTypes
         route:
@@ -192,8 +192,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: EventTypes.typeTitle
-          description: EventTypes.typeDescription
+          title: component.ontology.typeView.event.title
+          description: component.ontology.typeView.event.description
       - id: deviceVocabulary
         label: component.menu.deviceTypes
         route:
@@ -202,8 +202,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: DeviceTypes.typeTitle
-          description: DeviceTypes.typeDescription
+          title: component.ontology.typeView.device.title
+          description: component.ontology.typeView.device.description
       - id: organizationVocabulary
         label: component.menu.facilitiesTypes
         route:
@@ -212,8 +212,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: FacilitiesTypes.typeTitle
-          description: FacilitiesTypes.typeDescription
+          title: component.ontology.typeView.facility.title
+          description: component.ontology.typeView.facility.description
       - id: factorCategoryVocabulary
         label: component.menu.factorCategoryTypes
         route:
@@ -222,8 +222,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: FactorCategoryTypes.typeTitle
-          description: FactorCategoryTypes.typeDescription
+          title: component.ontology.typeView.factoryCategory.title
+          description: component.ontology.typeView.factoryCategory.description
       - id: namespacesVocabulary
         label: component.menu.namespaces
         route:
@@ -232,8 +232,8 @@ menu:
           credentials:
             - vocabulary-access
           icon: bi#bi-gear
-          title: component.menu.namespaces
-          description: Namespaces.description
+          title: component.ontology.namespace.title
+          description: component.ontology.namespace.description
   - id: configuration
     label: component.menu.configuration
     children:
@@ -337,25 +337,22 @@ routes:
   # - path: /facility/document/:uri
   #   component: opensilex-FacilityView
 
-  # - path: /scientific-object-types/properties
-  #   component: opensilex-ScientificObjectTypes
-  #   icon: ik#ik-settings
-  #   title: ScientificObjectTypes.typeTitle
-  #   description: ScientificObjectTypes.typeDescription
+  - path: /scientific-object-types/properties
+    component: opensilex-ScientificObjectTypes
 
-  # - path: /facilities-types/properties
-  #   component: opensilex-FacilitiesTypes
+  - path: /facilities-types/properties
+    component: opensilex-FacilitiesTypes
 
-  # - path: /device-types/properties
-  #   component: opensilex-DeviceTypes
+  - path: /device-types/properties
+    component: opensilex-DeviceTypes
 
-  # - path: /event-types/properties
-  #   component: opensilex-EventTypes
+  - path: /event-types/properties
+    component: opensilex-EventTypes
 
   - path: /variable/details/:uri
     component: opensilex-VariableView
     credentials: []
-    
+
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
   # - path: /variable/visualization/:uri
@@ -408,7 +405,7 @@ routes:
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
-    credentials: []
+    credentials: [ ]
 
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
@@ -433,7 +430,7 @@ routes:
   # - path: /area/annotations/:uri
   #   component: opensilex-AreaDetails
 
-# Optional <experiment> path
+  # Optional <experiment> path
   # - path: /scientific-objects/details/:uri/:experiment?
   #   component: opensilex-ScientificObjectDetailView
   #   credentials: [ ]
@@ -456,10 +453,10 @@ routes:
 
   - path: /organizations/details/:uri
     component: opensilex-OrganizationDetailView
-    credentials: []
+    credentials: [ ]
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
-    credentials: []
+    credentials: [ ]
   - path: /provenances/annotations/:uri
     component: opensilex-ProvenanceDetailsPage
   - path: /provenances/documents/:uri
@@ -475,10 +472,10 @@ routes:
     component: opensilex-HomeView
     name: HomeView
     icon: fa#hourglass-half
-    credentials: 
-    - private
+    credentials:
+      - private
 
-    
+
   ## Public routes
   - path: /forgot-password
     component: opensilex-ForgotPassword

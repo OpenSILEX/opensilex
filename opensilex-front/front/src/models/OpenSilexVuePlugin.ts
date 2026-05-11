@@ -1514,23 +1514,15 @@ export default class OpenSilexVuePlugin {
     }
 
     iconIDs = [];
-    selectIconIDs = [];
+    selectIconIDs: Array<{id: string, iconName: string}> = [];
 
     public getIconIDs() {
         return this.iconIDs;
     }
 
-    public setIconIDs(iconIDs) {
-        this.iconIDs = iconIDs;
-        this.selectIconIDs = [];
-        for (let i in iconIDs) {
-            let iconID = iconIDs[i];
-
-            this.selectIconIDs.push({
-                id: iconID,
-                label: iconID
-            })
-        }
+    public setIconIDs(iconIDs: Array<{id: string, iconName: string}>) {
+        this.iconIDs = iconIDs.map(({ id  }) => id);
+        this.selectIconIDs = iconIDs;
     }
 
     public getSelectIconIDs() {

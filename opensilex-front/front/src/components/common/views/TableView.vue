@@ -32,24 +32,20 @@
       </div>
 
       <!-- Tableau -->
-      <n-data-table
-        :columns="normalizedFields"
-        :data="pagedItems"
-        :pagination="false"
-        :bordered="false"
-        :striped="true"
-        :scroll-x="true"
-        :row-key="row => row.uri"
-        @update:checked-row-keys="onRowSelected"
-        @update:sorter="handleSort"
-      >
-        <template #header="{ column }">
-          <template v-if="!column.isSelect">
-            {{ $t(column.title) }}
-          </template>
-        </template>
-
-      </n-data-table>
+      <n-config-provider>
+        <n-data-table
+            :columns="normalizedFields"
+            :data="pagedItems"
+            :pagination="false"
+            :bordered="false"
+            :striped="true"
+            :scroll-x="scrollX"
+            :row-key="row => row.uri"
+            @update:checked-row-keys="onRowSelected"
+            @update:sorter="handleSort"
+        >
+        </n-data-table>
+      </n-config-provider>
 
 <!-- <pre style="font-size: 10px; color: red">
   Slots disponibles : {{ Object.keys($slots) }}
@@ -75,7 +71,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch, h } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { NDataTable, NPagination } from 'naive-ui';
+import { NDataTable, NPagination, NConfigProvider } from 'naive-ui';
 import { onMounted, useSlots } from 'vue';
 
 const slots = useSlots();
@@ -94,6 +90,7 @@ const props = defineProps({
   showCount: { type: Boolean, default: true },
   withPagination: { type: Boolean, default: true },
   sortBy: String,
+  scrollX: { type: String, default: undefined },
   sortDesc: { type: Boolean, default: false },
   selectable: { type: Boolean, default: false },
   customRenderers: { type: Object, default: () => ({}) }
@@ -105,7 +102,7 @@ const emit = defineEmits(['row-selected']);
 const { t } = useI18n();
 
 const currentPage = ref(1);
-const filter = ref<string | null>(null);
+const filter = ref<string>("");
 const pageSize = ref(10);
 
 const pageSizeOptions = [

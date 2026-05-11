@@ -39,18 +39,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed, onMounted, inject } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { FormInst } from 'naive-ui'
-import { NForm } from 'naive-ui'
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
+import {computed, inject, nextTick, ref, useTemplateRef} from 'vue'
+import {useI18n} from 'vue-i18n'
+import type {FormInst} from 'naive-ui'
+import {NForm} from 'naive-ui'
+import type {OpenSilexVuePlugin} from '@/models/OpenSilexVuePlugin'
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
 
 const modalRef = ref()
 const formRef = ref<FormInst | null>(null)
-const componentRef = ref()
+const componentRef = useTemplateRef<any>('componentRef')
 
 const props = defineProps({
   component: { type: [String, Object], required: true },
@@ -63,13 +63,14 @@ const props = defineProps({
   createAction: Function,
   updateAction: Function,
   successMessage: [String, Function],
-  overrideSuccessMessage: Boolean
+  overrideSuccessMessage: Boolean,
+  initForm: Function
 })
 
 const emit = defineEmits(['hide', 'onCreate', 'onUpdate', 'onSuccess'])
 
 const editMode = ref(false)
-const form = ref<Record<string, any>>({})
+const form = ref<Record<string, any>>()
 const rules = ref<Record<string, any>>({})
 const componentRefreshKey = ref(0)
 
@@ -126,7 +127,7 @@ async function validate() {
           emit('onCreate', res)
         }
 
-        modalRef.value?.hide()
+        hide();
         emit('hide')
         emit('onSuccess') // rafraîchir les listes
         console.log('[ModalForm] submit done, res = ', res)
@@ -157,6 +158,9 @@ function showCreateForm(passedForm?: any) {
   editMode.value = false
   nextTick(() => {
     form.value = passedForm ?? getFormRef()?.getEmptyForm?.() ?? {}
+    if (props.initForm) {
+      form.value = props.initForm(form.value)
+    }
     getFormRef()?.reset?.()
     // reconstruire le formulaire pour éviter les champs remplis par des valeurs precedentes
     formRef.value?.restoreValidation?.()
@@ -182,6 +186,7 @@ function hide() {
 defineExpose({
   showCreateForm,
   showEditForm,
+  getFormRef,
   hide
 })
 </script>

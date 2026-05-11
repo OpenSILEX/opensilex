@@ -44,7 +44,7 @@ const { t } = useI18n();
 const props = defineProps<{
   noFooter?: boolean;
   noHeader?: boolean;
-  label: string;
+  label?: string;
   icon?: string;
 }>();
 

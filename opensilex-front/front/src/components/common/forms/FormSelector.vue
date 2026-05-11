@@ -17,6 +17,7 @@
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
+            :checkStrategy="checkStrategy"
             :placeholder="placeholder"
             :disabled="disabled"
             :optionsLoadingMethod="optionsLoadingMethod"
@@ -87,11 +88,12 @@ const { t } = useI18n()
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<{
-  path: string
+  path?: string
   selected: string | string[] | undefined
   searchMethod?: Function
   multiple?: boolean
   checkable?: boolean
+  checkStrategy?: 'all' | 'child' | 'parent'
   itemLoadingMethod?: Function
   optionsLoadingMethod?: Function
   options?: any[]
@@ -163,7 +165,7 @@ function updateTotalCount (n: number) { totalCount.value = n }
 function updateResultCount (n: number) { resultCount.value = n }
 
 onMounted(() => {
-  console.log('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
+  console.debug('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
 })
 </script>
 

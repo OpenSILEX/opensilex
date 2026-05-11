@@ -375,22 +375,22 @@ routes:
     component: opensilex-ProjectDetails
   - path: /project/annotations/:uri
     component: opensilex-ProjectDetails
-  # - path: /germplasm/create
-  #   component: opensilex-GermplasmCreate
-  #   credentials: [ germplasm-modification ]
-  #   icon: fa#seedling
-  #   title: GermplasmCreate.title
-  #   description: GermplasmCreate.description
-  # - path: /germplasm/details/:uri
-  #   component: opensilex-GermplasmDetails
-  #   rdfType: vocabulary:Germplasm
-  #   credentials: [ ]
-  # - path: /germplasm/annotations/:uri
-  #   component: opensilex-GermplasmDetails
-  # - path: /germplasm/documents/:uri
-  #   component: opensilex-GermplasmDetails
-  # - path: /germplasm/group
-  #   component: opensilex-GermplasmGlobalView
+  - path: /germplasm/create
+    component: opensilex-GermplasmCreate
+    credentials: [ germplasm-modification ]
+    icon: fa#seedling
+    title: GermplasmCreate.title
+    description: GermplasmCreate.description
+  - path: /germplasm/details/:uri
+    component: opensilex-GermplasmDetails
+    rdfType: vocabulary:Germplasm
+    credentials: [ ]
+  - path: /germplasm/annotations/:uri
+    component: opensilex-GermplasmDetails
+  - path: /germplasm/documents/:uri
+    component: opensilex-GermplasmDetails
+  - path: /germplasm/group
+    component: opensilex-GermplasmGlobalView
 
   # - path: /factor/create
   #   component: opensilex-FactorForm

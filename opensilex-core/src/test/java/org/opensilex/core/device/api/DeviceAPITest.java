@@ -94,7 +94,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     private static final URI sensingDeviceType = URI.create(Oeso.SensingDevice.toString());
 
     public ServiceDescription search = new ServiceDescription(
-            DeviceAPI.class.getMethod("searchDevices", URI.class, boolean.class, String.class, URI.class, Integer.class, LocalDate.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
+            DeviceAPI.class.getMethod("searchDevices", URI.class, boolean.class, String.class, URI.class, Integer.class, LocalDate.class, URI.class, String.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
             path
     );
     public ServiceDescription create = new ServiceDescription(DeviceAPI.class.getMethod("createDevice", DeviceCreationDTO.class, Boolean.class), createPath);

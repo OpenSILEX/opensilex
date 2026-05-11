@@ -79,6 +79,7 @@
             "logout": "Logout",
             "parent": "parent",
             "type": "Type",
+            "type-properties": "Selected type properties",
             "select-lang": "Choose a language",
             "select-date": "Choose a date",
             "select": "Select",

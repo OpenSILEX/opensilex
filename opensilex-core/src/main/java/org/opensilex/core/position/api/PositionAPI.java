@@ -185,7 +185,7 @@ public class PositionAPI {
                                                                                     Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
             //for each unique target uri, get the mongoDB Model location linked (inside the current extend)
-            StringUriMap<LocationObservationModel> targetLocationMap = new StringUriMap<>(locationObservationLogic.getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
+             StringUriMap<LocationObservationModel> targetLocationMap = new StringUriMap<>(locationObservationLogic.getLocationObservationsWithGeospatializedPositionPerTargetFromTargetUris(
                     uniqueTargetLastMoveList.keySet().stream().flatMap(Collection::stream).collect(Collectors.toList()),
                     endDate != null ? Instant.parse(endDate) : null,
                     geoJsonToGeometry(geometry)));

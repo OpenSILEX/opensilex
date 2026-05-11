@@ -1,14 +1,11 @@
 <template>
   <div>
-    <div
-      v-for="relation in typeRelations"
-      :key="relation.property.uri"
-    >
+    <div v-for="(relation, index) in typeRelations" :key="index">
       <component
         v-if="getInputComponent(relation.property)"
         :is="getInputComponent(relation.property)"
         :property="relation.property"
-        :label="relation.property.name ?? relation.property.uri"
+        :label="relation.property.name"
         :required="relation.property.is_required"
         :multiple="relation.property.is_list"
         :value="relation.value"
@@ -21,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch, withDefaults } from 'vue'
+import { computed, inject, ref, withDefaults } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { OntologyService } from 'opensilex-core/api/ontology.service'
 import type {
@@ -52,6 +49,8 @@ const props = withDefaults(defineProps<{
 })
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const vueOntologyService = opensilex.getService<VueJsOntologyExtensionService>('opensilex.VueJsOntologyExtensionService')
+const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
 
 const vueOntologyService = opensilex.getService<VueJsOntologyExtensionService>(
   'opensilex-front.VueJsOntologyExtensionService'
@@ -66,6 +65,7 @@ const typeModel = ref<VueRDFTypeDTO | null>(null)
 const propertiesByDomainHierarchy = ref<PropertiesByDomainDTO[]>([])
 
 const typeRelations = computed<Array<MultiValuedRDFObjectRelation>>(() => {
+  // Retourne les relations internes uniquement lorsque le modèle RDF du type est chargé
   if (!typeModel.value) {
     return []
   }
@@ -99,6 +99,10 @@ function getInputComponent(property: VueRDFTypePropertyDTO): string | null {
 }
 
 function getHandledProperties(): Array<VueRDFTypePropertyDTO> {
+  /**
+  * Récupère les propriétés RDF à afficher, en excluant celles passées via excludedProperties,
+  * puis les trie selon l'ordre défini par le modèle ou par la hiérarchie des domaines
+  */
   if (!typeModel.value) {
     return []
   }
@@ -170,6 +174,10 @@ function getCustomPropsForComponent(property: string): any {
 }
 
 async function typeSwitch(type: string, initialLoad: boolean) {
+  /**
+  * Charge les propriétés du type RDF sélectionné, initialise le modèle interne,
+  * puis prépare les relations affichées dans le formulaire
+  */
   if (!type || type.length === 0 || !props.baseType) {
     typeModel.value = null
     internalRelations.value = []
@@ -183,6 +191,7 @@ async function typeSwitch(type: string, initialLoad: boolean) {
         props.baseType,
         [type]
       )
+    propertiesByDomainHierarchy.value = propertiesByDomainHttpResponse.response.result
 
     propertiesByDomainHierarchy.value =
       propertiesByDomainHttpResponse.response.result
@@ -215,6 +224,18 @@ async function typeSwitch(type: string, initialLoad: boolean) {
   }
 }
 
+function getInputComponent(property: VueRDFTypePropertyDTO) {
+  /**
+  * Détermine le composant Vue à utiliser pour saisir la valeur d'une propriété RDF
+  * Donne la priorité au composant spécifique défini pour cette propriété, sinon composant par défaut
+  */
+  if (property.input_components_by_property && property.input_components_by_property[property.uri]) {
+    return property.input_components_by_property[property.uri]
+  }
+  return property.input_component
+}
+
+function updateRelation(_newValue: string | Array<string>, _property: VueRDFTypePropertyDTO) {
   /**
   * Synchronise la prop relations avec les relations internes,
   * en reconvertissant les valeurs multiples en relations mono-valuées.
@@ -227,6 +248,7 @@ function updateRelation(
   props.relations.push(...toMultipleMonoValuedRelations(internalRelations.value))
 }
 
+function onRelationValueUpdate(
   /**
   * Met à jour la valeur d'une relation après modification dans un champ,
   * puis synchronise la liste des relations exposée au parent
@@ -240,6 +262,7 @@ function onRelationValueUpdate(
   updateRelation(newValue, property)
 }
 
+function toMultipleMonoValuedRelations(
   /**
   * Convertit les relations internes, qui peuvent contenir plusieurs valeurs,
   * en liste de relations RDF mono-valuées attendue par l'API ou le parent
@@ -276,6 +299,7 @@ function toMultipleMonoValuedRelations(
   return newRelations
 }
 
+function toMultiValuedRelations(
   /**
   * Regroupe les relations RDF mono-valuées par propriété,
   * afin de reconstruire le modèle utilisé par les composants du formulaire

@@ -147,11 +147,14 @@ public class DeviceDAO {
         }
 
         Node uriVar = NodeFactory.createVariable(DeviceModel.URI_FIELD);
-        if(!forExport){
+        if (!forExport) {
             String graph = sparql.getDefaultGraph(DeviceModel.class).getURI();
-            if(variable != null) {
-                SPARQLQueryHelper.appendRelationFilter(select,graph, uriVar, Oeso.measures, variable);
+
+            if (variable != null) {
+                SPARQLQueryHelper.appendRelationFilter(select, graph, uriVar, Oeso.measures, variable);
             }
+
+            appendDynamicRelationFilters(select, graph, uriVar, filter.getRelations());
         }
 
         DateDeserializer dateDeserializer = new DateDeserializer();
@@ -175,6 +178,78 @@ public class DeviceDAO {
 
         if (!CollectionUtils.isEmpty(filter.getIncludedUris())) {
             select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.URI_FIELD, filter.getIncludedUris()));
+        }
+    }
+
+    private void appendDynamicRelationFilters(
+            SelectBuilder select,
+            String graph,
+            Node deviceVar,
+            Map<URI, String> relations
+    ) throws Exception {
+
+        if (relations == null || relations.isEmpty()) {
+            return;
+        }
+
+        int index = 0;
+        ExprFactory exprFactory = new ExprFactory();
+
+        for (Map.Entry<URI, String> entry : relations.entrySet()) {
+            URI propertyURI = entry.getKey();
+            String expectedValue = entry.getValue();
+
+            if (propertyURI == null || expectedValue == null || expectedValue.trim().isEmpty()) {
+                continue;
+            }
+
+            Node propertyNode = SPARQLDeserializers.nodeURI(propertyURI);
+            String trimmedValue = expectedValue.trim();
+
+            if (URIDeserializer.validateURI(trimmedValue)) {
+                URI valueURI = URI.create(SPARQLDeserializers.formatURI(trimmedValue));
+                Node valueNode = SPARQLDeserializers.nodeURI(valueURI);
+
+                WhereBuilder relationWhere = new WhereBuilder();
+                relationWhere.addWhere(deviceVar, propertyNode, valueNode);
+
+                select.addGraph(NodeFactory.createURI(graph), relationWhere);
+            } else {
+                String valueVarName = "dynamicRelationValue" + index;
+                Node valueVar = NodeFactory.createVariable(valueVarName);
+
+                WhereBuilder relationWhere = new WhereBuilder();
+                relationWhere.addWhere(deviceVar, propertyNode, valueVar);
+
+                select.addGraph(NodeFactory.createURI(graph), relationWhere);
+
+                String normalizedValue = trimmedValue;
+
+                if (
+                        normalizedValue.length() >= 2
+                                && normalizedValue.startsWith("\"")
+                                && normalizedValue.endsWith("\"")
+                ) {
+                    normalizedValue = normalizedValue.substring(1, normalizedValue.length() - 1);
+                }
+//                assouplis pour que le resultat soit renvoyé même si l'utilisateur ne saisis pas les guillemets dans le champ de recherche
+                String quotedValue = "\"" + normalizedValue + "\"";
+
+                select.addFilter(
+                        exprFactory.or(
+                                exprFactory.eq(
+                                        exprFactory.str(valueVar),
+                                        normalizedValue
+                                ),
+                                exprFactory.eq(
+                                        exprFactory.str(valueVar),
+                                        quotedValue
+                                )
+                        )
+                );
+            }
+
+            index++;
         }
     }
 

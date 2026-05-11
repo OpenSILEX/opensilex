@@ -79,6 +79,7 @@
             "logout": "Déconnexion",
             "parent": "parent",
             "type": "Type",
+            "type-properties": "Propriétés du type selectionné",
             "select": "Sélectionner",
             "select-lang": "Choisissez une langue",
             "select-date": "Choisissez une date",

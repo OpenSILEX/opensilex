@@ -5,6 +5,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
+import java.util.Map;
 import java.time.LocalDate;
 
 public class DeviceSearchFilter extends SearchFilter {
@@ -19,6 +20,7 @@ public class DeviceSearchFilter extends SearchFilter {
     private String modelPattern;
     private String snPattern;
     private AccountModel currentUser;
+    private Map<URI, String> relations;
 
     public DeviceSearchFilter() {
         super();
@@ -111,6 +113,15 @@ public class DeviceSearchFilter extends SearchFilter {
 
     public DeviceSearchFilter setCurrentUser(AccountModel currentUser) {
         this.currentUser = currentUser;
+        return this;
+    }
+
+    public Map<URI, String> getRelations() {
+        return relations;
+    }
+
+    public DeviceSearchFilter setRelations(Map<URI, String> relations) {
+        this.relations = relations;
         return this;
     }
 }

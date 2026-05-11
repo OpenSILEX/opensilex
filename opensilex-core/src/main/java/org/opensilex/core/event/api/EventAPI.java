@@ -505,8 +505,13 @@ public class EventAPI {
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         logic.assertNoDeprecatedPropertiesIsFilled(dto);
         MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
-        logic.updateModel(model);
-        return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
+        try {
+            logic.updateModel(model);
+            return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
+        } catch(Exception e) {
+            System.out.println(e);
+            throw e;
+        }
     }
 
     @GET

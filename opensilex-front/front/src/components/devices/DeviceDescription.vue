@@ -98,7 +98,7 @@
 
                         <ul>
                         <li v-if="lastPosition?.location?.to">
-                            {{ lastPosition.location.to.name }}
+                            {{ lastPosition.location.to }}
                         </li>
 
                         <li
@@ -122,6 +122,13 @@
                         </li>
                         </ul>
                     </opensilex-StringView>
+
+                    <!-- <opensilex-StringView :label="t('Event.lastPosition')">
+                      <pre pre>{{ lastPosition }}</pre>
+                      <br>
+                      <span> position </span>
+                      <pre>{{ JSON.stringify(lastPosition, null, 2) }}</pre>
+                    </opensilex-StringView> -->
 
                     <!-- Relations -->
                     <div
@@ -433,17 +440,24 @@ async function loadLastCalibrationEvent() {
 }
 
 async function loadLastPosition() {
-  if (!device.value.uri) return
+  if (!device.value.uri) {
+    lastPosition.value = null
+    return
+  }
 
   try {
-    const http: HttpResponse<OpenSilexResponse<PositionGetDTO>> =
-      await positionService.getPosition(device.value.uri)
-
-    if (http.response.result.event !== null) {
-      lastPosition.value = http.response.result
-    }
+    const http = await positionService.searchPositionHistory(
+      device.value.uri,
+      undefined,
+      undefined,
+      ['end=desc'],
+      0,
+      1
+    )
+    lastPosition.value = http.response.result?.[0] ?? null
   } catch (error) {
     $opensilex.errorHandler(error)
+    lastPosition.value = null
   }
 }
 

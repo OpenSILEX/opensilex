@@ -989,6 +989,32 @@
                 "om": "L’Ontology of Units of Measure (OM) 2.0 modélise les concepts et relations importants pour la recherche scientifique. Elle met particulièrement l’accent sur les unités, les quantités, les mesures et les dimensions.",
                 "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
                 "xsd": "Découvrez les langages de schémas XML."
+            },
+            "typeView": {
+                "scientificObject": {
+                    "title": "Types d'objets scientifiques",
+                    "description": "Gérer et configurer les types d'objets scientifiques"
+                },
+                "event": {
+                    "title": "Types d'événements",
+                    "description": "Gérer et configurer les types d'évenements"
+                },
+                "device": {
+                    "title": "Types d'appareils",
+                    "description": "Gérer et configurer les types d'appareil"
+                },
+                "facility": {
+                    "title": "Types d'installations environnementales",
+                    "description": "Gérer et configurer les types d'installations environnementales"
+                },
+                "factoryCategory": {
+                    "title": "Catégories de facteurs",
+                    "description": "Gérer et configurer les catégories de facteurs"
+                }
+            },
+            "namespace": {
+                "title": "Espaces de nom",
+                "description": "Page d'affichage des espaces de nom"
             }
         },
         "tutorial": {

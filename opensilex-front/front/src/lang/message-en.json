@@ -932,6 +932,32 @@
                 "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
                 "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
                 "xsd": "Discover XML schema languages."
+            },
+            "typeView": {
+                "scientificObject": {
+                    "title": "Scientific object types",
+                    "description": "Manage and configure scientific object types"
+                },
+                "event": {
+                    "title": "Event types",
+                    "description": "Manage and configure event types"
+                },
+                "device": {
+                    "title": "Device types",
+                    "description": "Manage and configure device types"
+                },
+                "facility": {
+                    "title": "Facilities types",
+                    "description": "Manage and configure facilities types"
+                },
+                "factoryCategory": {
+                    "title": "Factor category",
+                    "description": "Manage and configure factor categories"
+                }
+            },
+            "namespace": {
+                "title": "Namespaces",
+                "description": "Namespaces display page"
             }
         },
         "tutorial": {

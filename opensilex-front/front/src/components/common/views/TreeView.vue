@@ -1,11 +1,9 @@
 <template>
-  <div style="background: red; color: white">TEST TREEVIEW</div>
   <!-- <span>titre du premier node {{ nodes[0].title }}</span> -->
   <!-- <p>nodes: {{ nodes }}</p> -->
 
 <n-tree
   ref="treeRef"
-  v-model:expanded-keys="expandedKeys"
   :data="nodeList"
   :show-irrelevant-nodes="false"
   key-field="key"
@@ -14,6 +12,7 @@
   @update:selected-keys="onSelectItem"
   @update:expanded-keys="onToggle"
   :render-label="renderLabel"
+  :default-expand-all="defaultExpandAll"
 >
   <!-- label-field="title" -->
   <!-- Slot label : rendu du node -->
@@ -35,49 +34,48 @@
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, useSlots, defineExpose, watch, onMounted, h } from 'vue'
-import { NTree } from 'naive-ui'
+import {NTree, TreeOption} from 'naive-ui'
 
-const props = defineProps<{
-  nodes: any[]
+const props = withDefaults(defineProps<{
+  nodes: TreeOption[]
   noButtons?: boolean
-}>()
+  defaultExpandAll: boolean
+}>(), {
+  defaultExpandAll: false
+})
 
-const emit = defineEmits(['select', 'toggle'])
+const emit = defineEmits<{
+  select: [Array<TreeOption>],
+  toggle: [Array<TreeOption>]
+}>()
 const slots = useSlots()
 
 const treeRef = ref<InstanceType<typeof NTree> | null>(null)
 const nodeList = ref(props.nodes || [])
-const expandedKeys = ref<string[]>([])
 const selectedKeys = ref<string[]>([])
 
 onMounted(() => {
-  console.log("TreeView mounted")
-  console.log("nodeList au mount :", nodeList.value)
+  console.debug("[TreeView] nodeList au mount :", nodeList.value)
 })
 
 // Dans le watch de props.nodes
 watch(
   () => props.nodes,
   (newVal) => {
-     console.log("[TreeView] Mise à jour des nodes", newVal)
+     console.debug("[TreeView] Mise à jour des nodes", newVal)
     nodeList.value = newVal
   },
   { immediate: true }
 )
 
 
-function onSelectItem(keys: string[], options: any) {
+function onSelectItem(keys: string[], options: Array<TreeOption>) {
   selectedKeys.value = keys
-  if (options?.node) {
-    emit('select', options.node)
-  }
+  emit('select', options)
 }
 
-function onToggle(keys: string[], options: any) {
-  expandedKeys.value = keys
-  if (options?.node) {
-    emit('toggle', options.node)
-  }
+function onToggle(keys: string[], options: Array<TreeOption>) {
+  emit('toggle', options)
 }
 
 function getSelectedNode() {
@@ -123,9 +121,6 @@ function renderLabel(option: any) {
     ]
   )
 }
-
-
-
 
 defineExpose({
   getSelectedNode

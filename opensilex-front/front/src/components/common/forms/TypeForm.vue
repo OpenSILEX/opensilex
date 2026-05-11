@@ -146,6 +146,31 @@ function flatten(nodes: InputOpt[] = []): Array<{ id: string; label: string }> {
   return out
 }
 
+// searchMethod attend => Promise<{ response: { result: NamedResourceDTO[], metadata: { pagination: { totalCount }}}}>
+// NamedResourceDTO minimal = { uri, name }
+async function searchTypes(rawQuery: string, _offset = 0, limit = 20) {
+  // CustomTreeselect utilise '.*' quand query vide
+  const searchedText = (rawQuery === '.*' ? '' : (rawQuery ?? '')).trim().toLowerCase()
+
+  const all = flatten(typesOptions.value)
+
+  const filtered = searchedText
+      ? all.filter(x =>
+          (x.label ?? '').toLowerCase().includes(searchedText) ||
+          (x.id ?? '').toLowerCase().includes(searchedText)
+      )
+      : all
+
+  const sliced = filtered.slice(0, limit)
+
+  return {
+    response: {
+      result: sliced.map(x => ({ uri: x.id, name: x.label })), // <= matcher ce que CustomTreeselect attend
+      metadata: { pagination: { totalCount: filtered.length } }
+    }
+  }
+}
+
 onMounted(() => { loadTypes().catch(opensilex.errorHandler) })
 watch(() => store.getters.language, () => loadTypes().catch(opensilex.errorHandler))
 </script>

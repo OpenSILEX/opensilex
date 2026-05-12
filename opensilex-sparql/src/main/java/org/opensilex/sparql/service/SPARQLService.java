@@ -1350,7 +1350,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 null,
                 autoupdateListFields.stream().map(Field::getName).toList()
         );
-        //return loadListByURIs(mapper.getObjectClass(), instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toCollection(ArrayList::new)), getDefaultLang());
     }
 
     private <T extends SPARQLResourceModel> void updateAutoUpdateFields(SPARQLClassObjectMapper<T> mapper, T oldInstance, T instance) throws Exception {

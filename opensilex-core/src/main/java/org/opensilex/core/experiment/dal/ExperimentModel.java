@@ -137,8 +137,7 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "studyEffectOf",
-            cascadeDelete = true,
-            ignoreUpdateIfNull = true
+            cascadeDelete = true
     )
     List<FactorModel> factors;
     public static final String FACTORS_FIELD = "factors";

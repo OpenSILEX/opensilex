@@ -99,7 +99,7 @@ import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui';
 const props = defineProps<{
   fields: any;
   fieldKeyToSortableModelLabelMap?: Record<string, string>;
-  searchMethod: Function;
+  searchMethod?: (options: {orderBy: string[], currentPage: number, pageSize: number}) => Promise<HttpResponse<OpenSilexResponse<any[]>>>;
   useQueryParams?: boolean;
   defaultSortBy?: string;
   defaultSortDesc?: boolean;
@@ -108,12 +108,11 @@ const props = defineProps<{
   iconNumberOfSelectedRow?: string;
   maximumSelectedRows?: number;
   selectAllLimit?: number;
-  defaultPageSize: number;
-  showCount: { type: Boolean, default: true },
-  isSelectable: { type: Boolean, default: false },
-  showHeaderCount: { type: Boolean, default: true },
-  allowOnlySelected: Boolean, // optionnel, par défaut false
-  showActions: Boolean, // pour bouton dropdown actions groupées
+  showCount?: { type: Boolean, default: true },
+  isSelectable?: { type: Boolean, default: false },
+  showHeaderCount?: { type: Boolean, default: true },
+  allowOnlySelected?: Boolean, // optionnel, par défaut false
+  showActions?: Boolean, // pour bouton dropdown actions groupées
 }>();
 
 //  Injections
@@ -367,7 +366,7 @@ function resetSelection() {
   refresh()
 }
 
-function loadData() {
+function loadData(): Promise<any[]> {
   const orderBy = getOrderBy();
 
   $opensilex.disableLoader();
@@ -402,6 +401,7 @@ function loadData() {
       .catch((error) => {
         isSearching.value = false;
         $opensilex.errorHandler(error);
+        return [];
       });
   }
 }
@@ -572,18 +572,30 @@ function setPage(page: number) {
   currentPage.value = page
 }
 
+function checkSelectedItems(uri: string) {
+  if (selectedItems.value.length > 0) {
+    const deletedItem = selectedItems.value.findIndex(it => it.uri == uri);
+    if (deletedItem !== -1) {
+      selectedItems.value.splice(deletedItem, 1)
+    }
+  }
+}
+
 defineExpose({
   refresh,
   getSelected,
   onItemSelected,
   onItemUnselected,
   getPaginationInfo,
+  getOrderBy,
   getCurrentPage,
   getPageSize,
   getTotalRow,
   toggleOnlySelected,
   resetSelection,
-  setPage
+  setPage,
+  checkSelectedItems,
+  onlySelected
 });
 
 

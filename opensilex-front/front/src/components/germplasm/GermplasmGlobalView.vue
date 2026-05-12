@@ -1,64 +1,72 @@
-
 <template>
   <div class="container-fluid">
-
-    <opensilex-PageHeader
+    <PageHeader
         icon="fa#seedling"
         title="GermplasmView.title"
         description="GermplasmView.description"
         class="detail-element-header"
-    ></opensilex-PageHeader>
-    <opensilex-PageActions :tabs="true" :returnButton="false">
+    ></PageHeader>
+    <PageActions :tabs="true" :returnButton="false">
       <template v-slot>
-        <b-nav-item
-            :active="isGermplasmTab()"
-            :to="{ path: '/germplasm' }"
-        >{{ $t("GermplasmView.title") }}
-        </b-nav-item>
-        <b-nav-item
-            :active="isGroupGermplasmTab()"
-            :to="{ path: '/germplasm/group' }"
-        >{{ $t("GermplasmGroupView.title") }}
-        </b-nav-item>
+        <n-menu
+            v-model:value="activeMenuOption"
+            :options="menuOptions"
+            mode="horizontal"
+        />
       </template>
-    </opensilex-PageActions>
-    <opensilex-PageContent>
+    </PageActions>
+    <PageContent>
       <template v-slot>
-        <opensilex-GermplasmView
-            v-if="isGermplasmTab()"
-        ></opensilex-GermplasmView>
-        <opensilex-GermplasmGroup
-            v-else-if="isGroupGermplasmTab()"
-        ></opensilex-GermplasmGroup>
+        <GermplasmView v-if="activeMenuOption === MENU_KEY_GERMPLASM"></GermplasmView>
+        <GermplasmGroup v-else-if="activeMenuOption === MENU_KEY_GROUP"></GermplasmGroup>
       </template>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
+<script setup lang="ts">
+import {computed, h, onMounted, ref} from "vue";
+import {RouterLink, useRoute} from "vue-router";
+import {useI18n} from "vue-i18n";
+import PageHeader from "@/components/layout/PageHeader.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import GermplasmView from "@/components/germplasm/list/GermplasmView.vue";
+import {MenuOption, NMenu} from "naive-ui";
+import GermplasmGroup from "@/components/germplasm/group/GermplasmGroup.vue";
 
-<script lang="ts">
-import {Component} from "vue-property-decorator";
-import Vue from "vue";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-@Component
-export default class GermplasmGlobalView extends Vue {
+const route = useRoute();
+const {t} = useI18n();
 
-  $route: any;
-  $opensilex: OpenSilexVuePlugin;
+const MENU_KEY_GERMPLASM = "germplasm";
+const MENU_KEY_GROUP = "group"
 
+const menuOptions = computed<MenuOption[]>(() => [
+  {
+    label: () => h(RouterLink, {to: {path: "/germplasm"}}, t("germplasmMenu")),
+    key: MENU_KEY_GERMPLASM,
+  },
+  {
+    label: () => h(RouterLink, {to: {path: "/germplasm/group"}}, t("germplasmGroupMenu")),
+    key: MENU_KEY_GROUP,
+  },
+]);
+const activeMenuOption = ref<string | null>(null);
 
-  isGermplasmTab() {
-    return this.$route.path === "/germplasm";
-  }
-
-  isGroupGermplasmTab() {
-    return this.$route.path.startsWith("/germplasm/group");
-  }
-
-
-}
+onMounted(() => {
+  activeMenuOption.value = route.path.startsWith("/germplasm/group")
+      ? MENU_KEY_GROUP
+      : MENU_KEY_GERMPLASM;
+})
 </script>
 
-<style scoped>
+<style scoped></style>
 
-</style>
+<i18n>
+en:
+  germplasmMenu: "Germplasm"
+  germplasmGroupMenu: "Germplasm Group"
+fr:
+  germplasmMenu: "Ressources Génétiques "
+  germplasmGroupMenu: "Groupe de Ressources Génétiques"
+</i18n>

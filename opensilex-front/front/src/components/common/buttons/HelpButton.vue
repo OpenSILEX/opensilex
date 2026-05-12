@@ -13,12 +13,14 @@
 <script setup lang="ts">
  
 
-defineProps<{
+withDefaults(defineProps<{
   label?: string;
   small?: boolean;
   disabled?: boolean;
-  variant: { type: String, default: "outline-info" }
-}>();
+  variant: string;
+}>(), {
+  variant: "outline-info"
+});
 
 const emit = defineEmits(["click"]);
 

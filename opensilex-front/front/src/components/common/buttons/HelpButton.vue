@@ -17,7 +17,7 @@ withDefaults(defineProps<{
   label?: string;
   small?: boolean;
   disabled?: boolean;
-  variant: string;
+  variant?: string;
 }>(), {
   variant: "outline-info"
 });

@@ -6,14 +6,12 @@
         description="GermplasmView.description"
         class="detail-element-header"
     ></PageHeader>
-    <PageActions :tabs="true" :returnButton="false">
-      <template v-slot>
-        <n-menu
-            v-model:value="activeMenuOption"
-            :options="menuOptions"
-            mode="horizontal"
-        />
-      </template>
+    <PageActions :returnButton="false">
+      <n-menu
+          v-model:value="activeMenuOption"
+          :options="menuOptions"
+          mode="horizontal"
+      />
     </PageActions>
     <PageContent>
       <template v-slot>
@@ -43,11 +41,11 @@ const MENU_KEY_GROUP = "group"
 
 const menuOptions = computed<MenuOption[]>(() => [
   {
-    label: () => h(RouterLink, {to: {path: "/germplasm"}}, t("germplasmMenu")),
+    label: () => h(RouterLink, {to: {path: "/germplasm"}}, () => t("germplasmMenu")),
     key: MENU_KEY_GERMPLASM,
   },
   {
-    label: () => h(RouterLink, {to: {path: "/germplasm/group"}}, t("germplasmGroupMenu")),
+    label: () => h(RouterLink, {to: {path: "/germplasm/group"}}, () => t("germplasmGroupMenu")),
     key: MENU_KEY_GROUP,
   },
 ]);

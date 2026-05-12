@@ -1,10 +1,10 @@
+<template>
+  todo germplasm help
+</template>
+
 <script setup lang="ts">
 
 </script>
-
-<template>
-
-</template>
 
 <style scoped lang="scss">
 

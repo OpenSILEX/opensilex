@@ -40,19 +40,17 @@ big-data:
 phisws:
     infrastructure: opensilex
 # Configuration for module: SecurityModule (SecurityConfig)
-# security:
-# #    Email service (EmailService)
-#    email:
-#         config:
-#             enable: true
-#             simulateSending: false
-#             # Not working
-#             sender: opensilex@mail.com
-#             smtp :
-#                 host: smtp.gmail.com
-#                 port: 587
-#                 userId : ""
-#                 userPassword : ""
+
+security:
+    email:
+        config:
+            enable: true
+            smtp:
+                host: smtp.inrae.fr
+                port: 587
+                userId: "mtp-opensilex"
+                userPassword: "KDbv4vVQ92Yc"
+                sender: "mtp-opensilex@inrae.fr"
 
 #core:
 #    enableLogs: true

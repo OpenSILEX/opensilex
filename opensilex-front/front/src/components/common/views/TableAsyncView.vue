@@ -595,6 +595,7 @@ defineExpose({
   resetSelection,
   setPage,
   checkSelectedItems,
+  clickOnlySelected,
   onlySelected
 });
 

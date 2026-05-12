@@ -208,6 +208,15 @@
           iconNumberOfSelectedRow="fa#seedling"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+          <n-dropdown
+              :options="displayDropdownOptions"
+              @select="(key: string) => displayDropdownOptionsMap.get(key).clicked()"
+              trigger="click"
+          >
+            <n-button>
+              {{ t('display') }}
+            </n-button>
+          </n-dropdown>
           <b-dropdown
               dropright
               class="mb-2 mr-2"
@@ -313,7 +322,7 @@ import Icon from "@/components/common/views/Icon.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
-import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
+import {computed, h, inject, onBeforeUnmount, onMounted, ref, useTemplateRef, VNodeChild} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
@@ -327,6 +336,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
 import FilterField from "@/components/common/filters/FilterField.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {DropdownOption, NDropdown, NButton} from "naive-ui";
 
 //#region Public
 const props = withDefaults(defineProps<{
@@ -353,6 +363,23 @@ defineExpose({
 //#endregion
 
 //#region Private
+const displayDropdownOptionsMap = ref<Map<string, { label: string | (() => VNodeChild), clicked: () => void }>>(new Map([
+  ['selectedOnly', {
+    label: () => onlySelected ? t('selected-all') : t("component.common.selected-only"),
+    clicked: () => {
+      tableRef.value.clickOnlySelected()
+    }
+  }],
+  ['resetSelected', {
+    label: () => t("component.common.resetSelected"),
+    clicked: () => {
+      tableRef.value.resetSelection()
+    }
+  }]
+]));
+const displayDropdownOptions = computed<Array<DropdownOption>>(() => displayDropdownOptionsMap.value.entries().map(([key, option]) => ({key, ...option})).toArray());
+const actionDropdownOptions = []
+
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
 const {t} = useI18n();
@@ -365,7 +392,6 @@ const documentForm = useTemplateRef<InstanceType<typeof ModalForm>>("documentFor
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>("tableRef");
 const attributesValueSelector = useTemplateRef<InstanceType<typeof GermplasmAttributesValueSelector>>("attributesValueSelector");
 
-
 const resetExperimentSelectorKey = ref(0);
 const species = ref<Array<{ id: string, label: string }>>([])
 const speciesByUri = new Map<String, SpeciesDTO>();
@@ -375,7 +401,7 @@ const filter = ref(initFilters())
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 const lang = computed(() => store.state.lang);
-const onlySelected = computed(() => tableRef.value.onlySelected)
+const onlySelected = computed(() => tableRef.value.onlySelected);
 const fields = computed(() => {
   let tableFields = [
     {
@@ -405,7 +431,7 @@ const fields = computed(() => {
     });
   }
   return tableFields;
-})
+});
 
 const unwatchLang = store.watch(
     () => store.getters.language,
@@ -558,6 +584,7 @@ en:
   export: Export Germplasm list
   selected-all: All Germplasm
   is_public: Visibility
+  display: Display
   filter:
     description: Germplasm Search
     species: Species
@@ -598,6 +625,7 @@ fr:
   export: Exporter la liste
   selected-all: Toutes les ressources génétiques
   is_public: Visibilité
+  display: Affichage
   filter:
     description: Recherche de Ressources Génétiques
     species: Espèce

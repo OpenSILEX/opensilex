@@ -217,35 +217,16 @@
               {{ t('display') }}
             </n-button>
           </n-dropdown>
-          <b-dropdown
-              dropright
-              class="mb-2 mr-2"
-              :small="true"
-              :text="$t('VariableList.display')">
-
-            <b-dropdown-item-button @click="clickOnlySelected()">
-              {{ onlySelected ? $t('GermplasmList.selected-all') : $t("component.common.selected-only") }}
-            </b-dropdown-item-button>
-            <b-dropdown-item-button @click="resetSelected()">{{ $t("component.common.resetSelected") }}
-            </b-dropdown-item-button>
-          </b-dropdown>
-
-          <b-dropdown
-              dropright
-              class="mb-2 mr-2"
-              :small="true"
-              :disabled="numberOfSelectedRows == 0"
-              text=actions>
-            <b-dropdown-item-button
-                v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-                @click="createDocument()"
-            >{{ $t('component.common.addDocument') }}
-            </b-dropdown-item-button>
-            <b-dropdown-item-button
-                @click="exportCSV(false)"
-            >{{ $t('GermplasmList.export') }}
-            </b-dropdown-item-button>
-          </b-dropdown>
+          <n-dropdown
+            :options="actionDropdownOptions"
+            @select="(key: string) => actionDropdownOptionsMap.get(key).clicked()"
+            trigger="click"
+            :disabled="numberOfSelectedRows === 0"
+          >
+            <n-button :disabled="numberOfSelectedRows === 0">
+              {{ t('actions') }}
+            </n-button>
+          </n-dropdown>
 
           <CreateButton
               v-if="!noActions"
@@ -363,9 +344,12 @@ defineExpose({
 //#endregion
 
 //#region Private
-const displayDropdownOptionsMap = ref<Map<string, { label: string | (() => VNodeChild), clicked: () => void }>>(new Map([
+const displayDropdownOptionsMap = ref<Map<string, {
+  label: string | (() => VNodeChild),
+  clicked: () => void
+}>>(new Map([
   ['selectedOnly', {
-    label: () => onlySelected ? t('selected-all') : t("component.common.selected-only"),
+    label: () => onlySelected.value ? t('selected-all') : t("component.common.selected-only"),
     clicked: () => {
       tableRef.value.clickOnlySelected()
     }
@@ -378,7 +362,24 @@ const displayDropdownOptionsMap = ref<Map<string, { label: string | (() => VNode
   }]
 ]));
 const displayDropdownOptions = computed<Array<DropdownOption>>(() => displayDropdownOptionsMap.value.entries().map(([key, option]) => ({key, ...option})).toArray());
-const actionDropdownOptions = []
+const actionDropdownOptionsMap = ref<Map<string, {
+  label: string | (() => VNodeChild),
+  clicked: () => void
+}>>(new Map([
+  ['addDocument', {
+    label: () => t('component.common.addDocument'),
+    clicked: () => {
+      documentForm.value.showCreateForm()
+    }
+  }],
+  ['exportCsv', {
+    label: () => t('export'),
+    clicked: () => {
+      exportCSV(false)
+    }
+  }]
+]));
+const actionDropdownOptions = computed<Array<DropdownOption>>(() => actionDropdownOptionsMap.value.entries().map(([key, option]) => ({key, ...option})).toArray());
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
@@ -551,7 +552,7 @@ function exportCSV(exportAll: boolean) {
   } else {
     exportDto.page_size = tableRef.value.getTotalRow();
   }
-  opensilex.downloadFilefromPostService(path, filename, "csv", exportDto, this.lang);
+  opensilex.downloadFilefromPostService(path, filename, "csv", exportDto, lang.value);
 }
 
 onMounted(() => {
@@ -585,6 +586,7 @@ en:
   selected-all: All Germplasm
   is_public: Visibility
   display: Display
+  actions: Actions
   filter:
     description: Germplasm Search
     species: Species
@@ -626,6 +628,7 @@ fr:
   selected-all: Toutes les ressources génétiques
   is_public: Visibilité
   display: Affichage
+  actions: Actions
   filter:
     description: Recherche de Ressources Génétiques
     species: Espèce

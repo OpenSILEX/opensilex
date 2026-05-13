@@ -347,7 +347,7 @@ import {
 
 //#region Public
 const props = withDefaults(defineProps<{
-  experimentUri: string
+  experimentUri?: string
   isSelectable?: boolean
   noActions?: boolean
 }>(), {

@@ -376,11 +376,8 @@ routes:
   - path: /project/annotations/:uri
     component: opensilex-ProjectDetails
   - path: /germplasm/create
-    component: opensilex-GermplasmCreate
+    component: opensilex-GermplasmGlobalView
     credentials: [ germplasm-modification ]
-    icon: fa#seedling
-    title: GermplasmCreate.title
-    description: GermplasmCreate.description
   - path: /germplasm/details/:uri
     component: opensilex-GermplasmDetails
     rdfType: vocabulary:Germplasm

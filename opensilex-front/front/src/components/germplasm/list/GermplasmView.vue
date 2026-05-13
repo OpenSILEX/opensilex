@@ -1,31 +1,10 @@
 <template>
   <div class="container-fluid">
-    <PageActions
-        v-if="
-      user.hasCredential(
-      credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)
-    ">
-      <HelpButton
-          @click="showHelpModal = true"
-          label="component.common.help-button"
-          class="helpButton"
-      ></HelpButton>
-      <CreateButton
-          @click="router.push({ path: '/germplasm/create' })"
-          :label="t('add')"
-          class="createButton"
-      ></CreateButton>
-    </PageActions>
-
-    <PageContent>
-      <template v-slot>
-        <GermplasmList
-            ref="germplasmList"
-            @onEdit="editGermplasm"
-            @onDelete="deleteGermplasm"
-        ></GermplasmList>
-      </template>
-    </PageContent>
+    <GermplasmList
+        ref="germplasmList"
+        @onEdit="editGermplasm"
+        @onDelete="deleteGermplasm"
+    ></GermplasmList>
 
     <ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
@@ -37,23 +16,11 @@
         @onCreate="germplasmList.refresh()"
         @onUpdate="germplasmList.updateSelectedGermplasm()"
     ></ModalForm>
-    <n-modal
-        v-model:show="showHelpModal"
-        preset="card"
-        :style="{ width: '600px' }"
-    >
-      <GermplasmHelp></GermplasmHelp>
-    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import HelpButton from "@/components/common/buttons/HelpButton.vue";
-import CreateButton from "@/components/common/buttons/CreateButton.vue";
-import PageContent from "@/components/layout/PageContent.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
-import GermplasmHelp from "@/components/germplasm/list/GermplasmHelp.vue";
-import {NModal} from "naive-ui";
 import {computed, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
@@ -65,7 +32,6 @@ import GermplasmForm from "@/components/germplasm/form/GermplasmForm.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import GermplasmList from "@/components/germplasm/list/GermplasmList.vue";
 import {useI18n} from "vue-i18n";
-import PageActions from "@/components/layout/PageActions.vue";
 
 //#region Public
 
@@ -74,7 +40,7 @@ import PageActions from "@/components/layout/PageActions.vue";
 //#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
-const { t } = useI18n();
+const {t} = useI18n();
 const router = useRouter();
 const service = opensilex.getService<GermplasmService>("opensilex.GermplasmService")
 
@@ -93,7 +59,7 @@ function editGermplasm(uri: string) {
         form.readAttributes(http.response.result.metadata);
         //Take the has_parent_germplasm properties from the GermplasmGetSingleDTO and put the correct uris into the relations attribute of GermplasmUpdateDTO
         //The labels will be loaded with another service call inside the GermplasmForm component
-        let resultWithRelationsField : GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(http.response.result);
+        let resultWithRelationsField: GermplasmUpdateDTO = GermplasmForm.readDuplicatableRelations(http.response.result);
         germplasmForm.value.showEditForm(resultWithRelationsField);
       })
       .catch(opensilex.errorHandler);
@@ -104,11 +70,12 @@ function deleteGermplasm(uri: string) {
       .deleteGermplasm(uri)
       .then(() => {
         germplasmList.value.refresh();
-        let message = t("deleteSuccessMessage", { uri });
+        let message = t("deleteSuccessMessage", {uri});
         opensilex.showSuccessToast(message);
       })
       .catch(opensilex.errorHandler);
 }
+
 //#endregion
 </script>
 

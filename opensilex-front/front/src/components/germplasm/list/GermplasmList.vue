@@ -1,173 +1,251 @@
 <template>
-  <div>
-    <PageContent
-        class="pagecontent"
+  <!-- Barre Actions / Counts / Selection -->
+  <n-space
+      class="listActionButtons"
+      :class="[searchFiltersToggle ? 'filtersNotCollapsed' : 'filtersCollapsed']"
+  >
+    <!-- Dropdown Affichage / sélection -->
+    <n-dropdown
+        :options="displayDropdownOptions"
+        @select="(key: string) => displayDropdownOptionsMap.get(key).clicked()"
+        trigger="click"
+        placement="bottom-end"
     >
-      <!-- Toggle Sidebar -->
-      <div class="searchMenuContainer"
-           @click="searchFiltersToggle = !searchFiltersToggle"
-           :title="t('searchfilter.label')">
-        <div class="searchMenuIcon">
-          <i class="ik ik-search"></i>
-        </div>
+      <n-button size="small" class="greenThemeColor">
+        {{ t('display') }}
+      </n-button>
+    </n-dropdown>
+
+    <!-- Dropdown Actions -->
+    <n-dropdown
+        :options="actionDropdownOptions"
+        @select="(key: string) => actionDropdownOptionsMap.get(key).clicked()"
+        trigger="click"
+        placement="bottom-end"
+        :disabled="selectedCount === 0"
+    >
+      <n-button
+          size="small"
+          :disabled="selectedCount === 0"
+          :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
+      >
+        {{ t('actions') }}
+      </n-button>
+    </n-dropdown>
+
+    <!-- Export all -->
+    <n-button
+      size="small"
+      class="greenThemeColor"
+      @click="exportCSV(true)"
+      :disabled="tableRef?.totalRow === 0"
+    >
+      {{ t('export-all') }}
+    </n-button>
+
+    <!-- Affichage Counts / sélection -->
+    <div class="displayAndListSelectionCount">
+      <div v-if="paginationInfo.hasResults">
+        <strong>
+          <span class="ml-1">
+            {{
+              t('component.common.list.pagination.nbEntries', {
+                limit: paginationInfo.start,
+                offset: paginationInfo.end,
+                totalRow: n(paginationInfo.total)
+              })
+            }}
+          </span>
+        </strong>
       </div>
-      <Transition>
-        <div v-show="searchFiltersToggle">
-          <SearchFilterField
-              @search="refresh()"
-              @clear="reset()"
-              :label="t('filter.description')"
-              :showAdvancedSearch="true"
-              class="searchFilterField"
-          >
-            <template v-slot:filters>
-              <!-- Type -->
-              <div>
-                <TypeForm
-                    v-model:type="filter.rdf_type"
-                    :baseType="opensilex.Oeso.GERMPLASM_TYPE_URI"
-                    :placeholder="t('filter.rdfType-placeholder')"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></TypeForm>
-              </div>
+      <div v-else>
+        <strong>
+          <span class="ml-1">
+            {{ t('component.common.list.pagination.noEntries') }}
+          </span>
+        </strong>
+      </div>
+      <span> | </span>
+      <span>
+        {{ t('DeviceList.selected') }} :
+        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
+      </span>
+    </div>
+  </n-space>
 
-              <!-- Species -->
-              <div>
-                <FormSelector
-                    :label="t('filter.species')"
-                    :placeholder="t('filter.species-placeholder')"
-                    :multiple="false"
-                    v-model:selected="filter.species"
-                    :options="species"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></FormSelector>
-              </div>
+  <n-layout has-sider class="germplasm-layout">
+    <!-- Bouton loupe -->
+    <n-space class="mb-2 me-1" align="start">
+      <n-button
+          quaternary
+          circle
+          @click="searchFiltersToggle = !searchFiltersToggle"
+          :title="searchFiltersPanel"
+          :class="{ greenThemeColor: searchFiltersToggle }"
+          class="globalFiltersSearchButton"
+      >
+        <i class="bi bi-search filtersGlobalSearchIcon"></i>
 
-              <!-- Year -->
-              <div>
-                <label>{{ t('filter.year') }}</label>
-                <StringFilter
-                    v-model:filter="filter.production_year"
-                    :placeholder="t('filter.year-placeholder')"
-                    type="number"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></StringFilter>
-                <br>
-              </div>
+        <div
+            v-show="searchFiltersToggle && activeFiltersCount > 0"
+            class="filters-count-badge"
+        >
+          ( {{ activeFiltersCount }} )
+        </div>
+      </n-button>
+    </n-space>
 
-              <!-- Institute -->
-              <div>
-                <label>{{ t('filter.institute') }}</label>
-                <StringFilter
-                    v-model:filter="filter.institute"
-                    :placeholder="t('filter.institute-placeholder')"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></StringFilter>
-                <br>
-              </div>
 
-              <!-- Name -->
-              <div>
-                <label>{{ t('filter.label') }}</label>
-                <StringFilter
-                    v-model:filter="filter.name"
-                    :placeholder="t('filter.label-placeholder')"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></StringFilter>
-                <br>
-              </div>
+    <!-- Sidebar / Filtres -->
+    <n-layout-sider
+        v-model:collapsed="searchFiltersToggle"
+        :collapsed-width="0"
+        :width="360"
+        collapse-mode="width"
+        show-trigger
+        bordered
+        class="device-sider"
+    >
+      <n-space class="p-3" vertical>
+        <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
+          <!-- Type -->
+          <n-form-item class="compact-form-item">
+            <TypeForm
+                v-model:type="filter.rdf_type"
+                :baseType="opensilex.Oeso.GERMPLASM_TYPE_URI"
+                :placeholder="t('filter.rdfType-placeholder')"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></TypeForm>
+          </n-form-item>
 
-              <!-- Experiments -->
-              <div v-if="!experimentUri">
-                <ExperimentSelector
-                    :label="t('filter.experiment')"
-                    v-model:experiments="filter.experiment"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                    :key="resetExperimentSelectorKey"
-                ></ExperimentSelector>
-              </div>
+          <!-- Species -->
+          <n-form-item class="compact-form-item">
+            <FormSelector
+                :label="t('filter.species')"
+                :placeholder="t('filter.species-placeholder')"
+                :multiple="false"
+                v-model:selected="filter.species"
+                :options="species"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></FormSelector>
+          </n-form-item>
 
-              <!-- Germplasm Parents filter -->
-              <div>
-                <GermplasmSelector
-                    :label="t('filter.parents')"
-                    :multiple="true"
-                    v-model:germplasm="filter.parent_germplasms"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></GermplasmSelector>
-              </div>
+          <!-- Year -->
+          <n-form-item :label="t('filter.year')" class="compact-form-item">
+            <StringFilter
+                v-model:filter="filter.production_year"
+                :placeholder="t('filter.year-placeholder')"
+                type="number"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></StringFilter>
+          </n-form-item>
 
-              <!-- Germplasm Group -->
-              <div>
-                <GermplasmGroupSelector
-                    :label="t('filter.germplasm-group')"
-                    :multiple="false"
-                    v-model:germplasmGroup="filter.germplasm_group"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></GermplasmGroupSelector>
-              </div>
+          <!-- Institute -->
+          <n-form-item :label="t('filter.institute')" class="compact-form-item">
+            <StringFilter
+                v-model:filter="filter.institute"
+                :placeholder="t('filter.institute-placeholder')"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></StringFilter>
+          </n-form-item>
 
-              <!-- URI -->
-              <div>
-                <label>{{ t('filter.uri') }}</label>
-                <StringFilter
-                    v-model:filter="filter.uri"
-                    :placeholder="t('filter.uri-placeholder')"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></StringFilter>
-                <br>
-              </div>
-            </template>
+          <!-- Name -->
+          <n-form-item :label="t('filter.label')" class="compact-form-item">
+            <StringFilter
+                v-model:filter="filter.name"
+                :placeholder="t('filter.label-placeholder')"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></StringFilter>
+          </n-form-item>
 
-            <template v-slot:advancedSearch>
+          <!-- Experiments -->
+          <n-form-item class="compact-form-item" v-if="!experimentUri">
+            <ExperimentSelector
+                :label="t('filter.experiment')"
+                v-model:experiments="filter.experiment"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+                :key="resetExperimentSelectorKey"
+            ></ExperimentSelector>
+          </n-form-item>
 
-              <!-- Germplasm Attributes -->
-              <div>
-                <GermplasmAttributesSelector
-                    v-model:germplasmAttribute="filter.metadataKey"
-                    :label="t('filter.metadataKey')"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></GermplasmAttributesSelector>
-              </div>
+          <!-- Germplasm Parents filter -->
+          <n-form-item class="compact-form-item">
+            <GermplasmSelector
+                :label="t('filter.parents')"
+                :multiple="true"
+                v-model:germplasm="filter.parent_germplasms"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></GermplasmSelector>
+          </n-form-item>
 
-              <div>
-                <GermplasmAttributesValueSelector
-                    v-model:attributeKey="filter.metadataKey"
-                    v-model:attributeValue="filter.metadataValue"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                ></GermplasmAttributesValueSelector>
-              </div>
+          <!-- Germplasm Group -->
+          <n-form-item class="compact-form-item">
+            <GermplasmGroupSelector
+                :label="t('filter.germplasm-group')"
+                :multiple="false"
+                v-model:germplasmGroup="filter.germplasm_group"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></GermplasmGroupSelector>
+          </n-form-item>
 
-              <!-- Germplasm Visibility -->
-              <div>
-                <FormSelector
-                    :label="t('filter.is_public')"
-                    :options="[
+          <!-- URI -->
+          <n-form-item :label="t('filter.uri')" class="compact-form-item">
+            <StringFilter
+                v-model:filter="filter.uri"
+                :placeholder="t('filter.uri-placeholder')"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></StringFilter>
+            <br>
+          </n-form-item>
+
+          <!-- Germplasm Attributes -->
+          <n-form-item class="compact-form-item">
+            <GermplasmAttributesSelector
+                v-model:germplasmAttribute="filter.metadataKey"
+                :label="t('filter.metadataKey')"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></GermplasmAttributesSelector>
+          </n-form-item>
+
+          <n-form-item class="compact-form-item">
+            <GermplasmAttributesValueSelector
+                v-model:attributeKey="filter.metadataKey"
+                v-model:attributeValue="filter.metadataValue"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></GermplasmAttributesValueSelector>
+          </n-form-item>
+
+          <!-- Germplasm Visibility -->
+          <n-form-item class="compact-form-item">
+            <FormSelector
+                :label="t('filter.is_public')"
+                :options="[
                         { id: true, label: t('filter.is_public_true') },
                         { id: false, label: t('filter.is_public_false') }
                       ]"
-                    v-model:selected="filter.is_public"
-                    :async="false"
-                    :multiple="false"
-                    :showCount="false"
-                    :placeholder="t('filter.is_public-placeholder')"
-                />
-              </div>
-            </template>
-          </SearchFilterField>
-        </div>
-      </Transition>
+                v-model:selected="filter.is_public"
+                :async="false"
+                :multiple="false"
+                :showCount="false"
+                :placeholder="t('filter.is_public-placeholder')"
+            />
+          </n-form-item>
+        </n-form>
+      </n-space>
+    </n-layout-sider>
+    <!-- Contenu Liste -->
+    <n-layout-content class="germplasm-content">
       <TableAsyncView
           ref="tableRef"
           :searchMethod="searchGermplasm"
@@ -179,39 +257,9 @@
           @selectall="$emit('selectall', $event)"
           defaultSortBy="label"
           :labelNumberOfSelectedRow="t('selected')"
-          :showHeaderCount="true"
+          :showHeaderCount="false"
           iconNumberOfSelectedRow="fa#seedling"
       >
-        <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-          <n-dropdown
-              :options="displayDropdownOptions"
-              @select="(key: string) => displayDropdownOptionsMap.get(key).clicked()"
-              trigger="click"
-          >
-            <n-button>
-              {{ t('display') }}
-            </n-button>
-          </n-dropdown>
-          <n-dropdown
-              :options="actionDropdownOptions"
-              @select="(key: string) => actionDropdownOptionsMap.get(key).clicked()"
-              trigger="click"
-              :disabled="numberOfSelectedRows === 0"
-          >
-            <n-button :disabled="numberOfSelectedRows === 0">
-              {{ t('actions') }}
-            </n-button>
-          </n-dropdown>
-
-          <CreateButton
-              v-if="!noActions"
-              class="mb-2 mr-2"
-              @click="exportCSV(true)"
-              :disabled="tableRef.totalRow === 0"
-              label="ScientificObjectList.export-all"
-          ></CreateButton>
-
-        </template>
         <template v-slot:cell(name)="{data}">
           <UriLink
               :uri="data.item.uri"
@@ -245,18 +293,17 @@
           ></DeleteButton>
         </template>
       </TableAsyncView>
-      <ModalForm
-          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
-          ref="documentForm"
-          component="opensilex-DocumentForm"
-          :createTitle="t('component.common.addDocument')"
-          modalSize="lg"
-          :initForm="initForm"
-          icon="ik#ik-file-text"
-      ></ModalForm>
-    </PageContent>
-  </div>
-
+    </n-layout-content>
+  </n-layout>
+  <ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      :createTitle="t('component.common.addDocument')"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-file-text"
+  ></ModalForm>
 </template>
 
 <script setup lang="ts">
@@ -290,7 +337,17 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
 import FilterField from "@/components/common/filters/FilterField.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-import {DropdownOption, NButton, NDropdown} from "naive-ui";
+import {
+  DropdownOption,
+  NButton,
+  NDropdown,
+  NSpace,
+  NLayout,
+  NLayoutSider,
+  NForm,
+  NFormItem,
+  NLayoutContent
+} from "naive-ui";
 
 //#region Public
 const props = withDefaults(defineProps<{
@@ -356,7 +413,7 @@ const actionDropdownOptions = computed<Array<DropdownOption>>(() => actionDropdo
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
-const {t} = useI18n();
+const {t, n} = useI18n();
 const route = useRoute();
 const service = opensilex.getService<GermplasmService>("opensilex.GermplasmService")
 const speciesService = opensilex.getService<SpeciesService>("opensilex.SpeciesService")
@@ -374,6 +431,15 @@ const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 const lang = computed(() => store.state.lang);
 const onlySelected = computed(() => tableRef.value.onlySelected);
+const selectedCount = computed(() => (tableRef.value?.getSelected() ?? []).length);
+const paginationInfo = computed(() => {
+  return tableRef.value?.getPaginationInfo() ?? {
+    start: 0,
+    end: 0,
+    total: 0,
+    hasResults: false
+  }
+});
 const fields = computed(() => {
   let tableFields = [
     {
@@ -538,7 +604,33 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
+// neutralisation des classes injectées par naive dans les <n-form-item> qui créent des espaces indésirés entre les champs
+:deep(.compact-form-item) {
+  --n-label-height: 0px !important;
+  --n-label-padding: 0 !important;
+}
 
+.listActionButtons {
+  position: relative;
+  display: flex;
+  gap: 0 !important;
+}
+
+.filtersNotCollapsed {
+  margin-left: 55px;
+}
+
+.filtersCollapsed {
+  margin-left: 415px;
+}
+
+.germplasm-layout {
+  background: transparent;
+}
+
+.germplasm-content {
+  padding-left: 12px;
+}
 </style>
 
 <i18n>
@@ -558,6 +650,7 @@ en:
   is_public: Visibility
   display: Display
   actions: Actions
+  export-all: Export all
   filter:
     description: Germplasm Search
     species: Species
@@ -600,6 +693,7 @@ fr:
   is_public: Visibilité
   display: Affichage
   actions: Actions
+  export-all: Tout exporter
   filter:
     description: Recherche de Ressources Génétiques
     species: Espèce

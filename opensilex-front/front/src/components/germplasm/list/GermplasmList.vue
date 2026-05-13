@@ -23,125 +23,107 @@
             <template v-slot:filters>
               <!-- Type -->
               <div>
-                <FilterField>
-                  <TypeForm
-                      v-model:type="filter.rdf_type"
-                      :baseType="opensilex.Oeso.GERMPLASM_TYPE_URI"
-                      :placeholder="t('filter.rdfType-placeholder')"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></TypeForm>
-                </FilterField>
+                <TypeForm
+                    v-model:type="filter.rdf_type"
+                    :baseType="opensilex.Oeso.GERMPLASM_TYPE_URI"
+                    :placeholder="t('filter.rdfType-placeholder')"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></TypeForm>
               </div>
 
               <!-- Species -->
               <div>
-                <FilterField>
-                  <FormSelector
-                      :label="t('filter.species')"
-                      :placeholder="t('filter.species-placeholder')"
-                      :multiple="false"
-                      v-model:selected="filter.species"
-                      :options="species"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></FormSelector>
-                </FilterField>
+                <FormSelector
+                    :label="t('filter.species')"
+                    :placeholder="t('filter.species-placeholder')"
+                    :multiple="false"
+                    v-model:selected="filter.species"
+                    :options="species"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></FormSelector>
               </div>
 
               <!-- Year -->
               <div>
-                <FilterField>
-                  <label>{{ t('filter.year') }}</label>
-                  <StringFilter
-                      v-model:filter="filter.production_year"
-                      :placeholder="t('filter.year-placeholder')"
-                      type="number"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></StringFilter>
-                </FilterField>
+                <label>{{ t('filter.year') }}</label>
+                <StringFilter
+                    v-model:filter="filter.production_year"
+                    :placeholder="t('filter.year-placeholder')"
+                    type="number"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></StringFilter>
                 <br>
               </div>
 
               <!-- Institute -->
               <div>
-                <FilterField>
-                  <label>{{ t('filter.institute') }}</label>
-                  <StringFilter
-                      v-model:filter="filter.institute"
-                      :placeholder="t('filter.institute-placeholder')"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></StringFilter>
-                </FilterField>
+                <label>{{ t('filter.institute') }}</label>
+                <StringFilter
+                    v-model:filter="filter.institute"
+                    :placeholder="t('filter.institute-placeholder')"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></StringFilter>
                 <br>
               </div>
 
               <!-- Name -->
               <div>
-                <FilterField>
-                  <label>{{ t('filter.label') }}</label>
-                  <StringFilter
-                      v-model:filter="filter.name"
-                      placeholder="t('filter.label-placeholder')"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></StringFilter>
-                </FilterField>
+                <label>{{ t('filter.label') }}</label>
+                <StringFilter
+                    v-model:filter="filter.name"
+                    :placeholder="t('filter.label-placeholder')"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></StringFilter>
                 <br>
               </div>
 
               <!-- Experiments -->
               <div v-if="!experimentUri">
-                <FilterField>
-                  <ExperimentSelector
-                      :label="t('filter.experiment')"
-                      v-model:experiments="filter.experiment"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                      :key="resetExperimentSelectorKey"
-                  ></ExperimentSelector>
-                </FilterField>
+                <ExperimentSelector
+                    :label="t('filter.experiment')"
+                    v-model:experiments="filter.experiment"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                    :key="resetExperimentSelectorKey"
+                ></ExperimentSelector>
               </div>
 
               <!-- Germplasm Parents filter -->
               <div>
-                <FilterField>
-                  <GermplasmSelector
-                      :label="t('filter.parents')"
-                      :multiple="true"
-                      v-model:germplasm="filter.parent_germplasms"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></GermplasmSelector>
-                </FilterField>
+                <GermplasmSelector
+                    :label="t('filter.parents')"
+                    :multiple="true"
+                    v-model:germplasm="filter.parent_germplasms"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></GermplasmSelector>
               </div>
 
               <!-- Germplasm Group -->
               <div>
-                <FilterField>
-                  <GermplasmGroupSelector
-                      :label="t('filter.germplasm-group')"
-                      :multiple="false"
-                      v-model:germplasmGroup="filter.germplasm_group"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></GermplasmGroupSelector>
-                </FilterField>
+                <GermplasmGroupSelector
+                    :label="t('filter.germplasm-group')"
+                    :multiple="false"
+                    v-model:germplasmGroup="filter.germplasm_group"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></GermplasmGroupSelector>
               </div>
 
               <!-- URI -->
               <div>
-                <FilterField>
-                  <label>{{ t('filter.uri') }}</label>
-                  <StringFilter
-                      v-model:filter="filter.uri"
-                      :placeholder="t('filter.uri-placeholder')"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></StringFilter>
-                </FilterField>
+                <label>{{ t('filter.uri') }}</label>
+                <StringFilter
+                    v-model:filter="filter.uri"
+                    :placeholder="t('filter.uri-placeholder')"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></StringFilter>
                 <br>
               </div>
             </template>
@@ -150,43 +132,37 @@
 
               <!-- Germplasm Attributes -->
               <div>
-                <FilterField>
-                  <GermplasmAttributesSelector
-                      v-model:germplasmAttribute="filter.metadataKey"
-                      :label="t('filter.metadataKey')"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></GermplasmAttributesSelector>
-                </FilterField>
+                <GermplasmAttributesSelector
+                    v-model:germplasmAttribute="filter.metadataKey"
+                    :label="t('filter.metadataKey')"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></GermplasmAttributesSelector>
               </div>
 
               <div>
-                <FilterField>
-                  <GermplasmAttributesValueSelector
-                      v-model:attributeKey="filter.metadataKey"
-                      v-model:attributeValue="filter.metadataValue"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                  ></GermplasmAttributesValueSelector>
-                </FilterField>
+                <GermplasmAttributesValueSelector
+                    v-model:attributeKey="filter.metadataKey"
+                    v-model:attributeValue="filter.metadataValue"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></GermplasmAttributesValueSelector>
               </div>
 
               <!-- Germplasm Visibility -->
               <div>
-                <FilterField :fullWidth="true">
-                  <FormSelector
-                      :label="t('filter.is_public')"
-                      :options="[
+                <FormSelector
+                    :label="t('filter.is_public')"
+                    :options="[
                         { id: true, label: t('filter.is_public_true') },
                         { id: false, label: t('filter.is_public_false') }
                       ]"
-                      v-model:selected="filter.is_public"
-                      :async="false"
-                      :multiple="false"
-                      :showCount="false"
-                      :placeholder="t('filter.is_public-placeholder')"
-                  />
-                </FilterField>
+                    v-model:selected="filter.is_public"
+                    :async="false"
+                    :multiple="false"
+                    :showCount="false"
+                    :placeholder="t('filter.is_public-placeholder')"
+                />
               </div>
             </template>
           </SearchFilterField>
@@ -217,10 +193,10 @@
             </n-button>
           </n-dropdown>
           <n-dropdown
-            :options="actionDropdownOptions"
-            @select="(key: string) => actionDropdownOptionsMap.get(key).clicked()"
-            trigger="click"
-            :disabled="numberOfSelectedRows === 0"
+              :options="actionDropdownOptions"
+              @select="(key: string) => actionDropdownOptionsMap.get(key).clicked()"
+              trigger="click"
+              :disabled="numberOfSelectedRows === 0"
           >
             <n-button :disabled="numberOfSelectedRows === 0">
               {{ t('actions') }}
@@ -255,19 +231,19 @@
         </template>
 
         <template v-slot:cell(actions)="{data}">
-            <EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
-                @click="$emit('onEdit', data.item.uri)"
-                :label="t('update')"
-                :small="true"
-            ></EditButton>
-            <DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
-                @click="deleteGermplasm(data.item.uri)"
-                :label="t('delete')"
-                :small="true"
-            ></DeleteButton>
-      </template>
+          <EditButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
+              @click="$emit('onEdit', data.item.uri)"
+              :label="t('update')"
+              :small="true"
+          ></EditButton>
+          <DeleteButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
+              @click="deleteGermplasm(data.item.uri)"
+              :label="t('delete')"
+              :small="true"
+          ></DeleteButton>
+        </template>
       </TableAsyncView>
       <ModalForm
           v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"

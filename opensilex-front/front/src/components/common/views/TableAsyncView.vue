@@ -595,7 +595,8 @@ defineExpose({
   setPage,
   checkSelectedItems,
   clickOnlySelected,
-  onlySelected
+  onlySelected,
+  totalRow
 });
 
 

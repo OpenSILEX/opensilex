@@ -3,7 +3,7 @@
 </script>
 
 <template>
-
+todo germplasm attributes selector
 </template>
 
 <style scoped lang="scss">

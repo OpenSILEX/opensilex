@@ -56,7 +56,7 @@ const props = defineProps({
   component: { type: [String, Object], required: true },
   icon: String,
   createTitle: { type: String, required: true },
-  editTitle: { type: String, required: true },
+  editTitle: String,
   tutorial: Boolean,
   editMode: Boolean,
   data: Object,

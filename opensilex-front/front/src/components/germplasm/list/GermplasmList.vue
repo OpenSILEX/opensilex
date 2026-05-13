@@ -67,7 +67,7 @@
       </div>
       <span> | </span>
       <span>
-        {{ t('DeviceList.selected') }} :
+        {{ t('selected') }} :
         <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
       </span>
     </div>
@@ -274,7 +274,7 @@
               icon="ik#ik-lock"
               class="text-secondary"
               style="font-size: 1.2em"
-              :title="$t('GermplasmList.filter.is_public_false')"
+              :title="$t('filter.is_public_false')"
           />
         </template>
 
@@ -307,7 +307,6 @@
 </template>
 
 <script setup lang="ts">
-import PageContent from "@/components/layout/PageContent.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
@@ -317,7 +316,6 @@ import GermplasmGroupSelector from "@/components/germplasm/selector/GermplasmGro
 import GermplasmAttributesSelector from "@/components/germplasm/selector/GermplasmAttributesSelector.vue";
 import GermplasmAttributesValueSelector from "@/components/germplasm/selector/GermplasmAttributesValueSelector.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
-import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
@@ -327,26 +325,24 @@ import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef, VNode
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
-import {useRoute, useRouter} from "vue-router";
+import {useRoute} from "vue-router";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
 import {GermplasmSearchFilter} from "opensilex-core/model/germplasmSearchFilter";
 import {OrderBy} from "opensilex-core/model/orderBy";
 import {SpeciesService} from "opensilex-core/api/species.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
-import FilterField from "@/components/common/filters/FilterField.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {
   DropdownOption,
   NButton,
   NDropdown,
-  NSpace,
-  NLayout,
-  NLayoutSider,
   NForm,
   NFormItem,
-  NLayoutContent
+  NLayout,
+  NLayoutContent,
+  NLayoutSider,
+  NSpace
 } from "naive-ui";
 
 //#region Public
@@ -444,28 +440,28 @@ const fields = computed(() => {
   let tableFields = [
     {
       key: "name",
-      label: "GermplasmList.name",
+      label: t("name"),
       sortable: true
     },
     {
       key: "rdf_type_name",
-      label: "GermplasmList.rdfType",
+      label: t("rdfType"),
       sortable: true
     },
     {
       key: "species_name",
-      label: "GermplasmList.speciesLabel"
+      label: t("speciesLabel")
     },
     {
       key: "germplasm_is_public",
-      label: "GermplasmList.is_public"
+      label: t("is_public")
     }
 
   ];
   if (!props.noActions) {
     tableFields.push({
       key: "actions",
-      label: "component.common.actions"
+      label: t("component.common.actions")
     });
   }
   return tableFields;
@@ -506,11 +502,6 @@ function updateSelectedGermplasm() {
   opensilex.updateFiltersFromURL(route.query, filter.value);
   tableRef.value.onlySelected = false;
   tableRef.value.refresh();
-}
-
-function reset() {
-  filter.value = initFilters();
-  resetExperimentSelectorKey.value += 1;
 }
 
 function loadSpecies() {

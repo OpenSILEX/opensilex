@@ -163,7 +163,6 @@
               <div>
                 <FilterField>
                   <GermplasmAttributesValueSelector
-                      ref="attributesValueSelector"
                       v-model:attributeKey="filter.metadataKey"
                       v-model:attributeValue="filter.metadataValue"
                       class="searchFilter"
@@ -256,7 +255,6 @@
         </template>
 
         <template v-slot:cell(actions)="{data}">
-          <b-button-group size="sm">
             <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
                 @click="$emit('onEdit', data.item.uri)"
@@ -269,14 +267,13 @@
                 :label="t('delete')"
                 :small="true"
             ></DeleteButton>
-          </b-button-group>
-        </template>
+      </template>
       </TableAsyncView>
       <ModalForm
           v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
           ref="documentForm"
           component="opensilex-DocumentForm"
-          createTitle="component.common.addDocument"
+          :createTitle="t('component.common.addDocument')"
           modalSize="lg"
           :initForm="initForm"
           icon="ik#ik-file-text"
@@ -303,7 +300,7 @@ import Icon from "@/components/common/views/Icon.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
-import {computed, h, inject, onBeforeUnmount, onMounted, ref, useTemplateRef, VNodeChild} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef, VNodeChild} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
@@ -317,7 +314,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
 import FilterField from "@/components/common/filters/FilterField.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-import {DropdownOption, NDropdown, NButton} from "naive-ui";
+import {DropdownOption, NButton, NDropdown} from "naive-ui";
 
 //#region Public
 const props = withDefaults(defineProps<{
@@ -385,13 +382,11 @@ const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const store = useStore();
 const {t} = useI18n();
 const route = useRoute();
-const router = useRouter();
 const service = opensilex.getService<GermplasmService>("opensilex.GermplasmService")
 const speciesService = opensilex.getService<SpeciesService>("opensilex.SpeciesService")
 
 const documentForm = useTemplateRef<InstanceType<typeof ModalForm>>("documentForm");
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>("tableRef");
-const attributesValueSelector = useTemplateRef<InstanceType<typeof GermplasmAttributesValueSelector>>("attributesValueSelector");
 
 const resetExperimentSelectorKey = ref(0);
 const species = ref<Array<{ id: string, label: string }>>([])

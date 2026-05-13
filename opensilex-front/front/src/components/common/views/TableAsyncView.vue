@@ -65,12 +65,12 @@
         :loading="isSearching"
         :pagination="pagination"
         :remote="true"
-        :row-key="row => row.uri"
+        :row-key="row => $opensilex.getLongUri(row.uri)"
         @row-click="onRowClickedSafe"
         :row-props="(row) => ({
           style: row.__isDetailsRow ? '' : 'cursor: pointer'
         })"
-        :checked-row-keys="checkedRowKeys"
+        v-model:checked-row-keys="checkedRowKeys"
         @update:checked-row-keys="onCheckedRowKeysChange"
         @update:page="onPageChange"
         @update:page-size="onPageSizeChange"
@@ -85,7 +85,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, inject, nextTick, useSlots} from "vue";
+import {ref, computed, watch, onMounted, inject, nextTick, useSlots, useTemplateRef} from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { OrderBy } from "opensilex-core/index";
@@ -93,7 +93,7 @@ import type { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type HttpResponse from "../../../lib/HttpResponse";
 import { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui';
+import {NButton, NTag, NDataTable, DataTableRowKey, NTable} from 'naive-ui';
 
 // Props
 const props = defineProps<{
@@ -119,7 +119,7 @@ const props = defineProps<{
 const route = useRoute();
 const { t, n } = useI18n();
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
-const tableRef = ref(); // lié avec ref="tableRef" dans le template
+const tableRef = useTemplateRef<InstanceType<typeof NDataTable>>("tableRef"); // lié avec ref="tableRef" dans le template
 
 // States
 const currentPage = ref(1);
@@ -137,7 +137,6 @@ const selectedItem = ref();
 const badgeHelpMessage = "component.common.search.badgeHelpMessage";
 const currentStartPath = ref("");
 const currentTabPath = ref("");
-const selectedRowIndex = ref<number | null>(null);
 const checkedRowKeys = ref<DataTableRowKey[]>([]);
 const selectedUriSet = ref<Set<string>>(new Set())
 const selectedCache = ref<Map<string, any>>(new Map()) // uri -> objet complet
@@ -240,7 +239,6 @@ function onRowClicked(item: NamedResourceDTO) {
     props.maximumSelectedRows &&
     numberOfSelectedRows.value > props.maximumSelectedRows
   ) {
-    selectedRowIndex.value = tableRef.value?.sortedItems.findIndex((it) => item === it) ?? null;
     selectedItem.value = item;
   }
 }
@@ -292,9 +290,9 @@ async function refresh() {
 }
 
 function onItemUnselected(item: any) {
-  const idx = tableRef.value?.sortedItems.findIndex(it => item.id === it.uri);
-  if (idx !== undefined && idx >= 0) {
-    tableRef.value?.unselectRow(idx);
+  const index = checkedRowKeys.value.findIndex(it => it === item.id);
+  if (index >= 0) {
+    checkedRowKeys.value.splice(index, 1);
   }
 
   const selectedIdx = selectedItems.value.findIndex(it => item.id === it.uri);
@@ -305,10 +303,10 @@ function onItemUnselected(item: any) {
 }
 
 function onItemSelected(item: any) {
-  const idx = tableRef.value?.sortedItems.findIndex(it => item.id === it.uri);
-  if (idx !== undefined && idx >= 0) {
-    tableRef.value?.selectRow(idx);
-    selectedItems.value.push(tableRef.value.sortedItems[idx]);
+  const index = checkedRowKeys.value.findIndex(it => it === item.id);
+  if (index < 0) {
+    checkedRowKeys.value.push(item.id);
+    selectedItem.value.push(tableData.value.find(it => it.uri === item.id));
     numberOfSelectedRows.value = selectedItems.value.length;
   }
 }
@@ -341,7 +339,7 @@ function getOrderBy(): string[] {
 function clickOnlySelected() {
   onlySelected.value = !onlySelected.value;
   currentPage.value = 1;
-  tableRef.value?.refresh();
+  refresh();
 }
 
 function toggleOnlySelected() {

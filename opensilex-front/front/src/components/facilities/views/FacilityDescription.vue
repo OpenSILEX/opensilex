@@ -5,35 +5,23 @@
     class="facilityDetailComponent"
     v-if="selected"
   >
-    <template v-slot:rightHeader v-if="withActions">
+    <template v-if="withActions" #rightHeader>
       <b-button-group>
         <opensilex-EditButton
-          v-if="
-                  user.hasCredential(
-                    credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
-                  )
-                "
+          v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
           @click="onClickEditButton()"
           label="FacilitiesView.update"
           :small="true"
         ></opensilex-EditButton>
         <opensilex-DeleteButton
-          v-if="
-                  user.hasCredential(
-                    credentials.CREDENTIAL_FACILITY_DELETE_ID
-                  )
-                "
+          v-if=" user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
           @click="onClickDeleteButton()"
           label="FacilitiesView.delete"
           :small="true"
         ></opensilex-DeleteButton>
       </b-button-group>
       <opensilex-FacilityModalForm
-        v-if="
-            user.hasCredential(
-              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
-            )
-          "
+        v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         ref="organizationFacilityForm"
         @onUpdate="emit('update')"
       ></opensilex-FacilityModalForm>
@@ -154,10 +142,13 @@ import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {useRouter} from "vue-router";
+import {useStore} from "vuex";
 
 //#region: Constants
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
-const $store = inject<any>('$store')!;
+const $store = useStore();
+const router = useRouter();
 //#endregion
 
 //#region: Props and Emits
@@ -259,14 +250,14 @@ const variableGroupUriList = computed(() => {
 
 //#region: Event handlers
 function onClickEditButton() {
-  organizationFacilityForm.value.showEditForm(props.selected.uri);
+  organizationFacilityForm.value?.showEditForm(props.selected.uri);
 }
 function onClickDeleteButton() {
   $opensilex
     .getService<OrganizationsService>("opensilex.OrganizationsService")
-    .deleteFacility(this.selected.uri)
+    .deleteFacility(props.selected.uri)
     .then(() => {
-      this.$router.push({
+      router.push({
         path: "/organizations",
       });
     })

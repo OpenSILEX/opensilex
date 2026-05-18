@@ -22,8 +22,7 @@
       </nav>
     </opensilex-PageActions>
 
-    <opensilex-PageContent>
-      <template v-slot>
+    <opensilex-PageContent v-slot>
 
         <opensilex-FacilityDetails
           v-if="currentTab === 'details'"
@@ -55,7 +54,7 @@
           :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
           :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
         ></opensilex-AnnotationList>
-      </template>
+
     </opensilex-PageContent>
   </div>
 </template>
@@ -88,41 +87,6 @@
   const positionsCountIsLoading = ref(true);
   const positions = ref<number | null>(null);
   //#endregion
-
-  const tabs = computed(() => {
-    if (!uri.value) return []
-
-    return [
-      {
-        key: 'details',
-        label: t('FacilityView.details'),
-        to: `/facility/details/${encodeURIComponent(uri.value)}`
-      },
-      {
-        key: 'overview',
-        label: t('FacilityView.overview'),
-        to: `/facility/overview/${encodeURIComponent(uri.value)}`
-      },
-      {
-        key: 'annotations',
-        label: t('component.annotation.list-title'),
-        to: `/facility/annotations/${encodeURIComponent(uri.value)}`
-      },
-      {
-        key: 'document',
-        label: t('FacilityView.document'),
-        to: `/facility/document/${encodeURIComponent(uri.value)}`
-      },
-      {
-        key: 'positions',
-        //TODO MAX when the correct component is present , move translation to global like for Annotations
-        label: t('Position.list-title'),
-        to: `/facility/positions/${encodeURIComponent(uri.value)}`
-      }
-    ]
-  })
-
-  const currentTab = computed(() => $route.params.tab);
 
   //#region: Component Refs
   const annotationList = ref<InstanceType<typeof AnnotationList> | null>(null);
@@ -170,6 +134,51 @@
   const credentials = computed(() => {
     return $store.state.credentials;
   });
+
+  const tabs = computed(() => {
+    if (!uri.value) return []
+
+    return [
+      {
+        key: 'details',
+        label: t('FacilityView.details'),
+        to: `/facility/details/${encodeURIComponent(uri.value)}`
+      },
+      {
+        key: 'overview',
+        label: t('FacilityView.overview'),
+        to: `/facility/overview/${encodeURIComponent(uri.value)}`
+      },
+      {
+        key: 'annotations',
+        label: t('component.annotation.list-title'),
+        to: `/facility/annotations/${encodeURIComponent(uri.value)}`
+      },
+      {
+        key: 'document',
+        label: t('FacilityView.document'),
+        to: `/facility/document/${encodeURIComponent(uri.value)}`
+      },
+      {
+        key: 'positions',
+        //TODO MAX when the correct component is present , move translation to global like for Annotations
+        label: t('Position.list-title'),
+        to: `/facility/positions/${encodeURIComponent(uri.value)}`
+      }
+    ]
+  });
+
+  const currentTab = computed(() => {
+    const path = $route.path
+
+    if (path.includes('/details/')) return 'details'
+    if (path.includes('/overview/')) return 'overview'
+    if (path.includes('/annotations/')) return 'annotations'
+    if (path.includes('/document/')) return 'document'
+    if (path.includes('/positions/')) return 'positions'
+
+    return null
+  })
   //#endregion
 
 </script>

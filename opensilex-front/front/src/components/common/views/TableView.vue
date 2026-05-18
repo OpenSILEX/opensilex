@@ -9,7 +9,7 @@
       <div v-if="globalFilterField" class="mb-3">
         <opensilex-StringFilter
           v-model:filter="filter"
-          :placeholder="$t(filterPlaceholder)"
+          :placeholder="t(filterPlaceholder)"
           :debounce="300"
           :lazy="false"
         />
@@ -265,3 +265,16 @@ watch(filter, () => {
   justify-content: flex-end;
 }
 </style>
+
+<i18n>
+en:
+  TableView:
+    filter:
+      placeholder: Search in this table
+
+fr:
+  TableView:
+    filter:
+      placeholder: Rechercher dans ce tableau
+</i18n>
+

@@ -105,6 +105,7 @@ import {DeviceCreationDTO, DevicesService} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import AttributesTable from "../../common/forms/AttributesTable.vue";
+import DC from "../../../ontologies/DC";
 
 @Component
 export default class DeviceForm extends Vue {
@@ -141,6 +142,9 @@ export default class DeviceForm extends Vue {
             this.$opensilex.Oeso.PERSON_IN_CHARGE,
             this.$opensilex.Oeso.START_UP,
             this.$opensilex.Oeso.REMOVAL,
+            DC.PUBLISHER,
+            DC.MODIFIED,
+            DC.ISSUED
         ]);
 
     }

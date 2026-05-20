@@ -89,12 +89,11 @@
     ></opensilex-InputForm>
 
     <!-- public germplasm -->
-    <opensilex-FormSelector
-      :options="isPublicOptions"
-      :selected.sync="form.is_public"
-      :required="true"
-      label="GermplasmForm.isPublic_label"
-    ></opensilex-FormSelector>    
+    <opensilex-CheckboxForm
+      :value.sync="form.is_public"
+      title="GermplasmForm.is-public-title"
+      label="GermplasmForm.is-public-label"
+    ></opensilex-CheckboxForm>
 
     <!-- institute -->
     <opensilex-InputForm
@@ -196,16 +195,6 @@ export default class GermplasmForm extends Vue {
   uriGenerated = true;
 
   attributesArray = [];
-  isPublicOptions = [
-    {
-      id: true, 
-      label: this.$i18n.t("GermplasmForm.isPublic")
-    },
-    {
-      id: false, 
-      label: this.$i18n.t("GermplasmForm.isPrivate")
-    },
-  ];
 
   @Prop()
   editMode: boolean;
@@ -223,7 +212,7 @@ export default class GermplasmForm extends Vue {
         institute: null,
         production_year: null,
         description: null,
-        is_public: null,
+        is_public: true,
         groups: [],
         synonyms:[],
         relations:[],
@@ -249,7 +238,7 @@ export default class GermplasmForm extends Vue {
       institute: null,
       production_year: null,
       description: null,
-      is_public: null,
+      is_public: true,
       groups: [],
       synonyms:[],
       relations:[],
@@ -358,7 +347,8 @@ en:
     groups: Groups
     isPublic: Public
     isPrivate: Private
-    isPublic_label: Define status
+    is-public-title: Visibility
+    is-public-label: Check to make this germplasm publicly available
 
 
 fr:
@@ -392,7 +382,7 @@ fr:
     groups: Groupes
     isPublic: Public
     isPrivate: Privé
-    isPublic_label: Définir le statut
-
+    is-public-title: Visibilité
+    is-public-label: Cocher pour rendre cette ressource visible publiquement
 </i18n>
 

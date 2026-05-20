@@ -78,9 +78,9 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             logger.info("Migration successfully completed");
         }catch(Exception e){
             try {
-                logger.error("Error while migrating too 1.5. No changes were saved on the databases", e);
+                logger.error("Error while migrating to 1.5. No changes were saved on the databases", e);
             } catch (Exception exception) {
-                throw new OpensilexModuleUpdateException("Error while migrating too 1.5. No changes were saved on the databases", exception);
+                throw new OpensilexModuleUpdateException("Error while migrating to 1.5. No changes were saved on the databases", exception);
             }
         }
 

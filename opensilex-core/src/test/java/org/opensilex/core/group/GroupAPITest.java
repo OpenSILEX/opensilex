@@ -32,27 +32,40 @@ import static org.junit.Assert.assertNotNull;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
-    public String path = "/security/groups";
-    public ServiceDescription create = new ServiceDescription(
-            GroupAPI.class.getMethod("createGroup", GroupCreationDTO.class),
-            path
-    );
-    public ServiceDescription update = new ServiceDescription(
-            GroupAPI.class.getMethod("updateGroup", GroupUpdateDTO.class),
-            path
-    );
-    public ServiceDescription get = new ServiceDescription(
-            GroupAPI.class.getMethod("getGroup", URI.class),
-            path + "/{uri}"
-    );
-    public ServiceDescription delete = new ServiceDescription(
-            GroupAPI.class.getMethod("deleteGroup", URI.class),
-            path + "/{uri}"
-    );
-    public ServiceDescription search = new ServiceDescription(
-            GroupAPI.class.getMethod("searchGroups", String.class, List.class, int.class, int.class),
-            path
-    );
+    public static String path = "/security/groups";
+
+    public static ServiceDescription create;
+    public static ServiceDescription update;
+    public static ServiceDescription get;
+    public static ServiceDescription delete;
+    public static ServiceDescription search;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    GroupAPI.class.getMethod("createGroup", GroupCreationDTO.class),
+                    path
+            );
+            update = new ServiceDescription(
+                    GroupAPI.class.getMethod("updateGroup", GroupUpdateDTO.class),
+                    path
+            );
+            get = new ServiceDescription(
+                    GroupAPI.class.getMethod("getGroup", URI.class),
+                    path + "/{uri}"
+            );
+            search = new ServiceDescription(
+                    GroupAPI.class.getMethod("searchGroups", String.class, List.class, int.class, int.class),
+                    path
+            );
+            delete = new ServiceDescription(
+                    GroupAPI.class.getMethod("deleteGroup", URI.class),
+                    path + "/{uri}"
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private final static String USER1_URI = "http://example.org/users/user1";
     private final static String USER2_URI = "http://example.org/users/user2";

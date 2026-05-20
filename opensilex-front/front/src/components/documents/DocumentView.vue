@@ -37,15 +37,11 @@ const credentials = computed(() => store.state.credentials)
 <i18n>
 en:
   DocumentView:
-    title: Document
-    description: Manage Document
     add: Add document
     update: Update Document
     delete: Delete DOcument
 fr:
   DocumentView:
-    title: Document
-    description: Gestion des documents
     add: Ajouter un document
     update: Editer un document
     delete: Supprimer un document

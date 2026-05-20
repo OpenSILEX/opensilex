@@ -162,7 +162,7 @@
         createTitle="component.common.addDocument"
         modalSize="lg"
         :initForm="initForm"
-        icon="ik#ik-file-text"
+        icon="bi#bi-file-text"
       />
     </n-layout-content>
   </n-layout>

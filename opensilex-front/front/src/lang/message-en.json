@@ -287,6 +287,10 @@
             "namespaces": "Namespaces",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
+            "document": {
+                "label" :"Document",
+                "description": "Manage Document" 
+            },
             "events" : "Events",
             "vocabulary" : "Vocabulary",
             "about" : {

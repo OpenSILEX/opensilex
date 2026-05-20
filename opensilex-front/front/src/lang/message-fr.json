@@ -289,6 +289,10 @@
             "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Appareils",
+            "document": {
+                "label" :"Document",
+                "description": "Gestion des documents" 
+            },
             "events" : "Évènements",
             "vocabulary" : "Vocabulaire",
             "about" : {

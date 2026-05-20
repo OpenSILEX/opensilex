@@ -15,12 +15,11 @@ import com.apicatalog.jsonld.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.rdf4j.query.algebra.Move;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
-import org.opensilex.core.event.dal.move.*;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.MoveSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
@@ -42,11 +41,11 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -655,7 +654,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * In order to keep deprecated properties without relying on them, we need to convert old 'from', 'to' and 'targets_positions' to new property location
      * DTOs with a location will be ignored, no changes will be applied on them.
      * DTOs with multiple targets_positions will be split in many MoveCreationDTOs
-     * this method exists to beceause moveDTO contain deprecated properties for retro compatibility to version 1.4.x purpose
+     * This method exists because MoveDTO's contain deprecated properties, it allows for retro compatability with version 1.4.x
      */
     public void fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(List<MoveCreationDTO> dtos) {
         // move with multiple targets_positions will be splited in new moves that we will append to the dtos list

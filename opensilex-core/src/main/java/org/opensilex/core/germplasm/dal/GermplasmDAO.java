@@ -41,14 +41,14 @@ public class GermplasmDAO {
     protected final SPARQLService sparql;
     protected final MongoDBServiceV2 nosql;
     private final GermplasmSparqlDAO sparqlDAO;
-    private final MetaDataDaoV2 metaDataDao;
+    private final GermplasmMetadataDAO metaDataDao;
     public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttribute";
 
     public GermplasmDAO(SPARQLService sparql, MongoDBServiceV2 nosql) {
         this.sparql = sparql;
         this.nosql = nosql;
         this.sparqlDAO = new GermplasmSparqlDAO(sparql);
-        this.metaDataDao = new MetaDataDaoV2(nosql, ATTRIBUTES_COLLECTION_NAME);
+        this.metaDataDao = new GermplasmMetadataDAO(nosql, ATTRIBUTES_COLLECTION_NAME);
 
         MongoCollection<MetaDataModel> collection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
         collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
@@ -60,8 +60,8 @@ public class GermplasmDAO {
 
     public GermplasmModel update(GermplasmModel model, AccountModel user) throws Exception {
         //sparqlDAO.validateGermplasmAccess(model.getUri(), user);
-        MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
-        MetaDataModel attributeModel = model.getMetadata();
+        var storedAttributes = getStoredAttributes(model.getUri());
+        var attributeModel = model.getMetadata();
 
         if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
             sparqlDAO.update(model,user);
@@ -169,7 +169,7 @@ public class GermplasmDAO {
         //sparqlDAO.validateGermplasmAccess(uri, user);
         GermplasmModel germplasm = sparqlDAO.get(uri, user, withNested);
         if (germplasm != null) {
-            MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
+            var storedAttributes = getStoredAttributes(germplasm.getUri());
             if (storedAttributes != null) {
                 germplasm.setMetadata(storedAttributes);
             }
@@ -290,8 +290,8 @@ public class GermplasmDAO {
 
     }
 
-    private MetaDataModel getStoredAttributes(URI uri) {
-        MetaDataModel storedAttributes = null;
+    private GermplasmMetadataModel getStoredAttributes(URI uri) {
+        GermplasmMetadataModel storedAttributes = null;
         try {
             storedAttributes = metaDataDao.get(uri);
         } catch (NoSQLInvalidURIException ignored) {

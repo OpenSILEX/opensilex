@@ -58,6 +58,7 @@ import { PropertiesByDomainDTO } from 'opensilex-core/index';
 import Rdfs from "../../../ontologies/Rdfs";
 import { createUriListFromGetPropertiesResult, sortProperties } from '../OntologyTools';
 import VueI18n from "vue-i18n";
+import DC from "../../../ontologies/DC";
 
 interface GetTypesPromisesReturnType{
   uri: string,
@@ -123,6 +124,7 @@ export default class OntologyCsvTemplateGenerator extends Vue {
     separator = ",";
     types: any[] = [];
     dataTypesToExampleTranslateKey: Map<string, string>
+    propertiesToIgnore: Set<string>
 
     @Ref("validatorRefTemplate") readonly validatorRefTemplate!: any;
     @Ref("soModalRef") readonly soModalRef!: any;
@@ -136,6 +138,12 @@ export default class OntologyCsvTemplateGenerator extends Vue {
         this.dataTypesToExampleTranslateKey.set("xsd:date", "date");
         this.dataTypesToExampleTranslateKey.set("xsd:datetime", "datetime");
         this.dataTypesToExampleTranslateKey.set("xsd:boolean", "boolean");
+
+        this.propertiesToIgnore = new Set([
+            this.$opensilex.getShortUri(DC.ISSUED),
+            this.$opensilex.getShortUri(DC.MODIFIED),
+            this.$opensilex.getShortUri(DC.PUBLISHER),
+        ]);
     }
 
     get user() {
@@ -238,11 +246,15 @@ export default class OntologyCsvTemplateGenerator extends Vue {
                     }
                     for (let property of http.response.result.data_properties) {
                         let propURI = property.uri;
-                        result.dataProperties.set(propURI, property);
+                        if (!this.propertiesToIgnore.has(this.$opensilex.getShortUri(propURI))) {
+                          result.dataProperties.set(propURI, property);
+                        }
                     }
                     for (let property of http.response.result.object_properties) {
                         let propURI = property.uri;
-                        result.objectProperties.set(propURI, property);
+                        if (!this.propertiesToIgnore.has(this.$opensilex.getShortUri(propURI))) {
+                           result.objectProperties.set(propURI, property);
+                        }
                     }
 
                     return result;

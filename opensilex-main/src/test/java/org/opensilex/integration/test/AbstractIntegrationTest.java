@@ -577,15 +577,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          *
          * <ul>
          *     <li>Sets the body to the given object</li>
-         *     <li>Sets the media type to {@code MediaType.MULTIPART_FORM_DATA_TYPE}</li>
-         *     <li>Adds {@code MultiPartFeature.class} as a target component</li>
+         *     <li>Sets the media type to {@link MediaType#MULTIPART_FORM_DATA_TYPE}</li>
+         *     <li>Adds {@link MultiPartFeature} as a target component</li>
          * </ul>
          */
         public T setMultipartBody(Object body) {
-            this.body = body;
-            this.callMediaType = MediaType.MULTIPART_FORM_DATA_TYPE;
-            this.addTargetComponent(MultiPartFeature.class);
-            return self();
+            return setBody(body)
+                    .setCallMediaType(MediaType.MULTIPART_FORM_DATA_TYPE)
+                    .addTargetComponent(MultiPartFeature.class);
         }
 
         public T setPathTemplateParams(Map<String, Object> pathTemplateParams) {
@@ -618,11 +617,25 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return self();
         }
 
+        /**
+         * Register component classes using {@link WebTarget#register(Class)}. This is necessary for certain features,
+         * such as Multipart form requests. See {@link #setMultipartBody(Object)}
+         *
+         * @see #setMultipartBody(Object)
+         * @param targetComponents The list of target components to register
+         */
         public T setTargetComponents(List<Class<?>> targetComponents) {
             this.targetComponents = targetComponents;
             return self();
         }
 
+        /**
+         * Add a component class to be registered using {@link WebTarget#register(Class)}. This is necessary for certain
+         * features, such as Multipart form requests.
+         *
+         * @see #setMultipartBody(Object)
+         * @param targetComponent The target component to register
+         */
         public T addTargetComponent(Class<?> targetComponent) {
             this.targetComponents.add(targetComponent);
             return self();

@@ -94,9 +94,12 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
         SELECT  ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name (GROUP_CONCAT(DISTINCT ?experiment_uri ; separator=',') AS ?experiment_uri__opensilex__concat)
         WHERE
-          { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
-              { ?uri  rdf:type ?type
-                FILTER (?type IN (vocabulary:Variety, vocabulary:Accession))
+          { GRAPH <{base_uri}/set/germplasm>
+              { ?uri  rdf:type             ?type ;
+                      vocabulary:isPublic  true
+                FILTER ( ?type IN (vocabulary:Accession, vocabulary:Variety) )
+                GRAPH ?experiment_uri
+                  { ?so  vocabulary:hasGermplasm  ?uri}
                 OPTIONAL
                   { ?uri  foaf:homepage  ?website}
                 OPTIONAL
@@ -109,10 +112,7 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                   { ?uri      vocabulary:fromVariety  ?variety .
                     ?variety  rdfs:label            ?variety_name}
                 OPTIONAL
-                  { GRAPH ?experiment_uri
-                      { ?so  vocabulary:hasGermplasm  ?uri}}
-                OPTIONAL
-                  { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
+                  { GRAPH <http://opensilex.dev/set/germplasm>
                       { ?uri  rdfs:label  ?label}}
               }}
         GROUP BY ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name

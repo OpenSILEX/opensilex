@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.geojson.Feature;
+import org.geojson.GeoJsonObject;
+import org.geojson.Point;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +15,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveDetailsDTO;
 import org.opensilex.core.event.api.move.MoveGetDTO;
+import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationModel;
@@ -36,6 +40,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.*;
 
 public class MoveEventApiTest extends AbstractMongoIntegrationTest {
@@ -66,6 +71,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     private final static int nbMoveMax = 10;
 
     private static final ServiceDescription create;
+    private static final ServiceDescription update;
     private static final ServiceDescription getByUriList;
 
     static {
@@ -73,6 +79,10 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
             create = new ServiceDescription(
                     EventAPI.class.getMethod("createMoves", List.class),
                     path
+            );
+            update = new ServiceDescription(
+                    EventAPI.class.getMethod("updateMoveEvent", MoveUpdateDTO.class),
+                    updatePath
             );
             getByUriList = new ServiceDescription(
                     EventAPI.class.getMethod("getMoveEventByUris", List.class),
@@ -515,6 +525,148 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(newEventCreationDto.getLocation(),history.get(0).getLocation(),newerMoveEventUri);
         testEquals(creationDTO.getLocation(), history.get(1).getLocation(),moveEventUri);
     }
+
+    //#region retro compatibility to OpenSILEX 1.4
+
+    /**
+     * @return a MoveCreationDTO without location, but with deprecated fields (from, to, targets_positions)
+     */
+    private MoveCreationDTO getMoveDTOFilledAsIn1dot4(){
+        MoveCreationDTO dto = new MoveCreationDTO();
+        dto.setDescription("A test event");
+        dto.setIsInstant(false);
+        OffsetDateTime now = OffsetDateTime.now();
+        dto.setStart(now.toString());
+        dto.setEnd(now.plusMinutes(2).toString());
+
+        dto.setTargets(Arrays.asList(scientificObjectA.getUri()));
+
+        dto.setFrom(facilityA.getUri());
+        dto.setTo(facilityB.getUri());
+
+        TargetPositionCreationDTO targetPositionDTO = new TargetPositionCreationDTO();
+        PositionCreationDTO positionDTO = new PositionCreationDTO();
+        targetPositionDTO.setPosition(positionDTO);
+        dto.setTargetsPositions(new ArrayList<>(List.of(targetPositionDTO)));
+
+        positionDTO.setX("72");
+        positionDTO.setY("500");
+        positionDTO.setZ("400");
+        positionDTO.setDescription("textual position");
+        positionDTO.setPoint(new Point(1, 1));
+
+        return dto;
+    }
+
+
+    /**
+     * check that for a move created with 3 targets_positions we create 3 different moves with right fields
+     * also check that deprecated properties are well retrieved in the location property
+     */
+    @Test
+    public void ImportWithManyTargetsPositionCreateManyMovesRetroCompatibility() throws Exception {
+        MoveCreationDTO moveDTO = getMoveDTOFilledAsIn1dot4();
+
+        moveDTO.getTargetsPositions().get(0).getPosition().setDescription(null);
+
+        for (int i = 0; i < 2; i++) {
+            TargetPositionCreationDTO targetPositionDTO = new TargetPositionCreationDTO();
+            PositionCreationDTO positionDTO = new PositionCreationDTO();
+            targetPositionDTO.setPosition(positionDTO);
+            positionDTO.setPoint(new Point(5, 10));
+            positionDTO.setDescription("textual position");
+            moveDTO.getTargetsPositions().add(targetPositionDTO);
+        }
+
+        moveDTO.getTargetsPositions().get(1).setTarget(scientificObjectB.getUri());
+        moveDTO.getTargetsPositions().get(2).setTarget(scientificObjectC.getUri());
+
+        var uriList = new UserCallBuilder(create)
+                .setBody(List.of(moveDTO))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<URI>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        assertEquals("3 different move should have been created as the move has 3 target_positions", 3, uriList.size());
+
+        var resultModels = new UserCallBuilder(getByUriList)
+                .addParam("uris", uriList)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveDetailsDTO>>() {})
+                .getDeserializedResponse();
+
+        var firstMove = resultModels.getResult().stream().filter(m -> SPARQLDeserializers.compareURIs(m.getUri(), uriList.get(0))).findFirst().orElseThrow();
+        assertEquals("target_position.position.x should now be on location.x", "72", firstMove.getLocation().getX());
+        assertEquals("target_position.position.y should now be on location.y", "500", firstMove.getLocation().getY());
+        assertEquals("target_position.position.z should now be on location.z", "400", firstMove.getLocation().getZ());
+        assertNull("target_position.position.description should now be on location.description", firstMove.getLocation().getTextualPosition());
+        Feature firstMoveGeojson = (Feature) firstMove.getLocation().getGeojson();
+        assertEquals("target_position.position.point should now be on location.geojson", new Point(1, 1), firstMoveGeojson.getGeometry());
+
+        var otherMoves = resultModels.getResult().stream().filter(m -> !SPARQLDeserializers.compareURIs(m.getUri(), uriList.get(0))).toList();
+        for (MoveDetailsDTO move : otherMoves) {
+            assertNull("other moves was created without x position", move.getLocation().getX());
+            assertNull("other moves was created without y position", move.getLocation().getY());
+            assertNull("other moves was created without z position", move.getLocation().getZ());
+            assertEquals("target_position.position.description should now be on location.description", "textual position", move.getLocation().getTextualPosition());
+            Feature otherMoveGeojson = (Feature) move.getLocation().getGeojson();
+            assertEquals("other moves created from the same moveDTO should have the same position information", new Point(5, 10), otherMoveGeojson.getGeometry());
+        }
+
+    }
+
+    @Test
+    public void updateMoveWithDeprecatedPropertiesReturnError() {
+        MoveCreationDTO moveDTO = getMoveDTOFilledAsIn1dot4();
+        new UserCallBuilder(update)
+                .setBody(List.of(moveDTO))
+                .buildAdmin()
+                .executeCallAndAssertStatus("move with some deprecated properties should return a bad request error", Response.Status.BAD_REQUEST);
+
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void createWithLocationIgnoreDeprecatedProperties() throws Exception {
+        URI moveURI = URI.create("http://my/move/without/deprecated/infos");
+        LocationModel locationModel = new LocationModel();
+        locationModel.setFrom(facilityB.getUri());
+        locationModel.setTo(facilityC.getUri());
+
+        LocationObservationModel locationObservationModel = new LocationObservationModel();
+        locationObservationModel.setHasGeometry(true);
+        locationObservationModel.setLocation(locationModel);
+        locationModel.setX("800");
+        locationModel.setY("800");
+        locationModel.setZ("800");
+
+        MoveCreationDTO moveDTO = getMoveDTOFilledAsIn1dot4();
+        moveDTO.setLocation(LocationObservationDTO.getDTOFromModel(locationObservationModel));
+        moveDTO.setUri(moveURI);
+
+        new UserCallBuilder(create)
+                .setBody(List.of(moveDTO))
+                .buildAdmin()
+                .executeCallAndAssertStatus("move creation with location should ignore deprecated properties and be created successfully", Response.Status.CREATED);
+
+        MoveGetDTO returnedMove = new UserCallBuilder(getByUriList)
+                .addParam("uris", List.of(moveURI))
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult()
+                .get(0);
+        assertEquals("move should save the 'X' property from location and not from deprecated property", "800", returnedMove.getLocation().getX());
+        assertEquals("move should save the 'Y' property from location and not from deprecated property", "800", returnedMove.getLocation().getY());
+        assertEquals("move should save the 'Z' property from location and not from deprecated property", "800", returnedMove.getLocation().getZ());
+        assertTrue("move should save the 'from' property from location and not from deprecated property", SPARQLDeserializers.compareURIs(facilityB.getUri(), returnedMove.getLocation().getFrom()));
+        assertTrue("move should save the 'to' property from location and not from deprecated property", SPARQLDeserializers.compareURIs(facilityC.getUri(), returnedMove.getLocation().getTo()));
+        assertEquals("move should save the 'textualPosition' property from location and not from deprecated property", null, returnedMove.getLocation().getTextualPosition());
+    }
+    //#endregion
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

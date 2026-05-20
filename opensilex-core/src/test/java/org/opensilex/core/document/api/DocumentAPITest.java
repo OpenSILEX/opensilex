@@ -70,8 +70,9 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
     protected static String getFilePath = path + "/{uri}";
     protected static String deletePath = path + "/{uri}";
 
-    private static final ServiceDescription getByUri;
-    private static final ServiceDescription create;
+    public static final ServiceDescription getByUri;
+    public static final ServiceDescription create;
+    public static final ServiceDescription search;
 
     static {
         try {
@@ -81,6 +82,10 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
             );
             create = new ServiceDescription(
                     DocumentAPI.class.getMethod("createDocument", DocumentCreationDTO.class, File.class, FormDataContentDisposition.class),
+                    path
+            );
+            search = new ServiceDescription(
+                    DocumentAPI.class.getMethod("searchDocuments", URI.class, String.class, String.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
                     path
             );
         } catch (NoSuchMethodException e) {

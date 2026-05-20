@@ -601,6 +601,7 @@ public class GermplasmAPI {
     public Response exportGermplasm(
             @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
+        searchFilter.setUser(currentUser);
         List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
                 .search(searchFilter,false,false).getList();
 

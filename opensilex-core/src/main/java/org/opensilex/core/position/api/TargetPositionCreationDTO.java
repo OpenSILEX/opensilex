@@ -11,6 +11,10 @@ import java.net.URI;
 
 @ApiModel
 @Valid
+@Deprecated
+/**
+ * this is a deprecated property of MoveDTO. It allows for retro compatability with version 1.4.x
+ */
 public class TargetPositionCreationDTO {
 
     @JsonProperty("target")

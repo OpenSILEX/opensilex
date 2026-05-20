@@ -67,7 +67,6 @@ public class OrganizationModel extends SPARQLDagModel<OrganizationModel> {
     @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasGroup",
-            cascadeDelete = true,
             ignoreUpdateIfNull = true
     )
     private List<GroupModel> groups;

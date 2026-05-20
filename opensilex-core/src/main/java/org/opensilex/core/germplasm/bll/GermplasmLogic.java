@@ -489,7 +489,6 @@ public class GermplasmLogic {
             List<OrderBy> orderByList,
             Integer page,
             Integer pageSize) throws Exception {
-
         return dao.getExpFromGermplasm(currentUser, uri, name, orderByList, page, pageSize);
 
     }

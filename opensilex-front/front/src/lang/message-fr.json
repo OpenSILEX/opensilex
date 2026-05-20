@@ -200,7 +200,10 @@
                 "description": "Gérer et configurer les organisations",
                 "site": "Site",
                 "sites": "Sites"
-            }
+            },
+            "title": "Titre",
+            "date": "Date",
+            "authors": "Auteurs"
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -283,6 +286,10 @@
             "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Appareils",
+            "document": {
+                "label" :"Document",
+                "description": "Gestion des documents" 
+            },
             "events" : "Évènements",
             "vocabulary" : "Vocabulaire",
             "about" : {

@@ -156,8 +156,8 @@ menu:
           credentials:
             - document-access
           icon: bi#bi-file-text
-          title: DocumentView.title
-          description: DocumentView.description
+          title: component.menu.document.label
+          description: component.menu.document.description
   - id: spatial
     label: component.menu.spatial.label
     children:

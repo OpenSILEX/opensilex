@@ -199,7 +199,10 @@
                 "description": "Manage and configure organizations",
                 "site": "Site",
                 "sites": "Sites"
-            }
+            },
+            "title": "Title",
+            "date": "Date",
+            "authors": "Authors"
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -281,6 +284,10 @@
             "namespaces": "Namespaces",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
+            "document": {
+                "label" :"Document",
+                "description": "Manage Document" 
+            },
             "events" : "Events",
             "vocabulary" : "Vocabulary",
             "about" : {

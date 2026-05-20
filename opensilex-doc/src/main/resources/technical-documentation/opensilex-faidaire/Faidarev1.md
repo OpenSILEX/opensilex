@@ -213,7 +213,7 @@ This service should return a list of the available services as well as their dat
 
 Only germplasms that are in an experiment the user has access to, and that are declared public (isPublic = true) will be returned.
 
-__Note : only accessions are considered germplasms for BrAPI. However the service will return variety and germplasms__
+__Note : only accessions are considered germplasms for BrAPI. However the service will return variety and accessions__
 
 This is why an error is returned when this notion doesn't exist :
 

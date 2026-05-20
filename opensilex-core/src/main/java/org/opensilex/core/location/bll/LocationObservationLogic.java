@@ -625,7 +625,7 @@ public class LocationObservationLogic {
     private Exception notAllowedException(LocationObservationModel model) {
         StringBuilder message = new StringBuilder();
         message.append(model.getObservationCollection().toString())
-                .append(" can't be at 2 different locations in the same time (")
+                .append(" can't be at 2 different locations at the same time (")
                 .append(model.getEndDate().toString())
                 .append(")");
 

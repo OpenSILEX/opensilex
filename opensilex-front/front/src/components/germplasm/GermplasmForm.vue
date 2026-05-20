@@ -345,10 +345,8 @@ en:
     website: Web site
     website-help: the web page of the institute or the germplasm
     groups: Groups
-    isPublic: Public
-    isPrivate: Private
-    is-public-title: Visibility
-    is-public-label: Check to make this germplasm publicly available
+    is-public-title: Check to make this germplasm publicly available
+    is-public-label: Public
 
 
 fr:
@@ -380,9 +378,7 @@ fr:
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
     groups: Groupes
-    isPublic: Public
-    isPrivate: Privé
-    is-public-title: Visibilité
-    is-public-label: Cocher pour rendre cette ressource visible publiquement
+    is-public-title: Cocher pour rendre cette ressource visible publiquement
+    is-public-label: Publique
 </i18n>
 

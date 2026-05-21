@@ -346,16 +346,7 @@ public class GermplasmDAO {
                 .map(GermplasmModel::getUri)
                 .map(SPARQLDeserializers::formatURI)
                 .collect(Collectors.toUnmodifiableSet());
-        return SetUtils.difference(new HashSet<>(uris),  allowedUris);
-    }
-
-    /**
-     * Checks if the user has access to a specific germplasm. This is a shorthand for calling {@link #getUnauthorizedGermplasms(Collection, AccountModel)}
-     * and checking if the list is empty.
-     *
-     * @see #getUnauthorizedGermplasms(Collection, AccountModel)
-     */
-    public boolean hasAccess(URI uri, AccountModel account) throws Exception {
-        return getUnauthorizedGermplasms(Set.of(uri), account).isEmpty();
+        var initialUriSet = uris.stream().map(SPARQLDeserializers::formatURI).collect(Collectors.toSet());
+        return SetUtils.difference(initialUriSet, allowedUris);
     }
 }

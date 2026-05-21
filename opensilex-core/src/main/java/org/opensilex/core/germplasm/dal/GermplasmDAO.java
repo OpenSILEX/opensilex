@@ -19,12 +19,12 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -70,7 +70,8 @@ public class GermplasmDAO {
                 sparqlDAO.update(model, user);
 
                 if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
-                    attributeModel.setUri(model.getUri());
+                    var modelWithPublisher = sparql.getByURI(GermplasmModel.class, model.getUri(), null);
+                    updateMetadataFromGermplasm(attributeModel, modelWithPublisher);
                     metaDataDao.upsert(session, attributeModel);
                 } else {
                     metaDataDao.delete(session, model.getUri());
@@ -107,7 +108,8 @@ public class GermplasmDAO {
                 return;
             }
             if (metadata != null && !MapUtils.isEmpty(metadata.getAttributes())) {
-                model.getMetadata().setUri(model.getUri());
+                var modelWithPublisher = sparql.getByURI(GermplasmModel.class, model.getUri(), null);
+                updateMetadataFromGermplasm(model.getMetadata(), modelWithPublisher);
                 metaDataDao.upsert(session, model.getMetadata());
             } else {
                 metaDataDao.delete(session, model.getUri());
@@ -119,9 +121,7 @@ public class GermplasmDAO {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
             sparqlDAO.create(model);
             if(model.getMetadata() != null){
-                //Set the metaDataModel's uri to be the same as the device
-                model.getMetadata().setUri(model.getUri());
-
+                updateMetadataFromGermplasm(model.getMetadata(), model);
                 metaDataDao.create(session, model.getMetadata());
             }
             return null;
@@ -152,10 +152,20 @@ public class GermplasmDAO {
         }
         for (GermplasmModel model : instanceList) {
             if (model.getMetadata() != null) {
-                model.getMetadata().setUri(model.getUri());
+                updateMetadataFromGermplasm(model.getMetadata(), model);
                 metaDataDao.create(session, model.getMetadata());
             }
         }
+    }
+
+    private void updateMetadataFromGermplasm(GermplasmMetadataModel metadata, GermplasmModel germplasm) {
+        if (germplasm == null) {
+            return;
+        }
+        metadata.setUri(germplasm.getUri());
+        metadata.setPublisher(germplasm.getPublisher());
+        metadata.setIsPublic(germplasm.getIsPublic());
+        metadata.setGroups(germplasm.getGroups().stream().map(SPARQLResourceModel::getUri).toList());
     }
 
     /**

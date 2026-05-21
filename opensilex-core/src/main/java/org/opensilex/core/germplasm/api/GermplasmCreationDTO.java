@@ -25,7 +25,6 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.DefaultValue;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;

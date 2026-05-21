@@ -143,7 +143,7 @@ public class ScientificObjectLogic {
             }
         }
 
-        checkGermplasmAccess(model, currentUser);
+        checkGermplasmAccess(relations, currentUser);
         checkFactorLevelsBelongsToExperiment(relations, experiment);
         checkUniqueNameByGraph(context, model.getName(), null, true);
         Node graphNodeContext = SPARQLDeserializers.nodeURI(context);
@@ -535,7 +535,7 @@ public class ScientificObjectLogic {
             context = contextURI;
         }
 
-        checkGermplasmAccess(model, currentUser);
+        checkGermplasmAccess(relations, currentUser);
 
         checkUniqueNameByGraph(context, model.getName(), model.getUri(), false);
         Node graphNode = SPARQLDeserializers.nodeURI(context);
@@ -825,13 +825,13 @@ public class ScientificObjectLogic {
         });
     }
 
-    private void checkGermplasmAccess(ScientificObjectModel scientificObjectModel, AccountModel account) throws Exception {
-        var relation = scientificObjectModel.getRelation(Oeso.hasGermplasm);
-        if (relation == null) {
+    private void checkGermplasmAccess(List<RDFObjectRelationDTO> relations, AccountModel account) throws Exception {
+        var relation = relations.stream().filter(rel -> SPARQLDeserializers.compareURIs(rel.getProperty(), Oeso.hasGermplasm.getURI())).findFirst();
+        if (relation.isEmpty()) {
             return;
         }
         var germplasmDao = new GermplasmDAO(sparql, nosql);
-        var germplasmUri = new URI(relation.getValue());
+        var germplasmUri = new URI(relation.get().getValue());
         if (!germplasmDao.hasAccess(germplasmUri, account)) {
             throw new ForbiddenURIAccessException(germplasmUri);
         }

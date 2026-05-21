@@ -23,6 +23,7 @@ import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -276,8 +277,8 @@ public class GermplasmDAO {
     /**
      * Get all germplasm attributes
      */
-    public Set<String> getDistinctGermplasmAttributes() {
-        return metaDataDao.getDistinctKeys();
+    public Set<String> getDistinctGermplasmAttributes(AccountModel user, List<GroupModel> userGroups) {
+        return metaDataDao.getDistinctKeys(user, userGroups);
     }
 
     public Set<String> getDistinctGermplasmAttributesValues(String attribute, String attributeValue, int page, int pageSize) {

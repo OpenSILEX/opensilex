@@ -799,6 +799,7 @@ public class ScientificObjectDAO {
         Var locationCollectionVar = makeVar(LocationObservationCollectionModel.OBSERVATION_COLLECTION_FIELD);
 
         SelectBuilder select = new SelectBuilder();
+        select.setDistinct(true);
 
         // Define request var
         select.addVar(uriVar);

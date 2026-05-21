@@ -472,7 +472,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
         return deleteResult;
     }
 
-    protected final @NotNull DeleteResult deleteMany(ClientSession session, Bson deleteFilterBson) {
+    public final @NotNull DeleteResult deleteMany(ClientSession session, Bson deleteFilterBson) {
 
         String deleteFilterString = deleteFilterBson.toString();
         Instant operationStart = mongoLogger.logOperationStart(DELETE_MANY, FILTER, deleteFilterString);

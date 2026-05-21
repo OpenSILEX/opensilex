@@ -12,6 +12,7 @@ package org.opensilex.core.germplasm.bll;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
@@ -40,6 +41,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GermplasmLogic {
@@ -204,14 +206,11 @@ public class GermplasmLogic {
             lookForAlreadyExistantUri(germplasmModels, errors);
         }
 
+        checkUserAccess(germplasmModels, errors);
         globalFormatValidation(germplasmModels, errors);
-
         validateTypes(germplasmModels, errors);
-
         validateGermplasmDependenciesExists(germplasmModels, errors);
-
         validateAccessionVarietyOrSpeciesAreGiven(germplasmModels, errors);
-
         checkSpeciesCoherency(germplasmModels, errors);
 
         return errors;
@@ -461,6 +460,26 @@ public class GermplasmLogic {
                 }
             }
         });
+    }
+
+    private void checkUserAccess(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws Exception {
+        var uriGermplasmMap = germplasmModels.stream()
+                .collect(Collectors.toMap(germplasm -> SPARQLDeserializers.formatURI(germplasm.getUri()), Function.identity()));
+        var uris = uriGermplasmMap.keySet().stream().toList();
+        var filter = new GermplasmSearchFilter()
+                .setUris(uris)
+                .setUser(currentUser);
+        var allowedUris = dao.search(filter, false, false).getList().stream()
+                .map(GermplasmModel::getUri)
+                .map(SPARQLDeserializers::formatURI)
+                .collect(Collectors.toUnmodifiableSet());
+        var forbiddenUris = SetUtils.difference(uriGermplasmMap.keySet(), allowedUris);
+        if (forbiddenUris.isEmpty()) {
+            return;
+        }
+        for (var uri : forbiddenUris) {
+            errors.addError(uriGermplasmMap.get(uri), "URI already exists and corresponds to a private resource.");
+        }
     }
 
     /**

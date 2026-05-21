@@ -4,9 +4,10 @@
 **Document history (please add a line when you edit the document)**
 
 
-| Date       | Editor(s)    | OpenSILEX version | Comment           |
-|------------|--------------|-------------------|-------------------|
-| 22/09/2025 | Lydia ALIANE | 1.4.10            | Document creation |
+| Date       | Editor(s)                 | OpenSILEX version | Comment           |
+|------------|---------------------------|-------------------|-------------------|
+| 22/09/2025 | Lydia ALIANE              | 1.4.10            | Document creation |
+| 21/05/2026 | valentin.rigolle@inrae.fr | 1.5.1             |                   |
 
 
 
@@ -15,15 +16,15 @@
 
 
 <!-- TOC -->
-* [Specifications : Germplasms access](#specifications--germplasms-access-rights)
+* [Specifications : Germplasms access rights](#specifications--germplasms-access-rights)
   * [Table of contents](#table-of-contents)
   * [Definitions](#definitions)
   * [Needs](#needs)
     * [Non-functional requirements](#non-functional-requirements)
   * [Technical specifications](#technical-specifications)
-      * [API Layer](#api-layer)
-      * [Business Logic Layer](#business-logic-layer)
-      * [Data Access Layer](#data-access-layer)
+    * [API Layer](#api-layer)
+    * [Business Logic Layer](#business-logic-layer)
+    * [Data Access Layer](#data-access-layer)
 <!-- TOC -->
 
 
@@ -38,16 +39,9 @@
 
 The main objective is to restrict access to germplasms by introducing the concept of public and private germplasms.
 
-
 - Users need to see only the germplasms they are authorized to access, with the visibility status (public or private) clearly indicated in the main list.
-
-
 - Users need to filter germplasms by visibility (public/private) in the advanced filter menu, showing only the germplasms they are authorized to access.
-
-
 - Users need restricted access to private germplasms, only if they belong to the associated group or are the publisher.
-
-
 - Admin users need full access to all germplasms without restriction.
 
 ### Non-functional requirements
@@ -56,7 +50,6 @@ The main objective is to restrict access to germplasms by introducing the concep
 - **Ergonomy** :
     - Each germplasm in the main list shows whether it is public or private, allowing users to immediately understand the access restrictions.
     - In the search menu, Users can filter germplasms by visibility (public/private) using advanced filters.
-    - 
 
 ## Technical specifications
 
@@ -80,6 +73,7 @@ The main objective is to restrict access to germplasms by introducing the concep
     - Builds the search query using `GermplasmSearchFilter`
     - Handles optional metadata loading via `metaDataDao.getMetaDataAssociatedTo()`
     - Loads nested germplasm relations conditionally via `fetchGermplasmsOfRelation()`
+    - Validates the germplasms for creation or update using `checkBeforeCreateOrUpdate()`
 
 ---
 

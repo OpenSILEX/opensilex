@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 public class GermplasmMetadataModel extends MetaDataModel {
+    public static final String IS_PUBLIC_FIELD = "isPublic";
     private Boolean isPublic;
+    public static final String GROUPS_FIELD = "groups";
     private List<URI> groups;
 
     public GermplasmMetadataModel() {

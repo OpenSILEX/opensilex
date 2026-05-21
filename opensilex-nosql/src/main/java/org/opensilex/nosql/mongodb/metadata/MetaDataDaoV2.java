@@ -94,11 +94,33 @@ public class MetaDataDaoV2<M extends MetaDataModel> extends MongoReadWriteDao<M,
     }
 
     /**
+     * @param filter Optional filter, for example to manage access rights. If null, all documents will be retrieved
+     *
      * @return each unique attribute key from the MetaDataModel collection
      */
-    public Set<String> getDistinctKeys() {
+    public Set<String> getDistinctKeys(Bson filter) {
+        /*
+        Generated aggregation :
+          [
+            { $match: <filter> },
+            {
+              $project: {
+                computed_attributes: {
+                  $objectToArray: '$attributes'
+                }
+              }
+            },
+            { $unwind: '$computed_attributes' },
+            { $group: { _id: '$computed_attributes.k' } }
+          ]
+         */
 
         List<Bson> aggregatePipeline = new ArrayList<>();
+
+        // 0. match - Filter out documents, for example to manage access rights
+        if (filter != null) {
+            aggregatePipeline.add(Aggregates.match(filter));
+        }
 
         // 1.project/computed - Transform document to multiple array elements
         // Each item in array has k (original document key) and v (original document value) fields

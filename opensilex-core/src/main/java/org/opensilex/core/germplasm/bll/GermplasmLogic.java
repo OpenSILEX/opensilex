@@ -20,6 +20,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 public class GermplasmLogic {
 
     private final GermplasmDAO dao;
+    private final GroupDAO groupDao;
     private final SPARQLService sparql;
     private final AccountModel currentUser;
 
@@ -61,6 +63,7 @@ public class GermplasmLogic {
 
     public GermplasmLogic(SPARQLService sparql, MongoDBServiceV2 nosql, AccountModel currentUser) {
         this.dao = new GermplasmDAO(sparql, nosql);
+        this.groupDao = new GroupDAO(sparql);
         this.sparql = sparql;
         this.currentUser = currentUser;
     }
@@ -70,6 +73,7 @@ public class GermplasmLogic {
      */
     public GermplasmLogic(GermplasmDAO dao, SPARQLService sparql, AccountModel currentUser) {
         this.dao = dao;
+        this.groupDao = new GroupDAO(sparql);
         this.sparql = sparql;
         this.currentUser = currentUser;
     }
@@ -496,8 +500,8 @@ public class GermplasmLogic {
     /**
      * @return all germplasm attributes (key). Each attribute is unique
      * */
-    public Set<String> getDistinctGermplasmAttributes() {
-        return dao.getDistinctGermplasmAttributes();
+    public Set<String> getDistinctGermplasmAttributes() throws Exception {
+        return dao.getDistinctGermplasmAttributes(currentUser, groupDao.getUserGroups(currentUser.getUri()));
     }
 
     /**

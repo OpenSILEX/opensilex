@@ -114,7 +114,7 @@ public class GermplasmCreationDTO {
     @JsonProperty("is_public")
     @NotNull
     @ApiModelProperty(value = "boolean", example = "True", required = true)
-    protected Boolean isPublic;
+    protected Boolean isPublic = true;
 
     @JsonProperty("groups")
     @ApiModelProperty(value = "groups", example = "")

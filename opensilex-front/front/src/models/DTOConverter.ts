@@ -14,9 +14,14 @@ import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
  *
  * @param getDto The DTO of which the properties must be converted
  * @param properties The set of properties to convert. If not specified, all properties of the object will be converted
+ * @param excludedProperties An optional set of properties to exclude (useful if we want all properties minus some property we definitely do not want).
  *  (if possible)
  */
-function extractURIFromResourceProperties<T extends NamedResourceDTO, U extends NamedResourceDTO>(getDto: T, properties?: Array<string>): U {
+function extractURIFromResourceProperties<T extends NamedResourceDTO, U extends NamedResourceDTO>(
+        getDto: T,
+        properties?: Array<string>,
+        excludedProperties?: Array<string>
+    ): U {
     let creationDto: U = JSON.parse(JSON.stringify(getDto));
 
     // If the concerned properties are not defined, take all of them
@@ -27,6 +32,10 @@ function extractURIFromResourceProperties<T extends NamedResourceDTO, U extends 
     // Iterate over the properties to transform only the one corresponding to either a ResourceDTO or an array of
     // ResourceDTOs
     for (let key of properties) {
+        if(excludedProperties && excludedProperties.includes(key)){
+            creationDto[key] = null;
+            continue;
+        }
         if (Array.isArray(creationDto[key])) {
             // Case 1 : array of ResourceDTO (example : ExperimentGetDTO.facilities)
             creationDto[key] = creationDto[key].map((dto: NamedResourceDTO | string) => {

@@ -15,17 +15,17 @@
     <ValidationObserver ref="validatorRef">
         <!-- Dates -->
         <opensilex-DateTimeRangeForm
-            v-if="doShowDateFields"
+            v-if="displayDateFields"
             :startDate.sync="form.startDate"
             :endDate.sync="form.endDate"
             :start_required="false"
             :end_required="!!form.geojson || !!form.startDate"
-            :isInstant="locationIsInstant"
+            :isInstant.sync="locationIsInstant"
             :canBeInstant="true"
         >
         </opensilex-DateTimeRangeForm>
 
-      <div class="row">
+      <div class="row" v-if="!isForFacilityLocation">
         <div class="col-lg-5">
           <opensilex-FacilitySelector
             label="LocationForm.from"
@@ -66,7 +66,7 @@
             </div>
         </div>
       <!--XYZ form-->
-      <div class="row">
+      <div class="row" v-if="!isForFacilityLocation">
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.x"
@@ -98,7 +98,7 @@
         </div>
       </div>
       <!--Textual position form-->
-      <div class="row">
+      <div class="row" v-if="!isForFacilityLocation">
         <div class="col">
           <!-- Comment -->
           <opensilex-TextAreaForm
@@ -134,7 +134,7 @@ export default class LocationForm extends Vue {
     disableValidation: boolean;
 
     @Prop({ default: false })
-    isMove: boolean
+    isForFacilityLocation: boolean
 
     @Prop({ default: true })
     displayDateFields: boolean;

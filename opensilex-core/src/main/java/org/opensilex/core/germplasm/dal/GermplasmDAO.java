@@ -12,6 +12,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
@@ -24,6 +25,7 @@ import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -32,6 +34,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Data Access Object for Germplasm, metadatas (also known as attributes) are stored in MongoDB while the rest is stored in RDF.
@@ -319,5 +322,40 @@ public class GermplasmDAO {
      */
     public Collection<URI> checkExistence(List<URI> uris) throws Exception {
         return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, uris, true);
+    }
+
+    /**
+     * Compute the list of unauthorized URIs among the provided list. Access to a germplasm is allowed if
+     * one of the following conditions is fulfilled :
+     *
+     * <ul>
+     *     <li>The user is admin</li>
+     *     <li>The user is the publisher of the germplasm</li>
+     *     <li>The user is in one of the groups of the germplasm</li>
+     *     <li>The germplasm is public</li>
+     * </ul>
+     */
+    public Set<URI> getUnauthorizedGermplasms(Collection<URI> uris, AccountModel account) throws Exception {
+        if (CollectionUtils.isEmpty(uris)) {
+            return Set.of();
+        }
+        var filter = new GermplasmSearchFilter()
+                .setUris(uris.stream().toList())
+                .setUser(account);
+        var allowedUris = search(filter, false, false).getList().stream()
+                .map(GermplasmModel::getUri)
+                .map(SPARQLDeserializers::formatURI)
+                .collect(Collectors.toUnmodifiableSet());
+        return SetUtils.difference(new HashSet<>(uris),  allowedUris);
+    }
+
+    /**
+     * Checks if the user has access to a specific germplasm. This is a shorthand for calling {@link #getUnauthorizedGermplasms(Collection, AccountModel)}
+     * and checking if the list is empty.
+     *
+     * @see #getUnauthorizedGermplasms(Collection, AccountModel)
+     */
+    public boolean hasAccess(URI uri, AccountModel account) throws Exception {
+        return getUnauthorizedGermplasms(Set.of(uri), account).isEmpty();
     }
 }

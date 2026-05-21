@@ -826,14 +826,17 @@ public class ScientificObjectLogic {
     }
 
     private void checkGermplasmAccess(List<RDFObjectRelationDTO> relations, AccountModel account) throws Exception {
-        var relation = relations.stream().filter(rel -> SPARQLDeserializers.compareURIs(rel.getProperty(), Oeso.hasGermplasm.getURI())).findFirst();
-        if (relation.isEmpty()) {
+        var uris = relations.stream()
+                .filter(rel -> SPARQLDeserializers.compareURIs(rel.getProperty(), Oeso.hasGermplasm.getURI()))
+                .map(rel -> URI.create(rel.getValue()))
+                .toList();
+        if (uris.isEmpty()) {
             return;
         }
         var germplasmDao = new GermplasmDAO(sparql, nosql);
-        var germplasmUri = new URI(relation.get().getValue());
-        if (!germplasmDao.hasAccess(germplasmUri, account)) {
-            throw new ForbiddenURIAccessException(germplasmUri);
+        var forbiddenUris = germplasmDao.getUnauthorizedGermplasms(uris, account);
+        if (!forbiddenUris.isEmpty()) {
+            throw new ForbiddenURIAccessException(forbiddenUris, "Forbidden access to private resources.");
         }
     }
 

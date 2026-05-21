@@ -125,7 +125,7 @@ function loadVariableAndDeviceList() {
 }
 
 function isVariableRelation(relation: RDFObjectRelationDTO): boolean {
-  return $opensilex.compareLongUris($opensilex.Oeso.MEASURES_PROP_URI, relation.property)
+  return $opensilex.compareUris($opensilex.Oeso.MEASURES_PROP_URI, relation.property)
 }
 
 /**

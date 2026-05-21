@@ -66,8 +66,10 @@
         :pagination="pagination"
         :remote="true"
         :row-key="row => row.uri"
-        @row-click="onRowClicked"
-        :row-props="(row) => ({ style: 'cursor: pointer' })"
+        @row-click="onRowClickedSafe"
+        :row-props="(row) => ({
+          style: row.__isDetailsRow ? '' : 'cursor: pointer'
+        })"
         :checked-row-keys="checkedRowKeys"
         @update:checked-row-keys="onCheckedRowKeysChange"
         @update:page="onPageChange"
@@ -205,6 +207,20 @@ function onCheckedRowKeysChange(newKeys: DataTableRowKey[]) {
   emit('row-selected', numberOfSelectedRows.value)
 }
 
+ /* Sécurise le clic sur une ligne de tableau.
+ *
+ * Ignore les lignes techniques utilisées pour afficher les détails,
+ * afin d'éviter qu'un clic sur la zone de détails déclenche la sélection
+ * ou la désélection d'un élément.
+ *
+ * Pour les lignes normales, délègue le traitement à `onRowClicked`.
+ */
+function onRowClickedSafe(row: any) {
+  if (row?.__isDetailsRow) {
+    return;
+  }
+  onRowClicked(row);
+}
 
 function onRowClicked(item: NamedResourceDTO) {
   const idx = selectedItems.value.findIndex((it) => item.uri === it.uri);
@@ -438,31 +454,97 @@ function onPageSizeChange(size: number) {
 const slots = useSlots();
 
 const dataList = ref<any[]>([]);
-const tableData = computed(() => dataList.value);
 
+/**
+ * Prépare les données envoyées à `n-data-table`.
+ *
+ * Part de la liste de données principale (`dataList`) et ajoute, juste après
+ * chaque ligne qui demande l'affichage de détails (`_showDetails`), une ligne
+ * technique supplémentaire.
+ *
+ * Cette ligne technique est identifiée par `__isDetailsRow` et sert uniquement
+ * à afficher le slot `row-details` sous la ligne principale.
+ */
+const tableData = computed(() => {
+  const rows: any[] = [];
+
+  for (const item of dataList.value) {
+    rows.push(item);
+
+    if (item._showDetails) {
+      rows.push({
+        __isDetailsRow: true,
+        __parent: item,
+        uri: `${item.uri}__details`
+      });
+    }
+  }
+
+  return rows;
+});
+
+/**
+ * Transforme la configuration générique des colonnes (`props.fields`)
+ * en colonnes compatibles avec le composant `n-data-table` de Naive UI.
+ *
+ * Pour chaque champ, définit :
+ * - le titre traduit,
+ * - la clé de colonne,
+ * - le tri,
+ * - le rendu via slot personnalisé si disponible,
+ * - la gestion spéciale des lignes de détails.
+ *
+ * Si la table est sélectionnable, ajoute aussi la colonne de sélection fournie par Naive UI.
+ */
 const naiveColumns = computed(() => {
-  const dynamicCols = props.fields.map((field: any) => ({
+  const dynamicCols = props.fields.map((field: any, colIndex: number) => ({
     title: t(field.label),
     key: field.key,
     resizable: true,
     sortable: field.sortable ?? false,
     sorter: (a, b) => {
-  const valA = a[field.key];
-  const valB = b[field.key];
+      if (a.__isDetailsRow || b.__isDetailsRow) return 0;
 
-  // Si les valeurs sont des chaînes, utiliser localeCompare
-  if (typeof valA === 'string' && typeof valB === 'string') {
-    return valA.localeCompare(valB);
-  }
-  // Sinon, supposer qu'elles sont numériques
-  return (valA ?? 0) - (valB ?? 0);
-}
-,
+      const valA = a[field.key];
+      const valB = b[field.key];
+
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        return valA.localeCompare(valB);
+      }
+
+      return (valA ?? 0) - (valB ?? 0);
+    },
     render: (row: any, index: number) => {
+      if (row.__isDetailsRow) {
+        if (colIndex !== 0) {
+          return null;
+        }
+
+        return slots['row-details']
+          ? slots['row-details']!({
+              data: {
+                item: row.__parent,
+                index
+              }
+            })
+          : null;
+      }
+
       return slots[`cell(${field.key})`]
-        ? slots[`cell(${field.key})`]!({ data: { item: row, index } })
+        ? slots[`cell(${field.key})`]!({
+            data: {
+              item: row,
+              index
+            }
+          })
         : row[field.key];
     },
+    colSpan: (row: any) => {
+      if (row.__isDetailsRow) {
+        return colIndex === 0 ? props.fields.length + (props.isSelectable ? 1 : 0) : 0;
+      }
+      return 1;
+    }
   }));
 
   if (props.isSelectable) {
@@ -518,7 +600,6 @@ defineExpose({
 
 .title-icon {
   position: relative;
-  /* top: -5px; */
 }
 </style>
 

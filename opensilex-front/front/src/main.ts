@@ -25,6 +25,10 @@ import 'vue3-tour/dist/vue3-tour.css';
 
 // Ajoute toutes les icônes solides à la bibliothèque
 library.add(fas);
+const iconIDs = Array.from(new Set(Object.values(fas).map(def => def.iconName))).map(iconName => ({
+    id: "fa#" + iconName,
+    iconName
+}));
 
 let lang = navigator.language;
 
@@ -159,6 +163,7 @@ import Highcharts from 'highcharts';
 const app = createApp(App);
 
 const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
+$opensilex.setIconIDs(iconIDs)
 
 // Fournit l'instance pour injection dans Vue 3
 app.provide("$opensilex", $opensilex);

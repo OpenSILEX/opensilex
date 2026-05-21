@@ -20,7 +20,7 @@ import { inject, computed } from "vue";
 import { useI18n , Composer} from "vue-i18n";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import type { UserGetDTO } from "opensilex-security";
-import DateTimeFormatter from "./../../../models/DateTimeFormatter";
+import DateTimeFormatter, {DateArg} from "./../../../models/DateTimeFormatter";
 
 const i18n = useI18n();
 const { t } = i18n;
@@ -29,8 +29,8 @@ const formatter = new DateTimeFormatter(i18n);
 // Props
 const props = defineProps<{
   publisher: UserGetDTO;
-  publicationDate?: string;
-  lastUpdatedDate?: string;
+  publicationDate?: DateArg;
+  lastUpdatedDate?: DateArg;
 }>();
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 

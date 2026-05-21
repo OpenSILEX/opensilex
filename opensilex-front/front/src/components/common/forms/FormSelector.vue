@@ -8,8 +8,7 @@
     <template #field="{ id }">
       <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
-        <div class="select-button-container input-group">
-            <!-- v-bind="$attrs" -->
+        <div class="select-button-container">
           <opensilex-CustomTreeselect
             ref="customTreeselect"
             v-bind="$attrs"
@@ -18,6 +17,7 @@
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
+            :checkStrategy="checkStrategy"
             :placeholder="placeholder"
             :disabled="disabled"
             :optionsLoadingMethod="optionsLoadingMethod"
@@ -29,7 +29,7 @@
             :actionHandler="actionHandler"
             :disableBranchNodes="disableBranchNodes"
             :itemLoadingMethod="itemLoadingMethod || undefined"
-            class="flex-fill"
+            class="select-main"
             @totalCount="updateTotalCount"
             @resultCount="updateResultCount"
             @close="onBlur"
@@ -50,21 +50,21 @@
             </template>
           </opensilex-CustomTreeselect>
 
-          <!-- Boutons annexes -->
-          <div v-if="!actionHandler && viewHandler" class="input-group-append">
+          <div v-if="!actionHandler && viewHandler" class="select-side-button">
             <opensilex-DetailButton
               @click="viewHandler"
-              :label="viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails'"
+              :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
               :small="true"
               class="greenThemeColor"
             />
           </div>
-          <div v-else-if="actionHandler" class="input-group-append">
+
+          <div v-else-if="actionHandler" class="select-side-button">
             <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
             <opensilex-DetailButton
               v-if="viewHandler"
               @click="viewHandler"
-              :label="viewHandlerDetailsVisible ? 'FormSelector.hideDetails' : 'FormSelector.showDetails'"
+              :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
               :small="true"
             />
           </div>
@@ -88,11 +88,12 @@ const { t } = useI18n()
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<{
-  path: string
+  path?: string
   selected: string | string[] | undefined
   searchMethod?: Function
   multiple?: boolean
   checkable?: boolean
+  checkStrategy?: 'all' | 'child' | 'parent'
   itemLoadingMethod?: Function
   optionsLoadingMethod?: Function
   options?: any[]
@@ -164,7 +165,7 @@ function updateTotalCount (n: number) { totalCount.value = n }
 function updateResultCount (n: number) { resultCount.value = n }
 
 onMounted(() => {
-  console.log('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
+  console.debug('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
 })
 </script>
 
@@ -172,10 +173,26 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .select-button-container {
-   margin-bottom: 0; width: 100%;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
+  flex-wrap: nowrap;
 }
 
-.input-group-append > button {
+.select-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.select-side-button {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  margin-left: 8px;
+}
+
+.select-side-button > * {
   height: 100%;
 }
 
@@ -191,13 +208,10 @@ onMounted(() => {
   white-space: normal;
 }
 
-.flex-fill {
-  flex: 1 1 auto;
-  min-width: 0;
+/* Le composant sélection prend toute la largeur dispo */
+:deep(.n-base-selection) {
+  width: 100%;
 }
-
-/* assure que le sélecteur occupe toute la largeur */
-:deep(.n-base-selection) { width: 100%; }
 </style>
 
 <i18n>

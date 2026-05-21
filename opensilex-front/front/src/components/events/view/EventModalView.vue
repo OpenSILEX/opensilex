@@ -4,7 +4,7 @@
       <div class="modal-content">
 
         <div class="modal-header">
-          <h5 class="modal-title">{{ $t('Event.event') }}</h5>
+          <h5 class="modal-title">{{ t('EventModalView.event') }}</h5>
         </div>
 
         <div class="modal-body">
@@ -13,13 +13,13 @@
             <opensilex-TypeView :type="event.rdf_type" :typeLabel="event.rdf_type_name" />
             <opensilex-TextView label="component.common.description" :value="event.description" /><br>
 
-            <opensilex-StringView v-if="event.start" label="Event.start" :value="formatDate(event.start)" />
-            <opensilex-StringView v-if="event.end" label="Event.end" :value="formatDate(event.end)" />
-            <opensilex-StringView label="Event.publisher" :value="displayPublisher(event.publisher)" />
-            <opensilex-StringView label="Event.datePublication" :value="event.publication_date" />
-            <opensilex-StringView label="Event.lastUpdateDate" :value="event.last_updated_date" />
-
-            <opensilex-StringView class="overflow-auto" style="height: 100px" label="Event.targets" :uri="event.targets">
+            <opensilex-StringView v-if="event.start" label="EventModalView.start" :value="formatDate(event.start)" />
+            <opensilex-StringView v-if="event.end" :label="t('EventModalView.end')" :value="formatDate(event.end)" />
+            <opensilex-StringView :label="t('EventModalView.publisher')" :value="displayPublisher(event.publisher)" />
+            <opensilex-StringView :label="t('EventModalView.datePublication')" :value="event.publication_date" />
+            <opensilex-StringView :label="t('EventModalView.lastUpdateDate')" :value="event.last_updated_date" />
+            <br>
+            <opensilex-StringView class="overflow-auto" style="height: 100px" :label="t('EventModalView.targets')" :uri="event.targets">
               <div v-for="targetURI in event.targets" :key="targetURI">
                 <opensilex-UriLink :uri="targetURI" :value="uriLabels[targetURI]" :to="{ path: uriPaths[targetURI] }" />
               </div>
@@ -36,7 +36,7 @@
 
           <div v-if="hasRelations(event)" class="card-body">
             <br>
-            <p><b>{{ $t('Event.specific-properties') }} ({{ event.rdf_type_name }})</b></p>
+            <p><b>{{ t('EventModalView.specific-properties') }} ({{ event.rdf_type_name }})</b></p>
             <hr />
             <div v-for="(relation, index) in event.relations" :key="index">
               <opensilex-UriView
@@ -48,6 +48,7 @@
               />
             </div>
           </div>
+          <br>
 
           <opensilex-DocumentTabList
             :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
@@ -58,7 +59,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn greenThemeColor" @click="hide()">
-            {{ $t('component.common.ok') }}
+            {{ t('component.common.ok') }}
           </button>
         </div>
 
@@ -74,6 +75,7 @@ import { EventDetailsDTO, MoveDetailsDTO } from 'opensilex-core/index';
 import { VueJsOntologyExtensionService, VueRDFTypeDTO } from '../../../lib';
 import { OntologyService } from 'opensilex-core/api/ontology.service';
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin';
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   modalSize: { type: String, default: 'lg' },
@@ -84,6 +86,7 @@ const modalRef = ref<HTMLDivElement | null>(null);
 const isVisible = ref(false);
 const store = useStore();
 
+const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const $vueJsOntologyService = $opensilex.getService("opensilex.VueJsOntologyExtensionService") as VueJsOntologyExtensionService;
 const ontologyService = $opensilex.getService("opensilex.OntologyService") as OntologyService;
@@ -188,6 +191,11 @@ function buildPropertyMap() {
 function hide() {
   isVisible.value = false;
 }
+
+defineExpose({
+  show,
+  hide
+})
 </script>
 
 <style scoped lang="scss">
@@ -198,3 +206,27 @@ function hide() {
   overflow: auto;
 }
 </style>
+
+<i18n>
+en:
+  EventModalView:
+    start: Begin
+    targets: Targets
+    end: End
+    event: Event
+    publisher: Publisher
+    datePublication: Issued
+    lastUpdateDate: Modified
+    specific-properties: Specific properties
+
+fr:
+  EventModalView:
+    start: Début
+    targets: Concerne
+    end: Fin
+    event: Évenement
+    publisher: Publieur
+    datePublication: Publié
+    lastUpdateDate: Modifié
+    specific-properties: Propriétés spécifiques
+</i18n>

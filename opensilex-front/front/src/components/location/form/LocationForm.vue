@@ -48,7 +48,7 @@
             v-model:value="formState.geojson"
             label="component.common.geometry.geometry-title"
             helpMessage="component.common.geometry.geometry-help"
-            :placeholder="t('LocationsForm.geometry')"
+            :placeholder="t('LocationForm.geometry')"
             :required="false"
           />
         </div>

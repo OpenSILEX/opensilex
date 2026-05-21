@@ -18,15 +18,17 @@
 import { }  from 'vue';
 
 // props
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   uri: string;
-  value: string;
+  value?: string;
   url?: string;
   to?: string;
   title?: string;
   customClass?: string;
-  allowCopy: boolean;
-}>();
+  allowCopy?: boolean;
+}>(), {
+  allowCopy: true
+});
 
 // default value
 const title = props.title || 'component.common.uri';

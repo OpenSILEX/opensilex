@@ -77,6 +77,7 @@
             "logout": "Logout",
             "parent": "parent",
             "type": "Type",
+            "type-properties": "Selected type properties",
             "select-lang": "Choose a language",
             "select-date": "Choose a date",
             "select": "Select",
@@ -201,7 +202,10 @@
                 "description": "Manage and configure organizations",
                 "site": "Site",
                 "sites": "Sites"
-            }
+            },
+            "title": "Title",
+            "date": "Date",
+            "authors": "Authors"
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -283,6 +287,10 @@
             "namespaces": "Namespaces",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
+            "document": {
+                "label" :"Document",
+                "description": "Manage Document" 
+            },
             "events" : "Events",
             "vocabulary" : "Vocabulary",
             "about" : {
@@ -643,6 +651,7 @@
             "description": "Description of the event",
             "start-help": "Begin of event, only if the event is not instantaneous",
             "start-example": "2019-09-08T13:00:00+01:00",
+            "target": "Target",
             "targets": "Targets",
             "targets-help": "Object(s) concerned by this function are \"Device\" and \"Scientific Objects\"",
             "target-help": "Object targeted by the event (Must exist)",
@@ -870,6 +879,9 @@
             "update": "Update organization",
             "delete": "Delete organization"
         },
+        "device": {
+            "description": "Manage Devices"
+        },
         "site": {
             "description": "Manage and configure sites",
             "update": "Update site",
@@ -928,6 +940,32 @@
                 "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
                 "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
                 "xsd": "Discover XML schema languages."
+            },
+            "typeView": {
+                "scientificObject": {
+                    "title": "Scientific object types",
+                    "description": "Manage and configure scientific object types"
+                },
+                "event": {
+                    "title": "Event types",
+                    "description": "Manage and configure event types"
+                },
+                "device": {
+                    "title": "Device types",
+                    "description": "Manage and configure device types"
+                },
+                "facility": {
+                    "title": "Facilities types",
+                    "description": "Manage and configure facilities types"
+                },
+                "factoryCategory": {
+                    "title": "Factor category",
+                    "description": "Manage and configure factor categories"
+                }
+            },
+            "namespace": {
+                "title": "Namespaces",
+                "description": "Namespaces display page"
             }
         },
         "tutorial": {
@@ -945,6 +983,10 @@
         "packages": {
             "title": "Packages",
             "description": "Set of packages that allows access to the webservice"
+        },
+        "GDPR": {
+            "title": "GDPR",
+            "title-description": "Privacy policy"
         }
     },
     "credential-groups": {

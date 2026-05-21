@@ -77,6 +77,7 @@
             "logout": "Déconnexion",
             "parent": "parent",
             "type": "Type",
+            "type-properties": "Propriétés du type selectionné",
             "select": "Sélectionner",
             "select-lang": "Choisissez une langue",
             "select-date": "Choisissez une date",
@@ -202,7 +203,10 @@
                 "description": "Gérer et configurer les organisations",
                 "site": "Site",
                 "sites": "Sites"
-            }
+            },
+            "title": "Titre",
+            "date": "Date",
+            "authors": "Auteurs"
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -285,6 +289,10 @@
             "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Appareils",
+            "document": {
+                "label" :"Document",
+                "description": "Gestion des documents" 
+            },
             "events" : "Évènements",
             "vocabulary" : "Vocabulaire",
             "about" : {
@@ -649,6 +657,7 @@
             "start-help": "Début de l'événement, uniquement si celui-ci n'est pas instantané",
             "start-example": "2019-09-08T13:00:00+01:00",
             "targets": "Concerne",
+            "target": "Cible",
             "targets-help": "Objet(s) concerné(s) sont \"Appareils\" et \"Objets scientifiques\"",
             "target-help": "URI de l'objet concerné par l'évènement (Doit exister).",
             "targets-example": "os-so:plant1",
@@ -927,6 +936,9 @@
             "update": "Modifier l'organisation",
             "delete": "Supprimer l'organisation"
         },
+        "device": {
+            "description": "Gestion des appareils"
+        },
         "site": {
             "description": "Gérer et configurer les sites",
             "update": "Modifier le site",
@@ -985,6 +997,32 @@
                 "om": "L’Ontology of Units of Measure (OM) 2.0 modélise les concepts et relations importants pour la recherche scientifique. Elle met particulièrement l’accent sur les unités, les quantités, les mesures et les dimensions.",
                 "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
                 "xsd": "Découvrez les langages de schémas XML."
+            },
+            "typeView": {
+                "scientificObject": {
+                    "title": "Types d'objets scientifiques",
+                    "description": "Gérer et configurer les types d'objets scientifiques"
+                },
+                "event": {
+                    "title": "Types d'événements",
+                    "description": "Gérer et configurer les types d'évenements"
+                },
+                "device": {
+                    "title": "Types d'appareils",
+                    "description": "Gérer et configurer les types d'appareil"
+                },
+                "facility": {
+                    "title": "Types d'installations environnementales",
+                    "description": "Gérer et configurer les types d'installations environnementales"
+                },
+                "factoryCategory": {
+                    "title": "Catégories de facteurs",
+                    "description": "Gérer et configurer les catégories de facteurs"
+                }
+            },
+            "namespace": {
+                "title": "Espaces de nom",
+                "description": "Page d'affichage des espaces de nom"
             }
         },
         "tutorial": {
@@ -1002,6 +1040,10 @@
         "packages": {
             "title": "Librairies",
             "description": "Ensemble de bibliothèque logicielles qui permet l'accès au webservice"
+        },
+        "GDPR": {
+            "title": "RGPD",
+            "title-description": "Politique RGPD"
         }
     },
     "credential-groups": {

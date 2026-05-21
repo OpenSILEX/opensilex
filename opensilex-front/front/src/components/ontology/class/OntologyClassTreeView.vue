@@ -1,0 +1,205 @@
+<template>
+  <TreeView
+      :nodes="nodes"
+      defaultExpandAll
+      @select="displayClassDetail($event[0]?.data?.uri)">
+    <template #node="{ node }">
+      <span class="item-icon">
+        <Icon v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon"
+              :icon="classParametersByURI[node.data.uri].icon"/>
+      </span>&nbsp;
+      <strong v-if="node.data.selected">{{ node.title }}</strong>
+      <span v-if="!node.data.selected">{{ node.title }}</span>
+    </template>
+
+    <template #buttons="{ node }">
+      <AddChildButton
+          v-if="user.isAdmin()"
+          @click="emit('createChildClass' ,node.data.uri)"
+          :label="t('OntologyClassTreeView.add-child')"
+          :small="true"
+      ></AddChildButton>
+      <DeleteButton
+          v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+          @click="emit('deleteRDFType', node.data)"
+          :label="t('OntologyClassTreeView.delete')"
+          :small="true"
+      ></DeleteButton>
+    </template>
+  </TreeView>
+</template>
+
+<script setup lang="ts">
+
+import {computed, h, inject, onBeforeUnmount, onMounted, ref, watchEffect} from "vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {useStore} from "vuex";
+import {OntologyService} from "opensilex-core/api/ontology.service";
+import {useRoute} from "vue-router";
+import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {useI18n} from "vue-i18n";
+import TreeView from "@/components/common/views/TreeView.vue";
+import Icon from "@/components/common/views/Icon.vue";
+import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+
+//#region Public
+const props = defineProps<{
+  rdfType: string
+}>();
+
+const emit = defineEmits<{
+  selectionChange: [selected: VueRDFTypeDTO],
+  createChildClass: [uri: string],
+  deleteRDFType: [nodeData: any]
+}>()
+
+defineExpose({
+  getTree,
+  refresh
+})
+//#endregion
+
+//#region Private
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const store = useStore();
+const route = useRoute();
+const user = computed(() => store.state.user);
+const {t} = useI18n();
+
+const nodes = ref([]);
+const selected = ref<VueRDFTypeDTO | undefined>();
+const resourceTree = ref<Array<ResourceTreeDTO>>();
+const classParametersByURI = ref({});
+
+const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
+const vueJsOntologyService = opensilex.getService<VueJsOntologyExtensionService>("opensilex-front.VueJsOntologyExtensionService");
+
+
+onMounted(() => {
+  let preselected = route.query.selected;
+  if (typeof preselected === "string") {
+    displayClassDetail(preselected);
+  }
+  onRootClassChange();
+});
+
+const unwatchLang = store.watch(
+    () => store.getters.language,
+    () => {
+      if (selected.value) {
+        displayClassDetail(selected.value.uri);
+      }
+    }
+);
+
+onBeforeUnmount(() => {
+  unwatchLang();
+})
+
+function displayClassDetail(uri: string) {
+  vueJsOntologyService
+      .getRDFTypeProperties(uri, props.rdfType)
+      .then(http => {
+        selected.value = http.response.result;
+        //This updates or adds a url parameter, permitting refresh and navigation to specific elements
+        opensilex.updateURLParameter("selected", selected.value.uri);
+        emit('selectionChange', selected.value);
+      }).catch(opensilex.errorHandler);
+}
+
+const onRootClassChange = watchEffect(() => {
+  if (props.rdfType) {
+    refresh(undefined, undefined);
+  }
+});
+
+function refresh(selection: VueRDFTypeDTO, nameFilter?: string) {
+  Promise.all([
+    ontologyService.searchSubClassesOf(props.rdfType, nameFilter, false),
+    vueJsOntologyService.getRDFTypesParameters()
+  ]).then(results => {
+    let classesParameters = results[1].response.result;
+    let classParamByURI = {};
+    for (let i in classesParameters) {
+      classParamByURI[classesParameters[i].uri] = classesParameters[i];
+    }
+    classParametersByURI.value = classParamByURI;
+
+    if (results[0].response.result.length > 0) {
+      resourceTree.value = results[0].response.result;
+
+      // push the root class on the first tree level, and recursively build nodes for descendant
+      nodes.value = [dtoToNode(resourceTree.value[0], selection)];
+
+    } else {
+      nodes.value = [];
+    }
+
+    if (selection) {
+      displayClassDetail(selection.uri);
+    }
+  }).catch(opensilex.errorHandler);
+}
+
+function getTree(): Array<ResourceTreeDTO> {
+  return resourceTree.value;
+}
+
+function dtoToNode(dto: ResourceTreeDTO, selection) {
+  let isLeaf = dto.children.length == 0;
+
+  let childrenDTOs = [];
+  if (!isLeaf) {
+    for (let i in dto.children) {
+      childrenDTOs.push(dtoToNode(dto.children[i], selection));
+    }
+  }
+
+  if (selection && selection.uri == dto.uri) {
+    selected.value = selection;
+  }
+
+  let isSelected = selected.value && selected.value.uri == dto.uri;
+
+  const icon = classParametersByURI.value[dto.uri]?.icon?.split('#')[1];
+  return {
+    key: dto.uri,
+    title: dto.name,
+    data: dto,
+    isLeaf: isLeaf,
+    children: childrenDTOs,
+    isExpanded: true,
+    isSelected: isSelected,
+    isDraggable: false,
+    isSelectable: !dto.disabled,
+    prefix: () => icon ? h(FontAwesomeIcon, {icon}) : undefined
+  };
+}
+
+function isManagedClass(rdfClassURI) {
+  return !!classParametersByURI.value[rdfClassURI];
+}
+//#endregion
+</script>
+
+<style scoped lang="scss">
+</style>
+
+<i18n>
+en:
+  OntologyClassTreeView:
+    edit: Edit object type
+    add-child: Add sub-object type
+    delete: Delete object type
+
+fr:
+  OntologyClassTreeView:
+    edit: Editer le type d'objet
+    add-child: Ajouter un sous-type d'objet
+    delete: Supprimer le type d'objet
+
+
+</i18n>

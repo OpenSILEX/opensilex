@@ -63,6 +63,7 @@ const props = defineProps<{
   disabled?: boolean
   conversionMethod?: (dto: NamedResourceDTO) => { id: string; label: string; isDisabled?: boolean }
   disableBranchNodes?: boolean
+  checkStrategy?: 'all' | 'parent' | 'child'
 }>()
 
 const emit = defineEmits<{
@@ -123,7 +124,7 @@ const treeSelectBindings = computed(() => ({
   disabled: props.disabled,
   placeholder: props.placeholder,
   value: value.value,
-  'check-strategy': 'child' as const,
+  'check-strategy': props.checkStrategy ?? 'child',
   'default-expanded-keys': defaultExpandedKeys.value,   // <— optionnel
   'default-expand-all': true
 }))
@@ -225,11 +226,11 @@ const opts = dtos
      .filter(Boolean)
      .map(toTreeOpt)
 
-    const keys = new Set(options.value.map(object => object.key))
-    opts.forEach(object => {
-      if (!keys.has(object.key)) options.value.push(object)
-      cacheSelectedOption(object)
-    })
+      opts.forEach(object => {
+        const exists = !!findOptionByKey(object.key, options.value)
+        if (!exists) options.value.push(object)
+        cacheSelectedOption(object)
+      })
   }
    // on répercute la sélection normalisée
   value.value = props.multiple ? ids : ids[0]

@@ -44,18 +44,23 @@
   </div>
 </template>
 
+
+<script lang="ts">
+export const FAVORITE_TYPES = [
+  Oeso.DEVICE_TYPE_URI,
+  Oeso.SCIENTIFIC_OBJECT_TYPE_URI,
+  Oeso.EXPERIMENT_TYPE_URI
+];
+</script>
 <script setup lang="ts">
 import { ref, onMounted, inject } from "vue";
 import { SecurityService } from "opensilex-security/api/security.service";
-import { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import FavoritesHelp from "./FavoritesHelp.vue";
-import HelpButton from "@/components/HelpButton.vue";
 import Oeso from "../../../ontologies/Oeso";
 import { FavoriteGetDTO } from "opensilex-security/index";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { useI18n } from 'vue-i18n';
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
-const FAVORITE_TYPES = [Oeso.DEVICE_TYPE_URI, Oeso.SCIENTIFIC_OBJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI];
 
 const favorites = ref<FavoriteGetDTO[]>([]);
 const favoritesHelpModal = ref<InstanceType<typeof FavoritesHelp> | null>(null);

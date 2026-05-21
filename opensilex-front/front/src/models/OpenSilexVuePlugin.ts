@@ -1413,9 +1413,12 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-     * Compares 2 uris by getting long uris and checking if they are the same
+     * > This function checks if two URIs are the same
+     * @param uri1 - The first URI to compare.
+     * @param uri2 - The URI to check against.
+     * @returns true if the two URIs are the same, comparison is done on their long uri.
      */
-    public compareLongUris(uri1, uri2) {
+    public compareUris(uri1, uri2) {
         return this.getLongUri(uri1) === this.getLongUri(uri2);
     }
 
@@ -1426,7 +1429,7 @@ export default class OpenSilexVuePlugin {
         if (!uris || !Array.isArray(uris)) {
             return false;
         }
-        return uris.some((item) => this.compareLongUris(item, uri));
+        return uris.some((item) => this.compareUris(item, uri));
     }
 
 
@@ -1522,23 +1525,15 @@ export default class OpenSilexVuePlugin {
     }
 
     iconIDs = [];
-    selectIconIDs = [];
+    selectIconIDs: Array<{id: string, iconName: string}> = [];
 
     public getIconIDs() {
         return this.iconIDs;
     }
 
-    public setIconIDs(iconIDs) {
-        this.iconIDs = iconIDs;
-        this.selectIconIDs = [];
-        for (let i in iconIDs) {
-            let iconID = iconIDs[i];
-
-            this.selectIconIDs.push({
-                id: iconID,
-                label: iconID
-            })
-        }
+    public setIconIDs(iconIDs: Array<{id: string, iconName: string}>) {
+        this.iconIDs = iconIDs.map(({ id  }) => id);
+        this.selectIconIDs = iconIDs;
     }
 
     public getSelectIconIDs() {

@@ -114,6 +114,7 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_VARIABLE = "test:set/variables#air_temperature_thermocouple_degree-celsius";
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
     public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
+    public static final String DEVICE_EXAMPLE_RELATIONS = "{ \"vocabulary:hasShapeLength\" : \"87.0\" }";
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
 
     public static final String LINKED_DEVICE_ERROR = "LINKED_DEVICE_ERROR";
@@ -209,6 +210,7 @@ public class DeviceAPI {
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
             @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by RDF relations", example = DEVICE_EXAMPLE_RELATIONS) @QueryParam("relations") String relations,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -226,6 +228,8 @@ public class DeviceAPI {
             }
         }
 
+        Map<URI, String> relationFilters = parseRelationFilters(relations);
+
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         DeviceSearchFilter filter = new DeviceSearchFilter()
@@ -238,6 +242,7 @@ public class DeviceAPI {
                 .setBrandPattern(brand)
                 .setModelPattern(model)
                 .setSnPattern(serialNumber)
+                .setRelations(relationFilters)
                 .setCurrentUser(currentUser);
         filter.setOrderByList(orderByList)
                 .setPage(page)
@@ -268,6 +273,29 @@ public class DeviceAPI {
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    private Map<URI, String> parseRelationFilters(String relations) {
+        if (relations == null || relations.trim().isEmpty()) {
+            return null;
+        }
+
+        Document document = Document.parse(relations);
+
+        Map<URI, String> relationFilters = new HashMap<>();
+
+        for (String property : document.keySet()) {
+            Object value = document.get(property);
+
+            if (value == null || value.toString().trim().isEmpty()) {
+                continue;
+            }
+
+            URI propertyURI = URI.create(SPARQLDeserializers.formatURI(property));
+            relationFilters.put(propertyURI, value.toString().trim());
+        }
+
+        return relationFilters;
     }
 
     @GET

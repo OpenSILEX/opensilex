@@ -201,6 +201,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         mongoDBServiceV2.registerIndexes(DeviceAPI.METADATA_COLLECTION_NAME, MetaDataDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(ProvenanceDaoV2.PROVENANCE_COLLECTION_NAME, DataFileDaoV2.getIndexes());
+        mongoDBServiceV2.registerIndexes(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationDAO.getIndexes());
 
         // Ensure index creation on application start (only in production)
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {

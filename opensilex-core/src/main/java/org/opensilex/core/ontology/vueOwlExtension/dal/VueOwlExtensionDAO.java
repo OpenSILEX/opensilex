@@ -27,6 +27,8 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,8 +136,22 @@ public class VueOwlExtensionDAO {
         // maintain a tmp set in order to ensure uniqueness (according getTypeUri()) into data/object types
         Set<String> uniquesTypes = new HashSet<>();
 
-        ServiceLoader.load(VueOntologyType.class, OpenSilex.getClassLoader())
-                .forEach((ontologyType -> {
+        //ServiceLoader.load retrieve all implementation of VueOntologyType interface thanks to the opensilex-vue-types-services plugin (see pom.xml of opensilex-core)
+        Reflections reflections = new Reflections(
+                "org.opensilex.core.ontology.vueOwlExtension.types",
+                new SubTypesScanner(false)
+        );
+        Set<Class<? extends VueOntologyType>> typesClasses = reflections.getSubTypesOf(VueOntologyType.class);
+        Set<? extends VueOntologyType> typesObjects = typesClasses.stream().map(clazz -> {
+            try {
+                return clazz.getConstructor().newInstance();
+            } catch (Exception ex) {
+                LOGGER.warn(String.format("Unable to instantiate VueOntologyType implementation: %s.\nCheck that this is an interface or an abstract class", clazz.getName()));
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        typesObjects.forEach((ontologyType -> {
                     if (!ontologyType.isDisabled()) {
                         // associate the VueOntologyType to the type
                         typesByURI.put(SPARQLDeserializers.getShortURI(ontologyType.getTypeUri()), ontologyType);

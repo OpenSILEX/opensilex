@@ -161,7 +161,6 @@
       },
       {
         key: 'positions',
-        //TODO MAX when the correct component is present , move translation to global like for Annotations
         label: t('Position.list-title'),
         to: `/facility/positions/${encodeURIComponent(uri.value)}`
       }

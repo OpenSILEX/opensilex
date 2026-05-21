@@ -6,20 +6,18 @@
     v-if="selected"
   >
     <template v-if="withActions" #rightHeader>
-      <b-button-group>
-        <opensilex-EditButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
-          @click="onClickEditButton()"
-          label="FacilitiesView.update"
-          :small="true"
-        ></opensilex-EditButton>
-        <opensilex-DeleteButton
-          v-if=" user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
-          @click="onClickDeleteButton()"
-          label="FacilitiesView.delete"
-          :small="true"
-        ></opensilex-DeleteButton>
-      </b-button-group>
+      <opensilex-EditButton
+        v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
+        @click="onClickEditButton()"
+        label="FacilitiesView.update"
+        :small="true"
+      ></opensilex-EditButton>
+      <opensilex-DeleteButton
+        v-if=" user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
+        @click="onClickDeleteButton()"
+        label="FacilitiesView.delete"
+        :small="true"
+      ></opensilex-DeleteButton>
       <opensilex-FacilityModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         ref="organizationFacilityForm"

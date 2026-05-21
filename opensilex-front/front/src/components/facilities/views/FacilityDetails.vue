@@ -20,12 +20,11 @@
     </div>
 
     <div class="col-md-6">
-      Hello Test!
-<!--      <opensilex-AssociatedExperimentsList
+      <opensilex-AssociatedExperimentsList
         :searchMethod="loadExperiments"
         :nameFilter.sync="experimentName"
         ref="experimentsView"
-      ></opensilex-AssociatedExperimentsList>-->
+      ></opensilex-AssociatedExperimentsList>
     </div>
   </div>
 </template>

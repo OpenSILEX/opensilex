@@ -57,11 +57,16 @@ public class AnnotationAPITest extends AbstractMongoIntegrationTest {
     protected static final TypeReference<PaginatedListResponse<AnnotationGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<AnnotationGetDTO>>() {};
     protected static final TypeReference<PaginatedListResponse<MotivationGetDTO>> listTypeReferenceMotivation = new TypeReference<PaginatedListResponse<MotivationGetDTO>>() {};
 
-    private static final ServiceDescription getByUri;
-    private static final ServiceDescription create;
+    public static final ServiceDescription search;
+    public static final ServiceDescription getByUri;
+    public static final ServiceDescription create;
 
     static {
         try {
+            search = new ServiceDescription(
+                    AnnotationAPI.class.getMethod("searchAnnotations", String.class, URI.class, URI.class, URI.class, List.class, int.class, int.class),
+                    SEARCH_PATH
+            );
             getByUri = new ServiceDescription(
                     AnnotationAPI.class.getMethod("getAnnotation", URI.class),
                     URI_PATH

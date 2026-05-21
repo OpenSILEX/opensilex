@@ -94,9 +94,12 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
         SELECT  ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name (GROUP_CONCAT(DISTINCT ?experiment_uri ; separator=',') AS ?experiment_uri__opensilex__concat)
         WHERE
-          { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
-              { ?uri  rdf:type ?type
-                FILTER (?type IN (vocabulary:Variety, vocabulary:Accession))
+          { GRAPH <{base_uri}/set/germplasm>
+              { ?uri  rdf:type             ?type ;
+                      vocabulary:isPublic  true
+                FILTER ( ?type IN (vocabulary:Accession, vocabulary:Variety) )
+                GRAPH ?experiment_uri
+                  { ?so  vocabulary:hasGermplasm  ?uri}
                 OPTIONAL
                   { ?uri  foaf:homepage  ?website}
                 OPTIONAL
@@ -109,10 +112,7 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                   { ?uri      vocabulary:fromVariety  ?variety .
                     ?variety  rdfs:label            ?variety_name}
                 OPTIONAL
-                  { GRAPH ?experiment_uri
-                      { ?so  vocabulary:hasGermplasm  ?uri}}
-                OPTIONAL
-                  { GRAPH <http://phenome.inrae.fr/diaphen/set/germplasm>
+                  { GRAPH <http://opensilex.dev/set/germplasm>
                       { ?uri  rdfs:label  ?label}}
               }}
         GROUP BY ?uri ?label ?website ?code ?institute ?species ?variety ?variety_name
@@ -142,7 +142,6 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
         Var soVar = makeVar("so");
 
         WhereBuilder experimentsWhere = new WhereBuilder().addGraph(experimentUriVar, soVar, Oeso.hasGermplasm.asNode(), uriVar);
-        SPARQLQueryHelper.addWhereUriValues(experimentsWhere, experimentUriVar.getVarName(), userExperiments);
 
         Expr filterExpr = SPARQLQueryHelper.inURIFilter(
                 typeVar,
@@ -151,7 +150,9 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
 
         accessions.addGraph(germplasmGraph, new WhereBuilder()
                 .addWhere(uriVar, RDF.type.asNode(), typeVar)
+                .addWhere(uriVar, Oeso.isPublic, true)
                 .addFilter(filterExpr)
+                .addWhere(experimentsWhere)
                 .addOptional(uriVar, FOAF.homepage.asNode(), websiteVar)
                 .addOptional(uriVar, Oeso.hasId.asNode(), codeVar)
                 .addOptional(uriVar, Oeso.fromInstitute.asNode(), instituteVar)
@@ -162,12 +163,11 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
                                 .addWhere(varietyVar, RDFS.label.asNode(), varietyNameVar)
                 )
                 .addOptional(
-                        experimentsWhere
-                )
-                .addOptional(
                         new WhereBuilder().addGraph(germplasmGraph, uriVar, RDFS.label.asNode(), labelVar)
                 )
         );
+
+        SPARQLQueryHelper.addWhereUriValues(accessions, experimentUriVar.getVarName(), userExperiments);
 
         SPARQLQueryHelper.appendGroupConcatAggregator(accessions, experimentUriVar, true);
 

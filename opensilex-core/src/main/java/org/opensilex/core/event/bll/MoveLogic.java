@@ -15,12 +15,13 @@ import com.apicatalog.jsonld.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.rdf4j.query.algebra.Move;
 import org.locationtech.jts.io.ParseException;
-import org.opensilex.core.event.dal.move.*;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.event.api.move.MoveCreationDTO;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.MoveSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationModel;
@@ -28,21 +29,23 @@ import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.location.dal.LocationObservationSearchFilter;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.utils.ApiUtils;
 import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -647,6 +650,84 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         return false;
     }
 
+    /**
+     * In order to keep deprecated properties without relying on them, we need to convert old 'from', 'to' and 'targets_positions' to new property location
+     * DTOs with a location will be ignored, no changes will be applied on them.
+     * DTOs with multiple targets_positions will be split in many MoveCreationDTOs
+     * This method exists because MoveDTO's contain deprecated properties, it allows for retro compatability with version 1.4.x
+     */
+    public void fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(List<MoveCreationDTO> dtos) {
+        // move with multiple targets_positions will be splited in new moves that we will append to the dtos list
+        List<MoveCreationDTO> dtosToAddFromMultipleTargetsPositions = new ArrayList<>();
+
+        for (MoveCreationDTO moveDTO : dtos) {
+            if (moveDTO.getLocation() != null) {
+                continue;
+            }
+
+            LocationObservationDTO firstLocationDTO = new LocationObservationDTO();
+            firstLocationDTO.setFrom(moveDTO.getFrom());
+            firstLocationDTO.setTo(moveDTO.getTo());
+
+            boolean isFirstTargetPosition = true;
+            for (TargetPositionCreationDTO targetPositionDTO : moveDTO.getTargetsPositions()) {
+                if (targetPositionDTO.getTarget() == null) {
+                    if ( ! isFirstTargetPosition) {
+                        continue;
+                    }
+                }
+
+                LocationObservationDTO currentLocationDTO = new LocationObservationDTO();
+                if (moveDTO.getTargetsPositions() != null && !moveDTO.getTargetsPositions().isEmpty()) {
+                    currentLocationDTO.setFrom(moveDTO.getFrom());
+                    currentLocationDTO.setTo(moveDTO.getTo());
+                    currentLocationDTO.setFeatureOfInterest(targetPositionDTO.getTarget());
+                    if (Objects.nonNull(targetPositionDTO.getPosition())) {
+                        currentLocationDTO.setX(targetPositionDTO.getPosition().getX());
+                        currentLocationDTO.setY(targetPositionDTO.getPosition().getY());
+                        currentLocationDTO.setZ(targetPositionDTO.getPosition().getZ());
+                        currentLocationDTO.setTextualPosition(targetPositionDTO.getPosition().getDescription());
+                        currentLocationDTO.setGeojson(targetPositionDTO.getPosition().getPoint());
+                    }
+                }
+
+
+                if (isFirstTargetPosition) {
+                    firstLocationDTO = currentLocationDTO;
+                    isFirstTargetPosition = false;
+                } else {
+                    // if it is not the first target position, create a new Move and add it to the list
+                    MoveCreationDTO newMoveDTO = new MoveCreationDTO();
+                    newMoveDTO.setTargets(List.of(currentLocationDTO.getFeatureOfInterest()));
+                    newMoveDTO.setIsInstant(moveDTO.getIsInstant());
+                    newMoveDTO.setStart(moveDTO.getStart());
+                    newMoveDTO.setEnd(moveDTO.getEnd());
+                    newMoveDTO.setDescription(moveDTO.getDescription());
+                    newMoveDTO.setType(moveDTO.getType());
+                    newMoveDTO.setRelations(moveDTO.getRelations());
+
+                    newMoveDTO.setLocation(currentLocationDTO);
+                    dtosToAddFromMultipleTargetsPositions.add(newMoveDTO);
+                }
+            }
+
+            moveDTO.setLocation(firstLocationDTO); //first location is set on the base moveDTO
+        }
+
+        dtos.addAll(dtosToAddFromMultipleTargetsPositions);
+    }
+
+    /**
+     * @throws BadRequestException if one or many deprecated properties of a moveDTO is filled up
+     * this method exists to beceause moveDTO contain deprecated properties for retro compatibility to version 1.4.x purpose
+     */
+    public void assertNoDeprecatedPropertiesIsFilled(MoveCreationDTO dto) throws BadRequestException{
+        if (dto.getFrom() != null || dto.getTo() != null || dto.getTargetsPositions() != null) {
+            String message = "The properties 'from', 'to' and 'targets_positions' are deprecated, please use 'location' instead. This error concern move with uri : %s";
+            String uri = dto.getUri().toString();
+            throw new BadRequestException(String.format(message, uri));
+        }
+    }
     //#endregion
 
     //#region PRIVATE METHODS

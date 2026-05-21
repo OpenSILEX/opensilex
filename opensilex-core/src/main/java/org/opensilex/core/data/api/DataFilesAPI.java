@@ -1150,20 +1150,17 @@ public class DataFilesAPI {
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
-          /**
+    /**
      * Returns the filepath corresponding to the URI given.
-     *
-     * @param uri
-     * @param response
-     * @return The filepath or null with a 404 status if it doesn't exists
+     * @return The filepath or null with a 404 status if it doesn't exist
      */
     @ApiProtected
     @GET
     @Path("{uri}/path")
     @ApiOperation(value = "Get a datafile path")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve filepath"),
-        @ApiResponse(code = 404, message = "uri not found")
+        @ApiResponse(code = 200, message = "Retrieve filepath", response = String.class),
+        @ApiResponse(code = 404, message = "uri not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

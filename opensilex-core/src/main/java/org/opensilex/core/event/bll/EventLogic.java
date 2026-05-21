@@ -14,7 +14,6 @@ package org.opensilex.core.event.bll;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
@@ -25,7 +24,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
@@ -340,5 +338,4 @@ public class EventLogic<T extends EventModel, F extends EventSearchFilter> {
 
     }
     //#endregion
-
 }

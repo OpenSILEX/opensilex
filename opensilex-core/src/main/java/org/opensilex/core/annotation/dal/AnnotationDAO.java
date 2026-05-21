@@ -293,16 +293,18 @@ public class AnnotationDAO {
         select.addWhere(targetVar, RDF.type, experimentTypeNode);
 
         //Add filter to exclude any annotations that have at least 1 target that is included in userExperiments
-        WhereBuilder filterWhereBuilder = new WhereBuilder();
-        Var excludedTarget = SPARQLQueryHelper.makeVar("excludedTarget");
-        filterWhereBuilder.addGraph(annotationGraph, annotationVar, OA.hasTarget.asNode(), excludedTarget);
-        filterWhereBuilder.addWhere(excludedTarget, RDF.type, experimentTypeNode);
-        filterWhereBuilder.addFilter(SPARQLQueryHelper.inURIFilter(excludedTarget, userExperiments));
-        select.addFilter(
-                SPARQLQueryHelper.getExprFactory().notexists(
-                        filterWhereBuilder
-                )
-        );
+        if (CollectionUtils.isNotEmpty(userExperiments)) {
+            WhereBuilder filterWhereBuilder = new WhereBuilder();
+            Var excludedTarget = SPARQLQueryHelper.makeVar("excludedTarget");
+            filterWhereBuilder.addGraph(annotationGraph, annotationVar, OA.hasTarget.asNode(), excludedTarget);
+            filterWhereBuilder.addWhere(excludedTarget, RDF.type, experimentTypeNode);
+            filterWhereBuilder.addFilter(SPARQLQueryHelper.inURIFilter(excludedTarget, userExperiments));
+            select.addFilter(
+                    SPARQLQueryHelper.getExprFactory().notexists(
+                            filterWhereBuilder
+                    )
+            );
+        }
 
         //Execute and return result
         return sparql.executeSelectQueryAsStream(select).map(

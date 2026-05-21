@@ -466,14 +466,7 @@ public class GermplasmLogic {
         var uriGermplasmMap = germplasmModels.stream()
                 .collect(Collectors.toMap(germplasm -> SPARQLDeserializers.formatURI(germplasm.getUri()), Function.identity()));
         var uris = uriGermplasmMap.keySet().stream().toList();
-        var filter = new GermplasmSearchFilter()
-                .setUris(uris)
-                .setUser(currentUser);
-        var allowedUris = dao.search(filter, false, false).getList().stream()
-                .map(GermplasmModel::getUri)
-                .map(SPARQLDeserializers::formatURI)
-                .collect(Collectors.toUnmodifiableSet());
-        var forbiddenUris = SetUtils.difference(uriGermplasmMap.keySet(), allowedUris);
+        var forbiddenUris = dao.getUnauthorizedGermplasms(uris, currentUser);
         if (forbiddenUris.isEmpty()) {
             return;
         }

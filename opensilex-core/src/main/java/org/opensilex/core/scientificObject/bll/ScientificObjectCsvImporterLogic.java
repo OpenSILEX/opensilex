@@ -3,6 +3,7 @@ package org.opensilex.core.scientificObject.bll;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -23,6 +24,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
@@ -109,6 +111,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private final MoveLogic moveLogic;
     private final ScientificObjectDAO scientificObjectDAO;
     private final ExperimentDAO experimentDAO;
+    private final GermplasmDAO germplasmDAO;
     private ExperimentModel experimentModel;
     private final AccountModel currentUser;
     private final ScientificObjectLogic scientificObjectLogic;
@@ -167,6 +170,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         this.currentUser = user;
         this.experiment = experiment;
         experimentDAO = new ExperimentDAO(sparql, mongoDB);
+        germplasmDAO = new GermplasmDAO(sparql, mongoDB);
 
         moveLogic = new MoveLogic(sparql, mongoDB, user, session);
         this.locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
@@ -629,6 +633,19 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                     movesPerTargetToTestCollectionDatesFor.put(sciObj.getUri(), csvFilledMoves.get(sciObj.getUri()));
                 }
             }
+        }
+
+        var germplasmSet = modelChunk.stream()
+                .flatMap(so -> so.getRelations(Oeso.hasGermplasm))
+                .map(SPARQLModelRelation::getValue)
+                .map(URI::create)
+                .map(SPARQLDeserializers::formatURI)
+                .collect(Collectors.toUnmodifiableSet());
+        var forbiddenGermplasms = germplasmDAO.getUnauthorizedGermplasms(germplasmSet, currentUser);
+        if (!forbiddenGermplasms.isEmpty()) {
+            var error = new CsvCellValidationContext();
+            error.setMessage("Unauthorized access to private resources : " + forbiddenGermplasms.stream().map(uri -> "<" + uri + ">").collect(Collectors.joining(", ")));
+            restrictionValidator.addInvalidURIError(error);
         }
 
         //Validations to perform if batch concerns an update

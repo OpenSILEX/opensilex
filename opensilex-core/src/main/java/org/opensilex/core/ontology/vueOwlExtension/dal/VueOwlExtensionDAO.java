@@ -136,7 +136,6 @@ public class VueOwlExtensionDAO {
         // maintain a tmp set in order to ensure uniqueness (according getTypeUri()) into data/object types
         Set<String> uniquesTypes = new HashSet<>();
 
-        //ServiceLoader.load retrieve all implementation of VueOntologyType interface thanks to the opensilex-vue-types-services plugin (see pom.xml of opensilex-core)
         Reflections reflections = new Reflections(
                 "org.opensilex.core.ontology.vueOwlExtension.types",
                 new SubTypesScanner(false)

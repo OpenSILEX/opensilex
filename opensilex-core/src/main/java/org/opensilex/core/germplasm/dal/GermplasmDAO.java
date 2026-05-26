@@ -169,7 +169,9 @@ public class GermplasmDAO {
         metadata.setUri(germplasm.getUri());
         metadata.setPublisher(germplasm.getPublisher());
         metadata.setIsPublic(germplasm.getIsPublic());
-        metadata.setGroups(germplasm.getGroups().stream().map(SPARQLResourceModel::getUri).toList());
+        if (CollectionUtils.isNotEmpty(germplasm.getGroups())) {
+            metadata.setGroups(germplasm.getGroups().stream().map(SPARQLResourceModel::getUri).toList());
+        }
     }
 
     /**
@@ -335,13 +337,14 @@ public class GermplasmDAO {
      * </ul>
      */
     public Set<URI> getUnauthorizedGermplasms(Collection<URI> uris, AccountModel account) throws Exception {
-        if (CollectionUtils.isEmpty(uris)) {
+        var existingUris = checkExistence(uris.stream().toList());
+        if (CollectionUtils.isEmpty(existingUris)) {
             return Set.of();
         }
-        var filter = new GermplasmSearchFilter()
-                .setUris(uris.stream().toList())
+        var allowedFilter = new GermplasmSearchFilter()
+                .setUris(existingUris.stream().toList())
                 .setUser(account);
-        var allowedUris = search(filter, false, false).getList().stream()
+        var allowedUris = search(allowedFilter, false, false).getList().stream()
                 .map(GermplasmModel::getUri)
                 .map(SPARQLDeserializers::formatURI)
                 .collect(Collectors.toUnmodifiableSet());

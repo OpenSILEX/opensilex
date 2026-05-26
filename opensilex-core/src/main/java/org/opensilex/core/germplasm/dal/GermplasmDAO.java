@@ -331,7 +331,6 @@ public class GermplasmDAO {
      * <ul>
      *     <li>The user is admin</li>
      *     <li>The user is the publisher of the germplasm</li>
-     *     <li>The user is in one of the groups of the germplasm</li>
      *     <li>The germplasm is public</li>
      * </ul>
      */

@@ -1028,7 +1028,7 @@ test:temporary1:deploy:
     <<: *deploy_opensilex_template
     variables:
         CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/temporary1"
-        INSTANCE_CONFIGURATION_FILE_NAME: "test.yml"
+        INSTANCE_CONFIGURATION_FILE_NAME: "tmp1.test.yml"
         OPENSILEX_JAR_ADMIN_PORT: 4092
         OPENSILEX_JAR_PORT: 8092
         REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"

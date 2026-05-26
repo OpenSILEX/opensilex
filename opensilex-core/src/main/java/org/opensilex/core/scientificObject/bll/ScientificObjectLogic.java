@@ -826,6 +826,9 @@ public class ScientificObjectLogic {
     }
 
     private void checkGermplasmAccess(List<RDFObjectRelationDTO> relations, AccountModel account) throws Exception {
+        if (relations == null) {
+            return;
+        }
         var uris = relations.stream()
                 .filter(rel -> SPARQLDeserializers.compareURIs(rel.getProperty(), Oeso.hasGermplasm.getURI()))
                 .map(rel -> URI.create(rel.getValue()))

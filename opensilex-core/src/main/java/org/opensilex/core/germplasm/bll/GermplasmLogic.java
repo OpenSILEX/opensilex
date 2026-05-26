@@ -464,6 +464,7 @@ public class GermplasmLogic {
 
     private void checkUserAccess(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws Exception {
         var uriGermplasmMap = germplasmModels.stream()
+                .filter(germplasm -> germplasm.getUri() != null)
                 .collect(Collectors.toMap(germplasm -> SPARQLDeserializers.formatURI(germplasm.getUri()), Function.identity()));
         var uris = uriGermplasmMap.keySet().stream().toList();
         var forbiddenUris = dao.getUnauthorizedGermplasms(uris, currentUser);

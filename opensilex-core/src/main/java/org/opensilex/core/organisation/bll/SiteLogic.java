@@ -439,7 +439,7 @@ public class SiteLogic {
             }
         } else {
             try {
-                locationObservationLogic.deleteEveryLocationObservationInCollection(session, siteModel.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteEveryLocationObservationInCollection(session, siteModel.getLocationObservationCollection().getUri(), true);
             } catch (Exception ignore) {
                 //Even if the location is not found, it must not block the request
             }
@@ -474,8 +474,7 @@ public class SiteLogic {
             try {
                 LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(locationObservationCollectionUri);
                 if (locationObservationModel != null) {
-                    locationObservationLogic.deleteEveryLocationObservationInCollection(session, locationObservationCollectionUri);
-                    locationObservationCollectionLogic.deleteLocationObservationCollection(locationObservationCollectionUri);
+                    locationObservationLogic.deleteEveryLocationObservationInCollection(session, locationObservationCollectionUri, true);
                 }
             } catch (NoSQLInvalidURIException e) {
                 //Even if the location is not found, it must not block the request

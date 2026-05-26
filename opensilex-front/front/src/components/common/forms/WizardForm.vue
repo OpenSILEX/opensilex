@@ -44,7 +44,7 @@
           <component
             :ref="'step' + index"
             v-bind:is="step.component"
-            :props="step.props"
+            v-bind="step.props"
             :editMode="editMode"
             :form.sync="form"
             @fill="fillForm"

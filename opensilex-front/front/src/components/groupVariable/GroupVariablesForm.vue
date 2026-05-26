@@ -1,5 +1,6 @@
 <template>
   <n-form
+    v-if="props.form"
     ref="formRef"
     :model="form"
     :rules="rules"
@@ -59,17 +60,21 @@ import { NForm, NFormItem } from 'naive-ui'
 import { requiredTrimmed } from  "../../models/FormFieldsFormatter"
 
 // ---- Props / Emits ----
-const props = defineProps<{
-  editMode?: boolean
-  uriGenerated: { type: Boolean, default: true },
-  form: {
-    uri?: string | null
-    name?: string | null
-    description?: string | null
-    variables: string[]
-    __variablesWithLabels?: Array<{ id: string; label: string }>
+const props = withDefaults(defineProps<{
+    editMode?: boolean
+    uriGenerated?: boolean,
+    form: {
+      uri?: string | null
+      name?: string | null
+      description?: string | null
+      variables: string[]
+      __variablesWithLabels?: Array<{ id: string; label: string }>
+    }
+  }>(),
+  {
+    uriGenerated: true
   }
-}>()
+);
 
 const emit = defineEmits<{
   (e: 'hideSelector'): void

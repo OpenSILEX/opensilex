@@ -155,7 +155,7 @@ export default class LocationsForm extends Vue {
         },
     ];
     private locationSteps = [
-        {component: "opensilex-LocationForm"}
+        {component: "opensilex-LocationForm", props:{isForFacilityLocation:true}}
     ]
     private index: number;
     //endregion

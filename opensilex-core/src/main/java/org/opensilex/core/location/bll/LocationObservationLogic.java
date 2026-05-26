@@ -275,16 +275,20 @@ public class LocationObservationLogic {
 
     /**
      * Delete all location observations for a Collection
-     * Then deletes the collection to maintain coherence with objects that were never given a location (they have no collection)
+     * Then deletes the collection if doDeleteCollection is true to maintain coherence with objects that were never given a location (they have no collection)
      *
+     * @param session user client session
      * @param locationObservationCollectionURI location observation
+     * @param doDeleteCollection, if true then also deletes the containing collection
      */
-    public void deleteEveryLocationObservationInCollection(ClientSession session, URI locationObservationCollectionURI) throws Exception {
+    public void deleteEveryLocationObservationInCollection(ClientSession session, URI locationObservationCollectionURI, boolean doDeleteCollection) throws Exception {
         LocationObservationSearchFilter searchFilter = new LocationObservationSearchFilter();
         searchFilter.setObservationCollection(locationObservationCollectionURI);
 
         locationObservationDAO.deleteMany(session, searchFilter);
-        collectionLogic.deleteLocationObservationCollection(locationObservationCollectionURI);
+        if(doDeleteCollection){
+            collectionLogic.deleteLocationObservationCollection(locationObservationCollectionURI);
+        }
     }
 
     /**
@@ -625,7 +629,7 @@ public class LocationObservationLogic {
     private Exception notAllowedException(LocationObservationModel model) {
         StringBuilder message = new StringBuilder();
         message.append(model.getObservationCollection().toString())
-                .append("can't be at 2 different locations in the same time (")
+                .append(" can't be at 2 different locations at the same time (")
                 .append(model.getEndDate().toString())
                 .append(")");
 

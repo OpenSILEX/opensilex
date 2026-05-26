@@ -13,6 +13,7 @@
   * [Business logic](#business-logic)
     * [Site](#site)
     * [Facility](#facility)
+  * [Retro compatibility with version 1.4.x](#retro-compatibility-with-version-14x)
   * [Documentation](#documentation)
 <!-- TOC -->
 
@@ -113,6 +114,24 @@ A facility can be located by an address and positions (at different times):
         "endDate" : 2024-10-15T06:48:15.777+00:00,
         "startDate" : 2024-11-15T06:48:15.777+00:00
     }
+
+## Retro compatibility with version 1.4.x
+
+In order to avoid **breaking API changes**, we kept **deprecated API properties** despite significant logic changes.
+This section explains the behavior of these deprecated properties. **Please do not use these properties, as they will be deleted in a future version, and use `location` property instead.**
+
+Deprecated properties are : `from`, `to`, and `targetPositions`.
+
+When **creating** a move :
+- A move with a non-null `location` property will ignore the deprecated properties listed above.
+- A move filled with `from` and `to` properties will have the same behaviour as if it was filled with a location containing a `from` and `to` property
+- A move filled with many `targetPositionswill` result in many different moves. If you send a move with 3 `targetPositions`, it will create 3 different moves with the same information. Only information contained in the `targetsPositions` will differ.
+- `x`, `y`, `z`, `point` and `text` properties in `targetPositions.position` are used to fill resprectively `x`, `y`, `z`, `geojson` and `text` properties in the `location` property of the move.
+- A move filled with `from` and `to` and with many `targetPositions` will result in many different moves, each move will have the same `location.from` and `location.to` properties.
+
+**Updating** a move with one of the deprecated properties will result in an error. You can only update a move with the `location` property.
+
+**Getting** a move will always return a move with the `location` property. The deprecated properties will not be returned in the response, even if they were used to create the move.
 
 ## Documentation
 

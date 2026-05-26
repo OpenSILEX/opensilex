@@ -1,6 +1,7 @@
 package org.opensilex.migration.one_point_five_ALL;
 
 import org.opensilex.OpenSilex;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -39,7 +40,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
 
     @Override
     public void execute() throws OpensilexModuleUpdateException {
-        
+
         //Initialize services
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
@@ -69,24 +70,20 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         }
         //Execute them
         try{
-            sparql.startTransaction();
-            mongodb.startTransaction();
 
-            facilitiesLinkToVariablesAndDevicesMigration.execute();
-            sciObjsAndMovesLocationMigration.execute();
-            sciObjAndXpLinkMigration.execute();
-            facilitiesLocationsMigration.execute();
-            changeTypeParametersUri.execute();
+            new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session ->{
+                facilitiesLinkToVariablesAndDevicesMigration.execute();
+                sciObjsAndMovesLocationMigration.execute(session);
+                sciObjAndXpLinkMigration.execute();
+                facilitiesLocationsMigration.execute(session);
+                changeTypeParametersUri.execute();
+                return null;
+            });
 
-            sparql.commitTransaction();
-            mongodb.commitTransaction();
             logger.info("Migration successfully completed");
         }catch(Exception e){
             try {
-                sparql.rollbackTransaction();
-                mongodb.rollbackTransaction();
-                logger.error("Error while migrating to 1.5. No changes were saved on the databases");
-                throw e;
+                logger.error("Error while migrating to 1.5. No changes were saved on the databases", e);
             } catch (Exception exception) {
                 throw new OpensilexModuleUpdateException("Error while migrating to 1.5. No changes were saved on the databases", exception);
             }

@@ -127,7 +127,7 @@ public class VueOwlExtensionDAO {
         Set<String> uniquesTypes = new HashSet<>();
 
         Reflections reflections = new Reflections(
-                "org.opensilex.core.ontology.vueOwlExtension.types",
+                "org.opensilex.front.vueOwlExtension.types",
                 new SubTypesScanner(false)
         );
         Set<Class<? extends VueOntologyType>> typesClasses = reflections.getSubTypesOf(VueOntologyType.class);

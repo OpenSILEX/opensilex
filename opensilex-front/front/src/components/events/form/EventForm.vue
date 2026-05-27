@@ -95,7 +95,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import MoveForm from "./MoveForm.vue";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
+import {VueJsOntologyExtensionService} from "../../../lib";
 import OpenSilexVuePlugin from 'src/models/OpenSilexVuePlugin';
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import {EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index';

@@ -1,5 +1,4 @@
-import {VueRDFTypeDTO} from 'opensilex-core/model/vueRDFTypeDTO'
-import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
+import {VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 

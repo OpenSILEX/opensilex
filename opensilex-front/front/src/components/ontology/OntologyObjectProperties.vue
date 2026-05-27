@@ -71,9 +71,7 @@
 <script lang="ts">
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
-import {VueRDFTypeDTO} from "opensilex-core/model/vueRDFTypeDTO";
-import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
 import {RDFObjectRelationDTO} from "../../../../../opensilex-core/front/src/lib";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";

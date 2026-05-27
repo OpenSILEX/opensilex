@@ -26,9 +26,7 @@
 
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
-import {VueRDFTypeDTO} from "opensilex-core/model/vueRDFTypeDTO";
-import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import {PropertiesByDomainDTO, RDFObjectRelationDTO } from 'opensilex-core/index';

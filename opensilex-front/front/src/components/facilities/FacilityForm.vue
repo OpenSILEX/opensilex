@@ -106,7 +106,7 @@
 import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
+import {VueJsOntologyExtensionService} from "../../lib";
 import {FacilityCreationDTO} from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";

@@ -13,7 +13,7 @@
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "opensilex-core/index";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component

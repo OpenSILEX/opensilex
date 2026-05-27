@@ -104,8 +104,7 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
-import {VueRDFTypeDTO} from "opensilex-core/model/vueRDFTypeDTO";
+import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EventDetailsDTO, MoveDetailsDTO} from 'opensilex-core/index';
 import {UserGetDTO} from "../../../../../../opensilex-security/front/src/lib";

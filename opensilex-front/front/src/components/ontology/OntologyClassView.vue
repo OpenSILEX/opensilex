@@ -66,7 +66,7 @@ import Vue from "vue";
 import OntologyClassTreeView from "./OntologyClassTreeView.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {Store} from "vuex";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
+import {VueJsOntologyExtensionService} from "../../lib";
 
 @Component
 export default class OntologyClassView extends Vue {
@@ -113,7 +113,7 @@ export default class OntologyClassView extends Vue {
 
     showEditForm(data) {
         this.vueJsOntologyService
-            .getRDFTypeVue(data.uri, this.rdfType)
+            .getRDFType(data.uri, this.rdfType)
             .then(http => {
                 let form = http.response.result;
                 this.classForm.getFormRef().setParentTypes(this.classesTree.getTree());

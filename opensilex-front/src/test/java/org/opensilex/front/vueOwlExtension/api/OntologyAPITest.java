@@ -18,8 +18,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.OWLClassPropertyRestrictionDTO;
 import org.opensilex.core.ontology.api.OntologyAPI;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
-import org.opensilex.core.ontology.vueOwlExtension.api.VueOwlExtensionAPI;
-import org.opensilex.core.ontology.vueOwlExtension.api.VueRDFTypeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ErrorResponse;

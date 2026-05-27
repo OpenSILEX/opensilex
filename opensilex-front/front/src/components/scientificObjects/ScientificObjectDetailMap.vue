@@ -38,8 +38,7 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
-import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO"
+import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {GeoJsonObject} from "opensilex-core/model/geoJsonObject";
 

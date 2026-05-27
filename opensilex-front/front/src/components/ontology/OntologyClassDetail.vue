@@ -190,8 +190,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {OntologyService} from "opensilex-core/index";
-import {VueJsOntologyExtensionService} from "opensilex-core/api/vueJsOntologyExtension.service";
-import {VueRDFTypePropertyDTO} from "opensilex-core/model/vueRDFTypePropertyDTO";
+import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../lib";
 import OntologyClassPropertyForm from "./OntologyClassPropertyForm.vue";
 
 @Component

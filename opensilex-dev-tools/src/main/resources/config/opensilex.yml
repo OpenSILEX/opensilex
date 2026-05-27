@@ -1,5 +1,5 @@
 ontologies:
-    baseURI: http://opensilex.dev/
+    baseURI: http://phenome.inrae.fr/m3p/
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
@@ -10,24 +10,14 @@ ontologies:
 file-system:
     fs:
         config:
-            defaultFS: local
+            defaultFS: gridfs
             connections:
-                local:
-                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
-                    config:
-                        basePath: ../../opensilex-data
-                #     irods:
-                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-                #         config:
-                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
                 gridfs:
                     implementation: org.opensilex.fs.gridfs.GridFSConnection
                     config:
                         host: localhost
                         port: 8668
                         database: opensilex
-            # customPath:
-            #     datafile/: irods
 
 big-data:
     mongodb:
@@ -39,61 +29,21 @@ big-data:
 
 phisws:
     infrastructure: opensilex
-# Configuration for module: SecurityModule (SecurityConfig)
-# security:
-# #    Email service (EmailService)
-#    email:
-#         config:
-#             enable: true
-#             simulateSending: false
-#             # Not working
-#             sender: opensilex@mail.com
-#             smtp :
-#                 host: smtp.gmail.com
-#                 port: 587
-#                 userId : ""
-#                 userPassword : ""
-
-#core:
-#    enableLogs: true
-#server:
-#    pathPrefix: /sunagri
-
-# Base system configuration OpenSilex (OpenSilexConfig)
-#system:
-#  instanceTitle: OpenSILEX
-#  # Instance description (String)
-#  instanceDescription: OpenSILEX is an ontology-driven Information System designed for life science data.
-#  # Contact name (String)
-#  contactName: OpenSILEX Team
-#  # Contact e-mail (String)
-#  contactEmail: opensilex-help@groupes.renater.fr
-#  # Project homepage (String)
-#  projectHomepage: http://www.opensilex.org/
 
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
 
 front:
-    agroportal:
-        entity:
-            - AGROVOC
-            - PO
-        trait:
-            - PATO
-        method:
-            - TRANSFORMON
-        unit:
-            - OBOE
+    connectAsGuest: true
 
-# dataverse:
-#     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
-#     dataverseAlias: "opensilex-tests"
-#     dataverseLanguages:
-#         - en
-#         - fr
-#     datasetMetadataLanguages:
-#         - en
-#         - fr
+security:
+    gdprPdfPathsByLanguages:
+        en: /home/roux/Documents/utile/configs/rgpd_en
+        fr: /home/roux/Documents/utile/configs/rgpd_en
+
+core :
+    agroportal:
+        basePath: "https://agroportal.eu"
+        baseAPIPath: "https://data.agroportal.eu"
+        externalAPIKey: "8bc3c0c9-464a-4bce-a218-a9d43fbf0df8"

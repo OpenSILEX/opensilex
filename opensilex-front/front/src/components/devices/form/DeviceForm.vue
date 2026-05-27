@@ -237,7 +237,6 @@ defineExpose({
   create,
   update,
   readAttributes: loadAttributes,
-  typeSwitch,
   validate,
   getEmptyForm
 })

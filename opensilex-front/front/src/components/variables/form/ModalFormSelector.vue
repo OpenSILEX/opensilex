@@ -11,58 +11,55 @@
         <div class="select-button-container">
           <!-- Zone d’affichage des valeurs sélectionnées -->
           <div
-            class="chip-area"
-            :class="{ clickable: openOnClick && !disabled }"
+            class="selectedItemsArea"
+            :class="{ clickable: openOnClick && !isDisabled }"
             @click="showModal"
           >
-            <template v-if="displayed.length">
+            <template v-if="displayedSelectedItems.length">
               <n-tag
-                v-for="item in displayed"
+                v-for="item in displayedSelectedItems"
                 :key="item.id"
                 closable
                 size="small"
-                @close.stop="onChipClose(item)"
+                @close.stop="onSelectedItemTagClose(item)"
               >
-                <span class="label" :title="item.label">{{ item.label }}</span>
+                <span class="label" :title="item.label">
+                  {{ item.label }}
+                </span>
               </n-tag>
-              <n-tag v-if="extraCount > 0" size="small">+{{ extraCount }}</n-tag>
+
+              <n-tag v-if="remainingSelectedItemsCount > 0" size="small">
+                +{{ remainingSelectedItemsCount }}
+              </n-tag>
             </template>
 
-            <span v-else class="modalFormSelectorPlaceholder">{{ t(placeholder) }}</span>
+            <span v-else class="modalFormSelectorPlaceholder">
+              {{ t(placeholder) }}
+            </span>
           </div>
-
-          <n-button
-            size="small"
-            class="greenThemeColor"
-            :disabled="disabled"
-            @click="showModal"
-          >
-            {{ t('component.common.select') }}
-          </n-button>
 
           <n-button
             v-if="clearable && !disabled && hasSelection"
             quaternary
             size="small"
-            @click="clearAll"
+            @click.stop="clearAll"
           >
-            {{ t('component.common.clear') }}
+            <i class="bi bi-x-lg"></i>
           </n-button>
         </div>
       </n-spin>
 
-      <!-- Composant modal dynamique -->
       <component
         ref="searchModal"
         :is="modalComponent"
         v-bind="modalComponentProps"
+        :selected="confirmedSelectedItems"
         :maximumSelectedRows="maximumSelectedItems"
         v-model:searchFilter="searchModalFilterModel"
         :withAssociatedData="withAssociatedData"
         :experiment="experiment"
         :objects="objects"
         :devices="devices"
-
         @onClose="$emit('onClose')"
         @close="$emit('close')"
         @onValidate="onValidate"
@@ -79,29 +76,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, nextTick, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NSpin, NTag } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 
-/** ----- Types ----- */
 export interface SelectableItem {
   id: string
   label: string
   isDisabled?: boolean
 }
-type NamedResourceDTO = { uri: string; name: string; isDisabled?: boolean }
 
-/** ----- i18n / plugin ----- */
-const { t } = useI18n()
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+type NamedResourceDTO = {
+  uri: string
+  name: string
+  isDisabled?: boolean
+}
 
-/** ----- Props / Emits ----- */
+type SelectedJsonItem = {
+  uri?: string
+  name?: string
+  id?: string
+  label?: string
+  isDisabled?: boolean
+}
+
 const props = defineProps<{
   /** v-model:selected : tableau d’URIs (multiple=true) ou string (multiple=false) */
   selected: string[] | string | undefined
   /** liste d’objets { uri, name } (ou { id, label }) pour préremplir les libellés */
-  selectedInJsonFormat?: Array<{ uri?: string; name?: string; id?: string; label?: string }> | null
+  selectedInJsonFormat?: SelectedJsonItem[] | null
 
   multiple?: boolean
   itemLoadingMethod?: (uris: Array<string | { uri: string }>) => Promise<any[]>
@@ -116,7 +120,6 @@ const props = defineProps<{
   modalComponent: string | any
   modalComponentProps?: Record<string, any>
 
-  /** v-model:filter -> renommé v-model:searchFilter côté modal */
   filter?: any
 
   conversionMethod?: (dto: NamedResourceDTO | SelectableItem) => SelectableItem
@@ -141,7 +144,10 @@ const props = defineProps<{
   /** nb max de tags affichés dans l’input avant “+N” */
   limit?: number
 
-  // VariablesSelectorWithFilter props
+  /**
+   * Props spécifiques à certaines modales,
+   * notamment VariablesSelectorWithFilter.
+   */
   withAssociatedData?: boolean
   experiment?: any
   objects?: any
@@ -151,7 +157,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:selected', value: string[] | string | undefined): void
   (e: 'update:filter', value: any): void
-  (e: 'update:selectedInJsonFormat', value: Array<{ uri: string; name: string }> | null): void
+  (e: 'update:selectedInJsonFormat', value: Array<{ uri: string; name: string; isDisabled?: boolean }> | null): void
   (e: 'select', item: SelectableItem, all?: SelectableItem[]): void
   (e: 'deselect', item: SelectableItem): void
   (e: 'onValidate', items: SelectableItem[]): void
@@ -163,98 +169,211 @@ const emit = defineEmits<{
   (e: 'clear'): void
 }>()
 
-/** ----- Valeurs par défaut ----- */
+const { t } = useI18n()
+const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+
 const multiple = computed(() => props.multiple !== false)
 const clearable = computed(() => props.clearable !== false)
 const openOnClick = computed(() => props.openOnClick !== false)
-const limit = computed(() => (props.limit ?? 4))
+const limit = computed(() => props.limit ?? 4)
+const isDisabled = computed(() => props.disabled === true)
 
-/** ----- Réfs internes ----- */
 const searchModal = ref<any>(null)
 const loading = ref(false)
 const firstTimeOpening = ref(false)
 
 /** Sélection côté form : copie (confirmée) & temporaire (dans la modale) */
-const selectedCopie = ref<SelectableItem[]>([])
-const selectedTmp   = ref<SelectableItem[]>([])
+const confirmedSelectedItems = ref<SelectableItem[]>([])
+const temporarySelectedItems = ref<SelectableItem[]>([])
 
 /** ----- v-model:selected (URIs) ----- */
 const selectionModel = computed<string[] | string | undefined>({
   get: () => props.selected,
-  set: (val) => emit('update:selected', val)
+  set: value => emit('update:selected', value)
 })
 
 /** v-model:filter -> v-model:searchFilter (nommage côté modal) */
 const searchModalFilterModel = computed({
   get: () => props.filter,
-  set: (v) => emit('update:filter', v)
+  set: value => emit('update:filter', value)
 })
-
-/** ----- Conversion par défaut (DTO -> SelectableItem) ----- */
-const conversion = (dto: any): SelectableItem => {
-  if (typeof props.conversionMethod === 'function') {
-    return props.conversionMethod(dto as any)
-  }
-  if (dto && (dto as NamedResourceDTO).uri && (dto as NamedResourceDTO).name) {
-    return { id: dto.uri, label: dto.name, isDisabled: (dto as NamedResourceDTO).isDisabled ?? false }
-  }
-  return dto as SelectableItem
-}
-
-/** aide : convertir vers la forme attendue par la modale */
-const toModalRow = (it: SelectableItem) => ({ uri: it.id, name: it.label })
 
 /** ----- Hidden input (compat) ----- */
 const hiddenValue = computed(() => {
   if (multiple.value && Array.isArray(selectionModel.value)) {
     return selectionModel.value.length ? selectionModel.value.join(',') : ''
-  } else {
-    return (selectionModel.value as string) || ''
   }
+
+  return (selectionModel.value as string) || ''
 })
 
-/** ----- Affichage tags avec limite ----- */
-const displayed = computed(() => selectedCopie.value.slice(0, limit.value))
-const extraCount = computed(() => Math.max(0, selectedCopie.value.length - displayed.value.length))
-const hasSelection = computed(() => selectedCopie.value.length > 0)
+/**
+ * Liste des éléments réellement affichés en selecteur.
+ * Si la sélection contient plus d’éléments que la limite,
+ * on affiche seulement les premiers.
+ */
+const displayedSelectedItems = computed(() => confirmedSelectedItems.value.slice(0, limit.value))
 
-/** ----- Préremplissage libellés ----- */
-function preloadFromJson() {
-  if (props.selectedInJsonFormat && props.selectedInJsonFormat.length) {
-    const normalized: SelectableItem[] = props.selectedInJsonFormat.map((it: any) => {
-      if (it.id && it.label) return { id: it.id, label: it.label }
-      return { id: it.uri, label: it.name }
-    })
-    selectedTmp.value = normalized.slice()
-    selectedCopie.value = normalized.slice()
+/**
+ * Nombre d’éléments non affichés car excedant la limite.
+ * Si 7 elements, limit = 4 et remainingSelectedItemsCount = 3
+ * On affiche alors "+3".
+ */
+const remainingSelectedItemsCount = computed(() => Math.max(0, confirmedSelectedItems.value.length - displayedSelectedItems.value.length))
+
+const hasSelection = computed(() => confirmedSelectedItems.value.length > 0)
+
+function normalizeSelectableItem(item: any): SelectableItem | null {
+  if (!item) {
+    return null
   }
+
+  if (item.id && item.label) {
+    return {
+      id: item.id,
+      label: item.label,
+      isDisabled: item.isDisabled ?? false
+    }
+  }
+
+  if (item.uri && item.name) {
+    return {
+      id: item.uri,
+      label: item.name,
+      isDisabled: item.isDisabled ?? false
+    }
+  }
+
+  if (typeof item === 'string') {
+    return {
+      id: item,
+      label: item
+    }
+  }
+
+  return null
+}
+
+function conversion(dto: any): SelectableItem {
+  if (typeof props.conversionMethod === 'function') {
+    return props.conversionMethod(dto as any)
+  }
+
+  const normalized = normalizeSelectableItem(dto)
+
+  if (normalized) {
+    return normalized
+  }
+
+  return dto as SelectableItem
+}
+
+/**
+ * Synchronise le v-model:selected du parent à partir d’une liste d’items.
+ * En mode multiple : émet un tableau d’ids.
+ * En mode simple : émet le premier id trouvé.
+ */
+function syncSelectionModelFromItems(items: SelectableItem[]) {
+  const ids = items.map(item => item.id)
+
+  if (multiple.value) {
+    emit('update:selected', ids)
+  } else {
+    emit('update:selected', ids[0])
+  }
+}
+
+function syncSelectedJsonFormat() {
+  emit(
+    'update:selectedInJsonFormat',
+    confirmedSelectedItems.value.length
+      ? confirmedSelectedItems.value.map(item => ({
+          uri: item.id,
+          name: item.label,
+          isDisabled: item.isDisabled
+        }))
+      : null
+  )
+}
+
+function toModalRow(item: SelectableItem) {
+  return {
+    uri: item.id,
+    name: item.label,
+    isDisabled: item.isDisabled
+  }
+}
+
+function setSelection(items: SelectableItem[]) {
+  const byId = new Map<string, SelectableItem>()
+
+  items.forEach(item => {
+    if (item?.id) {
+      byId.set(item.id, item)
+    }
+  })
+
+  confirmedSelectedItems.value = Array.from(byId.values())
+  temporarySelectedItems.value = confirmedSelectedItems.value.slice()
+
+  syncSelectionModelFromItems(confirmedSelectedItems.value)
+  syncSelectedJsonFormat()
+}
+
+function preloadFromJson() {
+  const list = props.selectedInJsonFormat
+
+  if (!list || !list.length) {
+    return false
+  }
+
+  const normalized = list
+    .map(normalizeSelectableItem)
+    .filter((item): item is SelectableItem => !!item)
+
+  confirmedSelectedItems.value = normalized.slice()
+  temporarySelectedItems.value = normalized.slice()
+
+  return normalized.length > 0
 }
 
 /** Optionnel : charger les labels via itemLoadingMethod si on n’a que des URIs */
 async function preloadFromItemLoaderIfNeeded() {
-  if (!props.itemLoadingMethod) return
+  if (!props.itemLoadingMethod) {
+    return
+  }
+
   const current = selectionModel.value
   const uris: string[] = multiple.value
-    ? (Array.isArray(current) ? current : [])
-    : (current ? [current as string] : [])
+    ? Array.isArray(current) ? current : []
+    : current ? [current as string] : []
 
-  if (!uris.length) return
+  if (!uris.length) {
+    return
+  }
+
   try {
     $opensilex?.disableLoader()
+
     const items = await props.itemLoadingMethod(uris)
-    const normalized = items.map(conversion)
-    selectedTmp.value = normalized.slice()
-    selectedCopie.value = normalized.slice()
-  } catch (e) {
-    $opensilex?.errorHandler(e)
+    const normalized = items
+      .map(conversion)
+      .filter((item): item is SelectableItem => !!item?.id)
+
+    confirmedSelectedItems.value = normalized.slice()
+    temporarySelectedItems.value = normalized.slice()
+    syncSelectedJsonFormat()
+  } catch (error) {
+    $opensilex?.errorHandler(error)
   } finally {
     $opensilex?.enableLoader()
   }
 }
 
 onMounted(async () => {
-  preloadFromJson()
-  if (!selectedCopie.value.length) {
+  const hasJsonSelection = preloadFromJson()
+
+  if (!hasJsonSelection) {
     await preloadFromItemLoaderIfNeeded()
   }
 })
@@ -262,104 +381,85 @@ onMounted(async () => {
 function setSelectorToFirstTimeOpen() {
   firstTimeOpening.value = true
 }
+
 function refreshModalSearch() {
   searchModal.value?.refresh?.()
 }
+
 function refresh() {
   searchModal.value?.refresh?.()
 }
 
-/** ----- Sync modal <-> sélection ----- */
-function updateModal() {
-  // désélectionner dans la modale ce qui est dans tmp mais pas dans copie
-  const toUnselect = selectedTmp.value.filter(x => !selectedCopie.value.some(el => el.id === x.id))
-  toUnselect.forEach(it => searchModal.value?.unSelect?.(toModalRow(it)))
+async function showModal() {
+  console.log('showModal called', {
+    disabled: props.disabled,
+    isDisabled: isDisabled.value,
+    openOnClick: openOnClick.value,
+    searchModal: searchModal.value
+  })
 
-  // re-sélectionner ce qui est dans copie mais pas dans tmp
-  const toReselect = selectedCopie.value.filter(x => !selectedTmp.value.some(el => el.id === x.id))
-  toReselect.forEach(it => searchModal.value?.selectItem?.(toModalRow(it)))
+  if (isDisabled.value) {
+    return
+  }
 
-  // réaligner tmp sur copie
-  selectedTmp.value = selectedCopie.value.slice()
-}
+  temporarySelectedItems.value = confirmedSelectedItems.value.slice()
 
-/** Ouvrir la modale */
-async function showModal () {
-  // 1) partir de la sélection confirmée
-  selectedTmp.value = selectedCopie.value.slice()
-
-  // 2) ouvrir la modale d’abord (pour que VariableList existe vraiment)
   searchModal.value?.show?.()
-  await nextTick() // laisse NModal/VariableList se monter
 
-  // 3) pousser la sélection initiale (format { uri, name })
-  const json = selectedCopie.value.map(v => ({ uri: v.id, name: v.label }))
+  await nextTick()
+
+  const json = confirmedSelectedItems.value.map(toModalRow)
+
   searchModal.value?.setInitiallySelectedItems?.(json)
-
-  // 4) demander un refresh conservant la sélection
   searchModal.value?.refreshWithKeepingSelection?.()
 
-  // 5) attendre que la page ait (re)chargé, puis re-cocher les cases visibles
   await nextTick()
-  // micro-delay utile si fetchVariablesPage est async
-  await new Promise(r => setTimeout(r, 0))
+  await new Promise(resolve => setTimeout(resolve, 0))
+
   searchModal.value?.applySelectionToPage?.()
 }
 
-
-
-/** Clear / remove */
 function clearSelectedModal() {
-  selectedTmp.value.forEach((it) => searchModal.value?.unSelect?.(toModalRow(it)))
-  selectedTmp.value = []
-  selectedCopie.value = []
+  temporarySelectedItems.value.forEach(item => {
+    searchModal.value?.unSelect?.(toModalRow(item))
+  })
+
+  temporarySelectedItems.value = []
+  confirmedSelectedItems.value = []
 }
+
 function clearAll() {
+  clearSelectedModal()
+
   if (multiple.value) {
     emit('update:selected', [])
   } else {
     emit('update:selected', undefined)
   }
-  clearSelectedModal()
+
   emit('update:selectedInJsonFormat', null)
   emit('clear')
 }
 
-function syncSelectedJsonFormat() {
-  const json = selectedCopie.value.length
-    ? selectedCopie.value.map(v => ({ uri: v.id, name: v.label }))
-    : null
-  emit('update:selectedInJsonFormat', json)
-}
+function onSelectedItemTagClose(item: SelectableItem) {
+  confirmedSelectedItems.value = confirmedSelectedItems.value.filter(value => value.id !== item.id)
+  temporarySelectedItems.value = temporarySelectedItems.value.filter(value => value.id !== item.id)
 
-/** tag “x” */
-function onChipClose(item: SelectableItem) {
-  // retirer de la sélection confirmée + temporaire
-  selectedCopie.value = selectedCopie.value.filter(v => v.id !== item.id)
-  selectedTmp.value   = selectedTmp.value.filter(v => v.id !== item.id)
-
-  // MAJ v-model:selected
-  if (multiple.value) {
-    const ids = (Array.isArray(selectionModel.value) ? selectionModel.value : []).filter(id => id !== item.id)
-    emit('update:selected', ids)
-  } else {
-    emit('update:selected', undefined)
-  }
-
-  // prévenir la modale (pour la prochaine ouverture)
-  searchModal.value?.unSelect?.(toModalRow(item))
-
-  // miroir JSON
+  syncSelectionModelFromItems(confirmedSelectedItems.value)
   syncSelectedJsonFormat()
+
+  searchModal.value?.unSelect?.(toModalRow(item))
 
   emit('deselect', item)
 }
 
-/** Événements de la modale */
 function onSelect(item: SelectableItem) {
-  // éviter les doublons
-  if (!selectedTmp.value.some(v => v.id === item.id)) {
-    selectedTmp.value.push(item)
+  if (!item?.id) {
+    return
+  }
+
+  if (!temporarySelectedItems.value.some(value => value.id === item.id)) {
+    temporarySelectedItems.value.push(item)
   }
 
   if (multiple.value) {
@@ -370,132 +470,180 @@ function onSelect(item: SelectableItem) {
     emit('update:selected', item.id)
   }
 
-  emit('select', item, selectedTmp.value)
+  emit('select', item, temporarySelectedItems.value)
 }
 
 function onModalComponentUnselect(item: SelectableItem) {
-  // retirer de tmp
-  selectedTmp.value = selectedTmp.value.filter(v => v.id !== item.id)
-  // MAJ v-model:selected
+  if (!item?.id) {
+    return
+  }
+
+  temporarySelectedItems.value = temporarySelectedItems.value.filter(value => value.id !== item.id)
+
   if (multiple.value) {
-    const ids = (Array.isArray(selectionModel.value) ? selectionModel.value : []).filter(id => id !== item.id)
+    const ids = (Array.isArray(selectionModel.value) ? selectionModel.value : [])
+      .filter(id => id !== item.id)
+
     emit('update:selected', ids)
   } else {
     emit('update:selected', undefined)
   }
+
   emit('deselect', item)
 }
 
 function onSelectAll(items: any[] | undefined) {
   if (!items) {
-    selectedTmp.value = []
+    temporarySelectedItems.value = []
     return
   }
-  const converted = items.map(conversion).filter(it => !!it?.label)
-  // merge unique par id
-  const byId = new Map(selectedTmp.value.map(v => [v.id, v]))
-  for (const it of converted) byId.set(it.id, it)
-  selectedTmp.value = Array.from(byId.values())
+
+  const converted = items
+    .map(conversion)
+    .filter((item): item is SelectableItem => !!item?.id)
+
+  const byId = new Map(temporarySelectedItems.value.map(item => [item.id, item]))
+
+  converted.forEach(item => {
+    byId.set(item.id, item)
+  })
+
+  temporarySelectedItems.value = Array.from(byId.values())
 
   if (multiple.value) {
     const ids = new Set<string>(Array.isArray(selectionModel.value) ? selectionModel.value : [])
-    for (const it of converted) ids.add(it.id)
+
+    converted.forEach(item => {
+      ids.add(item.id)
+    })
+
     emit('update:selected', Array.from(ids))
   } else if (converted[0]) {
     emit('update:selected', converted[0].id)
   }
 }
 
-/** Validation (fermeture modale) */
-function onValidate() {
-  loading.value = selectedTmp.value.length > 0
+function onValidate(items?: any[]) {
+  loading.value = temporarySelectedItems.value.length > 0
 
-  // dédoublonner & bloquer la sélection confirmée
-  const byId = new Map(selectedTmp.value.map(v => [v.id, v]))
-  selectedCopie.value = Array.from(byId.values())
+  if (items && Array.isArray(items) && items.length) {
+    const converted = items
+      .map(conversion)
+      .filter((item): item is SelectableItem => !!item?.id)
 
-  // sync v-model:selected (URIs)
-  const finalIds = selectedCopie.value.map(v => v.id)
-  emit('update:selected', multiple.value ? finalIds : finalIds[0])
+    const byId = new Map(temporarySelectedItems.value.map(item => [item.id, item]))
 
-  // miroir JSON pour le parent (variablesWithLabels)
-  syncSelectedJsonFormat()
+    converted.forEach(item => {
+      byId.set(item.id, item)
+    })
 
+    temporarySelectedItems.value = Array.from(byId.values())
+  }
+
+  setSelection(temporarySelectedItems.value)
+  // Laisse Vue propager les update:selected et update:selectedInJsonFormat
+  // avant d’émettre onValidate.
   setTimeout(() => {
-    emit('onValidate', selectedCopie.value)
+    emit('onValidate', confirmedSelectedItems.value)
     loading.value = false
   }, 0)
 }
 
-/** Ouverture de la modale (événement) */
-// function onModalSearchShown() {
-//   emit('shown')
-//   searchModal.value?.refreshWithKeepingSelection?.()
-// }
+function updateModal() {
+  const toUnselect = temporarySelectedItems.value.filter(
+    item => !confirmedSelectedItems.value.some(selected => selected.id === item.id)
+  )
+
+  toUnselect.forEach(item => {
+    searchModal.value?.unSelect?.(toModalRow(item))
+  })
+
+  const toReselect = confirmedSelectedItems.value.filter(
+    item => !temporarySelectedItems.value.some(selected => selected.id === item.id)
+  )
+
+  toReselect.forEach(item => {
+    searchModal.value?.selectItem?.(toModalRow(item))
+  })
+
+  temporarySelectedItems.value = confirmedSelectedItems.value.slice()
+}
 
 async function onModalSearchShown() {
   emit('shown')
 
-  const json = selectedCopie.value.map(v => ({ uri: v.id, name: v.label }))
+  const json = confirmedSelectedItems.value.map(toModalRow)
+
   searchModal.value?.setInitiallySelectedItems?.(json)
   searchModal.value?.refreshWithKeepingSelection?.()
 
   await nextTick()
-  selectedTmp.value = selectedCopie.value.slice()
-  updateModal() // selectItem/unSelect sur les lignes visibles
 
-  await new Promise(r => setTimeout(r, 0))
+  temporarySelectedItems.value = confirmedSelectedItems.value.slice()
   updateModal()
 
+  await new Promise(resolve => setTimeout(resolve, 0))
+
+  updateModal()
   searchModal.value?.applySelectionToPage?.()
 }
 
-
-
-//  Réagir aux changements de selectedInJsonFormat après le montage
-// watch(
-//   () => props.selectedInJsonFormat,
-//   (list) => {
-//     if (!list || !list.length) return
-//     const normalized: SelectableItem[] = list.map((item: any) =>
-//       item.id && item.label ? { id: item.id, label: item.label } : { id: item.uri, label: item.name }
-//     )
-//     // si la sélection diffère, on synchronise les "chips"
-//     const before = selectedCopie.value.map(v => v.id).join('|')
-//     const after  = normalized.map(v => v.id).join('|')
-//     if (before !== after) {
-//       selectedTmp.value = normalized.slice()
-//       selectedCopie.value = normalized.slice()
-//     }
-//   },
-//   { immediate: true }
-// )
-
-// 👉 Mettre à jour l'affichage si selectedInJsonFormat change après montage
 watch(
   () => props.selectedInJsonFormat,
-  (list) => {
-    if (!list || !list.length) return
-    const normalized = list.map((it: any) =>
-      it.id && it.label ? { id: it.id, label: it.label } : { id: it.uri, label: it.name }
-    )
-    const before = selectedCopie.value.map(v => v.id).join('|')
-    const after  = normalized.map(v => v.id).join('|')
+  list => {
+    if (!list || !list.length) {
+      if (!props.selected || (Array.isArray(props.selected) && props.selected.length === 0)) {
+        temporarySelectedItems.value = []
+        confirmedSelectedItems.value = []
+      }
+
+      return
+    }
+
+    const normalized = list
+      .map(normalizeSelectableItem)
+      .filter((item): item is SelectableItem => !!item)
+
+    const before = confirmedSelectedItems.value.map(item => item.id).join('|')
+    const after = normalized.map(item => item.id).join('|')
+
     if (before !== after) {
-      selectedTmp.value = normalized.slice()
-      selectedCopie.value = normalized.slice()
+      temporarySelectedItems.value = normalized.slice()
+      confirmedSelectedItems.value = normalized.slice()
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
+
+
+watch(
+  () => props.selected,
+  async value => {
+    const isEmpty = multiple.value
+      ? !Array.isArray(value) || value.length === 0
+      : !value
+
+    if (isEmpty) {
+      temporarySelectedItems.value = []
+      confirmedSelectedItems.value = []
+      return
+    }
+
+    if (!props.selectedInJsonFormat?.length) {
+      await preloadFromItemLoaderIfNeeded()
+    }
+  },
+  { deep: true }
+)
+
 
 defineExpose({
   setSelectorToFirstTimeOpen,
   refreshModalSearch,
   refresh,
   show: showModal,
-  selectItem: (it: SelectableItem) => searchModal.value?.selectItem?.(toModalRow(it)),
-  unSelect: (it: SelectableItem) => searchModal.value?.unSelect?.(toModalRow(it))
+  selectItem: (item: SelectableItem) => searchModal.value?.selectItem?.(toModalRow(item)),
+  unSelect: (item: SelectableItem) => searchModal.value?.unSelect?.(toModalRow(item))
 })
 </script>
 
@@ -503,11 +651,12 @@ defineExpose({
 .select-button-container {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
-.chip-area {
+.selectedItemsArea {
   flex: 1;
+  min-width: 0;
   min-height: 36px;
   padding: 6px 8px;
   border: 1px solid #e5e5e5;
@@ -517,13 +666,18 @@ defineExpose({
   gap: 6px;
   align-items: center;
 }
-.clickable { cursor: pointer; }
+
+.clickable {
+  cursor: pointer;
+}
 
 .label {
+  display: inline-block;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   max-width: 220px;
+  vertical-align: bottom;
 }
 
 .modalFormSelectorPlaceholder {

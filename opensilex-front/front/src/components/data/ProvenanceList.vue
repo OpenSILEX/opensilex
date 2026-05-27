@@ -194,7 +194,7 @@
             :isSelectable="isSelectable"
             :showHeaderCount="false"
             labelNumberOfSelectedRow="ProvenanceList.selected"
-            iconNumberOfSelectedRow="ik#ik-target"
+            iconNumberOfSelectedRow="bi#bi-bullseye"
             @select="emit('select', $event)"
             @unselect="emit('unselect', $event)"
             @selectall="emit('selectall', $event)"
@@ -242,13 +242,13 @@
                 <opensilex-EditButton
                   v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
                   @click="emit('onEdit', data.item.uri)"
-                  label="ProvenanceList.update"
+                  :label="t('ProvenanceList.update')"
                   :small="true"
                 />
                 <opensilex-DeleteButton
                   v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
                   @click="deleteProvenance(data.item.uri)"
-                  label="ProvenanceList.delete"
+                  :label="t('ProvenanceList.delete')"
                   :small="true"
                 />
               </n-button-group>

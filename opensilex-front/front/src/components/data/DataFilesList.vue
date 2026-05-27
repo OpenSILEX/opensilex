@@ -119,7 +119,7 @@
             :disabled="!images_rdf_types.includes(data.item.rdf_type)"
             component="opensilex-DocumentDetails"
             @click="showImage(data.item)"
-            label="ScientificObjectDataFiles.displayImage"
+            :label="t('DataFilesList.displayImage')"
             :small="true"
             icon="fa#image"
             variant="outline-info"
@@ -127,14 +127,14 @@
           <opensilex-DetailButton
             v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
             @click="showDataProvenanceDetailsModal(data.item)"
-            label="DataFilesView.details"
+            :label="t('DataFilesList.details')"
             :small="true"
           />
           <opensilex-Button
             @click="deleteDatafile(data.item.uri)"
             variant="outline-danger"
             :small="true"
-            label="DataFilesList.delete"
+            :label="t('component.common.delete')"
             icon="fa#trash-alt"
           />
         </n-button-group>
@@ -285,7 +285,7 @@ const fields = computed(() => {
   if (!props.hideTarget) {
     baseFields.unshift({
       key: 'target',
-      label: 'DataView.list.object'
+      label: t('DataFilesList.list.object')
     })
   }
 
@@ -801,7 +801,9 @@ en:
     add-event: Add events
     datafile-not-found: Datafile not found
     date: Date
+    details: View datafile metadata
     display: Display
+    displayImage: Display image
     format: Format
     filename: Filename
     selected: Selected datafiles
@@ -817,6 +819,12 @@ en:
     provenance: Provenance
     rdfType: Type
     upload-success-message: File uploaded and processed successfully.
+    list:
+      date: Date
+      variable: Variable
+      value: Value
+      object: Target
+
 
 fr:
   DataFilesList:
@@ -824,7 +832,9 @@ fr:
     add-event: Ajouter des événements
     datafile-not-found: Fichiers de données non trouvés
     date: Date
+    details: Voir les métadonnées du fichier
     display: Affichage
+    displayImage: Afficher l'image
     format: Format
     filename: Nom du fichier
     selected: Fichiers de données selectionnés
@@ -840,4 +850,9 @@ fr:
     provenance: Provenance
     rdfType: Type
     upload-success-message: Fichier téléchargé et traité avec succès.
+    list:
+      date: Date
+      variable: Variable
+      value: Valeur
+      object: Objet cible
 </i18n>

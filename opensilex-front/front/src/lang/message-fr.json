@@ -47,10 +47,11 @@
             "yes": "oui",
             "no": "non",
             "ok": "OK",
+            "clear": "Vider",
             "close": "Fermer",
             "cancel": "annuler",
             "creator": "Créateur",
-            "delete": "supprimer",
+            "delete": "Supprimer",
             "name": "Nom",
             "term":"Terme",
             "comment": "Description",
@@ -953,6 +954,9 @@
         },
         "provenance": {
             "description": "Décrire la provenance de données"
+        },
+        "datafile": {
+            "description": "Voir les fichiers de données"
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

@@ -133,6 +133,23 @@ const props = withDefaults(
     disableValidation?: boolean
   }>(),
   {
+    form: () => ({
+      uri: null,
+      name: null,
+      description: null,
+      experiments: [],
+      activity_type: null,
+      activity_start_date: null,
+      activity_end_date: null,
+      activity_uri: null,
+      agentTypes: [],
+      agents: [
+        {
+          uris: [],
+          rdf_type: null
+        }
+      ]
+    }),
     editMode: false,
     uriGenerated: true,
     disableValidation: false

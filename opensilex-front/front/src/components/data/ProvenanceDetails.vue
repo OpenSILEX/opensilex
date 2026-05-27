@@ -42,7 +42,7 @@
           <!-- agent -->
           <opensilex-UriListView
             v-if="agentList.length > 0"
-            label="ProvenanceDetails.agent"
+            :label="t('ProvenanceDetails.agent')"
             :list="agentList"
           />
         </template>

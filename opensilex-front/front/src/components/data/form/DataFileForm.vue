@@ -330,7 +330,23 @@ const rules = computed(() => ({
 const successMessage = computed(() => undefined)
 
 function initForm() {
-  return undefined
+  return {
+    uri: null,
+    name: null,
+    description: null,
+    experiments: [],
+    activity_type: null,
+    activity_start_date: null,
+    activity_end_date: null,
+    activity_uri: null,
+    agentTypes: [],
+    agents: [
+      {
+        uris: [],
+        rdf_type: null
+      }
+    ]
+  }
 }
 
 function getEmptyForm() {

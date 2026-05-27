@@ -15,7 +15,6 @@
           :deviceList="selected.devices"
           :facilityUri="selected.uri"
         ></opensilex-AssociatedVariableList>
-<!--        <div>Asooc Variable list</div>-->
       </div>
     </div>
 

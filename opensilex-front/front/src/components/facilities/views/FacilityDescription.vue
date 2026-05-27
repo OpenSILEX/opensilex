@@ -1,7 +1,7 @@
 <template>
   <opensilex-Card
-    icon="ik#ik-clipboard"
-    :label="$t('component.common.informations')"
+    icon="bi-clipboard"
+    :label="t('component.common.informations')"
     class="facilityDetailComponent"
     v-if="selected"
   >
@@ -9,13 +9,13 @@
       <opensilex-EditButton
         v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         @click="onClickEditButton()"
-        label="FacilitiesView.update"
+        label="component.facility.buttons.update"
         :small="true"
       ></opensilex-EditButton>
       <opensilex-DeleteButton
         v-if=" user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
         @click="onClickDeleteButton()"
-        label="FacilitiesView.delete"
+        label="component.facility.buttons.delete"
         :small="true"
       ></opensilex-DeleteButton>
       <opensilex-FacilityModalForm
@@ -50,7 +50,7 @@
       <!-- Organisations -->
       <opensilex-UriListView
         v-if="hasOrganizations"
-        label="FacilityDescription.organizations"
+        label="credential-groups.organizations"
         :list="organizationUriList"
         :inline="false"
       >
@@ -59,7 +59,7 @@
       <!-- Site -->
       <opensilex-UriListView
         v-if="hasSites"
-        label="FacilityDescription.site"
+        label="component.common.organization.site"
         :list="siteUriList"
         :inline="false"
       >
@@ -68,7 +68,7 @@
       <!-- Experiments -->
       <opensilex-UriListView
         v-if="hasExperiments"
-        label="FacilityDescription.expsInProgress"
+        label="component.experiment.expsInProgress"
         :list="experimentUriList"
         :inline="false"
       >
@@ -77,7 +77,7 @@
       <!-- VariableGroups -->
       <opensilex-UriListView
         v-if="hasVariableGroups"
-        label="FacilityDescription.variable-groups"
+        label="component.variable.groupVariable.groupVariable"
         :list="variableGroupUriList"
         :inline="true"
       >
@@ -86,7 +86,7 @@
       <!-- Devices -->
       <opensilex-UriListView
         v-if="hasDevices"
-        label="FacilityDescription.devices"
+        label="component.menu.devices"
         :list="deviceUriList"
         :inline="true"
       >
@@ -100,7 +100,7 @@
       </opensilex-AddressView>
 
       <!--Last Position-->
-      <opensilex-StringView v-if="selected.lastPosition" label="FacilityDescription.lastPosition">
+      <opensilex-StringView v-if="selected.lastPosition" label="component.common.geometry.lastPosition">
         <!-- Position detail -->
         <div v-if="selected.lastPosition.endDate">
           <span>{{ new Date(selected.lastPosition.endDate).toLocaleString() }}</span>
@@ -142,11 +142,13 @@ import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
+import {useI18n} from "vue-i18n";
 
 //#region: Constants
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
 const $store = useStore();
 const router = useRouter();
+const { t } = useI18n()
 //#endregion
 
 //#region: Props and Emits
@@ -274,24 +276,3 @@ function onClickDeleteButton() {
 
 </style>
 
-<i18n>
-en:
-  FacilityDescription:
-    organizations: Organizations
-    expsInProgress: Experiments in progress
-    variable-groups: Groups of variables
-    devices: Devices
-    site: "Site"
-    address: "Address"
-    lastPosition: Last position
-
-fr:
-  FacilityDescription:
-    organizations: Organisations
-    expsInProgress: Experiences en cours
-    variable-groups: Groupes de variables
-    devices: Appareils
-    site: "Site"
-    address: "Adresse"
-    lastPosition: Dernière position
-</i18n>

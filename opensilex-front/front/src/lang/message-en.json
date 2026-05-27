@@ -37,7 +37,9 @@
                 "textual-position-placeholder": "Beside the left door",
                 "from-placeholder": "dev-infra:greenHouseA",
                 "to-placeholder": "dev-infra:greenHouseB",
-                "coordinates-placeholder": "POINT Z(1 1 80)"
+                "coordinates-placeholder": "POINT Z(1 1 80)",
+                "lastPosition": "Last position",
+                "positions": "Positions"
             },
             "altName": "Alternative name",
             "month": "month",
@@ -753,7 +755,7 @@
                 "selectedLabel": "Selected Experiment(s)",
                 "buttons": {
                     "create-experiment": "Add experiment",
-                    "create-experiment-help": " Add an experiment (experimental informations, sensors/variables/factors linked)"
+                    "create-experiment-help": " Add an experiment (experimental information, linked sensors/variables/factors)"
                 },
                 "column": {
                     "alias": "Alias",
@@ -812,7 +814,8 @@
             "errors": {
                 "associated-data": "The experiment can't be deleted since there are some associated data"
             },
-            "funding": "Funding"
+            "funding": "Funding",
+            "expsInProgress": "Experiments in progress"
         },
         "germplasms": {
             "errors": {
@@ -901,6 +904,10 @@
                     "next": "Consult the next facility",
                     "return": "Return to the list of facilities"
                 }
+            },
+            "buttons": {
+                "update": "Update facility",
+                "delete": "Delete facility"
             }
         },
         "provenance": {
@@ -978,7 +985,7 @@
         },
         "system": {
             "title": "System",
-            "description": "Informations about information systeme"
+            "description": "Information about information system"
         },
         "packages": {
             "title": "Packages",

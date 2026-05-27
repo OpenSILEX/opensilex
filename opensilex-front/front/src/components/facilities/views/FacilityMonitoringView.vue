@@ -12,18 +12,18 @@
             <!-- Variable Group Selector -->
             <div v-if="hasVariableGroup">
               <label for="variableGroupSelector">
-                {{ $t("FacilityMonitoringView.variable-group-selector") }}
+                {{ t("FacilityMonitoringView.variable-group-selector") }}
               </label>
               <font-awesome-icon
                 icon="question-circle"
                 class="variable-group-help"
-                v-b-tooltip.hover.top="$t('FacilityMonitoringView.variable-group-help')"
+                v-b-tooltip.hover.top="t('FacilityMonitoringView.variable-group-help')"
               />
               <opensilex-FormSelector
                 id="variableGroupSelector"
-                :selected="selectedVariableGroup"
+                v-model:selected="selectedVariableGroup"
                 :searchMethod="searchVariableGroups"
-                :placeholder="$t('FacilityMonitoringView.no-variable-group-selected')"
+                :placeholder="t('FacilityMonitoringView.no-variable-group-selected')"
                 class="searchFilter"
                 @clear="loadVariables"
                 @onValidate="loadVariables"
@@ -31,6 +31,13 @@
                 @select="loadVariables"
                 @handlingEnterKey="loadVariables"
               ></opensilex-FormSelector>
+<!--              <opensilex-GroupVariablesSelector
+                v-model:variableGroup="selectedVariableGroup"
+                class="searchFilter"
+                @handlingEnterKey="loadVariables"
+                @clear="loadVariables"
+                @select="loadVariables"
+              />-->
             </div>
           </div>
         </div>
@@ -40,7 +47,7 @@
     <opensilex-TextView
       v-if="isNoVariableFound"
       id="no-variable-text"
-      :label="$t('FacilityMonitoringView.no-variable')"
+      :label="t('FacilityMonitoringView.no-variable')"
     >
     </opensilex-TextView>
 
@@ -77,11 +84,13 @@ import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
 import {computed, inject, onMounted, ref} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
+import { useI18n } from 'vue-i18n'
 
 //#region Constant values & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const $store = useStore();
 const $route = useRoute()
+const { t } = useI18n()
 // services
 const organizationService: OrganizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
 const variablesService: VariablesService = $opensilex.getService<VariablesService>('opensilex.VariablesService');
@@ -95,7 +104,7 @@ const layout = ref<Array<any>>([]);
 const uri = ref<string>(null);
 const selected = ref<FacilityGetDTO>(null);
 const usedVariables = ref<NamedResourceDTOVariableModel[]>([]);
-const selectedVariableGroup = ref(null);
+const selectedVariableGroup = ref<string>(null);
 const startDate = ref<string>(null);
 const endDate = ref<string>(null);
 
@@ -113,7 +122,7 @@ const credentials = computed(() => {
 });
 
 const hasVariableGroup = computed(() => {
-  return selected.value && (selected.value.variableGroups.length != 0);
+  return selected.value?.variableGroups?.length > 0;
 });
 //#endregion
 
@@ -147,7 +156,8 @@ function initDatePeriod() {
 }
 
 function searchVariableGroups() {
-  let variableGroupsURIs = selected.value.variableGroups.map(group => group.uri);
+  const variableGroupsURIs =
+    selected.value?.variableGroups?.map(group => group.uri) ?? [];
   return variablesService
     .getVariablesGroupByURIs(variableGroupsURIs, undefined)
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
@@ -168,7 +178,7 @@ function loadVariables() {
   isNoVariableFound.value = false;
   isItemsLoaded.value = false;
 
-  if (selectedVariableGroup != null) {
+  if (selectedVariableGroup.value != null) {
     loadVariablesFromGroup();
   }
   else {

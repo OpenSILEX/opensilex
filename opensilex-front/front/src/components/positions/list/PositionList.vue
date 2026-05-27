@@ -378,14 +378,12 @@ defineExpose({
 en:
   Position:
     name: The event
-    list-title: Positions
     end: Arrival date
     data-imported: Observations have been imported successfully
     details: Show or hide position details
 fr:
   Position:
     name: "L'événement"
-    list-title: Positions
     end: "Date d'arrivée"
     data-imported: observations ont été importées avec succès
     details: Afficher ou masquer les détails de la position

@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Card :label="t('AssociatedVariablesList.relatedVariables')" icon="ik#ik-layers">
+  <opensilex-Card :label="t('AssociatedVariablesList.relatedVariables')" icon="bi-layers">
     <template v-slot:body>
       <opensilex-TableView
         ref="tableRef"

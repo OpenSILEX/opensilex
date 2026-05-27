@@ -1,7 +1,8 @@
 <template>
   <div v-if="uri" class="container-fluid">
     <opensilex-PageHeader
-      icon="ik#ik-globe"
+      icon="bi#bi-globe"
+      :hasIcon="true"
       :title="name"
       description="component.facility.view.title"
       class= "detail-element-header"
@@ -161,7 +162,7 @@
       },
       {
         key: 'positions',
-        label: t('Position.list-title'),
+        label: t('component.common.geometry.positions'),
         to: `/facility/positions/${encodeURIComponent(uri.value)}`
       }
     ]
@@ -187,12 +188,6 @@
 .tab {
   text-decoration: none;
   color: inherit;
-}
-
-.wip-icon {
-  float: right;
-  padding-left: 5px;
-  width: 28px;
 }
 
 </style>

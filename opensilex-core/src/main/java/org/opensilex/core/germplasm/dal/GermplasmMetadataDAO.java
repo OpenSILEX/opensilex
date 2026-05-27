@@ -7,6 +7,7 @@ import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class GermplasmMetadataDAO extends MetaDataDaoV2<GermplasmMetadataModel> 
                 new Document(GermplasmMetadataModel.PUBLISHER_FIELD, account.getUri()),
                 Filters.in(
                         GermplasmMetadataModel.GROUPS_FIELD,
-                        groups.stream().map(group -> group.getUri().toString()).toList()
+                        groups.stream().map(SPARQLResourceModel::getUri).toList()
                 )
         );
         return getDistinctKeys(filter);

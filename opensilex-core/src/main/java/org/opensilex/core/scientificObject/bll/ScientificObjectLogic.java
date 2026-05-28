@@ -13,7 +13,6 @@ package org.opensilex.core.scientificObject.bll;
 
 
 import com.mongodb.client.model.geojson.Geometry;
-import com.mongodb.lang.Nullable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.graph.Node;
 import org.geojson.GeoJsonObject;
@@ -52,7 +51,6 @@ import org.opensilex.server.exceptions.displayable.DisplayableBadRequestExceptio
 import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -65,10 +63,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

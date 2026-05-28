@@ -19,7 +19,10 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
@@ -46,6 +49,8 @@ import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -380,7 +385,23 @@ public class ScientificObjectAPI {
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
 
         ScientificObjectModel soModel = scientificObjectDto.newModel();
-        MoveModel moveModel = scientificObjectDto.getMove() == null ? null : scientificObjectDto.getMove().toModel();
+        MoveModel moveModel = null;
+        if (scientificObjectDto.getGeometry() != null) {
+            if (scientificObjectDto.getMove() != null) {
+                throw new BadRequestException("The geometry property is deprecated and cannot be used together with the move property. " +
+                        "Please only use the move property to attach geometry to an object.");
+            }
+            var creationDate = scientificObjectDto.getRelations().stream().filter(rel -> SPARQLDeserializers.compareURIs(Oeso.hasCreationDate.getURI(), rel.getProperty()))
+                    .findFirst().map(rel -> LocalDate.parse(rel.getValue())).orElse(null);
+            moveModel = soLogic.getCompatibilityMoveModel(
+                    scientificObjectDto.getExperiment(),
+                    creationDate,
+                    GeospatialDAO.geoJsonToGeometry(scientificObjectDto.getGeometry()),
+                    null);
+        }
+        if (scientificObjectDto.getMove() != null) {
+            moveModel = scientificObjectDto.getMove().toModel();
+        }
 
         try {
             URI soURI = soLogic.createScientificObject(
@@ -420,6 +441,11 @@ public class ScientificObjectAPI {
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         ScientificObjectModel soModel = scientificObjectDto.newModel();
+
+        if (scientificObjectDto.getGeometry() != null) {
+            throw new BadRequestException("vocabulary:hasGeometry is not supported for scientific object updates. Please" +
+                    " create an new move event instead.");
+        }
 
         try {
             URI soURI = logic.updateScientificObject(

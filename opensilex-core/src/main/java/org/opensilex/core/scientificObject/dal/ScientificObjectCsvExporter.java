@@ -1,6 +1,8 @@
 package org.opensilex.core.scientificObject.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.jena.vocabulary.RDFS;
+import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
@@ -40,8 +42,10 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
 
         if (experiment != null) {
             // just let the export find which properties are associated to an OS
-            customColumns = Collections.emptySet();
-            extraNonUriColumns = ScientificObjectCsvImporterLogic.moveProperties;
+            customColumns = Set.of();
+            extraNonUriColumns = new HashSet<>(ScientificObjectCsvImporterLogic.extraColumns);
+            extraNonUriColumns.add(SPARQLDeserializers.getShortURI(Oeso.isHosted.toString()));
+            extraNonUriColumns.add(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.toString()));
         }else{
             // only export name and geometry when out of experimental context
             customColumns = new LinkedHashSet<>();
@@ -66,6 +70,7 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
         //For now this function only exists to add the Move related stuff to the export, so obviously we need to go get that Move
         MoveModel correspondingMove = this.initialMovePerTarget.get(object.getUri());
         if(correspondingMove == null){
+            lineBuffer[colIdx] = null;
             return;
         }
         if(column.equals(ScientificObjectCsvImporterLogic.MOVE_START_FIELD_UNIQUE_HEADER)){
@@ -148,6 +153,26 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
                 object.getDestructionDate() != null ? object.getDestructionDate().toString() : null
         );
 
+        customRelationWrite(Oeso.hasGeometry.getURI(), object -> {
+            var move = this.initialMovePerTarget.get(object.getUri());
+            if (move != null) {
+                try {
+                    return GeospatialDAO.geometryToWkt(move.getLocationObservation().getLocation().getGeometry());
+                } catch (JsonProcessingException | ParseException e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        customRelationWrite(Oeso.isHosted.getURI(), object ->{
+            var move = this.initialMovePerTarget.get(object.getUri());
+            if (move != null) {
+                var facilityUri = move.getLocationObservation().getLocation().getTo();
+                return facilityUri != null ? SPARQLDeserializers.formatURI(facilityUri).toString() : null;
+            }
+            return null;
+        });
     }
 
 

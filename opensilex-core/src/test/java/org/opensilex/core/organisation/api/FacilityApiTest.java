@@ -366,6 +366,62 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         assertEquals(facilityList.getResult().size(), 3);
     }
 
+    //#region Compatibility tests (old geometry model)
+    @Test
+    public void testCompatibilityCreateWithOldGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        dto.setGeometry(new Point(49, 3));
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        Feature feature = (Feature) singleObjectResponse.getResult().getLastPosition().getGeojson();
+        assertEquals(new Point(49, 3), feature.getGeometry());
+        assertNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
+    public void testCompatibilityCreateWithOldAndNewGeometryShouldFail() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, new Point(6, 7));
+        dto.setGeometry(new Point(49, 3));
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testCompatibilityUpdateWithOldGeometryShouldFail() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        FacilityUpdateDTO updateDto = getUpdateDTOWithGeometry(createdUri, null, null);
+        updateDto.setGeometry(new Point(49, 3));
+        response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testCompatibilityGetWithGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        dto.setGeometry(new Point(49, 3));
+        Response response = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        var facility = singleObjectResponse.getResult();
+        assertEquals(new Point(49, 3), ((Feature) facility.getGeometry()).getGeometry());
+        assertNull(facility.getAddress());
+    }
+    //#endregion
+
 
     @Override
     protected List<String> getCollectionsToClearNames() {

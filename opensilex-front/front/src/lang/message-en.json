@@ -50,8 +50,9 @@
             "yes": "yes",
             "no": "no",
             "ok": "OK",
+            "clear": "Clear",
             "close": "Close",
-            "delete": "delete",
+            "delete": "Delete",
             "cancel": "cancel",
             "creator": "Creator",
             "edit": "edit",
@@ -912,6 +913,9 @@
         },
         "provenance": {
             "description": "Describe data provenance"
+        },
+        "datafile": {
+            "description": "View datafiles"
         },
         "custom-properties" : {
             "linked-resources" : "Linked resources"

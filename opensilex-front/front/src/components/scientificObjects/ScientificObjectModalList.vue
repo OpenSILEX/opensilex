@@ -5,7 +5,7 @@
     preset="dialog"
     :show-icon="false"
     :style="{ width: '1400px', maxWidth: '95vw' }"
-    @after-enter="emit('shown')"
+    @after-enter="onModalShown"
   >
     <template #header>
       <div class="modal-title">
@@ -65,7 +65,11 @@
               </n-form-item>
 
               <!-- Type -->
-              <n-form-item :label="$t('component.common.type')" :show-feedback="false" class="compact-form-item">
+              <n-form-item
+                :label="$t('component.common.type')"
+                :show-feedback="false"
+                class="compact-form-item"
+              >
                 <opensilex-ScientificObjectTypeSelector
                   :types="filter.types"
                   :multiple="true"
@@ -107,16 +111,24 @@
                   </n-form-item>
 
                   <!-- Existence date -->
-                  <n-form-item :label="t('ScientificObjectModalList.filter.existenceDate')" :show-feedback="false">
+                  <n-form-item
+                    :label="t('ScientificObjectModalList.filter.existenceDate')"
+                    :show-feedback="false"
+                  >
                     <opensilex-DateForm
                       :value="filter.existenceDate"
                       class="searchFilter"
                       @update:value="filter.existenceDate = $event"
                     />
                   </n-form-item>
-                  <br>
+
+                  <br />
+
                   <!-- Creation date -->
-                  <n-form-item :label="t('ScientificObjectModalList.filter.creationDate')" :show-feedback="false">
+                  <n-form-item
+                    :label="t('ScientificObjectModalList.filter.creationDate')"
+                    :show-feedback="false"
+                  >
                     <opensilex-DateForm
                       :value="filter.creationDate"
                       class="searchFilter"
@@ -159,9 +171,9 @@
             :pageSize="10"
             :searchFilter="filter"
             :noUpdateURL="true"
-            @select="emit('select', $event)"
-            @unselect="emit('unselect', $event)"
-            @selectall="emit('selectall', $event)"
+            @select="onSelect"
+            @unselect="onUnselect"
+            @selectall="onSelectAll"
           />
         </n-layout-content>
       </n-layout>
@@ -181,8 +193,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import { NModal, NButton, NSpace, NLayout, NLayoutSider, NLayoutContent, NForm, NFormItem, NCollapse, NCollapseItem } from 'naive-ui'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
+import {
+  NModal,
+  NButton,
+  NSpace,
+  NLayout,
+  NLayoutSider,
+  NLayoutContent,
+  NForm,
+  NFormItem,
+  NCollapse,
+  NCollapseItem
+} from 'naive-ui'
 import CriteriaSearchModalCreator from './CriteriaSearchModalCreator.vue'
 import { useI18n } from 'vue-i18n'
 
@@ -197,9 +220,39 @@ type ScientificObjectFilter = {
   criteriaDto: { criteria_list: any[] }
 }
 
+type SelectableItem = {
+  id: string
+  label: string
+  isDisabled?: boolean
+  [key: string]: any
+}
+
 const props = defineProps<{
   searchFilter?: ScientificObjectFilter
+  selected?: any[]
 }>()
+
+const emit = defineEmits<{
+  (e: 'update:searchFilter', value: ScientificObjectFilter): void
+  (e: 'onValidate', value: any[]): void
+  (e: 'onClose'): void
+  (e: 'shown'): void
+  (e: 'select', value: any): void
+  (e: 'unselect', value: any): void
+  (e: 'selectall', value: any): void
+}>()
+
+const { t } = useI18n()
+
+const soList = ref<any>(null)
+const criteriaSearchCreateModal = ref<InstanceType<typeof CriteriaSearchModalCreator> | null>(null)
+
+const visible = ref(false)
+const searchFiltersToggle = ref(false)
+const expandedNames = ref<string[]>([])
+
+const filter = reactive<ScientificObjectFilter>(defaultFilter())
+const selectedItems = ref<SelectableItem[]>([])
 
 function defaultFilter(): ScientificObjectFilter {
   return {
@@ -214,30 +267,18 @@ function defaultFilter(): ScientificObjectFilter {
   }
 }
 
-const emit = defineEmits<{
-  (e: 'update:searchFilter', value: ScientificObjectFilter): void
-  (e: 'onValidate', value: any[]): void
-  (e: 'onClose'): void
-  (e: 'shown'): void
-  (e: 'select', value: any): void
-  (e: 'unselect', value: any): void
-  (e: 'selectall', value: any): void
-}>()
-
-const { t } = useI18n()
-const soList = ref<any>(null)
-const criteriaSearchCreateModal = ref<InstanceType<typeof CriteriaSearchModalCreator> | null>(null)
-
-const visible = ref(false)
-const searchFiltersToggle = ref(false)
-const expandedNames = ref<string[]>([])
-
-const filter = reactive<ScientificObjectFilter>(defaultFilter())
-
 watch(
   () => props.searchFilter,
-  (newValue) => {
+  newValue => {
     Object.assign(filter, defaultFilter(), newValue || {})
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
+  () => props.selected,
+  newSelected => {
+    selectedItems.value = normalizeItems(newSelected || [])
   },
   { immediate: true, deep: true }
 )
@@ -249,16 +290,71 @@ const filtersCollapsedProxy = computed({
   }
 })
 
+function normalizeItem(item: any): SelectableItem | null {
+  if (!item) {
+    return null
+  }
+
+  if (item.id && item.label) {
+    return {
+      ...item,
+      id: item.id,
+      label: item.label,
+      uri: item.uri ?? item.id,
+      name: item.name ?? item.label
+    }
+  }
+
+  if (item.uri && item.name) {
+    return {
+      ...item,
+      id: item.uri,
+      label: item.name,
+      uri: item.uri,
+      name: item.name
+    }
+  }
+
+  if (typeof item === 'string') {
+    return {
+      id: item,
+      label: item,
+      uri: item,
+      name: item
+    }
+  }
+
+  return null
+}
+
+function normalizeItems(items: any[]): SelectableItem[] {
+  const byId = new Map<string, SelectableItem>()
+
+  items.forEach(item => {
+    const normalized = normalizeItem(item)
+
+    if (normalized?.id) {
+      byId.set(normalized.id, normalized)
+    }
+  })
+
+  return Array.from(byId.values())
+}
+
+function getItemUri(item: any) {
+  if (!item) {
+    return undefined
+  }
+
+  if (typeof item === 'string') {
+    return item
+  }
+
+  return item.uri ?? item.id
+}
+
 function emitFilterUpdate() {
   emit('update:searchFilter', { ...filter })
-}
-
-function selectItem(row: any) {
-  soList.value?.onItemSelected?.(row)
-}
-
-function unSelect(row: any) {
-  soList.value?.onItemUnselected?.(row)
 }
 
 function show() {
@@ -267,32 +363,150 @@ function show() {
 
 function hide(validate: boolean) {
   visible.value = false
+
   if (validate) {
-    emit('onValidate', soList.value?.getSelected?.() ?? [])
+    emit('onValidate', selectedItems.value)
   } else {
     emit('onClose')
   }
 }
 
-function refresh() {
+async function refresh() {
   emitFilterUpdate()
-  soList.value?.refresh?.()
+
+  await nextTick()
+
+  if (soList.value?.refreshWithKeepingSelection) {
+    await soList.value.refreshWithKeepingSelection()
+  } else {
+    await soList.value?.refresh?.()
+  }
+
+  await applySelectionToPage()
 }
 
-function reset() {
+async function refreshWithKeepingSelection() {
+  await refresh()
+}
+
+async function reset() {
   Object.assign(filter, defaultFilter())
-  criteriaSearchCreateModal.value?.resetCriteriaListAndSave?.()
-  emitFilterUpdate()
-  refresh()
-}
+  selectedItems.value = []
 
-function refreshWithKeepingSelection() {
+  criteriaSearchCreateModal.value?.resetCriteriaListAndSave?.()
+
   emitFilterUpdate()
-  soList.value?.refreshWithKeepingSelection?.()
+
+  await nextTick()
+  await soList.value?.resetSelection?.()
+  await soList.value?.refresh?.()
 }
 
 function searchFiltersPanel() {
   return t('searchfilter.label')
+}
+
+function upsertSelectedItem(item: any) {
+  const normalized = normalizeItem(item)
+
+  if (!normalized?.id) {
+    return
+  }
+
+  const index = selectedItems.value.findIndex(selected => selected.id === normalized.id)
+
+  if (index === -1) {
+    selectedItems.value.push(normalized)
+  } else {
+    selectedItems.value[index] = {
+      ...selectedItems.value[index],
+      ...normalized
+    }
+  }
+}
+
+function removeSelectedItem(item: any) {
+  const uri = getItemUri(item)
+
+  if (!uri) {
+    return
+  }
+
+  selectedItems.value = selectedItems.value.filter(selected => selected.id !== uri)
+}
+
+function onSelect(value: any) {
+  upsertSelectedItem(value)
+  emit('select', normalizeItem(value) ?? value)
+}
+
+function onUnselect(value: any) {
+  removeSelectedItem(value)
+  emit('unselect', normalizeItem(value) ?? value)
+}
+
+function onSelectAll(value: any) {
+  const values = Array.isArray(value) ? value : [value]
+
+  values.forEach(item => {
+    upsertSelectedItem(item)
+  })
+
+  emit('selectall', selectedItems.value)
+}
+
+function selectItem(row: any) {
+  const normalized = normalizeItem(row)
+
+  if (!normalized) {
+    return
+  }
+
+  upsertSelectedItem(normalized)
+  soList.value?.onItemSelected?.(normalized)
+}
+
+function unSelect(row: any) {
+  const normalized = normalizeItem(row)
+
+  if (!normalized) {
+    return
+  }
+
+  removeSelectedItem(normalized)
+  soList.value?.onItemUnselected?.(normalized)
+}
+
+function setInitiallySelectedItems(items: any[]) {
+  selectedItems.value = normalizeItems(items)
+}
+
+async function applySelectionToPage() {
+  await nextTick()
+
+  selectedItems.value.forEach(item => {
+    soList.value?.onItemSelected?.(item)
+  })
+}
+
+async function onModalShown() {
+  emit('shown')
+
+  await nextTick()
+  await applySelectionToPage()
+}
+
+/**
+ * Méthodes dédiées au mode "éléments sélectionnés seulement".
+ * Si ScientificObjectList / TableAsyncView appelle ces méthodes,
+ * elles permettent de récupérer la sélection complète multi-pages.
+ */
+function getSelected() {
+  return selectedItems.value
+}
+
+function getSelectedItems() {
+  return selectedItems.value
 }
 
 defineExpose({
@@ -302,7 +516,11 @@ defineExpose({
   reset,
   refreshWithKeepingSelection,
   selectItem,
-  unSelect
+  unSelect,
+  setInitiallySelectedItems,
+  applySelectionToPage,
+  getSelected,
+  getSelectedItems
 })
 </script>
 
@@ -315,18 +533,27 @@ defineExpose({
 
 .modal-body {
   padding: 8px 0;
+  height: 72vh;
+  overflow: hidden;
 }
 
 .so-layout {
+  height: 100%;
   background: transparent;
-  overflow: scroll;
+}
+
+.so-sider,
+.so-content {
+  height: 100%;
 }
 
 .so-sider {
   background: #fff;
+  overflow: auto;
 }
 
 .so-content {
+  overflow: auto;
   padding-left: 12px;
 }
 
@@ -347,30 +574,6 @@ defineExpose({
   margin-top: 10px;
 }
 
-.modal-body {
-  padding: 8px 0;
-  height: 72vh;
-  overflow: hidden;
-}
-
-.so-layout {
-  height: 100%;
-}
-
-.so-sider,
-.so-content {
-  height: 100%;
-}
-
-.so-sider {
-  overflow: auto;
-}
-
-.so-content {
-  overflow: auto;
-  padding-left: 12px;
-}
-
 /* neutralisation des classes injectées par naive dans les <n-form-item> qui créent des espaces indésirés entre les champs */
 :deep(.compact-form-item) {
   --n-label-height: 0px !important;
@@ -378,22 +581,20 @@ defineExpose({
 }
 </style>
 
-
 <i18n>
 en:
-    ScientificObjectModalList:
-        filter:
-            experiments: Experiment(s)
-            name: Enter name,
-            creationDate: Creation date
-            existenceDate: Object exists
+  ScientificObjectModalList:
+    filter:
+      experiments: Experiment(s)
+      name: Enter name
+      creationDate: Creation date
+      existenceDate: Object exists
 
 fr:
-    ScientificObjectModalList:
-        filter:
-            experiments: Expérimentation(s)
-            name: Saisir un nom
-            creationDate: Date de création
-            existenceDate: Date d'existence
-            
+  ScientificObjectModalList:
+    filter:
+      experiments: Expérimentation(s)
+      name: Saisir un nom
+      creationDate: Date de création
+      existenceDate: Date d'existence
 </i18n>

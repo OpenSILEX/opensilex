@@ -31,17 +31,12 @@ const { t } = useI18n();
 
 
 const relations = computed(() => {
-  console.log("props.skosReferences:", props.skosReferences);
-
   const allRelations: { relation: string; relationURI: string }[] = [];
-  console.log("supported skos :", SUPPORTED_SKOS_RELATIONS)
 
   const skosArray = Array.from(SUPPORTED_SKOS_RELATIONS);
 
 for (const skosRelation of skosArray) {
-  console.log("SKOS relation:", skosRelation);
   const references = props.skosReferences?.[skosRelation.dtoKey];
-  console.log("References for", skosRelation.dtoKey, ":", references);
 
   if (references) {
     for (const uri of references) {
@@ -53,7 +48,6 @@ for (const skosRelation of skosArray) {
   }
 }
 
-console.log("all ", allRelations)
   return allRelations;
 });
 

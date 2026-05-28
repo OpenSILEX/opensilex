@@ -127,7 +127,7 @@ menu:
             - data-access
           icon: fa#file-medical-alt
           title: component.menu.data.datafiles
-          description: DataFilesView.description
+          description: component.datafile.description
       - id: provenances
         label: component.menu.data.provenance
         route:

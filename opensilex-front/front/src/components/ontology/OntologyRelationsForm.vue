@@ -1,10 +1,14 @@
 <template>
   <div>
-    <div v-for="(relation, index) in typeRelations" :key="index">
+    <div
+      v-for="relation in typeRelations"
+      :key="relation.property.uri"
+    >
       <component
+        v-if="getInputComponent(relation.property)"
         :is="getInputComponent(relation.property)"
         :property="relation.property"
-        :label="relation.property.name"
+        :label="relation.property.name ?? relation.property.uri"
         :required="relation.property.is_required"
         :multiple="relation.property.is_list"
         :value="relation.value"
@@ -17,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, withDefaults } from 'vue'
+import { computed, inject, ref, watch, withDefaults } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { OntologyService } from 'opensilex-core/api/ontology.service'
 import type {
@@ -48,38 +52,68 @@ const props = withDefaults(defineProps<{
 })
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const vueOntologyService = opensilex.getService<VueJsOntologyExtensionService>('opensilex.VueJsOntologyExtensionService')
-const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
+
+const vueOntologyService = opensilex.getService<VueJsOntologyExtensionService>(
+  'opensilex-front.VueJsOntologyExtensionService'
+)
+
+const ontologyService = opensilex.getService<OntologyService>(
+  'opensilex-core.OntologyService'
+)
 
 const internalRelations = ref<Array<MultiValuedRDFObjectRelation>>([])
 const typeModel = ref<VueRDFTypeDTO | null>(null)
 const propertiesByDomainHierarchy = ref<PropertiesByDomainDTO[]>([])
 
 const typeRelations = computed<Array<MultiValuedRDFObjectRelation>>(() => {
-  // Retourne les relations internes uniquement lorsque le modèle RDF du type est chargé
   if (!typeModel.value) {
     return []
   }
+
   return internalRelations.value
 })
 
-function getHandledProperties(): Array<VueRDFTypePropertyDTO> {
-  /**
-  * Récupère les propriétés RDF à afficher, en excluant celles passées via excludedProperties,
-  * puis les trie selon l'ordre défini par le modèle ou par la hiérarchie des domaines
+    /**
+  * Détermine le composant Vue à utiliser pour saisir la valeur d'une propriété RDF
+  * Donne la priorité au composant spécifique défini pour cette propriété, sinon composant par défaut
   */
+function getInputComponentName(property: VueRDFTypePropertyDTO): string | null {
+  if (
+    property.input_components_by_property &&
+    property.input_components_by_property[property.uri]
+  ) {
+    return property.input_components_by_property[property.uri]
+  }
+
+  return property.input_component ?? null
+}
+
+function getInputComponent(property: VueRDFTypePropertyDTO): string | null {
+  const componentName = getInputComponentName(property)
+
+  if (!componentName) {
+    return null
+  }
+
+  return componentName
+}
+
+function getHandledProperties(): Array<VueRDFTypePropertyDTO> {
   if (!typeModel.value) {
     return []
   }
 
   const shortExcludedProperties = new Set<string>()
+
   props.excludedProperties.forEach(property => {
     shortExcludedProperties.add(opensilex.getShortUri(property))
   })
 
   const properties = typeModel.value.data_properties
     .concat(typeModel.value.object_properties)
+    .filter(property => property.inherited === false)
     .filter(property => !shortExcludedProperties.has(opensilex.getShortUri(property.uri)))
+    .filter(property => !!getInputComponent(property))
 
   if (!typeModel.value.properties_order || typeModel.value.properties_order.length === 0) {
     const newPropertyOrder: Array<VueRDFTypePropertyDTO> = []
@@ -91,9 +125,10 @@ function getHandledProperties(): Array<VueRDFTypePropertyDTO> {
       )
 
       propsOfDomainsUris.forEach(propertyUri => {
-        const filteredByCurrentProperty = properties.filter(e =>
-          opensilex.compareUris(e.uri, propertyUri)
+        const filteredByCurrentProperty = properties.filter(property =>
+          opensilex.compareUris(property.uri, propertyUri)
         )
+
         if (filteredByCurrentProperty.length === 1) {
           newPropertyOrder.push(filteredByCurrentProperty[0])
         }
@@ -126,6 +161,7 @@ function getCustomPropsForComponent(property: string): any {
   }
 
   const customAttributes = props.customComponentProps.get(property)
+
   if (!customAttributes || customAttributes.size === 0) {
     return {}
   }
@@ -134,11 +170,10 @@ function getCustomPropsForComponent(property: string): any {
 }
 
 async function typeSwitch(type: string, initialLoad: boolean) {
-  /**
-  * Charge les propriétés du type RDF sélectionné, initialise le modèle interne,
-  * puis prépare les relations affichées dans le formulaire
-  */
   if (!type || type.length === 0 || !props.baseType) {
+    typeModel.value = null
+    internalRelations.value = []
+    propertiesByDomainHierarchy.value = []
     return
   }
 
@@ -148,9 +183,13 @@ async function typeSwitch(type: string, initialLoad: boolean) {
         props.baseType,
         [type]
       )
-    propertiesByDomainHierarchy.value = propertiesByDomainHttpResponse.response.result
 
-    const vueRdfTypeResponse = await vueOntologyService.getRDFTypeProperties(type, props.baseType)
+    propertiesByDomainHierarchy.value =
+      propertiesByDomainHttpResponse.response.result
+
+    const vueRdfTypeResponse =
+      await vueOntologyService.getRDFTypeProperties(type, props.baseType)
+
     typeModel.value = vueRdfTypeResponse.response.result
 
     internalRelations.value.splice(0)
@@ -171,36 +210,28 @@ async function typeSwitch(type: string, initialLoad: boolean) {
         props.initHandler?.(relation)
       })
     }
-  } catch (e) {
-    opensilex.errorHandler(e)
+  } catch (error) {
+    opensilex.errorHandler(error)
   }
 }
 
-function getInputComponent(property: VueRDFTypePropertyDTO) {
-  /**
-  * Détermine le composant Vue à utiliser pour saisir la valeur d'une propriété RDF
-  * Donne la priorité au composant spécifique défini pour cette propriété, sinon composant par défaut
-  */
-  if (property.input_components_by_property && property.input_components_by_property[property.uri]) {
-    return property.input_components_by_property[property.uri]
-  }
-  return property.input_component
-}
-
-function updateRelation(_newValue: string | Array<string>, _property: VueRDFTypePropertyDTO) {
   /**
   * Synchronise la prop relations avec les relations internes,
   * en reconvertissant les valeurs multiples en relations mono-valuées.
   */
+function updateRelation(
+  _newValue: string | Array<string>,
+  _property: VueRDFTypePropertyDTO
+) {
   props.relations.splice(0)
   props.relations.push(...toMultipleMonoValuedRelations(internalRelations.value))
 }
 
-function onRelationValueUpdate(
   /**
   * Met à jour la valeur d'une relation après modification dans un champ,
   * puis synchronise la liste des relations exposée au parent
   */
+function onRelationValueUpdate(
   newValue: string | Array<string>,
   property: VueRDFTypePropertyDTO,
   relation: MultiValuedRDFObjectRelation
@@ -209,11 +240,11 @@ function onRelationValueUpdate(
   updateRelation(newValue, property)
 }
 
-function toMultipleMonoValuedRelations(
   /**
   * Convertit les relations internes, qui peuvent contenir plusieurs valeurs,
   * en liste de relations RDF mono-valuées attendue par l'API ou le parent
   */
+function toMultipleMonoValuedRelations(
   relations: Array<MultiValuedRDFObjectRelation>
 ): Array<RDFObjectRelationDTO> {
   const newRelations: Array<RDFObjectRelationDTO> = []
@@ -222,14 +253,16 @@ function toMultipleMonoValuedRelations(
     .filter(relation =>
       Array.isArray(relation.value)
         ? relation.value.length > 0
-        : relation.value !== undefined && relation.value !== null && relation.value !== ''
+        : relation.value !== undefined &&
+          relation.value !== null &&
+          relation.value !== ''
     )
     .forEach(relation => {
       if (Array.isArray(relation.value)) {
-        relation.value.forEach(aValue => {
+        relation.value.forEach(value => {
           newRelations.push({
             property: relation.property.uri,
-            value: aValue
+            value
           })
         })
       } else {
@@ -243,11 +276,11 @@ function toMultipleMonoValuedRelations(
   return newRelations
 }
 
-function toMultiValuedRelations(
   /**
   * Regroupe les relations RDF mono-valuées par propriété,
   * afin de reconstruire le modèle utilisé par les composants du formulaire
   */
+function toMultiValuedRelations(
   relations: Array<RDFObjectRelationDTO>
 ): Array<MultiValuedRDFObjectRelation> {
   if (!typeModel.value) {
@@ -260,11 +293,15 @@ function toMultiValuedRelations(
     .filter(relation => !relation.inverse)
     .forEach(relation => {
       let propertyDto =
-        typeModel.value?.object_properties.find(propertyModel => propertyModel.uri === relation.property)
+        typeModel.value?.object_properties.find(propertyModel =>
+          opensilex.compareUris(propertyModel.uri, relation.property)
+        )
 
       if (!propertyDto) {
         propertyDto =
-          typeModel.value?.data_properties.find(propertyModel => propertyModel.uri === relation.property)
+          typeModel.value?.data_properties.find(propertyModel =>
+            opensilex.compareUris(propertyModel.uri, relation.property)
+          )
       }
 
       if (!propertyDto) {
@@ -298,6 +335,22 @@ function toMultiValuedRelations(
 
   return Array.from(valueByProperties.values()).concat(emptyRelations)
 }
+
+watch(
+  () => props.rdfType,
+  async rdfType => {
+    if (!rdfType) {
+      typeModel.value = null
+      internalRelations.value = []
+      propertiesByDomainHierarchy.value = []
+      return
+    }
+
+    const initialLoad = props.relations.length > 0
+    await typeSwitch(rdfType, initialLoad)
+  },
+  { immediate: true }
+)
 
 defineExpose({
   typeSwitch

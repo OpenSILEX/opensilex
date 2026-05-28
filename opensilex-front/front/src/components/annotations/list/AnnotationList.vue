@@ -67,20 +67,20 @@
                         <opensilex-DetailButton
                             v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
                             @click="showDetails(data.item)"
-                            label="Annotation.details"
+                            :label="t('Annotation.details')"
                             :title="t('Annotation.details')"
                             :small="true"
                         />
                         <opensilex-EditButton
                             v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
                             @click="editAnnotation(data.item)"
-                            label="Annotation.edit"
+                            :label="t('Annotation.edit')"
                             :small="true"
                         />
                         <opensilex-DeleteButton
                             v-if="!deleteCredentialId || user.hasCredential(deleteCredentialId)"
                             @click="deleteAnnotation(data.item.uri)"
-                            label="Annotation.delete"
+                            :label="t('Annotation.delete')"
                             :small="true"
                         />
                     </div>

@@ -1,7 +1,7 @@
 <template>
   <div class="static-field">
     <span class="field-view-title" :class="{ 'whole-line': !inline }">
-      {{ t(label) }}
+      {{ t(props.label) }}
     </span>
 
     <!-- Liste inline (séparée par des virgules) -->

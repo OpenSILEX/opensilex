@@ -9,7 +9,7 @@
       <div v-if="globalFilterField" class="mb-3">
         <opensilex-StringFilter
           v-model:filter="filter"
-          :placeholder="$t(filterPlaceholder)"
+          :placeholder="t(filterPlaceholder)"
           :debounce="300"
           :lazy="false"
         />
@@ -41,6 +41,7 @@
             :striped="true"
             :scroll-x="scrollX"
             :row-key="row => row.uri"
+            :row-props="rowProps"
             @update:checked-row-keys="onRowSelected"
             @update:sorter="handleSort"
         >
@@ -69,10 +70,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, h } from 'vue';
+import {ref, computed, watch, h, inject} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { NDataTable, NPagination, NConfigProvider } from 'naive-ui';
 import { onMounted, useSlots } from 'vue';
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 const slots = useSlots();
 
@@ -97,8 +99,9 @@ const props = defineProps({
 });
 
 
+//Row-selected = with CHECKBOXES , row-clicked = simply clicking on the row
+const emit = defineEmits(['row-selected', 'row-clicked']);
 
-const emit = defineEmits(['row-selected']);
 const { t } = useI18n();
 
 const currentPage = ref(1);
@@ -161,6 +164,22 @@ if (sortKey.value && sortOrder.value) {
 
   return items;
 });
+
+//#region: Row-clicked handling
+const lastClickedRow = ref(null);
+
+const rowProps = (row: any) => {
+  return {
+    onClick: () => {
+      lastClickedRow.value = row;
+      emit('row-clicked', row);
+    },
+    style: {
+      cursor: 'pointer',
+    }
+  };
+};
+//#endregion
 
 // Pagination
 const computedTotalRows = computed(() => filteredItems.value.length);
@@ -243,3 +262,16 @@ watch(filter, () => {
   justify-content: flex-end;
 }
 </style>
+
+<i18n>
+en:
+  TableView:
+    filter:
+      placeholder: Search in this table
+
+fr:
+  TableView:
+    filter:
+      placeholder: Rechercher dans ce tableau
+</i18n>
+

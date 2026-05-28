@@ -13,6 +13,8 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -27,17 +29,14 @@ import static org.opensilex.sparql.csv.AbstractCsvImporter.CSV_URI_KEY;
 
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.export.CsvExporter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -123,17 +122,10 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         sparql.loadOntology(new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH),
                 OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
-        // create germplasms
-        GermplasmModel germplasm1 = new GermplasmModel();
-        germplasm1.setName("test_os_csv_export");
-        germplasm1.setType(URI.create(Oeso.Germplasm.getURI()));
-        germplasm1.setUri(URI.create("test:id/germplasm/germplasm.test_os_csv_export"));
-
-        GermplasmModel germplasm2 = new GermplasmModel();
-        germplasm2.setName("test_os_csv_export2");
-        germplasm2.setType(URI.create(Oeso.Germplasm.getURI()));
-        germplasm2.setUri(URI.create("test:id/germplasm/germplasm.test_os_csv_export-2"));
-        sparql.create(GermplasmModel.class, Arrays.asList(germplasm1, germplasm2));
+        // create germplasm
+        var germplasmDao = new GermplasmDAO(sparql, mongodb.getServiceV2());
+        germplasmDao.create(makeGermplasm("test:id/germplasm/germplasm.test_os_csv_export", "test_os_csv_export", user));
+        germplasmDao.create(makeGermplasm("test:id/germplasm/germplasm.test_os_csv_export-2", "test_os_csv_export2", user));
 
         // create a device, in order to ensure that the custom property "customObjectPropExport" from the test ontology is well exported
         DeviceModel device = new DeviceModel();
@@ -156,6 +148,16 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         Assert.assertFalse(validation.hasErrors());
         Assert.assertEquals(10, validation.getNbObjectImported());
         Assert.assertEquals(10, sparql.count(ScientificObjectModel.class));
+    }
+
+    private static GermplasmModel makeGermplasm(String uri, String name, AccountModel publisher) throws Exception {
+        var germplasmDto = new GermplasmCreationDTO();
+        germplasmDto.setName(name);
+        germplasmDto.setUri(uri);
+        germplasmDto.setRdfType(URI.create(Oeso.Species.getURI()));
+        var model = germplasmDto.newModelWithoutRelations();
+        model.setPublisher(publisher.getUri());
+        return model;
     }
 
 

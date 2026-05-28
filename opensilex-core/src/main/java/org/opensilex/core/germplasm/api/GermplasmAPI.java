@@ -137,6 +137,7 @@ public class GermplasmAPI {
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
         GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
+        model.setPublisher(currentUser.getPublisher());
 
         if (!checkOnly) {
 
@@ -601,6 +602,7 @@ public class GermplasmAPI {
     public Response exportGermplasm(
             @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
+        searchFilter.setUser(currentUser);
         List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
                 .search(searchFilter,false,false).getList();
 

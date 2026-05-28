@@ -12,6 +12,7 @@ package org.opensilex.core.germplasm.bll;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
@@ -20,6 +21,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -39,11 +41,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GermplasmLogic {
 
     private final GermplasmDAO dao;
+    private final GroupDAO groupDao;
     private final SPARQLService sparql;
     private final AccountModel currentUser;
 
@@ -61,6 +65,7 @@ public class GermplasmLogic {
 
     public GermplasmLogic(SPARQLService sparql, MongoDBServiceV2 nosql, AccountModel currentUser) {
         this.dao = new GermplasmDAO(sparql, nosql);
+        this.groupDao = new GroupDAO(sparql);
         this.sparql = sparql;
         this.currentUser = currentUser;
     }
@@ -70,6 +75,7 @@ public class GermplasmLogic {
      */
     public GermplasmLogic(GermplasmDAO dao, SPARQLService sparql, AccountModel currentUser) {
         this.dao = dao;
+        this.groupDao = new GroupDAO(sparql);
         this.sparql = sparql;
         this.currentUser = currentUser;
     }
@@ -200,14 +206,11 @@ public class GermplasmLogic {
             lookForAlreadyExistantUri(germplasmModels, errors);
         }
 
+        checkUserAccess(germplasmModels, errors);
         globalFormatValidation(germplasmModels, errors);
-
         validateTypes(germplasmModels, errors);
-
         validateGermplasmDependenciesExists(germplasmModels, errors);
-
         validateAccessionVarietyOrSpeciesAreGiven(germplasmModels, errors);
-
         checkSpeciesCoherency(germplasmModels, errors);
 
         return errors;
@@ -459,6 +462,20 @@ public class GermplasmLogic {
         });
     }
 
+    private void checkUserAccess(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws Exception {
+        var uriGermplasmMap = germplasmModels.stream()
+                .filter(germplasm -> germplasm.getUri() != null)
+                .collect(Collectors.toMap(germplasm -> SPARQLDeserializers.formatURI(germplasm.getUri()), Function.identity()));
+        var uris = uriGermplasmMap.keySet().stream().toList();
+        var forbiddenUris = dao.getUnauthorizedGermplasms(uris, currentUser);
+        if (forbiddenUris.isEmpty()) {
+            return;
+        }
+        for (var uri : forbiddenUris) {
+            errors.addError(uriGermplasmMap.get(uri), "URI already exists and corresponds to a private resource.");
+        }
+    }
+
     /**
      * Set the isUpdate property to true for the models that already exist in the database.
      * @param germplasmModels the list of germplasm models among which some may already exist in the database.
@@ -489,7 +506,6 @@ public class GermplasmLogic {
             List<OrderBy> orderByList,
             Integer page,
             Integer pageSize) throws Exception {
-
         return dao.getExpFromGermplasm(currentUser, uri, name, orderByList, page, pageSize);
 
     }
@@ -497,8 +513,8 @@ public class GermplasmLogic {
     /**
      * @return all germplasm attributes (key). Each attribute is unique
      * */
-    public Set<String> getDistinctGermplasmAttributes() {
-        return dao.getDistinctGermplasmAttributes();
+    public Set<String> getDistinctGermplasmAttributes() throws Exception {
+        return dao.getDistinctGermplasmAttributes(currentUser, groupDao.getUserGroups(currentUser.getUri()));
     }
 
     /**

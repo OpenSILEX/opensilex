@@ -28,6 +28,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.api.GeometryDTO;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -35,12 +36,15 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.scientificObject.api.*;
+import org.opensilex.core.scientificObject.api.ScientificObjectExportDTO;
+import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
+import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
@@ -61,7 +65,10 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.*;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -141,6 +148,7 @@ public class ScientificObjectLogic {
             }
         }
 
+        checkGermplasmAccess(relations, currentUser);
         checkFactorLevelsBelongsToExperiment(relations, experiment);
         checkUniqueNameByGraph(context, model.getName(), null, true);
         Node graphNodeContext = SPARQLDeserializers.nodeURI(context);
@@ -532,6 +540,8 @@ public class ScientificObjectLogic {
             context = contextURI;
         }
 
+        checkGermplasmAccess(relations, currentUser);
+
         checkUniqueNameByGraph(context, model.getName(), model.getUri(), false);
         Node graphNode = SPARQLDeserializers.nodeURI(context);
 
@@ -835,6 +845,24 @@ public class ScientificObjectLogic {
                 throw new InvalidValueException("Following factor level is not part of the experiment: "+factorLevel);
             }
         });
+    }
+
+    private void checkGermplasmAccess(List<RDFObjectRelationDTO> relations, AccountModel account) throws Exception {
+        if (relations == null) {
+            return;
+        }
+        var uris = relations.stream()
+                .filter(rel -> SPARQLDeserializers.compareURIs(rel.getProperty(), Oeso.hasGermplasm.getURI()))
+                .map(rel -> URI.create(rel.getValue()))
+                .toList();
+        if (uris.isEmpty()) {
+            return;
+        }
+        var germplasmDao = new GermplasmDAO(sparql, nosql);
+        var forbiddenUris = germplasmDao.getUnauthorizedGermplasms(uris, account);
+        if (!forbiddenUris.isEmpty()) {
+            throw new ForbiddenURIAccessException(forbiddenUris, "Forbidden access to private resources.");
+        }
     }
 
     private ScientificObjectModel initObject(URI contextURI,ScientificObjectModel object, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {

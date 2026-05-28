@@ -20,13 +20,13 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     public static final String updatePath = path;
     public static final String deletePath = path + "/{uri}";
 
-    protected static final ServiceDescription get;
-    protected static final ServiceDescription search;
-    protected static final ServiceDescription create;
-    protected static final ServiceDescription update;
-    protected static final ServiceDescription delete;
-    protected static final ServiceDescription getAttributes;
-    protected static final ServiceDescription getAttributeValues;
+    public static final ServiceDescription get;
+    public static final ServiceDescription search;
+    public static final ServiceDescription create;
+    public static final ServiceDescription update;
+    public static final ServiceDescription delete;
+    public static final ServiceDescription getAttributes;
+    public static final ServiceDescription getAttributeValues;
 
     static {
         try {

@@ -1,7 +1,6 @@
 <template>
   <span>
-    <i v-if="iconType === 'ik'" :class="ikClasses"></i>
-    <font-awesome-icon v-else-if="iconType === 'fa'" :icon="faClass" :size="size" />
+    <font-awesome-icon v-if="iconType === 'fa'" :icon="faClass" :size="size" />
     <i v-else-if="iconType === 'bi'" :class="bootstrapClasses"></i>
   </span>
 </template>
@@ -16,12 +15,11 @@ const props = defineProps<{
 
 const iconType = computed(() => {
   const type = props.icon?.split("#")[0];
-  return ["ik", "fa", "bi"].includes(type || "") ? type : "ik";
+  return ["fa", "bi"].includes(type || "") ? type : "bi";
 });
 
-const iconName = computed(() => props.icon?.split("#")[1] || "ik-folder");
+const iconName = computed(() => props.icon?.split("#")[1] || "bi-folder");
 
-const ikClasses = computed(() => `ik ${iconName.value} ${props.size || "sm"}`);
 const faClass = computed(() => iconName.value);
 const bootstrapClasses = computed(() => {
   const name = iconName.value.startsWith("bi-") ? iconName.value.slice(3) : iconName.value;

@@ -372,7 +372,6 @@ en:
     publisher: Publisher
     published: Date
     target: Target
-    list-title: Annotations
     already-exist: the annotation already exist
     image: Image annotations
 fr:
@@ -389,7 +388,6 @@ fr:
     published: Date
     publisher: Publieur
     target: Cible
-    list-title: Annotations
     already-exist: l'annotation existe déjà
     image: Annotations d'image
 </i18n>

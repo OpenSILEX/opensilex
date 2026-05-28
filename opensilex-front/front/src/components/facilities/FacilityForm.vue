@@ -73,7 +73,7 @@
     <opensilex-SiteSelector
       label="component.common.organization.site"
       :multiple="true"
-      v-model:sites="facility.sites"
+      v-model:siteURIs="facility.sites"
     />
 
     <!-- Warning if more than one site -->

@@ -45,7 +45,7 @@
         :sortBy="fetchAndShowCurrentExperiments ? 'experiment_count' : 'rdf_type_name'"
         :sortDesc="fetchAndShowCurrentExperiments"
         :selectable="isSelectable"
-        @row-selected="onFacilitySelected"
+        @row-clicked="onFacilitySelected"
       >
         <template #cell(name)="{ data }">
           <opensilex-UriLink
@@ -74,13 +74,13 @@
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
               @click="editFacility(data.item)"
-              :label="t('FacilitiesView.update')"
+              :label="t('component.facility.buttons.update')"
               :small="true"
             />
             <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
               @click="deleteFacility(data.item.uri)"
-              :label="t('FacilitiesView.delete')"
+              :label="t('component.facility.buttons.delete')"
               :small="true"
             />
           </n-button-group>
@@ -234,8 +234,8 @@ async function deleteFacility(uri: string) {
     const title = t('OrganizationFacilityForm.name', {}, { default: t('FacilitiesView.facilities') })
     const msg = `${title} ${uri} ${t('component.common.success.delete-success-message')}`
 
-    $opensilex.showSuccessToast(msg)
-    emit('onDelete', uri)
+    $opensilex.showSuccessToast(msg);
+    emit('onDelete', uri);
   } catch (e) {
     $opensilex.errorHandler(e)
   }

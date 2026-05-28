@@ -37,7 +37,9 @@
                 "textual-position-placeholder": "à côté de la porte gauche",
                 "from-placeholder": "dev-infra:serreA",
                 "to-placeholder": "dev-infra:serreB",
-                "coordinates-placeholder": "POINT Z(1 1 80)"
+                "coordinates-placeholder": "POINT Z(1 1 80)",
+                "lastPosition": "Dernière position",
+                "positions": "Positions"
             },
             "month": "mois",
             "months": "mois",
@@ -417,7 +419,8 @@
             "description": "Description",
             "select-motivation": "Sélectionnez une motivation",
             "motivation-help": "Intention ou motivation guidant la création de l'annotation",
-            "no-motivation": "Aucune motivation trouvée"
+            "no-motivation": "Aucune motivation trouvée",
+            "list-title": "Annotations"
 
         },
         "variable" : {
@@ -792,7 +795,9 @@
             },
             "errors": {
                 "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
-            }
+            },
+            "funding": "Financeurs",
+            "expsInProgress": "Experiences en cours"
         },
         "germplasms": {
             "errors": {
@@ -950,6 +955,10 @@
                     "next": "Consulter l'infrastructure suivante",
                     "return": "Revenir à la liste des infrastructures"
                 }
+            },
+            "buttons": {
+                "update": "Modifier l'installation environnementale",
+                "delete": "Supprimer l'installation environnementale"
             }
         },
         "provenance": {

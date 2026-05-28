@@ -1412,16 +1412,27 @@ export default class OpenSilexVuePlugin {
         return this.getShortUri(uri1) === this.getShortUri(uri2);
     }
 
-     /**
+    /**
      * > This function checks if two URIs are the same
      * @param uri1 - The first URI to compare.
      * @param uri2 - The URI to check against.
      * @returns true if the two URIs are the same, comparison is done on their long uri.
      */
-        public compareUris(uri1, uri2) {
-            return this.getLongUri(uri1) === this.getLongUri(uri2);
+    public compareUris(uri1, uri2) {
+        return this.getLongUri(uri1) === this.getLongUri(uri2);
+    }
+
+    /**
+     * returns true if the given uri is in the list of uris, wether the uri is a short or long uri
+     */
+    public includesUri(uris: Array<string>, uri: string): boolean {
+        if (!uris || !Array.isArray(uris)) {
+            return false;
         }
-    
+        return uris.some((item) => this.compareUris(item, uri));
+    }
+
+
 
     public versionInfo: any = [];
 

@@ -11,7 +11,9 @@ export default defineConfig(({ mode }) => ({
       '@': resolve(__dirname, 'src')
     },
   },
-
+  optimizeDeps: {
+    include: ["vue-i18n"],
+  },
   plugins: [
     vue(),
     ...(mode === 'development' ? [vueDevTools()] : []),

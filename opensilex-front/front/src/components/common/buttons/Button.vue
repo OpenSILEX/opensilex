@@ -1,7 +1,7 @@
 <template>
   <button
     v-if="href"
-    :title="t(label)"
+    :title="label"
     :disabled="disabled"
     :href="href"
     class="btn btn-outline-primary"
@@ -11,13 +11,13 @@
       <opensilex-Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" />
       <i v-else-if="icon && icon.startsWith('bi-')" :class="['bi', icon]" />
     </slot>
-    <span class="button-label" :title="tooltip" v-if="size === 'md'">{{ t(label) }}</span>
+    <span class="button-label" :title="tooltip" v-if="size === 'md'">{{ label }}</span>
   </button>
 
   <button
     v-else
     @click.prevent="emit('click')"
-    :title="t(label)"
+    :title="label"
     :class="['btn', variant ? `btn-${variant}` : '']"
     :disabled="disabled"
   >
@@ -25,13 +25,12 @@
       <opensilex-Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" />
       <i v-else-if="icon && icon.startsWith('bi-')" :class="['bi', icon]" />
     </slot>
-    <span class="button-label" :title="tooltip" v-if="size === 'md'">{{ t(label) }}</span>
+    <span class="button-label" :title="tooltip" v-if="size === 'md'">{{ label }}</span>
   </button>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed } from "vue"; 
 
 const props = defineProps<{
   label?: string;
@@ -46,13 +45,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "click"): void;
 }>();
-
-const { t } = useI18n();
+ 
 
 const tooltip = computed(() =>
   !props.helpMessage || props.helpMessage.length === 0
-    ? props.label ? t(props.label) : undefined
-    : t(props.helpMessage)
+    ? props.label ? props.label : undefined
+    : props.helpMessage
 );
 
 const size = computed(() => (props.small ? "sm" : "md"));

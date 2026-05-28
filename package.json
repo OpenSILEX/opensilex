@@ -11,7 +11,9 @@
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
         "check:outdated": "npm outdated || cd .",
         "check:security": "npm audit || cd .",
-        "vite": "vite"
+        "vite": "vite",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "dependencies": {
         "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -36,6 +38,7 @@
         "vee-validate": "^4.15.1",
         "vue": "3.5.21",
         "vue-easy-lightbox": "^1.19.0",
+        "vue-i18n": "^11.4.4",
         "vue3-tour": "^1.0.3",
         "vuex": "4.1.0",
         "whatwg-fetch": "3.6.20",
@@ -43,16 +46,29 @@
         "yup": "^1.7.0"
     },
     "devDependencies": {
+        "@chromatic-com/storybook": "^5.2.1",
+        "@intlify/unplugin-vue-i18n": "^11.2.3",
+        "@storybook/addon-a11y": "^10.4.1",
+        "@storybook/addon-docs": "^10.4.1",
+        "@storybook/addon-onboarding": "^10.4.1",
+        "@storybook/addon-vitest": "^10.4.1",
+        "@storybook/vue3-vite": "^10.4.1",
         "@types/node": "22.15.1",
         "@vitejs/plugin-vue": "^5.2.4",
+        "@vitest/browser-playwright": "^4.1.7",
+        "@vitest/coverage-v8": "^4.1.7",
         "@vue/compiler-sfc": "^3.5.21",
         "eslint": "^9.27.0",
+        "eslint-plugin-storybook": "^10.4.1",
         "eslint-plugin-vue": "^9.32.0",
+        "playwright": "^1.60.0",
         "sass": "1.89.0",
         "sass-loader": "16.0.5",
+        "storybook": "^10.4.1",
         "typescript": "^5.8.3",
         "vite": "^6.3.5",
-        "vite-plugin-vue-devtools": "^8.0.2"
+        "vite-plugin-vue-devtools": "^8.0.2",
+        "vitest": "^4.1.7"
     },
     "eslintConfig": {
         "root": true,
@@ -62,7 +78,8 @@
         "extends": [
             "plugin:vue/essential",
             "eslint:recommended",
-            "@vue/typescript"
+            "@vue/typescript",
+            "plugin:storybook/recommended"
         ],
         "rules": {
             "no-unused-vars": "off",

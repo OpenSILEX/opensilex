@@ -113,13 +113,6 @@ defineExpose({
 })
 </script>
 
-<style scoped>
-.validation-confirm-container {
-  color: rgb(40, 167, 69);
-  font-weight: bold;
-}
-</style>
-
 <i18n>
 en:
   ExportDataFileModal:
@@ -143,3 +136,10 @@ fr:
     includeSampleDatetime-help: Ajouter une colonne avec la date et heure. Uniquement pour l'export DX vers TSV.
     includeSampleDatetime-title: Date et heure
 </i18n>
+
+<style scoped>
+.validation-confirm-container {
+  color: rgb(40, 167, 69);
+  font-weight: bold;
+}
+</style>

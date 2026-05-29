@@ -41,12 +41,27 @@
                 "lastPosition": "Dernière position",
                 "positions": "Positions"
             },
+            "date-time-stuff": {
+                "month": "mois",
+                "months": "mois",
+                "day":"jour",
+                "days":"jours",
+                "years":"années",
+                "startDate" : "Date de début",
+                "endDate" : "Date de fin",
+                "begin":"Début",
+                "end":"Fin",
+                "period":"Période",
+                "year":"année",
+                "period-descriptions":{
+                    "day": "24 dernieres heures",
+                    "week": "Derniere semaine",
+                    "month": "Dernier mois",
+                    "6month": "6 dernier mois",
+                    "year": "Derniere année"
+                }
+            },
             "altName": "Nom alternatif",
-            "month": "mois",
-            "months": "mois",
-            "day":"jour",
-            "days":"jours",
-            "years":"années",
             "yes": "oui",
             "no": "non",
             "ok": "OK",
@@ -63,11 +78,7 @@
             "element": "L'élément",
             "keyword": "Mot clé",
             "keywords": "Mot clés",
-            "startDate" : "Date de début",
-            "endDate" : "Date de fin",
-            "begin":"Début",
             "add":"Ajouter",
-            "end":"Fin",
             "description": "Description",
             "informations": "Informations générales",
             "objective":"Objectif",
@@ -100,8 +111,6 @@
             "resetSelected": "Réinitialiser la sélection",
             "state":"Etat",
             "species":"Espèces",
-            "period":"Période",
-            "year":"Année",
             "select-all" : "Sélectionner les elements de toutes les pages",
             "select-allp" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
@@ -174,7 +183,8 @@
                 "visualize-button": "Visualiser",
                 "badgeHelpMessage": "Ce badge représente le nombre d'éléments sélectionnés sur le maximum permis.",
                 "clear-button": "Réinitialiser",
-                "noDataFound": "Pas de données trouvées"
+                "noDataFound": "Pas de données trouvées",
+                "limitSizeMessageBasic" : "Il y a {count} données. Seules les 50 000 premières valeurs sont affichées."
             },
             "filter-search-no-result": "Désolé, aucun élément ne correspond à votre recherche.",
             "help-button": "Aide",
@@ -209,7 +219,9 @@
             },
             "title": "Titre",
             "date": "Date",
-            "authors": "Auteurs"
+            "authors": "Auteurs",
+            "fullscreen" : "Plein ecran",
+            "change-viewing-mode": "Changer de mode de vue"
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -472,7 +484,10 @@
                 "groupVariable": "Groupe de variables",
                 "groupVariableAssociated": "Groupe de variables associées",
                 "add-groupVariable": "Ajouter un groupe de variables",
-                "edit": "Éditer un groupe de variables"
+                "edit": "Éditer un groupe de variables",
+                "enviromental-variable-groups": "Groupes de variables environnementales",
+                "all-enviromental-variables": "Toutes les variables environnementales",
+                "variable-group-help": "Les groupes de variables associées à l'installation. Vous pouvez associer des groupes dans le formulaire de modification de l'installation."
             },
             "timeInterval" : {
                 "time-interval":"Intervalle de temps",
@@ -553,7 +568,8 @@
                 "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
                 "description": "Rendement du grain obtenu après récolte d'une microparcelle expérimentale.",
                 "species": "Riz"
-            }
+            },
+            "no-enviromental-variable": "Aucune variable environnementale trouvée"
         },
         "profile": {
             "description": "Gérer et configurer les profils",
@@ -701,7 +717,6 @@
             "objective-help": "Prédiction génomique du rendement du maïs",
             "comment": "Description",
             "comment-help": "Prédiction génomique du rendement du maïs dans les scénarios environnementaux européen",
-            "startDate": "Date de début",
             "endDate": "Date de fin",
             "campaign": "Campagne",
             "campaign-placeholder": "2020",
@@ -761,7 +776,6 @@
                     "campaign": "Campagne",
                     "places": "Lieux",
                     "species": "Espèces",
-                    "startDate": "Date de début",
                     "endDate": "Date de fin",
                     "uri": "URI",
                     "state": "Etat"
@@ -971,8 +985,14 @@
         "provenance": {
             "description": "Décrire la provenance de données"
         },
+        "data": {
+            "lastMedianData": "Dernière valeur médiane",
+            "lastDataStored": "Dernière donnée importée à la date",
+            "no-data": "Aucune donnée trouvée pour cette période"
+        },
         "datafile": {
-            "description": "Voir les fichiers de données"
+            "description": "Voir les fichiers de données",
+            "download-image" : "Télecharger l'image"
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

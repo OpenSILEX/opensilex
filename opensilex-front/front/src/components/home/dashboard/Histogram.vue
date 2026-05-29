@@ -12,7 +12,7 @@
         <div class="graphicOptions">
         <!-- Period badge -->
         <span v-if="period" class="badge rounded-pill greenThemeColor">
-        <opensilex-Icon icon="fa#hourglass-half" /> {{ t("Histogram.period." + period) }}
+        <opensilex-Icon icon="fa#hourglass-half" /> {{ t("component.common.period-descriptions." + period) }}
         </span>
 
 
@@ -25,19 +25,19 @@
             <li>
                 <a class="dropdown-item" href="#" @click="scatter">
                 <opensilex-Icon icon="fa#braille" />
-                {{ t("Histogram.dataStyle") }}
+                {{ t("component.common.change-viewing-mode") }}
                 </a>
             </li>
             <li>
                 <a class="dropdown-item" href="#" @click="fullscreen">
                 <opensilex-Icon icon="fa#expand" />
-                {{ t("VisualisationGraphic.fullscreen") }}
+                {{ t("component.common.fullscreen") }}
                 </a>
             </li>
             <li>
                 <a class="dropdown-item" href="#" @click="exportPNG">
                 <opensilex-Icon icon="fa#download" />
-                {{ t("VisualisationGraphic.download") }}
+                {{ t("component.datafile.download-image") }}
                 </a>
             </li>
           </ul>
@@ -408,7 +408,6 @@ function buildDataSeries(devicesToDisplay?: any[], period?: any): Promise<any[]>
 <i18n>
 en:
   Histogram:
-    dataStyle: "Change viewing mode"
     today: Today
     weekday:
       1: Monday
@@ -418,12 +417,6 @@ en:
       5: Friday
       6: Saturday
       0: Sunday
-    period:
-      day: Last hours
-      week: "Last week"
-      month: "Last month"
-      6month: "Last 6 month"
-      year: "Last year"
     settings: "Choice of period and devices"
     noDataFound : "No data found at the selected period for : "
     limitSizeMessageA : "There are "
@@ -433,7 +426,6 @@ en:
 
 fr:
   Histogram:
-    dataStyle: "Changer de mode de vue"
     today: Aujourd'hui
     weekday:
       1: Lundi
@@ -443,12 +435,6 @@ fr:
       5: Vendredi
       6: Samedi
       0: Dimanche
-    period:
-      day: "24 dernieres heures"
-      week: "Derniere semaine"
-      month: "Dernier mois"
-      6month: "6 dernier mois"
-      year: "Derniere année"
     settings: "Choix de la période et des appareils"
     noDataFound: "Pas de données pour la période choisie pour : "
     limitSizeMessageA : "Il y a "

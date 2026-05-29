@@ -64,12 +64,12 @@ const locationsService: LocationsService = $opensilex.getService<LocationsServic
 const fields = [
   {
     key: "startDate",
-    label: "component.common.begin",
+    label: "component.common.date-time-stuff.begin",
     sortable: true,
   },
   {
     key: "endDate",
-    label: "component.common.end",
+    label: "component.common.date-time-stuff.end",
     sortable: true,
   },
   {

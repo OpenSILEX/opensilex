@@ -40,8 +40,8 @@
       <opensilex-DateRangePickerForm
         v-model:start="formDto.start_date"
         v-model:end="formDto.end_date"
-        labelStart="component.common.startDate"
-        labelEnd="component.common.endDate"
+        labelStart="component.common.date-time-stuff.startDate"
+        labelEnd="component.common.date-time-stuff.endDate"
         type="date"
         :requiredStart="true"
       />
@@ -178,7 +178,7 @@ function validate(): boolean {
   const startDate = (formDto.value.start_date ?? '').toString().trim()
   if (!startDate) {
     startDateError.value = t('validations.required_if', {
-      _field_: t('component.common.startDate') as string
+      _field_: t('component.common.date-time-stuff.startDate') as string
     }) as string
   }
 

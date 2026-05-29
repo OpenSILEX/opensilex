@@ -21,7 +21,7 @@ function walk(dir: string) {
     } else if (extname(entry) === '.vue') {
       const componentName = basename(entry, '.vue');
       const relativePath = fullPath.split('src')[1]; // path after 'src'
-      const importPath = `@/opensilex-front/front/src${relativePath}`;
+      const importPath = `../opensilex-front/front/src${relativePath}`;
       const storyFile = join(storiesDir, `${componentName}.stories.ts`);
       if (existsSync(storyFile)) continue; // skip existing stories
       const storyContent = `import ${componentName} from '${importPath}';

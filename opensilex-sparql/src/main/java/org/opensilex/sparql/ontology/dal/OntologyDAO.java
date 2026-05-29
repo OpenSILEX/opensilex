@@ -139,6 +139,8 @@ public final class OntologyDAO {
             );
         }
 
+        checkFactorCategoryDeletionRule(classURI);
+
         boolean hasDataPropertiesOnClass = searchDataProperties(classURI,null,null).getRootsCount() > 0;
         if (hasDataPropertiesOnClass) {
             throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
@@ -170,6 +172,26 @@ public final class OntologyDAO {
             sparql.commitTransaction();
         }catch (Exception e){
             sparql.rollbackTransaction();
+        }
+    }
+
+    /**
+     * @throws DisplayableBadRequestException if the class is a subtype of vocabulary:FactorCategory and is linked with at least one factor.
+     * @see FactorCategoryDeleteVerificationAskQueryProvider implementationfor a query exemple.
+     */
+    private void checkFactorCategoryDeletionRule(URI classURI) throws Exception, DisplayableBadRequestException {
+        Optional<FactorCategoryDeleteVerificationAskQueryProvider> askBuilder = ServiceLoader.load(FactorCategoryDeleteVerificationAskQueryProvider.class).findFirst();
+
+        if (askBuilder.isEmpty()){
+            throw new IllegalStateException("No implementation of " + FactorCategoryDeleteVerificationAskQueryProvider.class.getName() + " found, can't check factor category deletion rule");
+        }
+
+        boolean factorCategoryCannotBeDeleted = sparql.executeAskQuery(askBuilder.get().getFactorCategoryDeleteVerificationAskQuery(classURI));
+        if (factorCategoryCannotBeDeleted) {
+            throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                    "component.ontology.class.exception.delete.factor-category",
+                    Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+            );
         }
     }
 

@@ -6,7 +6,6 @@
 package org.opensilex.front.vueOwlExtension.dal;
 
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.OpenSilex;
 import org.opensilex.front.vueOwlExtension.VueOwlExtension;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
@@ -75,7 +74,7 @@ public class VueOwlExtensionDAO {
      *
      * @see OntologyDAO#deleteClass(URI)
      */
-    public void deleteExtendedClass(URI classURI) throws Exception {
+    public void deleteClassWithExtension(URI classURI) throws Exception {
 
         Objects.requireNonNull(classURI);
 
@@ -87,7 +86,6 @@ public class VueOwlExtensionDAO {
                     Collections.singletonMap(OntologyDAO.CLASS_DELETION_KEY_PARAMETER,classURI.toString())
             );
         }
-
         sparql.startTransaction();
         try {
             ontologyDAO.deleteClass(classURI);

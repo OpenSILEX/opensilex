@@ -776,7 +776,8 @@
                         "instance-exists" : "Une ou plusieurs ressources du type {class} existent. Vous devez les supprimer d'abord",
                         "has-children" : "Le type {class} a plusieurs sous-types. Vous devez les supprimer d'abord",
                         "has-data-properties" : "Le type {class} est relié à plusieurs propriétés literales. Vous devez les supprimer d'abord",
-                        "has-object-properties" : "Le type {class} est relié à plusieurs propriétés objets. Vous devez les supprimer d'abord"
+                        "has-object-properties" : "Le type {class} est relié à plusieurs propriétés objets. Vous devez les supprimer d'abord",
+                        "factor-category" : "La catégorie de facteur {class} est utilisée par un ou plusieurs facteurs. Cette catégorie de facteur ne doit être utilisée par aucun facteur pour être supprimée."
                     }
                 }
             },

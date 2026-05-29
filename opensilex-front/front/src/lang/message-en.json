@@ -724,7 +724,9 @@
                         "instance-exists" : "Some objects are instance of {class}. You must delete them first",
                         "has-children" : "The class {class} has child class. You must delete them first",
                         "has-data-properties" : "The class {class} is concerned by some data-properties. You must delete them first",
-                        "has-object-properties" : "The class {class} is concerned by some object-properties. You must delete them first"
+                        "has-object-properties" : "The class {class} is concerned by some object-properties. You must delete them first",
+                        "has-custom-properties" : "The class {class} is concerned by some custom properties. You must delete them first",
+                        "factor-category" : "The factor category {class} is used by one or many factor. This factor category must not be used by any factor to be deleted"
                     }
                 }
             },

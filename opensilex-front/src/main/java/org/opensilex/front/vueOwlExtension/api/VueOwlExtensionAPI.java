@@ -181,7 +181,7 @@ public class VueOwlExtensionAPI {
             @ApiParam(value = "RDF type") @PathParam("uri") @NotNull @ValidURI URI classURI
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
-        dao.deleteExtendedClass(classURI);
+        dao.deleteClassWithExtension(classURI);
         SPARQLModule.getOntologyStoreInstance().reload();
         return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }

@@ -137,6 +137,24 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- Allow to give an implementation of FactorCategoryDeleteVerificationAskQueryProvider interface that will be usable for all modules -->
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>factor-category-delete-verification-provider</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.sparql.ontology.dal.FactorCategoryDeleteVerificationAskQueryProvider</param>
+                            </services>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             
         </plugins>
     </build>

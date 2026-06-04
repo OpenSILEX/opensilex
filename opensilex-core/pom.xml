@@ -149,7 +149,7 @@
                         </goals>
                         <configuration>
                             <services>
-                                <param>org.opensilex.sparql.ontology.dal.FactorCategoryDeleteVerificationAskQueryProvider</param>
+                                <param>org.opensilex.sparql.ontology.dal.ClassSpecificDeleteVerificationAskQueryProvider</param>
                             </services>
                         </configuration>
                     </execution>

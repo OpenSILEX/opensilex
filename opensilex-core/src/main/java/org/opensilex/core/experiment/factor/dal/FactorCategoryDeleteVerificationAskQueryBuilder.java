@@ -17,14 +17,14 @@ import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.ontology.dal.FactorCategoryDeleteVerificationAskQueryProvider;
+import org.opensilex.sparql.ontology.dal.ClassSpecificDeleteVerificationAskQueryProvider;
 import org.opensilex.sparql.utils.Ontology;
 
 import java.net.URI;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
-public class FactorCategoryDeleteVerificationAskQueryBuilder implements FactorCategoryDeleteVerificationAskQueryProvider {
+public class FactorCategoryDeleteVerificationAskQueryBuilder implements ClassSpecificDeleteVerificationAskQueryProvider {
 
     /**
      * @return a AskBuilder with a query returning true if the class is a subtype of vocabulary:FactorCategory and is linked with at least one factor
@@ -45,5 +45,10 @@ public class FactorCategoryDeleteVerificationAskQueryBuilder implements FactorCa
                 .addWhere(factorCategoryUriNode, RDF.type, OWL.Class)
                 .addWhere(factorCategoryUriNode, Ontology.subClassAny, Oeso.FactorCategory).
                 addWhere(linkedCategory, Oeso.hasCategory, factorCategoryUriNode);
+    }
+
+    @Override
+    public String getErrorTranslationKey() {
+        return "component.ontology.class.exception.delete.factor-category";
     }
 }

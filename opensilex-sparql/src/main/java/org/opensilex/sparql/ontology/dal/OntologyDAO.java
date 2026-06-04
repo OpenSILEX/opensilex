@@ -45,6 +45,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -139,7 +140,7 @@ public final class OntologyDAO {
             );
         }
 
-        checkFactorCategoryDeletionRule(classURI);
+        checkSpecificClassDeletionRule(classURI);
 
         boolean hasDataPropertiesOnClass = searchDataProperties(classURI,null,null).getRootsCount() > 0;
         if (hasDataPropertiesOnClass) {
@@ -177,21 +178,20 @@ public final class OntologyDAO {
 
     /**
      * @throws DisplayableBadRequestException if the class is a subtype of vocabulary:FactorCategory and is linked with at least one factor.
-     * @see FactorCategoryDeleteVerificationAskQueryProvider implementationfor a query exemple.
+     * @see ClassSpecificDeleteVerificationAskQueryProvider implementationfor a query exemple.
      */
-    private void checkFactorCategoryDeletionRule(URI classURI) throws Exception, DisplayableBadRequestException {
-        Optional<FactorCategoryDeleteVerificationAskQueryProvider> askBuilder = ServiceLoader.load(FactorCategoryDeleteVerificationAskQueryProvider.class).findFirst();
+    private void checkSpecificClassDeletionRule(URI classURI) throws Exception, DisplayableBadRequestException {
+        var askBuilderInstanceLoader = ServiceLoader.
+                load(ClassSpecificDeleteVerificationAskQueryProvider.class);
 
-        if (askBuilder.isEmpty()){
-            throw new IllegalStateException("No implementation of " + FactorCategoryDeleteVerificationAskQueryProvider.class.getName() + " found, can't check factor category deletion rule");
-        }
-
-        boolean factorCategoryCannotBeDeleted = sparql.executeAskQuery(askBuilder.get().getFactorCategoryDeleteVerificationAskQuery(classURI));
-        if (factorCategoryCannotBeDeleted) {
-            throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
-                    "component.ontology.class.exception.delete.factor-category",
-                    Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
-            );
+        for (ClassSpecificDeleteVerificationAskQueryProvider askBuilder : askBuilderInstanceLoader) {
+            boolean classCannotBeDeleted = sparql.executeAskQuery(askBuilder.getFactorCategoryDeleteVerificationAskQuery(classURI));
+            if (classCannotBeDeleted) {
+                throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                        askBuilder.getErrorTranslationKey(),
+                        Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+                );
+            }
         }
     }
 

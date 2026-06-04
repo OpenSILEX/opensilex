@@ -18,6 +18,8 @@ import java.net.URI;
  * this interface is used to let the opensilex-core module provide the necessary query to ensure that a factor category can be deleted.
  * using this interface allow us to use ClassLoader and runtime dependency injection, because the opensilex-sparql module can't depend on the opensilex-core module.
  */
-public interface FactorCategoryDeleteVerificationAskQueryProvider {
+public interface ClassSpecificDeleteVerificationAskQueryProvider {
     public abstract AskBuilder getFactorCategoryDeleteVerificationAskQuery(URI factorCategoryURI);
+
+    public abstract String getErrorTranslationKey();
 }

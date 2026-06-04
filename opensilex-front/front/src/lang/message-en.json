@@ -108,6 +108,7 @@
             "loading" : "Loading...",
             "metadata": "Metadata",
             "set-description": "Enter a description",
+            "scroll-to-load-more": "Scroll to load more",
             "no-more-results": "No more results",
             "errors": {
                 "error-title": "Error",

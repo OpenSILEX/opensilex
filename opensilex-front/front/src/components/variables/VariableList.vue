@@ -114,6 +114,7 @@
             :placeholder="$t('component.variable.entity.entity-placeholder')"
           />
         </n-form-item>
+        <br>
 
         <!-- Caractéristique -->
         <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
@@ -123,8 +124,6 @@
             :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
           />
         </n-form-item>
-
-        
 
         <!-- Group of variables -->
         <n-form-item :label="t('component.variable.groupVariable.groupVariable')" :show-feedback="false">

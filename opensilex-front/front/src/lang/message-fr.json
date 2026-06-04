@@ -109,6 +109,7 @@
             "loading" : "Chargement...",
             "metadata": "Metadonnée(s)",
             "set-description": "Saisir une description",
+            "scroll-to-load-more": "Défiler pour charger plus de résultats",
             "no-more-results": "Pas de résultats supplémentaires",
             "errors": {
                 "error-title": "Erreur",

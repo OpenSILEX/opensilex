@@ -344,7 +344,7 @@ en:
     code-help: The code of the germplasm
     website: Web site
     website-help: the web page of the institute or the germplasm
-    groups: Groups
+    groups: Authorized groups
     is-public-title: Check to make this germplasm publicly available
     is-public-label: Public
 
@@ -377,7 +377,7 @@ fr:
     code-help: Code de la ressource génétique
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
-    groups: Groupes
+    groups: Groupes autorisés
     is-public-title: Cocher pour rendre cette ressource visible publiquement
     is-public-label: Publique
 </i18n>

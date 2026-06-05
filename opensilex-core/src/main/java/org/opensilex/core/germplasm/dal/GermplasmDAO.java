@@ -341,9 +341,13 @@ public class GermplasmDAO {
         if (CollectionUtils.isEmpty(existingUris)) {
             return Set.of();
         }
+        if (account.isAdmin()) {
+            return Set.of();
+        }
         var allowedFilter = new GermplasmSearchFilter()
                 .setUris(existingUris.stream().toList())
                 .setUser(account);
+        allowedFilter.setPageSize(0);
         var allowedUris = search(allowedFilter, false, false).getList().stream()
                 .map(GermplasmModel::getUri)
                 .map(SPARQLDeserializers::formatURI)

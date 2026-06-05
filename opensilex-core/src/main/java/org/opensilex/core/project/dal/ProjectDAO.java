@@ -9,11 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.jetbrains.annotations.NotNull;
-import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -22,7 +17,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
-import org.opensilex.sparql.service.schemaQuery.SparqlSchemaNode;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
 import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.utils.OrderBy;
@@ -31,7 +25,6 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,7 +53,7 @@ public class ProjectDAO {
 
     @Deprecated
     public void update(List<ProjectModel> instances) throws Exception {
-        sparql.update(instances);
+        sparql.update(instances, null);
     }
 
     public void delete(URI uri, AccountModel user) throws Exception {

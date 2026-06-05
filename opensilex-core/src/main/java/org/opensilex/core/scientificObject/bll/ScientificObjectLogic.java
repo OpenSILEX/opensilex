@@ -579,7 +579,7 @@ public class ScientificObjectLogic {
             }
 
             //Perform the actual update of OS's
-            sparql.update(models, context);
+            sparql.update(models, context, null);
 
             //Replace the children
             for(Map.Entry<URI, List<URI>> entry : oldChildrenPerOSUri.entrySet()){

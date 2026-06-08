@@ -89,12 +89,11 @@
     ></opensilex-InputForm>
 
     <!-- public germplasm -->
-    <opensilex-FormSelector
-      :options="isPublicOptions"
-      :selected.sync="form.is_public"
-      :required="true"
-      label="GermplasmForm.isPublic_label"
-    ></opensilex-FormSelector>    
+    <opensilex-CheckboxForm
+      :value.sync="form.is_public"
+      title="GermplasmForm.is-public-title"
+      label="GermplasmForm.is-public-label"
+    ></opensilex-CheckboxForm>
 
     <!-- institute -->
     <opensilex-InputForm
@@ -196,16 +195,6 @@ export default class GermplasmForm extends Vue {
   uriGenerated = true;
 
   attributesArray = [];
-  isPublicOptions = [
-    {
-      id: true, 
-      label: this.$i18n.t("GermplasmForm.isPublic")
-    },
-    {
-      id: false, 
-      label: this.$i18n.t("GermplasmForm.isPrivate")
-    },
-  ];
 
   @Prop()
   editMode: boolean;
@@ -223,7 +212,7 @@ export default class GermplasmForm extends Vue {
         institute: null,
         production_year: null,
         description: null,
-        is_public: null,
+        is_public: true,
         groups: [],
         synonyms:[],
         relations:[],
@@ -249,7 +238,7 @@ export default class GermplasmForm extends Vue {
       institute: null,
       production_year: null,
       description: null,
-      is_public: null,
+      is_public: true,
       groups: [],
       synonyms:[],
       relations:[],
@@ -355,10 +344,9 @@ en:
     code-help: The code of the germplasm
     website: Web site
     website-help: the web page of the institute or the germplasm
-    groups: Groups
-    isPublic: Public
-    isPrivate: Private
-    isPublic_label: Define status
+    groups: Authorized groups
+    is-public-title: Check to make this germplasm publicly available
+    is-public-label: Public
 
 
 fr:
@@ -389,10 +377,8 @@ fr:
     code-help: Code de la ressource génétique
     website: Site web
     website-help: page web de l'institut ou de la ressource plus spécifique
-    groups: Groupes
-    isPublic: Public
-    isPrivate: Privé
-    isPublic_label: Définir le statut
-
+    groups: Groupes autorisés
+    is-public-title: Cocher pour rendre cette ressource visible publiquement
+    is-public-label: Publique
 </i18n>
 

@@ -3,7 +3,6 @@ package org.opensilex.core.scientificObject.bll;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;

@@ -1,10 +1,12 @@
 package org.opensilex.migration.one_point_five_ALL;
 
+import com.mongodb.client.ClientSession;
 import org.bson.Document;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmMetadataModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -41,21 +43,18 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
         var sparql = factory.provide();
         var mongo = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
 
-        mongo.startTransaction();
         try {
-            executeWithoutTransaction(sparql, mongo.getServiceV2());
+            new SparqlMongoTransaction(sparql, mongo.getServiceV2()).execute(session -> {
+                executeWithSession(sparql, mongo.getServiceV2(), session);
+                return null;
+            });
         } catch (Exception e) {
-            try {
-                mongo.rollbackTransaction();
-                throw new OpensilexModuleUpdateException(this, e);
-            } catch (Exception ex) {
-                throw new OpensilexModuleUpdateException(this, ex);
-            }
+            logger.error("Error during germplasm attribute rights migration", e);
+            throw new OpensilexModuleUpdateException(this, e);
         }
-        mongo.commitTransaction();
     }
 
-    public void executeWithoutTransaction(SPARQLService sparql, MongoDBServiceV2 mongo) throws Exception {
+    public void executeWithSession(SPARQLService sparql, MongoDBServiceV2 mongo, ClientSession session) throws Exception {
         var attributeCollection = mongo.getDatabase().getCollection(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
 
         var uris = attributeCollection.distinct(GermplasmMetadataModel.URI_FIELD, String.class)
@@ -66,12 +65,15 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
         for (var germplasm : germplasms) {
             var uri = SPARQLDeserializers.getExpandedURI(germplasm.getUri());
             var updateDocument = new Document(Map.of(
-                    GermplasmMetadataModel.PUBLISHER_FIELD, SPARQLDeserializers.getExpandedURI(germplasm.getPublisher()),
                     GermplasmMetadataModel.IS_PUBLIC_FIELD, Optional.ofNullable(germplasm.getIsPublic()).orElse(true),
                     GermplasmMetadataModel.GROUPS_FIELD, germplasm.getGroups().stream().map(group -> SPARQLDeserializers.getExpandedURI(group.getUri())).toList()
             ));
+            if (germplasm.getPublisher() != null) {
+                updateDocument.put(GermplasmMetadataModel.PUBLISHER_FIELD, SPARQLDeserializers.getExpandedURI(germplasm.getPublisher()));
+            }
             logger.info("Updating " + uri + " with values " + updateDocument.toJson());
             attributeCollection.updateMany(
+                    session,
                     new Document(GermplasmMetadataModel.URI_FIELD, uri),
                     new Document("$set", updateDocument)
             );

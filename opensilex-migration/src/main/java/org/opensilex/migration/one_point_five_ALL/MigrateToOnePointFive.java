@@ -73,7 +73,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                 sciObjsAndMovesLocationMigration.execute(session);
                 sciObjAndXpLinkMigration.execute();
                 facilitiesLocationsMigration.execute(session);
-                germplasmAttributeUpdateRights.executeWithoutTransaction(sparql, mongodb.getServiceV2());
+                germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
                 return null;
             });
 

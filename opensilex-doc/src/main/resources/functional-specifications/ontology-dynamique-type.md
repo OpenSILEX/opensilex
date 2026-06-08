@@ -21,12 +21,12 @@
 
 - **Ontology** : a structured model that formally defines the concepts, relationships, and categories used to organize and interpret data within an information system.
 - **Type** : in an ontology, each concept is represented as a type, which defines the properties and relationships associated with that concept.
-- **Dynamique type** : a new type of facility, device or else... , that is not in the core ontology but was added by a user thanks to the web interace or the API.
+- **Dynamic type** : a new type of facility, device or else... , that is not in the core ontology but was added by a user thanks to the web interace or the API.
 - **Core ontology** : the ontology that is provided with OpenSILEX and that contains the basic types and relationships for describing scientific data.
 
 ## functional requirements
 
-OpenSILEX has a core ontology that can automatically be extended by specifics implementations of OpenSILEX.
+OpenSILEX has a core ontology that can automatically be extended by specific implementations of OpenSILEX.
 Even with this extension mechanism, we sometimes need concepts that are specific to an experiment or an implementation,
 but is not aimed to be used in other implementations.
 
@@ -51,17 +51,17 @@ Only admin users can create, delete or update dynamique types.
 If you find one then use its URI when creating your type in OpenSILEX.
 
 
-- Dynamique types can be created through the web interface or the API.
-- When creating a dynamique type, user should provide :
+- Dynamic types can be created through the web interface or the API.
+- When creating a dynamic type, user should provide :
   - a URI for the new type (the URI should be unique in the database and should not already exist in the core ontology)
-  - a Parent, that could be a type of the core ontology or one of its subtypes (including other dynamique types)
+  - a Parent, that could be a type of the core ontology or one of its subtypes (including other dynamic types)
   - english and French names and descriptions
 - user may provide and icon by selecting on of the list
 
 ### Deletion
-Dynamique types can be deleted through the web interface or the API.
+Dynamic types can be deleted through the web interface or the API.
 
-Trying to delete a dynamique type with instances will return an error, all instances of this type should be deleted before deleting the type itself.
+Trying to delete a dynamic type with instances will return an error, all instances of this type should be deleted before deleting the type itself.
 
 ## Documentation
 

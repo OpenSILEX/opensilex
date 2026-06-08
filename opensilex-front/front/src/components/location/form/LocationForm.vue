@@ -25,7 +25,7 @@
         >
         </opensilex-DateTimeRangeForm>
 
-      <div class="row" v-if="!isForFacilityLocation">
+      <div class="row" v-if="!props.isForFacilityLocation">
         <div class="col-lg-5">
           <opensilex-FacilitySelector
             label="LocationForm.from"
@@ -66,7 +66,7 @@
             </div>
         </div>
       <!--XYZ form-->
-      <div class="row" v-if="!isForFacilityLocation">
+      <div class="row" v-if="!props.isForFacilityLocation">
         <div class="col-lg-3">
           <opensilex-InputForm
             :value.sync="form.x"
@@ -98,7 +98,7 @@
         </div>
       </div>
       <!--Textual position form-->
-      <div class="row" v-if="!isForFacilityLocation">
+      <div class="row" v-if="!props.isForFacilityLocation">
         <div class="col">
           <!-- Comment -->
           <opensilex-TextAreaForm
@@ -133,8 +133,12 @@ export default class LocationForm extends Vue {
     @Prop({default: false})
     disableValidation: boolean;
 
-    @Prop({ default: false })
-    isForFacilityLocation: boolean
+    @Prop({ default: ()=>{return {
+        isForFacilityLocation: false
+      } }})
+    props: {
+      isForFacilityLocation: boolean
+    };
 
     @Prop({ default: true })
     displayDateFields: boolean;

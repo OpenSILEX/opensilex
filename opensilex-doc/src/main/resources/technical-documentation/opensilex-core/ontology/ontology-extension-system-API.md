@@ -35,6 +35,7 @@
 - **Type** : The word type is often used as a synonym of class from a user perspective. In the interface we define new types of events rather than new subclasses of event.
 - **Property** : In ontology, a property describe a relationship between concepts. For example, `rdfs:label` is a property that link a concept to a string that is its label (sort of name).
 - **Custom class** : In OpenSILEX, a class is custom if it has been created by users through API services, and is not directly present in the ontologies.
+- **Dynamic type** : Synonym of custom class, used from a user perspective (in the web interface).
 - **property restriction** : Link between a property and a class.
 
 ## functional requirements

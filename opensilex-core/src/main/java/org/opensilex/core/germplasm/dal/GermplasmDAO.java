@@ -63,7 +63,6 @@ public class GermplasmDAO {
     }
 
     public GermplasmModel update(GermplasmModel model, AccountModel user) throws Exception {
-        //sparqlDAO.validateGermplasmAccess(model.getUri(), user);
         var storedAttributes = getStoredAttributes(model.getUri());
         var attributeModel = model.getMetadata();
 
@@ -182,7 +181,6 @@ public class GermplasmDAO {
      * @return GermplasmModel
      */
     public GermplasmModel get(URI uri, AccountModel user, boolean withNested) throws Exception {
-        //sparqlDAO.validateGermplasmAccess(uri, user);
         GermplasmModel germplasm = sparqlDAO.get(uri, user, withNested);
         if (germplasm != null) {
             var storedAttributes = getStoredAttributes(germplasm.getUri());
@@ -264,8 +262,6 @@ public class GermplasmDAO {
     }
 
     public void delete(URI uri, AccountModel user) throws Exception {
-
-        //sparqlDAO.validateGermplasmAccess(uri, user);
         new SparqlMongoTransaction(sparql, nosql).execute(session -> {
             if (metaDataDao.exists(uri)) {
                 metaDataDao.delete(session, uri);

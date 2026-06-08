@@ -12,7 +12,6 @@ package org.opensilex.core.germplasm.bll;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;

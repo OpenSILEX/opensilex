@@ -135,7 +135,7 @@ public class FacilityDAO {
     }
 
     public void updateMany(List<FacilityModel> facilities) throws Exception {
-        sparql.update(facilities);
+        sparql.update(facilities, null);
     }
 
     public boolean exists(URI facilityUri) throws SPARQLException {

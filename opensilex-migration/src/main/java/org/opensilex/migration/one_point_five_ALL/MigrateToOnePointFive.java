@@ -47,11 +47,12 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         Logger logger = LoggerFactory.getLogger(MigrateToOnePointFive.class);
         //Initialize the sub-part migration classes
-        FacilitiesLinkToVariablesAndDevicesMigration facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb, logger);
-        UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb, logger);
-        ScientificObjectAndExperimentRelationMigration sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql, logger);
-        UpdateFacilitiesWithLocationObservationCollectionModel facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb, logger);
-        ChangeTypeParametersUri changeTypeParametersUri = new ChangeTypeParametersUri();
+        var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb, logger);
+        var sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb, logger);
+        var sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql, logger);
+        var facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb, logger);
+        var germplasmAttributeUpdateRights = new GermplasmAttributeUpdateRightsMigration();
+        var changeTypeParametersUri = new ChangeTypeParametersUri();
         changeTypeParametersUri.setSparql(sparql);
         //Check migration has not already been run by checking each sub-migration
         try{
@@ -76,6 +77,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                 sciObjsAndMovesLocationMigration.execute(session);
                 sciObjAndXpLinkMigration.execute();
                 facilitiesLocationsMigration.execute(session);
+                germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
                 changeTypeParametersUri.execute();
                 return null;
             });

@@ -2,9 +2,10 @@
 
 **Document history (please add a line when you edit the document)**
 
-| Date       | Editor(s)          | OpenSILEX version     | Comment           |
-|------------|--------------------|-----------------------|-------------------|
-| 19/08/2024 | yvan.roux@inrae.fr | 1.3.3 - Dizzy Diamond | Document creation |
+| Date       | Editor(s)                 | OpenSILEX version     | Comment           |
+|------------|---------------------------|-----------------------|-------------------|
+| 19/08/2024 | yvan.roux@inrae.fr        | 1.3.3 - Dizzy Diamond | Document creation |
+| 21/05/2026 | valentin.rigolle@inrae.fr | 1.5.1                 |                   |
 
 ## Table of contents
 
@@ -41,6 +42,11 @@ The business logic is the same as the creation web service, any germplasm presen
   - if germplasm 'A' has a variety and a species, the variety should have the same species as germplasm 'A'
   - if germplasm 'A' has an accession and a species, the accession should have the same species as germplasm 'A'
   - if germplasm 'A' has an accession and a variety, the accession should have the same variety as germplasm 'A'
+- in the case of an update, the user must have access to the germplasm, i.e. at least one of these conditions is verified :
+  - the user is admin
+  - the germplasm is public
+  - the user is the publisher of the germplasm
+  - the user is in one of the group of the germplasm
 - Coherency of relations *** ⚠️ _WARNING_ : this part is not actually very clear (see GermplasmAPI::getGermplasmModelsAndValidateRelations ) ***
 
 ## Documentation

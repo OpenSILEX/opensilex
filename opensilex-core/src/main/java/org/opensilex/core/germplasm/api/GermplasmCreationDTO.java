@@ -10,11 +10,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.germplasm.dal.GermplasmMetadataModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -310,7 +310,7 @@ public class GermplasmCreationDTO {
         }
 
         if (metadata != null ) {
-            model.setMetadata(new MetaDataModel());
+            model.setMetadata(new GermplasmMetadataModel());
             model.getMetadata().setAttributes(metadata);
         }
 

@@ -161,7 +161,7 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     public static final String WEBSITE_VAR = "website";
 
     @SPARQLIgnore
-    private MetaDataModel metadata;
+    private GermplasmMetadataModel metadata;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -263,11 +263,11 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     }
 
 
-    public MetaDataModel getMetadata() {
+    public GermplasmMetadataModel getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(MetaDataModel metadata) {
+    public void setMetadata(GermplasmMetadataModel metadata) {
         this.metadata = metadata;
     }
 

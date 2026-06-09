@@ -2,6 +2,7 @@ package org.opensilex.core.scientificObject.bll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -63,6 +64,7 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -127,7 +129,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     /**
      * The extra move columns we expect. Some things from Events (like isInstant, target...) can be deduced so no need for those columns.
      */
-    public static final Set<String> moveProperties = Stream.concat(
+    public static final Set<String> extraColumns = Stream.concat(
             Stream.of(
                     MOVE_START_FIELD_UNIQUE_HEADER,
                     MOVE_END_FIELD_UNIQUE_HEADER
@@ -161,7 +163,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 experiment == null ? sparql.getDefaultGraphURI(ScientificObjectModel.class) : experiment,
                 ScientificObjectModel::new,
                 user.getUri(),
-                moveProperties
+                extraColumns
         );
         Objects.requireNonNull(user);
         Objects.requireNonNull(mongoDB);
@@ -187,6 +189,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             }
         }
         addFactorLevelValidation();
+        addCompatibilityGeometryValidation();
+        addCompatibilityIsHostedValidation();
     }
 
     private void addFactorLevelValidation() throws Exception {
@@ -236,8 +240,82 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
     }
 
+    private void addCompatibilityGeometryValidation() {
+        addCustomValidation(new CustomCsvValidation<>(
+                Oeso.hasGeometry.getURI(),
+                false,
+                (model, value, validator, validationContextSupplier) -> {
+                    if (StringUtils.isEmpty(value)) {
+                        return;
+                    }
+                    try {
+                        // try to parse from wkt -> Geometry. Collect model into validation metadata
+                        Geometry geometry = GeospatialDAO.wktToGeometry(value);
+
+                        // Geometry is collected in order to be inserted by batch inside create() method
+                        Map<SPARQLNamedResourceModel, Geometry> geometryMap = (Map<SPARQLNamedResourceModel, Geometry>) validator
+                                .getValidationModel()
+                                .getObjectsMetadata()
+                                .computeIfAbsent(Oeso.hasGeometry.getURI(), hasGeometry -> new IdentityHashMap<>());
+
+                        geometryMap.put(model, geometry);
+
+                    } catch (JsonProcessingException | ParseException e) {
+                        CsvCellValidationContext validationContext = validationContextSupplier.get();
+                        validationContext.setMessage(e.getMessage());
+                        validator.addInvalidValueError(validationContext);
+                    }
+                }
+        ));
+    }
+
+    private void addCompatibilityIsHostedValidation() throws SPARQLException {
+        // no facility handling outside of experiment
+        // add error if a value is set and no experiment
+        if (experiment == null) {
+            addCustomValidation(new CustomCsvValidation<>(
+                    Oeso.isHosted.getURI(),
+                    false, // bypass default validation (redundant since factor level existence and URI parsing is performed here)
+                    (model, value, validator, validationContextSupplier) -> {
+                        if (!StringUtils.isEmpty(value)) {
+                            CsvCellValidationContext validationContext = validationContextSupplier.get();
+                            validationContext.setMessage("vocabulary:isHosted cannot be used outside of experiment context");
+                            validator.addInvalidValueError(validationContext);
+                        }
+                    }));
+        } else {
+            // compute set of facilities from xp
+            final Set<String> facilities = experimentDAO.getAvailableFacilitiesURIs(experiment)
+                    .collect(Collectors.toSet());
+            final URI isHostedURI = URI.create(Oeso.isHosted.getURI());
+
+            addCustomValidation(new CustomCsvValidation<>(
+                    Oeso.isHosted.getURI(),
+                    false, // bypass default validation (redundant since facility existence and URI parsing is performed here)
+                    (model, value, validator, validationContextSupplier) -> {
+                        if (StringUtils.isEmpty(value)) {
+                            return;
+                        }
+                        String shortValue = URIDeserializer.formatURIAsStr(value);
+                        if (!facilities.contains(shortValue)) {
+                            CsvCellValidationContext validationContext = validationContextSupplier.get();
+                            validationContext.setMessage("Unknown facility from experiment facilities");
+                            validator.addInvalidValueError(validationContext);
+                        }  else {
+                            // Geometry is collected in order to be inserted by batch inside create() method
+                            Map<SPARQLNamedResourceModel, URI> isHostedMap = (Map<SPARQLNamedResourceModel, URI>) validator
+                                    .getValidationModel()
+                                    .getObjectsMetadata()
+                                    .computeIfAbsent(Oeso.isHosted.getURI(), isHosted -> new IdentityHashMap<>());
+                            isHostedMap.put(model, URI.create(value));
+                        }
+                    }
+            ));
+        }
+    }
+
     @Override
-    protected void handleURIMapping(
+    protected boolean handleURIMapping(
             CsvOwlRestrictionValidator validator,
             ScientificObjectModel model,
             int rowIndex,
@@ -246,7 +324,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             Map<String, Integer> generatedUrisToIndexesInChunk,
             Map<String, Integer> filledUrisToIndexesInChunk
     ) throws SPARQLException {
-        if (checkIfSONameIsNull(validator, model, rowIndex)) return;
+        if (checkIfSONameIsNull(validator, model, rowIndex)) return false;
 
         SPARQLNamedResourceModel alreadyExistingOsWithName = null;
 
@@ -264,7 +342,7 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             // check existence of a URI (return false/true) in Context
             List<SPARQLResult> result = scientificObjectDAO.checkUriExistInContext(validator, model, rowIndex, rootClassURI, graphNode);
 
-            if (result == null) return;
+            if (result == null) return false;
             String isURIExistInGraphString = !result.isEmpty() ? result.get(0).getStringValue(SPARQLService.EXISTING_VAR) : "";
             boolean isUriExistInGraph = isURIExistInGraphString.equalsIgnoreCase("true");
 
@@ -273,13 +351,14 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
                 modelChunkToCreate.add(model);
                 // register URI to the set of URIs to create new SOs
                 filledUrisToIndexesInChunk.put(model.getUri().toString(), rowIndex);
+                return false;
             }
 
             // Scenario 3: If the URI entered in CSV does exist in context -> update the SO
             else if (isUriExistInGraph) {
                 modelChunkToUpdate.add(model);
+                return true;
             }
-
         }
         // Scenario 4: If the URI is empty in CSV and there's a SO with the same name in XP -> update the SO
         else if (model.getUri() == null && alreadyExistingOsWithName != null) {
@@ -287,14 +366,19 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
             URI alreadyExistingOSUri = alreadyExistingOsWithName.getUri();
             model.setUri(alreadyExistingOSUri);
             modelChunkToUpdate.add(model);
+            return true;
         }
         // Scenario 2: If the URI is empty in CSV and there's no SO with the same name in XP -> insert the SO
         else {
             // register URI to the set of URIs to update the existing SOs
             generateLocallyUniqueUri(model, rowIndex, validator.getValidationModel(), generatedUrisToIndexesInChunk);
             modelChunkToCreate.add(model);
+            return false;
         }
+        return false;
     }
+
+
 
     @Override
     protected void readExtraStringColumn(
@@ -398,17 +482,57 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
      * @param header Contains all the information of the csv header, including the important , were there any Location columns question.
      */
     @Override
-    protected void performEndOfRowOperations(int rowIdx, ScientificObjectModel sciObjModel, CsvOwlRestrictionValidator restrictionValidator, CsvHeader header){
+    protected void performEndOfRowOperations(int rowIdx, ScientificObjectModel sciObjModel, CsvOwlRestrictionValidator restrictionValidator, CsvHeader header, boolean isForUpdate){
+        StringUriMap<MoveModel> movePerScientificObjectUri = (StringUriMap<MoveModel>) restrictionValidator
+                .getValidationModel()
+                .getObjectsMetadata()
+                .computeIfAbsent(GEOMETRY_STUFF_METADATA_KEY, n -> new StringUriMap<MoveModel>());
+
+        var geometryMapCompat = (Map<SPARQLNamedResourceModel, Geometry>) restrictionValidator
+                .getValidationModel()
+                .getObjectsMetadata()
+                .getOrDefault(Oeso.hasGeometry.getURI(), Collections.emptyMap());
+
+        var facilityMapCompat = (Map<SPARQLNamedResourceModel, URI>) restrictionValidator
+                .getValidationModel()
+                .getObjectsMetadata()
+                .getOrDefault(Oeso.isHosted.getURI(), Collections.emptyMap());
+
+        if (geometryMapCompat.containsKey(sciObjModel) || facilityMapCompat.containsKey(sciObjModel)) {
+            if (isForUpdate) {
+                var cell = new CsvCellValidationContext(rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, header.size() - 1, "", Oeso.hasGeometry.getURI());
+                cell.setMessage("vocabulary:hasGeometry and vocabulary:isHosted cannot be used for an update. Please update the object location using a Move event.");
+                restrictionValidator.addInvalidValueError(cell);
+                atLeast1MoveFieldFilledForCurrentRow = false;
+                currentMoveModel = new MoveModel();
+                return;
+            }
+            if (atLeast1MoveFieldFilledForCurrentRow) {
+                var cell = new CsvCellValidationContext(rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, header.size() - 1, "", Oeso.hasGeometry.getURI());
+                cell.setMessage("vocabulary:hasGeometry is a compatibility field. It cannot be used along with the Move event model. vocabulary:hasGeometry will be removed in the future ; please only use the Move event model.");
+                restrictionValidator.addInvalidValueError(cell);
+                atLeast1MoveFieldFilledForCurrentRow = false;
+                currentMoveModel = new MoveModel();
+                return;
+            }
+            var creationDate = Optional.ofNullable(sciObjModel.getRelation(Oeso.hasCreationDate)).map(rel -> LocalDate.parse(rel.getValue())).orElse(null);
+            var moveCompat = scientificObjectLogic.getCompatibilityMoveModel(experiment, creationDate, geometryMapCompat.get(sciObjModel), facilityMapCompat.get(sciObjModel));
+            moveCompat.setTargets(Collections.singletonList(sciObjModel.getUri()));
+            movePerScientificObjectUri.put(sciObjModel.getUri(), moveCompat);
+            return;
+        }
+
         //All the end of row operations at the time of writing this are about Moves, so quit function if there were no Move columns
         if(!restrictionValidator.getValidationModel().getCsvHeader().doesContainExtraStringColumns()){
             return;
         }
+
         //If at least one move field was filled then perform some last operations on it, if nay then leave this function
-        if(!atLeast1MoveFieldFilledForCurrentRow){
+        if (!atLeast1MoveFieldFilledForCurrentRow) {
             //Before leaving function, add an error if no Location specific field filled, but we did fill start and end dates
             //This validation is specific to moves with OS's, in the direct Move importer, any location field being null simply creates an error, whiles here it is
             //possible to have no move with an OS.
-            if(currentMoveModel.getStart() != null || currentMoveModel.getEnd() != null){
+            if (currentMoveModel.getStart() != null || currentMoveModel.getEnd() != null) {
                 CsvCellValidationContext cell = new CsvCellValidationContext(
                         rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET,
                         header.size()-1,
@@ -466,10 +590,6 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         currentMoveModel.setType(URI.create(Oeev.Move.getURI()));
 
         //Add Move to the map and initialize next move
-        StringUriMap<MoveModel> movePerScientificObjectUri = (StringUriMap<MoveModel>) restrictionValidator
-                .getValidationModel()
-                .getObjectsMetadata()
-                .computeIfAbsent(GEOMETRY_STUFF_METADATA_KEY, n -> new StringUriMap<MoveModel>());
 
         movePerScientificObjectUri.put(sciObjModel.getUri(), currentMoveModel);
         atLeast1MoveFieldFilledForCurrentRow = false;
@@ -1033,6 +1153,8 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
     private static void cleanValidationModel(CSVValidationModel validation) {
         validation.getObjectsMetadata().remove(GEOMETRY_STUFF_METADATA_KEY);
         validation.getObjectsMetadata().remove(MOVES_TO_UPDATE_INFORMATION_CACHEKEY);
+        validation.getObjectsMetadata().remove(Oeso.hasGeometry.getURI());
+        validation.getObjectsMetadata().remove(Oeso.isHosted.getURI());
     }
 
     private void setExperimentInSOObj(ScientificObjectModel model) {
@@ -1068,21 +1190,16 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
     @Override
     public void upsert(CSVValidationModel validation, List<ScientificObjectModel> modelsToCreate, List<ScientificObjectModel> modelsToUpdate) throws Exception {
-
-        boolean locationColsWerePresent = validation.getCsvHeader().doesContainExtraStringColumns();
-
         //If there were no location columns then we know we don't need to try and fetch anything
         StringUriMap<MoveModel> newMoveToCreatePerOSUri = null;
         StringUriMap<MoveModel> existingMovesToUpdatePerOSUri = null;
 
-        if(locationColsWerePresent) {
-            newMoveToCreatePerOSUri = (StringUriMap<MoveModel>) validation
-                    .getObjectsMetadata()
-                    .get(GEOMETRY_STUFF_METADATA_KEY);
-            existingMovesToUpdatePerOSUri = (StringUriMap<MoveModel>) validation
-                    .getObjectsMetadata()
-                    .get(MOVES_TO_UPDATE_INFORMATION_CACHEKEY);
-        }
+        newMoveToCreatePerOSUri = (StringUriMap<MoveModel>) validation
+                .getObjectsMetadata()
+                .get(GEOMETRY_STUFF_METADATA_KEY);
+        existingMovesToUpdatePerOSUri = (StringUriMap<MoveModel>) validation
+                .getObjectsMetadata()
+                .get(MOVES_TO_UPDATE_INFORMATION_CACHEKEY);
 
         create(modelsToCreate, newMoveToCreatePerOSUri);
         update(modelsToUpdate, newMoveToCreatePerOSUri, existingMovesToUpdatePerOSUri);

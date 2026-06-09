@@ -133,6 +133,12 @@ When **creating** a move :
 
 **Getting** a move will always return a move with the `location` property. The deprecated properties will not be returned in the response, even if they were used to create the move.
 
+For compatibility changes regarding the facilities or scientific objects, please see the following documentation files :
+
+- [Specifications : facilities](facilities.md#compatibility)
+- [Specifications : Scientific object - geospatial information](scientific-object/scientific-object-geospatial.md#compatibility)
+- [Specifications : scientific objects import](scientific-object/scientific-objects-import.md#compatibility)
+
 ## Documentation
 
 - see the technical document [new_location_model.md](../technical-documentation/opensilex-core/geospatial/new_location_model.md)

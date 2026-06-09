@@ -77,7 +77,7 @@ export default class FacilityModalForm extends Vue {
                 .then((http) => {
                     let dto: FacilityGetDTO = http.response.result;
                     let publisher: UserGetDTO = dto.publisher;
-                    editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
+                    editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto, null, ['geometry']);
                     editDto.publisher = publisher;
                 }).catch(this.$opensilex.errorHandler)
                 .finally(() => {

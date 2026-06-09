@@ -57,17 +57,23 @@ SPARQLResourceModel can have two types of fields (or properties) :
 - data properties, represented by simple data types (String, Integer, etc.)
 - object properties, represented by other SPARQLResourceModel.
 
-When updating a SPARQLResourceModel, if an object property field is annotated with @AutoUpdate, it means that the user want to automatically update the referenced resource.
+When updating a SPARQLResourceModel, if an object property field is annotated with @AutoUpdate,
+it means that the user want to automatically update the referenced resource content (as opposed to update only the URI to the resource).
 
 For exemple, when updating a factor, the user fill factor information as well as factor-level information.
-As the factor-level list is annotated with @AutoUpdate, when updating the factor, the factor-levels will also be updated.
+As the factor-level list is annotated with @AutoUpdate, when updating the factor, the factor-levels will also be updated (label, description...).
+
+Most of the fields in OpenSILEX are **not** annotated with @AutoUpdate. For example, an organization has a list of facilities.
+however updating an organization only allows you to change the list of associated facility URIs,not the facilities' information like their name or location.
+
 
 ### Technical explanation
 
-The `SPARQLService#update` method call the `SPARQLService#loadOnlyOldNeededInstances` to load every instance with @AutoUpdate fields, because 
+The `SPARQLService#update` method call the `SPARQLService#loadOnlyOldNeededInstances` to fetch every instance with @AutoUpdate fields to get old values of these instances.
 
 Then, `SPARQLService#updateAutoUpdateFields` method is called and update all the fields annotated with @AutoUpdate.
-Using the `SPARQLService#SPARQLClassObjectMapper`, this method determine which fields are annotated with @AutoUpdate, and if it is a list
+This method will call again `SPARQLService#update` to update each instance annotated with @AutoUpdate.
+This is why these instances are deeply updated, and why autoupdate is recursive, potentially leading to an infinite loop if two resources reference each other with @AutoUpdate fields.
 
 ### Improvements idea
 

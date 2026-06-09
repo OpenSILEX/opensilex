@@ -16,7 +16,9 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
+import org.geojson.Point;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.*;
@@ -105,16 +107,32 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
+    public static final String searchWithGeometryPath = path + "/geometry";
 
 
 
     public static final ServiceDescription create;
+    public static final ServiceDescription update;
+    public static final ServiceDescription getDetail;
+    public static final ServiceDescription searchWithGeometry;
 
     static {
         try {
             create = new ServiceDescription(
                     ScientificObjectAPI.class.getMethod("createScientificObject", ScientificObjectCreationDTO.class),
                     createPath
+            );
+            update = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("updateScientificObject", ScientificObjectUpdateDTO.class),
+                    updatePath
+            );
+            getDetail = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("getScientificObjectDetail", URI.class, URI.class),
+                    uriPath
+            );
+            searchWithGeometry = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("searchScientificObjectsWithGeometryListByUris", URI.class, String.class, String.class),
+                    searchWithGeometryPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -229,6 +247,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             List<RDFObjectRelationDTO> relationList = new ArrayList<>();
             relationList.add(germplasmRelation);
             dto.setRelations(relationList);
+        } else {
+            dto.setRelations(new ArrayList<>());
         }
 
         return dto;
@@ -1301,4 +1321,85 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), resultGJson.getStatus());
     }
 
+    //#region Compatibility test - old geometry and isHosted model
+    @Test
+    public void testCompatibilityCreateWithOldGeometry() throws Exception {
+        var dto = getCreationDTO(false);
+        dto.setGeometry(new Point(49, 3));
+
+        var uri = new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        var details = new UserCallBuilder(getDetail)
+                .setUriInPath(uri)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        assertEquals(
+                new Point(49, 3),
+                ((Feature) details.getLocation().getGeojson()).getGeometry()
+        );
+    }
+
+    @Test
+    public void testCompatibilityCreateWithOldAndNewGeometryShouldFail() throws Exception {
+        var dto = getCreationDTO(true);
+        dto.setGeometry(new Point(49, 3));
+
+        new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void testCompatibilityUpdateWithOldGeometryShouldFail() throws Exception {
+        var dto = getCreationDTO(false);
+
+        var uri = new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var updateDto = getCreationDTO(false);
+        updateDto.setUri(uri);
+        updateDto.setName("New name");
+        updateDto.setGeometry(new Point(49, 3));
+
+        new UserCallBuilder(update)
+                .setBody(updateDto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void testCompatibilityGetWithGeometry() throws Exception {
+        var dto = getCreationDTO(false);
+        var moveDto = new MoveCreationDTO();
+        var locationObservationDto = new LocationObservationDTO();
+        locationObservationDto.setGeojson(new Point(49, 3));
+        locationObservationDto.setEndDate(Instant.now());
+        moveDto.setLocation(locationObservationDto);
+        moveDto.setEnd(locationObservationDto.getEndDate().toString());
+        dto.setMove(moveDto);
+
+        var uri = new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var details = new UserCallBuilder(getDetail)
+                .setUriInPath(uri)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {
+                })
+                .getDeserializedResponse()
+                .getResult();
+        assertEquals(
+                new Point(49, 3),
+                ((Feature) details.getGeometry()).getGeometry());
+    }
+    //#endregion
 }

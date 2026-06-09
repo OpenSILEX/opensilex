@@ -12,6 +12,7 @@
 package org.opensilex.core.scientificObject.bll;
 
 
+import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.graph.Node;
 import org.geojson.GeoJsonObject;
@@ -30,6 +31,7 @@ import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -52,6 +54,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -60,10 +63,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -777,6 +777,23 @@ public class ScientificObjectLogic {
     public int getCount(ScientificObjectSearchFilter searchFilter) throws Exception {
         return dao.getCount(searchFilter);
     }
+
+    public MoveModel getCompatibilityMoveModel(URI experimentURI, LocalDate creationDate, Geometry geometry, URI facility) {
+        var moveCompat = new MoveModel();
+        var endInstant = new InstantModel();
+        var moveLocation = MoveLogic.getOrCreateMovesLocationObservation(moveCompat, experimentURI);
+        var endTime = creationDate != null
+                ? OffsetDateTime.of(creationDate, LocalTime.NOON, ZoneOffset.UTC)
+                : OffsetDateTime.now();
+        endInstant.setDateTimeStamp(endTime);
+        moveCompat.setEnd(endInstant);
+        moveCompat.setIsInstant(true);
+        moveLocation.setGeometry(geometry);
+        moveLocation.setTo(facility);
+        moveCompat.setType(URI.create(Oeev.Move.getURI()));
+        return moveCompat;
+    }
+
     //#endregion
 
     //#region PRIVATE METHODS

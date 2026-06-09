@@ -7,6 +7,7 @@ package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -24,6 +25,10 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
 
     private LocationObservationDTO location;
 
+    @Deprecated
+    @ApiModelProperty("Object geometry. Depreciated : use location instead")
+    private GeoJsonObject geometry;
+
     @JsonProperty("creation_date")
     @ApiModelProperty(value = "Scientific object creation date")
     private LocalDate creationDate;
@@ -38,6 +43,16 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
 
     public void setLocation(LocationObservationDTO location) {
         this.location = location;
+    }
+
+    @Deprecated
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    @Deprecated
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     public LocalDate getCreationDate() {
@@ -74,6 +89,7 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
         ScientificObjectNodeDTO dto = getDTOFromModel(model);
         if (Objects.nonNull(location)) {
             dto.setLocation(LocationObservationDTO.getDTOFromModel(location));
+            dto.setGeometry(dto.getLocation().getGeojson());
         }
 
         return dto;

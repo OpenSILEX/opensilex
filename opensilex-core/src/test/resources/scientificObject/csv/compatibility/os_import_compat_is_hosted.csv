@@ -1,0 +1,3 @@
+uri,type,rdfs:label,vocabulary:isHosted
+column_description,column_description,column_description,column_description
+,,os_import_basic_1,{{facility_uri}}

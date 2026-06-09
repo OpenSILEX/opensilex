@@ -157,7 +157,7 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
     }
 
     public void updateModels(List<T> models) throws Exception{
-        sparql.update(models);
+        sparql.update(models, null);
     }
 
     public void delete(URI uri) throws Exception {

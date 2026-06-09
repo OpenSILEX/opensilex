@@ -87,7 +87,7 @@ public class GermplasmDAO {
 
     public List<GermplasmModel> updateList(List<GermplasmModel> models) throws Exception {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
-            sparql.update(models);
+            sparql.update(models, null);
             this.upsertMetaData(models, session);
             return null;
         });

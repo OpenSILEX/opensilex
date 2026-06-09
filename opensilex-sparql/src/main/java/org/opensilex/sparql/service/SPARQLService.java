@@ -1143,14 +1143,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * create instances without publication date and publisher (for update use case).
      */
-    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances, Node graph) throws Exception {
+    public <T extends SPARQLResourceModel> void createForUpdate(Collection<T> instances, Node graph, SPARQLResourceModel parent) throws Exception {
         if (instances.isEmpty()) { return; }
 
         OffsetDateTime now = OffsetDateTime.now();
         instances.forEach(instance -> instance.setLastUpdateDate(now));
 
         List<String> fieldsToExclude = List.of(SPARQLResourceModel.PUBLISHER_FIELD, SPARQLResourceModel.PUBLICATION_DATE_FIELD);
-        create(graph, instances, DEFAULT_MAX_INSTANCE_PER_QUERY , false, false, fieldsToExclude);
+        create(graph, instances, DEFAULT_MAX_INSTANCE_PER_QUERY , false, false, fieldsToExclude, parent);
     }
 
     public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {
@@ -1183,13 +1183,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+     * @param parent          must be the same parent for all instances. Used to update every field (objects) of an instance. Set it to null otherwise. {@link SPARQLService#updateAutoUpdateFields(SPARQLClassObjectMapper, SPARQLResourceModel, SPARQLResourceModel)}
      */
     public <T extends SPARQLResourceModel> void createWithoutTransaction(
-                                                            Node graph, Collection<T> instances,
-                                                            Integer maxInstancePerQuery,
-                                                            boolean checkUriExist,
-                                                            boolean setPublicationDate,
-                                                            List<String> fieldsToExclude) throws Exception {
+            Node graph, Collection<T> instances,
+            Integer maxInstancePerQuery,
+            boolean checkUriExist,
+            boolean setPublicationDate,
+            List<String> fieldsToExclude,
+            SPARQLResourceModel parent) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
         if (reuseSameQuery && maxInstancePerQuery <= 0) {
@@ -1201,7 +1203,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
         Instant start = Instant.now();
 
-        validateAllRelations(instances, null);
+        validateAllRelations(instances, parent);
         UpdateBuilder updateBuilder = new UpdateBuilder();
 
         // use the same query for the instance and her sub-instance if a query batch size is specified
@@ -1220,7 +1222,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }
             }
 
-            prepareInstancesCreation(graph, batchInstances, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
+            prepareInstancesCreation(graph, batchInstances, parent, mapper, subInstanceUpdateBuilder, checkUriExist, false);
 
             for (T instance : batchInstances) {
                 mapper.addCreateBuilder(graph, instance, updateBuilder, false, null, fieldsToExclude);
@@ -1255,11 +1257,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * call create without excluding any field from creation query.
-     * @see #create(Node, Collection, Integer, boolean, boolean, List) for more details
+     * @see #create(Node, Collection, Integer, boolean, boolean, List, SPARQLResourceModel) for more details
      * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used. If you don't have specific needs, use SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY.
      */
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
-        create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, null);
+        create(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, null, null);
     }
 
 
@@ -1269,17 +1271,19 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
          * @param instances           the list of instance to create
          * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used
          * @param checkUriExist       indicate if the service must check if instances already exist
-         * @param fieldsToExclude list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+         * @param fieldsToExclude     list of fields to exclude from the insert query (useful for update operations where some fields should not be updated ie: dc:publisher)
+         * @param parent              must be the same parent for all instances. Used to update every field (objects) of an instance. Set it to null otherwise. {@link SPARQLService#updateAutoUpdateFields(SPARQLClassObjectMapper, SPARQLResourceModel, SPARQLResourceModel)}
          */
     public <T extends SPARQLResourceModel> void create(
-                                                        Node graph,
-                                                        Collection<T> instances,
-                                                        Integer maxInstancePerQuery,
-                                                        boolean checkUriExist,
-                                                        boolean setPublicationDate,
-                                                        List<String> fieldsToExclude) throws Exception {
+            Node graph,
+            Collection<T> instances,
+            Integer maxInstancePerQuery,
+            boolean checkUriExist,
+            boolean setPublicationDate,
+            List<String> fieldsToExclude,
+            SPARQLResourceModel parent) throws Exception {
         withTransaction(() -> {
-            createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, fieldsToExclude);
+            createWithoutTransaction(graph, instances, maxInstancePerQuery, checkUriExist, setPublicationDate, fieldsToExclude, parent);
             return null;
         });
     }
@@ -1401,7 +1405,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         deleteURIClassMap(autoUpdateFieldsToDelete);
-        update(autoUpdateFieldsToUpdate);
+        update(autoUpdateFieldsToUpdate, instance);
     }
 
 
@@ -1450,7 +1454,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void update(Node graph, T instance) throws Exception {
-        update(List.of(instance), graph);
+        update(List.of(instance), graph, null);
     }
 
     /**
@@ -1476,11 +1480,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * For @IgnoreUpdateIfNull, see SPARQLService#updateFields
      * This method does not delete and recreate dc:publisher and dc:issued relations, in order to keep metadata information.
      * for mor details see :
-     * @see SPARQLService#createForUpdate(Collection, Node)
+     * @see SPARQLService#createForUpdate(Collection, Node, SPARQLResourceModel)
      * @see SPARQLService#deleteForUpdate(Class, List, Node)
      * @see #updateFields(SPARQLResourceModel, SPARQLResourceModel)
+     * @param parent must be the same parent for all instances. Used to update every field (objects) of an instance. Set it to null otherwise. {@link SPARQLService#updateAutoUpdateFields(SPARQLClassObjectMapper, SPARQLResourceModel, SPARQLResourceModel)}
      */
-    public <T extends SPARQLResourceModel> void update(List<T> instances, Node graph) throws Exception {
+    public <T extends SPARQLResourceModel> void update(List<T> instances, Node graph, SPARQLResourceModel parent) throws Exception {
         if (instances.isEmpty()) return;
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
@@ -1495,7 +1500,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             startTransaction();
 
-            validateAllRelations(instances, null);
+            validateAllRelations(instances, parent);
 
             Set<URI> nonExistingUris = getExistingUris(objectClass, instances.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList()), false);
             if ( !nonExistingUris.isEmpty()) {
@@ -1518,7 +1523,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 updateFields(instance, oldInstance);
             }
 
-            createForUpdate(instances, graph);
+            createForUpdate(instances, graph, parent);
             commitTransaction();
         } catch (Exception ex) {
             rollbackTransaction(ex);
@@ -1527,10 +1532,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * @see #update(List, Node)
+     * @see #update(List, Node, SPARQLResourceModel)
+     * @param parent must be the same parent for all instances. Used to update every field (objects) of an instance. Set it to null otherwise.
      */
-    public <T extends SPARQLResourceModel> void update(List<T> instances) throws Exception {
-        update(instances, null);
+    public <T extends SPARQLResourceModel> void update(List<T> instances, SPARQLResourceModel parent) throws Exception {
+        update(instances, null, parent);
     }
 
     /**

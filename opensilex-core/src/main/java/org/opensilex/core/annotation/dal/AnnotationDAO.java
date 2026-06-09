@@ -86,7 +86,7 @@ public class AnnotationDAO {
     }
 
     public List<AnnotationModel> update(List<AnnotationModel> models) throws Exception {
-        sparql.update(models);
+        sparql.update(models, null);
         return models;
     }
 

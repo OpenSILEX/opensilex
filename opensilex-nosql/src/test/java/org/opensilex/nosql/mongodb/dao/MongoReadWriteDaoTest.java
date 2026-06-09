@@ -791,7 +791,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
 
             var transaction = new SparqlMongoTransaction(newSparqlService, mongoDBv2);
             Callable<InsertManyResult> task = () -> transaction.execute((mongoSession) -> {
-                newSparqlService.createWithoutTransaction(graph, sparqlModels, 1000, false, false, null);
+                newSparqlService.createWithoutTransaction(graph, sparqlModels, 1000, false, false, null, null);
                 return readWriteDao.create(mongoSession, mongoModels);
             });
             executor.submit(task);

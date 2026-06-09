@@ -51,6 +51,37 @@ Create operation does not need special behaviour because if the new value is nul
 > ⚠️ **Warning:** Auto update is recursive. For example, imagine a Germplasm A with a Parent field referencing Germplasm B.
 > If both the parent and child fields are set to auto update, updating A will automatically update its parent B, which will then automatically update its child A, and so on, potentially leading to an infinite loop.>
 
+### Use case
+
+SPARQLResourceModel can have two types of fields (or properties) :
+- data properties, represented by simple data types (String, Integer, etc.)
+- object properties, represented by other SPARQLResourceModel.
+
+When updating a SPARQLResourceModel, if an object property field is annotated with @AutoUpdate,
+it means that the user want to automatically update the referenced resource content (as opposed to update only the URI to the resource).
+
+For exemple, when updating a factor, the user fill factor information as well as factor-level information.
+As the factor-level list is annotated with @AutoUpdate, when updating the factor, the factor-levels will also be updated (label, description...).
+
+Most of the fields in OpenSILEX are **not** annotated with @AutoUpdate. For example, an organization has a list of facilities.
+however updating an organization only allows you to change the list of associated facility URIs,not the facilities' information like their name or location.
+
+
+### Technical explanation
+
+The `SPARQLService#update` method call the `SPARQLService#loadOnlyOldNeededInstances` to fetch every instance with @AutoUpdate fields to get old values of these instances.
+
+Then, `SPARQLService#updateAutoUpdateFields` method is called and update all the fields annotated with @AutoUpdate.
+This method will call again `SPARQLService#update` to update each instance annotated with @AutoUpdate.
+This is why these instances are deeply updated, and why autoupdate is recursive, potentially leading to an infinite loop if two resources reference each other with @AutoUpdate fields.
+
+### Improvements idea
+
+Currently, every update of SPARQLResourceModel with @AutoUpdate fields force the update method to fetch every instance
+in order to get old values of @AutoUpdate fields. This can be very costly when updating many resources at the same time.
+
+This is not really an improvement idea, but I think there are many ways to optimize this process.
+
 ## @CascadeDelete
 > ⚠️ **Warning:** Cascade delete is recursive. For example, imagine a Germplasm A with a Parent field referencing Germplasm B.
 > If both the parent and child fields are set to cascade delete, deleting A will first automatically delete its parent B, which will first automatically delete its child A, and so on, potentially leading to an infinite loop.

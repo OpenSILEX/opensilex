@@ -1,0 +1,3 @@
+uri,type,rdfs:label,vocabulary:isHosted
+column_description,column_description,column_description,column_description
+{{so_uri}},,new_name,{{facility_uri}}

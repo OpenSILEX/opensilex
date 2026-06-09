@@ -1,9 +1,10 @@
 # Specifications : scientific objects import
 
-| Date       | Editor(s)     | OpenSILEX version | Comment                                |
-|------------|---------------|-------------------|----------------------------------------|
-| 04/08/2025 | Dhruthi NOOKA | 1.4.8-rdg         | Document creation                      |
-| 08/10/2025 | Max Hart      | 1.4.8-rdg         | Modified for type update development   |
+| Date       | Editor(s)        | OpenSILEX version | Comment                                       |
+|------------|------------------|-------------------|-----------------------------------------------|
+| 04/08/2025 | Dhruthi NOOKA    | 1.4.8-rdg         | Document creation                             |
+| 08/10/2025 | Max Hart         | 1.4.8-rdg         | Modified for type update development          |
+| 22/04/2026 | Valentin Rigolle | 1.5.1             | Updated geometry compatibility specifications |
 
 ## Table of contents
 
@@ -11,19 +12,11 @@
 * [Specifications : scientific objects import](#specifications--scientific-objects-import)
   * [Table of contents](#table-of-contents)
   * [Definitions](#definitions)
-  * [Needs](#needs)
-  * [Solution](#solution)
+  * [functional requirements](#functional-requirements)
+    * [Main use-cases](#main-use-cases)
+    * [Geolocation use-cases](#geolocation-use-cases)
     * [Business logic](#business-logic)
-  * [Possible scenarios](#possible-scenarios)
-  * [Technical specifications](#technical-specifications)
-    * [Detailed explanations](#detailed-explanations)
-  * [`AbstractCsvImporter.java`](#abstractcsvimporterjava)
-  * [`ScientificObjectCsvImporter.java`](#scientificobjectcsvimporterjava)
-  * [`ScientificObjectDAO.java`](#scientificobjectdaojava)
-    * [Exceptions/Errors thrown](#exceptionserrors-thrown)
-  * [Errors shown in UI](#errors-shown-in-ui)
-    * [Tests](#tests)
-  * [Limitations and improvements](#limitations-and-improvements)
+    * [Compatibility](#compatibility)
 <!-- TOC -->
 
 ## Definitions
@@ -61,3 +54,17 @@ Any scientific object in the CSV file should :
 - not have an empty SO name 
 - have a unique URI
 - not have an incorrect URI
+
+### Compatibility
+
+Before the 1.5.0 version, we used two columns to define geospatial information of an object : `vocabulary:hasGeometry`
+and `vocabulary:isHosted` (pointing to the containing facility). These column do not match the underlying model anymore ;
+however, for compatibility reasons, the user can still use them to attach geospatial info to an object. They work as
+following :
+
+- These columns only work during creation. Trying to update an object with one or both columns filled will trigger an error.
+- If any location information is specified together with either `hasGeometry` or `isHosted`, the import fails.
+- If either `hasGeometry` or `isHosted` is defined, a new move will be created for the scientific object. The `geometry`
+  property of the move event will take the value of `hasGeometry`, and the `to` property will take the value of
+  `isHosted`. The creation date of the object, if defined, will be used as the instantaneous date for the event. If the
+  creation date is not defined, the current date will be used instead.

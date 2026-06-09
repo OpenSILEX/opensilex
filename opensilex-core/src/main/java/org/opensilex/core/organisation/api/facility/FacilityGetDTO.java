@@ -8,6 +8,8 @@ package org.opensilex.core.organisation.api.facility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -48,6 +50,10 @@ public class FacilityGetDTO extends FacilityDTO {
 
     protected LocationObservationDTO lastPosition;
 
+    @Deprecated
+    @ApiModelProperty("Object geometry. Depreciated : use lastPosition instead")
+    private GeoJsonObject geometry;
+
     @NotNull
     public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
         return organizations;
@@ -71,6 +77,16 @@ public class FacilityGetDTO extends FacilityDTO {
 
     public void setVariablesGroups(List<NamedResourceDTO<VariablesGroupModel>> variablesGroups) {
         this.variablesGroups = variablesGroups;
+    }
+
+    @Deprecated
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    @Deprecated
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     @Override

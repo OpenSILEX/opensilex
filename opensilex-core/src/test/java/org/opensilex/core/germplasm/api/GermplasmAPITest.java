@@ -12,10 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmMetadataModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -498,7 +498,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Map<String,String> attributes = new HashMap<>();
         attributes.put("p1","v1");
         attributes.put("p2","v2");
-        model1.setMetadata(new MetaDataModel(attributes));
+        model1.setMetadata(new GermplasmMetadataModel(attributes));
         dao.create(model1);
 
         GermplasmModel model2 = new GermplasmModel();
@@ -508,7 +508,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         Map<String,String> attributes2 = new HashMap<>();
         attributes2.put("p3","v3");
         attributes2.put("p4","v4");
-        model2.setMetadata(new MetaDataModel(attributes2));
+        model2.setMetadata(new GermplasmMetadataModel(attributes2));
 
         dao.create(model2);
 

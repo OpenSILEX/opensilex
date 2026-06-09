@@ -30,6 +30,7 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     public static final String URI_FIELD = "uri";
     public static final String TYPE_FIELD = "rdfType";
+    public static final String PUBLISHER_FIELD = "publisher";
 
     public static final String MONGO_ID_FIELD = "_id";
 

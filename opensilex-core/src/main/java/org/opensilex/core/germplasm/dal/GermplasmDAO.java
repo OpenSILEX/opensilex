@@ -12,6 +12,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
@@ -19,18 +20,21 @@ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Data Access Object for Germplasm, metadatas (also known as attributes) are stored in MongoDB while the rest is stored in RDF.
@@ -41,14 +45,14 @@ public class GermplasmDAO {
     protected final SPARQLService sparql;
     protected final MongoDBServiceV2 nosql;
     private final GermplasmSparqlDAO sparqlDAO;
-    private final MetaDataDaoV2 metaDataDao;
+    private final GermplasmMetadataDAO metaDataDao;
     public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttribute";
 
     public GermplasmDAO(SPARQLService sparql, MongoDBServiceV2 nosql) {
         this.sparql = sparql;
         this.nosql = nosql;
         this.sparqlDAO = new GermplasmSparqlDAO(sparql);
-        this.metaDataDao = new MetaDataDaoV2(nosql, ATTRIBUTES_COLLECTION_NAME);
+        this.metaDataDao = new GermplasmMetadataDAO(nosql, ATTRIBUTES_COLLECTION_NAME);
 
         MongoCollection<MetaDataModel> collection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
         collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
@@ -59,9 +63,8 @@ public class GermplasmDAO {
     }
 
     public GermplasmModel update(GermplasmModel model, AccountModel user) throws Exception {
-        //sparqlDAO.validateGermplasmAccess(model.getUri(), user);
-        MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
-        MetaDataModel attributeModel = model.getMetadata();
+        var storedAttributes = getStoredAttributes(model.getUri());
+        var attributeModel = model.getMetadata();
 
         if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
             sparqlDAO.update(model,user);
@@ -70,7 +73,8 @@ public class GermplasmDAO {
                 sparqlDAO.update(model, user);
 
                 if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
-                    attributeModel.setUri(model.getUri());
+                    var modelWithPublisher = sparql.getByURI(GermplasmModel.class, model.getUri(), null);
+                    updateMetadataFromGermplasm(attributeModel, modelWithPublisher);
                     metaDataDao.upsert(session, attributeModel);
                 } else {
                     metaDataDao.delete(session, model.getUri());
@@ -107,7 +111,8 @@ public class GermplasmDAO {
                 return;
             }
             if (metadata != null && !MapUtils.isEmpty(metadata.getAttributes())) {
-                model.getMetadata().setUri(model.getUri());
+                var modelWithPublisher = sparql.getByURI(GermplasmModel.class, model.getUri(), null);
+                updateMetadataFromGermplasm(model.getMetadata(), modelWithPublisher);
                 metaDataDao.upsert(session, model.getMetadata());
             } else {
                 metaDataDao.delete(session, model.getUri());
@@ -119,9 +124,7 @@ public class GermplasmDAO {
         new SparqlMongoTransaction(sparql,nosql).execute(session -> {
             sparqlDAO.create(model);
             if(model.getMetadata() != null){
-                //Set the metaDataModel's uri to be the same as the device
-                model.getMetadata().setUri(model.getUri());
-
+                updateMetadataFromGermplasm(model.getMetadata(), model);
                 metaDataDao.create(session, model.getMetadata());
             }
             return null;
@@ -152,9 +155,21 @@ public class GermplasmDAO {
         }
         for (GermplasmModel model : instanceList) {
             if (model.getMetadata() != null) {
-                model.getMetadata().setUri(model.getUri());
+                updateMetadataFromGermplasm(model.getMetadata(), model);
                 metaDataDao.create(session, model.getMetadata());
             }
+        }
+    }
+
+    private void updateMetadataFromGermplasm(GermplasmMetadataModel metadata, GermplasmModel germplasm) {
+        if (germplasm == null) {
+            return;
+        }
+        metadata.setUri(germplasm.getUri());
+        metadata.setPublisher(germplasm.getPublisher());
+        metadata.setIsPublic(germplasm.getIsPublic());
+        if (CollectionUtils.isNotEmpty(germplasm.getGroups())) {
+            metadata.setGroups(germplasm.getGroups().stream().map(SPARQLResourceModel::getUri).toList());
         }
     }
 
@@ -166,10 +181,9 @@ public class GermplasmDAO {
      * @return GermplasmModel
      */
     public GermplasmModel get(URI uri, AccountModel user, boolean withNested) throws Exception {
-        //sparqlDAO.validateGermplasmAccess(uri, user);
         GermplasmModel germplasm = sparqlDAO.get(uri, user, withNested);
         if (germplasm != null) {
-            MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
+            var storedAttributes = getStoredAttributes(germplasm.getUri());
             if (storedAttributes != null) {
                 germplasm.setMetadata(storedAttributes);
             }
@@ -248,8 +262,6 @@ public class GermplasmDAO {
     }
 
     public void delete(URI uri, AccountModel user) throws Exception {
-
-        //sparqlDAO.validateGermplasmAccess(uri, user);
         new SparqlMongoTransaction(sparql, nosql).execute(session -> {
             if (metaDataDao.exists(uri)) {
                 metaDataDao.delete(session, uri);
@@ -266,8 +278,8 @@ public class GermplasmDAO {
     /**
      * Get all germplasm attributes
      */
-    public Set<String> getDistinctGermplasmAttributes() {
-        return metaDataDao.getDistinctKeys();
+    public Set<String> getDistinctGermplasmAttributes(AccountModel user, List<GroupModel> userGroups) {
+        return metaDataDao.getDistinctKeys(user, userGroups);
     }
 
     public Set<String> getDistinctGermplasmAttributesValues(String attribute, String attributeValue, int page, int pageSize) {
@@ -290,8 +302,8 @@ public class GermplasmDAO {
 
     }
 
-    private MetaDataModel getStoredAttributes(URI uri) {
-        MetaDataModel storedAttributes = null;
+    private GermplasmMetadataModel getStoredAttributes(URI uri) {
+        GermplasmMetadataModel storedAttributes = null;
         try {
             storedAttributes = metaDataDao.get(uri);
         } catch (NoSQLInvalidURIException ignored) {
@@ -308,5 +320,35 @@ public class GermplasmDAO {
      */
     public Collection<URI> checkExistence(List<URI> uris) throws Exception {
         return sparqlDAO.sparql.getExistingUris(GermplasmModel.class, uris, true);
+    }
+
+    /**
+     * Compute the list of unauthorized URIs among the provided list. Access to a germplasm is allowed if
+     * one of the following conditions is fulfilled :
+     *
+     * <ul>
+     *     <li>The user is admin</li>
+     *     <li>The user is the publisher of the germplasm</li>
+     *     <li>The germplasm is public</li>
+     * </ul>
+     */
+    public Set<URI> getUnauthorizedGermplasms(Collection<URI> uris, AccountModel account) throws Exception {
+        var existingUris = checkExistence(uris.stream().toList());
+        if (CollectionUtils.isEmpty(existingUris)) {
+            return Set.of();
+        }
+        if (account.isAdmin()) {
+            return Set.of();
+        }
+        var allowedFilter = new GermplasmSearchFilter()
+                .setUris(existingUris.stream().toList())
+                .setUser(account);
+        allowedFilter.setPageSize(0);
+        var allowedUris = search(allowedFilter, false, false).getList().stream()
+                .map(GermplasmModel::getUri)
+                .map(SPARQLDeserializers::formatURI)
+                .collect(Collectors.toUnmodifiableSet());
+        var initialUriSet = uris.stream().map(SPARQLDeserializers::formatURI).collect(Collectors.toSet());
+        return SetUtils.difference(initialUriSet, allowedUris);
     }
 }

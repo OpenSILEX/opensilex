@@ -15,8 +15,9 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.germplasm.api.BaseGermplasmAPITest;
+import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeev;
@@ -28,9 +29,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVValidationModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
@@ -127,6 +126,17 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         experiment.setObjective(experiment.getName());
         experiment.setStartDate(LocalDate.now());
         return experiment;
+    }
+
+    private void createGermplasm(String name) throws Exception {
+        var germplasmDto = new GermplasmCreationDTO();
+        germplasmDto.setName(name);
+        germplasmDto.setRdfType(URI.create(Oeso.Species.getURI()));
+
+        new UserCallBuilder(BaseGermplasmAPITest.create)
+                .setBody(germplasmDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
     }
 
     private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
@@ -824,17 +834,8 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
 
     @Test
     public void testHasGermplasm() throws Exception {
-
-        // create germplasms
-        GermplasmModel germplasm1 = new GermplasmModel();
-        germplasm1.setName("test_os_csv_import");
-        germplasm1.setType(URI.create(Oeso.Germplasm.getURI()));
-
-        GermplasmModel germplasm2 = new GermplasmModel();
-        germplasm2.setName("test_os_csv_import2");
-        germplasm2.setType(URI.create(Oeso.Germplasm.getURI()));
-
-        getSparqlService().create(GermplasmModel.class,Arrays.asList(germplasm1, germplasm2));
+        createGermplasm("test_os_csv_import");
+        createGermplasm("test_os_csv_import2");
 
         // test with valid germplasm
         CSVValidationModel validation = testImport("os_import_germplasm.csv", experiment.getUri(), user);

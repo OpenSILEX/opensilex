@@ -138,17 +138,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.1]
 
 ### Fixed or optimized
-
+ 
+- (!1477) (!1481) [Scientific object] [Facility] [Move] GET, POST and CSV import services for moves, facilities and
+  scientific objects are now compatible with OpenSILEX 1.4.x.
+  
+  See more information about the changes and future deprecated APIs in the
+  [release notes](opensilex-doc/src/main/resources/release/1.5.0.md).
 - (!1499) [Factor] Updating factors now works correctly again
 - (!1498) [Experiment] Change financial logos to SVG
 - (!1484) [Ontology] Fix dynamic types update
-- (!1477) [Scientific object] [Facility] Added compatibility options for services that broke with 1.5.0
 - (!1492) [Germplasm] Germplasm access is now correctly restricted according to isPublic / publisher rules
 - (!1489) [Facility] Fixed locations being systematically deleted upon Facility update
 - (!1475) (!1495) [Germplasm] The `isPublic` field is now true by default when creating a Germplasm
 - (!1491) [Migration] Migration to 1.5.0 now rollbacks correctly on error
 - (!1483) [Datafile] Added the response type to the Swagger documentation for the GET /datafile/{uri}/path service
-- (!1481) [Compatibility] GET and POST services for moves are now compatible with OpenSILEX 4.x
 - (!1476) [Faidare] GET germplasms now correctly considers experiments the user has access to
 - (!1480) [Document] Fetching documents and annotations as a user with no access works again
 - (!1490) [Groups] Changing a group's users now works correctly again

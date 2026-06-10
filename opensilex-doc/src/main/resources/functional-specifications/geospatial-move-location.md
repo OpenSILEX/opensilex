@@ -49,7 +49,7 @@ When an address is associated with a site or facility, the address is stored in 
 coordinates, stored in the MongoDB in the "geospatial" collection".
 
 For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the
-[facility specification](/src/main/resources/functional-specifications/facilities.md).
+[facility specification](/src/main/resources/functional-specifications/facility/facilities.md).
 
 ![Location_models_before](imgs/Location_Models_before.png)
 
@@ -63,7 +63,7 @@ In second stage, we would also like to store spatial dataset (e.g. drone flight 
 ## Business logic
 
 For facilities, we can enter an address and spatial coordinates. The feature behavior is explained in the
-[facility specification](facilities.md).
+[facility specification](facility/facilities.md).
 
 In SOSA Ontology, an observation collection of a property must be unique for each feature of interest. For example, a
 person (feature of interest) can have only one observation collection of his height (property : height) and only one 

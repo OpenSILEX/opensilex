@@ -34,22 +34,26 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                 FacilitiesLinkToVariablesAndDevicesMigration.DESCRIPTION +
                 UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel.DESCRIPTION +
                 ScientificObjectAndExperimentRelationMigration.DESCRIPTION +
-                UpdateFacilitiesWithLocationObservationCollectionModel.DESCRIPTION;
+                UpdateFacilitiesWithLocationObservationCollectionModel.DESCRIPTION +
+                ChangeTypeParametersUri.DESCRIPTION;
     }
 
     @Override
     public void execute() throws OpensilexModuleUpdateException {
+
         //Initialize services
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-        Logger logger = LoggerFactory.getLogger(getClass());
+        Logger logger = LoggerFactory.getLogger(MigrateToOnePointFive.class);
         //Initialize the sub-part migration classes
         var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb, logger);
         var sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb, logger);
         var sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql, logger);
         var facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb, logger);
         var germplasmAttributeUpdateRights = new GermplasmAttributeUpdateRightsMigration();
+        var changeTypeParametersUri = new ChangeTypeParametersUri();
+        changeTypeParametersUri.setSparql(sparql);
         //Check migration has not already been run by checking each sub-migration
         try{
             if(
@@ -74,6 +78,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                 sciObjAndXpLinkMigration.execute();
                 facilitiesLocationsMigration.execute(session);
                 germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
+                changeTypeParametersUri.execute();
                 return null;
             });
 

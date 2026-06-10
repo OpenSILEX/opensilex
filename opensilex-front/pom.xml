@@ -108,8 +108,8 @@
                 <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
                 <version>${revision}</version>
             </plugin>
-            
-            <!-- Allow to extends SPARQL deserializers --> 
+
+            <!-- Allow to extends SPARQL deserializers -->
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>

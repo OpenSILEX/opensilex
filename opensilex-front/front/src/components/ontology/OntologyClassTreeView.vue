@@ -2,14 +2,20 @@
     <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
         <template v-slot:node="{ node }">
       <span class="item-icon">
-        <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
-                        :icon="classesParametersByURI[node.data.uri].icon"/>
+        <opensilex-Icon v-if="getIcon(node.data.uri)"
+                        :icon="getIcon(node.data.uri)"/>
       </span>&nbsp;
             <strong v-if="node.data.selected">{{ node.title }}</strong>
             <span v-if="!node.data.selected">{{ node.title }}</span>
         </template>
 
         <template v-slot:buttons="{ node }">
+            <opensilex-EditButton
+                v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+                @click="$emit('editClass' ,node.data)"
+                label="OntologyClassTreeView.edit"
+                :small="true"
+            ></opensilex-EditButton>
             <opensilex-AddChildButton
                 v-if="user.isAdmin()"
                 @click="$emit('createChildClass' ,node.data.uri)"
@@ -60,6 +66,8 @@ export default class OntologyClassTreeView extends Vue {
 
     public selected = null;
 
+    private PARAMETER_URI_SUFFIX = "/owl-vue-extension"
+
     created() {
         this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
         this.vueJsOntologyService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
@@ -100,7 +108,7 @@ export default class OntologyClassTreeView extends Vue {
         return this.resourceTree;
     }
 
-    classesParametersByURI = {};
+    classesParametersByClasseURI = {};
 
     refresh(selection, nameFilter) {
 
@@ -109,9 +117,9 @@ export default class OntologyClassTreeView extends Vue {
             this.vueJsOntologyService.getRDFTypesParameters()
         ]).then(results => {
             let classesParameters = results[1].response.result;
-            this.classesParametersByURI = {};
+            this.classesParametersByClasseURI = {};
             for (let i in classesParameters) {
-                this.classesParametersByURI[classesParameters[i].uri] = classesParameters[i];
+                this.classesParametersByClasseURI[classesParameters[i].extendedClass] = classesParameters[i];
             }
 
             if (results[0].response.result.length > 0) {
@@ -170,7 +178,14 @@ export default class OntologyClassTreeView extends Vue {
     }
 
     isManagedClass(rdfClassURI) {
-        return !!this.classesParametersByURI[rdfClassURI];
+        return !!this.classesParametersByClasseURI[rdfClassURI];
+    }
+
+    getIcon(uri){
+        if (! this.classesParametersByClasseURI[uri] ){
+            return null
+        }
+        return this.classesParametersByClasseURI[uri].icon
     }
 }
 </script>

@@ -80,7 +80,7 @@ public class VueOwlExtensionAPI {
         try {
             ClassModel model = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
-            VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, model.getUri(), currentUser.getLanguage());
+            VueClassExtensionModel modelExt = new VueOwlExtensionDAO(sparql).getExtensionClass(model.getUri(), currentUser.getLanguage());
             return new SingleObjectResponse<>(new VueRDFTypeDTO(model, modelExt)).getResponse();
         } catch (SPARQLInvalidURIException e) {
             throw new NotFoundURIException(rdfType);
@@ -106,7 +106,7 @@ public class VueOwlExtensionAPI {
 
             ClassModel classModel = dto.toModel(currentUser.getLanguage());
             classModel.setPublisher(currentUser.getUri());
-            VueClassExtensionModel classExtModel = dto.getExtClassModel();
+            VueClassExtensionModel classExtModel = getExtClassModel(dto, classModel);
             dao.createExtendedClass(classModel, classExtModel);
             SPARQLModule.getOntologyStoreInstance().reload();
 
@@ -133,11 +133,20 @@ public class VueOwlExtensionAPI {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
         ClassModel classModel = dto.toModel(currentUser.getLanguage());
-        VueClassExtensionModel classExtModel = dto.getExtClassModel();
+        VueClassExtensionModel classExtModel = getExtClassModel(dto, classModel);
         dao.updateExtendedClass(classModel, classExtModel);
         SPARQLModule.getOntologyStoreInstance().reload();
 
         return new CreatedUriResponse(classModel.getUri()).getResponse();
+    }
+
+    private VueClassExtensionModel getExtClassModel(VueRDFTypeDTO dto, ClassModel classModel) {
+        VueClassExtensionModel extModel = new VueClassExtensionModel();
+        extModel.setUri(dto.getClassExtensionUri());
+        extModel.setExtendedClass(classModel.getUri());
+        extModel.setIsAbstractClass(dto.getIsAbstract());
+        extModel.setIcon(dto.getIcon());
+        return extModel;
     }
 
     @PUT
@@ -172,7 +181,7 @@ public class VueOwlExtensionAPI {
             @ApiParam(value = "RDF type") @PathParam("uri") @NotNull @ValidURI URI classURI
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
-        dao.deleteExtendedClass(classURI);
+        dao.deleteClassWithExtension(classURI);
         SPARQLModule.getOntologyStoreInstance().reload();
         return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }
@@ -195,7 +204,7 @@ public class VueOwlExtensionAPI {
         VueOwlExtensionDAO daoExt = new VueOwlExtensionDAO(sparql);
 
         ClassModel classModel = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
-        VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, classModel.getUri(), currentUser.getLanguage());
+        VueClassExtensionModel modelExt = daoExt.getExtensionClass(classModel.getUri(), currentUser.getLanguage());
 
         VueRDFTypeDTO vueRDFTypeDTO = new VueRDFTypeDTO(classModel, modelExt);
         if (Objects.nonNull(classModel.getPublisher())) {

@@ -45,6 +45,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -139,6 +140,8 @@ public final class OntologyDAO {
             );
         }
 
+        checkSpecificClassDeletionRule(classURI);
+
         boolean hasDataPropertiesOnClass = searchDataProperties(classURI,null,null).getRootsCount() > 0;
         if (hasDataPropertiesOnClass) {
             throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
@@ -170,6 +173,25 @@ public final class OntologyDAO {
             sparql.commitTransaction();
         }catch (Exception e){
             sparql.rollbackTransaction();
+        }
+    }
+
+    /**
+     * @throws DisplayableBadRequestException if the class is a subtype of vocabulary:FactorCategory and is linked with at least one factor.
+     * @see ClassSpecificDeleteVerificationAskQueryProvider implementationfor a query exemple.
+     */
+    private void checkSpecificClassDeletionRule(URI classURI) throws Exception, DisplayableBadRequestException {
+        var askBuilderInstanceLoader = ServiceLoader.
+                load(ClassSpecificDeleteVerificationAskQueryProvider.class);
+
+        for (ClassSpecificDeleteVerificationAskQueryProvider askBuilder : askBuilderInstanceLoader) {
+            boolean classCannotBeDeleted = sparql.executeAskQuery(askBuilder.getFactorCategoryDeleteVerificationAskQuery(classURI));
+            if (classCannotBeDeleted) {
+                throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                        askBuilder.getErrorTranslationKey(),
+                        Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+                );
+            }
         }
     }
 

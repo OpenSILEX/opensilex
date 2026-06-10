@@ -5,11 +5,10 @@
  */
 package org.opensilex.front.vueOwlExtension.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 
@@ -17,7 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -39,6 +37,9 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
     @JsonProperty("properties_order")
     protected List<URI> propertiesOrder;
 
+    @ValidURI
+    protected URI classExtensionUri;
+
     public boolean getIsAbstract() {
         return isAbstract;
     }
@@ -55,11 +56,16 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
         this.icon = icon;
     }
 
+    public URI getClassExtensionUri() { return this.classExtensionUri; }
+
+    public void setClassExtensionUri(URI classExtensionUri) { this.classExtensionUri = classExtensionUri; }
+
     public VueRDFTypeDTO(ClassModel classModel, VueClassExtensionModel modelExt){
         super(classModel);
         if (modelExt != null) {
             setIsAbstract(modelExt.getIsAbstractClass());
             setIcon(modelExt.getIcon());
+            classExtensionUri = modelExt.getUri();
         } else {
             setIsAbstract(false);
         }
@@ -123,15 +129,6 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
             model.setParent(parentClass);
         }
 
-        return model;
-    }
-
-    @JsonIgnore
-    public VueClassExtensionModel getExtClassModel() {
-        VueClassExtensionModel model = new VueClassExtensionModel();
-        model.setUri(getUri());
-        model.setIcon(getIcon());
-        model.setIsAbstractClass(getIsAbstract());
         return model;
     }
 

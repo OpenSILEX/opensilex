@@ -138,7 +138,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.1]
 
 ### Fixed or optimized
- 
+
+> Warning: upgrading to this new version requires manual operations.
+> 
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+> 
+> If you are upgrading from 1.5.0, you must perform the following two migrations :
+> 
+> ```shell
+> java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensilex.migration.one_point_five_ALL.GermplasmAttributeUpdateRightsMigration
+> java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensilex.migration.one_point_five_ALL.ChangeTypeParametersUri
+> ```
+
 - (!1477) (!1481) [Scientific object] [Facility] [Move] GET, POST and CSV import services for moves, facilities and
   scientific objects are now compatible with OpenSILEX 1.4.x.
   

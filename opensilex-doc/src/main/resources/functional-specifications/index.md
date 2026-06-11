@@ -7,7 +7,16 @@ sidebar: true
 # OpenSILEX specification
 
 **rules and definition of core concepts**
+___
 
+### Is this documentation relevant for you ?
+This documentation is intended as a practical reference for people who need to understand how OpenSILEX features are expected to behave and how to use or evolve them. In particular, it targets:
+
+- **Advanced users and script developers** — looking for precise information about the expected behaviour, validation rules and logical constraints of features.
+- **Exploitation | Operations and platform teams** — seeking implementation-level details to adapt or extend features, to design new functionality inspired by existing ones, and to prepare or perform functional tests.
+- **Software developers** — checking for expected behavior to avoid regressions and debug functional issues.
+
+___
 *To navigate among concepts use the left sidebar or hit CTRL+K and search among indexed titles*
 
 *Following links could be interesting if you want to develop for or try OpenSILEX*

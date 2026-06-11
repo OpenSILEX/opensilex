@@ -1,5 +1,5 @@
 
-# Specifications : [ontology] dynamic type and core ontology extension
+# Specifications : [ontology] core ontology extension via API using dynamic types and properties
 
 **Document history (please add a line when you edit the document)**
 

@@ -4,6 +4,19 @@
 
 If you just have edited a markdown file, it is a good idea to check if it will pass build step or not. To check for error go to `functional-specifications` or `technical-documentation` folder wit `cd` command, then run `npm run docs:build`.
 
+or run it from your IDE :
+- **functional specifications** :
+```shell
+cd ../functional-specifications
+npm install
+npm run docs:build
+```
+- **technical documentation** :
+```shell
+npm install
+npm run docs:build
+```
+
 ## modifyng home page
 
 The entry point (home page) of each documentation is the `index.md` file in `functional-specifications` or `technical-documentation` folder.

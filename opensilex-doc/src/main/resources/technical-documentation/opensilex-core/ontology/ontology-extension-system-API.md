@@ -41,7 +41,7 @@
 ## functional requirements
 
 **functional specification** : to understand the purpose of the feature and its precise rules see relative functional specification file :
-- [ontology-dynamique-type.md](../../../functional-specifications/ontology-dynamique-type.md)
+- [ontology-API-extension-types-and-properties.md](../../../functional-specifications/ontology-API-extension-types-and-properties.md)
 
 ## Non-functional requirements
 

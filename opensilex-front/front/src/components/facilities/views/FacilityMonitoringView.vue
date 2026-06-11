@@ -31,13 +31,6 @@
                 @select="loadVariables"
                 @handlingEnterKey="loadVariables"
               ></opensilex-FormSelector>
-<!--              <opensilex-GroupVariablesSelector
-                v-model:variableGroup="selectedVariableGroup"
-                class="searchFilter"
-                @handlingEnterKey="loadVariables"
-                @clear="loadVariables"
-                @select="loadVariables"
-              />-->
             </div>
           </div>
         </div>
@@ -259,7 +252,7 @@ function loadTiles() {
   for (let v of usedVariables.value) {
     layout.value.push({
       "i":''+i,
-      "content": { target: uri, variableUri: v }
+      "content": { target: uri.value, variableUri: v }
     });
     ++i;
   }

@@ -74,7 +74,7 @@ export default class DateTimeFormatter {
             dateStyle: 'short',
             ...options
         };
-        const locale = this.$i18n.locale?.value || "en"; // fallback si probleme avec la locale
+        const locale = this.$i18n?.locale?.value || "en"; // fallback si probleme avec la locale
         return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
             .format(new Date(dateTimeValue));
     
@@ -93,9 +93,9 @@ export default class DateTimeFormatter {
             timeStyle: 'long',
             ...options
         };
-        // return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
+        // return new Intl.DateTimeFormat(this.$i18n?.t("dateTimeLocale").toString(), dateTimeFormatOptions)
         //     .format(new Date(dateTimeValue));
-        const locale = this.$i18n.locale?.value || "en";
+        const locale = this.$i18n?.locale?.value || "en";
         return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
         .format(new Date(dateTimeValue));
 

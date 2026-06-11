@@ -44,7 +44,7 @@
         </div>
 
         <!-- Periods & Devices selection button -->
-        <opensilex-Button class="btn settingsButton" @click="histogramSettings.show()" :label="t('Histogram.settings')" icon="fa#cog" :small="true">
+        <opensilex-Button class="btn settingsButton" @click="histogramSettings.show()" :label="t('component.facility.monitoring.settings')" icon="fa#cog" :small="true">
         </opensilex-Button>
         </div>
       </template>

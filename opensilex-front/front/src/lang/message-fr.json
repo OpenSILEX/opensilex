@@ -47,6 +47,7 @@
                 "day":"jour",
                 "days":"jours",
                 "years":"années",
+                "Week": "Semaine",
                 "startDate" : "Date de début",
                 "endDate" : "Date de fin",
                 "begin":"Début",
@@ -67,7 +68,7 @@
             "ok": "OK",
             "clear": "Vider",
             "close": "Fermer",
-            "cancel": "annuler",
+            "cancel": "Annuler",
             "creator": "Créateur",
             "delete": "Supprimer",
             "name": "Nom",
@@ -104,6 +105,7 @@
             "advanced-search-title": "Recherche Avancée",
             "not-specified": "Non renseigné(e)",
             "validate": "Valider",
+            "apply": "Appliquer",
             "required": "Requis",
             "validateSelection": "Valider la selection",
             "selected-only": "Élements selectionnés seulement",
@@ -221,7 +223,13 @@
             "date": "Date",
             "authors": "Auteurs",
             "fullscreen" : "Plein ecran",
-            "change-viewing-mode": "Changer de mode de vue"
+            "change-viewing-mode": "Changer de mode de vue",
+            "graphsStuff": {
+                "settings": "Paramètres du graphique",
+                "display_by": "Afficher par",
+                "filter": "Filtrer la selection",
+                "help": "Décochez pour utiliser le sélecteur ci-dessous"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -955,7 +963,9 @@
             "delete": "Supprimer l'organisation"
         },
         "device": {
-            "description": "Gestion des appareils"
+            "description": "Gestion des appareils",
+            "all_devices": "Tout les appareils",
+            "select_devices": "Choisir des dispositifs"
         },
         "site": {
             "description": "Gérer et configurer les sites",
@@ -980,10 +990,14 @@
             "buttons": {
                 "update": "Modifier l'installation environnementale",
                 "delete": "Supprimer l'installation environnementale"
+            },
+            "monitoring": {
+                "settings": "Choix de la période et des appareils"
             }
         },
         "provenance": {
-            "description": "Décrire la provenance de données"
+            "description": "Décrire la provenance de données",
+            "all_provenances": "Toutes les provenances"
         },
         "data": {
             "lastMedianData": "Dernière valeur médiane",

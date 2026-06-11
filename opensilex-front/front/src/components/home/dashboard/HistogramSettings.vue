@@ -7,7 +7,7 @@
         <div class="modal-header">
           <h4 class="modal-title">
             <opensilex-Icon icon="fa#cog" />
-            {{ t("HistogramSettings.title") }}
+            {{ t("component.common.graphsStuff.settings") }}
           </h4>
           <button type="button" class="btn-close" @click="hide"></button>
         </div>
@@ -16,7 +16,7 @@
         <div class="modal-body">
           <!-- Periods -->
           <div class="mb-3">
-            <label class="form-label">{{ t('HistogramSettings.display_by') }}:</label>
+            <label class="form-label">{{ t('component.common.graphsStuff.display_by') }}:</label>
             <div class="btn-group w-100">
               <button
                 v-for="(period, index) in periods"
@@ -33,7 +33,7 @@
 
           <!-- Devices Selection -->
           <div class="mb-3">
-            <label class="form-label">{{ t('HistogramSettings.filter') }}:</label>
+            <label class="form-label">{{ t('component.common.graphsStuff.filter') }}:</label>
             <div class="d-flex align-items-center">
               <input 
                 type="checkbox" 
@@ -41,11 +41,11 @@
                 v-model="selectAll"
                 @change="changeSelectorAccess"
               />
-              <span>{{ t('HistogramSettings.all_devices') }}</span>
+              <span>{{ t('component.device.all_devices') }}</span>
               <font-awesome-icon 
                 icon="question-circle" 
                 class="ms-2 text-muted"
-                v-tooltip="t('HistogramSettings.help')"
+                v-tooltip="t('component.common.graphsStuff.help')"
               />
             </div>
           </div>
@@ -56,17 +56,17 @@
             v-model="selectedDevices"
             :disabled="selectorAccess"
             :options="devicesLoaded"
-            placeholder="HistogramSettings.select_devices"
+            placeholder="component.device.select_devices"
           /> -->
         </div>
 
         <!-- Footer -->
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="hide">
-            {{ t('HistogramSettings.cancel') }}
+            {{ t('component.common.cancel') }}
           </button>
           <button class="btn greenThemeColor" @click="validate">
-            {{ t('HistogramSettings.apply') }}
+            {{ t('component.common.apply') }}
           </button>
         </div>
 
@@ -104,10 +104,10 @@ const devicesToDisplay = ref<Array<{ label: string; id: string }>>([]);
 
 // Periods List
 const periods = computed(() => [
-  { text: t("HistogramSettings.day"), value: "day" },
-  { text: t("HistogramSettings.week"), value: "week" },
-  { text: t("HistogramSettings.month"), value: "month" },
-  { text: t("HistogramSettings.year"), value: "year" },
+  { text: t("component.common.date-time-stuff.day"), value: "day" },
+  { text: t("component.common.date-time-stuff.Week"), value: "week" },
+  { text: t("component.common.date-time-stuff.month"), value: "month" },
+  { text: t("component.common.date-time-stuff.year"), value: "year" },
 ]);
 
 // Methods
@@ -169,34 +169,10 @@ defineExpose({ show, hide });
 <i18n>
 en:
   HistogramSettings:
-    title : Graphic settings
-    apply: Apply
-    cancel: Cancel
-    display_by: Display by
-    filter: Filter selection
-    all_devices: All Devices
-    select_devices: Select Devices
-    hour: Hour
-    day: Day
-    week: Week
-    month: Month
-    year: Year
     help: Uncheck to use bellow selector
 
 fr:
   HistogramSettings:
-    title : Paramètres du graphique
-    apply: Appliquer
-    cancel: Annuler
-    display_by: Afficher par
-    filter: Filtrer la selection
-    all_devices: Tout les appareils
-    select_devices: Choisir des appareils
-    hour: Heure
-    day: Jour
-    week: Semaine
-    month: Mois
-    year: année
     help: Décochez pour utiliser le sélecteur ci-dessous
 
 </i18n>

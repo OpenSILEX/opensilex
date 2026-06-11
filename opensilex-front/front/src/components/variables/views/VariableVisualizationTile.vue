@@ -53,54 +53,47 @@
 
         <!-- Modal for graphic -->
 
-        <b-modal
-          ref="graphic-modal"
-          size="xl"
-          :title="variableUri.name"
-          hide-footer
-        >
-          <div class="text-right card-header-right">
+        <opensilex-Modal ref="graphicModal" modalSize="xl">
+          <template #header>
+            <h4 class="modal-title">
+              {{ variableUri.name }}
+            </h4>
+          </template>
+
+          <div class="graphic-modal-header-actions">
             <!-- Period badge-->
-            <b-badge v-if="period" pill class="greenThemeColor">
-              <opensilex-Icon icon="fa#hourglass-half"/> {{ t("component.common.period-descriptions." + period) }}
-            </b-badge>
+            <n-tag v-if="period" round class="greenThemeColor">
+              <opensilex-Icon icon="fa#hourglass-half"/>
+              {{ t("component.common.date-time-stuff.period-descriptions." + period) }}
+            </n-tag>
 
             <!-- Graphic Options menu dropdown-->
-            <b-dropdown right size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
-              <template #button-content>
+            <n-dropdown
+              trigger="click"
+              placement="bottom-end"
+              :options="graphicDropdownOptions"
+              @select="handleGraphicDropdownSelect"
+            >
+              <n-button text>
                 <opensilex-Icon icon="fa#bars" size="lg" class="dashboardGraphicMenu" />
-              </template>
-
-              <b-dropdown-item @click="scatter">
-                <opensilex-Icon icon="fa#braille" />
-                {{ t("component.common.change-viewing-mode") }}
-              </b-dropdown-item>
-
-              <b-dropdown-item @click="fullscreen">
-                <opensilex-Icon icon="fa#expand" />
-                {{ t("component.common.fullscreen") }}
-              </b-dropdown-item>
-
-              <b-dropdown-item @click="exportPNG">
-                <opensilex-Icon icon="fa#download" />
-                {{ t("component.datafile.download-image") }}
-              </b-dropdown-item>
-            </b-dropdown>
+              </n-button>
+            </n-dropdown>
 
             <!-- Settings button -->
             <opensilex-Button
-              label=Histogram.settings
+              :label="t('component.facility.monitoring.settings')"
               class="settingsButton"
               icon="fa#cog"
               @click="histogramSettings.show()"
-              @update="onSettingsChanged"
             ></opensilex-Button>
           </div>
 
           <div class="row justify-content-center">
-            <opensilex-TextView v-if="!isDataForGraph && isGraphicLoaded"
-                                id="no-data-text"
-                                :label="t('component.data.no-data')">
+            <opensilex-TextView
+              v-if="!isDataForGraph && isGraphicLoaded"
+              id="no-data-text"
+              :label="t('component.data.no-data')"
+            >
             </opensilex-TextView>
           </div>
 
@@ -109,6 +102,8 @@
             <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
               <b-spinner label="Loading..."></b-spinner>
             </div>
+
+            <!--
             <opensilex-VisualisationGraphic
               v-if="isGraphicLoaded"
               id="graphic"
@@ -117,6 +112,7 @@
               :lType="true"
               :lWidth="true"
             ></opensilex-VisualisationGraphic>
+            -->
           </div>
 
           <!-- Modal settings component-->
@@ -124,7 +120,9 @@
             ref="histogramSettings"
             @update="onSettingsChanged"
           ></opensilex-FacilityHistogramSettings>
-        </b-modal>
+
+          <template #footer></template>
+        </opensilex-Modal>
 
       </template>
     </opensilex-Card>
@@ -132,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import {DevicesService, NamedResourceDTOVariableModel} from "opensilex-core/index";
+import {NamedResourceDTOVariableModel} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -143,12 +141,13 @@ import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
 import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
-import {Period} from "../../facilities/DatePeriodPicker.vue";
-import {computed, inject, onMounted, ref, useTemplateRef, nextTick} from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef, nextTick, h, resolveComponent} from "vue";
 import { useStore } from "vuex";
 import { useI18n } from 'vue-i18n'
-import AssociatedExperimentsList from "@/components/experiments/AssociatedExperimentsList.vue";
 import VisualisationGraphic from "@/components/home/dashboard/VisualisationGraphic.vue";
+import {Period} from "@/components/common/forms/DatePeriodPicker.vue";
+import FacilityHistogramSettings from "@/components/facilities/FacilityHistogramSettings.vue";
+import { NButton, NTag } from 'naive-ui'
 
 //#region Constants & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
@@ -156,7 +155,6 @@ const $store = useStore();
 const { t } = useI18n()
 
 const variablesService: VariablesService = $opensilex.getService<VariablesService>('opensilex.VariablesService');
-const devicesService: DevicesService = $opensilex.getService<DevicesService>('opensilex.DevicesService');
 const dataService: DataService = $opensilex.getService<DataService>('opensilex.DataService');
 //#endregion
 
@@ -172,13 +170,6 @@ const props = defineProps<Props>();
 //#endregion
 
 //#region Computed
-const user = computed(() => {
-  return $store.state.user;
-});
-
-const credentials = computed(() => {
-  return $store.state.credentials;
-});
 
 const hasCalculatedSeries = computed(() => {
   return (calculatedDataSeries.value.length > 0);
@@ -187,6 +178,26 @@ const hasCalculatedSeries = computed(() => {
 const isDataForGraph = computed(() => {
   return !(dataSeries.value.length ===0 && calculatedDataSeries.value.length === 0)
 });
+
+const OpensilexIcon = resolveComponent("opensilex-Icon");
+
+const graphicDropdownOptions = computed(() => [
+  {
+    label: t("component.common.change-viewing-mode"),
+    key: "scatter",
+    icon: () => h(OpensilexIcon, { icon: "fa#braille" })
+  },
+  {
+    label: t("component.common.fullscreen"),
+    key: "fullscreen",
+    icon: () => h(OpensilexIcon, { icon: "fa#expand" })
+  },
+  {
+    label: t("component.datafile.download-image"),
+    key: "exportPNG",
+    icon: () => h(OpensilexIcon, { icon: "fa#download" })
+  }
+]);
 //#endregion
 
 //#region Data
@@ -211,15 +222,9 @@ const isLoadAllProvToggled = ref<boolean>(false);
 
 //#endregion
 
-/* TODO MAX This was old vue2 code, these watchers didnt seem to be doing anything as there was never a startDate and endDate. Delete if confimed pointless
-@Watch('startDate')
-@Watch('endDate')
-onPropertyChanged(value: string, oldValue: string) {
-  this.loadSimplifiedData();
-}*/
 
 //#region Template Refs
-const graphicModal = useTemplateRef<any>("graphic-modal")
+const graphicModal = useTemplateRef<{ show: () => void; hide: () => void }>("graphicModal")
 const visuGraphic = useTemplateRef<InstanceType<typeof VisualisationGraphic>>("visuGraphic")
 const histogramSettings = useTemplateRef<InstanceType<typeof FacilityHistogramSettings>>("histogramSettings")
 //#endregion
@@ -233,12 +238,26 @@ onMounted(()=>{
 //#endregion
 
 //#region EventHandlers
-function onSettingsChanged(period: Period, begin: string, end: string, selectAll: boolean) {
+function onSettingsChanged(periodd: Period, begin: string, end: string, selectAll: boolean) {
   graphicStartDate.value = begin;
   graphicEndDate.value = end;
-  period.value = period;
+  period.value = periodd;
   isLoadAllProvToggled.value = selectAll;
   loadAllData();
+}
+
+function handleGraphicDropdownSelect(key: string) {
+  switch (key) {
+    case "scatter":
+      scatter();
+      break;
+    case "fullscreen":
+      fullscreen();
+      break;
+    case "exportPNG":
+      exportPNG();
+      break;
+  }
 }
 //#endregion
 
@@ -338,23 +357,19 @@ function updateLastMedianData() {
     return;
   }
 
+  const latestMedianData = medianSerie.value[medianSerie.value.length - 1];
+
   lastData.value = {
-    value: medianSerie.value[medianSerie.value.length - 1].value,
-    date: medianSerie.value[medianSerie.value.length - 1].date
+    value: Number(latestMedianData.value).toPrecision(4) + " " + variable.value.unit.symbol,
+    date: latestMedianData.date
   };
-  lastData.value = lastData.value.toPrecision(4) + " " + variable.value.unit.symbol;
 }
 
-//TODO MAX i think we no longer need this because i removed the pointless langUnwatcher in mounted
-/*function beforeDestroy() {
-  langUnwatcher();
-}*/
-
-function showGraphic() {
-  graphicModal.value.show();
+const showGraphic = () => {
+  graphicModal.value?.show();
   prepareGraphic();
   isGraphicLoaded.value = true;
-}
+};
 
 function prepareGraphic() {
   $opensilex.disableLoader();
@@ -448,6 +463,13 @@ function exportPNG() {
 .settingsButton:hover {
   background-color: #00A28C;
   color: #f1f1f1
+}
+.graphic-modal-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 </style>

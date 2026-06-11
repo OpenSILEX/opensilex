@@ -31,12 +31,12 @@
         ></opensilex-FacilityDetails>
 
         <opensilex-FacilityMonitoringView
-          v-if="currentTab === 'overview'"
+          v-else-if="currentTab === 'overview'"
           :uri="uri"
         ></opensilex-FacilityMonitoringView>
 
         <opensilex-LocationList
-          v-if="currentTab === 'positions'"
+          v-else-if="currentTab === 'positions'"
           :target="uri"
         ></opensilex-LocationList>
 
@@ -169,15 +169,19 @@
   });
 
   const currentTab = computed(() => {
-    const path = $route.path
+    const tab = $route.path.split('/')[2];
 
-    if (path.includes('/details/')) return 'details'
-    if (path.includes('/overview/')) return 'overview'
-    if (path.includes('/annotations/')) return 'annotations'
-    if (path.includes('/document/')) return 'document'
-    if (path.includes('/positions/')) return 'positions'
+    if (
+      tab === 'details' ||
+      tab === 'overview' ||
+      tab === 'annotations' ||
+      tab === 'document' ||
+      tab === 'positions'
+    ) {
+      return tab;
+    }
 
-    return null
+    return 'details';
   })
   //#endregion
 

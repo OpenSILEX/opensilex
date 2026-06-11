@@ -42,11 +42,12 @@
                 "positions": "Positions"
             },
             "date-time-stuff": {
-                "month": "month",
+                "month": "Month",
                 "months": "months",
-                "day":"day",
+                "day":"Day",
                 "days":"days",
                 "years":"years",
+                "Week": "Week",
                 "startDate": "Start date",
                 "endDate": "End date",
                 "begin":"Begin",
@@ -68,7 +69,7 @@
             "clear": "Clear",
             "close": "Close",
             "delete": "Delete",
-            "cancel": "cancel",
+            "cancel": "Cancel",
             "creator": "Creator",
             "edit": "edit",
             "name": "Name",
@@ -106,6 +107,7 @@
             "not-specified": "Not specified",
             "required": "Required",
             "validate": "Validate",
+            "apply": "Apply",
             "validateSelection": "Validate the selection",
             "selected-only": "Selection only",
             "resetSelected": "Reset selection",
@@ -220,7 +222,13 @@
             "date": "Date",
             "authors": "Authors",
             "fullscreen" : "Fullscreen",
-            "change-viewing-mode": "Change viewing mode"
+            "change-viewing-mode": "Change viewing mode",
+            "graphsStuff": {
+                "settings": "Graphic settings",
+                "display_by": "Display by",
+                "filter": "Filter selection",
+                "help": "Uncheck to use the bellow selector"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -499,7 +507,7 @@
             "dataType" : {
                 "data-type": "Data type",
                 "datatype-placeholder": "Select a datatype",
-                "datatype-help": "Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable).",
+                "datatype-help": "Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable)."
             },
             "name": "The variable",
             "altName": "Alternative name",
@@ -898,7 +906,9 @@
             "delete": "Delete organization"
         },
         "device": {
-            "description": "Manage Devices"
+            "description": "Manage Devices",
+            "all_devices": "All Devices",
+            "select_devices": "Select Devices"
         },
         "site": {
             "description": "Manage and configure sites",
@@ -923,10 +933,14 @@
             "buttons": {
                 "update": "Update facility",
                 "delete": "Delete facility"
+            },
+            "monitoring": {
+                "settings": "Choice of period and devices"
             }
         },
         "provenance": {
-            "description": "Describe data provenance"
+            "description": "Describe data provenance",
+            "all_provenances": "All Provenances"
         },
         "data": {
             "lastMedianData": "Last median value",

@@ -2,14 +2,14 @@
   <div class="container-fluid">
     <PageHeader
         icon="fa#seedling"
-        title="GermplasmView.title"
-        description="GermplasmView.description"
+        :title="t('title')"
+        :description="t('description')"
         class="detail-element-header"
     ></PageHeader>
     <PageActions :returnButton="false">
       <HelpButton
           @click="showHelpModal = true"
-          label="component.common.help-button"
+          :label="t('component.common.help-button')"
           class="helpButton"
       ></HelpButton>
       <n-menu
@@ -95,10 +95,14 @@ onMounted(() => {
 
 <i18n>
 en:
+  title: Germplasm
+  description: Manage Genetic Resources Information
   germplasmMenu: "Germplasm"
   germplasmGroupMenu: "Germplasm Group"
   germplasmCreateMenu: "Add and modify germplasms"
 fr:
+  title: Germplasm
+  description: Manage Genetic Resources Information
   germplasmMenu: "Ressources Génétiques "
   germplasmGroupMenu: "Groupe de Ressources Génétiques"
   germplasmCreateMenu: "Ajouter et modifier des ressources génétiques"

@@ -1432,8 +1432,6 @@ export default class OpenSilexVuePlugin {
         return uris.some((item) => this.compareUris(item, uri));
     }
 
-
-
     public versionInfo: any = [];
 
     public loadVersionInfo() {

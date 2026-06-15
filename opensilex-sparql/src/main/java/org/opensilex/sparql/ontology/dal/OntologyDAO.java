@@ -45,6 +45,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -139,6 +140,8 @@ public final class OntologyDAO {
             );
         }
 
+        checkSpecificClassDeletionRule(classURI);
+
         boolean hasDataPropertiesOnClass = searchDataProperties(classURI,null,null).getRootsCount() > 0;
         if (hasDataPropertiesOnClass) {
             throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
@@ -170,6 +173,25 @@ public final class OntologyDAO {
             sparql.commitTransaction();
         }catch (Exception e){
             sparql.rollbackTransaction();
+        }
+    }
+
+    /**
+     * @throws DisplayableBadRequestException if the class is a subtype of vocabulary:FactorCategory and is linked with at least one factor.
+     * @see ClassSpecificDeleteVerificationAskQueryProvider implementationfor a query exemple.
+     */
+    private void checkSpecificClassDeletionRule(URI classURI) throws Exception, DisplayableBadRequestException {
+        var askBuilderInstanceLoader = ServiceLoader.
+                load(ClassSpecificDeleteVerificationAskQueryProvider.class);
+
+        for (ClassSpecificDeleteVerificationAskQueryProvider askBuilder : askBuilderInstanceLoader) {
+            boolean classCannotBeDeleted = sparql.executeAskQuery(askBuilder.getFactorCategoryDeleteVerificationAskQuery(classURI));
+            if (classCannotBeDeleted) {
+                throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                        askBuilder.getErrorTranslationKey(),
+                        Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+                );
+            }
         }
     }
 
@@ -642,12 +664,12 @@ public final class OntologyDAO {
         Node newRangeNode = SPARQLDeserializers.nodeURI(newRange);
 
         Triple oldRangeTriple = isDataProperty ?
-                new Triple(uriVar, OWL2.onDataRange.asNode(), rangeVar) :
-                new Triple(uriVar, OWL2.onClass.asNode(), rangeVar);
+                Triple.create(uriVar, OWL2.onDataRange.asNode(), rangeVar) :
+                Triple.create(uriVar, OWL2.onClass.asNode(), rangeVar);
 
         Triple newRangeTriple = isDataProperty ?
-                new Triple(uriVar, OWL2.onDataRange.asNode(), newRangeNode) :
-                new Triple(uriVar, OWL2.onClass.asNode(), newRangeNode);
+                Triple.create(uriVar, OWL2.onDataRange.asNode(), newRangeNode) :
+                Triple.create(uriVar, OWL2.onClass.asNode(), newRangeNode);
 
         UpdateBuilder update = new UpdateBuilder()
                 .addDelete(customGraph, oldRangeTriple)
@@ -886,9 +908,18 @@ public final class OntologyDAO {
     public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws Exception {
         List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
 
-        if (uris.size() > 0) {
-            // Gracefully handle empty uris.
-            // SHOULD be backward compatible, since prvious behaviour in said situation was crash
+        if (uris.isEmpty()) {
+            return resultList;
+        }
+
+        List<URI> uriList = new ArrayList<>(uris);
+        int batchSize = 10;
+
+        //Do this request in batches of 10 as the uris filter was failing above 17 uris
+        for (int i = 0; i < uriList.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, uriList.size());
+            List<URI> batch = uriList.subList(i, end);
+
             SelectBuilder select = new SelectBuilder();
             select.setDistinct(true);
 
@@ -908,18 +939,22 @@ public final class OntologyDAO {
             select.addVar(typeNameVar);
 
             if (context != null) {
-                select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), new Triple(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
+                select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), Triple.create(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
             } else {
                 select.addWhere(uriVar, RDFS.label, nameVar);
             }
+
             select.addWhere(uriVar, RDF.type, typeVar);
             select.addWhere(typeVar, RDFS.label, typeNameVar);
-            select.addGroupBy(SPARQLResourceModel.URI_FIELD).addGroupBy(SPARQLResourceModel.TYPE_FIELD).addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
+
+            select.addGroupBy(SPARQLResourceModel.URI_FIELD)
+                    .addGroupBy(SPARQLResourceModel.TYPE_FIELD)
+                    .addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
+
             Locale locale = Locale.forLanguageTag(language);
             select.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameField, locale.getLanguage()));
             select.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
-            select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
-
+            select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, batch));
 
             List<SPARQLResult> results = sparql.executeSelectQuery(select);
             SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
@@ -929,15 +964,19 @@ public final class OntologyDAO {
                 model.setName(result.getStringValue(namesField));
                 model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
                 model.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+
                 SPARQLLabel typeLabel = new SPARQLLabel();
                 typeLabel.setDefaultLang(locale.getLanguage());
                 typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
                 model.setTypeLabel(typeLabel);
+
                 resultList.add(model);
             }
         }
+
         return resultList;
     }
+
 
     public SPARQLResourceModel getRdfType(URI uri, String language) throws Exception {
         return sparql.getByURI(SPARQLResourceModel.class, uri, language);

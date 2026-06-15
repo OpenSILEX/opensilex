@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
         ontology = ORG.class,
         resource = "Site",
         graph = OrganizationModel.GRAPH,
-        prefix = "infra"
+        prefix = "orga"
 )
 public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     @SPARQLProperty(

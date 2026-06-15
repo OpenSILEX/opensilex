@@ -5,25 +5,20 @@
 //******************************************************************************
 package org.opensilex.core;
 
-import com.auth0.jwt.JWTCreator;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.vocabulary.OA;
 import org.bson.Document;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.SwaggerExtension;
 import org.opensilex.core.config.SharedResourceInstanceItem;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataDaoV2;
 import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlDao;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.core.metrics.dal.MetricDAO;
 import org.opensilex.core.ontology.Oeev;
@@ -42,9 +37,6 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.ModuleWithNosqlEntityLinkedToAccount;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
@@ -65,7 +57,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -210,6 +201,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         mongoDBServiceV2.registerIndexes(DeviceAPI.METADATA_COLLECTION_NAME, MetaDataDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(DataFileDaoV2.COLLECTION_NAME, DataFileDaoV2.getIndexes());
         mongoDBServiceV2.registerIndexes(ProvenanceDaoV2.PROVENANCE_COLLECTION_NAME, DataFileDaoV2.getIndexes());
+        mongoDBServiceV2.registerIndexes(LocationObservationDAO.LOCATION_COLLECTION_NAME, LocationObservationDAO.getIndexes());
 
         // Ensure index creation on application start (only in production)
         if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
@@ -347,7 +339,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         results.add(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
         results.add(LogsDAO.LOGS_COLLECTION_NAME);
         results.add(MetricDAO.METRICS_COLLECTION);
-        results.add(MoveEventNoSqlDao.COLLECTION_NAME);
+        results.add(LocationObservationDAO.LOCATION_COLLECTION_NAME);
         results.add(ProvenanceDAO.PROVENANCE_COLLECTION_NAME);
 
         return results;

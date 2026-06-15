@@ -24,7 +24,7 @@ import java.util.List;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "sharedResourceInstance"
+        "uri", "name", "description", "dataType", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "sharedResourceInstance"
 })
 public class VariableGetDTO {
 
@@ -36,6 +36,12 @@ public class VariableGetDTO {
 
     @JsonProperty("alternative_name")
     private String alternativeName;
+
+    @JsonProperty("description")
+    private String description;
+
+    @JsonProperty("dataType")
+    private URI dataType;
 
     @JsonProperty("entity")
     private EntityGetDTO entity;
@@ -83,6 +89,14 @@ public class VariableGetDTO {
     public void setAlternativeName(String alternativeName) {
         this.alternativeName = alternativeName;
     }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
+
+    public URI getDataType() { return dataType; }
+
+    public void setDataType(URI dataType) { this.dataType = dataType; }
 
     public EntityGetDTO getEntity() { return entity; }
 
@@ -147,6 +161,8 @@ public class VariableGetDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setAlternativeName(model.getAlternativeName());
+        dto.setDescription(model.getDescription());
+        dto.setDataType(model.getDataType());
 
         EntityModel entity = model.getEntity();
         dto.setEntity(new EntityGetDTO(entity));

@@ -12,12 +12,14 @@ import java.io.IOException;
 import java.net.URI;
 
 import io.swagger.annotations.ApiModelProperty;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
 import org.geojson.GeoJsonObject;
+import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -25,7 +27,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author vmigot
  */
-@JsonPropertyOrder({"uri", "rdf_type", "name", "experiment", "relations", "geometry"})
+@JsonPropertyOrder({"uri", "rdf_type", "name", "experiment", "relations", "move"})
 public class ScientificObjectCreationDTO extends RDFObjectDTO {
 
     @NotNull
@@ -39,12 +41,13 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
     @ApiModelProperty(value = "Scientific object experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
     private URI experiment;
 
-    /**
-     * geometry of the Geospatial
-     */
+    @Deprecated
     @JsonProperty("geometry")
-    @ApiModelProperty(value = "The geographical coordinates of the Geospatial", example = "{'type':'Polygon','coordinates':[[[3.97167246,43.61328981], [3.97171243,43.61332417],[3.9717427,43.61330558],[3.97170272,43.61327122], [3.97167246,43.61328981],[3.97167246,43.61328981]]]}")
+    @ApiModelProperty(value = "Deprecated. Please use the move property to attach geospatial info to the scientific object.")
     private GeoJsonObject geometry;
+
+    @JsonProperty("move")
+    private MoveCreationDTO move;
 
     @Override
     @ValidURI
@@ -77,17 +80,41 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
         this.name = name;
     }
 
+    @Deprecated
     public GeoJsonObject getGeometry() {
         return geometry;
     }
 
+    @Deprecated
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
+    }
+
+    public MoveCreationDTO getMove() {
+        return move;
+    }
+
+    public void setMove(MoveCreationDTO move) {
+        this.move = move;
     }
 
     public static ScientificObjectCsvDescriptionDTO fromString(String param) throws IOException {
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         return mapper.readValue(param, ScientificObjectCsvDescriptionDTO.class);
     }
+
+    public void toModel(ScientificObjectModel model) {
+        model.setUri(getUri());
+        model.setType(getType());
+        model.setName(getName());
+    }
+
+    public ScientificObjectModel newModel() {
+        ScientificObjectModel model = new ScientificObjectModel();
+        toModel(model);
+
+        return model;
+    }
+
 
 }

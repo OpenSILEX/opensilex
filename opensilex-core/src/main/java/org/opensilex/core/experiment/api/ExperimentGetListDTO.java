@@ -54,6 +54,12 @@ public class ExperimentGetListDTO {
     @JsonProperty("facilities")
     protected List<URI> facilities = new ArrayList<>();
 
+    @JsonProperty("funding")
+    protected List<URI> funding = new ArrayList<>();
+
+    @JsonProperty("alternative_name")
+    private String alternativeName;
+
     public URI getUri() {
         return uri;
     }
@@ -126,13 +132,20 @@ public class ExperimentGetListDTO {
         this.facilities = facilities;
     }
 
-    protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
+    public List<URI> getFunding() {
+        return funding;
+    }
 
-        if (models == null || models.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return models.stream().map(SPARQLResourceModel::getUri)
-                .collect(Collectors.toCollection(ArrayList::new));
+    public void setFunding(List<URI> funding) {
+        this.funding = funding;
+    }
+
+    public String getAlternativeName() {
+        return alternativeName;
+    }
+
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
     }
 
     public static ExperimentGetListDTO fromModel(ExperimentModel model) {
@@ -146,8 +159,10 @@ public class ExperimentGetListDTO {
         dto.setIsPublic(model.getIsPublic());
         dto.setObjective(model.getObjective());
         dto.setDescription(model.getDescription());
-        dto.setSpecies(getUriList(model.getSpecies()));
-        dto.setFacilities(getUriList(model.getFacilities()));
+        dto.setSpecies(SPARQLResourceModel.getUriList(model.getSpecies()));
+        dto.setFacilities(SPARQLResourceModel.getUriList(model.getFacilities()));
+        dto.setFunding(SPARQLResourceModel.getUriList(model.getFunding()));
+        dto.setAlternativeName(model.getAlternativeName());
 
         return dto;
     }

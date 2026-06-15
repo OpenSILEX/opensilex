@@ -1,16 +1,33 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.4.4]](#144)
+  * [[1.5.1]](#151)
     * [Fixed or optimized](#fixed-or-optimized)
-  * [[1.4.3]](#143)
-    * [Fixed or optimized](#fixed-or-optimized-1)
-  * [[1.4.2]](#142)
-    * [Fixed or optimized](#fixed-or-optimized-2)
-  * [[1.4.1]](#141)
-    * [Fixed or optimized](#fixed-or-optimized-3)
-  * [[1.4.0]](#140)
+  * [[1.5.0] - Freaky Fossil](#150---freaky-fossil)
     * [Changes and new features](#changes-and-new-features)
+    * [Fixed or optimized](#fixed-or-optimized-)
+  * [[1.4.10]](#1410)
+    * [Fixed or optimized](#fixed-or-optimized-1)
+  * [[1.4.9]](#149)
+    * [Fixed or optimized](#fixed-or-optimized-2)
+  * [[1.4.8]](#148)
+    * [Fixed or optimized](#fixed-or-optimized-3)
+  * [[1.4.7]](#147)
     * [Fixed or optimized](#fixed-or-optimized-4)
+  * [[1.4.6]](#146)
+    * [Fixed or optimized](#fixed-or-optimized-5)
+  * [[1.4.5]](#145)
+    * [Fixed or optimized](#fixed-or-optimized-6)
+  * [[1.4.4]](#144)
+    * [Fixed or optimized](#fixed-or-optimized-7)
+  * [[1.4.3]](#143)
+    * [Fixed or optimized](#fixed-or-optimized-8)
+  * [[1.4.2]](#142)
+    * [Fixed or optimized](#fixed-or-optimized-9)
+  * [[1.4.1]](#141)
+    * [Fixed or optimized](#fixed-or-optimized-10)
+  * [[1.4.0] - Explosive Emerald](#140---explosive-emerald)
+    * [Changes and new features](#changes-and-new-features-1)
+    * [Fixed or optimized](#fixed-or-optimized-11)
     * [Other](#other)
   * [[1.3.5]](#135)
     * [Fixed](#fixed)
@@ -20,61 +37,61 @@
     * [Fixed](#fixed-2)
   * [[1.3.2]](#132)
     * [Fixed](#fixed-3)
-    * [Changes and new features](#changes-and-new-features-1)
+    * [Changes and new features](#changes-and-new-features-2)
   * [[1.3.1]](#131)
     * [Fixed](#fixed-4)
   * [[1.3.0] - Dizzy Diamond](#130---dizzy-diamond-)
-    * [Changes and new features](#changes-and-new-features-2)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Changes and new features](#changes-and-new-features-3)
+    * [Fixed or optimized](#fixed-or-optimized-12)
   * [[1.2.7]](#127)
-    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Fixed or optimized](#fixed-or-optimized-13)
   * [[1.2.6]](#126)
-    * [Fixed or optimized](#fixed-or-optimized-7)
+    * [Fixed or optimized](#fixed-or-optimized-14)
     * [Known issue](#known-issue)
   * [[1.2.5]](#125)
-    * [Fixed or optimized](#fixed-or-optimized-8)
+    * [Fixed or optimized](#fixed-or-optimized-15)
   * [[1.2.4]](#124)
-    * [Fixed or optimized](#fixed-or-optimized-9)
+    * [Fixed or optimized](#fixed-or-optimized-16)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
-    * [Changes and new features](#changes-and-new-features-3)
-    * [Fixed or optimized](#fixed-or-optimized-10)
+    * [Changes and new features](#changes-and-new-features-4)
+    * [Fixed or optimized](#fixed-or-optimized-17)
   * [[1.2.2]](#122)
     * [Fixed](#fixed-5)
   * [[1.2.1]](#121)
     * [Fixed](#fixed-6)
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
-    * [Changes and new features](#changes-and-new-features-4)
-    * [Fixed or optimized](#fixed-or-optimized-11)
+    * [Changes and new features](#changes-and-new-features-5)
+    * [Fixed or optimized](#fixed-or-optimized-18)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
-    * [Changes and new features](#changes-and-new-features-5)
-    * [Fixed or optimized](#fixed-or-optimized-12)
+    * [Changes and new features](#changes-and-new-features-6)
+    * [Fixed or optimized](#fixed-or-optimized-19)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
-    * [Fixed or optimized](#fixed-or-optimized-13)
+    * [Fixed or optimized](#fixed-or-optimized-20)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-14)
+    * [Fixed or optimized](#fixed-or-optimized-21)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-15)
+    * [Fixed or optimized](#fixed-or-optimized-22)
   * [[1.0.0-rc+6]](#100-rc6)
-    * [Fixed or optimized](#fixed-or-optimized-16)
+    * [Fixed or optimized](#fixed-or-optimized-23)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-17)
+    * [Fixed or optimized](#fixed-or-optimized-24)
   * [[1.0.0-rc+5.1]](#100-rc51)
-    * [Fixed or optimized](#fixed-or-optimized-18)
+    * [Fixed or optimized](#fixed-or-optimized-25)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-19)
+    * [Fixed or optimized](#fixed-or-optimized-26)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
     * [Fixed](#fixed-7)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
@@ -90,10 +107,10 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-20)
+    * [Fixed or optimized](#fixed-or-optimized-27)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-21)
+    * [Fixed or optimized](#fixed-or-optimized-28)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
@@ -118,6 +135,120 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1]
+
+### Fixed or optimized
+
+> Warning: upgrading to this new version requires manual operations.
+> 
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+> 
+> If you are upgrading from 1.5.0, you must perform the following two migrations :
+> 
+> ```shell
+> java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensilex.migration.one_point_five_ALL.GermplasmAttributeUpdateRightsMigration
+> java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensilex.migration.one_point_five_ALL.ChangeTypeParametersUri
+> ```
+
+- (!1477) (!1481) [Scientific object] [Facility] [Move] GET, POST and CSV import services for moves, facilities and
+  scientific objects are now compatible with OpenSILEX 1.4.x.
+  
+  See more information about the changes and future deprecated APIs in the
+  [release notes](opensilex-doc/src/main/resources/release/1.5.0.md).
+- (!1499) [Factor] Updating factors now works correctly again
+- (!1498) [Experiment] Change financial logos to SVG
+- (!1484) [Ontology] Fix dynamic types update
+- (!1492) [Germplasm] Germplasm access is now correctly restricted according to isPublic / publisher rules
+- (!1489) [Facility] Fixed locations being systematically deleted upon Facility update
+- (!1475) (!1495) [Germplasm] The `isPublic` field is now true by default when creating a Germplasm
+- (!1491) [Migration] Migration to 1.5.0 now rollbacks correctly on error
+- (!1483) [Datafile] Added the response type to the Swagger documentation for the GET /datafile/{uri}/path service
+- (!1476) [Faidare] GET germplasms now correctly considers experiments the user has access to
+- (!1480) [Document] Fetching documents and annotations as a user with no access works again
+- (!1490) [Groups] Changing a group's users now works correctly again
+- (!1474) [Front] Fixed api-docs link not working on some instances
+- (!1485) [CSV] Metadata properties (publisher, modified, issued) are now excluded from CSV templates and forms
+
+## [1.5.0] - Freaky Fossil
+
+> Warning : upgrading to this new version requires manual operations.  
+Please follow the [versioning notes](opensilex-doc/src/main/resources/release/1.5.0.md)
+
+### Changes and new features
+
+- (!1418) [Experiment]
+> Added option to create and update Experiments with an alternative name.  
+When searching for an Experiment by name it will also look at the alternative names.  
+Added display of Experiment alternative name in Experiment details, and in the Experiments list.
+- (!1397) [Experiment] Add funding with logo in experiment
+- (!1399) [install] install command now create a RDF4J LMDB repository for more efficient persistent data storing.
+- (!1374) Update dependencies and add sonarcube dependencies
+- (!1395) [device] search device by type and subtypes does not return all devices anymore
+- (!1389) [Moves] Move events now use the same Geospatial ontology as Facilities and Sites.
+- (!1386) [datafiles]
+> You can now link data to a data file upon import by adding a "prov_entity" column to the CSV template.  
+There is now a graphical interface for managing data files from the menu Data -> Datafiles. You can now insert, delete and export data files. A specific process has been developed for spectral data files (DX and CSV), with the possibility to visualize spectra from raw data files of type DX.
+- (!1385) [ScientificObject] Added posibility to perform Scientific Object bulk update import on the global Scientific Object page.
+- (!1370) [Annotations] Applying experimentation rights management on joined annotations.
+- (!1368) [Documents] Applying experimentation rights management on joined documents
+- (!1363) [Germplasm]
+> germplasm import change, it is now possible to update at the same time as we create germplasms.  
+Any error in any germplasm of the list will cause cancellation of any update or creation.
+- (!1379) [facility]
+> Added the hasDevice and hasVariable properties to Facilities.  
+Display of the hasDevice and hasVariable property values in a table on the faility details page.
+- (!1377) [annotation] Updated date format of annotations to YYYY-MM-DD HH:mm:ss.
+- (!1376) [ScientificObject] Scientific Object import change, it is now possible to update multiple scientific objects in an experiment
+- (!1362) [annotation] Updated annotation display, resolved sorting issues and fixed line break behavior in description field.
+- (!1339) [datafiles] Datafiles can now be searched by files name -> 568d15dd7 (PRADO SEBASTIEN)
+- (!1304) [facility] Facilities can now have several locations in time and are displayed on the global map.
+
+### Fixed or optimized 
+
+- (!1384) [germplasm] creation and update by list is now faster.
+- (!1361) [DataFiles]
+> Fixed not being able to see further than the 5th page on some lists.  
+  DataFiles list now uses the same pagination strategy as Data page.  
+  Added filters to the DataFiles count web-service, so that the filters match the search web-service.
+- (!1355) [Data]
+> Massive optimizations to Data insertion and Data validation.  
+A zipped CSV document is now saved in the system after a successful data import, visible only by the user who performed the import.  
+After a successful data import, a "batch uri" is created to represent the imported data, this can be used to filter data or to to delete the imported data.
+- (!1353) [Annotation] Annotation table display updated and Fixed sorting issue
+- (!1354) [GlobalUriSearch] Repaired global uri search for events
+- (!1348) [SchemaSearch]
+> Some search web-services will now be a lot faster thanks to a new "search by schema" feature.  
+  Faster search time for the search experiments service.  
+  Faster search time for the search projects service.  
+  Faster search time for the search facilities service.  
+  Faster search time for the search devices service.  
+  Faster search time for the search user groups service.  
+  Faster search time for the search factor levels service.
+
+## [1.4.10]
+
+### Fixed or optimized
+
+- (!1387) [Variables] Added description and data type in get variable service
+
+## [1.4.9]
+
+### Fixed or optimized
+
+- [Email-service] Fixed e-mail service.
+
+## [1.4.8]
+
+### Fixed or optimized
+
+- (!1365) [Variables] Fixed a non-admin user not being able to search variables when experiments filter was filled with short uris, and the withAssociatedData boolean set to true.
+
+## [1.4.7]
+
+### Fixed or optimized
+
+- Fixed security problem of some users having access to all experiments
+- Fixed the return types of getFactorLevel and getFactorLevelDetails web-services
 
 ## [1.4.6]
 
@@ -159,7 +290,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1334) [GlobalUriSearch] Blocked access to data details if the user shouldn't be able to see them.
 - (!1335) [Datafile] Added support for tiff format images
 
-## [1.4.0]
+## [1.4.0] - Explosive Emerald
 
 > Warning : upgrading to this new version requires manual operations. Please follow the
 > [versioning notes](opensilex-doc/src/main/resources/release/1.4.0.md) 

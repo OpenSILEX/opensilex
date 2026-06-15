@@ -12,6 +12,7 @@ let checkURIS = (uri1, uri2) => {
 let ontologies = {
     URI: FOAF_URI,
     ORGANIZATION_TYPE_URI: FOAF_URI + "Organization",
+    PERSON_TYPE_URI: FOAF_URI + "Person",
     getShortUri,
     checkURIS
 };

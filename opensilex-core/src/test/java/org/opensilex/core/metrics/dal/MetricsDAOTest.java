@@ -119,8 +119,8 @@
 //
 //        Node nodeURI = SPARQLDeserializers.nodeURI(new URI(Oeso.NS + "Berry"));
 //
-//        Triple insertType = new Triple(nodeURI, RDFS.subClassOf.asNode(), Oeso.ScientificObject.asNode());
-//        Triple insertClassType = new Triple(nodeURI, RDFS.Class.asNode(), RDFS.Class.asNode());
+//        Triple insertType = Triple.create(nodeURI, RDFS.subClassOf.asNode(), Oeso.ScientificObject.asNode());
+//        Triple insertClassType = Triple.create(nodeURI, RDFS.Class.asNode(), RDFS.Class.asNode());
 //
 //        updateBuilder.addInsert(insertType);
 //        updateBuilder.addInsert(insertClassType);
@@ -130,7 +130,7 @@
 //        SelectBuilder select = new SelectBuilder();
 //        
 //        Node uri = SPARQLQueryHelper.makeVar("?uri");
-//        Triple selectType = new Triple(uri, RDFS.subClassOf.asNode(), Oeso.ScientificObject.asNode());
+//        Triple selectType = Triple.create(uri, RDFS.subClassOf.asNode(), Oeso.ScientificObject.asNode());
 //        select.addVar(uri);
 //        
 //        select.addWhere(selectType); 

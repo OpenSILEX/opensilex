@@ -164,7 +164,7 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
                 
                 if(documentModel.getSource() == null){
                     try{
-                        byte[] file = documentDAO.getFile(documentUri);
+                        byte[] file = documentDAO.getFile(documentUri, AccountModel.getSystemUser());
                         // if file has not been found in file system
                         if(file != null ){
                             File theFile = new File(documentPaths.toFile(), encodeHexString); 

@@ -47,12 +47,7 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
          *   The goal is to make every exception referenced here extend `WebApplicationException`, so that every case
          *   is handled by one condition.
          */
-        if (exception instanceof ForbiddenURIAccessException) { //@todo get rid of this
-            response = new ErrorResponse(
-                    Response.Status.FORBIDDEN, "URI access forbidden",
-                    exception.getMessage()
-            ).getResponse();
-        } else if(exception instanceof SPARQLInvalidUriListException){ //@todo get rid of this
+        if(exception instanceof SPARQLInvalidUriListException){ //@todo get rid of this
             response = new ErrorResponse(
                     Response.Status.NOT_FOUND, "URIs not found",
                     exception.getMessage()

@@ -258,7 +258,7 @@ public class SiteLogic {
      */
     public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) {
         if(siteModel.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
             try {
                 return locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
             } catch (NoSQLInvalidURIException e) {
@@ -287,10 +287,12 @@ public class SiteLogic {
 
         List<SiteModel> siteList = siteDAO.getSiteListWithFacilities(currentUser, userOrganizations).getList();
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
-        return locationObservationLogic.generateModelObservationCollectionMap(
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+        return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                 siteList,
-                SiteModel::getLocationObservationCollection,
+                (SiteModel model)->(model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
+                null,
+                true,
                 null
         );
     }
@@ -400,12 +402,12 @@ public class SiteLogic {
 
         if (geom != null) {
             //Create the LocationObservation
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
 
             checkUniqueObservation(locationObservationCollectionUri);
 
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
-            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel);
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null, null, null);
+            locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null, null, locationModel,null);
         }
     }
 
@@ -423,21 +425,21 @@ public class SiteLogic {
     private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
         Geometry geom = convertAddressToGeometry(siteModel);
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null, null, null, null);
+            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null,null,null, null, null, null);
 
             try {
                 locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
             } catch (Exception e) {
                 //Even if the location is not found, it must not block the request
-                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel);
+                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel,null);
             }
         } else {
             try {
-                locationObservationLogic.delete(session, siteModel.getLocationObservationCollection().getUri());
+                locationObservationLogic.deleteEveryLocationObservationInCollection(session, siteModel.getLocationObservationCollection().getUri(), true);
             } catch (Exception ignore) {
                 //Even if the location is not found, it must not block the request
             }
@@ -465,15 +467,14 @@ public class SiteLogic {
         }
 
         if (siteModel.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
             LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
             URI locationObservationCollectionUri = siteModel.getLocationObservationCollection().getUri();
 
             try {
                 LocationObservationModel locationObservationModel = locationObservationLogic.getLocationObservationByURI(locationObservationCollectionUri);
                 if (locationObservationModel != null) {
-                    locationObservationLogic.delete(session, locationObservationCollectionUri);
-                    locationObservationCollectionLogic.deleteLocationObservationCollection(locationObservationCollectionUri);
+                    locationObservationLogic.deleteEveryLocationObservationInCollection(session, locationObservationCollectionUri, true);
                 }
             } catch (NoSQLInvalidURIException e) {
                 //Even if the location is not found, it must not block the request
@@ -483,7 +484,7 @@ public class SiteLogic {
     }
 
     private void checkUniqueObservation(URI observationCollectionUri) throws Exception {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
 
         try {
             LocationObservationModel model = locationObservationLogic.getLocationObservationByURI(observationCollectionUri);

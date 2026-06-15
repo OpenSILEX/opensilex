@@ -21,11 +21,10 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -36,6 +35,7 @@ import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -46,7 +46,10 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -97,8 +100,8 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         descriptionVar = SPARQLQueryHelper.makeVar(EventModel.DESCRIPTION_FIELD);
         targetVar = SPARQLQueryHelper.makeVar(EventModel.TARGETS_FIELD);
         isInstantVar = SPARQLQueryHelper.makeVar(EventModel.IS_INSTANT_FIELD);
-        fromVar = SPARQLQueryHelper.makeVar(MoveModel.FROM_FIELD);
-        toVar = SPARQLQueryHelper.makeVar(MoveModel.TO_FIELD);
+        fromVar = SPARQLQueryHelper.makeVar(LocationModel.FROM_FIELD);
+        toVar = SPARQLQueryHelper.makeVar(LocationModel.TO_FIELD);
 
         descriptionTriple = Triple.create(uriVar, RDFS.comment.asNode(), descriptionVar);
         targetTriple = Triple.create(uriVar, Oeev.concerns.asNode(), targetVar);
@@ -153,8 +156,16 @@ public class EventDAO<T extends EventModel, F extends EventSearchFilter> {
         return model;
     }
 
+    public void updateModels(List<T> models) throws Exception{
+        sparql.update(models, null);
+    }
+
     public void delete(URI uri) throws Exception {
         sparql.delete(EventModel.class, uri);
+    }
+
+    public void deleteMany(List<URI> uris) throws Exception {
+        sparql.delete(graph, clazz, uris);
     }
 
     public T get(URI uri, AccountModel user) throws Exception {

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.JerseyTest;
@@ -296,6 +297,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected final String httpMethod;
         protected final MediaType callMediaType;
         protected final List<MediaType> responseMediaTypes;
+        protected final List<Class<?>> targetComponents;
 
         public PublicCall(
                 Map<String, Object> params,
@@ -305,7 +307,8 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 String pathTemplate,
                 String httpMethod,
                 MediaType callMediaType,
-                List<MediaType> responseMediaTypes
+                List<MediaType> responseMediaTypes,
+                List<Class<?>> targetComponents
         ) {
             this.params = params;
             this.body = body;
@@ -315,6 +318,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             this.httpMethod = httpMethod;
             this.callMediaType = callMediaType;
             this.responseMediaTypes = responseMediaTypes;
+            this.targetComponents = targetComponents;
         }
 
         /**
@@ -328,13 +332,29 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
 
         /**
-         * Executes the call and asserts that the response status matches the expected status.
+         * Executes the call and asserts that the response status matches the expected status. Display response error in case of failure.
          * @param expectedStatus the expected status of the response
          * @throws RuntimeException if there is an error executing the call or if the response status does not match the expected status
          */
         public void executeCallAndAssertStatus(Response.Status expectedStatus) {
+            executeCallAndAssertStatus(null, expectedStatus);
+        }
+
+        /**
+         * Executes the call and asserts that the response status matches the expected status. Display response error in case of failure.
+         * @param assertionErrorMessage the message to display if the assertion fails
+         * @param expectedStatus the expected status of the response
+         * @throws RuntimeException if there is an error executing the call or if the response status does not match the expected status
+         */
+        public void executeCallAndAssertStatus(String assertionErrorMessage, Response.Status expectedStatus) {
             try (Response response = executeCall()) {
-                assertEquals(expectedStatus.getStatusCode(), response.getStatus());
+                String requestError = null;
+                if (expectedStatus != null && response.getStatus() != expectedStatus.getStatusCode()) {
+                    requestError = response.readEntity(String.class);
+                }
+                assertionErrorMessage = Optional.ofNullable(assertionErrorMessage).orElse("");
+                String messageWithError = String.format("%s \n Response error : \n %s", assertionErrorMessage, requestError);
+                assertEquals(messageWithError , expectedStatus.getStatusCode(), response.getStatus());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -348,7 +368,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         public <T extends JsonResponse<?>> Result<T> executeCallAndDeserialize(TypeReference<T> typeReference) throws Exception {
             try (Response response = executeCall()) {
-                assertTrue("request failed with status : "+response.getStatus(), response.getStatus() >= 200 && response.getStatus() < 300);
+                boolean responseOk = response.getStatus() >= 200 && response.getStatus() < 300;
+                String error = null;
+                if ( !responseOk) {
+                    error = response.readEntity(String.class);
+                }
+                assertTrue(String.format("request failed with status : %s \n API error response : %s", response.getStatus(), error), response.getStatus() >= 200 && response.getStatus() < 300);
                 Result<T> result = new Result<>(readResponse(response, typeReference), response);
                 response.close();
                 return result;
@@ -361,9 +386,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          * @throws Exception if there is an error executing the call or retrieving the URI from the response
          */
         public URI executeCallAndReturnURI() throws Exception {
-            if (Objects.equals(httpMethod, HttpMethod.PUT) ||
-                    Objects.equals(httpMethod, HttpMethod.POST) ||
-                    Objects.equals(httpMethod, HttpMethod.DELETE)) {
+            if (isPostPutOrDeleteCall()) {
                 Result<ObjectUriResponse> response = executeCallAndDeserialize(new TypeReference<>() {
                 });
                 return URI.create(response.getDeserializedResponse().getResult());
@@ -372,6 +395,29 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                 });
                 return readResponse.getDeserializedResponse().getResult().getUri();
             }
+        }
+
+        /**
+         * Executes the call and returns the list of URI from the response.
+         * @return the list of URI from the response
+         * @throws Exception if there is an error executing the call or retrieving the list of URI
+         */
+        public List<URI> executeCallAndReturnUriList() throws Exception {
+            if (isPostPutOrDeleteCall()){
+                Result<PaginatedListResponse<URI>> response = executeCallAndDeserialize(new TypeReference<PaginatedListResponse<URI>>() {
+                });
+                return response.getDeserializedResponse().getResult();
+            } else {
+                Result<DeserializedResponse<List<UriResourceDTO>>> readResponse = executeCallAndDeserialize(new TypeReference<>() {
+                });
+                return readResponse.getDeserializedResponse().getResult().stream().map(UriResourceDTO::getUri).collect(Collectors.toList());
+            }
+        }
+
+        private boolean isPostPutOrDeleteCall() {
+            return Objects.equals(httpMethod, HttpMethod.PUT) ||
+                    Objects.equals(httpMethod, HttpMethod.POST) ||
+                    Objects.equals(httpMethod, HttpMethod.DELETE);
         }
 
         /**
@@ -391,7 +437,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
          */
         protected Invocation.Builder buildRequestBuilder(WebTarget target) {
 
-            Invocation.Builder requestBuilder = target.request(callMediaType);
+            Invocation.Builder requestBuilder = target.request();
 
             requestBuilder.accept(responseMediaTypes.toArray(new MediaType[0]));
 
@@ -408,9 +454,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             if(Objects.equals(httpMethod, HttpMethod.GET)) {
                 return requestBuilder.get();
             } else if(Objects.equals(httpMethod, HttpMethod.POST)) {
-                return requestBuilder.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+                return requestBuilder.post(Entity.entity(body, callMediaType));
             } else if(Objects.equals(httpMethod, HttpMethod.PUT)) {
-                return requestBuilder.put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
+                return requestBuilder.put(Entity.entity(body, callMediaType));
             } else if(Objects.equals(httpMethod, HttpMethod.DELETE)) {
                 return requestBuilder.delete();
             } else {
@@ -429,6 +475,9 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             }
             if (!pathTemplateParams.isEmpty()) {
                 target = target.resolveTemplates(pathTemplateParams);
+            }
+            for (var component : targetComponents) {
+                target = target.register(component);
             }
             return target;
         }
@@ -501,17 +550,24 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         protected MediaType callMediaType = MediaType.valueOf(MediaType.APPLICATION_JSON);
         protected List<MediaType> responseMediaTypes = Collections.singletonList(MediaType.valueOf(MediaType.APPLICATION_JSON));
         protected String httpMethod;
+        protected List<Class<?>> targetComponents = new ArrayList<>();
 
         public PublicCallBuilder(ServiceDescription serviceDescription) {
             this.serviceMethod = serviceDescription.getServiceMethod();
             this.pathTemplate = serviceDescription.getPathTemplate();
         }
 
+        /**
+         * Set the query parameters for the request.
+         */
         public T setParams(Map<String, Object> params) {
             this.params = params;
             return self();
         }
 
+        /**
+         * Add a query parameter to the request.
+         */
         public T addParam(String key, Object value) {
             this.params.put(key, value);
             return self();
@@ -522,21 +578,56 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return self();
         }
 
+        /**
+         * Helper method to set a multipart body and the corresponding parameters.
+         *
+         * <ul>
+         *     <li>Sets the body to the given object</li>
+         *     <li>Sets the media type to {@link MediaType#MULTIPART_FORM_DATA_TYPE}</li>
+         *     <li>Adds {@link MultiPartFeature} as a target component</li>
+         * </ul>
+         */
+        public T setMultipartBody(Object body) {
+            return setBody(body)
+                    .setCallMediaType(MediaType.MULTIPART_FORM_DATA_TYPE)
+                    .addTargetComponent(MultiPartFeature.class);
+        }
+
+        /**
+         * Set the list of request path template parameters. For example, if the request path is
+         * {@code /device/{myparam}}, and the {@code myparam} template parameter is provided with a value of
+         * {@code myvalue}, then the resolved path will be {@code /device/myvalue}.
+         */
         public T setPathTemplateParams(Map<String, Object> pathTemplateParams) {
             this.pathTemplateParams = pathTemplateParams;
             return self();
         }
 
+        /**
+         * Add a path template parameter to the request. For example, if the request path is
+         * {@code /device/{myparam}}, and the {@code myparam} template parameter is provided with a value of
+         * {@code myvalue}, then the resolved path will be {@code /device/myvalue}.
+         */
         public T addPathTemplateParam(String key, Object value) {
             this.pathTemplateParams.put(key, value);
             return self();
         }
 
+        /**
+         * Helper method to set the {@code uri} path template parameter to the given URI.
+         *
+         * @see #addPathTemplateParam(String, Object)
+         */
         public T setUriInPath(URI uri) {
-            this.pathTemplateParams.put("uri", uri);
-            return self();
+            return addPathTemplateParam("uri", uri);
         }
 
+        /**
+         * Set the media type of the provided body. Please note that certain media types, like Multipart, require
+         * specific components to be registered. You can do that by using {@link #addTargetComponent(Class)}.
+         * In the specific case of Multipart, you can use the helper method {@link #setMultipartBody(Object)} to
+         * set the body, media type and register the component all at once.
+         */
         public T setCallMediaType(MediaType callMediaType) {
             this.callMediaType = callMediaType;
             return self();
@@ -552,6 +643,30 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
             return self();
         }
 
+        /**
+         * Register component classes using {@link WebTarget#register(Class)}. This is necessary for certain features,
+         * such as Multipart form requests. See {@link #setMultipartBody(Object)}
+         *
+         * @see #setMultipartBody(Object)
+         * @param targetComponents The list of target components to register
+         */
+        public T setTargetComponents(List<Class<?>> targetComponents) {
+            this.targetComponents = targetComponents;
+            return self();
+        }
+
+        /**
+         * Add a component class to be registered using {@link WebTarget#register(Class)}. This is necessary for certain
+         * features, such as Multipart form requests.
+         *
+         * @see #setMultipartBody(Object)
+         * @param targetComponent The target component to register
+         */
+        public T addTargetComponent(Class<?> targetComponent) {
+            this.targetComponents.add(targetComponent);
+            return self();
+        }
+
         @SuppressWarnings("unchecked")
         protected T self() {
             return (T) this;
@@ -559,7 +674,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
         public PublicCall build() {
             preBuildChecks();
-            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes);
+            return new PublicCall(params, body, pathTemplateParams, serviceMethod, pathTemplate, httpMethod, callMediaType, responseMediaTypes, targetComponents);
         }
 
         /**
@@ -580,7 +695,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
                     .filter(parameter -> parameter.getAnnotation(QueryParam.class) != null)
                     .map(parameter -> parameter.getAnnotation(QueryParam.class).value())
                     .collect(Collectors.toList());
-            assertTrue(availableParams.containsAll(params.keySet()));
+            assertTrue("One or more parameters in the request has an invalid key", availableParams.containsAll(params.keySet()));
         }
 
         /**

@@ -13,21 +13,30 @@ package org.opensilex.core.organisation.dal.site;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.ThrowingConsumer;
 
 import java.net.URI;
 import java.util.*;
@@ -67,7 +76,18 @@ public class SiteDAO {
      */
     public ListWithPagination<SiteModel> search(SiteSearchFilter filter, List<URI> userOrganizations) throws Exception {
 
-        ListWithPagination<SiteModel> models = sparql.searchWithPagination(SiteModel.class, filter.getUser().getLanguage(), select -> {
+        return sparql.searchWithPaginationUsingSchema(
+                SiteModel.class,
+                filter.getUser().getLanguage(),
+                getFilterHandler(filter, userOrganizations),
+                getSparqlSchema(),
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize());
+    }
+
+    private ThrowingConsumer<SelectBuilder, Exception> getFilterHandler(SiteSearchFilter filter, List<URI> userOrganizations) {
+        return select -> {
             Var uriVar = makeVar(SiteModel.URI_FIELD);
             Var organizationsVar = makeVar("__" + SiteModel.ORGANIZATION_FIELD);
 
@@ -89,18 +109,24 @@ public class SiteDAO {
             if (Objects.nonNull(filter.getFacility())) {
                 select.addWhere(SPARQLDeserializers.nodeURI(filter.getFacility()), Oeso.withinSite, uriVar);
             }
-        }, filter.getOrderByList(), filter.getPage(), filter.getPageSize());
+        };
+    }
 
-        SPARQLListFetcher<SiteModel> listFetcher = new SPARQLListFetcher<>(
+    private SparqlSchema<SiteModel> getSparqlSchema() throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        List<SparqlSchemaSimpleNode<?>> childrenOfRoot = new ArrayList<>(List.of(
+                new SparqlSchemaSimpleNode<>(SiteAddressModel.class, SiteModel.ADDRESS_FIELD),
+                new SparqlSchemaSimpleNode<>(FacilityModel.class, SiteModel.FACILITY_FIELD),
+                new SparqlSchemaSimpleNode<>(OrganizationModel.class, SiteModel.ORGANIZATION_FIELD)
+        ));
+
+        SparqlSchemaRootNode<SiteModel> rootNode = new SparqlSchemaRootNode<>(
                 sparql,
                 SiteModel.class,
-                sparql.getDefaultGraph(SiteModel.class),
-                Collections.singleton(SiteModel.ORGANIZATION_FIELD),
-                models.getList()
+                childrenOfRoot,
+                false
         );
-        listFetcher.updateModels();
 
-        return models;
+        return new SparqlSchema<>(rootNode);
     }
 
     /**

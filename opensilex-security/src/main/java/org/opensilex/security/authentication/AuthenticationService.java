@@ -283,7 +283,7 @@ public class AuthenticationService extends BaseService implements Service {
                 .withClaim(CLAIM_IS_ADMIN, user.isAdmin());
 
         // Add credential list
-        if (credentialsList != null) {
+        if ( credentialsList != null && ! user.isAdmin() ) {
             tokenBuilder.withArrayClaim(CLAIM_CREDENTIALS_LIST, credentialsList.toArray(new String[credentialsList.size()]));
         }
 

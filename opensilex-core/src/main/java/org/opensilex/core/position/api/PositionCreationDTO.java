@@ -5,6 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import org.geojson.Point;
 import org.opensilex.core.event.dal.move.PositionModel;
 
+@Deprecated
+/**
+ * this is a deprecated property of MoveDTO. It allows for retro compatability with version 1.4.x
+ */
 public class PositionCreationDTO {
 
 

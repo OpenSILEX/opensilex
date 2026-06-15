@@ -16,7 +16,9 @@
 package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -29,6 +31,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -105,7 +108,23 @@ public class FacilityAPI {
 
             List<LocationObservationModel> locations = new ArrayList<>();
 
-            if (!dto.getLocations().isEmpty()) {
+            // Compatibility geometry handling
+            if (dto.getGeometry() != null) {
+                if (!CollectionUtils.isEmpty(dto.getLocations())) {
+                    throw new BadRequestException("The `geometry` property is deprecated and cannot be used together with the `locations` property. " +
+                            "Please only use the `locations` property to attach geometry to a facility.");
+                }
+                var locationModel = LocationLogic.buildLocationModel(
+                        dto.getGeometry() != null ? LocationLogic.geoJsonToGeometry(dto.getGeometry()) : null,
+                        null, null,null,null,null,null
+                );
+                var locationObservationModel = new LocationObservationModel();
+                locationObservationModel.setLocation(locationModel);
+                locationObservationModel.setEndDate(Instant.now());
+                locations.add(locationObservationModel);
+            }
+
+            if (!CollectionUtils.isEmpty(dto.getLocations())) {
                 locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
             }
 
@@ -182,6 +201,7 @@ public class FacilityAPI {
             if (Objects.nonNull(lastLocationObservation)) {
                 LocationObservationDTO locationDto = LocationObservationDTO.getDTOFromModel(lastLocationObservation);
                 facilityGetDTO.setLastPosition(locationDto);
+                facilityGetDTO.setGeometry(locationDto.getGeojson());
             }
         }
 
@@ -318,6 +338,10 @@ public class FacilityAPI {
 
         List<LocationObservationModel> locations = new ArrayList<>();
 
+        if (dto.getGeometry() != null) {
+            throw new BadRequestException("`geometry` is a compatibility field and cannot be used to update a facility location. " +
+                    "Please use Move events to update the facility location.");
+        }
         if (Objects.nonNull(dto.getLocations())) {
             locations = dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList());
         }
@@ -383,4 +407,5 @@ public class FacilityAPI {
         }
         return filter;
     }
+
 }

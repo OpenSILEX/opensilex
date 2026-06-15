@@ -1,5 +1,6 @@
 package org.opensilex.core.location.dal;
 
+import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 
 import java.net.URI;
@@ -9,9 +10,13 @@ import java.util.List;
 public class LocationObservationSearchFilter extends MongoSearchFilter {
     private List<URI> observationCollectionList;
     private URI observationCollection;
+    private URI featureOfInterest;
     private Instant startDate;
     private Instant endDate;
-    private boolean hasGeometry;
+    private Boolean hasGeometry;
+    private Geometry intersection;
+    private URI to;
+    private List<URI> moveUris;
 
     public List<URI> getObservationCollectionList() {
         return observationCollectionList;
@@ -27,6 +32,14 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
 
     public void setObservationCollection(URI observationCollection) {
         this.observationCollection = observationCollection;
+    }
+
+    public URI getFeatureOfInterest() {
+        return featureOfInterest;
+    }
+
+    public void setFeatureOfInterest(URI featureOfInterest) {
+        this.featureOfInterest = featureOfInterest;
     }
 
     public Instant getStartDate() {
@@ -46,10 +59,37 @@ public class LocationObservationSearchFilter extends MongoSearchFilter {
     }
 
     public boolean isHasGeometry() {
+        if(hasGeometry == null){
+            return false;
+        }
         return hasGeometry;
     }
 
     public void setHasGeometry(boolean hasGeometry) {
         this.hasGeometry = hasGeometry;
+    }
+
+    public Geometry getIntersection() {
+        return intersection;
+    }
+
+    public void setIntersection(Geometry intersection) {
+        this.intersection = intersection;
+    }
+
+    public URI getTo() {
+        return to;
+    }
+
+    public void setTo(URI to) {
+        this.to = to;
+    }
+
+    public List<URI> getMoveUris() {
+        return moveUris;
+    }
+
+    public void setMoveUris(List<URI> moveUris) {
+        this.moveUris = moveUris;
     }
 }

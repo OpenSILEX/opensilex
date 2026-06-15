@@ -376,10 +376,11 @@ public class EventAPI {
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
             MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+            logic.fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(dtoList);
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
             models = logic.create(models, false);
 
-            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
+            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
@@ -461,7 +462,7 @@ public class EventAPI {
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
+        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null);
 
         return buildCsvResponse(csvImporter, logic, false).getResponse();
     }
@@ -480,7 +481,7 @@ public class EventAPI {
 
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
+        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null);
         return buildCsvResponse(csvImporter, logic, true).getResponse();
     }
 
@@ -502,6 +503,7 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        logic.assertNoDeprecatedPropertiesIsFilled(dto);
         MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
         logic.updateModel(model);
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();

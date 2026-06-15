@@ -10,14 +10,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.geojson.Geometry;
-import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.XSD;
+import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
+import org.geojson.Point;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.*;
@@ -33,6 +34,8 @@ import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.event.api.move.MoveCreationDTO;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -44,6 +47,10 @@ import org.opensilex.core.experiment.factors.api.FactorsAPITest;
 import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.bll.LocationLogic;
+import org.opensilex.core.location.dal.LocationObservationCollectionModel;
+import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
@@ -77,14 +84,15 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  * @author Vincent MIGOT
@@ -99,16 +107,32 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
     public static final String searchPath = path + "/";
+    public static final String searchWithGeometryPath = path + "/geometry";
 
 
 
     public static final ServiceDescription create;
+    public static final ServiceDescription update;
+    public static final ServiceDescription getDetail;
+    public static final ServiceDescription searchWithGeometry;
 
     static {
         try {
             create = new ServiceDescription(
                     ScientificObjectAPI.class.getMethod("createScientificObject", ScientificObjectCreationDTO.class),
                     createPath
+            );
+            update = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("updateScientificObject", ScientificObjectUpdateDTO.class),
+                    updatePath
+            );
+            getDetail = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("getScientificObjectDetail", URI.class, URI.class),
+                    uriPath
+            );
+            searchWithGeometry = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("searchScientificObjectsWithGeometryListByUris", URI.class, String.class, String.class),
+                    searchWithGeometryPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -166,6 +190,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Arrays.asList(
+                EventModel.class,
+                LocationObservationCollectionModel.class,
                 ScientificObjectModel.class,
                 VariableModel.class,
                 FactorModel.class,
@@ -175,6 +201,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Override
     protected List<String> getCollectionsToClearNames() {
         return Arrays.asList(
+                LocationObservationDAO.LOCATION_COLLECTION_NAME,
                 GeospatialDAO.GEOSPATIAL_COLLECTION_NAME,
                 DataDAO.DATA_COLLECTION_NAME,
                 DataDAO.FILE_COLLECTION_NAME,
@@ -186,6 +213,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();
 
         if (withGeometry) {
+            //We need a bunch of other dtos for this
+            MoveCreationDTO moveCreationDTO = new MoveCreationDTO();
+            LocationObservationDTO locationObservationDTO = new LocationObservationDTO();
+
             List<Position> list = new LinkedList<>();
             list.add(new Position(3.97167246, 43.61328981));
             list.add(new Position(3.97171243, 43.61332417));
@@ -193,8 +224,14 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             list.add(new Position(3.97170272, 43.61327122));
             list.add(new Position(3.97167246, 43.61328981));
             list.add(new Position(3.97167246, 43.61328981));
+
             Geometry geometry = new Polygon(list);
-            dto.setGeometry(geometryToGeoJson(geometry));
+            Instant endInstant = Instant.now();
+            locationObservationDTO.setEndDate(endInstant);
+            locationObservationDTO.setGeojson(LocationLogic.geometryToGeoJson(geometry));
+            moveCreationDTO.setLocation(locationObservationDTO);
+            moveCreationDTO.setEnd(endInstant.toString());
+            dto.setMove(moveCreationDTO);
         }
 
         dto.setName("SO " + soCount++);
@@ -210,6 +247,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             List<RDFObjectRelationDTO> relationList = new ArrayList<>();
             relationList.add(germplasmRelation);
             dto.setRelations(relationList);
+        } else {
+            dto.setRelations(new ArrayList<>());
         }
 
         return dto;
@@ -462,8 +501,18 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         // update the so
         soDTO.setUri(extractUriFromResponse(postResult));
         soDTO.setName("new alias");
+
+        //All the stuff needed to update geospat info
+        //THERE IS NO UPDATING OF GEO FOR OS's FOR NOW
+        /*LocationObservationDTO locationObservationDTO = new LocationObservationDTO();
+        MoveCreationDTO moveCreationDTO = new MoveCreationDTO();
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
-        soDTO.setGeometry(geometryToGeoJson(geometry));
+        Instant endInstant = Instant.now();
+        locationObservationDTO.setEndDate(endInstant);
+        locationObservationDTO.setGeojson(LocationLogic.geometryToGeoJson(geometry));
+        moveCreationDTO.setLocation(locationObservationDTO);
+        moveCreationDTO.setEnd(endInstant.toString());
+        soDTO.setMove(moveCreationDTO);*/
 
         final Response updateResult = getJsonPutResponse(target(updatePath), soDTO);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -480,7 +529,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         // check that the object has been updated
         assertEquals(soDTO.getName(), dtoFromApi.getName());
         assertEquals(soDTO.getType(), new URI(SPARQLDeserializers.getExpandedURI(dtoFromApi.getType())));
-        assertEquals(soDTO.getGeometry().toString(), dtoFromApi.getGeometry().toString());
+        /*assertEquals(
+                LocationLogic.geoJsonToGeometry(soDTO.getMove().getLocation().getGeojson()).toString(),
+                LocationLogic.geoJsonToGeometry(dtoFromApi.getLocation().getGeojson()).toString()
+        );*/
     }
 
     @Test
@@ -504,10 +556,16 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         getDeleteByUriTarget = getDeleteByUriTarget.queryParam("experiment", experiment.toString());
 
         try(final Response delResult = appendAdminToken(getDeleteByUriTarget).delete()){
-            assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
-
             final Response getResult = getResponse(uri);
-            assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+            //If there was a geometry then a move was created at same time, so deleting should fail unless we first deleted the move
+            if(!withGeometry){
+                assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
+                assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+            }else{
+                assertNotEquals(Status.OK.getStatusCode(), delResult.getStatus());
+                assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+            }
+
         }
 
     }
@@ -1237,7 +1295,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         //build params
         ArrayList<URI> propsList= new ArrayList<>();
-        propsList.add(new URI(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.getURI())));
         propsList.add(new URI("vocabulary:hasFactorLevel"));
         propsList.add(new URI("vocabulary:hasGermplasm"));
         propsList.add(new URI("vocabulary:hasReplication"));
@@ -1263,4 +1320,86 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         final Response resultGJson =  getOctetPostResponseAsAdmin(appendQueryParams(target(exportGeospatialPath),paramsGJson),objectsList);
         assertEquals(Status.OK.getStatusCode(), resultGJson.getStatus());
     }
+
+    //#region Compatibility test - old geometry and isHosted model
+    @Test
+    public void testCompatibilityCreateWithOldGeometry() throws Exception {
+        var dto = getCreationDTO(false);
+        dto.setGeometry(new Point(49, 3));
+
+        var uri = new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        var details = new UserCallBuilder(getDetail)
+                .setUriInPath(uri)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        assertEquals(
+                new Point(49, 3),
+                ((Feature) details.getLocation().getGeojson()).getGeometry()
+        );
+    }
+
+    @Test
+    public void testCompatibilityCreateWithOldAndNewGeometryShouldFail() throws Exception {
+        var dto = getCreationDTO(true);
+        dto.setGeometry(new Point(49, 3));
+
+        new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void testCompatibilityUpdateWithOldGeometryShouldFail() throws Exception {
+        var dto = getCreationDTO(false);
+
+        var uri = new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var updateDto = getCreationDTO(false);
+        updateDto.setUri(uri);
+        updateDto.setName("New name");
+        updateDto.setGeometry(new Point(49, 3));
+
+        new UserCallBuilder(update)
+                .setBody(updateDto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void testCompatibilityGetWithGeometry() throws Exception {
+        var dto = getCreationDTO(false);
+        var moveDto = new MoveCreationDTO();
+        var locationObservationDto = new LocationObservationDTO();
+        locationObservationDto.setGeojson(new Point(49, 3));
+        locationObservationDto.setEndDate(Instant.now());
+        moveDto.setLocation(locationObservationDto);
+        moveDto.setEnd(locationObservationDto.getEndDate().toString());
+        dto.setMove(moveDto);
+
+        var uri = new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var details = new UserCallBuilder(getDetail)
+                .setUriInPath(uri)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {
+                })
+                .getDeserializedResponse()
+                .getResult();
+        assertEquals(
+                new Point(49, 3),
+                ((Feature) details.getGeometry()).getGeometry());
+    }
+    //#endregion
 }

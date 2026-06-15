@@ -18,6 +18,9 @@ import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupModel;
+
 import java.net.URI;
 import java.util.List;
 
@@ -158,7 +161,21 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     public static final String WEBSITE_VAR = "website";
 
     @SPARQLIgnore
-    private MetaDataModel metadata;
+    private GermplasmMetadataModel metadata;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPublic"
+    )
+    protected Boolean isPublic;
+    public static final String IS_PUBLIC_FIELD = "isPublic";
+
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "hasGroup"
+    )
+    List<GroupModel> groups;
+    public static final String GROUP_USER_FIELD = "groups";
 
     public SPARQLLabel getLabel() {
         return label;
@@ -180,6 +197,14 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
             label = new SPARQLLabel();
         }
         label.setDefaultValue(name);
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+
     }
 
     public GermplasmModel getSpecies() {
@@ -205,6 +230,13 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     public void setAccession(GermplasmModel accession) {
         this.accession = accession;
     }
+
+
+    public List<GroupModel> getGroups() {
+        return this.groups;
+    }
+    public void setGroups(List<GroupModel> groups) {
+        this.groups = groups;    }
     
     public String getComment() {
         return comment;
@@ -231,11 +263,11 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     }
 
 
-    public MetaDataModel getMetadata() {
+    public GermplasmMetadataModel getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(MetaDataModel metadata) {
+    public void setMetadata(GermplasmMetadataModel metadata) {
         this.metadata = metadata;
     }
 

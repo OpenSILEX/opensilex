@@ -1,0 +1,6 @@
+uri,type,rdfs:label,vocabulary:someTestProperty,rdfs:comment
+column_description,column_description,column_description,column_description,column_description
+test:id/csv_import_os_sample1,vocabulary:Population,Sample1Renamed,,lala
+test:id/csv_import_os_sample2,vocabulary:Sample,Sample2Renamed,,
+test:id/csv_import_os_sample3,vocabulary:Population,Sample3Renamed,777,chacha
+test:id/csv_import_os_sample4,vocabulary:Sample,Sample4Renamed,,

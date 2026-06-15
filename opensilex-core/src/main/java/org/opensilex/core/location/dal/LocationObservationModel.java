@@ -20,6 +20,15 @@ public class LocationObservationModel extends MongoModel {
     public static final String HAS_GEOMETRY_FIELD = "hasGeometry";
     private boolean hasGeometry;
     private LocationModel location;
+    private URI experimentUri;
+
+    public static final String LOCATION_TO_FIELD = "location.to";
+    public static final String GEOMETRY_FIELD = "location.geometry";
+
+    //TODO temporary link to a move, delete this if we ever get rid of moves
+    public static final String MOVE_URI_FIELD = "moveUri";
+    private URI moveUri;
+
 
     @Override
     @BsonId
@@ -73,6 +82,22 @@ public class LocationObservationModel extends MongoModel {
 
     public void setLocation(LocationModel location) {
         this.location = location;
+    }
+
+    public URI getMoveUri() {
+        return moveUri;
+    }
+
+    public void setMoveUri(URI moveUri) {
+        this.moveUri = moveUri;
+    }
+
+    public URI getExperimentUri() {
+        return experimentUri;
+    }
+
+    public void setExperimentUri(URI experimentUri) {
+        this.experimentUri = experimentUri;
     }
 
     @Override

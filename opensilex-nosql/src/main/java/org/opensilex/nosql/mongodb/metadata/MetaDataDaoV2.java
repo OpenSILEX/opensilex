@@ -21,14 +21,14 @@ import static org.opensilex.nosql.mongodb.MongoModel.MONGO_ID_FIELD;
  * @author mhart
  * Dao used to handle {@link MetaDataModel}
  */
-public class MetaDataDaoV2 extends MongoReadWriteDao<MetaDataModel, MetadataSearchFilter> {
+public class MetaDataDaoV2<M extends MetaDataModel> extends MongoReadWriteDao<M, MetadataSearchFilter> {
 
-    public MetaDataDaoV2(MongoDBServiceV2 mongodb, String collectionName) {
-        super(mongodb, MetaDataModel.class, collectionName, collectionName);
+    public MetaDataDaoV2(MongoDBServiceV2 mongodb, Class<M> modelClass, String collectionName) {
+        super(mongodb, modelClass, collectionName, collectionName);
     }
 
-    public MetaDataDaoV2(MongoDBService mongodb, String collectionName) {
-        this(mongodb.getServiceV2(), collectionName);
+    public MetaDataDaoV2(MongoDBService mongodb, Class<M> modelClass, String collectionName) {
+        this(mongodb.getServiceV2(), modelClass, collectionName);
     }
 
     public static Map<Bson, IndexOptions> getIndexes() {
@@ -76,17 +76,17 @@ public class MetaDataDaoV2 extends MongoReadWriteDao<MetaDataModel, MetadataSear
      * @param <T>        Type of {@link SPARQLResourceModel} for which we want to set {@link MetaDataModel}
      */
     public <T extends SPARQLResourceModel> void getMetaDataAssociatedTo(Collection<T> models,
-                                                                        BiConsumer<T, MetaDataModel> consumer) {
+                                                                        BiConsumer<T, M> consumer) {
 
         // store metadataModels by their URi to easily associate them with the model having the same URI
-        Map<String, MetaDataModel> metadatas = new HashMap<>();
+        Map<String, M> metadatas = new HashMap<>();
 
         findByUris(models.stream().
                 map(SPARQLResourceModel::getUri), models.size()
         ).forEach(metadata -> metadatas.put(SPARQLDeserializers.getShortURI(metadata.getUri()), metadata));
 
         models.forEach(model -> {
-            MetaDataModel metadata = metadatas.get(SPARQLDeserializers.getShortURI(model.getUri()));
+            M metadata = metadatas.get(SPARQLDeserializers.getShortURI(model.getUri()));
             if (metadata != null) {
                 consumer.accept(model, metadata);
             }
@@ -94,11 +94,33 @@ public class MetaDataDaoV2 extends MongoReadWriteDao<MetaDataModel, MetadataSear
     }
 
     /**
+     * @param filter Optional filter, for example to manage access rights. If null, all documents will be retrieved
+     *
      * @return each unique attribute key from the MetaDataModel collection
      */
-    public Set<String> getDistinctKeys() {
+    public Set<String> getDistinctKeys(Bson filter) {
+        /*
+        Generated aggregation :
+          [
+            { $match: <filter> },
+            {
+              $project: {
+                computed_attributes: {
+                  $objectToArray: '$attributes'
+                }
+              }
+            },
+            { $unwind: '$computed_attributes' },
+            { $group: { _id: '$computed_attributes.k' } }
+          ]
+         */
 
         List<Bson> aggregatePipeline = new ArrayList<>();
+
+        // 0. match - Filter out documents, for example to manage access rights
+        if (filter != null) {
+            aggregatePipeline.add(Aggregates.match(filter));
+        }
 
         // 1.project/computed - Transform document to multiple array elements
         // Each item in array has k (original document key) and v (original document value) fields

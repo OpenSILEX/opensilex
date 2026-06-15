@@ -11,7 +11,9 @@ import com.google.common.io.Files;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.CountOptions;
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -56,6 +58,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
@@ -88,8 +91,12 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opensilex.server.response.ObjectUriResponse;
+import java.io.InputStream;
+import org.apache.commons.io.FilenameUtils;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
 import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
@@ -112,6 +119,12 @@ public class DataFilesAPI {
 
     private static final Set<String> THUMBNAIL_EXTENSIONS = Set.of("png", "jpg", "gif", "bmp", "jpeg", "PNG", "JPG", "GIF", "BMP");
     private static final Set<String> TIFF_EXTENSIONS = Set.of("tiff", "tif");
+    private static final Set<String> DX_EXTENSIONS = Set.of("dx", "jdx", "DX", "JDX");
+
+
+
+    public static final Integer DATAFILE_MAX_SIZE = 104857600;
+    public static final String DATAFILE_MAX_SIZE_ERROR_MESSAGE = "Empty or too large file size:  0 MB < filesize < 100 MB";
 
 
     @Inject
@@ -155,6 +168,15 @@ public class DataFilesAPI {
     ) throws Exception {
         
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+
+        if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
+            return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "Bad file",
+                    DATAFILE_MAX_SIZE_ERROR_MESSAGE
+            ).getResponse();
+        }
+
         try {
             validDataFileDescription(Arrays.asList(dto));
             DataFileModel model = dto.newModel();
@@ -290,10 +312,46 @@ public class DataFilesAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response countDatafiles(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") List<URI> target,
-        @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
+            @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+    ) throws  Exception {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
-        DataFileSearchFilter filter = new DataFileSearchFilter().setDevices(device).setTargets(target).setUser(user);
+
+        DataFileSearchFilter filter = null;
+
+        try{
+            filter = this.createDataFileSearchFilter(
+                    name,
+                    rdfType,
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    target,
+                    device,
+                    provenances,
+                    metadata,
+                    null,
+                    null,
+                    null
+            );
+        }
+        catch(DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
+        }
+        catch(IllegalArgumentException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
+                    .getResponse();
+        }
+
         long countResult = dao.count(filter);
 
         return new SingleObjectResponse<>(countResult).getResponse();
@@ -417,11 +475,11 @@ public class DataFilesAPI {
             DataFileModel description = dao.get(uri);
 
             // Determine extension from file name (#TODO Determine the file type with TIKA and store it inside database) instead of relying on file name/extension
-            String fileExt = Files.getFileExtension(description.getFilename());
+            String fileExt = com.google.common.io.Files.getFileExtension(description.getFilename());
 
             // Non handled file type
-            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt)){
-                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
+            if(! THUMBNAIL_EXTENSIONS.contains(fileExt) && ! TIFF_EXTENSIONS.contains(fileExt) && ! DX_EXTENSIONS.contains(fileExt)){
+                final Set<String> everyExtensions  = Stream.of(THUMBNAIL_EXTENSIONS, TIFF_EXTENSIONS, DX_EXTENSIONS).flatMap(Set::stream).collect(Collectors.toSet());
                 return new BadRequestException("the file is not an image with a valid extension in the following list: " + everyExtensions).getResponse();
             }
 
@@ -432,6 +490,11 @@ public class DataFilesAPI {
                 image = convertTIFFToPNG(image);
             }
 
+            // Handle DX : convert to PNG
+            if(DX_EXTENSIONS.contains(fileExt)){
+                image = DXFileConverter.getInstance().convertDXToImage(image);
+            }
+
             return resizeImageAndGetResponse(image, description.getFilename(), scaledWidth, scaledHeight);
 
         } catch (NoSQLInvalidURIException e) {
@@ -440,6 +503,7 @@ public class DataFilesAPI {
             return new UnexpectedErrorException(e).getResponse();
         }
     }
+
 
     private Response resizeImageAndGetResponse(byte[] convertedImage, String fileName, Integer scaledWidth, Integer scaledHeight) throws IOException {
         byte[] resizedImage = ImageResizer.getInstance().resize(
@@ -536,7 +600,21 @@ public class DataFilesAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return  searchDataFiles(name, rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+        return  searchDataFiles(
+                name,
+                rdfType,
+                startDate,
+                endDate,
+                timezone,
+                experiments,
+                targets,
+                devices,
+                provenances,
+                metadata,
+                orderByList,
+                page,
+                pageSize
+        );
     }
 
     private Response searchDataFiles(
@@ -557,77 +635,49 @@ public class DataFilesAPI {
     ) throws Exception {
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
+        DataFileSearchFilter filter = null;
 
-        if (startDate != null) {
-            try  {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+        try{
+            filter = this.createDataFileSearchFilter(
+                    name,
+                    rdfType,
+                    startDate,
+                    endDate,
+                    timezone,
+                    experiments,
+                    targets,
+                    devices,
+                    provenances,
+                    metadata,
+                    orderByList,
+                    page,
+                    pageSize
+            );
         }
-
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (DateValidationException e) {
-                return new DateMappingExceptionResponse().toResponse(e);
-            }
+        catch(DateValidationException e){
+            return new DateMappingExceptionResponse().toResponse(e);
         }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-                        .getResponse();
-            }
+        catch(IllegalArgumentException e){
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
+                    .getResponse();
         }
-
-        Set<URI> rdfTypes = new HashSet<>();
-
-        if (rdfType != null) {
-            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
-            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
-            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
-            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType)));
-        }
-
-        DataFileSearchFilter filter = new DataFileSearchFilter()
-                .setName(name)
-                .setUser(user)
-                .setExperiments(experiments)
-                .setTargets(targets)
-                .setProvenances(provenances)
-                .setDevices(devices)
-                .setStartDate(startInstant)
-                .setEndDate(endInstant)
-                .setMetadata(metadataFilter);
-
-        filter.setRdfTypes(rdfTypes);
-        filter.setOrderByList(orderByList);
-        filter.setPage(page);
-        filter.setPageSize(pageSize);
 
         //Map of publisher uris to lists of DataFileGetDTOs to optimize setting of publisher information
         Map<URI, List<DataFileGetDTO>> publishersToDataFiles = new HashMap<>();
-        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(
-                new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
-                        .setFilter(filter)
-                        .setConvertFunction(model -> {
-                            DataFileGetDTO next = DataFileGetDTO.fromModel(model);
-                            if (Objects.nonNull(model.getPublisher())) {
-                                List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
-                                publishersDataFiles.add(next);
-                                publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
-                            }
-                            return next;
-                        })
-                        .setPaginationStrategy(PaginatedSearchStrategy.COUNT_QUERY_BEFORE_SEARCH)
-        );
+        MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO> query = new MongoSearchQuery<DataFileModel, DataFileSearchFilter, DataFileGetDTO>()
+                .setFilter(filter)
+                .setConvertFunction(model -> {
+                    DataFileGetDTO nextDto = DataFileGetDTO.fromModel(model);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        List<DataFileGetDTO> publishersDataFiles = publishersToDataFiles.getOrDefault(model.getPublisher(), new ArrayList<>());
+                        publishersDataFiles.add(nextDto);
+                        publishersToDataFiles.put(model.getPublisher(), publishersDataFiles);
+                    }
+                    return nextDto;
+                })
+                .setPaginationStrategy(PaginatedSearchStrategy.HAS_NEXT_PAGE);
+
+        ListWithPagination<DataFileGetDTO> results = dao.searchWithPagination(query);
         //Fetch all the publishers in one call
         new AccountDAO(sparql).getList(new ArrayList<>(publishersToDataFiles.keySet())).forEach(
                 accountModel -> publishersToDataFiles.get(accountModel.getUri()).forEach(
@@ -774,4 +824,359 @@ public class DataFilesAPI {
         }
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
+    /**
+     * this function creates a DataFileSearchFilter that is used by the search and count services.
+     */
+    private DataFileSearchFilter createDataFileSearchFilter(
+            String name,
+            URI rdfType,
+            String startDate,
+            String endDate,
+            String timezone,
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> devices,
+            List<URI> provenances,
+            String metadata,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize
+    ) throws DateValidationException, IllegalArgumentException, SPARQLException {
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+        }
+
+        if (endDate != null) {
+            endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("METADATA_PARAM_ERROR");
+            }
+        }
+
+        Set<URI> rdfTypes = new HashSet<>();
+
+        if (rdfType != null) {
+            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
+            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
+            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
+            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType)));
+        }
+
+        DataFileSearchFilter filter = new DataFileSearchFilter()
+                .setName(name)
+                .setUser(user)
+                .setExperiments(experiments)
+                .setTargets(targets)
+                .setProvenances(provenances)
+                .setDevices(devices)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setMetadata(metadataFilter);
+
+        if(!CollectionUtils.isEmpty(rdfTypes)){
+            filter.setRdfTypes(rdfTypes);
+        }
+        if(!CollectionUtils.isEmpty(orderByList)){
+            filter.setOrderByList(orderByList);
+        }
+        if(Objects.nonNull(page)){
+            filter.setPage(page);
+        }
+        if(Objects.nonNull(pageSize)){
+            filter.setPageSize(pageSize);
+        }
+
+        return filter;
+    }
+    
+    /**
+     * Parse and save the metadata of a DX file
+     *
+     */
+    @POST
+    @Path("upload-dx")
+    @ApiOperation(value = "Upload and parse DX file")
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = DataFileGetDTO.class)
+    })
+    public Response uploadAndParseDX(
+        @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+        @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
+        @FormDataParam("rdf_type") URI rdfType,
+        @FormDataParam("provenance") URI provenanceUri,
+        @FormDataParam("experiments") List<URI> experiments
+    ) throws IOException {
+
+            DXFileParser fileParser = new DXFileParser(fs);
+            DXMetadataParser metadataParser = new DXMetadataParser();
+            if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "Bad file",
+                        DATAFILE_MAX_SIZE_ERROR_MESSAGE
+                ).getResponse();
+            }
+                
+            try {
+                fileParser.parseDXfile(file.getAbsolutePath());
+                String baseUri = sparql.getBaseURI().toString();
+                List<Map<String, Object>> jsonDataList = metadataParser.parseDXFileForJSON(file.getAbsolutePath(), rdfType, provenanceUri, experiments, baseUri);
+        
+                // Returning the JSON data list as the response
+                return new SingleObjectResponse<>(jsonDataList).getResponse();
+            } catch (IOException e) {
+                return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+            }
+        }
+    
+    
+    /**
+     * Parse and save the metadata of a CSV spctra file
+     *
+     */
+    @POST
+    @Path("upload-spectra-csv")
+    @ApiOperation(value = "Upload and parse spectra CSV file")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = DataFileGetDTO.class)})
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response uploadAndParseSpectraCSV(
+        @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+        @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
+        @FormDataParam("rdf_type") URI rdfType,
+        @FormDataParam("provenance") URI provenanceUri,
+        @FormDataParam("experiment") List<URI> experiments) throws IOException {
+
+            SpectraCSVFileParser fileParser = new SpectraCSVFileParser(fs);
+            SpectraCSVMetadataParser metadataParser = new SpectraCSVMetadataParser();
+ 
+            if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "Bad file",
+                        DATAFILE_MAX_SIZE_ERROR_MESSAGE
+                ).getResponse();
+            }
+        
+        
+            try {
+                fileParser.parseCSVFile(file.getAbsolutePath());
+                String baseUri = sparql.getBaseURI().toString();
+                List<Map<String, Object>> jsonDataList = metadataParser.parseSpectraCSVFileForJSON(file.getAbsolutePath(), rdfType, provenanceUri, experiments, baseUri);
+        
+                // Returning the JSON data list as the response
+                return new SingleObjectResponse<>(jsonDataList).getResponse();
+            } catch (IOException | com.opencsv.exceptions.CsvException e) {
+                return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
+
+            }
+        }
+
+
+    /**
+     * Returns the content of the file corresponding to the URI given.
+     *
+     * @param uris
+     * @param response
+     * @return The file content or null with a 404 status if it doesn't exists
+     */
+    @ApiProtected
+    @POST
+    @Path("export-spectra-files")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportSpectraFiles(
+        @ApiParam(value = "Export format DX file, TSV file, CSV file if available", allowableValues = "dx, tsv, csv", defaultValue = "tsv") @QueryParam("format") String format,
+        @ApiParam(value = "URI datafiles") List<URI> uris,
+        @ApiParam(value = "Include average line", defaultValue = "false") @QueryParam("includeAverage") boolean includeAverage,
+        @ApiParam(value = "Include datetime column", defaultValue = "false") @QueryParam("includeSampleDatetime") boolean includeSampleDatetime,
+        @Context HttpServletResponse response
+        ) throws Exception {
+            StringBuilder combinedContent = new StringBuilder();
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            String firstFileExtension = null;
+            boolean isFirstFile = true;
+            List<String> firstFileHeader = null;
+
+            // Loop through all the selected file URIs provided by the user. 
+            // For each file, we check that all files have the same extension and that the requested export format is compatible.
+            // For CSV files, ensure that the first few columns of the header match across all files.
+            // This ensures that all selected files can be safely combined into a single export file.
+            for (URI uri : uris) {
+                try {
+                    DataFileModel description = dao.get(uri);
+                    java.nio.file.Path filePath = Paths.get(description.getPath());
+
+                    String fileExtension = FilenameUtils.getExtension(filePath.getFileName().toString());
+                    if (firstFileExtension == null) {
+                        firstFileExtension = fileExtension;  
+                    } else if (!firstFileExtension.equals(fileExtension)) {
+                        throw new IllegalArgumentException("All files must have the same extension. Mismatch found: " + filePath);
+                    }
+
+                    // DX files can be exported to DX or TSV
+                    if (fileExtension.equalsIgnoreCase("dx") || fileExtension.equalsIgnoreCase("jdx")) {
+                        if (!(format.equalsIgnoreCase("dx") || format.equalsIgnoreCase("tsv"))) {
+                            throw new IllegalArgumentException("DX files can only be exported to DX or TSV: " + filePath);
+                        }
+                    }
+
+                    // CSV files can only be exported to CSV
+                    else if (fileExtension.equalsIgnoreCase("csv")) {
+                        if (!format.equalsIgnoreCase("csv")) {
+                            throw new IllegalArgumentException("CSV files can only be exported to CSV: " + filePath);
+                        }
+                    }
+
+                    // Any other format cannot be converted to TSV
+                    else {
+                        if (format.equalsIgnoreCase("tsv")) {
+                            throw new IllegalArgumentException("Only DX files can be converted to TSV: " + filePath);
+                        }
+                    }
+            
+                    String fileContent = fs.readFile(FS_FILE_PREFIX, filePath);
+
+                    //processing for csv files to keep only the first header 
+                    if (fileExtension.equals("csv")) {
+                        List<String> lines = Arrays.asList(fileContent.split("\n"));
+                        // Only compare the first 5 columns of the header, as only these are guaranteed to be common across files
+                        List<String> currentFileHeader = Arrays.asList(lines.get(0).split(",")).subList(0, 5);
+
+                        if (isFirstFile) {
+                            firstFileHeader = currentFileHeader;
+                            combinedContent.append(fileContent).append("\n");  
+                        } else {
+                            if (!currentFileHeader.equals(firstFileHeader)) {
+                                throw new IllegalArgumentException("File headers are not compatible: " + filePath);
+                            }
+                            combinedContent.append(String.join("\n", lines.subList(1, lines.size()))).append("\n");
+                        }
+                        isFirstFile = false;
+                    } else {
+                        combinedContent.append(fileContent).append("\n");
+                    }
+                } catch (NoSQLInvalidURIException e) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Invalid URI: " + uri.toString())
+                            .build();
+                } catch (IOException e) {
+                    throw new NotFoundException("Datafile not found : " + uri.toString());
+                }
+            }
+
+            try {
+                java.nio.file.Path combinedFilePath = java.nio.file.Files.createTempFile("combined", ".dx");
+                java.nio.file.Files.write(combinedFilePath, combinedContent.toString().getBytes());        
+            
+                if ("dx".equalsIgnoreCase(format)) {
+                    fs.writeFile(FS_FILE_PREFIX, combinedFilePath, combinedContent.toString().getBytes(), null);
+                    File combinedFile = combinedFilePath.toFile();
+                    return Response.ok(combinedFile)
+                            .header("Content-Disposition", "attachment; filename=\"" + combinedFile.getName() + "\"")
+                            .build();
+                }
+
+                if ("csv".equalsIgnoreCase(format)) {
+                    java.nio.file.Path combinedFilePathCSV = java.nio.file.Files.createTempFile("combined", ".csv");
+                    java.nio.file.Files.write(combinedFilePathCSV, combinedContent.toString().getBytes());        
+                    fs.writeFile(FS_FILE_PREFIX, combinedFilePathCSV, combinedContent.toString().getBytes(), null);
+                    File combinedFile = combinedFilePathCSV.toFile();
+                    return Response.ok(combinedFile)
+                            .header("Content-Disposition", "attachment; filename=\"" + combinedFile.getName() + "\"")
+                            .build();
+                } 
+            
+                java.nio.file.Path outputFilePath = java.nio.file.Files.createTempFile("output", ".tsv");
+            
+                DXToTSVConverter converter = new DXToTSVConverter();
+                converter.convertDXFilesToTSV(combinedFilePath, outputFilePath, includeAverage, includeSampleDatetime);
+            
+                File outputFile = outputFilePath.toFile();
+                return Response.ok(outputFile)
+                        .header("Content-Disposition", "attachment; filename=\"" + outputFile.getName() + "\"")
+                        .build();
+            }  catch (IOException e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity("Error processing files: " + e.getMessage())
+                        .build();
+            }
+        }
+
+
+    /**
+     * Remove a datafile
+     * @param uri datafile uri
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted datafile {@link URI}
+     */
+    @DELETE
+    @Path("{uri}")
+    @ApiOperation("Delete a datafile")
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Datafile deleted", response = URI.class),
+        @ApiResponse(code = 404, message = "Datafile URI not found", response = ErrorResponse.class)
+    })
+    public Response deleteDatafile(
+            @ApiParam(value = "Datafile URI", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+
+        DataFileModel description = dao.get(uri);
+        java.nio.file.Path filePath = Paths.get(description.getPath());
+        fs.delete(FS_FILE_PREFIX, filePath);        
+        
+        nosql.getServiceV2().withSession(session -> {
+            dao.delete(session, uri);
+        });        
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+    /**
+     * Returns the filepath corresponding to the URI given.
+     * @return The filepath or null with a 404 status if it doesn't exist
+     */
+    @ApiProtected
+    @GET
+    @Path("{uri}/path")
+    @ApiOperation(value = "Get a datafile path")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Retrieve filepath", response = String.class),
+        @ApiResponse(code = 404, message = "uri not found", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatafilePath(
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        try {
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            DataFileModel description = dao.get(uri);
+
+            java.nio.file.Path filePath = Paths.get(description.getPath());
+            return new SingleObjectResponse<>(filePath).getResponse();
+            
+        } catch (NoSQLInvalidURIException e) {
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
+        }
+    }
 }
+

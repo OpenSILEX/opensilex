@@ -19,6 +19,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.opensilex.core.utils.StringURIsListDTO;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.bll.GermplasmLogic;
@@ -31,14 +32,22 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
-import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
+import org.opensilex.server.exceptions.multipleError.MultipleCreateUpdateErrorObject;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorListException;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorObject;
+import org.opensilex.server.exceptions.multipleError.MultipleErrorObjectList;
 import org.opensilex.server.response.*;
+import org.opensilex.server.response.multipleError.MultipleErrorResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -59,6 +68,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -119,35 +129,184 @@ public class GermplasmAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = URI.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 409, message = "A germplasm with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
 
     public Response createGermplasm(
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
-        GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
+        GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
+        model.setPublisher(currentUser.getUri());
 
         if (!checkOnly) {
 
             try {
                 GermplasmModel germplasm = germplasmBusiness.create(model);
                 return new CreatedUriResponse(germplasm.getUri()).getResponse();
-            } catch (DisplayableResponseException exception){
-                return exception.getResponse();
+            } catch ( WebApplicationException exception){
+                throw exception;
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }
 
         } else {
             //raise a Displayable Exception if the germplasm already exists or is incorrect
-            germplasmBusiness.checkBeforeCreateOrUpdate(model, false);
+            germplasmBusiness.checkBeforeCreateOrUpdate(Collections.singletonList(model), false);
             return new ObjectUriResponse().getResponse();
         }
 
     }
+
+    /**
+     *  create and/or update many germplasms if everything is correct, block everything if there is an error.
+     *  JSon validation id disabled to handle manually errors like uri format, it allows to return errors as multiple errors.
+     *  Errors are returned with the index of the germplasm in the list as key.
+     * @param germplasmDTOs
+     * @param checkOnly
+     * @return
+     * @throws Exception
+     */
+    @POST
+    @Path("import")
+    @ApiOperation("Add or update many germplasms")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "germplasms are created and/or updated", response = URI.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
+
+    public Response upsertGermplasms(
+            @ApiParam("List of germplasm description") List<GermplasmCreationDTO> germplasmDTOs,
+            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+    ) throws Exception {
+        GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
+        List<GermplasmModel> models;
+        MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> relationsErrors = null;
+
+        try {
+            models = getGermplasmModelsAndValidateRelations(germplasmDTOs);
+        } catch (InvalidValueException e) {
+            relationsErrors = new MultipleErrorObjectList<>("germplasms errors", new ArrayList<>(), MultipleCreateUpdateErrorObject::new);
+            models = getGermplasmModelWithoutRelationsAndCollectErrors(germplasmDTOs, relationsErrors);
+        }
+
+        if (!checkOnly) {
+
+            try {
+                List<GermplasmModel> germplasms = germplasmBusiness.upsert(models);
+                List<URI> uris = germplasms.stream().map(GermplasmModel::getUri).toList();
+                return new CreatedUriResponse(uris).getResponse();
+            } catch (MultipleErrorListException exception){
+                if (relationsErrors != null && relationsErrors.hasErrors()) {
+                    exception.getMultipleErrorObjectList().mergeErrors(relationsErrors);
+                }
+                return exception.getResponse();
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+
+        } else {
+            var multipleErrorObjectList = germplasmBusiness.checkBeforeCreateOrUpdate(models, true);
+
+            if (relationsErrors != null && relationsErrors.hasErrors()) {
+                multipleErrorObjectList.mergeErrors(relationsErrors);
+            }
+
+            if (multipleErrorObjectList.hasErrors()) {
+                return new MultipleErrorResponse(multipleErrorObjectList.toDTO()).getResponse();
+            }
+            return new ObjectUriResponse().getResponse();
+        }
+
+    }
+
+    /**
+     *  get models from DTOs and validate relations.
+     *  This method validates relations of each germplasmDTO. It would be better to validate relations in the business layer, but this would require refactoring.
+     * @throws MultipleErrorListException
+     */
+    private List<GermplasmModel> getGermplasmModelsAndValidateRelations(List<GermplasmCreationDTO> germplasmDTOs) throws SPARQLException {
+        //this object allow to catch all uri syntax error and return them all in once.
+        MultipleErrorObjectList<MultipleErrorObject, GermplasmCreationDTO> errors = new MultipleErrorObjectList<>(
+                "some uris cannot be parsed due to syntax error",
+                germplasmDTOs,
+                MultipleErrorObject::new
+        );
+
+        List<GermplasmModel> models = new ArrayList<>();
+        if (CollectionUtils.isEmpty(germplasmDTOs)) {
+            return models;
+        }
+
+        Map<URI, ClassModel> classModels = new HashMap<>();
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        //get every different types from DTOs
+        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getRdfType).distinct().toList();
+        for (URI type : germplasmsTypes) {
+            classModels.put(type, ontologyDAO.getClassModel(type, URI.create(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
+        }
+
+        for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
+            try {
+                models.add(germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getRdfType())));
+            } catch ( URISyntaxException e ) {
+                errors.addError(germplasmDTO, e.getMessage());
+            }
+        }
+
+        if (errors.hasErrors()) {
+            throw new MultipleErrorListException(errors.toDTO().title, errors);
+        }
+
+        return models;
+    }
+
+    /**
+     * This method is used to handle germplasms errors on relations. It would be better to handle relations in the business layer, but this would require refactoring.
+     * return germplasms. For germplasms with relations errors, we return the germplasm model without relations and collect errors in the errors list.
+     * This method fill the errors list with germplasm models and errors.
+     * @param errors should be initialized with an empty list of models. Models will be added to the list by this method.
+     * @return a list of germplasm models without relations.
+     */
+    private List<GermplasmModel> getGermplasmModelWithoutRelationsAndCollectErrors(List<GermplasmCreationDTO> germplasmDTOs, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws URISyntaxException, SPARQLException {
+        List<GermplasmModel> models = new ArrayList<>();
+        if (CollectionUtils.isEmpty(germplasmDTOs)) {
+            return models;
+        }
+
+        Map<URI, ClassModel> classModels = new HashMap<>();
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        //get every different types from DTOs
+        List<URI> germplasmsTypes = germplasmDTOs.stream().map(GermplasmCreationDTO::getRdfType).distinct().toList();
+        for (URI type : germplasmsTypes) {
+            classModels.put(type, ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), currentUser.getLanguage()));
+        }
+
+        for (GermplasmCreationDTO germplasmDTO : germplasmDTOs) {
+            GermplasmModel model = null;
+            try {
+                model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), classModels.get(germplasmDTO.getRdfType()));
+                errors.addModel(model);
+            } catch (InvalidValueException e){
+                model = germplasmDTO.newModelWithoutRelations();
+                errors.addModel(model);
+                errors.addError(model, e.getErrorMessage());
+            } finally {
+                models.add(model);
+            }
+        }
+
+        return models;
+
+    }
+
+
 
     /**
      *
@@ -200,6 +359,7 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
+
     public Response getGermplasmsByURI(
             @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
@@ -208,9 +368,13 @@ public class GermplasmAPI {
         filter.setLang(currentUser.getLanguage());
         filter.setUris(uris);
 
-        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser).search(filter,false, false).getList();
+        boolean isAdmin = currentUser.isAdmin();
 
-    if (!models.isEmpty()) {
+        List<GermplasmModel> models = new GermplasmLogic(sparql, nosql, currentUser)
+                .search(filter, false, false)
+                .getList();
+
+        if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
             models.forEach(result -> resultDTOList.add(GermplasmGetAllDTO.fromModel(result)));
 
@@ -224,6 +388,7 @@ public class GermplasmAPI {
             ).getResponse();
         }
     }
+
 
     /**
      *
@@ -310,24 +475,38 @@ public class GermplasmAPI {
     }
 
     /**
+     * Searches and returns a paginated list of germplasms based on various criteria.
+     * <p>
+     * Available filters include: URI, RDF type, name/synonyms, code, species,
+     * variety, accession, institute, related experiment, parents (A, B, or both),
+     * production year, group, metadata, and visibility (public/private).
+     * <br>
+     * Results can be sorted, paginated, and adapted to the language of the current user.
+     * </p>
      *
-     * @param uri
-     * @param type
-     * @param name
-     * @param code
-     * @param productionYear
-     * @param species
-     * @param variety
-     * @param accession
-     * @param institute
-     * @param experiment
-     * @param metadata
-     * @param orderByList
-     * @param page
-     * @param pageSize
-     * @return
-     * @throws Exception
+     * @param uri               regex filter on the germplasm URI
+     * @param type              RDF type of the germplasm
+     * @param name              regex on the name or synonyms
+     * @param code              regex on the internal code
+     * @param productionYear    production year
+     * @param species           species of the germplasm
+     * @param variety           variety of the germplasm
+     * @param accession         accession of the germplasm
+     * @param group             group related to the germplasm
+     * @param institute         associated institute or organization
+     * @param experiment        related experiment
+     * @param parentGermplasms  list of parent germplasms (A or B)
+     * @param parentGermplasmsM maternal parents (type A)
+     * @param parentGermplasmsF paternal parents (type B)
+     * @param metadata          associated metadata
+     * @param isPublic          visibility: public ({@code true}) or private ({@code false})
+     * @param orderByList       sorting criteria (e.g., "uri=asc", "name=desc")
+     * @param page              page number (≥ 0)
+     * @param pageSize          page size (≥ 0)
+     * @return an HTTP response containing a paginated list of {@link GermplasmGetAllDTO}
+     * @throws Exception if an error occurs during the search or data access
      */
+
     @GET
     @ApiOperation("Search germplasm")
     @ApiProtected
@@ -353,36 +532,54 @@ public class GermplasmAPI {
             @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_m") List<URI> parentGermplasmsM,
             @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_f") List<URI> parentGermplasmsF,
             @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search private(false) or public germplasm (true)") @QueryParam("is_public") Boolean isPublic,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-         GermplasmSearchFilter searchFilter = new GermplasmSearchFilter()
-                 .setUri(uri)
-                 .setType(type)
-                 .setName(name)
-                 .setSpecies(species)
-                 .setVariety(variety)
-                 .setAccession(accession)
-                 .setInstitute(institute)
-                 .setProductionYear(productionYear)
-                 .setExperiment(experiment)
-                 .setMetadata(metadata)
-                 .setGroup(group)
-                 .setParentGermplasms(parentGermplasms)
-                 .setParentMGermplasms(parentGermplasmsM)
-                 .setParentFGermplasms(parentGermplasmsF);
+        GermplasmSearchFilter searchFilter = new GermplasmSearchFilter()
+                .setUri(uri)
+                .setType(type)
+                .setName(name)
+                .setSpecies(species)
+                .setVariety(variety)
+                .setAccession(accession)
+                .setPublic(isPublic)
+                .setInstitute(institute)
+                .setProductionYear(productionYear)
+                .setExperiment(experiment)
+                .setMetadata(metadata)
+                .setGroup(group)
+                .setParentGermplasms(parentGermplasms)
+                .setParentMGermplasms(parentGermplasmsM)
+                .setParentFGermplasms(parentGermplasmsF)
+                .setUser(currentUser);
 
-         searchFilter.setOrderByList(orderByList)
-                 .setPage(page)
-                 .setPageSize(pageSize)
-                 .setLang(currentUser.getLanguage());
+        // get user groups
+        URI userURI = currentUser.getUri();
+        GroupDAO dao = new GroupDAO(sparql);
+        List<GroupModel> userGroups = dao.getUserGroups(userURI);
+
+        // extraction of URIs
+                List<URI> groupURIs = userGroups.stream()
+                        .map(GroupModel::getUri)
+                        .collect(Collectors.toList());
+
+        // inject into the filter
+        searchFilter.setGroups(groupURIs);
+
+
+        searchFilter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage());
 
         ListWithPagination<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,false, false);
+                .search(searchFilter, false, false);
 
-        // Convert paginated list to DTO
+
+        // Conversion DTO
         ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
                 GermplasmGetAllDTO.class,
                 GermplasmGetAllDTO::fromModel
@@ -390,6 +587,7 @@ public class GermplasmAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
 
     @POST
     @Path("export")
@@ -404,12 +602,13 @@ public class GermplasmAPI {
     public Response exportGermplasm(
             @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
+        searchFilter.setUser(currentUser);
         List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
-                .search(searchFilter,true, true).getList();
+                .search(searchFilter,false,false).getList();
 
         return buildCSV(resultList);
     }
-    
+
     private Response buildCSV(List<GermplasmModel> germplasmList) throws Exception {
         // Convert list to DTO
         //During this operation count the maximum number of occurrences of each duplicatable column
@@ -581,18 +780,20 @@ public class GermplasmAPI {
 
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Germplasm updated", response = URI.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Germplasm URI", response = ErrorResponse.class)})
+        @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
     public Response updateGermplasm(
             @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
     ) throws Exception {
         try {
-            GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
+            GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
             model = new GermplasmLogic(sparql, nosql, currentUser)
                     .update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
-            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", germplasmDTO.getUri());
+            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", URI.create(germplasmDTO.getUri()));
+        } catch (Exception e) {
+            throw e;
         }
     }
 
@@ -612,4 +813,26 @@ public class GermplasmAPI {
         new GermplasmLogic(sparql, nosql, currentUser).delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
+
+    /**
+     * Check if germplasms exist in the database, empty uris or not well-formed URIs are ignored.
+     */
+    @POST
+    @Path("check")
+    @ApiOperation("check germplasms exist")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return existant germplasm uris", response = URI.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
+    })
+    public Response checkGermplasmsExist(
+            @ApiParam(value = "list of uris to check for existence") StringURIsListDTO uris
+            ) throws Exception {
+        Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getExistingUrisFromString(uris.getUris());
+
+        return new PaginatedListResponse<>(new ArrayList<>(existantUris)).getResponse();
+    }
+
 }

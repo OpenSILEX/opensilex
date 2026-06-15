@@ -6,17 +6,16 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.location.api.LocationObservationDTO;
+import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
-import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  *
@@ -24,6 +23,10 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  */
 public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectModel> {
 
+    private LocationObservationDTO location;
+
+    @Deprecated
+    @ApiModelProperty("Object geometry. Depreciated : use location instead")
     private GeoJsonObject geometry;
 
     @JsonProperty("creation_date")
@@ -34,10 +37,20 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
     @ApiModelProperty(value = "Scientific object creation date")
     private LocalDate destructionDate;
 
+    public LocationObservationDTO getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationObservationDTO location) {
+        this.location = location;
+    }
+
+    @Deprecated
     public GeoJsonObject getGeometry() {
         return geometry;
     }
 
+    @Deprecated
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
     }
@@ -72,30 +85,13 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
         return dto;
     }
 
-    public static ScientificObjectNodeDTO getDTOFromModel(ScientificObjectModel model, Geometry geometryByURI) {
+    public static ScientificObjectNodeDTO getDTOFromModel(ScientificObjectModel model, LocationObservationModel location) {
         ScientificObjectNodeDTO dto = getDTOFromModel(model);
-        if (geometryByURI != null) {
-            try {
-                dto.setGeometry(geometryToGeoJson(geometryByURI));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+        if (Objects.nonNull(location)) {
+            dto.setLocation(LocationObservationDTO.getDTOFromModel(location));
+            dto.setGeometry(dto.getLocation().getGeojson());
         }
-        return dto;
-    }
 
-    public static ScientificObjectNodeDTO getDTOFromModel(GeospatialModel geospatialModel) {
-        ScientificObjectNodeDTO dto = new ScientificObjectNodeDTO();
-        if (geospatialModel != null) {
-            try {
-                dto.setType(geospatialModel.getRdfType());
-                dto.setUri(geospatialModel.getUri());
-                dto.setName(geospatialModel.getName());
-                dto.setGeometry(geometryToGeoJson(geospatialModel.getGeometry()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        }
         return dto;
     }
 }

@@ -20,6 +20,7 @@ stylesheets:
     - main.css
     - fix.css
     - hamburgers.css
+    - _helpMessage.scss
     
 fonts:
 

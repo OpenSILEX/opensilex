@@ -1,5 +1,6 @@
 .*
 .*/
+!/opensilex-doc/src/main/resources/*/.vitepress/
 !/.gitignore
 target/
 node_modules/
@@ -17,6 +18,11 @@ kotlin.log
 opensilex-main/dependency-reduced-pom.xml
 sonarqube_reports_log/*
 opensilex-front/front/src/opensilex.dev.ts
+owasp-dependency-check-logs
+site
+kotlin.log
+opensilex-main/dependency-reduced-pom.xml
+sonarqube_reports_log/*
 
 **/opensilex-brapi/dist
 **/opensilex-brapi/src/lib
@@ -44,5 +50,5 @@ opensilex-front/front/src/opensilex.dev.ts
 **/opensilex-front/types
 opensilex-front/front/src/opensilex.dev.ts
 
-**package-lock.json
-**yarn.lock
+**/.vitepress/dist/
+**/.vitepress/cache/

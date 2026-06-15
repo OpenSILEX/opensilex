@@ -26,23 +26,31 @@ import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchema;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaRootNode;
+import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensilex.core.experiment.dal.FundingModel;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -165,11 +173,24 @@ public class ExperimentDAO {
 
     }
 
-    public ListWithPagination<ExperimentModel> search(ExperimentSearchFilter filter) throws Exception {
+    /**
+     *
+     * @param filter search filter to use
+     * @param fetchProjects, if true then fetch projects associated to experiments, otherwise no extra request will be made.
+     * @param fetchScientificSupervisors, if true then fetch scientific supervisors, otherwise no extra request will be made.
+     * @param fetchTechnicalSupervisors, if true then fetch technical supervisors, otherwise no extra request will be made.
+     * @return list of experiments, with embedded fields loaded according to the used sparql schema
+     * @throws Exception
+     */
+    public ListWithPagination<ExperimentModel> search(
+            ExperimentSearchFilter filter,
+            boolean fetchProjects,
+            boolean fetchScientificSupervisors,
+            boolean fetchTechnicalSupervisors
+            ) throws Exception {
         LocalDate startDate;
         LocalDate endDate;
         if (filter.getYear() != null) {
-            String yearString = Integer.toString(filter.getYear());
             startDate = LocalDate.of(filter.getYear(), 1, 1);
             endDate = LocalDate.of(filter.getYear(), 12, 31);
         } else {
@@ -177,7 +198,9 @@ public class ExperimentDAO {
             endDate = null;
         }
 
-        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
+        SparqlSchema<ExperimentModel> schema = getSparqlSchema(fetchProjects, fetchScientificSupervisors, fetchTechnicalSupervisors);
+
+        ListWithPagination<ExperimentModel> xps = sparql.searchWithPaginationUsingSchema(
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
@@ -190,7 +213,10 @@ public class ExperimentDAO {
                     appendUserExperimentsFilter(select, filter.getUser());
                     appendPublicFilter(select, filter.isPublic());
                     appendFacilitiesFilter(select, filter.getFacilities());
+                    appendFundingFilter(select, filter.getFunding());
+
                 },
+                schema,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
@@ -198,6 +224,33 @@ public class ExperimentDAO {
 
         return xps;
 
+    }
+
+    private SparqlSchema<ExperimentModel> getSparqlSchema(boolean fetchProjects, boolean fetchScientificSupervisors, boolean fetchTechnicalSupervisors) throws SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+        List<SparqlSchemaSimpleNode<?>> childrenOfRoot = new ArrayList<>(List.of(
+                new SparqlSchemaSimpleNode<>(FundingModel.class, ExperimentModel.FUNDING_FIELD),
+                new SparqlSchemaSimpleNode<>(FacilityModel.class, ExperimentModel.FACILITY_FIELD),
+                new SparqlSchemaSimpleNode<>(SpeciesModel.class, ExperimentModel.SPECIES_FIELD)
+        ));
+        if(fetchProjects){
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(ProjectModel.class, ExperimentModel.PROJECT_URI_FIELD));
+        }
+        if(fetchScientificSupervisors){
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(PersonModel.class, ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD));
+        }
+        if(fetchTechnicalSupervisors){
+            childrenOfRoot.add(new SparqlSchemaSimpleNode<>(PersonModel.class, ExperimentModel.TECHNICAL_SUPERVISOR_FIELD));
+        }
+
+        SparqlSchemaRootNode<ExperimentModel> rootNode = new SparqlSchemaRootNode<>(
+                sparql,
+                ExperimentModel.class,
+                childrenOfRoot,
+                false
+        );
+
+        SparqlSchema<ExperimentModel> schema = new SparqlSchema<>(rootNode);
+        return schema;
     }
 
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
@@ -229,9 +282,19 @@ public class ExperimentDAO {
         }
     }
 
+    /**
+     * Applies the regex on any field we want to include, name and altLabel at the time of writing this.
+     *
+     * @param select , the Select request we are adding the filter to.
+     * @param name pattern to apply on name field and altLabel field.
+     */
     private void appendRegexLabelFilter(SelectBuilder select, String name) {
         if (!StringUtils.isEmpty(name)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name));
+            select.addFilter(
+                    SPARQLQueryHelper.or(
+                            SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name),
+                            SPARQLQueryHelper.regexFilter(ExperimentModel.ALTERNATIVE_NAME_FIELD_NAME, name)
+                    ));
         }
     }
 
@@ -286,7 +349,7 @@ public class ExperimentDAO {
     }
 
     private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
-        select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+        select.getWhereHandler().getClause().addTriplePattern(Triple.create(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
     private void appendGroupsListFilters(SelectBuilder select, boolean admin, Boolean isPublic, List<URI> groups) {
@@ -296,7 +359,7 @@ public class ExperimentDAO {
             return;
         }
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        Triple groupTriple = new Triple(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
+        Triple groupTriple = Triple.create(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
 
         if (CollectionUtils.isEmpty(groups) || (isPublic != null && isPublic)) {
             // get experiment without any group
@@ -333,6 +396,13 @@ public class ExperimentDAO {
         }
     }
 
+    private void appendFundingFilter(SelectBuilder select, List<URI> funding) throws Exception {
+        if (!CollectionUtils.isEmpty(funding)) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasFunding, ExperimentModel.FUNDING_FIELD);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FUNDING_FIELD, funding));
+        }
+    }
+
     public Set<URI> getUserExperiments(AccountModel user) throws Exception {
         String lang = user.getLanguage();
         Set<URI> userExperiments = new HashSet<>();
@@ -359,7 +429,7 @@ public class ExperimentDAO {
             appendUserExperimentsFilter(select, user); 
             Var uriVar = makeVar(ExperimentModel.URI_FIELD);
             Var endDateField = makeVar(ExperimentModel.END_DATE_FIELD);
-            Triple endDateTriple = new Triple(uriVar, Oeso.endDate.asNode(), endDateField);
+            Triple endDateTriple = Triple.create(uriVar, Oeso.endDate.asNode(), endDateField);
             select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(endDateTriple))); 
         });
 
@@ -381,26 +451,26 @@ public class ExperimentDAO {
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
 
         ElementGroup optionals = new ElementGroup();
-        optionals.addTriplePattern(new Triple(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
-        optionals.addTriplePattern(new Triple(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
-        optionals.addTriplePattern(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
+        optionals.addTriplePattern(Triple.create(uriVar, SecurityOntology.hasGroup.asNode(), groupVar));
+        optionals.addTriplePattern(Triple.create(groupVar, SecurityOntology.hasUserProfile.asNode(), userProfileVar));
+        optionals.addTriplePattern(Triple.create(userProfileVar, SecurityOntology.hasUser.asNode(), userVar));
         select.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
         Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
 
         Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
+        select.addOptional(Triple.create(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
         Expr hasScientificSupervisor = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
 
         Var technicalSupervisorVar = makeVar(ExperimentModel.TECHNICAL_SUPERVISOR_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
+        select.addOptional(Triple.create(uriVar, Oeso.hasTechnicalSupervisor.asNode(), technicalSupervisorVar));
         Expr hasTechnicalSupervisor = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
 
         Var isPublicVar = makeVar(ExperimentModel.IS_PUBLIC_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
+        select.addOptional(Triple.create(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
         Var publisherVar = makeVar(ExperimentModel.PUBLISHER_FIELD);
-        select.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
+        select.addOptional(Triple.create(uriVar, DCTerms.publisher.asNode(), publisherVar));
         Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
 
         select.addFilter(SPARQLQueryHelper.or(
@@ -725,6 +795,32 @@ public class ExperimentDAO {
         } catch (SPARQLException e) {
             LOGGER.error("Error while updating species of experiment " + experimentUri, e);
             sparql.rollbackTransaction();
+        }
+    }
+
+    public ListWithPagination<FundingModel> searchFunding(String stringPattern,
+                                                                 String lang,
+                                                                 List<OrderBy> orderByList,
+                                                                 Integer page,
+                                                                 Integer pageSize) throws Exception {
+
+        return sparql.searchWithPagination(
+                FundingModel.class,
+                lang,
+                selectBuilder -> {
+                    addFundingNameRegexFilter(selectBuilder, stringPattern);
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+
+    }
+
+    private void addFundingNameRegexFilter(SelectBuilder selectBuilder, String stringPattern) {
+        Expr regexFilter = SPARQLQueryHelper.regexFilter(FundingModel.NAME_FIELD, stringPattern);
+        if (regexFilter != null) {
+            selectBuilder.addFilter(regexFilter);
         }
     }
 }

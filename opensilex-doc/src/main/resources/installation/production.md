@@ -28,7 +28,7 @@
 
 # Using the ready to use Docker
 
-Before reading this document, you can check the [docker container for OpenSILEX ](https://forgemia.inra.fr/OpenSILEX/opensilex-docker-compose)
+Before reading this document, you can check the [docker container for OpenSILEX ](https://forge.inrae.fr/OpenSILEX/opensilex-docker-compose)
 This docker container allows you to install and configure OpenSILEX and all required databases (RDF4J and MongoDB) within only a few steps.
 
 If you prefer a fine tuned control on the installed databases or if you prefer a custom installation, you are at the right place !
@@ -43,13 +43,17 @@ The commands in this document should work on any Debian-like distribution (confi
 
 ## Java
 
-You need at least [Java JDK 11+](https://jdk.java.net/) installed on the server.
+You need at least [Java JRE 17+](https://jdk.java.net/) installed on the server.
 
-You can install it on Linux with the following command:
+On Linux, one or more JREs should be available to download using your distribution's package manager. For example,
+you can perform the following command on Ubuntu:
 
 ```bash
-sudo apt install openjdk-11-jdk openjdk-11-jre
+sudo apt install openjdk-17-jdk openjdk-17-jre
 ```
+
+An alternative method of installing Java is to use [SDKMAN!](https://sdkman.io/), which allows to easily switch version
+and distribution.
 
 You can check Java installation and version with the following command:
 
@@ -61,11 +65,11 @@ java --version
 
 Please follow MongoDB's official install documentation specific to your operating system.
 
-[Install MongoDB 4.2+](https://docs.mongodb.com/manual/installation/)
+[Install MongoDB 4.4+](https://docs.mongodb.com/manual/installation/)
 
 /!\ **CAUTION** /!\
 
-You must start a MongoDB Replica Set to allow transaction usage with MongoDB. This requires the use of a MongoDB server with a version >= 4.2.
+You must start a MongoDB Replica Set to allow transaction usage with MongoDB. This requires the use of a MongoDB server with a version >= 4.4.
 To do so you need to start the MongoDB daemon with the option `--replSet opensilex`. `opensilex` stands for your replica set name and can be modified at your own will.
 Look at this [documentation](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/#considerations-when-deploying-a-replica-set)
 for more information about replica set.
@@ -260,7 +264,7 @@ big-data:
       database: opensilex
 ```
 
-**N.B.** The ontologies OESO and OEEV are stored in [opensilex-core/src/main/resources/ontologies](https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-/tree/master/opensilex-core/src/main/resources/ontologies). Other specific ontologies can be stored in each module.
+**N.B.** The ontologies OESO and OEEV are stored in [opensilex-core/src/main/resources/ontologies](https://forge.inrae.fr/OpenSILEX/opensilex-dev/-/tree/master/opensilex-core/src/main/resources/ontologies). Other specific ontologies can be stored in each module.
 
 ### Configure logging
 

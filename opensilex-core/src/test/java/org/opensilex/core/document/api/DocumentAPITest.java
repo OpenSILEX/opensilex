@@ -9,15 +9,19 @@ package org.opensilex.core.document.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.opensilex.core.annotation.api.AnnotationAPI;
+import org.opensilex.core.annotation.api.AnnotationCreationDTO;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -55,16 +59,39 @@ import static org.opensilex.core.document.dal.DocumentDAO.FS_DOCUMENT_PREFIX;
  */
 public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/documents";
+    protected static String path = "/core/documents";
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     protected FileStorageService fs;
 
-    protected String uriPath = path + "/{uri}/description";
-    protected String getFilePath = path + "/{uri}";
-    protected String deletePath = path + "/{uri}";
+    protected static String uriPath = path + "/{uri}/description";
+    protected static String getFilePath = path + "/{uri}";
+    protected static String deletePath = path + "/{uri}";
+
+    public static final ServiceDescription getByUri;
+    public static final ServiceDescription create;
+    public static final ServiceDescription search;
+
+    static {
+        try {
+            getByUri = new ServiceDescription(
+                    DocumentAPI.class.getMethod("getDocumentMetadata", URI.class),
+                    getFilePath
+            );
+            create = new ServiceDescription(
+                    DocumentAPI.class.getMethod("createDocument", DocumentCreationDTO.class, File.class, FormDataContentDisposition.class),
+                    path
+            );
+            search = new ServiceDescription(
+                    DocumentAPI.class.getMethod("searchDocuments", URI.class, String.class, String.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
+                    path
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     FileStorageService getFs(){
 
@@ -442,6 +469,39 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         assertTrue(documentSearchList.stream().noneMatch(document ->
                 Objects.equals(SPARQLDeserializers.formatURI(document.getUri()), documentUri3)));
     }
+
+    /**
+     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
+     * final uri should be http://myuri/é
+     */
+    @Test
+    public void testUriEncoding() throws Exception {
+        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
+        URI decodedURI = URI.create("http://myuri/é");
+
+        DocumentCreationDTO creationDto = getCreationDTO();
+        creationDto.setUri(uriWithSpecialChar);
+        File file = tmpFolder.newFile("testFile.txt");
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write("test".getBytes());
+        }
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+        MultiPart multipart = new FormDataMultiPart().field("description", creationDto, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
+        URI createdURI = extractUriFromResponse(postResult);
+        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI), SPARQLDeserializers.compareURIs(decodedURI, createdURI));
+
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), decodedURI.toString());
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<DocumentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<DocumentGetDTO>>() {
+        });
+        DocumentGetDTO dtoFromApi = getResponse.getResult();
+        assertNotNull(dtoFromApi);
+        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()), SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
+    }
+
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

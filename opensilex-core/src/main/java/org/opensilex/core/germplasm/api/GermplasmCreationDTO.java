@@ -10,10 +10,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.germplasm.dal.GermplasmMetadataModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
-import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -34,9 +37,19 @@ import java.util.Map;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
-    "description", "species", "variety", "accession", "institute", "website", "relations", "metadata"})
-public class GermplasmCreationDTO extends RDFObjectDTO {
+    "description", "species","variety", "accession","institute", "website", "relations", "metadata","is_public","groups"}) // "variety", "accession",
+public class GermplasmCreationDTO {
 
+    @JsonProperty("uri")
+    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
+    protected String uri;
+
+    @JsonProperty("rdf_type")
+    @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot", required = true)
+    protected URI rdf_type;
+
+    @JsonProperty("relations")
+    protected List<RDFObjectRelationDTO> relations;
     
     /**
      * Germplasm label
@@ -98,28 +111,32 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
     @ApiModelProperty(value = "website")
     protected URI website;
 
-    @Override
-    @ValidURI
-    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
-    public URI getUri() {
+    @JsonProperty("is_public")
+    @ApiModelProperty(value = "boolean", example = "True")
+    protected Boolean isPublic = true;
+
+    @JsonProperty("groups")
+    @ApiModelProperty(value = "groups", example = "")
+    protected List<URI> groups = new ArrayList<>();
+
+    public String getUri() {
         return uri;
     }
 
-    public void setUri(URI uri) {
+    public void setUri(String uri) {
         this.uri = uri;
     }
 
-    @Override
-    @ValidURI
-    @NotNull
-    @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot", required = true)
-    public URI getType() {
-        return type;
+    @JsonProperty("rdf_type")
+    public URI getRdfType() {
+        return rdf_type;
     }
 
-    public void setRdfType(URI rdfType) {
-        super.setType(rdfType);
-    }
+    public void setRdfType(URI rdfType) {rdf_type = rdfType; }
+
+    public List<RDFObjectRelationDTO> getRelations() { return relations; }
+
+    public void setRelations(List<RDFObjectRelationDTO> relations) { this.relations = relations; }
 
     public String getName() {
         return name;
@@ -213,24 +230,57 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
         this.website = website;
     }
 
-    public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
-        GermplasmModel model = new GermplasmModel();
-        
-        if (uri != null) {
-            model.setUri(uri);
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+    public void setIsPublic(boolean isPublic) { this.isPublic = isPublic; }
+
+    public List<URI> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
+    }
+
+    /**
+     * WARNING: this method validate the properties of the GermplasmCreationDTO, that should be done in the business layer, but this would require refactoring.
+     */
+    public GermplasmModel newModel(SPARQLService sparql, String lang, ClassModel classModel) throws SPARQLException, URISyntaxException, InvalidValueException {
+        GermplasmModel model = newModelWithoutRelations();
+
+        if (isPublic != null) {
+            model.setIsPublic(isPublic);
         }
+
         if(relations != null){
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            if (classModel == null) {
+                classModel = ontologyDAO.getClassModel(rdf_type, new URI(Oeso.Germplasm.getURI()), lang);
+            }
             RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
         }
+
+        return model;
+    }
+
+    /**
+     * Create a new GermplasmModel and ignore relations (like germplasm parents)
+     */
+    public GermplasmModel newModelWithoutRelations() throws URISyntaxException {
+        GermplasmModel model = new GermplasmModel();
+
+        if (uri != null) {
+            model.setUri( new URI(uri));
+        }
+
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
-        if (type != null) {
-            model.setType(type);
+        if (rdf_type != null) {
+            model.setType(rdf_type);
         }
-        
+
         if (species != null) {
             GermplasmModel speciesModel = new GermplasmModel();
             speciesModel.setUri(this.species);
@@ -246,37 +296,44 @@ public class GermplasmCreationDTO extends RDFObjectDTO {
             accessionModel.setUri(this.accession);
             model.setAccession(accessionModel);
         }
-        
+
         if (institute != null) {
             model.setInstitute(institute);
         }
-        
+
         if (productionYear != null) {
             model.setProductionYear(productionYear);
         }
-        
+
         if (description != null) {
             model.setComment(description);
-        }        
-        
+        }
+
         if (metadata != null ) {
-           model.setMetadata(new MetaDataModel());
-           model.getMetadata().setAttributes(metadata);
+            model.setMetadata(new GermplasmMetadataModel());
+            model.getMetadata().setAttributes(metadata);
         }
 
         if (synonyms != null) {
             List<String> synonymsList = new ArrayList<>(synonyms.size());
             synonymsList.addAll(synonyms);
             model.setSynonyms(synonymsList);
-        }        
-        
+        }
+
         if (code != null) {
             model.setCode(code);
         }
-        
+
         if (website != null) {
-            model.setWebsite(website);                    
+            model.setWebsite(website);
         }
+        List<GroupModel> groupList = new ArrayList<>(groups.size());
+        groups.forEach((URI u) -> {
+            GroupModel group = new GroupModel();
+            group.setUri(u);
+            groupList.add(group);
+        });
+        model.setGroups(groupList);
 
         return model;
     }

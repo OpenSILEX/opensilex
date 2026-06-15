@@ -46,7 +46,6 @@ import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
-import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +57,7 @@ import org.slf4j.LoggerFactory;
 public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RDF4JServiceFactory.class);
+    private final static String TRIPLE_INDEXES = "spoc";
 
     private final Repository repository;
     private PoolingHttpClientConnectionManager cm;
@@ -174,16 +174,23 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
      * @return the rdf4j repository creation template file
      * @throws IOException if the file can't be read
      */
-    protected File getRepositoryCreationTemplateFile() throws IOException {
-        // Read repository configuration file located in jar
-        File rdf4jApiJar = ClassUtils.getJarFile(RepositoryConfig.class);
-        return ClassUtils.getFileFromJar(rdf4jApiJar, "org/eclipse/rdf4j/repository/config/native-shacl.ttl");
+    protected String readRepositoryCreationTemplateFile() throws IOException {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        try (InputStream is = classloader.getResourceAsStream("rdf4j-lmdb-repository-creation-template.ttl")) {
+            if (is == null) {
+                throw new IOException("Cannot find RDF4J repository creation template file");
+            }
+
+            return IOUtil.readString(new InputStreamReader(is, StandardCharsets.UTF_8));
+        } catch (Exception ex) {
+            throw new IOException("Error while reading RDF4J repository creation template file", ex);
+        }
     }
 
     /**
      *
      * @return a non-null {@link Map} which contains all repository custom properties and properties value.
-     * These settings override settings already present in the repository template file returned by {@link #getRepositoryCreationTemplateFile()}
+     * These settings override settings already present in the repository template file returned by {@link #readRepositoryCreationTemplateFile()}
      * @see <a href="https://rdf4j.org/documentation/tools/repository-configuration/"> RDF4J repository configuration </a>
      * @see <a href="https://rdf4j.org/documentation/reference/configuration/"> RDF4J repository configuration </a>
      */
@@ -191,7 +198,7 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
         Map<String,String> settings = new HashMap<>();
 
         // Go to https://rdf4j.org/documentation/reference/configuration/ and search 'Native store indexes' for more details
-        settings.put(TRIPLE_INDEXES_PARAMETER, "spoc,posc,opsc");
+        settings.put(TRIPLE_INDEXES_PARAMETER, TRIPLE_INDEXES);
 
         return settings;
     }
@@ -213,14 +220,8 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
             repositoryManager.init();
 
             // read the repository template file
-            File templateFile = getRepositoryCreationTemplateFile();
-            InputStream templateStream = new FileInputStream(templateFile);
-            String template;
-            try {
-                template = IOUtil.readString(new InputStreamReader(templateStream, StandardCharsets.UTF_8));
-            } finally {
-                templateStream.close();
-            }
+            String template = readRepositoryCreationTemplateFile();
+
             final ConfigTemplate configTemplate = new ConfigTemplate(template);
 
             final Map<String, String> repositorySettings = new HashMap<>();

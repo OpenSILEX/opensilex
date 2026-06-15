@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.germplasmGroup.api.GermplasmGroupApi;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SearchFilter;
 
 import java.net.URI;
@@ -43,6 +44,11 @@ public class GermplasmSearchFilter extends SearchFilter {
     private List<URI> parentMGermplasms;
 
     private List<URI> parentFGermplasms;
+
+    private Boolean isPublic;
+    private AccountModel user;
+
+    private List<URI> groups;
 
     @ApiModelProperty(value = "Regex pattern for filtering list by uri", example = GermplasmAPI.GERMPLASM_EXAMPLE_URI)
     public String getUri() {
@@ -199,6 +205,32 @@ public class GermplasmSearchFilter extends SearchFilter {
     public GermplasmSearchFilter setParentFGermplasms(List<URI> parentFGermplasms) {
         this.parentFGermplasms = parentFGermplasms;
         return this;
+    }
+
+
+
+    public Boolean isPublic() {
+        return isPublic;
+    }
+    public GermplasmSearchFilter setPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+        return this;
+    }
+    public AccountModel getUser() {
+        return user;
+    }
+
+    public GermplasmSearchFilter setUser(AccountModel user) {
+        this.user = user;
+        return this;
+    }
+
+    public List<URI> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<URI> groups) {
+        this.groups = groups;
     }
 
 }

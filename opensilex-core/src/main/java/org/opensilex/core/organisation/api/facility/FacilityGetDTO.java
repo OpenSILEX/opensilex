@@ -8,17 +8,19 @@ package org.opensilex.core.organisation.api.facility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.geojson.GeoJsonObject;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.location.api.LocationObservationDTO;
-import org.opensilex.core.location.dal.LocationObservationModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,8 +31,13 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups"})
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups","variables", "devices"})
 public class FacilityGetDTO extends FacilityDTO {
+    @JsonProperty("variables")
+    protected List<NamedResourceDTO<VariableModel>> variables;
+
+    @JsonProperty("devices")
+    protected List<DeviceGetDTO> devices;
 
     @JsonProperty("organizations")
     protected List<NamedResourceDTO<OrganizationModel>> organizations;
@@ -42,6 +49,10 @@ public class FacilityGetDTO extends FacilityDTO {
     protected List<NamedResourceDTO<VariablesGroupModel>> variablesGroups;
 
     protected LocationObservationDTO lastPosition;
+
+    @Deprecated
+    @ApiModelProperty("Object geometry. Depreciated : use lastPosition instead")
+    private GeoJsonObject geometry;
 
     @NotNull
     public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
@@ -68,6 +79,16 @@ public class FacilityGetDTO extends FacilityDTO {
         this.variablesGroups = variablesGroups;
     }
 
+    @Deprecated
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    @Deprecated
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
+    }
+
     @Override
     public void toModel(FacilityModel model) {
         super.toModel(model);
@@ -90,6 +111,16 @@ public class FacilityGetDTO extends FacilityDTO {
                 variablesGroupModels.add(groupModel);
             });
             model.setVariableGroups(variablesGroupModels);
+        }
+
+        if (Objects.nonNull(getVariables())) {
+            List<VariableModel> variableModels = new ArrayList<>();
+            getVariables().forEach(variable -> {
+                VariableModel variableModel = new VariableModel();
+                variableModel.setUri(variable.getUri());
+                variableModels.add(variableModel);
+            });
+            model.setVariables(variableModels);
         }
     }
 
@@ -117,6 +148,19 @@ public class FacilityGetDTO extends FacilityDTO {
                             (NamedResourceDTO<VariablesGroupModel>) NamedResourceDTO.getDTOFromModel(groupModel))
                     .collect(Collectors.toList()));
         }
+
+        if (Objects.nonNull(model.getVariables())) {
+            setVariables(model.getVariables().stream()
+                    .map(variableModel ->
+                            (NamedResourceDTO<VariableModel>) NamedResourceDTO.getDTOFromModel(variableModel))
+                    .collect(Collectors.toList()));
+        }
+
+        if(Objects.nonNull(model.getDevices())){
+            setDevices(model.getDevices().stream()
+                    .map(DeviceGetDTO::getDTOFromModel)
+                    .collect(Collectors.toList()));
+        }
     }
 
     public LocationObservationDTO getLastPosition() {
@@ -125,5 +169,21 @@ public class FacilityGetDTO extends FacilityDTO {
 
     public void setLastPosition(LocationObservationDTO lastPosition) {
         this.lastPosition = lastPosition;
+    }
+
+    public List<NamedResourceDTO<VariableModel>> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<NamedResourceDTO<VariableModel>> variables) {
+        this.variables = variables;
+    }
+
+    public void setDevices(List<DeviceGetDTO> devices) {
+        this.devices = devices;
+    }
+
+    public List<DeviceGetDTO> getDevices() {
+        return devices;
     }
 }

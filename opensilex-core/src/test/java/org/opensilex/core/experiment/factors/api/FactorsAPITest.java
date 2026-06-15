@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.factor.api.*;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
@@ -59,6 +60,11 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     public final ServiceDescription getFactorLevels = new ServiceDescription(
             FactorAPI.class.getMethod("getFactorLevels", URI.class),
             "/core/experiments/factors/{uri}/levels"
+    );
+
+    public final ServiceDescription search = new ServiceDescription(
+            FactorAPI.class.getMethod("searchFactors", String.class, String.class, URI.class, URI.class, List.class, int.class, int.class),
+            searchPath
     );
 
     private static int factorCount = 0;
@@ -263,7 +269,49 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         // System.out.println(list2.toString());
 
         assertTrue(!list2.isEmpty());
+    }
 
+    @Test
+    public void searchSortedByCategorie() throws Exception {
+        URI experimentURI = new UserCallBuilder(ExperimentAPITest.create)
+                .setBody(ExperimentAPITest.getCreationDTO())
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        FactorCreationDTO dto1WithCatB = getCreationDTO(experimentURI);
+        dto1WithCatB.setUri(URI.create("http://opensilex.org/factor1"));
+        dto1WithCatB.setCategory(URI.create("http://opensilex.org/categoryB"));
+
+        FactorCreationDTO dto2WithCatA = getCreationDTO(experimentURI);
+        dto2WithCatA.setUri(URI.create("http://opensilex.org/factor2"));
+        dto2WithCatA.setCategory(URI.create("http://opensilex.org/categoryA"));
+
+        new UserCallBuilder(create)
+                .setBody(dto1WithCatB)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.CREATED);
+        new UserCallBuilder(create)
+                .setBody(dto2WithCatA)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.CREATED);
+
+        List<FactorDetailsGetDTO> factorsSortedByCategoryAsc = new UserCallBuilder(search)
+                .addParam("order_by", "category=asc")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FactorDetailsGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        List<FactorDetailsGetDTO> factorsSortedByCategoryDesc = new UserCallBuilder(search)
+                .addParam("order_by", "category=desc")
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<FactorDetailsGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        assertEquals("search should have retrieved all factors", 2, factorsSortedByCategoryAsc.size());
+        assertEquals("first factor should be the one with category A when category sort with asc", "http://opensilex.org/categoryA", factorsSortedByCategoryAsc.get(0).getCategory().toString());
+        assertEquals("first factor should be the one with category B when category sort with desc", "http://opensilex.org/categoryB", factorsSortedByCategoryDesc.get(0).getCategory().toString());
     }
 
    

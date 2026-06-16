@@ -15,7 +15,7 @@
           checked
           v-model="selectedPeriodComputed"
         >
-        {{t('component.common.date-time-stuff.day')}}
+        {{t('component.common.date-time.day')}}
       </label>
 
       <!-- week -->
@@ -31,7 +31,7 @@
           value="week"
           v-model="selectedPeriodComputed"
         >
-        {{t('component.common.date-time-stuff.Week')}}
+        {{t('component.common.date-time.Week')}}
       </label>
 
       <!-- month -->
@@ -47,7 +47,7 @@
           value="month"
           v-model="selectedPeriodComputed"
         >
-        {{t('component.common.date-time-stuff.month')}}
+        {{t('component.common.date-time.month')}}
       </label>
 
       <!-- 6 month -->
@@ -63,7 +63,7 @@
           value="6month"
           v-model="selectedPeriodComputed"
         >
-        {{t('component.common.date-time-stuff.period-descriptions.6month')}}
+        {{t('component.common.date-time.period-descriptions.6month')}}
       </label>
     </div>
   </div>
@@ -113,11 +113,11 @@ const selectedPeriodComputed = computed({
 
 const periods = computed(() => {
   return [
-    { text: t("component.common.date-time-stuff.day"), value: 'day'},
-    { text: t("component.common.date-time-stuff.Week"), value: 'week'},
-    { text: t("component.common.date-time-stuff.month"), value: 'month'},
-    { text: t("component.common.date-time-stuff.period-descriptions.6month"), value: '6month'},
-    { text: t("component.common.date-time-stuff.year"), value: 'year'},
+    { text: t("component.common.date-time.day"), value: 'day'},
+    { text: t("component.common.date-time.Week"), value: 'week'},
+    { text: t("component.common.date-time.month"), value: 'month'},
+    { text: t("component.common.date-time.period-descriptions.6month"), value: '6month'},
+    { text: t("component.common.date-time.year"), value: 'year'},
   ];
 })
 //#endregion

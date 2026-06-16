@@ -76,7 +76,7 @@
           <n-form-item class="compact-form-item">
             <opensilex-DateTimeForm
               v-model:value="filter.start_date"
-              label="component.common.date-time-stuff.begin"
+              label="component.common.date-time.begin"
               :max-date="filter.end_date ? filter.end_date : undefined"
               class="searchFilter"
             />
@@ -86,7 +86,7 @@
           <n-form-item class="compact-form-item">
             <opensilex-DateTimeForm
               v-model:value="filter.end_date"
-              label="component.common.date-time-stuff.end"
+              label="component.common.date-time.end"
               :min-date="filter.start_date ? filter.start_date : undefined"
               class="searchFilter"
             />

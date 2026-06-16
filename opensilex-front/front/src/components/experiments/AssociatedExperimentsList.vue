@@ -107,8 +107,8 @@ const filter = computed<string>({
 const fields = [
   { key: 'name', label: 'component.common.name' },
   { key: 'species', label: 'component.common.species' },
-  { key: 'start_date', label: 'component.common.date-time-stuff.startDate', sortable: true },
-  { key: 'end_date', label: 'component.common.date-time-stuff.endDate', sortable: true },
+  { key: 'start_date', label: 'component.common.date-time.startDate', sortable: true },
+  { key: 'end_date', label: 'component.common.date-time.endDate', sortable: true },
   { key: 'state', label: 'component.common.state' }
 ] as const
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-Card
+    <Card
       :no-footer="true"
       :no-header="true"
       icon=""
@@ -19,7 +19,7 @@
                 class="variable-group-help"
                 v-b-tooltip.hover.top="t('component.variable.groupVariable.variable-group-help')"
               />
-              <opensilex-FormSelector
+              <FormSelector
                 id="variableGroupSelector"
                 v-model:selected="selectedVariableGroup"
                 :searchMethod="searchVariableGroups"
@@ -30,19 +30,19 @@
                 @onClose="loadVariables"
                 @select="loadVariables"
                 @handlingEnterKey="loadVariables"
-              ></opensilex-FormSelector>
+              ></FormSelector>
             </div>
           </div>
         </div>
       </template>
-    </opensilex-Card>
+    </Card>
 
-    <opensilex-TextView
+    <TextView
       v-if="isNoVariableFound"
       id="no-variable-text"
       :label="t('component.variable.no-enviromental-variable')"
     >
-    </opensilex-TextView>
+    </TextView>
 
     <!-- Grid layout for tiles -->
 
@@ -51,13 +51,14 @@
       <div v-for="item in layout"
            class="item col"
            :key="item.i">
-        <opensilex-VariableVisualizationTile
+        <VariableVisualizationTile
           class="tile-content"
-          v-bind="item.content"
+          :variableUri="item.content.variableUri"
+          :target="item.content.target"
           :defaultStartDate="startDate"
           :defaultEndDate="endDate"
         >
-        </opensilex-VariableVisualizationTile>
+        </VariableVisualizationTile>
       </div>
     </div>
 
@@ -78,6 +79,10 @@ import {computed, inject, onMounted, ref} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
 import { useI18n } from 'vue-i18n'
+import Card from "@/components/common/views/Card.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import TextView from "@/components/common/views/TextView.vue";
+import VariableVisualizationTile from "@/components/variables/views/VariableVisualizationTile.vue";
 
 //#region Constant values & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

@@ -41,7 +41,7 @@
                 "lastPosition": "Last position",
                 "positions": "Positions"
             },
-            "date-time-stuff": {
+            "date-time": {
                 "month": "Month",
                 "months": "months",
                 "day":"Day",
@@ -223,11 +223,11 @@
             "authors": "Authors",
             "fullscreen" : "Fullscreen",
             "change-viewing-mode": "Change viewing mode",
-            "graphsStuff": {
+            "graphs": {
                 "settings": "Graphic settings",
                 "display_by": "Display by",
                 "filter": "Filter selection",
-                "help": "Uncheck to use the bellow selector"
+                "help": "Uncheck to use the below selector"
             }
         },
         "copyToClipboard": {

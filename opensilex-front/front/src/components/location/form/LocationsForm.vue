@@ -173,8 +173,8 @@ watch(
 )
 
 const fields = computed(() => [
-  { key: 'startDate', label: t('component.common.date-time-stuff.begin'), sortable: true },
-  { key: 'endDate', label: t('component.common.date-time-stuff.end'), sortable: true },
+  { key: 'startDate', label: t('component.common.date-time.begin'), sortable: true },
+  { key: 'endDate', label: t('component.common.date-time.end'), sortable: true },
   { key: 'geometry', label: t('component.common.geometry.geometry-title') },
   { key: 'actions', label: t('component.common.actions') }
 ])
@@ -239,7 +239,7 @@ function validateDraftPosition(): boolean {
   // Si début saisi -> fin obligatoire
   if (hasStart && !hasEnd) {
     endDateError.value = t('validations.required_if', {
-      _field_: t('component.common.date-time-stuff.end') as string
+      _field_: t('component.common.date-time.end') as string
     }) as string
     return false
   }
@@ -247,7 +247,7 @@ function validateDraftPosition(): boolean {
   // Si géométrie saisie -> fin obligatoire
   if (hasGeometry && !hasEnd) {
     endDateError.value = t('validations.required_if', {
-      _field_: t('component.common.date-time-stuff.end') as string
+      _field_: t('component.common.date-time.end') as string
     }) as string
     return false
   }

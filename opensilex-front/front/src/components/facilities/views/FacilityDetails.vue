@@ -2,28 +2,28 @@
   <div class="row">
     <div class="col-md-6">
       <div class="facilityDescription">
-        <opensilex-FacilityDescription
+        <FacilityDescription
           :selected="selected"
           :withActions="true"
           @onUpdate="refresh"
         >
-        </opensilex-FacilityDescription>
+        </FacilityDescription>
 
-        <opensilex-AssociatedVariableList
+        <AssociatedVariableList
           v-if="selected"
           :variableList="selected.variables"
           :deviceList="selected.devices"
           :facilityUri="selected.uri"
-        ></opensilex-AssociatedVariableList>
+        ></AssociatedVariableList>
       </div>
     </div>
 
     <div class="col-md-6">
-      <opensilex-AssociatedExperimentsList
+      <AssociatedExperimentsList
         :searchMethod="loadExperiments"
         :nameFilter.sync="experimentName"
         ref="experimentsView"
-      ></opensilex-AssociatedExperimentsList>
+      ></AssociatedExperimentsList>
     </div>
   </div>
 </template>
@@ -41,6 +41,8 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AssociatedExperimentsList from "../../experiments/AssociatedExperimentsList.vue";
 import {computed, inject, onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
+import FacilityDescription from "@/components/facilities/views/FacilityDescription.vue";
+import AssociatedVariableList from "@/components/variables/AssociatedVariableList.vue";
 
 //#region constant values & Services
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>('$opensilex');

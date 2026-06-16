@@ -8,8 +8,8 @@
         <!-- Header -->
         <div class="modal-header">
           <h4 class="modal-title">
-            <opensilex-Icon icon="fa#cog" />
-            {{ t("component.common.graphsStuff.settings") }}
+            <Icon icon="fa#cog" />
+            {{ t("component.common.graphs.settings") }}
           </h4>
           <button type="button" class="btn-close" @click="hide"></button>
         </div>
@@ -17,16 +17,16 @@
         <!-- Body -->
         <div class="modal-body">
           <!-- Periods -->
-          <opensilex-DatePeriodPicker
+          <DatePeriodPicker
             ref="periodPicker"
             v-model:selectedPeriod="period"
             @update="updateDatePeriod"
           >
-          </opensilex-DatePeriodPicker>
+          </DatePeriodPicker>
 
           <!-- Devices Selection -->
           <div class="mb-3">
-            <label class="form-label">{{ t('component.common.graphsStuff.filter') }}:</label>
+            <label class="form-label">{{ t('component.common.graphs.filter') }}:</label>
             <div class="d-flex align-items-center">
               <input
                 type="checkbox"
@@ -38,7 +38,7 @@
               <font-awesome-icon
                 icon="question-circle"
                 class="ms-2 text-muted"
-                v-tooltip="t('component.common.graphsStuff.help')"
+                v-tooltip="t('component.common.graphs.help')"
               />
             </div>
           </div>
@@ -67,6 +67,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {inject, onMounted, ref} from "vue";
 import DatePeriodPicker, { Period } from "@/components/common/forms/DatePeriodPicker.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

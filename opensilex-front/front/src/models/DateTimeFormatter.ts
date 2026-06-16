@@ -184,12 +184,12 @@ export default class DateTimeFormatter {
         const isFr = locale.toLowerCase().startsWith('fr')
       
         // fallbacks (si i18n pas prêt)
-        const YEAR  = this.tr("component.common.date-time-stuff.year",  isFr ? "année"  : "year")
-        const YEARS = this.tr("component.common.date-time-stuff.years", isFr ? "années" : "years")
-        const MONTH  = this.tr("component.common.date-time-stuff.month",  isFr ? "mois" : "month")
-        const MONTHS = this.tr("component.common.date-time-stuff.months", isFr ? "mois" : "months")
-        const DAY  = this.tr("component.common.date-time-stuff.day",  isFr ? "jour"  : "day")
-        const DAYS = this.tr("component.common.date-time-stuff.days", isFr ? "jours" : "days")
+        const YEAR  = this.tr("component.common.date-time.year",  isFr ? "année"  : "year")
+        const YEARS = this.tr("component.common.date-time.years", isFr ? "années" : "years")
+        const MONTH  = this.tr("component.common.date-time.month",  isFr ? "mois" : "month")
+        const MONTHS = this.tr("component.common.date-time.months", isFr ? "mois" : "months")
+        const DAY  = this.tr("component.common.date-time.day",  isFr ? "jour"  : "day")
+        const DAYS = this.tr("component.common.date-time.days", isFr ? "jours" : "days")
       
         const periodStrings: string[] = []
       

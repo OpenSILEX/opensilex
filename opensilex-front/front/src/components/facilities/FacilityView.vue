@@ -1,14 +1,14 @@
 <template>
   <div v-if="uri" class="container-fluid">
-    <opensilex-PageHeader
+    <PageHeader
       icon="bi#bi-globe"
       :hasIcon="true"
       :title="name"
       description="component.facility.view.title"
       class= "detail-element-header"
-    ></opensilex-PageHeader>
+    ></PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
+    <PageActions :tabs="tabLabels" :returnButton="true" class="navigationTabs">
 
       <nav class="tabs mb-3">
         <router-link
@@ -21,32 +21,32 @@
           {{ tab.label }}
         </router-link>
       </nav>
-    </opensilex-PageActions>
+    </PageActions>
 
-    <opensilex-PageContent v-slot>
+    <PageContent v-slot>
 
-        <opensilex-FacilityDetails
+        <FacilityDetails
           v-if="currentTab === 'details'"
           :uri="uri"
-        ></opensilex-FacilityDetails>
+        ></FacilityDetails>
 
-        <opensilex-FacilityMonitoringView
+        <FacilityMonitoringView
           v-else-if="currentTab === 'overview'"
           :uri="uri"
-        ></opensilex-FacilityMonitoringView>
+        ></FacilityMonitoringView>
 
-        <opensilex-LocationList
+        <LocationList
           v-else-if="currentTab === 'positions'"
           :target="uri"
-        ></opensilex-LocationList>
+        ></LocationList>
 
-        <opensilex-DocumentTabList
+        <DocumentTabList
           v-else-if="currentTab === 'document'"
           :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
           :uri="uri"
-        ></opensilex-DocumentTabList>
+        ></DocumentTabList>
 
-        <opensilex-AnnotationList
+        <AnnotationList
           v-else-if="currentTab === 'annotations'"
           ref="annotationList"
           :target="uri"
@@ -54,9 +54,9 @@
           :enableActions="true"
           :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
           :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
-        ></opensilex-AnnotationList>
+        ></AnnotationList>
 
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -72,6 +72,13 @@
   import { useI18n } from 'vue-i18n'
   import {useStore} from "vuex";
   import AnnotationList from "@/components/annotations/list/AnnotationList.vue";
+  import PageHeader from "@/components/layout/PageHeader.vue";
+  import PageActions from "@/components/layout/PageActions.vue";
+  import PageContent from "@/components/layout/PageContent.vue";
+  import FacilityDetails from "@/components/facilities/views/FacilityDetails.vue";
+  import FacilityMonitoringView from "@/components/facilities/views/FacilityMonitoringView.vue";
+  import LocationList from "@/components/location/list/LocationList.vue";
+  import DocumentTabList from "@/components/documents/DocumentTabList.vue";
 
   //#region: Constant values & Services
   const $route = useRoute();
@@ -80,6 +87,14 @@
   const { t } = useI18n();
   const service: OrganizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
   const locationsService: LocationsService = $opensilex.getService<LocationsService>('opensilex.LocationsService');
+
+  const tabLabels = [
+    {label: t('FacilityView.details')},
+    {label: t('FacilityView.overview')},
+    {label: t('component.annotation.list-title')},
+    {label: t('FacilityView.document')},
+    {label: t('component.common.geometry.positions')}
+  ];
   //#endregion
 
   //#region: Value refs
@@ -135,6 +150,7 @@
   const credentials = computed(() => {
     return $store.state.credentials;
   });
+
 
   const tabs = computed(() => {
     if (!uri.value) return []

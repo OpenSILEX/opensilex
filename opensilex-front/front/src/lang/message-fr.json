@@ -41,7 +41,7 @@
                 "lastPosition": "Dernière position",
                 "positions": "Positions"
             },
-            "date-time-stuff": {
+            "date-time": {
                 "month": "mois",
                 "months": "mois",
                 "day":"jour",
@@ -224,7 +224,7 @@
             "authors": "Auteurs",
             "fullscreen" : "Plein ecran",
             "change-viewing-mode": "Changer de mode de vue",
-            "graphsStuff": {
+            "graphs": {
                 "settings": "Paramètres du graphique",
                 "display_by": "Afficher par",
                 "filter": "Filtrer la selection",

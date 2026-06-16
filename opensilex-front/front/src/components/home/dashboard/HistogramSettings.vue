@@ -7,7 +7,7 @@
         <div class="modal-header">
           <h4 class="modal-title">
             <opensilex-Icon icon="fa#cog" />
-            {{ t("component.common.graphsStuff.settings") }}
+            {{ t("component.common.graphs.settings") }}
           </h4>
           <button type="button" class="btn-close" @click="hide"></button>
         </div>
@@ -16,7 +16,7 @@
         <div class="modal-body">
           <!-- Periods -->
           <div class="mb-3">
-            <label class="form-label">{{ t('component.common.graphsStuff.display_by') }}:</label>
+            <label class="form-label">{{ t('component.common.graphs.display_by') }}:</label>
             <div class="btn-group w-100">
               <button
                 v-for="(period, index) in periods"
@@ -33,7 +33,7 @@
 
           <!-- Devices Selection -->
           <div class="mb-3">
-            <label class="form-label">{{ t('component.common.graphsStuff.filter') }}:</label>
+            <label class="form-label">{{ t('component.common.graphs.filter') }}:</label>
             <div class="d-flex align-items-center">
               <input 
                 type="checkbox" 
@@ -45,7 +45,7 @@
               <font-awesome-icon 
                 icon="question-circle" 
                 class="ms-2 text-muted"
-                v-tooltip="t('component.common.graphsStuff.help')"
+                v-tooltip="t('component.common.graphs.help')"
               />
             </div>
           </div>
@@ -104,10 +104,10 @@ const devicesToDisplay = ref<Array<{ label: string; id: string }>>([]);
 
 // Periods List
 const periods = computed(() => [
-  { text: t("component.common.date-time-stuff.day"), value: "day" },
-  { text: t("component.common.date-time-stuff.Week"), value: "week" },
-  { text: t("component.common.date-time-stuff.month"), value: "month" },
-  { text: t("component.common.date-time-stuff.year"), value: "year" },
+  { text: t("component.common.date-time.day"), value: "day" },
+  { text: t("component.common.date-time.Week"), value: "week" },
+  { text: t("component.common.date-time.month"), value: "month" },
+  { text: t("component.common.date-time.year"), value: "year" },
 ]);
 
 // Methods

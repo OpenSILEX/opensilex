@@ -97,23 +97,23 @@ import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui';
 
 // Props
 const props = defineProps<{
-  fields: any;
-  fieldKeyToSortableModelLabelMap?: Record<string, string>;
-  searchMethod: Function;
-  useQueryParams?: boolean;
-  defaultSortBy?: string;
-  defaultSortDesc?: boolean;
-  selectMode?: "multi" | "single";
-  labelNumberOfSelectedRow?: string;
-  iconNumberOfSelectedRow?: string;
-  maximumSelectedRows?: number;
-  selectAllLimit?: number;
-  defaultPageSize: number;
-  showCount: { type: Boolean, default: true },
-  isSelectable: { type: Boolean, default: false },
-  showHeaderCount: { type: Boolean, default: true },
-  allowOnlySelected: Boolean, // optionnel, par défaut false
-  showActions: Boolean, // pour bouton dropdown actions groupées
+  fields: any,
+  fieldKeyToSortableModelLabelMap?: Record<string, string>,
+  searchMethod: Function,
+  useQueryParams?: boolean,
+  defaultSortBy?: string,
+  defaultSortDesc?: boolean,
+  selectMode?: "multi" | "single",
+  labelNumberOfSelectedRow?: string,
+  iconNumberOfSelectedRow?: string,
+  maximumSelectedRows?: number,
+  selectAllLimit?: number,
+  defaultPageSize?: { type: number, default: 20 },
+  showCount?: { type: Boolean, default: true },
+  isSelectable?: { type: Boolean, default: false },
+  showHeaderCount?: { type: Boolean, default: true },
+  allowOnlySelected?: { type: Boolean, default: false }, // optionnel, par défaut false
+  showActions?: { type: Boolean, default: false }, // pour bouton dropdown actions groupées
 }>();
 
 //  Injections

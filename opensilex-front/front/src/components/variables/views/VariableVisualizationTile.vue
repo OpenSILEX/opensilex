@@ -64,7 +64,7 @@
             <!-- Period badge-->
             <n-tag v-if="period" round class="greenThemeColor">
               <opensilex-Icon icon="fa#hourglass-half"/>
-              {{ t("component.common.date-time-stuff.period-descriptions." + period) }}
+              {{ t("component.common.date-time.period-descriptions." + period) }}
             </n-tag>
 
             <!-- Graphic Options menu dropdown-->

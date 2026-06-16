@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     :label="label"
     :required="required"
     v-model:selected="organizationsURI"
@@ -21,6 +21,7 @@ import type { OrganizationsService } from 'opensilex-core/api/organizations.serv
 import type { OrganizationDagDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 const { t } = useI18n()
 

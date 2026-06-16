@@ -8,7 +8,7 @@
       class= "detail-element-header"
     ></PageHeader>
 
-    <PageActions :tabs="tabLabels" :returnButton="true" class="navigationTabs">
+    <PageActions :returnButton="true" class="navigationTabs">
 
       <nav class="tabs mb-3">
         <router-link

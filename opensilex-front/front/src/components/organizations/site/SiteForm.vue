@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- URI -->
-    <opensilex-UriForm
+    <UriForm
       v-model:uri="formState.uri"
       label="component.common.uri"
       helpMessage="component.common.uri-help-message"
@@ -10,7 +10,7 @@
     />
 
     <!-- Name -->
-    <opensilex-InputForm
+    <InputForm
       v-model:value="formState.name"
       label="component.common.name"
       type="text"
@@ -19,7 +19,7 @@
     />
 
     <!-- Description -->
-    <opensilex-InputForm
+    <InputForm
       v-model:value="formState.description"
       label="component.common.description"
       type="text"
@@ -27,23 +27,24 @@
     />
 
     <!-- Organizations -->
-    <opensilex-OrganizationSelector
+    <OrganizationSelector
       ref="organizationSelectorRef"
       :label="t('SiteForm.organizations')"
       v-model:organizations="formState.organizations"
       :multiple="true"
       :required="true"
+      checkStrategy="all"
     />
 
     <!-- Facilities -->
-    <opensilex-FacilitySelector
+    <FacilitySelector
       :label="t('SiteForm.facilities')"
       v-model:facilities="formState.facilities"
       :multiple="true"
     />
 
     <!-- Groups -->
-    <opensilex-GroupSelector
+    <GroupSelector
       :label="t('SiteForm.groups')"
       v-model:groups="formState.groups"
       :multiple="true"
@@ -66,7 +67,7 @@
 </div>
 
     <!-- Address -->
-    <opensilex-AddressForm v-if="hasAddress" v-model:address="formState.address" />
+    <AddressForm v-if="hasAddress" v-model:address="formState.address" />
   </div>
 </template>
 
@@ -79,6 +80,12 @@ import type { SiteCreationDTO } from 'opensilex-core/index'
 import type { SiteUpdateDTO } from 'opensilex-core/model/siteUpdateDTO'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse } from '@/lib/HttpResponse'
+import UriForm from "@/components/common/forms/UriForm.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import OrganizationSelector from "@/components/organizations/OrganizationSelector.vue";
+import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
+import GroupSelector from "@/components/groups/GroupSelector.vue";
+import AddressForm from "@/components/common/forms/AddressForm.vue";
 
 const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!

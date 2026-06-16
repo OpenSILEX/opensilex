@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- URI -->
-    <opensilex-UriForm
+    <UriForm
       v-model:uri="facility.uri"
       :label="t('FacilityForm.uri-label')"
       helpMessage="component.common.uri-help-message"
@@ -10,7 +10,7 @@
     />
 
     <!-- Type -->
-    <opensilex-TypeForm
+    <TypeForm
       v-if="baseType"
       v-model:type="facility.rdf_type"
       :baseType="baseType"
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Name -->
-    <opensilex-InputForm
+    <InputForm
       v-model:value="facility.name"
       label="component.common.name"
       type="text"
@@ -37,7 +37,7 @@
     </div>
 
     <!-- Description -->
-    <opensilex-TextAreaForm
+    <TextAreaForm
       v-model:value="facility.description"
       label="component.common.description"
       :placeholder="t('component.common.description')"
@@ -45,14 +45,14 @@
     />
 
     <!-- Group of variables -->
-    <opensilex-GroupVariablesSelector
+    <GroupVariablesSelector
       :label="t('component.variable.groupVariable.groupVariable')"
       v-model:variableGroup="facility.variableGroups"
       :multiple="true"
     />
 
     <!-- Custom properties -->
-    <opensilex-OntologyRelationsForm
+    <OntologyRelationsForm
       ref="ontologyRelationsFormRef"
       :rdfType="facility.rdf_type"
       :relations="facility.relations"
@@ -63,14 +63,14 @@
     <slot v-if="facility.rdf_type" :form="facility" />
 
     <!-- Organizations -->
-    <opensilex-OrganizationSelector
+    <OrganizationSelector
       label="component.experiment.organizations"
       v-model:organizations="facility.organizations"
       :multiple="true"
     />
 
     <!-- Site -->
-    <opensilex-SiteSelector
+    <SiteSelector
       label="component.common.organization.site"
       :multiple="true"
       v-model:siteURIs="facility.sites"
@@ -101,7 +101,7 @@
     </div>
 
     <!-- Address -->
-    <opensilex-AddressForm v-model:address="facility.address" />
+    <AddressForm v-model:address="facility.address" />
 
     <br />
   </div>
@@ -113,6 +113,14 @@ import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { FacilityCreationDTO } from 'opensilex-core/index'
 import type OntologyRelationsForm from '@/components/ontology/OntologyRelationsForm.vue'
+import UriForm from "@/components/common/forms/UriForm.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
+import GroupVariablesSelector from "@/components/groupVariable/GroupVariablesSelector.vue";
+import OrganizationSelector from "@/components/organizations/OrganizationSelector.vue";
+import SiteSelector from "@/components/organizations/site/SiteSelector.vue";
+import AddressForm from "@/components/common/forms/AddressForm.vue";
 
 function emptyFacilityForm(): FacilityCreationDTO {
   return {

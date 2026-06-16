@@ -55,7 +55,7 @@
               </span>
             </div>
 
-            <opensilex-StringView label="component.common.period" :value="period" />
+            <opensilex-StringView label="component.common.date-time.period" :value="period" />
             <opensilex-UriView :uri="project.uri" />
             <opensilex-StringView label="component.project.shortname" :value="project.shortname" />
             <opensilex-TextView

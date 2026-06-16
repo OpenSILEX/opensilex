@@ -1,136 +1,141 @@
 <template>
-  <opensilex-Card
+  <Card
     icon="bi-clipboard"
     :label="t('component.common.informations')"
     class="facilityDetailComponent"
     v-if="selected"
   >
     <template v-if="withActions" #rightHeader>
-      <opensilex-EditButton
+      <EditButton
         v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         @click="onClickEditButton()"
         label="component.facility.buttons.update"
         :small="true"
-      ></opensilex-EditButton>
-      <opensilex-DeleteButton
+      ></EditButton>
+      <DeleteButton
         v-if=" user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
         @click="onClickDeleteButton()"
         label="component.facility.buttons.delete"
         :small="true"
-      ></opensilex-DeleteButton>
-      <opensilex-FacilityModalForm
+      ></DeleteButton>
+      <FacilityModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         ref="organizationFacilityForm"
         @onUpdate="emit('update')"
-      ></opensilex-FacilityModalForm>
+      ></FacilityModalForm>
     </template>
 
     <template v-slot:body>
       <!-- URI -->
-      <opensilex-UriView
+      <UriView
         :uri="selected.uri"
         :value="selected.uri"
       >
-      </opensilex-UriView>
+      </UriView>
       <!-- Name -->
-      <opensilex-StringView
+      <StringView
         :value="selected.name"
         label="component.common.name"
-      ></opensilex-StringView>
+      ></StringView>
       <!-- Type -->
-      <opensilex-TypeView
+      <TypeView
         :type="selected.rdf_type"
         :typeLabel="selected.rdf_type_name"
-      ></opensilex-TypeView>
+      ></TypeView>
       <!-- Description -->
-      <opensilex-StringView
+      <StringView
         :value="selected.description"
         label="component.common.description"
-      ></opensilex-StringView>
+      ></StringView>
       <!-- Organisations -->
-      <opensilex-UriListView
+      <UriListView
         v-if="hasOrganizations"
         label="credential-groups.organizations"
         :list="organizationUriList"
         :inline="false"
+        :allowCopy="true"
       >
-      </opensilex-UriListView>
+      </UriListView>
 
       <!-- Site -->
-      <opensilex-UriListView
+      <UriListView
         v-if="hasSites"
         label="component.common.organization.site"
         :list="siteUriList"
         :inline="false"
+        :allowCopy="true"
       >
-      </opensilex-UriListView>
+      </UriListView>
 
       <!-- Experiments -->
-      <opensilex-UriListView
+      <UriListView
         v-if="hasExperiments"
         label="component.experiment.expsInProgress"
         :list="experimentUriList"
         :inline="false"
+        :allowCopy="true"
       >
-      </opensilex-UriListView>
+      </UriListView>
 
       <!-- VariableGroups -->
-      <opensilex-UriListView
+      <UriListView
         v-if="hasVariableGroups"
         label="component.variable.groupVariable.groupVariable"
         :list="variableGroupUriList"
         :inline="true"
+        :allowCopy="true"
       >
-      </opensilex-UriListView>
+      </UriListView>
 
       <!-- Devices -->
-      <opensilex-UriListView
+      <UriListView
         v-if="hasDevices"
         label="component.menu.devices"
         :list="deviceUriList"
         :inline="true"
+        :allowCopy="true"
       >
-      </opensilex-UriListView>
+      </UriListView>
 
       <!-- Address -->
-      <opensilex-AddressView
+      <AddressView
         v-if="selected.address"
-        :address="selected.address"
+        :address="addressViewFormattedAddress"
       >
-      </opensilex-AddressView>
+      </AddressView>
 
       <!--Last Position-->
-      <opensilex-StringView v-if="selected.lastPosition" label="component.common.geometry.lastPosition">
-        <!-- Position detail -->
+      <div v-if="selected.lastPosition">
+        <span :class="['field-view-title']">{{ t("component.common.geometry.lastPosition") }}</span>
         <div v-if="selected.lastPosition.endDate">
           <span>{{ new Date(selected.lastPosition.endDate).toLocaleString() }}</span>
         </div>
         <ul>
           <li>
-            <opensilex-GeometryCopy
+            <GeometryCopy
               label=""
               :value="selected.lastPosition.geojson">
-            </opensilex-GeometryCopy>
+            </GeometryCopy>
           </li>
         </ul>
-      </opensilex-StringView>
+      </div>
 
-      <opensilex-OntologyObjectProperties
+      <OntologyObjectProperties
         :selected="selected"
         :parentType="oeso.FACILITY_TYPE_URI"
         :relations="selected.relations"
       >
-      </opensilex-OntologyObjectProperties>
+      </OntologyObjectProperties>
 
       <!-- Metadata -->
-      <opensilex-MetadataView
+      <MetadataView
         v-if="selected.publisher && selected.publisher.uri"
         :publisher="selected.publisher"
         :publicationDate="selected.publication_date"
         :lastUpdatedDate="selected.last_updated_date"
-      ></opensilex-MetadataView>
+      ></MetadataView>
     </template>
-  </opensilex-Card>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -143,6 +148,17 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
+import Card from "@/components/common/views/Card.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import FacilityModalForm from "@/components/facilities/FacilityModalForm.vue";
+import UriView from "@/components/common/views/UriView.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import TypeView from "@/components/common/views/TypeView.vue";
+import UriListView from "@/components/common/views/UriListView.vue";
+import GeometryCopy from "@/components/common/views/GeometryCopy.vue";
+import AddressView from "@/components/common/views/AddressView.vue";
+import MetadataView from "@/components/common/views/MetadataView.vue";
 
 //#region: Constants
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
@@ -174,6 +190,8 @@ const organizationFacilityForm = ref();
 const oeso = computed(() => $opensilex.Oeso);
 const user = computed(() => $store.state.user);
 const credentials = computed(() => $store.state.credentials);
+
+const addressViewFormattedAddress = computed(() => {return {"readableAddress": props.selected.address.readableAddress}})
 
 const hasOrganizations = computed(() =>
   props.selected?.organizations?.length > 0

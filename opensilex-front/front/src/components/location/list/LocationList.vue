@@ -13,10 +13,10 @@
 
 <template>
   <div class="card">
-    <opensilex-PageContent>
+    <PageContent>
       <template v-slot>
         <div class="card-body">
-          <opensilex-TableAsyncView
+          <TableAsyncView
             ref="tableRef"
             :searchMethod="search"
             :fields="fields"
@@ -24,11 +24,11 @@
             :defaultSortDesc="true"
           >
             <template v-slot:cell(startDate)="{ data }">
-              <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+              <DateView :value="data.item.startDate"></DateView>
             </template>
 
             <template v-slot:cell(endDate)="{ data }">
-              <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+              <DateView :value="data.item.endDate"></DateView>
               <!-- Warning if the endDate is equal to 1970 == default date for facility geometry from migration-->
               <b-alert
                 v-if="data.item.endDate === DEFAULT_DATE"
@@ -41,14 +41,14 @@
             </template>
 
             <template v-slot:cell(geometry)="{data}">
-              <opensilex-GeometryCopy
+              <GeometryCopy
                 label="" :value="data.item.geojson">
-              </opensilex-GeometryCopy>
+              </GeometryCopy>
             </template>
-          </opensilex-TableAsyncView>
+          </TableAsyncView>
         </div>
       </template>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -56,6 +56,10 @@
 import {inject} from 'vue';
 import {LocationsService} from "opensilex-core/api/locations.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import PageContent from "@/components/layout/PageContent.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import DateView from "@/components/common/views/DateView.vue";
+import GeometryCopy from "@/components/common/views/GeometryCopy.vue";
 
 
 //#region Constant values and services
@@ -64,12 +68,12 @@ const locationsService: LocationsService = $opensilex.getService<LocationsServic
 const fields = [
   {
     key: "startDate",
-    label: "component.common.begin",
+    label: "component.common.date-time.begin",
     sortable: true,
   },
   {
     key: "endDate",
-    label: "component.common.end",
+    label: "component.common.date-time.end",
     sortable: true,
   },
   {

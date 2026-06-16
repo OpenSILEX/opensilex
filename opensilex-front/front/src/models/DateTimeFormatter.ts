@@ -74,7 +74,7 @@ export default class DateTimeFormatter {
             dateStyle: 'short',
             ...options
         };
-        const locale = this.$i18n.locale?.value || "en"; // fallback si probleme avec la locale
+        const locale = this.$i18n?.locale?.value || "en"; // fallback si probleme avec la locale
         return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
             .format(new Date(dateTimeValue));
     
@@ -93,9 +93,9 @@ export default class DateTimeFormatter {
             timeStyle: 'long',
             ...options
         };
-        // return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
+        // return new Intl.DateTimeFormat(this.$i18n?.t("dateTimeLocale").toString(), dateTimeFormatOptions)
         //     .format(new Date(dateTimeValue));
-        const locale = this.$i18n.locale?.value || "en";
+        const locale = this.$i18n?.locale?.value || "en";
         return new Intl.DateTimeFormat(locale, dateTimeFormatOptions)
         .format(new Date(dateTimeValue));
 
@@ -183,12 +183,12 @@ export default class DateTimeFormatter {
         const isFr = locale.toLowerCase().startsWith('fr')
       
         // fallbacks (si i18n pas prêt)
-        const YEAR  = this.tr("component.common.year",  isFr ? "année"  : "year")
-        const YEARS = this.tr("component.common.years", isFr ? "années" : "years")
-        const MONTH  = this.tr("component.common.month",  isFr ? "mois" : "month")
-        const MONTHS = this.tr("component.common.months", isFr ? "mois" : "months")
-        const DAY  = this.tr("component.common.day",  isFr ? "jour"  : "day")
-        const DAYS = this.tr("component.common.days", isFr ? "jours" : "days")
+        const YEAR  = this.tr("component.common.date-time.year",  isFr ? "année"  : "year")
+        const YEARS = this.tr("component.common.date-time.years", isFr ? "années" : "years")
+        const MONTH  = this.tr("component.common.date-time.month",  isFr ? "mois" : "month")
+        const MONTHS = this.tr("component.common.date-time.months", isFr ? "mois" : "months")
+        const DAY  = this.tr("component.common.date-time.day",  isFr ? "jour"  : "day")
+        const DAYS = this.tr("component.common.date-time.days", isFr ? "jours" : "days")
       
         const periodStrings: string[] = []
       

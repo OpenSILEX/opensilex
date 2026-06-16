@@ -88,7 +88,7 @@ const selectedIds = computed<string[] | string>({
 function mapTree(nodes: any[]): InputOpt[] {
   return (nodes || []).map((n: any) => ({
     id: n.id,
-    label: n.label,
+    label: n.label || n.id,
     children: mapTree(n.children || [])
   }))
 }

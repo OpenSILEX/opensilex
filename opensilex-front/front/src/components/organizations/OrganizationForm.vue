@@ -7,7 +7,7 @@
     :show-require-mark="true"
   >
     <!-- URI -->
-    <opensilex-UriForm
+    <UriForm
       v-model:uri="form.uri"
       :label="t('OrganizationForm.organization-uri')"
       helpMessage="component.common.uri-help-message"
@@ -17,7 +17,7 @@
 
     <!-- Name -->
     <n-form-item path="name" class="compact-form-item">
-      <opensilex-InputForm
+      <InputForm
         path="name"
         v-model:value="form.name"
         label="component.common.name"
@@ -29,17 +29,18 @@
 
     <!-- Type -->
     <n-form-item path="rdf_type" class="compact-form-item">
-      <opensilex-TypeForm
+      <TypeForm
         v-model:type="form.rdf_type"
         :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
         :ignoreRoot="false"
         :required="true"
+        :tree="true"
         :placeholder="t('OrganizationForm.form-type-placeholder')"
       />
     </n-form-item>
 
     <!-- Parents -->
-    <opensilex-FormSelector
+    <FormSelector
       v-if="parentOptionsReady"
       v-model:selected="form.parents"
       :options="parentOptions"
@@ -49,14 +50,14 @@
     />
 
     <!-- Groupes -->
-    <opensilex-GroupSelector
+    <GroupSelector
       v-model:groups="form.groups"
       :label="t('OrganizationForm.form-group-label')"
       :multiple="true"
     />
 
     <!-- Facilities -->
-    <opensilex-FacilitySelector
+    <FacilitySelector
       v-model:facilities="form.facilities"
       :label="t('OrganizationForm.form-facilities-label')"
       :multiple="true"
@@ -76,6 +77,12 @@ import type { OrganizationCreationDTO } from "opensilex-core/model/organizationC
 import type { OrganizationUpdateDTO } from "opensilex-core/model/organizationUpdateDTO";
 import { useI18n } from "vue-i18n";
 import { requiredTrimmed } from "../../models/FormFieldsFormatter";
+import UriForm from "@/components/common/forms/UriForm.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import GroupSelector from "@/components/groups/GroupSelector.vue";
+import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
 
 type OrganizationFormModel = OrganizationCreationDTO & {
   rdf_type_name?: string;

@@ -8,7 +8,10 @@
     role="dialog"
     aria-modal="true"
   >
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div
+      class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+      :class="'modal-' + modalSize"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <slot name="header"></slot>
@@ -35,6 +38,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+withDefaults(defineProps<{
+  modalSize?: 'sm' | 'lg' | 'xl';
+}>(), {
+  modalSize: 'lg'
+});
 
 const { t } = useI18n();
 

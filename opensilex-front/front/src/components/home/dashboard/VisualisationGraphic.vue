@@ -31,6 +31,9 @@ const props = defineProps<{
   lWidth?: boolean;
 }>();
 
+//Exposed
+defineExpose({reload, scatter, fullscreen, exportPNG});
+
 // Refs & Reactive Data
 const store = useStore();
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -247,17 +250,3 @@ onBeforeUnmount(() => {
 
 
 <style scoped lang="scss"></style>
-
-<i18n>
-fr:
-  VisualisationGraphic:
-    fullscreen : Plein ecran
-    download : Télecharger l'image
-    time : Time
-
-en:
-  VisualisationGraphic:  
-    fullscreen : Fullscreen
-    download : Download image
-    time : Temps
-</i18n>

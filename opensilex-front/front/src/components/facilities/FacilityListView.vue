@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-md-6">
         <!-- Facilities -->
-        <opensilex-FacilitiesView
+        <FacilitiesView
           :withActions="true"
           @onUpdate="refresh"
           @onCreate="refresh"
@@ -12,15 +12,15 @@
           ref="facilitiesView"
           @facilitySelected="onFacilitySelected"
           :displayButtonOnTop="true"
-        ></opensilex-FacilitiesView>
+        ></FacilitiesView>
       </div>
       <div class="col-md-6">
         <!-- Facility detail -->
-        <opensilex-FacilityDescription
+        <FacilityDescription
           :selected="selectedFacility"
           :experiments="experiments"
         >
-        </opensilex-FacilityDescription>
+        </FacilityDescription>
       </div>
     </div>
   </div>
@@ -37,6 +37,7 @@ import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {useStore} from "vuex";
+import FacilityDescription from "@/components/facilities/views/FacilityDescription.vue";
 
 //#region: Constants
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');

@@ -28,7 +28,7 @@
               class="user-select-none"
               @click="toggleSort('start_date')"
             >
-              {{ t("component.experiment.startDate") }}
+              {{ t("component.common.date-time.startDate") }}
               <span v-if="sortBy === 'start_date'">
                 {{ sortDir === "asc" ? "▲" : "▼" }}
               </span>

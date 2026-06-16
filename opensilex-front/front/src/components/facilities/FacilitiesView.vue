@@ -2,7 +2,7 @@
   <div>
     <!-- CreateButton position on top for FacilityListView -->
     <div class="spaced-actions" v-if="withActions">
-      <opensilex-CreateButton
+      <CreateButton
         v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         @click="facilityFormRef?.showCreateForm?.()"
         :label="t(createButtonLabel)"
@@ -17,7 +17,7 @@
 
           <!-- CreateButton position on card for OrganizationView -->
           <span v-if="!withActions">
-            <opensilex-CreateButton
+            <CreateButton
               v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
               @click="facilityFormRef?.showCreateForm?.()"
               :label="t(createButtonLabel)"
@@ -36,7 +36,7 @@
       </div>
 
       <!-- Facilities table -->
-      <opensilex-TableView
+      <TableView
         ref="tableViewRef"
         :items="displayableFacilities"
         :fields="fields"
@@ -48,7 +48,7 @@
         @row-clicked="onFacilitySelected"
       >
         <template #cell(name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :to="{ path: '/facility/details/' + encodeURIComponent(data.item.uri) }"
             :uri="data.item.uri"
             :value="data.item.name"
@@ -59,7 +59,7 @@
           v-if="fetchAndShowCurrentExperiments"
           #cell(experiment_count)="{ data }"
         >
-          <opensilex-ExperimentsModalList
+          <ExperimentsModalList
             :experiments="experimentByFacility[data.item.uri] || []"
             :currentFacility="data.item"
           />
@@ -71,13 +71,13 @@
 
         <template v-if="withActions" #cell(actions)="{ data }">
           <n-button-group size="small">
-            <opensilex-EditButton
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
               @click="editFacility(data.item)"
               :label="t('component.facility.buttons.update')"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_DELETE_ID)"
               @click="deleteFacility(data.item.uri)"
               :label="t('component.facility.buttons.delete')"
@@ -85,9 +85,9 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableView>
+      </TableView>
 
-      <opensilex-FacilityModalForm
+      <FacilityModalForm
         v-if="withActions && user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
         ref="facilityFormRef"
         @onCreate="onCreate"
@@ -117,6 +117,13 @@ import type {
 import type { ExperimentGetListDTO } from 'opensilex-core/model/experimentGetListDTO'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse } from '@/lib/HttpResponse'
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import TableView from "@/components/common/views/TableView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import ExperimentsModalList from "@/components/experiments/ExperimentsModalList.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import FacilityModalForm from "@/components/facilities/FacilityModalForm.vue";
 
 type FacilityModelWithExperimentCount = NamedResourceDTOFacilityModel & { experiment_count: number }
 

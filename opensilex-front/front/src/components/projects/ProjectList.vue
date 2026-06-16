@@ -106,7 +106,7 @@
             />
           </n-form-item>
 
-          <n-form-item :label="t('component.common.year')">
+          <n-form-item :label="t('component.common.date-time.year')">
             <n-input
               v-model:value="filter.year"
               clearable
@@ -303,8 +303,8 @@ const fields = computed(() => {
   const tableFields: any[] = [
     { key: 'name', label: 'component.common.name', sortable: true },
     { key: 'shortname', label: 'component.project.shortname', sortable: true },
-    { key: 'start_date', label: 'component.common.startDate', sortable: true },
-    { key: 'end_date', label: 'component.common.endDate', sortable: true },
+    { key: 'start_date', label: 'component.common.date-time.startDate', sortable: true },
+    { key: 'end_date', label: 'component.common.date-time.endDate', sortable: true },
     { key: 'financial_funding', label: 'component.project.financialFunding', sortable: true },
     { key: 'state', label: 'component.common.state' }
   ]

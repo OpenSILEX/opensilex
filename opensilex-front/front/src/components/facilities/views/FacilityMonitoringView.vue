@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-Card
+    <Card
       :no-footer="true"
       :no-header="true"
       icon=""
@@ -12,44 +12,37 @@
             <!-- Variable Group Selector -->
             <div v-if="hasVariableGroup">
               <label for="variableGroupSelector">
-                {{ t("FacilityMonitoringView.variable-group-selector") }}
+                {{ t("component.variable.groupVariable.enviromental-variable-groups") }}
               </label>
               <font-awesome-icon
                 icon="question-circle"
                 class="variable-group-help"
-                v-b-tooltip.hover.top="t('FacilityMonitoringView.variable-group-help')"
+                v-b-tooltip.hover.top="t('component.variable.groupVariable.variable-group-help')"
               />
-              <opensilex-FormSelector
+              <FormSelector
                 id="variableGroupSelector"
                 v-model:selected="selectedVariableGroup"
                 :searchMethod="searchVariableGroups"
-                :placeholder="t('FacilityMonitoringView.no-variable-group-selected')"
+                :placeholder="t('component.variable.groupVariable.all-enviromental-variables')"
                 class="searchFilter"
                 @clear="loadVariables"
                 @onValidate="loadVariables"
                 @onClose="loadVariables"
                 @select="loadVariables"
                 @handlingEnterKey="loadVariables"
-              ></opensilex-FormSelector>
-<!--              <opensilex-GroupVariablesSelector
-                v-model:variableGroup="selectedVariableGroup"
-                class="searchFilter"
-                @handlingEnterKey="loadVariables"
-                @clear="loadVariables"
-                @select="loadVariables"
-              />-->
+              ></FormSelector>
             </div>
           </div>
         </div>
       </template>
-    </opensilex-Card>
+    </Card>
 
-    <opensilex-TextView
+    <TextView
       v-if="isNoVariableFound"
       id="no-variable-text"
-      :label="t('FacilityMonitoringView.no-variable')"
+      :label="t('component.variable.no-enviromental-variable')"
     >
-    </opensilex-TextView>
+    </TextView>
 
     <!-- Grid layout for tiles -->
 
@@ -58,13 +51,14 @@
       <div v-for="item in layout"
            class="item col"
            :key="item.i">
-        <opensilex-VariableVisualizationTile
+        <VariableVisualizationTile
           class="tile-content"
-          v-bind="item.content"
+          :variableUri="item.content.variableUri"
+          :target="item.content.target"
           :defaultStartDate="startDate"
           :defaultEndDate="endDate"
         >
-        </opensilex-VariableVisualizationTile>
+        </VariableVisualizationTile>
       </div>
     </div>
 
@@ -85,6 +79,10 @@ import {computed, inject, onMounted, ref} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
 import { useI18n } from 'vue-i18n'
+import Card from "@/components/common/views/Card.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import TextView from "@/components/common/views/TextView.vue";
+import VariableVisualizationTile from "@/components/variables/views/VariableVisualizationTile.vue";
 
 //#region Constant values & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
@@ -259,7 +257,7 @@ function loadTiles() {
   for (let v of usedVariables.value) {
     layout.value.push({
       "i":''+i,
-      "content": { target: uri, variableUri: v }
+      "content": { target: uri.value, variableUri: v }
     });
     ++i;
   }
@@ -304,26 +302,3 @@ function loadTiles() {
 
 </style>
 
-<i18n>
-en:
-  FacilityMonitoringView:
-    variable-group-selector: Environmental variable groups
-    no-variable-group-selected: All environnemental variables
-    no-data: No data found for this period
-    no-variable: No environnemental variables found
-    start-date-help: Start date of data displayed
-    end-date-help: End date of data displayed
-    variable-group-help: Groups of variables associated with the facility. You can associate groups in the update form of the facility.
-
-
-fr:
-  FacilityMonitoringView:
-    variable-group-selector: Groupes de variables environnementales
-    no-variable-group-selected: Toutes les variables environnementales
-    no-data: Aucune donnée trouvée pour cette période
-    no-variable: Aucune variable environnementale trouvée
-    start-date-help: Date de début des données affichées
-    end-date-help: Date de fin des données affichées
-    variable-group-help: Les groupes de variables associées à l'installation. Vous pouvez associer des groupes dans le formulaire de modification de l'installation.
-
-</i18n>

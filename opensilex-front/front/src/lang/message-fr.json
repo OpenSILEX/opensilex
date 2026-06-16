@@ -1084,6 +1084,20 @@
         "GDPR": {
             "title": "RGPD",
             "title-description": "Politique RGPD"
+        },
+        "reset-password": {
+            "title": "Renouvellement de mot de passe",
+            "input": "Saisissez un nouveau mot de passe",
+            "confirm": "Confirmez votre mot de passe",
+            "submit": "Enregistrer et revenir à l'accueil",
+            "success": "Votre mot de passe a bien été mis à jour",
+            "return": "Retourner à l'accueil",
+            "error": {
+                "password-required": "Le mot de passe est obligatoire",
+                "confirmation-required": "La confirmation est obligatoire et doit être identique au mot de passe",
+                "bad-token": "L'URL est invalide",
+                "bad-token-info": "Tentez de renouveler à nouveau votre mot de passe ou contactez l'administrateur du système."
+            }
         }
     },
     "credential-groups": {

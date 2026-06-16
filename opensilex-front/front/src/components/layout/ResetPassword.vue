@@ -1,6 +1,19 @@
 <template>
   <div class="container-fluid">
     <div class="row">
+      <div class="col text-end">
+        <div class="m-2">
+          <n-dropdown
+              trigger="click"
+              :options="languages"
+              @select="onLanguageSelected"
+          >
+            <n-button><i class="bi bi-globe m-2"></i> {{ t(`component.header.language.${locale}`) }}</n-button>
+          </n-dropdown>
+        </div>
+      </div>
+    </div>
+    <div class="row">
       <div class="col"></div>
       <div class="col-8">
         <h2>{{ t('component.reset-password.title') }}</h2>
@@ -28,18 +41,18 @@
             ></InputForm>
           </n-form-item>
           <Button
-            variant="primary"
-            :label="t('component.reset-password.submit')"
-            @click="submit"
+              variant="primary"
+              :label="t('component.reset-password.submit')"
+              @click="submit"
           ></Button>
         </n-form>
         <div v-else>
           <h4>{{ t('component.reset-password.error.bad-token') }}</h4>
           <p>{{ t('component.reset-password.error.bad-token-info') }}</p>
           <Button
-            variant="secondary"
-            :label="t('component.reset-password.return')"
-            @click="router.push({ path: '/' })"
+              variant="secondary"
+              :label="t('component.reset-password.return')"
+              @click="router.push({ path: '/' })"
           ></Button>
         </div>
       </div>
@@ -69,7 +82,8 @@ const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const service = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
 const router = useRouter();
 const route = useRoute();
-const { t } = useI18n();
+const store = useStore();
+const {t, locale, availableLocales} = useI18n();
 
 const form = useTemplateRef<InstanceType<typeof NForm>>("form");
 
@@ -80,10 +94,30 @@ const formModel = ref({
 const passwordToken = ref<string | null>();
 const badToken = ref<boolean>(false);
 
+const rules: FormRules = {
+  password: {
+    required: true,
+    message: t('component.reset-password.error.password-required'),
+    trigger: ['input', 'blur']
+  },
+  confirmation: {
+    validator: validateSamePassword,
+    message: t('component.reset-password.error.confirmation-required'),
+    trigger: ['input', 'blur']
+  }
+};
+
+const languages = computed(() =>
+    availableLocales.map(l => ({
+      key: l,
+      label: t(`component.header.language.${l}`)
+    }))
+);
+
 onMounted(() => {
   passwordToken.value = decodeURIComponent(route.params.uri as string);
   if (!passwordToken.value) {
-    router.push({ path: "/" });
+    router.push({path: "/"});
   }
   service.renewPassword(passwordToken.value, true, formModel.value.password).catch((error) => {
     if (error.status == 403 || error.status == 500) {
@@ -108,10 +142,10 @@ function submit() {
       return;
     }
 
-    service.renewPassword(passwordToken.value, false, formModel.value.password).then((http) => {
+    service.renewPassword(passwordToken.value, false, formModel.value.password).then((_http) => {
       opensilex.showSuccessToast(t("ResetPasswordComponent.renew-password"));
       passwordToken.value = null;
-      router.push({ path: "/" });
+      router.push({path: "/"});
     }).catch((error) => {
       if (error.status == 400) {
         console.error("Invalid credentials", error);
@@ -124,22 +158,16 @@ function submit() {
   })
 }
 
-const rules: FormRules = {
-  password: {
-    required: true,
-    message: t('component.reset-password.error.password-required'),
-    trigger: ['input', 'blur']
-  },
-  confirmation: {
-    validator: validateSamePassword,
-    message: t('component.reset-password.error.confirmation-required'),
-    trigger: ['input', 'blur']
-  }
-};
 
-function validateSamePassword(rule: FormItemRule, value: string): boolean {
+function validateSamePassword(_rule: FormItemRule, value: string): boolean {
   return value === formModel.value.password;
 }
+
+function onLanguageSelected(newLocale: string) {
+  locale.value = newLocale;
+  store.commit("lang", newLocale);
+}
+
 //#endregion
 
 </script>

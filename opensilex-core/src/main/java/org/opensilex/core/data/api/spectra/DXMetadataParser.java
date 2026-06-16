@@ -1,4 +1,4 @@
-package org.opensilex.core.data.api;
+package org.opensilex.core.data.api.spectra;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

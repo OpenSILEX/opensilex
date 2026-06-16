@@ -1,11 +1,11 @@
-package org.opensilex.core.data.api;
+package org.opensilex.core.data.api.spectra;
+
+import org.opensilex.fs.service.FileStorageService;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
-import org.opensilex.fs.service.FileStorageService;
-import java.nio.file.Files;
 
 
 /**

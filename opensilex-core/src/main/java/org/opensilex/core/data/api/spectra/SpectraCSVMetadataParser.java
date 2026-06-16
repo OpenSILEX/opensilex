@@ -1,21 +1,11 @@
-package org.opensilex.core.data.api;
+package org.opensilex.core.data.api.spectra;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author efernandez A utility class for parse CSV spectrum file into JSON

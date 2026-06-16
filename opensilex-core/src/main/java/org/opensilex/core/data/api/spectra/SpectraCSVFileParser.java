@@ -1,25 +1,21 @@
-package org.opensilex.core.data.api;
+package org.opensilex.core.data.api.spectra;
+
+import com.opencsv.*;
+import com.opencsv.exceptions.CsvException;
+import org.opensilex.fs.service.FileStorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import com.opencsv.exceptions.CsvException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Calendar;
-import com.opencsv.CSVWriter;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.CSVParser;
 import java.util.List;
-import org.opensilex.fs.service.FileStorageService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**

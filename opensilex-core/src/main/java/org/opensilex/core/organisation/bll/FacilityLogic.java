@@ -557,7 +557,6 @@ public class FacilityLogic {
     private void deleteFacilityLocations(ClientSession session, FacilityModel facility) {
         if (facility.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
-            LocationObservationCollectionLogic locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
 
             try {
                 locationObservationLogic.deleteEveryLocationObservationInCollection(session, facility.getLocationObservationCollection().getUri(), true);

@@ -28,6 +28,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -50,7 +51,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.core.experiment.dal.FundingModel;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -71,12 +71,14 @@ public class ExperimentDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+    protected final FileStorageService fs;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExperimentDAO.class);
 
-    public ExperimentDAO(SPARQLService sparql, MongoDBService nosql) {
+    public ExperimentDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         this.sparql = sparql;
         this.nosql = nosql;
+        this.fs = fs;
     }
 
     public ExperimentModel create(ExperimentModel instance) throws Exception {
@@ -634,7 +636,7 @@ public class ExperimentDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, user, fs);
 
         if (!organizationUriFilter.isEmpty()) {
             facilityLogic.search(new FacilitySearchFilter()

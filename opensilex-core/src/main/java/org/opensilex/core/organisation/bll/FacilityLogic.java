@@ -16,6 +16,9 @@ package org.opensilex.core.organisation.bll;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.graph.Triple;
+import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.location.bll.LocationLogic;
@@ -33,10 +36,13 @@ import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -56,21 +62,27 @@ import java.util.stream.Collectors;
 public class FacilityLogic {
 
     private final SPARQLService sparql;
-    private final MongoDBServiceV2 mongodb;
+    private final MongoDBService mongoDBService;
+    private final MongoDBServiceV2 mongoDBServiceV2;
     private final FacilityDAO facilityDAO;
     private final OrganizationDAO organizationDAO;
     private final SiteLogic siteLogic;
     private final GeocodingService geocodingService;
+    private final AccountModel user;
+    private final FileStorageService fs;
 
 
     //#region constructor
-    public FacilityLogic(SPARQLService sparql, MongoDBServiceV2 mongodb) throws Exception {
+    public FacilityLogic(SPARQLService sparql, MongoDBService mongoDBService, AccountModel user, FileStorageService fs) throws Exception {
         this.sparql = sparql;
-        this.mongodb = mongodb;
+        this.mongoDBServiceV2 = mongoDBService.getServiceV2();
+        this.mongoDBService = mongoDBService;
         this.organizationDAO = new OrganizationDAO(sparql);
         this.facilityDAO = new FacilityDAO(sparql);
-        this.siteLogic = new SiteLogic(sparql, mongodb);
+        this.siteLogic = new SiteLogic(sparql, mongoDBService, fs);
         this.geocodingService = new OpenStreetMapGeocodingService();
+        this.user = user;
+        this.fs = fs;
     }
     //#endregion
 
@@ -100,7 +112,7 @@ public class FacilityLogic {
         List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(), lang);
         instance.setOrganizations(organizationModels);
 
-        new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
+        new SparqlMongoTransaction(sparql, mongoDBServiceV2).execute(session -> {
             facilityDAO.create(instance);
             if (Objects.nonNull(locations) || Objects.nonNull(instance.getAddress())) {
                 createFacilityLocations(session, instance, locations);
@@ -228,7 +240,7 @@ public class FacilityLogic {
 
         List<FacilityModel> facilityList = facilityDAO.minimalSearch(facilitySearchfilter, organizationsAndSites).getList();
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongoDBService, sparql, fs);
         return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                 facilityList,
                 (FacilityModel model)-> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
@@ -259,7 +271,7 @@ public class FacilityLogic {
 
         FacilityModel existingModel = facilityDAO.get(instance.getUri(), user.getLanguage());
 
-        new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
+        new SparqlMongoTransaction(sparql, mongoDBServiceV2).execute(session -> {
             facilityDAO.update(instance);
 
             URI collectionUri;
@@ -276,7 +288,7 @@ public class FacilityLogic {
             }
 
             //Update "hasGeometry" of location linked to the facility (as "to")
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongoDBService, sparql, fs);
             if(collectionUri != null) {
                 locationObservationLogic.updateAssociatedLocationModel(session, existingModel.getUri(), collectionUri);
             }
@@ -311,10 +323,11 @@ public class FacilityLogic {
 
         FacilityModel model = facilityDAO.get(uri, user.getLanguage());
 
-        new SparqlMongoTransaction(sparql, mongodb).execute(session -> {
+        new SparqlMongoTransaction(sparql, mongoDBServiceV2).execute(session -> {
             deleteFacilityLocations(session, model);
+            //Verify Facility not used in any data or as an object of some sparql relation
+            validateFacilityNotUsedElsewhere(uri, session);
             facilityDAO.delete(uri);
-
             return null;
         });
         organizationDAO.invalidateCache();
@@ -328,7 +341,7 @@ public class FacilityLogic {
      * @return The Location Observation model
      */
     public LocationObservationModel getLastFacilityLocationModel(FacilityModel facilityModel) {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongoDBService, sparql, fs);
 
         if (facilityModel.getLocationObservationCollection() == null) return null;
 
@@ -393,6 +406,55 @@ public class FacilityLogic {
     //endregion
 
     //#region private
+
+    /**
+     * Verifies that the facility is not used in any data or as an object of some sparql relation.
+     *
+     * @param facilityUri the URI in question
+     * @param session The client session to pass to DataLogic
+     * @throws SPARQLException if something went wrong during sparql request
+     * @throws ConflictException if the facility is used in some data or as an object of some sparql relation
+     */
+    private void validateFacilityNotUsedElsewhere(URI facilityUri, ClientSession session) throws SPARQLException, ConflictException {
+        //SPARQL
+        List<String> predicateUrisToExclude = new ArrayList<>();
+        List<Triple> existingOtherRdfLinks = sparql.getUriLinksWithOtherResources(facilityUri, predicateUrisToExclude);
+        StringBuilder errorLinkDetails = new StringBuilder();
+        errorLinkDetails.append(
+                String.format(
+                        "The facility cannot be deleted because it is used in the following %d Triples:\n",
+                        existingOtherRdfLinks.size()
+                )
+        );
+        for (Triple existingOtherRdfLink : existingOtherRdfLinks) {
+            errorLinkDetails.append("[ ");
+            errorLinkDetails.append(existingOtherRdfLink.getSubject().toString()).append(" , ");
+            errorLinkDetails.append(existingOtherRdfLink.getPredicate().toString()).append(" , ");
+            errorLinkDetails.append(existingOtherRdfLink.getObject().toString()).append(" ]");
+            errorLinkDetails.append("\n");
+        }
+
+        //DATA
+        DataLogic dataLogic = new DataLogic(sparql, mongoDBService, fs, user, session);
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUser(user);
+        dataSearchFilter.setTargets(List.of(facilityUri));
+        long dataAmount = dataLogic.countData(dataSearchFilter);
+        if(dataAmount > 0){
+            if(CollectionUtils.isNotEmpty(existingOtherRdfLinks)){
+                //Message if it was also present in rdf stuff
+                errorLinkDetails.append(String.format("The facility is also used in %d data.", dataAmount));
+            }else{
+                //Message if its only used in datas
+                errorLinkDetails.append(String.format("The facility cannot be deleted because it is used in %d data.", dataAmount));
+            }
+        }
+
+        //Final throw
+        if(CollectionUtils.isNotEmpty(existingOtherRdfLinks) || dataAmount > 0){
+            throw new ConflictException(errorLinkDetails.toString());
+        }
+    }
 
     /**
      * Validates that the user has access to a facility. Throws an exception if that is not the case. The
@@ -492,7 +554,7 @@ public class FacilityLogic {
      * @throws Exception
      */
     private URI createFacilityLocations(ClientSession session, FacilityModel facility, List<LocationObservationModel> locationObservationModels) throws Exception {
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongoDBService, sparql, fs);
         List<LocationObservationModel> locations = new ArrayList<>();
 
         if (Objects.isNull(locationObservationModels) && Objects.nonNull(facility.getAddress())) {
@@ -515,7 +577,7 @@ public class FacilityLogic {
 
     private void updateFacilityLocations(ClientSession session, FacilityModel instance, FacilityModel existingModel, List<LocationObservationModel> locationObservationModels) throws Exception {
         //Delete existing, only delete collection if the locations list is empty or null.
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongoDBService, sparql, fs);
         locationObservationLogic.deleteEveryLocationObservationInCollection(session, existingModel.getLocationObservationCollection().getUri(), CollectionUtils.isEmpty(locationObservationModels));
 
         //Create new locations
@@ -556,7 +618,7 @@ public class FacilityLogic {
 
     private void deleteFacilityLocations(ClientSession session, FacilityModel facility) {
         if (facility.getLocationObservationCollection() != null) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongoDBService, sparql, fs);
 
             try {
                 locationObservationLogic.deleteEveryLocationObservationInCollection(session, facility.getLocationObservationCollection().getUri(), true);

@@ -13,7 +13,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
@@ -24,7 +23,6 @@ import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
@@ -36,7 +34,6 @@ import org.opensilex.sparql.service.schemaQuery.SparqlSchemaSimpleNode;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -128,32 +125,9 @@ public class FacilityDAO {
     }
 
     /**
-     *
      * @param uri the URI of the facility to delete
-     * @throws Exception If the facility is used somewhere else, or if some other problem occurs during deletion
      */
     public void delete(URI uri) throws Exception {
-        //Verify Facility not used anywhere else
-        List<String> predicateUrisToExclude = new ArrayList<>();
-        List<Triple> existingOtherRdfLinks = sparql.getUriLinksWithOtherResources(uri, predicateUrisToExclude);
-        StringBuilder errorLinkDetails = new StringBuilder();
-        errorLinkDetails.append(
-                String.format(
-                        "The facility cannot be deleted because it is used in the following %d Triples:\n",
-                        existingOtherRdfLinks.size()
-                )
-        );
-        for (Triple existingOtherRdfLink : existingOtherRdfLinks) {
-            errorLinkDetails.append("[ ");
-            errorLinkDetails.append(existingOtherRdfLink.getSubject().toString()).append(" , ");
-            errorLinkDetails.append(existingOtherRdfLink.getPredicate().toString()).append(" , ");
-            errorLinkDetails.append(existingOtherRdfLink.getObject().toString()).append(" ]");
-            errorLinkDetails.append("\n");
-        }
-        if(CollectionUtils.isNotEmpty(existingOtherRdfLinks)){
-            throw new ConflictException(errorLinkDetails.toString());
-        }
-
         sparql.delete(FacilityModel.class, uri);
     }
 

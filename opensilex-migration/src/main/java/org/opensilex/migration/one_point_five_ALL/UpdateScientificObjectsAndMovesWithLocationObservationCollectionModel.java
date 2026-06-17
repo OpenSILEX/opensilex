@@ -36,6 +36,7 @@ import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
@@ -65,6 +66,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
     private SPARQLService sparql;
     private MongoDBService mongodb;
+    private FileStorageService fs;
     private final Logger logger;
 
     private static final String OLD_MOVE_COLLECTION = "move";
@@ -73,10 +75,11 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
     public static String DESCRIPTION = "Update ScientificObjects and Devices to use the new Location system. Do this by reading old Moves (includes the isHosted property for ScientificObjects as a move was created for each isHosted) and geospatial mongo collection.";
 
-    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
+    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger, FileStorageService fs) {
         this.sparql = sparql;
         this.mongodb = mongodb;
         this.logger = logger;
+        this.fs = fs;
     }
 
     public void execute(ClientSession session) throws Exception {
@@ -403,7 +406,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             }
             if (moveDetailsAsSPARQLResult.getStringValue(LocationModel.TO_FIELD) != null) {
                 too = URI.create(moveDetailsAsSPARQLResult.getStringValue(LocationModel.TO_FIELD));
-                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
                 //Create a temporary model just to be able to call checkHasGeom
                 LocationObservationModel temp =  new LocationObservationModel();
                 LocationModel tempLocationModel = new LocationModel();

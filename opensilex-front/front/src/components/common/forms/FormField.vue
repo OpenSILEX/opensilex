@@ -30,7 +30,6 @@ const props = defineProps<{
   requiredBlue?: boolean
   /** Conservé pour compat, non utilisé ici (validation déplacée dans les enfants / NFormItem) */
   rules?: string | (() => string)
-  vid?: string
 }>()
 
 const $opensilex = inject<OpenSilexVuePlugin>('opensilex')

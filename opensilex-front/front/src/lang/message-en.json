@@ -1027,6 +1027,20 @@
         "GDPR": {
             "title": "GDPR",
             "title-description": "Privacy policy"
+        },
+        "reset-password": {
+            "title": "Password renewal",
+            "input": "Define a new password",
+            "confirm": "Confirm your password",
+            "submit": "Save and go to home page",
+            "success": "Your password has been successfully modified",
+            "return": "Return to home page",
+            "error": {
+                "password-required": "Password is required",
+                "confirmation-required": "Confirmation is required and must match the password",
+                "bad-token": "The URL is not valid",
+                "bad-token-info": "Attempt to renew your password again or contact the system administrator."
+            }
         }
     },
     "credential-groups": {

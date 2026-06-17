@@ -4,7 +4,6 @@
     :required="isRequired"
     :label="label"
     :helpMessage="helpMessage"
-    :vid="vid"
   >
     <template #field="{ id }">
       <n-input
@@ -43,7 +42,6 @@ const props = defineProps<{
   disabled?: boolean
   rules?: string | Function
   autocomplete?: string
-  vid?: string
 }>()
 
 // Emits

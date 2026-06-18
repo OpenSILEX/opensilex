@@ -22,7 +22,7 @@
     </div>
     <div>
       <n-button
-          @click="onCheckBtnClick()"
+          @click="onCheckBtnClick"
           :disabled="disableCheck"
       >{{ t("check") }}
       </n-button>
@@ -90,13 +90,13 @@ import GermplasmAddColumnModal from "@/components/germplasm/creation/GermplasmAd
 import CSVInputFile from "@/components/common/forms/CSVInputFile.vue";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import {useI18n} from "vue-i18n";
-import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef, watch} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import {useStore} from "vuex";
 import {useRouter} from "vue-router";
 import {SelectableItem} from "@/components/variables/form/ModalFormSelector.vue";
-import {Tabulator} from "tabulator-tables";
+import {Tabulator, FormatModule, EditModule, ValidateModule} from "tabulator-tables";
 import GermplasmTableDataRow from "@/components/germplasm/creation/GermplasmTableDataRow";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
@@ -114,7 +114,7 @@ const props = defineProps<{
 }>()
 //#endregion
 
-//#region function
+//#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")
 const {t} = useI18n();
 const store = useStore();
@@ -146,11 +146,17 @@ const disableCheck = ref(false);
 const errorsToShowInModal = ref<string[]>([]);
 
 let tabulator: Tabulator | undefined = undefined;
+Tabulator.registerModule([FormatModule, EditModule, ValidateModule]);
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 
-const table = useTemplateRef("table")
+const table = useTemplateRef<HTMLDivElement>("table")
+
+watch(tableData, () => {
+  console.log("tableData changed");
+  tabulator.replaceData(tableData.value.map(row => row.getData()));
+});
 
 //#region Event handlers
 function onAddColumnBtnClick() {
@@ -301,7 +307,7 @@ function updateColumns() {
     title: "URI",
     field: "uri",
     visible: true,
-    editor: true,
+    editor: "input",
     minWidth: 150,
     validator: "unique",
   };
@@ -310,20 +316,20 @@ function updateColumns() {
     title: t("name") + '<span class="required">*</span>',
     field: "name",
     visible: true,
-    editor: true,
+    editor: "input",
     minWidth: 150,
   };
   let synonymCol = {
     title: t("synonyms"),
     field: "synonyms",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let subtaxaCol = {
     title: t("subtaxa"),
     field: "subtaxa",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let speciesCol = {
     title:
@@ -331,7 +337,7 @@ function updateColumns() {
         '<span class="requiredOnCondition">*</span>',
     field: "species",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let varietyCol = {
     title:
@@ -339,7 +345,7 @@ function updateColumns() {
         '<span class="requiredOnCondition">*</span>',
     field: "variety",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let accessionCol = {
     title:
@@ -347,49 +353,50 @@ function updateColumns() {
         '<span class="requiredOnCondition">*</span>',
     field: "accession",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let instituteCol = {
     title: t("institute"),
     field: "institute",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let websiteCol = {
     title: t("website"),
     field: "website",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let productionYearCol = {
     title: t("year"),
     field: "productionYear",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let commentCol = {
     title: t("comment"),
     field: "comment",
     visible: true,
-    editor: true,
+    editor: "input",
   };
   let isPublicCol = {
     title: t("is_public"),
     field: "is_public",
     visible: true,
-    editor: "select",
+    editor: "list",
     editorParams: {
-      values: {
-        true: "true",
-        false: "false",
-      }
+      defaultValue: "true",
+      values: [
+          "true",
+          "false"
+      ],
+      autocomplete: true
     }
   };
   let checkingStatusCol = {
     title: t("checkingStatus"),
     field: "checkingStatus",
     visible: false,
-    editor: false,
     minWidth: 400,
     formatter: errorFormaterFunction,
   };
@@ -397,7 +404,6 @@ function updateColumns() {
     title: t("insertionStatus"),
     field: "insertionStatus",
     visible: false,
-    editor: false,
     minWidth: 400,
     formatter: errorFormaterFunction,
   };
@@ -421,7 +427,7 @@ function updateColumns() {
       title: t("varietyCode"),
       field: "code",
       visible: true,
-      editor: true,
+      editor: "input",
     };
     tableColumns.value = [
       idCol,
@@ -445,7 +451,7 @@ function updateColumns() {
       title: t("accessionNumber"),
       field: "code",
       visible: true,
-      editor: true,
+      editor: "input",
     };
     tableColumns.value = [
       idCol,
@@ -468,7 +474,7 @@ function updateColumns() {
       title: t("lotNumber"),
       field: "code",
       visible: true,
-      editor: true,
+      editor: "input",
     };
     tableColumns.value = [
       idCol,
@@ -496,8 +502,10 @@ function updateColumns() {
   }).toString();
   existingRdfAttributesStringRule.value = "existingProperty:" + tableStartingHeaderTitlesFields;
 
-  tabulator = new Tabulator(table, {
+  console.log("Instanciation tabulator !!!")
+  tabulator = new Tabulator(table.value, {
     data: tableData.value.map(row => row.getData()), //link data to table
+    // data: [{rowNumber: 1, uri: "test1", name: "name1"}],
     reactiveData: true, //enable data reactivity
     columns: tableColumns.value, //define table columns
     layout: "fitData",
@@ -533,6 +541,7 @@ function updateColumns() {
 
   // tabulator initialisation with empty lines when the table is built
   tabulator.on("tableBuilt", () => {
+    console.log("tabulator built");
     tableData.value = [];
     addInitialXRows(5);
   });
@@ -589,7 +598,7 @@ function addNonExistingColumn(columnName: string, positionTarget: string) {
 
 function addColumnToTabulator(columnLabel: string, columnID: string, positionTarget: string) {
   tabulator.addColumn(
-      {title: columnLabel, field: columnID, editor: true},
+      {title: columnLabel, field: columnID, editor: "input"},
       false,
       "comment"
   );
@@ -666,12 +675,14 @@ async function callUpsertService(creationDtos: Array<GermplasmCreationDTO>) {
  * This will trigger the rowFormatter to change the color of the row.
  */
 function setUpdateStatusForEachGermplasm(existingUris: string[]) {
-  tableData.value.forEach((data) => {
+  console.log("setUpdateStatusForEachGermplasm");
+  tableData.value = tableData.value.map(data => {
     if (data.getData().uri != null && opensilex.includesUri(existingUris, data.getData().uri)) {
       data.setIsUpdate(true);
     } else {
       data.setIsUpdate(false);
     }
+    return data;
   });
 }
 
@@ -681,12 +692,14 @@ function setUpdateStatusForEachGermplasm(existingUris: string[]) {
  * @param upsertWasCancelled if true, the insertion status will not be set to success.
  */
 function setGermplasmsValidationStatus(upsertWasCancelled: boolean): void {
-  tableData.value.forEach((data) => {
+  console.log("setGermplasmsValidationStatus");
+  tableData.value = tableData.value.map(data => {
     data.setIsValidated();
     data.setInsertionStatus(t(
         upsertWasCancelled ? "cancelledUpsertRowMessage" : "successUpsertRowMessage"
     ).toString());
     data.setCheckingStatus(t("successCheckRowMessage").toString());
+    return data;
   });
 }
 

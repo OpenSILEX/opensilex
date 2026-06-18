@@ -40,6 +40,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.*;
+import org.opensilex.core.utils.GetByUrisWithSharedResourceInstanceDTO;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
@@ -130,6 +131,14 @@ public class InterestEntityAPI {
         }
     }
 
+    /**
+     * Return a list of entities of interest corresponding to the given URIs
+     *
+     * @param uris list of entities of interest uri
+     * @return Corresponding list of entities of interest
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(InterestEntityAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed entities of interest by uris")
@@ -145,6 +154,60 @@ public class InterestEntityAPI {
             @ApiParam(value = "Entities of interest URIs", required = true) @QueryParam(InterestEntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
             @ApiParam(value = "Shared resource instance") @QueryParam(InterestEntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
+            List<InterestEntityModel> models = dao.getList(uris);
+
+            if (!models.isEmpty()) {
+                List<InterestEntityDetailsDTO> resultDTOList = new ArrayList<>(models.size());
+                models.forEach(result -> {
+                    resultDTOList.add(new InterestEntityDetailsDTO(result));
+                });
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            } else {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Entities of interest not found", "Unknown entity of interest URIs").getResponse();
+            }
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<InterestEntityDetailsDTO> detailsList = service.getListByURI(Paths.get(InterestEntityAPI.PATH, InterestEntityAPI.GET_BY_URIS_PATH).toString(),
+                InterestEntityAPI.GET_BY_URIS_URI_PARAM,
+                uris, InterestEntityDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
+    }
+
+    /**
+     * Return a list of entities of interest corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs and optional shared resource instance
+     * @return Corresponding list of entities of interest
+     */
+    @POST
+    @Path(InterestEntityAPI.GET_BY_URIS_PATH)
+    @ApiOperation("Get detailed entities of interest by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return entities of interest", response = InterestEntityDetailsDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Entity of interest not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response searchInterestEntitiesByURIs(
+            @ApiParam(value = "Entities of interest URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+        URI sharedResourceInstance = dto == null ? null : dto.getSharedResourceInstance();
+        
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         if (sharedResourceInstance == null) {
             BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
             List<InterestEntityModel> models = dao.getList(uris);

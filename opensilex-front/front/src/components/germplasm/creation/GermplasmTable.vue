@@ -96,7 +96,7 @@ import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import {useStore} from "vuex";
 import {useRouter} from "vue-router";
 import {SelectableItem} from "@/components/variables/form/ModalFormSelector.vue";
-import {Tabulator, FormatModule, EditModule, ValidateModule} from "tabulator-tables";
+import {Tabulator, FormatModule, EditModule, ValidateModule, ResizeColumnsModule} from "tabulator-tables";
 import GermplasmTableDataRow from "@/components/germplasm/creation/GermplasmTableDataRow";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {ObjectNamedResourceDTO} from "opensilex-core/model/objectNamedResourceDTO";
@@ -146,7 +146,7 @@ const disableCheck = ref(false);
 const errorsToShowInModal = ref<string[]>([]);
 
 let tabulator: Tabulator | undefined = undefined;
-Tabulator.registerModule([FormatModule, EditModule, ValidateModule]);
+Tabulator.registerModule([FormatModule, EditModule, ValidateModule, ResizeColumnsModule]);
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
@@ -1074,6 +1074,73 @@ interface NewColumnCheckboxData {
 </script>
 
 <style scoped lang="scss">
+.requiredOnCondition {
+  color: blue;
+}
+
+.tabulator {
+  font-size: 13px;
+}
+
+.divHelpMsg {
+  flex-direction: column;
+  margin: 0.5rem 0.5rem;
+}
+
+.validation-status-legend, .update-status-legend, .icon-and-legend {
+  display: flex;
+  margin-right: 1rem;
+}
+
+.update-status-legend {
+  margin-bottom: 0.5rem;
+}
+
+.icon-and-legend div {
+  margin-right: 0.5rem;
+}
+
+.valid-legend {
+  width: 4rem;
+  height: 1rem;
+  background-color: #A5E051;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.invalid-legend {
+  width: 4rem;
+  height: 1rem;
+  background-color: #ED6661;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.error-log {
+  color: blue;
+}
+
+.id-update-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.update-symbol {
+  width: 1rem;
+  height: 1rem;
+  background-color: #3498db;
+  border-radius: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.create-symbol {
+  width: 1rem;
+  height: 1rem;
+  background-color: lightgray;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+}
 </style>
 
 <i18n>

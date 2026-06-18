@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.opensilex.core.utils.GetByUrisWithSharedResourceInstanceDTO;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
@@ -130,7 +131,14 @@ public class CharacteristicAPI {
         }
     }
     
-    
+    /**
+     * Return a list of characteristics corresponding to the given URIs
+     *
+     * @param uris list of characteristics uri
+     * @return Corresponding list of characteristics
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(CharacteristicAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed characteristics by uris")
@@ -146,6 +154,60 @@ public class CharacteristicAPI {
             @ApiParam(value = "Characteristics URIs", required = true) @QueryParam(CharacteristicAPI.GET_BY_URIS_URI_PARAM) @NotNull @NotEmpty List<URI> uris,
             @ApiParam(value = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+
+            try {
+                List<CharacteristicDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(CharacteristicDetailsDTO::new)
+                        .collect(Collectors.toList());
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Characteristics not found", e.getStrUris()).getResponse();
+            }
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<CharacteristicDetailsDTO> detailsList = service.getListByURI(Paths.get(CharacteristicAPI.PATH, CharacteristicAPI.GET_BY_URIS_PATH).toString(),
+                CharacteristicAPI.GET_BY_URIS_URI_PARAM,
+                uris, CharacteristicDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
+    }
+
+    /**
+     * Return a list of characteristics corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs and optional shared resource instance
+     * @return Corresponding list of characteristics
+     */
+    @POST
+    @Path(CharacteristicAPI.GET_BY_URIS_PATH)
+    @ApiOperation("Get detailed characteristics by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return characteristics", response = CharacteristicDetailsDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Characteristic not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response searchCharacteristicsByURIs(
+            @ApiParam(value = "Characteristics URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+        URI sharedResourceInstance = dto == null ? null : dto.getSharedResourceInstance();
+        
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         if (sharedResourceInstance == null) {
             BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
 

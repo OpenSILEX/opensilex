@@ -437,7 +437,7 @@ public class FacilityLogic {
         //DATA
         DataLogic dataLogic = new DataLogic(sparql, mongoDBService, fs, user, session);
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
-        dataSearchFilter.setUser(user);
+        dataSearchFilter.setUser(AccountModel.getSystemUser());
         dataSearchFilter.setTargets(List.of(facilityUri));
         long dataAmount = dataLogic.countData(dataSearchFilter);
         if(dataAmount > 0){

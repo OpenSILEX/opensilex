@@ -87,7 +87,8 @@ const returnTo = computed(() => {
 });
 
 function goBack() {
-  store.commit('goBack');
+  //TODO MAX verify nothing changed and replace
+  //store.commit('goBack');
 }
 
 // gestion du modèle de l’onglet actif

@@ -503,7 +503,7 @@ export default class ExperimentData extends Vue {
     const sos = scientificObjectsURIs.filter((x, i, a) => a.indexOf(x) == i); // distinct element on array
     return this.$opensilex
       .getService("opensilex.ScientificObjectsService")
-      .getScientificObjectsListByUris(this.uri, sos)
+      .searchScientificObjectsListByUris(this.uri, sos)
       .then(
         (
           http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>

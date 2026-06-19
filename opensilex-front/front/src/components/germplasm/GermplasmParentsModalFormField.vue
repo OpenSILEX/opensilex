@@ -119,7 +119,7 @@ export default class GermplasmParentsModalFormField extends Vue {
 
   async resetLineListWithInitialLabels(){
     if(Array.isArray(this.rdfObjectRelationDtos) && this.rdfObjectRelationDtos.length > 0){
-      let loadedParents  = (await this.germplasmService.getGermplasmsByURI(this.rdfObjectRelationDtos.map(rdfObject => rdfObject.value))).response.result;
+      let loadedParents  = (await this.germplasmService.searchGermplasmsByURIs(this.rdfObjectRelationDtos.map(rdfObject => rdfObject.value))).response.result;
       let loadedParentLabelsMap : Map<string, string> = new Map<string, string>();
       loadedParents.forEach(germplasm => loadedParentLabelsMap.set(this.$opensilex.getShortUri(germplasm.uri), germplasm.name));
       this.listBuilderRef.resetLineListWithInitialLabels([]);

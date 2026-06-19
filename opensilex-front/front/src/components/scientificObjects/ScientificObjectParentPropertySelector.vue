@@ -99,7 +99,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
 
         return this.$opensilex
             .getService("opensilex.ScientificObjectsService")
-            .getScientificObjectsListByUris(contextURI, soURIs)
+            .searchScientificObjectsListByUris(contextURI, soURIs)
             .then((http) => {
 
                 let nodeList = [];

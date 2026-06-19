@@ -97,7 +97,7 @@ export default class GermplasmSelector extends Vue {
    */
   load(uris: Array<string>) {
     return this.$service
-        .getGermplasmsByURI(uris)
+        .searchGermplasmsByURIs(uris)
         .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGetAllDTO>>>) => {
           return http.response.result;
         }).catch(this.$opensilex.errorHandler);

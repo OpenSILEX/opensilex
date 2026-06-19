@@ -96,6 +96,8 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             if(locationObservationsPerURI.isEmpty()){
                 return;
             }
+            logger.debug("Sleeping to avoid stressing RDF4J...");
+            Thread.sleep(10000);
             //5 - Add collections for each OS that has at least one LocationObservation. Return in a Map of format OS URI -> ObservationCOLLECTION URI
             StringUriMap<URI> soCollectionMap = sparqlAddLocationCollection(locationObservationsPerURI);
             //6 - Complete location observation models for each SO and insert to Location collection

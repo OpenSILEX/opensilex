@@ -62,6 +62,8 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
                 .into(new ArrayList<>());
         logger.info("Retrieved " + uris.size() + " germplasm attribute documents to update");
         var germplasms = sparql.getListByURIs(GermplasmModel.class, uris, null);
+        logger.debug("Sleeping to avoid stressing RDF4J...");
+        Thread.sleep(10000);
         for (var germplasm : germplasms) {
             var uri = SPARQLDeserializers.getExpandedURI(germplasm.getUri());
             var updateDocument = new Document(Map.of(

@@ -14,7 +14,6 @@ import org.bson.Document;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.api.CsvImportDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;
@@ -40,16 +39,19 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.*;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.commonDTOs.URIsListPostDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -58,7 +60,6 @@ import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -73,7 +74,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.StringWriter;
 import java.net.URI;
@@ -83,6 +85,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
 
@@ -305,6 +308,13 @@ public class DeviceAPI {
             }
     }
 
+    /**
+     * @return  a list of devices corresponding to the given URIs
+     *
+     * @param uris list of devices uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get devices by uris")
@@ -319,6 +329,52 @@ public class DeviceAPI {
     public Response getDeviceByUris(
             @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+        List<DeviceModel> models = dao.getList(uris,currentUser);
+
+        if (!models.isEmpty()) {
+            List<DeviceGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(model -> {
+                //No need to fetch metadata here as DeviceGetDTO doesn't have metadata information
+                resultDTOList.add(DeviceGetDTO.getDTOFromModel(model));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Devices not found",
+                    "Unknown device URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * @return  a list of devices corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs of devices to fetch.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get devices by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return devices", response = DeviceGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Device not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response searchDevicesByURIs(
+            @ApiParam(value = "Device URIs and optional parameters", required = true) URIsListPostDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> models = dao.getList(uris,currentUser);
 

@@ -32,6 +32,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -531,6 +532,13 @@ public class EventAPI {
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
+    /**
+     * @return  a list of moves corresponding to the given URIs
+     *
+     * @param uris list of moves uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(MOVE_PATH_PREFIX + "/by_uris")
     @ApiOperation("Get a list of moves with all positional information")
@@ -569,6 +577,62 @@ public class EventAPI {
         for (var dto : dtoList) {
             if (dto.getPublisher() != null) {
                 dto.setPublisher(UserGetDTO.fromModel(publisherMap.get(dto.getPublisher().getUri())));
+            }
+        }
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    /**
+     * @return  a list of moves corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs of moves to fetch.
+     */
+    @POST
+    @Path(MOVE_PATH_PREFIX + "/by_uris")
+    @ApiOperation("Get a list of moves with all positional information")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Moves retrieved", response = MoveDetailsDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchMoveEventByUris(
+            @ApiParam(value = "DTO containing move URIs", required = true) @Valid URIsListPostDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
+        var logic = new MoveLogic(sparql, nosql, currentUser);
+        var accountDao = new AccountDAO(sparql);
+        //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
+        //      to all services that need it.
+        var publisherMap = new HashMap<URI, AccountModel>();
+        var dtoList = new ArrayList<MoveDetailsDTO>(uris == null ? 0 : uris.size());
+
+        for (var model : logic.getList(uris)) {
+            var mDto = new MoveDetailsDTO(model);
+            if (model.getPublisher() != null) {
+                publisherMap.put(model.getPublisher(), null);
+                mDto.setPublisher(new UserGetDTO());
+                mDto.getPublisher().setUri(model.getPublisher());
+            }
+            dtoList.add(mDto);
+        }
+
+        //@todo Find a better way to fetch accounts for a list of model. Propagate this to all APIs.
+        for (var publisher : accountDao.getList((publisherMap.keySet()))) {
+            publisherMap.put(publisher.getUri(), publisher);
+        }
+
+        for (var mDto : dtoList) {
+            if (mDto.getPublisher() != null) {
+                mDto.setPublisher(UserGetDTO.fromModel(publisherMap.get(mDto.getPublisher().getUri())));
             }
         }
 

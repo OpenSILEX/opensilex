@@ -256,16 +256,12 @@ public class SiteLogic {
      * @param siteModel the site to get
      * @return The location observation model
      */
-    public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) {
+    public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) throws NotFoundException{
         if(siteModel.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
-            try {
-                return locationObservationLogic.getLocationObservationByURI(siteModel.getLocationObservationCollection().getUri());
-            } catch (NoSQLInvalidURIException e) {
-                //Even if the location is not found, it must not block the request
-                return new LocationObservationModel();
-            }
+            return locationObservationLogic.getASpecificLocationObservation(siteModel.getLocationObservationCollection().getUri(), null, null);
         } else {
+            //If no location collection then return an empty location observation
             return new LocationObservationModel();
         }
     }

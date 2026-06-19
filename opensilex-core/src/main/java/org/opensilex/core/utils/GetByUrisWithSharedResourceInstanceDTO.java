@@ -12,6 +12,8 @@ package org.opensilex.core.utils;
 
 import java.net.URI;
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -21,6 +23,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 public class GetByUrisWithSharedResourceInstanceDTO {
     
     @ValidURI
+    @ApiModelProperty(value = "URIs of objects to fetch", example = "[prefix:myuri, prefix:myuri/2]")
     protected List<URI> uris;
     
     @ValidURI

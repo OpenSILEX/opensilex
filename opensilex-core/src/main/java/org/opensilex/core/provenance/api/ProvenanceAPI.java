@@ -31,6 +31,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
@@ -296,12 +297,12 @@ public class ProvenanceAPI {
     }
 
     /**
-     * * Return a list of provenancess corresponding to the given URIs
+     * @return  a list of provenances corresponding to the given URIs
      *
      * @param uris list of provenancess uri
-     * @return Corresponding list of provenancess
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get a list of provenances by their URIs")
@@ -316,6 +317,41 @@ public class ProvenanceAPI {
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> models = dao.findByUris(uris.stream(), uris.size());
+
+        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
+        models.forEach(result -> resultDTOList.add(ProvenanceGetDTO.fromModel(result)));
+
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    /**
+     * @return  a list of provenances corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs of provenances to fetch.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get a list of provenances by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response searchProvenancesByURIs(
+            @ApiParam(value = "Provenances URIs and optional parameters", required = true) URIsListPostDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
         List<ProvenanceModel> models = dao.findByUris(uris.stream(), uris.size());
 

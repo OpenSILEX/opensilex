@@ -3,7 +3,7 @@
  *                         URIsListPostDTO.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2026.
- * Last Modification: 23/06/2025 13:13
+ * Last Modification: 18/06/2026 13:05
  * Contact: yvan.roux@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr,
  * *****************************************************************************
  */
@@ -13,7 +13,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.utils;
+package org.opensilex.server.commonDTOs;
 
 import java.net.URI;
 import java.util.List;

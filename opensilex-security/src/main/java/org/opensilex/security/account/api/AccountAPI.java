@@ -5,7 +5,10 @@ import org.opensilex.OpenSilex;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.*;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
@@ -13,13 +16,14 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.FavoriteCreationDTO;
 import org.opensilex.security.user.api.FavoriteGetDTO;
+import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.ForbiddenException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -297,12 +301,13 @@ public class AccountAPI {
     }
 
     /**
-     * *
      * Return a list of accounts corresponding to the given URIs
      *
      * @param uris list of accounts uri
      * @return Corresponding list of accounts
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get accounts by their URIs")
@@ -317,6 +322,41 @@ public class AccountAPI {
     public Response getAccountsByURI(
             @ApiParam(value = "Accounts URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+
+        AccountDAO dao = new AccountDAO(sparql);
+        List<AccountModel> models = dao.getList(uris);
+
+        List<AccountGetDTO> resultDTOList = new ArrayList<>(models.size());
+        models.forEach(result -> resultDTOList.add(AccountGetDTO.fromModel(result)));
+
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    /**
+     * @return a list of accounts corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs of accounts to fetch.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get accounts by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return accounts", response = AccountGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "accounts not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchAccountsByURIs(
+            @ApiParam(value = "DTO containing accounts URIs", required = true) @Valid URIsListPostDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
 
         AccountDAO dao = new AccountDAO(sparql);
         List<AccountModel> models = dao.getList(uris);

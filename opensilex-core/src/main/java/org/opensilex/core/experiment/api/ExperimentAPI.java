@@ -29,8 +29,8 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.dal.FundingModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
+import org.opensilex.core.experiment.dal.FundingModel;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
@@ -57,10 +57,11 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.ConflictException;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.commonDTOs.URIsListPostDTO;
+import org.opensilex.server.exceptions.ConflictException;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -1125,6 +1126,13 @@ public class ExperimentAPI {
         return new PaginatedListResponse<>(provenances).getResponse();
     }
     
+    /**
+     * @return a list of experiments corresponding to the given URIs
+     *
+     * @param uris list of experiments uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get experiments URIs")
@@ -1140,6 +1148,52 @@ public class ExperimentAPI {
             @ApiParam(value = "Experiments URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
+        List<ExperimentModel> models = dao.getByURIs(uris, currentUser);
+
+        if (!models.isEmpty()) {
+            List<ExperimentGetListDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(ExperimentGetListDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Experiments not found",
+                    "Unknown experiment URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * @return  a list of experiments corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs of experiments to fetch.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get experiments URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response searchExperimentsByURIs(
+            @ApiParam(value = "DTO containing experiments URIs", required = true) @Valid URIsListPostDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
         List<ExperimentModel> models = dao.getByURIs(uris, currentUser);
 
         if (!models.isEmpty()) {

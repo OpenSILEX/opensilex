@@ -140,6 +140,9 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
                 if(nextPage.getList().size() < 20000) {
                     done = true;
                 }
+                logger.debug(String.format("Done : page %s of %s", page + 1, 1 + nextPage.getTotal() / 20000));
+                logger.debug("Sleeping to avoid stressing RDF4J");
+                Thread.sleep(1000);
                 //Save facilities into list instead of data (there should be less and it should take up less memory)
                 List<FacilityModel> nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(nextPage.getList());
                 facilitiesToUpdate = mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);

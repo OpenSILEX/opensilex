@@ -1,5 +1,6 @@
 package org.opensilex.migration.one_point_five_ALL;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.opensilex.OpenSilex;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -81,13 +82,17 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         //Execute them
         try {
 
+            var watch = new StopWatch();
             new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
+                watch.start();
                 facilitiesLinkToVariablesAndDevicesMigration.execute();
                 sciObjsAndMovesLocationMigration.execute(session);
                 sciObjAndXpLinkMigration.execute();
                 facilitiesLocationsMigration.execute(session);
                 germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
                 changeTypeParametersUri.execute();
+                watch.stop();
+                logger.debug(format("Total time : %.1fs", (float) watch.getTime() / 1000.f));
                 return null;
             });
 

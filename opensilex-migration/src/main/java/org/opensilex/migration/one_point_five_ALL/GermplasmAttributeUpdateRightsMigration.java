@@ -83,7 +83,7 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
                 updateDocument.put(GermplasmMetadataModel.PUBLISHER_FIELD, SPARQLDeserializers.getExpandedURI(germplasm.getPublisher()));
             }
             logger.info("Updating " + uri + " with values " + updateDocument.toJson());
-            logger.debug(String.format("Progress : %s / %s (%.1f %%)", i, germplasms.size(), (float) i / (float) germplasms.size()));
+            logger.debug(String.format("Progress : %s / %s (%.1f %%)", i, germplasms.size(), 100.f * (float) i / (float) germplasms.size()));
             attributeCollection.updateMany(
                     session,
                     new Document(GermplasmMetadataModel.URI_FIELD, uri),

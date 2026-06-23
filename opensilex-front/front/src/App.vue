@@ -89,7 +89,6 @@ import {Component as ComponentAnnotation, Prop} from "vue-property-decorator";
 import Vue, { Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import AsyncComputed from "vue-async-computed-decorator";
-import {EventBus} from "../src/main";
 
 @ComponentAnnotation
 export default class App extends Vue {
@@ -126,7 +125,6 @@ export default class App extends Vue {
         this.notificationMessageDisplayed = this.notificationMessage[this.$i18n.locale]
       }
     );
-    EventBus.$on('uriGlobalSearch', () =>this.handleUriGlobalSearchPressed());
   }
 
   beforeDestroy() {
@@ -173,11 +171,6 @@ export default class App extends Vue {
 
   //#endregion
   //#region: EventHandlers
-
-  private handleUriGlobalSearchPressed(){
-    console.debug("handling");
-      this.toggleUriSearchBox();
-  }
 
   private handleHideUriSearch(){
     this.toggleUriSearchBox(false);

@@ -67,7 +67,7 @@
         </div>
         <!--Uri global search-->
         <opensilex-Button
-          @click="EventBus.$emit('uriGlobalSearch')"
+          @click="toggleUriSearchBoxState"
           :label="$t('component.header.uriSearchHoverMessage')"
           class="burgerMenu-searchIcon ik ik-search"
           :class="{ 'selected-searchicon': uriSearchBoxVisible }"
@@ -128,7 +128,7 @@
               class="searchicon"
               :class="{ 'selected-searchicon': uriSearchBoxVisible }"
               :title="$t('component.header.uriSearchHoverMessage')"
-              @click="EventBus.$emit('uriGlobalSearch')"
+              @click="toggleUriSearchBoxState"
             >
               URI
               <i class="icon ik ik-search"></i>
@@ -190,8 +190,6 @@ import Vue from "vue";
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 import store from "../../models/Store";
-import {EventBus} from "../../main";
-
 
 @Component
 export default class DefaultHeaderComponent extends Vue {
@@ -204,8 +202,8 @@ export default class DefaultHeaderComponent extends Vue {
   title: any;
   description: any;
 
-  get EventBus(){
-    return EventBus;
+  toggleUriSearchBoxState(){
+    this.$store.state.uriSearchBoxVisible = !this.$store.state.uriSearchBoxVisible;
   }
 
   /**

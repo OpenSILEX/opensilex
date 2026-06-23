@@ -76,9 +76,6 @@ system:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
 
 front:
-    theme: opensilex-phis#phis
-    loginComponent: opensilex-phis-PhisLoginComponent
-    headerComponent: opensilex-phis-PhisHeaderComponent
     agroportal:
         entity:
             - AGROVOC

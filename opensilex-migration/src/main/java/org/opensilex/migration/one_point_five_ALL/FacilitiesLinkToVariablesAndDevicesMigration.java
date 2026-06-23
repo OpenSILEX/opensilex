@@ -5,12 +5,16 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
 import org.bson.Document;
+import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.bll.MinimalData;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -45,6 +49,7 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
      * Checks if this migration was most likely already run. Does this by checking if any Facilities have devices or variables.
      * If they do not then we suppose that migration has not been done. It would technically be possible that it could have been done if
      * no data has a Facility as target, but the migration just wouldn't do anything in this case.
+     *
      * @return true if any Facility has a device or variable.
      */
     protected boolean wasMigrationPreviouslyRun() throws SPARQLException {
@@ -59,7 +64,7 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
 
         boolean aFacilityDoesHaveDevices = sparql.executeAskQuery(hasDeviceSelect);
         //If we have OS locations, no need to check for devices, we can leave
-        if(aFacilityDoesHaveDevices){
+        if (aFacilityDoesHaveDevices) {
             return true;
         }
 
@@ -74,108 +79,54 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
         return sparql.executeAskQuery(hasVariableSelect);
     }
 
-    private List<FacilityModel> mergeFacilitiesToUpdateList(List<FacilityModel> newFacilitiesToUpdate, List<FacilityModel> previouslyCalculatedFacilitiesToUpdate){
+    private void mergeFacilitiesToUpdateList(List<FacilityModel> newFacilitiesToUpdate, List<FacilityModel> allFacilities) {
         List<FacilityModel> newOnesToAddToResult = new ArrayList<>();
-        for(FacilityModel nextFacility : newFacilitiesToUpdate){
+        for (FacilityModel nextFacility : newFacilitiesToUpdate) {
             FacilityModel matchedFacility =
-                    previouslyCalculatedFacilitiesToUpdate.stream()
+                    allFacilities.stream()
                             .filter(e -> SPARQLDeserializers.compareURIs(e.getUri(), nextFacility.getUri()))
                             .findFirst()
                             .orElse(null);
-            if(matchedFacility == null){
+            if (matchedFacility == null) {
                 newOnesToAddToResult.add(nextFacility);
-            }else{
+            } else {
                 //Combine the variables and devices lists
                 List<VariableModel> previousVars = matchedFacility.getVariables();
                 List<VariableModel> newVars = nextFacility.getVariables();
-                for(VariableModel newVar : newVars){
-                    if(previousVars.stream().noneMatch(e -> SPARQLDeserializers.compareURIs(e.getUri(), newVar.getUri()))){
+                for (VariableModel newVar : newVars) {
+                    if (previousVars.stream().noneMatch(e -> SPARQLDeserializers.compareURIs(e.getUri(), newVar.getUri()))) {
                         previousVars.add(newVar);
                     }
                 }
                 List<DeviceModel> previousDevices = matchedFacility.getDevices();
                 List<DeviceModel> newDevices = nextFacility.getDevices();
-                for(DeviceModel newDevice : newDevices){
-                    if(previousDevices.stream().noneMatch(e -> SPARQLDeserializers.compareURIs(e.getUri(), newDevice.getUri()))){
+                for (DeviceModel newDevice : newDevices) {
+                    if (previousDevices.stream().noneMatch(e -> SPARQLDeserializers.compareURIs(e.getUri(), newDevice.getUri()))) {
                         previousDevices.add(newDevice);
                     }
                 }
             }
 
         }
-        previouslyCalculatedFacilitiesToUpdate.addAll(newOnesToAddToResult);
-        return previouslyCalculatedFacilitiesToUpdate;
-
+        allFacilities.addAll(newOnesToAddToResult);
     }
 
     protected void execute() throws Exception {
-        testAggregation();
-        return;
-//        FacilityDAO facilityDAO = new FacilityDAO(sparql);
-//        DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
-//        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, mongodb, null);
-//
-//        try {
-//
-//            // 1 Get all facilities
-//            List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
-//
-//            if(CollectionUtils.isEmpty(allFacilityUris)){
-//                return;
-//            }
-//
-//            // 2 Get all data that has for target these facilities
-//            List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
-//
-//            DataSearchFilter dataSearchFilter = new DataSearchFilter();
-//            dataSearchFilter.setUser(AccountModel.getSystemUser());
-//            dataSearchFilter.setTargets(allFacilityUris);
-//            dataSearchFilter.setPageSize(BATCH_SIZE);
-//
-//            boolean done = false;
-//            int page = 0;
-//            while(!done){
-//                dataSearchFilter.setPage(page);
-//                ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
-//                if(nextPage.getList().size() < BATCH_SIZE) {
-//                    done = true;
-//                }
-//                if (logger.isDebugEnabled()) {
-//                    var dbgPage = 1 + page;
-//                    var dbgTotalPage = 1 + nextPage.getTotal() / BATCH_SIZE;
-//                    var dbgPercent = 100 * (float) dbgPage / (float) dbgTotalPage;
-//                    logger.debug(String.format("Done : page %s of %s (progress: %.1f %%)", dbgPage, dbgTotalPage, dbgPercent));
-//                    logger.debug("Sleeping to avoid stressing RDF4J");
-//                }
-//                Thread.sleep(1000);
-//                //Save facilities into list instead of data (there should be less and it should take up less memory)
-//                List<FacilityModel> nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(nextPage.getList());
-//                facilitiesToUpdate = mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
-//
-//                page++;
-//            }
-//
-//            //3 Extract facilities that need updating with he same function that's used during data import, then update the facilities
-//            facilityDAO.updateMany(facilitiesToUpdate);
-//
-//        } catch (Exception e){
-//            logger.warn("Something went wrong in the FacilitiesLinkToVariablesAndDevicesMigration part of the migration!");
-//            throw e;
-//        }
+        updateFacilities();
     }
 
-    private void testAggregation() {
-        var pipeline = List.of(
-//                Aggregates.skip(page * pageSize),
-//                Aggregates.limit(pageSize),
-                Aggregates.project(new Document(Map.of(
-                        "t", "$target",
-                        "v", "$variable",
-                        "p", "$provenance.provWasAssociatedWith"
-                )))
-                );
+    private void updateFacilities() throws Exception {
+        var dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
+        var facilityDao = new FacilityDAO(sparql);
+        List<FacilityModel> facilitiesToUpdate = new ArrayList<FacilityModel>();
+
+        var pipeline = List.of(Aggregates.project(new Document(Map.of(
+                "t", "$target",
+                "v", "$variable",
+                "p", "$provenance.provWasAssociatedWith"
+        ))));
         var collection = mongodb.getServiceV2().getDatabase().getCollection("data");
-        var batch = new ArrayList<TestAggregationResult>(BATCH_SIZE);
+        var batch = new ArrayList<MinimalData>(BATCH_SIZE);
         var currentIndex = 0;
         var total = collection.countDocuments();
         try (var cursor = collection.aggregate(pipeline).cursor()) {
@@ -183,47 +134,21 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
                 batch.clear();
                 while (cursor.hasNext() && batch.size() < BATCH_SIZE) {
                     var document = cursor.next();
-                    var target = document.getString("t");
-                    var variable = document.getString("v");
                     var provEntity = document.getList("p", Document.class);
-                    batch.add(new TestAggregationResult(
-                            target,
-                            variable,
+                    batch.add(new MinimalData(
+                            URI.create(document.getString("t")),
+                            URI.create(document.getString("v")),
                             provEntity.stream()
                                     .filter(d -> d.get("uri") != null && d.get("type") != null)
                                     .map(d -> new ProvEntityModel(URI.create(d.getString("uri")), URI.create(d.getString("type")))).toList()
                     ));
                     currentIndex += 1;
                 }
-                logger.info("First document of batch : {} - {} - {}", batch.get(0).getTarget(), batch.get(0).getVariable(), batch.get(0).getProvEntities().get(0).getUri());
-                logger.info("Number of elements in batch : {}", batch.size());
+                var nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(batch);
+                mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
                 logger.info(String.format("Progress : %s / %s (%.1f %%)", currentIndex, total, 100.f * currentIndex / total));
             }
         }
-    }
-
-}
-
-class TestAggregationResult {
-    private final String target;
-    private final String variable;
-    private final List<ProvEntityModel> provEntities;
-
-    public TestAggregationResult(String target, String variable, List<ProvEntityModel> provEntities) {
-        this.target = target;
-        this.variable = variable;
-        this.provEntities = provEntities;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public String getVariable() {
-        return variable;
-    }
-
-    public List<ProvEntityModel> getProvEntities() {
-        return provEntities;
+        facilityDao.updateMany(facilitiesToUpdate);
     }
 }

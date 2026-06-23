@@ -114,13 +114,13 @@ public class DataLogic {
      *
      * Note method is public as it is also used in FacilitiesLinkToVariablesAndDevicesMigration
      *
-     * @param dataModels to look in
+     * @param dataList to look in
      * @return a list of facilities that we will need to update with the added variables and devices
      * @throws Exception
      */
-    public List<FacilityModel> getFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
+    public List<FacilityModel> getFacilitiesToUpdate(List<MinimalData> dataList) throws Exception{
         //Before doing anything create a list of all occurring targets in the data models, if this list is empty then leave
-        var targets = dataModels.stream().map(DataModel::getTarget).filter(Objects::nonNull)
+        var targets = dataList.stream().map(MinimalData::target).filter(Objects::nonNull)
                 .collect(Collectors.toSet()) //make them unique
                 .stream().toList();
         if(CollectionUtils.isEmpty(targets)) {
@@ -156,8 +156,8 @@ public class DataLogic {
         }
 
         //Iterate over DataModels to save variables and devices
-        for (DataModel dataModel : dataModels) {
-            FacilityModel facilityModel = facilityPerUri.get(dataModel.getTarget());
+        for (var data : dataList) {
+            FacilityModel facilityModel = facilityPerUri.get(data.target());
             //If facility is null then it means target was not a facility, continue
             if(facilityModel == null){
                 continue;
@@ -165,9 +165,9 @@ public class DataLogic {
             URI facilityUri = facilityModel.getUri();
 
             // Add variable to this facility
-            addVariableToFacilityFromData(dataModel, variablesPerFacility, facilityUri, facilityModel);
+            addVariableToFacilityFromData(data, variablesPerFacility, facilityUri, facilityModel);
             //Add devices to this facility
-            addDevicesToFacilityFromData(dataModel, devicesPerFacility, facilityUri, facilityModel, encounteredTestedIsDeviceTypes, cachedDeviceDao);
+            addDevicesToFacilityFromData(data, devicesPerFacility, facilityUri, facilityModel, encounteredTestedIsDeviceTypes, cachedDeviceDao);
         }
 
         //Iterate over the encountered facilities to prepare update of their variables and devices
@@ -664,7 +664,7 @@ public class DataLogic {
      * the passed variablesForFacility Map.
      */
     private void addVariableToFacilityFromData(
-            DataModel dataModel,
+            MinimalData data,
             StringUriMap<Set<String>> variablesPerFacility,
             URI facilityUri,
             FacilityModel facilityModel
@@ -677,7 +677,7 @@ public class DataLogic {
                         : new HashSet<>()
                 )
         );
-        boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(dataModel.getVariable()));
+        boolean addedVar = variablesForFacility.add(SPARQLDeserializers.getShortURI(data.variable()));
         if(addedVar){
             variablesPerFacility.put(facilityUri, variablesForFacility);
         }
@@ -688,14 +688,13 @@ public class DataLogic {
      * the passed devicesPerFacility Map.
      */
     private void addDevicesToFacilityFromData(
-            DataModel dataModel,
+            MinimalData data,
             StringUriMap<Set<String>> devicesPerFacility,
             URI facilityUri,
             FacilityModel facilityModel,
             Set<String> encounteredTestedIsDeviceTypes,
             CachedDeviceDAO deviceDAO
     ) throws SPARQLException {
-        DataProvenanceModel dataProvenanceModel = dataModel.getProvenance();
         Set<String> devicesForFacility = devicesPerFacility.getOrDefault(
                 facilityUri,
                 (!CollectionUtils.isEmpty(facilityModel.getDevices()) ?
@@ -704,7 +703,7 @@ public class DataLogic {
                         : new HashSet<>()
                 )
         );
-        List<ProvEntityModel> provWasAssociatedWith = dataProvenanceModel.getProvWasAssociatedWith();
+        List<ProvEntityModel> provWasAssociatedWith = data.provEntities();
         if(!CollectionUtils.isEmpty(provWasAssociatedWith)){
             for(ProvEntityModel provEntityModel : provWasAssociatedWith){
                 if(provEntityModel.getType() != null){
@@ -744,7 +743,9 @@ public class DataLogic {
      */
     private List<URI> createMany(List<DataModel> models, boolean csvImport, DataCSVValidationModel csvValidation) throws Exception {
         //Extract facilities to update
-        List<FacilityModel> facilitiesToUpdate = getFacilitiesToUpdate(models);
+        List<FacilityModel> facilitiesToUpdate = getFacilitiesToUpdate(models.stream().map(model -> new MinimalData(
+                model.getTarget(), model.getVariable(), model.getProvenance().getProvWasAssociatedWith()
+        )).toList());
 
         DataPostInsert postInsert;
         if (!csvImport) {

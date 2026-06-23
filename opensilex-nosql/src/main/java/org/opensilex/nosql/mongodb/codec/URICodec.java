@@ -39,7 +39,7 @@ public class URICodec implements Codec<URI> {
         try {
             String strURI = reader.readString();
             if (strURI != null && !strURI.isEmpty()) {
-                return SPARQLDeserializers.formatURI(new URI(strURI));
+                return new URI(strURI);
             }
         } catch (URISyntaxException ex) {
             LOGGER.warn("Exception while decoding mongodb URI (should never append", ex);

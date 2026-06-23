@@ -110,6 +110,7 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
     }
 
     protected void execute() throws Exception {
+        final int BATCH_SIZE = 20000;
 
         FacilityDAO facilityDAO = new FacilityDAO(sparql);
         DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
@@ -130,18 +131,23 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
             DataSearchFilter dataSearchFilter = new DataSearchFilter();
             dataSearchFilter.setUser(AccountModel.getSystemUser());
             dataSearchFilter.setTargets(allFacilityUris);
-            dataSearchFilter.setPageSize(20000);
+            dataSearchFilter.setPageSize(BATCH_SIZE);
 
             boolean done = false;
             int page = 0;
             while(!done){
                 dataSearchFilter.setPage(page);
                 ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
-                if(nextPage.getList().size() < 20000) {
+                if(nextPage.getList().size() < BATCH_SIZE) {
                     done = true;
                 }
-                logger.debug(String.format("Done : page %s of %s", page + 1, 1 + nextPage.getTotal() / 20000));
-                logger.debug("Sleeping to avoid stressing RDF4J");
+                if (logger.isDebugEnabled()) {
+                    var dbgPage = 1 + page;
+                    var dbgTotalPage = 1 + nextPage.getTotal() / BATCH_SIZE;
+                    var dbgPercent = 100 * (float) dbgPage / (float) dbgTotalPage;
+                    logger.debug(String.format("Done : page %s of %s (progress: %.1f %%)", dbgPage, dbgTotalPage, dbgPercent));
+                    logger.debug("Sleeping to avoid stressing RDF4J");
+                }
                 Thread.sleep(1000);
                 //Save facilities into list instead of data (there should be less and it should take up less memory)
                 List<FacilityModel> nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(nextPage.getList());

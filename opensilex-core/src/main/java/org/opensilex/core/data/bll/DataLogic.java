@@ -18,6 +18,7 @@ import org.opensilex.core.data.bll.dataImport.BatchHistoryLogic;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.device.dal.CachedDeviceDAO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
@@ -71,6 +72,13 @@ public class DataLogic {
     private final SPARQLService sparql;
     private final MongoDBService nosql;
     private final FileStorageService fs;
+
+    /**
+     * Cached wrapper for DeviceDAO used to optimize the {@link #getFacilitiesToUpdate(List)} method when called with
+     * successive batches.
+     */
+    private final CachedDeviceDAO cachedDeviceDao;
+
     //If client session is null then we know we need to handle transactions
     private ClientSession clientSession;
 
@@ -84,12 +92,7 @@ public class DataLogic {
     //#region constructors
 
     public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
-        this.dao = new DataDaoV2(sparql, nosql, fs);
-        this.sparql = sparql;
-        this.nosql = nosql;
-        this.user = user;
-        this.fs = fs;
-        this.clientSession = null;
+        this(sparql, nosql, fs, user, null);
     }
 
     public DataLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user, ClientSession clientSession) {
@@ -98,6 +101,7 @@ public class DataLogic {
         this.nosql = nosql;
         this.user = user;
         this.fs = fs;
+        this.cachedDeviceDao = new CachedDeviceDAO(new DeviceDAO(sparql, nosql, fs));
         this.clientSession = clientSession;
     }
 
@@ -116,7 +120,9 @@ public class DataLogic {
      */
     public List<FacilityModel> getFacilitiesToUpdate(List<DataModel> dataModels) throws Exception{
         //Before doing anything create a list of all occurring targets in the data models, if this list is empty then leave
-        List<URI> targets = dataModels.stream().map(DataModel::getTarget).filter(Objects::nonNull).toList();
+        var targets = dataModels.stream().map(DataModel::getTarget).filter(Objects::nonNull)
+                .collect(Collectors.toSet()) //make them unique
+                .stream().toList();
         if(CollectionUtils.isEmpty(targets)) {
             //Return empty initialized list in case we want to add to it later (Collections.emptyList is immutable)
             return new ArrayList<>();
@@ -149,8 +155,6 @@ public class DataLogic {
             facilityPerUri.put(facilityModel.getUri(), facilityModel);
         }
 
-        //Device Dao to verify if an Agent is a Device
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         //Iterate over DataModels to save variables and devices
         for (DataModel dataModel : dataModels) {
             FacilityModel facilityModel = facilityPerUri.get(dataModel.getTarget());
@@ -163,7 +167,7 @@ public class DataLogic {
             // Add variable to this facility
             addVariableToFacilityFromData(dataModel, variablesPerFacility, facilityUri, facilityModel);
             //Add devices to this facility
-            addDevicesToFacilityFromData(dataModel, devicesPerFacility, facilityUri, facilityModel, encounteredTestedIsDeviceTypes, deviceDAO);
+            addDevicesToFacilityFromData(dataModel, devicesPerFacility, facilityUri, facilityModel, encounteredTestedIsDeviceTypes, cachedDeviceDao);
         }
 
         //Iterate over the encountered facilities to prepare update of their variables and devices
@@ -689,7 +693,7 @@ public class DataLogic {
             URI facilityUri,
             FacilityModel facilityModel,
             Set<String> encounteredTestedIsDeviceTypes,
-            DeviceDAO deviceDAO
+            CachedDeviceDAO deviceDAO
     ) throws SPARQLException {
         DataProvenanceModel dataProvenanceModel = dataModel.getProvenance();
         Set<String> devicesForFacility = devicesPerFacility.getOrDefault(

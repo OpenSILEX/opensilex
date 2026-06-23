@@ -105,8 +105,6 @@ let store = createStore({
     menuVisible: true,
     disconnected: false,
     lang: "en",
-    previousPageCandidate: null,
-    previousPage: [],
     search: {
       experiments: new SearchStore()
     },

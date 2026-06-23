@@ -18,6 +18,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.graph.Triple;
 import org.opensilex.core.data.bll.DataLogic;
+import org.opensilex.core.data.dal.DataFileDaoV2;
 import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
@@ -416,37 +417,43 @@ public class FacilityLogic {
      * @throws ConflictException if the facility is used in some data or as an object of some sparql relation
      */
     private void validateFacilityNotUsedElsewhere(URI facilityUri, ClientSession session) throws SPARQLException, ConflictException {
+        //Potential error message StringBuilder
+        StringBuilder errorLinkDetails = new StringBuilder();
+
         //SPARQL
         List<String> predicateUrisToExclude = new ArrayList<>();
         List<Triple> existingOtherRdfLinks = sparql.getUriLinksWithOtherResources(facilityUri, predicateUrisToExclude);
-        StringBuilder errorLinkDetails = new StringBuilder();
-        errorLinkDetails.append(
-                String.format(
-                        "The facility cannot be deleted because it is used in the following %d Triples:\n",
-                        existingOtherRdfLinks.size()
-                )
-        );
-        for (Triple existingOtherRdfLink : existingOtherRdfLinks) {
-            errorLinkDetails.append("[ ");
-            errorLinkDetails.append(existingOtherRdfLink.getSubject().toString()).append(" , ");
-            errorLinkDetails.append(existingOtherRdfLink.getPredicate().toString()).append(" , ");
-            errorLinkDetails.append(existingOtherRdfLink.getObject().toString()).append(" ]");
-            errorLinkDetails.append("\n");
+
+        if(CollectionUtils.isNotEmpty(existingOtherRdfLinks)){
+            errorLinkDetails.append(
+                    String.format(
+                            "The facility cannot be deleted because it is used in the following %d Triples:\n",
+                            existingOtherRdfLinks.size()
+                    )
+            );
+            for (Triple existingOtherRdfLink : existingOtherRdfLinks) {
+                errorLinkDetails.append("[ ");
+                errorLinkDetails.append(existingOtherRdfLink.getSubject().toString()).append(" , ");
+                errorLinkDetails.append(existingOtherRdfLink.getPredicate().toString()).append(" , ");
+                errorLinkDetails.append(existingOtherRdfLink.getObject().toString()).append(" ]");
+                errorLinkDetails.append("\n");
+            }
         }
 
         //DATA
         DataLogic dataLogic = new DataLogic(sparql, mongoDBService, fs, user, session);
+        DataFileDaoV2 dataFileDao = new DataFileDaoV2(mongoDBService, sparql, fs);
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(AccountModel.getSystemUser());
         dataSearchFilter.setTargets(List.of(facilityUri));
-        long dataAmount = dataLogic.countData(dataSearchFilter);
+        long dataAmount = dataLogic.countData(dataSearchFilter) + dataFileDao.count(dataSearchFilter);
         if(dataAmount > 0){
             if(CollectionUtils.isNotEmpty(existingOtherRdfLinks)){
                 //Message if it was also present in rdf stuff
-                errorLinkDetails.append(String.format("The facility is also used in %d data.", dataAmount));
+                errorLinkDetails.append(String.format("The facility is also used in %d data or datafiles.", dataAmount));
             }else{
                 //Message if its only used in datas
-                errorLinkDetails.append(String.format("The facility cannot be deleted because it is used in %d data.", dataAmount));
+                errorLinkDetails.append(String.format("The facility cannot be deleted because it is used in %d data or datafiles.", dataAmount));
             }
         }
 

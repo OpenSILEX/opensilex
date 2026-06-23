@@ -135,6 +135,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2]
+
+### Fixed or optimized
+
+- () [Migration] Optimized migration to 1.5.0 with large datasets
+- () [Map] Fixed geometry visualization for scientific objects with an associated facility
+
 ## [1.5.1]
 
 ### Fixed or optimized

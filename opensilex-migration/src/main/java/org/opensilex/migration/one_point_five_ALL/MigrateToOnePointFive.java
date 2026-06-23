@@ -8,9 +8,11 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+
+import static java.lang.String.format;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A single migration to upgrade from 1.4.* to 1.5.0, this includes the following, see descriptions for more details:
@@ -22,6 +24,7 @@ import java.time.OffsetDateTime;
 public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
 
     private OpenSilex opensilex;
+    public static final String LOGGER_FORMAT = "%s [%s/%s]";
 
     @Override
     public OffsetDateTime getDate() {
@@ -45,34 +48,40 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-        Logger logger = LoggerFactory.getLogger(MigrateToOnePointFive.class);
+        Logger logger = getLogger(MigrateToOnePointFive.class);
         //Initialize the sub-part migration classes
-        var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb, logger);
-        var sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb, logger);
-        var sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql, logger);
-        var facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb, logger);
-        var germplasmAttributeUpdateRights = new GermplasmAttributeUpdateRightsMigration();
-        var changeTypeParametersUri = new ChangeTypeParametersUri();
+        var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb,
+                getLogger(format(LOGGER_FORMAT, FacilitiesLinkToVariablesAndDevicesMigration.class.getName(), 1, 6)));
+        var sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb,
+                getLogger(format(LOGGER_FORMAT, UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel.class.getName(), 2, 6)));
+        var sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql,
+                getLogger(format(LOGGER_FORMAT, ScientificObjectAndExperimentRelationMigration.class.getName(), 3, 6)));
+        var facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb,
+                getLogger(format(LOGGER_FORMAT, UpdateFacilitiesWithLocationObservationCollectionModel.class.getName(), 4, 6)));
+        var germplasmAttributeUpdateRights = new GermplasmAttributeUpdateRightsMigration(
+                getLogger(format(LOGGER_FORMAT, GermplasmAttributeUpdateRightsMigration.class.getName(), 5, 6)));
+        var changeTypeParametersUri = new ChangeTypeParametersUri(
+                getLogger(format(LOGGER_FORMAT, ChangeTypeParametersUri.class.getName(), 6, 6)));
         changeTypeParametersUri.setSparql(sparql);
         //Check migration has not already been run by checking each sub-migration
-        try{
-            if(
+        try {
+            if (
                     facilitiesLinkToVariablesAndDevicesMigration.wasMigrationPreviouslyRun() ||
                             sciObjsAndMovesLocationMigration.wasMigrationPreviouslyRun() ||
                             sciObjAndXpLinkMigration.wasMigrationPreviouslyRun() ||
                             facilitiesLocationsMigration.wasMigrationPreviouslyRun()
-            ){
+            ) {
                 logger.warn("It looks like this migration has already been performed. If this is not the case contact the Opensilex Team! No changes saved on the database.");
                 return;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             logger.error(" No changes saved on the database. Something went wrong during verification that migration was not already run, the error was: {}", e.getMessage());
             return;
         }
         //Execute them
-        try{
+        try {
 
-            new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session ->{
+            new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
                 facilitiesLinkToVariablesAndDevicesMigration.execute();
                 sciObjsAndMovesLocationMigration.execute(session);
                 sciObjAndXpLinkMigration.execute();
@@ -83,7 +92,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             });
 
             logger.info("Migration successfully completed");
-        }catch(Exception e){
+        } catch (Exception e) {
             try {
                 logger.error("Error while migrating to 1.5. No changes were saved on the databases", e);
             } catch (Exception exception) {

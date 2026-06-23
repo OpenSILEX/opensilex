@@ -36,6 +36,8 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
 
     protected static String DESCRIPTION = "Gets all facilities, to then fetch all data on these facilities, to finally be able to add the facilities-variables and facilities-devices links.";
 
+    private static final int BATCH_SIZE = 20000;
+
     public FacilitiesLinkToVariablesAndDevicesMigration(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
         this.sparql = sparql;
         this.mongodb = mongodb;
@@ -110,8 +112,6 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
     }
 
     protected void execute() throws Exception {
-        final int BATCH_SIZE = 20000;
-
         FacilityDAO facilityDAO = new FacilityDAO(sparql);
         DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
         DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, mongodb, null);

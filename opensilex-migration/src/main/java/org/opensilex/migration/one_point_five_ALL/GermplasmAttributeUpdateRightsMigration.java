@@ -25,7 +25,15 @@ import java.util.Optional;
 
 public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleUpdate {
     private OpenSilex opensilex;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger;
+
+    public GermplasmAttributeUpdateRightsMigration() {
+        this(LoggerFactory.getLogger(GermplasmAttributeUpdateRightsMigration.class));
+    }
+
+    public GermplasmAttributeUpdateRightsMigration(Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     public OffsetDateTime getDate() {
@@ -64,7 +72,8 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
         var germplasms = sparql.getListByURIs(GermplasmModel.class, uris, null);
         logger.debug("Sleeping to avoid stressing RDF4J...");
         Thread.sleep(10000);
-        for (var germplasm : germplasms) {
+        for (var i = 0; i < germplasms.size(); i += 1) {
+            var germplasm = germplasms.get(i);
             var uri = SPARQLDeserializers.getExpandedURI(germplasm.getUri());
             var updateDocument = new Document(Map.of(
                     GermplasmMetadataModel.IS_PUBLIC_FIELD, Optional.ofNullable(germplasm.getIsPublic()).orElse(true),
@@ -74,6 +83,7 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
                 updateDocument.put(GermplasmMetadataModel.PUBLISHER_FIELD, SPARQLDeserializers.getExpandedURI(germplasm.getPublisher()));
             }
             logger.info("Updating " + uri + " with values " + updateDocument.toJson());
+            logger.debug(String.format("Progress : %s / %s (%.1f %%)", i, germplasms.size(), (float) i / (float) germplasms.size()));
             attributeCollection.updateMany(
                     session,
                     new Document(GermplasmMetadataModel.URI_FIELD, uri),

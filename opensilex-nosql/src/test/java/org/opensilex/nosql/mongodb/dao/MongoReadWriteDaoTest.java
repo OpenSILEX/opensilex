@@ -28,6 +28,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.model.MongoTestModel;
 import org.opensilex.nosql.mongodb.model.SparqlMongoTestModel;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.service.SPARQLService;
@@ -658,7 +659,7 @@ public class MongoReadWriteDaoTest extends MongoDBServiceTest {
 
         MongoTestModel modelFromDB = readWriteDao.get(model.getUri());
         Assert.assertEquals(modelFromDB.getName(), model.getName());
-        Assert.assertEquals(modelFromDB.getRdfType(), model.getRdfType());
+        Assert.assertTrue(SPARQLDeserializers.compareURIs(modelFromDB.getRdfType(), model.getRdfType()));
 
         MongoTestModel unknown = new MongoTestModel();
         unknown.setUri(URI.create("test:fake_uri"));

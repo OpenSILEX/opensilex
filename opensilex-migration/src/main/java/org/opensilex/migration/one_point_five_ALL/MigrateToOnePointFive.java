@@ -26,6 +26,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
 
     private OpenSilex opensilex;
     public static final String LOGGER_FORMAT = "%s [%s/%s]";
+    public static final String VERSION_INFO = "Migration 1.5.0";
 
     @Override
     public OffsetDateTime getDate() {

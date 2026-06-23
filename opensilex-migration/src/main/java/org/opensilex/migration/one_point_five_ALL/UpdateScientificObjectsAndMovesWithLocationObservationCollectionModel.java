@@ -22,10 +22,13 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.bson.Document;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.location.bll.LocationObservationLogic;
@@ -34,12 +37,14 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.Time;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -55,6 +60,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -197,7 +203,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      * locations (in correct new format) for every existing ScientificObject.
      *
      */
-    private StringUriMap<List<LocationObservationModel>> makeNewLocationObservationsFromGeospatialModels() throws SPARQLException {
+    private StringUriMap<List<LocationObservationModel>> makeNewLocationObservationsFromGeospatialModels() throws Exception {
         //Get OS subClasses
         List<URI> soRdfType =  getOsSubTypes();
 
@@ -208,6 +214,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         List<GeospatialModel> soFromGeospatial = geospatialCollection.find(Filters.in(SPARQLResourceModel.TYPE_FIELD, soRdfType)).into(new ArrayList<>());
 
         StringUriMap<List<LocationObservationModel>> soLocationListMap = new StringUriMap<>();
+        StringUriMap<ExperimentModel> experimentMap = new StringUriMap<>();
 
         // Mapping FeatureOfInterest and locations
         // from geospatial collection
@@ -225,6 +232,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             try {
                 if(!SPARQLDeserializers.compareURIs(geo.getGraph(), sparql.getDefaultGraphURI(ScientificObjectModel.class))){
                     locationObservation.setExperimentUri(geo.getGraph());
+                    experimentMap.put(geo.getGraph(), null);
                 }
             } catch (SPARQLException ignore) {
                 //There should always be a default OS graph right?
@@ -232,6 +240,24 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
             soLocationListMap.put(geo.getUri(), List.of(locationObservation));
         });
+
+        // Assign the correct date to the location. We take the creation date if it exists, or the start date of the experiment otherwise
+        var expeDao = new ExperimentDAO(sparql, mongodb);
+        var soDao = new ScientificObjectDAO(sparql);
+
+        expeDao.getByURIs(experimentMap.keySet().stream().map(URI::create).toList(), AccountModel.getSystemUser())
+                .forEach(xp -> experimentMap.put(xp.getUri(), xp));
+        var soModelList = soDao.searchByURIs(null, soLocationListMap.keySet().stream().map(URI::create).toList(), AccountModel.getSystemUser(), false, null);
+        soModelList.forEach(so -> soLocationListMap.get(so.getUri()).forEach(location -> {
+            if (so.getCreationDate() != null) {
+                location.setEndDate(so.getCreationDate().atStartOfDay().toInstant(ZoneOffset.UTC));
+            } else if (location.getExperimentUri() != null) {
+                var xp = experimentMap.get(location.getExperimentUri());
+                if (xp != null && xp.getStartDate() != null) {
+                    location.setEndDate(xp.getStartDate().atStartOfDay().toInstant(ZoneOffset.UTC));
+                }
+            }
+        }));
 
         return soLocationListMap;
     }
@@ -331,6 +357,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             MoveEventDAO moveDao = new MoveEventDAO(sparql, mongodb);
 
             List<MoveModel> moveModels = new ArrayList<>();
+            var moveGraph = sparql.getDefaultGraph(MoveModel.class);
 
             soLocationListMap.values().stream()
                     .flatMap(Collection::stream)
@@ -341,9 +368,12 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
                         if (location.getEndDate() != null && location.getUri() == null) {
                             MoveModel moveModel = new MoveModel();
-                            moveModel.setEnd(defaultEnd);
+                            var instantModel = new InstantModel();
+                            instantModel.setDateTimeStamp(location.getEndDate().atOffset(ZoneOffset.UTC));
+                            moveModel.setEnd(instantModel);
                             moveModel.setIsInstant(true);
                             moveModel.setTargets(Collections.singletonList(location.getFeatureOfInterest()));
+                            moveModel.addRelation(URI.create(moveGraph.getURI()), URI.create(OWL.versionInfo.getURI()), String.class, MigrateToOnePointFive.VERSION_INFO);
                             moveModels.add(moveModel);
                         }
                     });

@@ -1,30 +1,27 @@
 package org.opensilex.migration.one_point_five_ALL;
 
-import org.apache.commons.collections4.CollectionUtils;
+import com.mongodb.client.model.Aggregates;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
-import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataDaoV2;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.dal.DataSearchFilter;
+import org.bson.Document;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -112,57 +109,121 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
     }
 
     protected void execute() throws Exception {
-        FacilityDAO facilityDAO = new FacilityDAO(sparql);
-        DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
-        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, mongodb, null);
+        testAggregation();
+        return;
+//        FacilityDAO facilityDAO = new FacilityDAO(sparql);
+//        DataLogic dataLogic = new DataLogic(sparql, mongodb, null, AccountModel.getSystemUser());
+//        DataDaoV2 dataDaoV2 = new DataDaoV2(sparql, mongodb, null);
+//
+//        try {
+//
+//            // 1 Get all facilities
+//            List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
+//
+//            if(CollectionUtils.isEmpty(allFacilityUris)){
+//                return;
+//            }
+//
+//            // 2 Get all data that has for target these facilities
+//            List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
+//
+//            DataSearchFilter dataSearchFilter = new DataSearchFilter();
+//            dataSearchFilter.setUser(AccountModel.getSystemUser());
+//            dataSearchFilter.setTargets(allFacilityUris);
+//            dataSearchFilter.setPageSize(BATCH_SIZE);
+//
+//            boolean done = false;
+//            int page = 0;
+//            while(!done){
+//                dataSearchFilter.setPage(page);
+//                ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
+//                if(nextPage.getList().size() < BATCH_SIZE) {
+//                    done = true;
+//                }
+//                if (logger.isDebugEnabled()) {
+//                    var dbgPage = 1 + page;
+//                    var dbgTotalPage = 1 + nextPage.getTotal() / BATCH_SIZE;
+//                    var dbgPercent = 100 * (float) dbgPage / (float) dbgTotalPage;
+//                    logger.debug(String.format("Done : page %s of %s (progress: %.1f %%)", dbgPage, dbgTotalPage, dbgPercent));
+//                    logger.debug("Sleeping to avoid stressing RDF4J");
+//                }
+//                Thread.sleep(1000);
+//                //Save facilities into list instead of data (there should be less and it should take up less memory)
+//                List<FacilityModel> nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(nextPage.getList());
+//                facilitiesToUpdate = mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
+//
+//                page++;
+//            }
+//
+//            //3 Extract facilities that need updating with he same function that's used during data import, then update the facilities
+//            facilityDAO.updateMany(facilitiesToUpdate);
+//
+//        } catch (Exception e){
+//            logger.warn("Something went wrong in the FacilitiesLinkToVariablesAndDevicesMigration part of the migration!");
+//            throw e;
+//        }
+    }
 
-        try {
-
-            // 1 Get all facilities
-            List<URI> allFacilityUris = sparql.searchURIs(sparql.getDefaultGraph(FacilityModel.class), FacilityModel.class, "en");
-
-            if(CollectionUtils.isEmpty(allFacilityUris)){
-                return;
-            }
-
-            // 2 Get all data that has for target these facilities
-            List<FacilityModel> facilitiesToUpdate = new ArrayList<>();
-
-            DataSearchFilter dataSearchFilter = new DataSearchFilter();
-            dataSearchFilter.setUser(AccountModel.getSystemUser());
-            dataSearchFilter.setTargets(allFacilityUris);
-            dataSearchFilter.setPageSize(BATCH_SIZE);
-
-            boolean done = false;
-            int page = 0;
-            while(!done){
-                dataSearchFilter.setPage(page);
-                ListWithPagination<DataModel> nextPage = dataDaoV2.searchWithPagination(dataSearchFilter);
-                if(nextPage.getList().size() < BATCH_SIZE) {
-                    done = true;
+    private void testAggregation() {
+        var pipeline = List.of(
+//                Aggregates.skip(page * pageSize),
+//                Aggregates.limit(pageSize),
+                Aggregates.project(new Document(Map.of(
+                        "t", "$target",
+                        "v", "$variable",
+                        "p", "$provenance.provWasAssociatedWith"
+                )))
+                );
+        var collection = mongodb.getServiceV2().getDatabase().getCollection("data");
+        var batch = new ArrayList<TestAggregationResult>(BATCH_SIZE);
+        var currentIndex = 0;
+        var total = collection.countDocuments();
+        try (var cursor = collection.aggregate(pipeline).cursor()) {
+            while (currentIndex < total) {
+                batch.clear();
+                while (cursor.hasNext() && batch.size() < BATCH_SIZE) {
+                    var document = cursor.next();
+                    var target = document.getString("t");
+                    var variable = document.getString("v");
+                    var provEntity = document.getList("p", Document.class);
+                    batch.add(new TestAggregationResult(
+                            target,
+                            variable,
+                            provEntity.stream()
+                                    .filter(d -> d.get("uri") != null && d.get("type") != null)
+                                    .map(d -> new ProvEntityModel(URI.create(d.getString("uri")), URI.create(d.getString("type")))).toList()
+                    ));
+                    currentIndex += 1;
                 }
-                if (logger.isDebugEnabled()) {
-                    var dbgPage = 1 + page;
-                    var dbgTotalPage = 1 + nextPage.getTotal() / BATCH_SIZE;
-                    var dbgPercent = 100 * (float) dbgPage / (float) dbgTotalPage;
-                    logger.debug(String.format("Done : page %s of %s (progress: %.1f %%)", dbgPage, dbgTotalPage, dbgPercent));
-                    logger.debug("Sleeping to avoid stressing RDF4J");
-                }
-                Thread.sleep(1000);
-                //Save facilities into list instead of data (there should be less and it should take up less memory)
-                List<FacilityModel> nextFacilitiesToUpdate = dataLogic.getFacilitiesToUpdate(nextPage.getList());
-                facilitiesToUpdate = mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
-
-                page++;
+                logger.info("First document of batch : {} - {} - {}", batch.get(0).getTarget(), batch.get(0).getVariable(), batch.get(0).getProvEntities().get(0).getUri());
+                logger.info("Number of elements in batch : {}", batch.size());
+                logger.info(String.format("Progress : %s / %s (%.1f %%)", currentIndex, total, 100.f * currentIndex / total));
             }
-
-            //3 Extract facilities that need updating with he same function that's used during data import, then update the facilities
-            facilityDAO.updateMany(facilitiesToUpdate);
-
-        } catch (Exception e){
-            logger.warn("Something went wrong in the FacilitiesLinkToVariablesAndDevicesMigration part of the migration!");
-            throw e;
         }
     }
 
+}
+
+class TestAggregationResult {
+    private final String target;
+    private final String variable;
+    private final List<ProvEntityModel> provEntities;
+
+    public TestAggregationResult(String target, String variable, List<ProvEntityModel> provEntities) {
+        this.target = target;
+        this.variable = variable;
+        this.provEntities = provEntities;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public List<ProvEntityModel> getProvEntities() {
+        return provEntities;
+    }
 }

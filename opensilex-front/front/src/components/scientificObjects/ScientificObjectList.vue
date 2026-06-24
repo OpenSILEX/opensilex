@@ -94,7 +94,7 @@ import { ScientificObjectsService } from 'opensilex-core'
 import type { ExperimentGetDTO } from 'opensilex-core'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 
-type ScientificObjectFilter = {
+export type ScientificObjectFilter = {
   name?: string
   experiment?: string
   germplasm?: string[]
@@ -174,7 +174,7 @@ const UriLink = resolveComponent('opensilex-UriLink')
 
 const filter = ref<ScientificObjectFilter>({
   ...defaultFilter(),
-  ...props.searchFilter
+  ...props.searchFilter || {}
 })
 
 watch(

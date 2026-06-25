@@ -1,37 +1,36 @@
 <template>
   <div class="container-fluid">
 
-    <opensilex-PageActions
-      v-if="
-    user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+    <PageActions
+      v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
     >
 
-      <opensilex-CreateButton
+      <CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
         class="createButton greenThemeColor"
-      ></opensilex-CreateButton>
-      <opensilex-ScientificObjectForm
+      ></CreateButton>
+      <ScientificObjectForm
         ref="soForm"
         @onUpdate="redirectToDetail"
         @onCreate="redirectToDetail"
-      ></opensilex-ScientificObjectForm>
+      ></ScientificObjectForm>
 
-      <opensilex-CreateButton
+      <CreateButton
         @click="importForm.show()"
         label="OntologyCsvImporter.import"
         class="createButton greenThemeColor"
-      ></opensilex-CreateButton>
+      ></CreateButton>
 
 
-      <opensilex-ScientificObjectCSVImporter
+      <ScientificObjectCSVImporter
         ref="importForm"
-        @csvImported="refresh()"
-      ></opensilex-ScientificObjectCSVImporter>
-    </opensilex-PageActions>
+        @csvImported="soList.refresh()"
+      ></ScientificObjectCSVImporter>
+    </PageActions>
 
 
-    <opensilex-PageContent
+    <PageContent
       class="pagecontent"
     >
 
@@ -50,7 +49,7 @@
       <Transition>
         <div v-show="searchFiltersToggle">
 
-          <opensilex-SearchFilterField
+          <SearchFilterField
             @search="soList.refresh()"
             @clear="reset()"
             searchButtonLabel="component.common.search.search-button"
@@ -61,44 +60,44 @@
 
               <!-- Name -->
               <div>
-                <opensilex-FilterField>
+                <FilterField>
                   <label for="name">{{ $t("component.common.name") }}</label>
-                  <opensilex-StringFilter
+                  <StringFilter
                     id="name"
                     :filter.sync="filter.name"
                     placeholder="ScientificObjectList.name-placeholder"
                     class="searchFilter"
                     @handlingEnterKey="soList.refresh()"
-                  ></opensilex-StringFilter>
+                  ></StringFilter>
                   <br>
-                </opensilex-FilterField>
+                </FilterField>
               </div>
 
               <!-- Experiments -->
               <div>
-                <opensilex-FilterField>
-                  <opensilex-ExperimentSelector
+                <FilterField>
+                  <ExperimentSelector
                     label="GermplasmList.filter.experiment"
                     :multiple="false"
                     :experiments.sync="filter.experiment"
                     class="searchFilter"
                     @handlingEnterKey="soList.refresh()"
                     :key="resetExperimentSelectorKey"
-                  ></opensilex-ExperimentSelector>
-                </opensilex-FilterField>
+                  ></ExperimentSelector>
+                </FilterField>
               </div>
 
               <!-- Types -->
               <div>
-                <opensilex-FilterField>
+                <FilterField>
                   <label for="type">{{ $t("component.common.type") }}</label>
-                  <opensilex-ScientificObjectTypeSelector
+                  <ScientificObjectTypeSelector
                     id="type"
                     :types.sync="filter.types"
                     :multiple="true"
                     class="searchFilter"
-                  ></opensilex-ScientificObjectTypeSelector>
-                </opensilex-FilterField>
+                  ></ScientificObjectTypeSelector>
+                </FilterField>
               </div>
             </template>
 
@@ -106,72 +105,72 @@
 
               <!-- Germplasm -->
               <div>
-                <opensilex-FilterField quarterWidth="false">
-                  <opensilex-GermplasmSelectorWithFilter
+                <FilterField quarterWidth="false">
+                  <GermplasmSelectorWithFilter
                     :germplasmsUris.sync="filter.germplasm"
-                  ></opensilex-GermplasmSelectorWithFilter>
-                </opensilex-FilterField>
+                  ></GermplasmSelectorWithFilter>
+                </FilterField>
               </div>
 
               <!-- Factors levels -->
               <div>
-                <opensilex-FilterField>
+                <FilterField>
                   <b-form-group>
                     <label for="factorLevels">
                       {{ $t("FactorLevelSelector.label") }}
                     </label>
-                    <opensilex-FactorLevelSelector
+                    <FactorLevelSelector
                       id="factorLevels"
                       :factorLevels.sync="filter.factorLevels"
                       :multiple="true"
                       :required="false"
                       :key="resetFactorLevelSelectorKey"
                       class="searchFilter"
-                    ></opensilex-FactorLevelSelector>
+                    ></FactorLevelSelector>
                   </b-form-group>
-                </opensilex-FilterField>
+                </FilterField>
               </div>
 
               <!-- Exists -->
               <div>
-                <opensilex-FilterField>
-                  <opensilex-DateForm
+                <FilterField>
+                  <DateForm
                     :value.sync="filter.existenceDate"
                     label="ScientificObjectList.existenceDate"
                     class="searchFilter"
-                  ></opensilex-DateForm>
-                </opensilex-FilterField>
+                  ></DateForm>
+                </FilterField>
               </div>
 
               <!-- Created -->
               <div>
-                <opensilex-FilterField>
-                  <opensilex-DateForm
+                <FilterField>
+                  <DateForm
                     :value.sync="filter.creationDate"
                     label="ScientificObjectList.creationDate"
                     class="searchFilter"
-                  ></opensilex-DateForm>
-                </opensilex-FilterField>
+                  ></DateForm>
+                </FilterField>
               </div>
 
               <!-- Criteria search -->
               <div>
-                <opensilex-FilterField quarterWidth="false">
-                  <opensilex-CriteriaSearchModalCreator
+                <FilterField quarterWidth="false">
+                  <CriteriaSearchModalCreator
                     class="searchFilter"
                     ref="criteriaSearchCreateModal"
                     :criteria_dto.sync="filter.criteriaDto"
                     :required="false"
                     :requiredBlue="false"
-                  ></opensilex-CriteriaSearchModalCreator>
-                </opensilex-FilterField>
+                  ></CriteriaSearchModalCreator>
+                </FilterField>
               </div>
             </template>
-          </opensilex-SearchFilterField>
+          </SearchFilterField>
         </div>
       </Transition>
 
-      <opensilex-ScientificObjectList
+      <ScientificObjectList
         ref="soList"
         :searchFilter="filter"
         @update="soForm.editScientificObject($event)"
@@ -179,34 +178,34 @@
         @createEvents="createEvents"
         @createMoves="createMoves"
         class="scientificObjectList"
-      ></opensilex-ScientificObjectList>
+      ></ScientificObjectList>
 
-    </opensilex-PageContent>
+    </PageContent>
 
-    <opensilex-ModalForm
+    <ModalForm
       ref="documentForm"
       component="opensilex-DocumentForm"
       createTitle="component.common.addDocument"
       modalSize="lg"
       :initForm="initForm"
       icon="ik#ik-file-text"
-    ></opensilex-ModalForm>
+    ></ModalForm>
 
-    <opensilex-EventCsvForm
+    <EventCsvForm
       ref="eventCsvForm"
       :targets="selectedUris"
-    ></opensilex-EventCsvForm>
+    ></EventCsvForm>
 
-    <opensilex-EventCsvForm
+    <EventCsvForm
       ref="moveCsvForm"
       :targets="selectedUris"
       :isMove="true"
-    ></opensilex-EventCsvForm>
+    ></EventCsvForm>
 
-    <opensilex-ScientificObjectForm
+    <ScientificObjectForm
       ref="soForm"
       @onUpdate="redirectToDetail"
-    ></opensilex-ScientificObjectForm>
+    ></ScientificObjectForm>
   </div>
 </template>
 
@@ -221,6 +220,15 @@ import ModalForm from "@/components/common/forms/ModalForm.vue";
 import ScientificObjectList, {ScientificObjectFilter} from "@/components/scientificObjects/ScientificObjectList.vue";
 import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
+import {DocForm} from "@/components/documents/DocumentForm.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
+import ScientificObjectTypeSelector from "@/components/scientificObjects/ScientificObjectTypeSelector.vue";
+import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSelector.vue";
+import DateForm from "@/components/common/forms/DateForm.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
@@ -270,8 +278,10 @@ function redirectToDetail(http): void {
   });
 }
 
+/**
+ * Shows the modal form to create a new document on an OS.
+ */
 function createDocument(): void {
-  //TODO MAX expose the virus
   documentForm.value.showCreateForm();
 }
 
@@ -292,9 +302,9 @@ function updateSelectedUris(): void{
   }
 }
 
-function initForm() {
+function initForm(): DocForm{
   let targetURI = [];
-  for (let select of this.soList.getSelected()) {
+  for (let select of soList.value.getSelected()) {
     targetURI.push(select.uri);
   }
 
@@ -316,8 +326,8 @@ function initForm() {
   };
 }
 
-reset() {
-  this.filter = {
+function reset(): void {
+  filter.value = {
     name: "",
     experiment: undefined,
     germplasm: [],
@@ -327,10 +337,10 @@ reset() {
     creationDate: undefined,
     criteriaDto: {criteria_list:[]}
   };
-  this.criteriaSearchCreateModal.resetCriteriaListAndSave();
-  this.soList.refresh();
-  this.resetExperimentSelectorKey++;
-  this.resetFactorLevelSelectorKey++;
+  criteriaSearchCreateModal.value.resetCriteriaListAndSave();
+  soList.value.refresh();
+  resetExperimentSelectorKey.value++;
+  resetFactorLevelSelectorKey.value++;
 }
 //#endregion
 

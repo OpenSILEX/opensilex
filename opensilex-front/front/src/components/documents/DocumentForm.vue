@@ -173,7 +173,7 @@ import { NForm, NFormItem, NRadio, NRadioGroup } from 'naive-ui'
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
 
 // ---- props
-type DocForm = {
+export type DocForm = {
   description: {
     uri?: string
     identifier?: string

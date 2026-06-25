@@ -93,6 +93,7 @@ import {
 import { ScientificObjectsService } from 'opensilex-core'
 import type { ExperimentGetDTO } from 'opensilex-core'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import {CriteriaDTO} from "@/components/scientificObjects/CriteriaSearchModalCreator.vue";
 
 export type ScientificObjectFilter = {
   name?: string
@@ -104,7 +105,7 @@ export type ScientificObjectFilter = {
   types?: string[]
   existenceDate?: string
   creationDate?: string
-  criteriaDto?: Record<string, any>
+  criteriaDto?: CriteriaDTO
   facility?: string
 }
 

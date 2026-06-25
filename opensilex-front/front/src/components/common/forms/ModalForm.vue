@@ -43,7 +43,7 @@ import {computed, inject, nextTick, ref, useTemplateRef} from 'vue'
 import {useI18n} from 'vue-i18n'
 import type {FormInst} from 'naive-ui'
 import {NForm} from 'naive-ui'
-import type {OpenSilexVuePlugin} from '@/models/OpenSilexVuePlugin'
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
@@ -56,9 +56,8 @@ const props = defineProps({
   component: { type: [String, Object], required: true },
   icon: String,
   createTitle: { type: String, required: true },
-  editTitle: { type: String, required: true },
+  editTitle: { type: String, required: false },
   tutorial: Boolean,
-  editMode: Boolean,
   data: Object,
   createAction: Function,
   updateAction: Function,
@@ -75,7 +74,8 @@ const rules = ref<Record<string, any>>({})
 const componentRefreshKey = ref(0)
 
 const translatedTitle = computed(() => {
-  const key = editMode.value ? props.editTitle : props.createTitle
+  //There are some ModalForms used only for Create, so editTitle is optional, so add a check to take something that isn't undefined
+  const key = editMode.value ? (props.editTitle ? props.editTitle : props.createTitle) : props.createTitle
   return t(key)
 })
 

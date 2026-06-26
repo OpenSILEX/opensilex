@@ -55,19 +55,20 @@
         
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
+        <module>opensilex-yvan</module>
 
         <!-- Dataverse module -->
-<!--        <module>opensilex-dataverse</module>-->
+        <!--        <module>opensilex-dataverse</module>-->
 
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
-        
+
         <!-- Release module -->
         <module>opensilex-release</module>
-         
+
         <!-- Maven Plugin module -->
         <module>opensilex-swagger-codegen-maven-plugin</module>
-        
+
         <!-- Documentation module -->
         <module>opensilex-doc</module>
         <module>opensilex-migration</module>

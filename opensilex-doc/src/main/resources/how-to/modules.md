@@ -63,6 +63,8 @@ Notes : *We use these naming conventions as examples, but **they are not mandato
 ├── src # back end java sources
 │   └── main
 │       ├── java
+│       │   └──org.opensilex.{module_name}
+│       │       └── {module_name}Module.java
 │       └── resources
 ```
 See [Theme subject](theme.md) for more details.
@@ -98,9 +100,9 @@ See [Theme subject](theme.md) for more details.
 
     <parent>
         <groupId>org.opensilex</groupId>
-        <artifactId>{module_name}</artifactId>
+        <artifactId>opensilex-module</artifactId>
         <version>${revision}</version>
-        <relativePath>../{module_name}/pom.xml</relativePath>
+        <relativePath>../opensilex-module/pom.xml</relativePath>
     </parent>
 </project>
 ```

@@ -8,7 +8,7 @@
  * *****************************************************************************
  */
 
-package org.opensilex.yvan.spidermutagene.api;
+package org.opensilex.yvan.spidermutagen.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,7 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-public class SpiderMutageneAPI {
+public class SpiderMutagenAPI {
     @Inject
     private SPARQLService sparqlService;
 
@@ -45,7 +45,7 @@ public class SpiderMutageneAPI {
             @ApiResponse(code = 409, message = "The SM already exists (duplicate URI)")
     })
     public Response createPerson(
-            @ApiParam("Person description") @Valid SpiderMutageneDTO dto
+            @ApiParam("Person description") @Valid SpiderMutagenDTO dto
     ) throws Exception {
 
         return new CreatedUriResponse().getResponse();

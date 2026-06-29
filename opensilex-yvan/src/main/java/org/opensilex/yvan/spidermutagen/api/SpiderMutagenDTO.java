@@ -8,12 +8,12 @@
  * *****************************************************************************
  */
 
-package org.opensilex.yvan.spidermutagene.api;
+package org.opensilex.yvan.spidermutagen.api;
 
 import io.swagger.annotations.ApiModel;
 
 @ApiModel
-public class SpiderMutageneDTO {
+public class SpiderMutagenDTO {
     String name;
     String description;
 }

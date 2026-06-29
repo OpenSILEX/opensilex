@@ -27,12 +27,13 @@ import type {MultiValuedRDFObjectRelation} from './models/MultiValuedRDFObjectRe
 import {createUriListFromGetPropertiesResult, sortProperties} from './OntologyTools'
 
 const props = withDefaults(defineProps<{
-  relations?: Array<RDFObjectRelationDTO>
-  rdfType?: string
-  baseType?: string
-  excludedProperties?: Set<string>
-  context?: { experimentURI: string } | string
-  initHandler?: (relation: MultiValuedRDFObjectRelation) => void
+  relations?: Array<RDFObjectRelationDTO>,
+  rdfType?: string,
+  baseType?: string,
+  typeToLoad?: string | null, //This is a way to avoid directly calling typeSwitch in the cases where we were using nextTick
+  excludedProperties?: Set<string>,
+  context?: { experimentURI: string } | string,
+  initHandler?: (relation: MultiValuedRDFObjectRelation) => void,
   customComponentProps?: Map<string, Map<string, any>>
 }>(), {
   relations: () => [],
@@ -347,9 +348,18 @@ watch(
     {immediate: true}
 )
 
-defineExpose({
-  typeSwitch
-})
+//TODO MAX verify nothing broken here, i added the prop typeToLoad to be able to remove nextTick from parent
+watch(
+  () => props.typeToLoad,
+  async (newType) => {
+    if (newType && props.baseType) {
+      // `initialLoad` is true when we are called from the parent after a base‑type change
+      await typeSwitch(newType, true);
+    }
+  }
+);
+
+defineExpose({typeSwitch, updateRelation});
 </script>
 
 <style scoped>

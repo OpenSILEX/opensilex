@@ -229,6 +229,7 @@ import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue"
 import ScientificObjectTypeSelector from "@/components/scientificObjects/ScientificObjectTypeSelector.vue";
 import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSelector.vue";
 import DateForm from "@/components/common/forms/DateForm.vue";
+import ScientificObjectForm from "@/components/scientificObjects/ScientificObjectForm.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

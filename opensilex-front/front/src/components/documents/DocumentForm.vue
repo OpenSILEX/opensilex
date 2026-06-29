@@ -220,26 +220,24 @@ const documentContentType = ref<ContentKind>(DOCUMENT_CONTENT_TYPE_FILE)
 watch(() => props.form, (nv) => {
 }, { deep: true });
 
+//Watchers to remove error states when a new value is filled
 watch(
   () => props.form?.description?.rdf_type,
   () => {
-    // Efface l’état d’erreur de l’item "Type" quand l’utilisateur choisit une valeur
     rdfTypeItem.value?.restoreValidation()
   },
   { flush: 'post' }
 )
-
 watch(
   () => props.form?.file,
   () => {
-    // Efface l’état d’erreur de l’item "Fichier" quand un fichier est sélectionné
     fileItem.value?.restoreValidation()
   },
   { flush: 'post' }
 )
 
 
-// ---- règles
+// ---- Rules
 const rules = computed(() => ({
   'description.title': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.title') }), trigger: ['blur','change'] },
   'description.rdf_type': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.type') }), trigger: ['change','blur'] },

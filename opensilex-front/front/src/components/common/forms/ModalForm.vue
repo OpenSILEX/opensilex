@@ -79,6 +79,9 @@ const translatedTitle = computed(() => {
   return t(key)
 })
 
+/**
+ * Gets the dynamic component .VALUE
+ */
 function getFormRef() {
   return componentRef.value
 }

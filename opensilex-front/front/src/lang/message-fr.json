@@ -228,6 +228,11 @@
                 "display_by": "Afficher par",
                 "filter": "Filtrer la selection",
                 "help": "Décochez pour utiliser le sélecteur ci-dessous"
+            },
+            "forms-generic-placeholders": {
+                "uri-label": "URI de l'objet",
+                "form-name-placeholder": "Saisir le nom de l'objet",
+                "form-type-placeholder": "Sélectionner le type de l'objet"
             }
         },
         "copyToClipboard": {

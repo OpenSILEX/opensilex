@@ -227,6 +227,11 @@
                 "display_by": "Display by",
                 "filter": "Filter selection",
                 "help": "Uncheck to use the below selector"
+            },
+            "forms-generic-placeholders": {
+                "uri-label": "Object URI",
+                "form-name-placeholder": "Enter object name",
+                "form-type-placeholder": "Select object type"
             }
         },
         "copyToClipboard": {

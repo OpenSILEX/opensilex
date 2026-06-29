@@ -159,6 +159,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-yvan</artifactId>
+            <version>BUILD-SNAPSHOT</version>
+        </dependency>
+
         
         <!--Other extension modules must be declared as dependencies-->
 <!--    <dependency>

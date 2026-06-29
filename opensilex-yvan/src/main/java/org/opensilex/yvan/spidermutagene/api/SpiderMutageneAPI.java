@@ -8,7 +8,7 @@
  * *****************************************************************************
  */
 
-package org.opensilex.yvan.spidermutagene.API;
+package org.opensilex.yvan.spidermutagene.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -16,10 +16,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.person.api.ORCIDClient;
-import org.opensilex.security.person.api.PersonDTO;
-import org.opensilex.security.person.dal.PersonDAO;
-import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -30,7 +26,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
 
 public class SpiderMutageneAPI {
     @Inject

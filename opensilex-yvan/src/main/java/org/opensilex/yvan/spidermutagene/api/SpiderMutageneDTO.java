@@ -8,7 +8,7 @@
  * *****************************************************************************
  */
 
-package org.opensilex.yvan.spidermutagene.API;
+package org.opensilex.yvan.spidermutagene.api;
 
 import io.swagger.annotations.ApiModel;
 

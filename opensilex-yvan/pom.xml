@@ -5,9 +5,7 @@
  Copyright © INRAE 2020
  Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 
- PHIS pom.xml
- This module is {description} web services API integrate as a module of the new
- modular system.
+ This module aim to extends the core opensilex system by adding useless things for tests
 ******************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -17,6 +15,7 @@
     <artifactId>opensilex-yvan</artifactId>
     <packaging>jar</packaging>
     <name>opensilex-yvan</name>
+    <version>${revision}</version>
 
     <properties>
         <revision>BUILD-SNAPSHOT</revision>

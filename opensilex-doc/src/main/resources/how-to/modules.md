@@ -127,7 +127,10 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 
 5. Update global ***pom.xml definition**
 
-You need to the new module to the full build stage you need to add it to the global pom.xml
+If you want your new module to be part of the OpenSilex build, you need to add it to the global pom.xml file in two places :
+- In the `<module> </module>` section to include it in the build
+- In the `<dependency> </dependency>` section to make it available for other modules
+
  ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--

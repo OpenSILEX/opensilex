@@ -30,7 +30,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
@@ -340,9 +339,8 @@ public class ProvenanceAPI {
             @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response searchProvenancesByURIs(
-            @ApiParam(value = "Provenances URIs and optional parameters", required = true) URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

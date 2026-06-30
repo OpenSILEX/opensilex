@@ -18,7 +18,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.ServiceUnavailableException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.response.CreatedUriResponse;
@@ -345,9 +344,8 @@ public class PersonAPI {
             @ApiResponse(code = 404, message = "Persons not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchPersonsByURIs(
-            @ApiParam(value = "DTO containing persons URIs", required = true) @Valid URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

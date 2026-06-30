@@ -367,9 +367,8 @@ public class DeviceAPI {
             @ApiResponse(code = 404, message = "Device not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response searchDevicesByURIs(
-            @ApiParam(value = "Device URIs and optional parameters", required = true) URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

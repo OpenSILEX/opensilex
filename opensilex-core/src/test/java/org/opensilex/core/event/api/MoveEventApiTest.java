@@ -88,7 +88,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
                     updatePath
             );
             getByUriList = new ServiceDescription(
-                    EventAPI.class.getMethod("searchMoveEventByUris", URIsListPostDTO.class),
+                    EventAPI.class.getMethod("searchMoveEventByUris", List.class),
                     getByUriListPath
             );
         } catch (NoSuchMethodException e) {
@@ -659,11 +659,8 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
     //#region private methods
     private List<MoveDetailsDTO> getMoveByUris(List<URI> uris) throws Exception {
-        var urisDto = new URIsListPostDTO();
-        urisDto.setUris(uris);
-
         return new UserCallBuilder(getByUriList)
-                .setBody(urisDto)
+                .setBody(uris)
                 .buildAdmin()
                 .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveDetailsDTO>>() {})
                 .getDeserializedResponse()

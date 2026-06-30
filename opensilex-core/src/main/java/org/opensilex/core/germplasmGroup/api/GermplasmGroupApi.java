@@ -22,7 +22,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -298,9 +297,8 @@ public class GermplasmGroupApi {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchGermplasmGroupByURIs(
-            @ApiParam(value = "DTO containing germplasm groups URIs", required = true) @Valid URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

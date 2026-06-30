@@ -15,7 +15,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.CreatedUriResponse;
@@ -325,9 +324,8 @@ public class GroupAPI {
         @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response searchGroupsByURIs(
-            @ApiParam(value = "DTO containing groups URIs", required = true) @Valid URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

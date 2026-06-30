@@ -112,7 +112,7 @@ export default class VariableSelector extends Vue {
     load(variables: Array<string>) {
 
         return this.service
-            .getVariablesByURIs(variables)
+            .searchVariablesByURIs(variables)
             .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
                 return (http && http.response) ? http.response.result : undefined
             }).catch(this.$opensilex.errorHandler);

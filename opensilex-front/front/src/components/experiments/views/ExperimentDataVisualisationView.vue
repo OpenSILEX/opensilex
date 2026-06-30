@@ -304,7 +304,7 @@ export default class ExperimentDataVisualisationView extends Vue {
     } else {
 
       this.VariablesService
-          .getVariablesByURIs(this.selectedVariable)
+          .searchVariablesByURIs(this.selectedVariable)
           .then((http: HttpResponse<OpenSilexResponse>) => {
                 this.selectedVariablesObjectsList = http.response.result;
                 const datatype = this.selectedVariablesObjectsList[0].datatype.split("#")[1];

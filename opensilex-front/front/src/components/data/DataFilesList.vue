@@ -401,7 +401,7 @@ export default class DataFilesList extends Vue {
             if (provenancesToLoad.length > 0) {
               let promiseProvenance = this.$opensilex
                 .getService("opensilex.DataService")
-                .getProvenancesByURIs(provenancesToLoad)
+                .searchProvenancesByURIs(provenancesToLoad)
                 .then((httpObj) => {
                   for (let j in httpObj.response.result) {
                     let prov = httpObj.response.result[j];

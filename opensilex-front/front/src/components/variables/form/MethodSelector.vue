@@ -27,6 +27,7 @@ import {MethodGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import FormSelector from "../../common/forms/FormSelector.vue";
+import {GetByUrisWithSharedResourceInstanceDTO} from "opensilex-core/model/getByUrisWithSharedResourceInstanceDTO";
 
 @Component
 export default class MethodSelector extends Vue {
@@ -91,8 +92,12 @@ export default class MethodSelector extends Vue {
     return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
   }
 
+  const urisAndSharedResourceDto: GetByUrisWithSharedResourceInstanceDTO = {
+    uris: methods,
+    sharedResourceInstance: this.sharedResourceInstance
+  }
   return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .getMethodsByURIs(methods, this.sharedResourceInstance)
+    .searchMethodsByURIs(urisAndSharedResourceDto)
     .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => http.response.result)
     .catch(this.$opensilex.errorHandler);
   }

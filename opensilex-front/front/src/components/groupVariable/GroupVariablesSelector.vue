@@ -24,6 +24,7 @@ import {VariablesGroupGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import FormSelector from "../common/forms/FormSelector.vue";
+import {GetByUrisWithSharedResourceInstanceDTO} from "opensilex-core/model/getByUrisWithSharedResourceInstanceDTO";
 
 
 @Component
@@ -57,8 +58,12 @@ export default class GroupVariablesSelector extends Vue {
   }
 
   loadVariablesGroups(vgUris): Promise<Array<VariablesGroupGetDTO>> {
+    const urisAndSharedResourceDto: GetByUrisWithSharedResourceInstanceDTO = {
+      uris: vgUris,
+      sharedResourceInstance: this.sharedResourceInstance
+    }
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getVariablesGroupByURIs(vgUris, this.sharedResourceInstance)
+      .searchVariablesGroupByURIs(urisAndSharedResourceDto)
       .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http.response.result;
       })

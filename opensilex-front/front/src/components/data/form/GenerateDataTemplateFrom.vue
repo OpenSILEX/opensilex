@@ -389,7 +389,7 @@ export default class GenerateDataTemplateFrom extends Vue {
         line3.push( this.getDataTypeLabel("xsd:date") +
           "\n" + this.$t("DataHelp.required"));
 
-        this.service.getVariablesByURIs(this.variables)
+        this.service.searchVariablesByURIs(this.variables)
           .then((http) => {
             for (let element of http.response.result) {
 

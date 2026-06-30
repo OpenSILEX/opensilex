@@ -27,6 +27,7 @@ import {InterestEntityGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import FormSelector from "../../common/forms/FormSelector.vue";
+import {GetByUrisWithSharedResourceInstanceDTO} from "opensilex-core/model/getByUrisWithSharedResourceInstanceDTO";
 
 @Component
 export default class InterestEntitySelector extends Vue {
@@ -68,8 +69,12 @@ export default class InterestEntitySelector extends Vue {
   }
 
   loadInterestEntities(interestEntities): Promise<Array<InterestEntityGetDTO>> {
+    const urisAndSharedResourceDto: GetByUrisWithSharedResourceInstanceDTO = {
+      uris: interestEntities,
+      sharedResourceInstance: this.sharedResourceInstance
+    }
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getInterestEntitiesByURIs(interestEntities, this.sharedResourceInstance)
+      .searchInterestEntitiesByURIs(urisAndSharedResourceDto)
       .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
         return http.response.result;
       })

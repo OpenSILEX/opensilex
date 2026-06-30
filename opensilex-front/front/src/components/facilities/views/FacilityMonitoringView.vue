@@ -76,6 +76,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
+import {GetByUrisWithSharedResourceInstanceDTO} from "opensilex-core/model/getByUrisWithSharedResourceInstanceDTO";
 
 
 @Component
@@ -151,8 +152,12 @@ export default class FacilityMonitoringView extends Vue {
 
   searchVariableGroups() {
     let variableGroupsURIs = this.selected.variableGroups.map(group => group.uri);
+    const urisAndSharedResourceDto: GetByUrisWithSharedResourceInstanceDTO = {
+      uris: variableGroupsURIs,
+      sharedResourceInstance: undefined
+    }
     return this.variablesService
-        .getVariablesGroupByURIs(variableGroupsURIs, undefined)
+        .searchVariablesGroupByURIs(urisAndSharedResourceDto)
         .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
           let nodeList = [];
           for (let group of http.response.result) {

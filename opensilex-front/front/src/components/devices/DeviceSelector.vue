@@ -105,7 +105,7 @@ export default class DeviceSelector extends Vue {
 
     load(devices) {
       return this.$service
-        .getDeviceByUris(devices)
+        .searchDevicesByURIs(devices)
         .then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
             return (http && http.response) ? http.response.result : undefined
         }).catch(this.$opensilex.errorHandler);

@@ -1,11 +1,18 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://phenome.inrae.fr/pheno3c/
+    baseURIAlias: pheno3c
     sparql:
-        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            serverURI: http://138.102.159.98:8080/rdf4j-server/
+            repository: pheno3c
+
+big-data:
+    mongodb:
+        config:
+            host: 138.102.159.98
+            port: 27017
+            database: pheno3c
+
 
 file-system:
     fs:
@@ -29,13 +36,6 @@ file-system:
             # customPath:
             #     datafile/: irods
 
-big-data:
-    mongodb:
-        config:
-            host: localhost
-            port: 8668
-            database: opensilex
-    #            timezone: Europe/Paris
 
 phisws:
     infrastructure: opensilex
@@ -75,25 +75,6 @@ system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
 
-front:
-    agroportal:
-        entity:
-            - AGROVOC
-            - PO
-        trait:
-            - PATO
-        method:
-            - TRANSFORMON
-        unit:
-            - OBOE
 
-# dataverse:
-#     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
-#     dataverseAlias: "opensilex-tests"
-#     dataverseLanguages:
-#         - en
-#         - fr
-#     datasetMetadataLanguages:
-#         - en
-#         - fr
+
+

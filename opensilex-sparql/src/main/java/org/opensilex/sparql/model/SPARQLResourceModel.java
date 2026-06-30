@@ -70,11 +70,8 @@ public class SPARQLResourceModel implements SPARQLModel {
         return uri;
     }
 
-    /**
-     * Set the uri after decoding it with UTF-8 to avoid issues with special characters in the URI (e.g : spaces encoded as %20)
-     */
     public void setUri(URI uri) {
-        this.uri = uri == null ? null : URI.create(URLDecoder.decode(uri.toString(), StandardCharsets.UTF_8));
+        this.uri = uri;
     }
 
     public URI getType() {

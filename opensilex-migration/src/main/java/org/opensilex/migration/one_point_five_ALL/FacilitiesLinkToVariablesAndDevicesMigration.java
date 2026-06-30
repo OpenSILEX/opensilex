@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -120,21 +121,36 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
         var facilityDao = new FacilityDAO(sparql);
         List<FacilityModel> facilitiesToUpdate = new ArrayList<FacilityModel>();
 
-        var pipeline = List.of(Aggregates.project(new Document(Map.of(
-                "t", "$target",
-                "v", "$variable",
-                "p", "$provenance.provWasAssociatedWith"
-        ))));
+        var pipeline = List.of(
+                Aggregates.project(new Document(Map.of(
+                        "t", "$target",
+                        "v", "$variable",
+                        "p", "$provenance.provWasAssociatedWith"
+                )))
+        );
         var collection = mongodb.getServiceV2().getDatabase().getCollection("data");
         var batch = new ArrayList<MinimalData>(BATCH_SIZE);
         var currentIndex = 0;
         var total = collection.countDocuments();
+        //A boolean to show a warning at end if some data with no variable or data exists
+        boolean messedUpDataExists = false;
         try (var cursor = collection.aggregate(pipeline).cursor()) {
             while (currentIndex < total) {
                 batch.clear();
                 while (cursor.hasNext() && batch.size() < BATCH_SIZE) {
                     var document = cursor.next();
+                    //Sometimes Data has no target (not normal but true), so ignore that data in this case. Also done that for variables just in case.
+                    if(document.getString("t") == null || document.getString("v") == null){
+                        messedUpDataExists = true;
+                        currentIndex += 1;
+                        continue;
+                    }
                     var provEntity = document.getList("p", Document.class);
+                    //provenance.provWasAssociatedWith sometimes doesn't exist, so handle that case
+                    if (provEntity == null) {
+                        provEntity = Collections.emptyList();
+                    }
+
                     batch.add(new MinimalData(
                             URI.create(document.getString("t")),
                             URI.create(document.getString("v")),
@@ -148,6 +164,9 @@ public class FacilitiesLinkToVariablesAndDevicesMigration {
                 mergeFacilitiesToUpdateList(nextFacilitiesToUpdate, facilitiesToUpdate);
                 logger.info(String.format("Progress : %s / %s (%.1f %%)", currentIndex, total, 100.f * currentIndex / total));
             }
+        }
+        if(messedUpDataExists){
+            logger.warn("Some data was found with no target or variable, not normal, you should check in the mongoDB!");
         }
         facilityDao.updateMany(facilitiesToUpdate);
     }

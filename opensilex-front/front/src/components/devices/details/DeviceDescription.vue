@@ -342,7 +342,7 @@ export default class DeviceDescription extends Vue {
 
   getLinkedVariables(){
     this.variablesService
-      .getVariablesByURIs(this.linkedVariablesURIs)
+      .searchVariablesByURIs(this.linkedVariablesURIs)
       .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
         this.linkedVariables = http.response.result;
       })

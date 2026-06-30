@@ -26,6 +26,7 @@ import {UnitGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import FormSelector from "../../common/forms/FormSelector.vue";
+import {GetByUrisWithSharedResourceInstanceDTO} from "opensilex-core/model/getByUrisWithSharedResourceInstanceDTO";
 
 @Component
 export default class UnitSelector extends Vue {
@@ -85,8 +86,12 @@ export default class UnitSelector extends Vue {
       return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
     }
 
+    const urisAndSharedResourceDto: GetByUrisWithSharedResourceInstanceDTO = {
+      uris: units,
+      sharedResourceInstance: this.sharedResourceInstance
+    }
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getUnitsByURIs(units, this.sharedResourceInstance)
+      .searchUnitsByURIs(urisAndSharedResourceDto)
       .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => http.response.result)
       .catch(this.$opensilex.errorHandler);
   }

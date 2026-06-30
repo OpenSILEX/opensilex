@@ -92,7 +92,7 @@ export default class ProvenanceSelector extends Vue {
   loadProvenances(provenancesURI) {
     return this.$opensilex
       .getService("opensilex.DataService")
-      .getProvenancesByURIs(provenancesURI)
+      .searchProvenances(provenancesURI)
       .then(
       (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
         http.response.result

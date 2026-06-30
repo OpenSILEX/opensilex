@@ -28,7 +28,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.SPARQLModule;
@@ -500,9 +499,8 @@ public class FactorAPI {
         @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response searchFactorsByURIs(
-            @ApiParam(value = "DTO containing factors URIs", required = true) @Valid URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

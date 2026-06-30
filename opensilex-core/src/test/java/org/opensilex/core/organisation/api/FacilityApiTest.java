@@ -47,7 +47,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
                     PATH
             );
             searchByURIs = new ServiceDescription(
-                    FacilityAPI.class.getMethod("searchFacilitiesByURIs", URIsListPostDTO.class),
+                    FacilityAPI.class.getMethod("searchFacilitiesByURIs", List.class),
                     URIS_PATH
             );
         } catch (NoSuchMethodException e) {
@@ -414,11 +414,8 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
     //#region private methods
     private List<FacilityGetDTO> getFacilitiesByUris(List<URI> uris) throws Exception {
-        var urisDto = new URIsListPostDTO();
-        urisDto.setUris(uris);
-
         return new UserCallBuilder(searchByURIs)
-                .setBody(urisDto)
+                .setBody(uris)
                 .buildAdmin()
                 .executeCallAndDeserialize(listTypeReference)
                 .getDeserializedResponse()

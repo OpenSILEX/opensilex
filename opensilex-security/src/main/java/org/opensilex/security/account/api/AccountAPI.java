@@ -16,7 +16,6 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.FavoriteCreationDTO;
 import org.opensilex.security.user.api.FavoriteGetDTO;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.ForbiddenException;
@@ -350,9 +349,8 @@ public class AccountAPI {
             @ApiResponse(code = 404, message = "accounts not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchAccountsByURIs(
-            @ApiParam(value = "DTO containing accounts URIs", required = true) @Valid URIsListPostDTO dto
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
-        List<URI> uris = dto == null ? null : dto.getUris();
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

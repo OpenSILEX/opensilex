@@ -6,9 +6,9 @@
 |------------|------------------------|---------------------|-------------------|
 | 22/05/2026 | yvan.roux@opensilex.fr | 1.5.0 Freaky Fossil | Document creation |
 
-> ⚠️ _WARNING_ : This document is about API ontology extension system and do not cover module extension system. ⚠️
+> ⚠️ _WARNING_ : This document is about API ontology extension system and does not cover module extension system. ⚠️
 >
-> If you are looking for explanation about the way you can extend the core ontology by creating a new module and putting owl files in it, this document is not for you.
+> If you are looking for an explanation about the way you can extend the core ontology by creating a new module and putting owl files in it, see [ontology module extension system](/src/main/resources/technical-documentation/opensilex-module/ontology-module-extension-system.md).
 
 ## Table of contents
 

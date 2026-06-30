@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso-phis#"
-     xml:base="http://www.opensilex.org/vocabulary/oeso-phis"
+<rdf:RDF xmlns="http://www.yvan.extension.org#"
+     xml:base="http://www.yvan.extension.org"
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -10,13 +10,12 @@
      xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:time="http://www.w3.org/2006/time#">
-    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso-phis">
+    <owl:Ontology rdf:about="http://www.yvan.extension.org">
         <dc:creator>yvan</dc:creator>
         <rdfs:comment>actually just a test to extend the opensilex core ontology in an opensilex test module</rdfs:comment>
         <rdfs:label xml:lang="en">OpenSILEX - Yvan onto</rdfs:label>
         <owl:versionInfo>Version 1.0</owl:versionInfo>
     </owl:Ontology>
-
 
 
     <owl:Class rdf:about="http://www.yvan.extension.org#SpiderMutagen">
@@ -31,8 +30,6 @@
         <rdfs:label xml:lang="en">has experiment</rdfs:label>
         <rdfs:label xml:lang="fr">à une expérimentation</rdfs:label>
     </owl:ObjectProperty>
-
-
 
 
 <!--      adding restrictions -->

@@ -67,9 +67,8 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         changeTypeParametersUri.setSparql(sparql);
 
         //Execute them
+        var watch = new StopWatch();
         try {
-
-            var watch = new StopWatch();
             new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
                 watch.start();
                 facilitiesLinkToVariablesAndDevicesMigration.executeWithinTransaction(sparql, mongodb, session);
@@ -79,7 +78,6 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
                 germplasmAttributeUpdateRights.executeWithinTransaction(sparql, mongodb.getServiceV2(), session);
                 changeTypeParametersUri.execute();
                 watch.stop();
-                logger.debug(format("Total time : %.1fs", (float) watch.getTime() / 1000.f));
                 return null;
             });
 
@@ -90,6 +88,8 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             } catch (Exception exception) {
                 throw new OpensilexModuleUpdateException("Error while migrating to 1.5. No changes were saved on the databases", exception);
             }
+        } finally {
+            logger.debug(format("Total time : %.1fs", (float) watch.getTime() / 1000.f));
         }
 
     }

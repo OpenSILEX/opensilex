@@ -55,7 +55,7 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
 
         try {
             new SparqlMongoTransaction(sparql, mongo.getServiceV2()).execute(session -> {
-                executeWithSession(sparql, mongo.getServiceV2(), session);
+                executeWithinTransaction(sparql, mongo.getServiceV2(), session);
                 return null;
             });
         } catch (Exception e) {
@@ -64,7 +64,7 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
         }
     }
 
-    public void executeWithSession(SPARQLService sparql, MongoDBServiceV2 mongo, ClientSession session) throws Exception {
+    public void executeWithinTransaction(SPARQLService sparql, MongoDBServiceV2 mongo, ClientSession session) throws Exception {
         var attributeCollection = mongo.getDatabase().getCollection(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
 
         var uris = attributeCollection.distinct(GermplasmMetadataModel.URI_FIELD, String.class)

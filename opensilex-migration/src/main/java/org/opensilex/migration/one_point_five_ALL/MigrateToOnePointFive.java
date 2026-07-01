@@ -52,45 +52,31 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         Logger logger = getLogger(MigrateToOnePointFive.class);
         //Initialize the sub-part migration classes
-        var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(sparql, mongodb,
+        var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(
                 getLogger(format(LOGGER_FORMAT, FacilitiesLinkToVariablesAndDevicesMigration.class.getName(), 1, 6)));
-        var sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(sparql, mongodb,
+        var sciObjsAndMovesLocationMigration = new UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(
                 getLogger(format(LOGGER_FORMAT, UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel.class.getName(), 2, 6)));
-        var sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(sparql,
+        var sciObjAndXpLinkMigration = new ScientificObjectAndExperimentRelationMigration(
                 getLogger(format(LOGGER_FORMAT, ScientificObjectAndExperimentRelationMigration.class.getName(), 3, 6)));
-        var facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(sparql, mongodb,
+        var facilitiesLocationsMigration = new UpdateFacilitiesWithLocationObservationCollectionModel(
                 getLogger(format(LOGGER_FORMAT, UpdateFacilitiesWithLocationObservationCollectionModel.class.getName(), 4, 6)));
         var germplasmAttributeUpdateRights = new GermplasmAttributeUpdateRightsMigration(
                 getLogger(format(LOGGER_FORMAT, GermplasmAttributeUpdateRightsMigration.class.getName(), 5, 6)));
         var changeTypeParametersUri = new ChangeTypeParametersUri(
                 getLogger(format(LOGGER_FORMAT, ChangeTypeParametersUri.class.getName(), 6, 6)));
         changeTypeParametersUri.setSparql(sparql);
-        //Check migration has not already been run by checking each sub-migration
-        try {
-            if (
-                    facilitiesLinkToVariablesAndDevicesMigration.wasMigrationPreviouslyRun() ||
-                            sciObjsAndMovesLocationMigration.wasMigrationPreviouslyRun() ||
-                            sciObjAndXpLinkMigration.wasMigrationPreviouslyRun() ||
-                            facilitiesLocationsMigration.wasMigrationPreviouslyRun()
-            ) {
-                logger.warn("It looks like this migration has already been performed. If this is not the case contact the Opensilex Team! No changes saved on the database.");
-                return;
-            }
-        } catch (Exception e) {
-            logger.error(" No changes saved on the database. Something went wrong during verification that migration was not already run, the error was: {}", e.getMessage());
-            return;
-        }
+
         //Execute them
         try {
 
             var watch = new StopWatch();
             new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
                 watch.start();
-                facilitiesLinkToVariablesAndDevicesMigration.execute();
-                sciObjsAndMovesLocationMigration.execute(session);
-                sciObjAndXpLinkMigration.execute();
-                facilitiesLocationsMigration.execute(session);
-                germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
+                facilitiesLinkToVariablesAndDevicesMigration.executeWithinTransaction(sparql, mongodb, session);
+                sciObjsAndMovesLocationMigration.executeWithinTransaction(sparql, mongodb, session);
+                sciObjAndXpLinkMigration.executeWithinTransaction(sparql);
+                facilitiesLocationsMigration.executeWithinTransaction(sparql, mongodb, session);
+                germplasmAttributeUpdateRights.executeWithinTransaction(sparql, mongodb.getServiceV2(), session);
                 changeTypeParametersUri.execute();
                 watch.stop();
                 logger.debug(format("Total time : %.1fs", (float) watch.getTime() / 1000.f));

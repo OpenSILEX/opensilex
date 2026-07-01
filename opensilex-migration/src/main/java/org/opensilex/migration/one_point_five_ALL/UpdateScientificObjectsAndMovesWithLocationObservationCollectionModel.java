@@ -25,6 +25,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.bson.Document;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -40,12 +41,12 @@ import org.opensilex.core.ontology.Time;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -53,9 +54,13 @@ import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -67,8 +72,9 @@ import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
-public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel {
+public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel implements OpenSilexModuleUpdate {
 
+    private OpenSilex opensilex;
     private SPARQLService sparql;
     private MongoDBService mongodb;
     private final Logger logger;
@@ -79,13 +85,55 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
     public static String DESCRIPTION = "Update ScientificObjects and Devices to use the new Location system. Do this by reading old Moves (includes the isHosted property for ScientificObjects as a move was created for each isHosted) and geospatial mongo collection.";
 
-    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
-        this.sparql = sparql;
-        this.mongodb = mongodb;
+    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel() {
+        this(LoggerFactory.getLogger(UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel.class));
+    }
+
+    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(Logger logger) {
         this.logger = logger;
     }
 
-    public void execute(ClientSession session) throws Exception {
+    @Override
+    public OffsetDateTime getDate() {
+        return OffsetDateTime.now();
+    }
+
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    @Override
+    public void execute() throws OpensilexModuleUpdateException {
+        var factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        var sparql = factory.provide();
+        var mongo = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+
+        try {
+            new SparqlMongoTransaction(sparql, mongo.getServiceV2()).execute(session -> {
+                executeWithinTransaction(sparql, mongo, session);
+                return null;
+            });
+        } catch (Exception e) {
+            logger.error("Error during scientific objects observation collection migration", e);
+            throw new OpensilexModuleUpdateException(this, e);
+        }
+    }
+
+    @Override
+    public void setOpensilex(OpenSilex opensilex) {
+        this.opensilex = opensilex;
+    }
+
+    public void executeWithinTransaction(SPARQLService sparql, MongoDBService mongodb, ClientSession session) throws Exception {
+        this.sparql = sparql;
+        this.mongodb = mongodb;
+
+        if (wasMigrationPreviouslyRun()) {
+            logger.info("The migration seems to have already been performed. Nothing will be done.");
+            return;
+        }
+
         try {
             //1 - For every existing ScientificObject  URI fetch all old GeospatialModels, create new LocationObservationModels,
             //placed in a Map of Format URI -> List(LocationObservationModels)
@@ -378,13 +426,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
                         }
                     });
 
-            List<MoveModel> createdMoves = moveDao.create(moveModels);
-            return createdMoves;
-
-        } catch (SPARQLException e) {
-            throw new RuntimeException(e);
-        } catch (SPARQLDeserializerNotFoundException e) {
-            throw new RuntimeException(e);
+            return moveDao.create(moveModels);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

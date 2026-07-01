@@ -86,17 +86,14 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             var watch = new StopWatch();
             new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
                 watch.start();
-                //TODO MAX Remove comments
                 facilitiesLinkToVariablesAndDevicesMigration.execute();
                 sciObjsAndMovesLocationMigration.execute(session);
                 sciObjAndXpLinkMigration.execute();
                 facilitiesLocationsMigration.execute(session);
-                //germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
+                germplasmAttributeUpdateRights.executeWithSession(sparql, mongodb.getServiceV2(), session);
                 changeTypeParametersUri.execute();
                 watch.stop();
                 logger.debug(format("Total time : %.1fs", (float) watch.getTime() / 1000.f));
-                //TODO MAX delete this force quit (to force rollbacks)
-                //throw new Exception("Force quit");
                 return null;
             });
 

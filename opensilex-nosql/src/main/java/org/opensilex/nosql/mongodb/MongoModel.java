@@ -7,12 +7,9 @@
 package org.opensilex.nosql.mongodb;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 /**

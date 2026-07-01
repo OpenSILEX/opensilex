@@ -102,25 +102,6 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
         }
 
         attributeCollection.bulkWrite(session, ops);
-        //TODO ive left the old way in case you say bulk write is garbage for some reason
-        /*for (var i = 0; i < germplasms.size(); i += 1) {
-            var germplasm = germplasms.get(i);
-            var uri = SPARQLDeserializers.getExpandedURI(germplasm.getUri());
-            var updateDocument = new Document(Map.of(
-                    GermplasmMetadataModel.IS_PUBLIC_FIELD, Optional.ofNullable(germplasm.getIsPublic()).orElse(true),
-                    GermplasmMetadataModel.GROUPS_FIELD, germplasm.getGroups().stream().map(group -> SPARQLDeserializers.getExpandedURI(group.getUri())).toList()
-            ));
-            if (germplasm.getPublisher() != null) {
-                updateDocument.put(GermplasmMetadataModel.PUBLISHER_FIELD, SPARQLDeserializers.getExpandedURI(germplasm.getPublisher()));
-            }
-            logger.info("Updating " + uri + " with values " + updateDocument.toJson());
-            logger.debug(String.format("Progress : %s / %s (%.1f %%)", i, germplasms.size(), 100.f * (float) i / (float) germplasms.size()));
-            attributeCollection.updateMany(
-                    session,
-                    new Document(GermplasmMetadataModel.URI_FIELD, uri),
-                    new Document("$set", updateDocument)
-            );
-        }*/
     }
 
     @Override

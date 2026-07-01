@@ -15,6 +15,7 @@
           v-for="tab in tabs"
           :key="tab.key"
           :to="tab.to"
+          :replace="true"
           class="tab"
           active-class="active"
         >

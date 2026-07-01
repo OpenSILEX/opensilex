@@ -76,7 +76,6 @@ function displayAfterCreation(device: DeviceCreationDTO) {
   const uri = device?.uri
   if (!uri) return
 
-  store.commit('storeReturnPage', router)
   router.push({
     path: '/device/details/' + encodeURIComponent(uri)
   })

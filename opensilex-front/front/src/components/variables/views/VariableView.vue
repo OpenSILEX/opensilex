@@ -163,7 +163,7 @@ function getPath(tab: 'details'|'annotations'|'visualization'|'documents'): stri
   return sri ? `${base}?sharedResourceInstance=${sri}` : base;
 }
 function go(tab: 'details'|'annotations'|'visualization'|'documents') {
-  router.push({ path: getPath(tab) });
+  router.replace({ path: getPath(tab) });
 }
 
 // Chargements

@@ -248,7 +248,7 @@ function onRowClicked(item: NamedResourceDTO) {
 
 const pagination = ref({
   page: 1,
-  pageSize: 10,
+  pageSize: 20,
   pageSizes: [10, 20, 50, 100],
   showSizePicker: true,
   itemCount: 0

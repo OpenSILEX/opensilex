@@ -94,8 +94,21 @@ a **contract** and a **service implementation** of itself.
 
 ## Binding
 
-As said above, service implementations must be **bound** to contracts in order to become injectable. In OpenSILEX, 
-this logic is defined in the `registerServices` method of `RestApplication`. This method uses an object of type 
+As said above, service implementations must be **bound** to contracts in order to become injectable. In OpenSILEX, you have many ways to do this.
+
+### `@SelfBound` annotation
+
+The simplest way to bind a service implementation to a contract is to annotate the class with `@SelfBound`. This will
+bind the class to itself as a contract, and it will be automatically registered as a service implementation.
+
+This simple way does not allow injecting config as in `MongoDBService.class`.
+
+The service being bound to itself means that this annotation does not allow using an interface as a contract with many
+service implementations.
+
+### `bindServices` method
+
+This logic is defined in the `registerServices` method of `RestApplication`. This method uses an object of type 
 `AbstractBinder` to register the bindings.
 
 For modules, the registration of bindings can be done by implementing `APIExtension` and overriding the `bindServices`

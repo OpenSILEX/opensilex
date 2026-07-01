@@ -13,7 +13,7 @@ import java.lang.annotation.*;
  *     binder.bindAsContract(serviceClass);
  * </pre>
  * <p>
- *     The class annotated with @SelfBoundService should also be annotated with @Service
+ *     The class annotated with @SelfBound should also be annotated with @Service
  *     (from {@link org.jvnet.hk2.annotations.Service}. Without both annotations, the service will not be automatically
  *     self-bound.
  * </p>

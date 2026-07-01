@@ -18,6 +18,7 @@ import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
+import org.jvnet.hk2.annotations.Service;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataSearchFilter;
@@ -28,6 +29,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.service.reflection.SelfBound;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -45,6 +47,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+import javax.inject.Inject;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,6 +60,8 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * @author vidalmor
  * @author rcolin
  */
+@SelfBound
+@Service
 public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_FIELD_NAME));
@@ -86,6 +91,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     private final FileStorageService fs;
     private final AccountModel user;
 
+    @Inject
     public VariableDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, AccountModel user) {
         super(VariableModel.class, sparql);
         this.nosql = nosql;

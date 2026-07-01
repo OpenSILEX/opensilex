@@ -95,10 +95,6 @@ public class VariableAPI {
 
     @Inject
     private SPARQLService sparql;
-    @Inject
-    private MongoDBService mongodb;
-    @Inject
-    private FileStorageService fs;
 
     @Inject
     private CoreModule coreModule;
@@ -110,9 +106,8 @@ public class VariableAPI {
     @CurrentUser
     AccountModel currentUser;
 
-    private VariableDAO getDao() {
-        return new VariableDAO(sparql, mongodb, fs, currentUser);
-    }
+    @Inject
+    private VariableDAO variabledao;
 
     @POST
     @ApiOperation("Add a variable")
@@ -132,7 +127,7 @@ public class VariableAPI {
             @ApiParam("Variable description") @Valid VariableCreationDTO dto
     ) throws Exception {
         try {
-            VariableDAO dao = getDao();
+            VariableDAO dao = variabledao;
             VariableModel model = dto.newModel();
             model.setPublisher(currentUser.getUri());
 
@@ -160,7 +155,7 @@ public class VariableAPI {
             @ApiParam(value = "Shared resource instance") @QueryParam(VariableAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
-            VariableDAO dao = getDao();
+            VariableDAO dao = variabledao;
             VariableModel variable = dao.get(uri);
             if (variable == null) {
                 throw new NotFoundURIException(uri);
@@ -212,7 +207,7 @@ public class VariableAPI {
     public Response updateVariable(
             @ApiParam("Variable description") @Valid VariableUpdateDTO dto
     ) throws Exception {
-        VariableDAO dao = getDao();
+        VariableDAO dao = variabledao;
 
         VariableModel model = dto.newModel();
         dao.update(model, currentUser);
@@ -237,7 +232,7 @@ public class VariableAPI {
     public Response deleteVariable(
             @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        VariableDAO dao = getDao();
+        VariableDAO dao = variabledao;
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -302,7 +297,7 @@ public class VariableAPI {
                     .setLang(currentUser.getLanguage())
                     .setOrderByList(orderByList);
 
-            ListWithPagination<VariableGetDTO> variables = getDao().search(filter).convert(
+            ListWithPagination<VariableGetDTO> variables = variabledao.search(filter).convert(
                     VariableGetDTO.class,
                     model -> VariableGetDTO.fromModel(model, coreModule.getSharedResourceInstancesFromConfiguration(currentUser.getLanguage()))
             );
@@ -362,7 +357,7 @@ public class VariableAPI {
                 .setPageSize(pageSize)
                 .setLang(currentUser.getLanguage());
 
-        VariableDAO dao = getDao();
+        VariableDAO dao = variabledao;
         ListWithPagination<VariableModel> resultList = dao.search(filter);
 
         ListWithPagination<VariableDetailsDTO> resultDTOList = resultList.convert(
@@ -415,7 +410,7 @@ public class VariableAPI {
     public Response getVariablesByURIs(
             @ApiParam(value = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris
     ) throws Exception {
-        VariableDAO dao = getDao();
+        VariableDAO dao = variabledao;
         List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
 
         if (!models.isEmpty()) {
@@ -526,7 +521,7 @@ public class VariableAPI {
     public Response classicExportVariableByURIs(
             @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
     ) throws Exception {
-        VariableDAO dao = getDao();
+        VariableDAO dao = variabledao;
         List<VariableModel> variableList = dao.getList(dto.getUris());
 
         return buildCSVForClassicExport(variableList);
@@ -546,7 +541,7 @@ public class VariableAPI {
     public Response detailsExportVariableByURIs(
             @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
     ) throws Exception {
-        VariableDAO dao = getDao();
+        VariableDAO dao = variabledao;
         List<VariableModel> variableList = dao.getListForExport(dto.getUris(), currentUser.getLanguage());
 
         return buildCSVForDetailsExport(variableList);

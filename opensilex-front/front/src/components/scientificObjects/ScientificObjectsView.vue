@@ -41,7 +41,7 @@
         :title="searchFiltersPannelTitle()"
       >
         <div class="searchMenuIcon">
-          <i class="icon ik ik-search"></i>
+          <i class="icon bi bi-search"></i>
         </div>
       </div>
 
@@ -188,7 +188,7 @@
       createTitle="component.common.addDocument"
       modalSize="lg"
       :initForm="initForm"
-      icon="ik#ik-file-text"
+      icon="bi#bi-file-earmark-text"
     ></ModalForm>
 
     <EventCsvForm
@@ -230,6 +230,7 @@ import ScientificObjectTypeSelector from "@/components/scientificObjects/Scienti
 import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSelector.vue";
 import DateForm from "@/components/common/forms/DateForm.vue";
 import ScientificObjectForm from "@/components/scientificObjects/ScientificObjectForm.vue";
+import ScientificObjectCSVImporter from "@/components/scientificObjects/ScientificObjectCSVImporter.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

@@ -160,7 +160,8 @@
             "import-files": {
                 "csv-file": "Charger un CSV",
                 "csv-template": "Télécharger un gabarit",
-                "select-button": "Sélectionner"
+                "select-button": "Sélectionner",
+                "generate-template": "Générer un gabarit"
             },
             "tabulator": {
                 "reset-table": "Vider la table",
@@ -847,6 +848,13 @@
                     "used-in-experiment" :"L'objet scientifique {scientific_object} ne peut être supprimé car il est utilisé dans une expérience. Vous devez supprimer l'objet de l'expérience d'abord",
                     "has-child" :"L'objet scientifique {scientific_object} ne peut être supprimé car il cet objet a des enfants. Vous devez les supprimer d'abord (ça peut paraitre cruel mais il le faut)"
                 }
+            },
+            "import" : {
+                "success-message": "objet(s) scientifique importé(s)"
+            },
+            "help-messages": {
+                "uri-help": "URI de l'objet scientifique (auto-générée si vide)",
+                "type-help": "URI du type d'objet scientifique"
             }
         },
         "skos": {
@@ -965,7 +973,18 @@
         "device": {
             "description": "Gestion des appareils",
             "all_devices": "Tout les appareils",
-            "select_devices": "Choisir des dispositifs"
+            "select_devices": "Choisir des dispositifs",
+            "import" : {
+                "success-message": "appareil(s) importé(s)",
+                "title": "Importer des appareils"
+            },
+            "help-messages": {
+                "uri-help": "URI de l'équipement (auto-générée si vide)",
+                "type-help": "URI du type d'équipement"
+            },
+            "form-placeholders": {
+                "rdfTypes-placeholder": "Sélectionner un type d'appareil"
+            }
         },
         "site": {
             "description": "Gérer et configurer les sites",

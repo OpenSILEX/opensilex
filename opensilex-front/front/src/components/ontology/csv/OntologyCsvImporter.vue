@@ -236,6 +236,7 @@ function resetState() {
   validation.value = null
 }
 
+//TODO MAX When i can test, test replacing showModal with a prop and a watcher for reset state
 function show() {
   resetState()
   showModal.value = true

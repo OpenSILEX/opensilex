@@ -16,6 +16,6 @@ public class YvanOntology {
     public static final String NS = DOMAIN + "#";
 
     public static final Resource SpiderMutagen = Ontology.resource(NS, "SpiderMutagen");
-    public static final Property hasExperiment = Ontology.property(NS, "hasExperiment");
-    public static final Property pawsNumber = Ontology.property(NS, "pawsNumber");
+    public static final Property legsNumber = Ontology.property(NS, "legsNumber");
+    public static final Property linkedDevice = Ontology.property(NS, "linkedDevice");
 }

@@ -11,9 +11,36 @@
 package org.opensilex.yvan.spidermutagen.api;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.net.URI;
+import java.util.List;
 
 @ApiModel
 public class SpiderMutagenDTO {
-    String name;
-    String description;
+
+    @ApiModelProperty(value = "Number of legs")
+    private Integer legsNumber;
+
+    @ApiModelProperty(value = "URIs of the linked devices")
+    private List<URI> linkedDevices;
+
+    @ApiModelProperty(value = "icon value")
+    private String hasIcon;
+
+    public Integer getLegsNumber() {
+        return legsNumber;
+    }
+
+    public void setLegsNumber(Integer legsNumber) {
+        this.legsNumber = legsNumber;
+    }
+
+    public List<URI> getLinkedDevices() {
+        return linkedDevices;
+    }
+
+    public void setLinkedDevices(List<URI> linkedDevices) {
+        this.linkedDevices = linkedDevices;
+    }
 }

@@ -10,11 +10,14 @@
 
 package org.opensilex.yvan.spidermutagen.dal;
 
-import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.front.vueOwlExtension.VueOwlExtension;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.yvan.ontology.YvanOntology;
+
+import java.util.List;
 
 @SPARQLResource(
         ontology = YvanOntology.class,
@@ -27,16 +30,45 @@ public class SpiderMutagenModel extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = YvanOntology.class,
-            property = "hasExperiment",
+            property = "legsNumber",
             required = true
     )
-    private ExperimentModel experiment;
+    private Integer legsNumber;
 
-    public ExperimentModel getExperiment() {
-        return experiment;
+    @SPARQLProperty(
+            ontology = YvanOntology.class,
+            property = "linkedDevice"
+    )
+    private List<DeviceModel> linkedDevices;
+
+    @SPARQLProperty(
+            ontology = VueOwlExtension.class,
+            property = "hasIcon"
+    )
+    private String hasIcon;
+
+
+    public Integer getLegsNumber() {
+        return legsNumber;
     }
 
-    public void setExperiment(ExperimentModel experiment) {
-        this.experiment = experiment;
+    public void setLegsNumber(Integer legsNumber) {
+        this.legsNumber = legsNumber;
+    }
+
+    public List<DeviceModel> getLinkedDevices() {
+        return linkedDevices;
+    }
+
+    public void setLinkedDevices(List<DeviceModel> linkedDevices) {
+        this.linkedDevices = linkedDevices;
+    }
+
+    public String getHasIcon() {
+        return hasIcon;
+    }
+
+    public void setHasIcon(String hasIcon) {
+        this.hasIcon = hasIcon;
     }
 }

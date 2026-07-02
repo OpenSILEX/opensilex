@@ -19,16 +19,13 @@
 
 
     <owl:DatatypeProperty rdf:about="http://www.yvan.extension.org#legsNumber">
-        <rdfs:domain rdf:resource="http://www.yvan.extension.org#SpiderMutagen"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
         <rdfs:label xml:lang="fr">nombre de pattes</rdfs:label>
         <rdfs:label xml:lang="en">number of legs</rdfs:label>
     </owl:DatatypeProperty>
 
     <owl:ObjectProperty rdf:about="http://www.yvan.extension.org#linkedDevice">
-        <rdfs:domain rdf:resource="http://www.yvan.extension.org#SpiderMutagen"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:label xml:lang="en">linked device</rdfs:label>
+       <rdfs:label xml:lang="en">linked device</rdfs:label>
         <rdfs:label xml:lang="fr">appareil lié</rdfs:label>
     </owl:ObjectProperty>
 
@@ -56,19 +53,11 @@
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-                <!-- lens (device) object property defined in the phis ontology -->
+                <!--   string data property defined in the core ontology -->
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasLens"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Lens"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-                <!--   string data property defined in the phis ontology -->
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#aperture"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/owl-vue-extension#hasIcon"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>

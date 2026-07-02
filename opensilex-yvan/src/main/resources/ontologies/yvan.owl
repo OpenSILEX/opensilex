@@ -18,28 +18,58 @@
     </owl:Ontology>
 
 
+    <owl:DatatypeProperty rdf:about="http://www.yvan.extension.org#legsNumber">
+        <rdfs:domain rdf:resource="http://www.yvan.extension.org#SpiderMutagen"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:label xml:lang="fr">nombre de pattes</rdfs:label>
+        <rdfs:label xml:lang="en">number of legs</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <owl:ObjectProperty rdf:about="http://www.yvan.extension.org#linkedDevice">
+        <rdfs:domain rdf:resource="http://www.yvan.extension.org#SpiderMutagen"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:label xml:lang="en">linked device</rdfs:label>
+        <rdfs:label xml:lang="fr">appareil lié</rdfs:label>
+    </owl:ObjectProperty>
+
+
+
+<!--   Spider mutagen -->
+
     <owl:Class rdf:about="http://www.yvan.extension.org#SpiderMutagen">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:label xml:lang="en">Spider mutagen</rdfs:label>
         <rdfs:label xml:lang="fr">Mutagène d'araignée</rdfs:label>
-    </owl:Class>
-
-    <owl:ObjectProperty rdf:about="http://www.yvan.extension.org#hasExperiment">
-        <rdfs:domain rdf:resource="http://www.yvan.extension.org#SpiderMutagen"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-        <rdfs:label xml:lang="en">has experiment</rdfs:label>
-        <rdfs:label xml:lang="fr">à une expérimentation</rdfs:label>
-    </owl:ObjectProperty>
-
-
-<!--      adding restrictions -->
-
-    <owl:Class rdf:about="http://www.yvan.extension.org#SpiderMutagen">
+                <!--  data integer property defined in this ontology -->
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.yvan.extension.org#hasExperiment"/>
-                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
+                <owl:onProperty rdf:resource="http://www.yvan.extension.org#legsNumber"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+                <!--  device object property defined in this ontology with multiple cardinality -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.yvan.extension.org#linkedDevice"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">3</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+                <!-- lens (device) object property defined in the phis ontology -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasLens"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Lens"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+                <!--   string data property defined in the phis ontology -->
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#aperture"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>

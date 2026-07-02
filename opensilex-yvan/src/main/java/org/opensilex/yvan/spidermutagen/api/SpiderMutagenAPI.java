@@ -18,6 +18,8 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.yvan.spidermutagen.bll.SpiderMutagenLogic;
+import org.opensilex.yvan.spidermutagen.dal.SpiderMutagenModel;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -26,6 +28,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 
 public class SpiderMutagenAPI {
     @Inject
@@ -34,21 +37,20 @@ public class SpiderMutagenAPI {
     @POST
     @ApiOperation("Add a spider mutagene")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PERSON_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_PERSON_MODIFICATION_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses({
             @ApiResponse(code = 201, message = "A SM is created"),
             @ApiResponse(code = 409, message = "The SM already exists (duplicate URI)")
     })
-    public Response createPerson(
+    public Response createSpiderMutagen(
             @ApiParam("Person description") @Valid SpiderMutagenDTO dto
     ) throws Exception {
+        SpiderMutagenLogic logic = new SpiderMutagenLogic();
 
-        return new CreatedUriResponse().getResponse();
+        SpiderMutagenModel model = logic.createSpiderMutagen(dto.toModel());
+
+        return new CreatedUriResponse(URI.create("")).getResponse();
     }
 
 }

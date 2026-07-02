@@ -17,6 +17,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.yvan.ontology.YvanOntology;
 
+import java.net.URI;
 import java.util.List;
 
 @SPARQLResource(
@@ -39,7 +40,7 @@ public class SpiderMutagenModel extends SPARQLResourceModel {
             ontology = YvanOntology.class,
             property = "linkedDevice"
     )
-    private List<DeviceModel> linkedDevices;
+    private List<URI> linkedDevices;
 
     @SPARQLProperty(
             ontology = VueOwlExtension.class,
@@ -56,11 +57,11 @@ public class SpiderMutagenModel extends SPARQLResourceModel {
         this.legsNumber = legsNumber;
     }
 
-    public List<DeviceModel> getLinkedDevices() {
+    public List<URI> getLinkedDevices() {
         return linkedDevices;
     }
 
-    public void setLinkedDevices(List<DeviceModel> linkedDevices) {
+    public void setLinkedDevices(List<URI> linkedDevices) {
         this.linkedDevices = linkedDevices;
     }
 

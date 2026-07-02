@@ -42,7 +42,7 @@ This could be useful for:
 - Easily sharing this ontology modification with other instances of OpenSILEX
 - creating a whole new concept that you will use in the module to extend the API with new web services and maybe new front-end pages.
 
-## Technical specifications
+## How to implement a new ontology in a new module
 
 ## Creating a new OpenSILEX module
 
@@ -74,9 +74,20 @@ If you have declared subtypes of concepts as scientific objects, devices, events
 
 You should also be able to use your new concepts to extend the API with new web services and store your new concepts in the database. For now there is no documentation about this.
 
+## Frontend implementation of ontology extension system
+
+- Creating a new subtype of event, device, scientific object or facility will allow you to choose this type in their respective forms.
+- Adding properties to this new subtype will automatically extend the form with new fields for the new properties.
+- Adding a cardinality constraint more than one will modify the new fieldset to allow multiple values. (works only on object properties and not on datatype properties like string or integer)
+
+- Creating a new subtype og germplasm will also allow you to choose this type in the germplasm creation interface, but it will not automatically add the properties as new columns in the table.
+
+
+
 ## Limitations and improvements
 
-As this is an extension system, it is not possible to modify the core ontology or to delete existing concepts. This behaviour is not planned to be changed and ensures that the ontology is always consistent.
+- As this is an extension system, it is not possible to modify the core ontology or to delete existing concepts. This behaviour is not planned to be changed and ensures that the ontology is always consistent.
+- The cardinality system is not totally implemented for datatype in the frontend.
 
 ## Documentation
 

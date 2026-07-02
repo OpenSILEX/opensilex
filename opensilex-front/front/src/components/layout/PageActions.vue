@@ -25,31 +25,18 @@
         </ul>
 
         <!-- Bouton retour -->
-        <router-link
-          v-if="returnTo && returnButton"
-          :to="returnTo"
-          v-slot="{ href, navigate }"
-        >
-          <a
-            class="btn back-button mr-2 h-100"
-            :href="href"
-            :title="t('pageActions.returnToTitle')"
-            @click="navigate; goBack()"
-          >
-            <opensilex-Icon icon="bi#bi-arrow-90deg-left" class="icon-title back-button-icon" />
-          </a>
-        </router-link>
-
-        <router-link
-          v-else-if="returnButton"
-          to="/"
+        <button
+          v-if="returnButton"
+          type="button"
           :title="t('pageActions.returnToTitle')"
-          @click.prevent="$router.go(-1)"
+          class="btn mr-2 h-100 back-button"
+          @click="$router.go(-1)"
         >
-          <a class="btn mr-2 h-100 back-button">
-            <opensilex-Icon class="icon-title back-button-icon" icon="bi#bi-arrow-90deg-left" />
-          </a>
-        </router-link>
+          <opensilex-Icon
+            class="icon-title back-button-icon"
+            icon="bi#bi-arrow-90deg-left"
+          />
+        </button>
 
         <!-- Slot principal -->
         <slot></slot>
@@ -78,17 +65,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:currentTab']);
 
-const store = useStore();
 const { t } = useI18n();
 
-const returnTo = computed(() => {
-  const previousPages = store.state.previousPage;
-  return previousPages.length > 0 ? previousPages[previousPages.length - 1] : false;
-});
-
-function goBack() {
-  store.commit('goBack');
-}
 
 // gestion du modèle de l’onglet actif
 const currentTabIndex = computed({

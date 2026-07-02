@@ -242,7 +242,7 @@ function goToTab(key: TabKey) {
                 ? '/device/annotations/'
                 : '/device/documents/'
 
-  router.push({ path: base + encodeURIComponent(uri.value) })
+  router.replace({ path: base + encodeURIComponent(uri.value) })
 }
 
 const currentTabProps = computed(() => {

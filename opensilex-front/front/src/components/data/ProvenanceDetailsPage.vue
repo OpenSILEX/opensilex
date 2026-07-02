@@ -186,7 +186,7 @@ function goToTab(key: TabKey) {
         ? '/provenances/annotations/'
         : '/provenances/documents/'
 
-  router.push({ path: base + encodeURIComponent(uri.value) })
+  router.replace({ path: base + encodeURIComponent(uri.value) })
 }
 
 

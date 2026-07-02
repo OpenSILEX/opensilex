@@ -139,7 +139,7 @@ function goToTab(key: TabKey) {
       : key === 'annotations'
         ? '/project/annotations/'
         : '/project/documents/'
-  router.push({ path: base + encodeURIComponent(uri.value) })
+  router.replace({ path: base + encodeURIComponent(uri.value) })
 }
 
 // Props envoyées au composant courant

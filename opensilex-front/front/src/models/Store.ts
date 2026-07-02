@@ -87,35 +87,6 @@ let defaultUserConfig: UserFrontConfigDTO = {
   userIsAnonymous: true
 };
 
-const computePage = function (router) {
-  if (!router || !router.currentRoute) {
-    return {};
-  }
-
-  const currentRoute = router.currentRoute.value;
-
-  if (!currentRoute) {
-    return {};
-  }
-
-  let queryParams = new URLSearchParams(window.location.search);
-  let queryValues = {};
-  queryParams.forEach((value, key) => {
-    queryValues[key] = value;
-  });
-
-  let realRoute: any = {};
-
-  for (let i in currentRoute) {
-    if (i == "query") {
-      realRoute.query = queryValues;
-    } else {
-      realRoute[i] = currentRoute[i];
-    }
-  }
-  return realRoute;
-}
-
 export class SearchStore {
 
   results = [];
@@ -134,8 +105,6 @@ let store = createStore({
     menuVisible: true,
     disconnected: false,
     lang: "en",
-    previousPageCandidate: null,
-    previousPage: [],
     search: {
       experiments: new SearchStore()
     },
@@ -359,21 +328,6 @@ let store = createStore({
       console.log("Define user language", lang);
       state.user.setLocale(lang);
       state.lang = lang;
-    },
-    storeCandidatePage(state, router) {
-      state.previousPageCandidate = computePage(router);
-    },
-    validateCandidatePage(state) {
-      if (state.previousPageCandidate) {
-        state.previousPage.push(state.previousPageCandidate);
-      }
-      state.previousPageCandidate = null;
-    },
-    storeReturnPage(state, router) {
-      state.previousPage.push(computePage(router));
-    },
-    goBack(state) {
-      state.previousPage.pop();
     },
     resetRouter(state) {
       if (state.openSilexRouter) {

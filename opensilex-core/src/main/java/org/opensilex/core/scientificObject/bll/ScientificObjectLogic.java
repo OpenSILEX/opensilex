@@ -16,6 +16,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.graph.Node;
 import org.geojson.GeoJsonObject;
+import org.jvnet.hk2.annotations.Service;
 import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.bll.DataLogic;
 import org.opensilex.core.data.dal.DataDAO;
@@ -48,6 +49,7 @@ import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
+import org.opensilex.service.reflection.SelfBound;
 import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -61,6 +63,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ExcludableUriList;
 import org.opensilex.utils.ListWithPagination;
 
+import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.*;
@@ -68,7 +71,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+@Service
+@SelfBound
 public class ScientificObjectLogic {
 
     private final SPARQLService sparql;
@@ -77,6 +81,7 @@ public class ScientificObjectLogic {
     private final ScientificObjectDAO dao;
     private final Node defaultGraphNode;
     private final URI defaultGraphURI;
+    private Iterable<ScientificObjectLogicExtendedRules> logicRulesExtensions;
 
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
@@ -89,6 +94,7 @@ public class ScientificObjectLogic {
      * This key is related to message-en.yml and message-fr.yml translation files (located in opensilex-front)
      */
     public static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
+
 
     //#region CONSTRUCTOR
     public ScientificObjectLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
@@ -104,6 +110,12 @@ public class ScientificObjectLogic {
         }catch (SPARQLException e){
             throw new RuntimeException(e);
         }
+    }
+
+    @Inject
+    public ScientificObjectLogic(SPARQLService sparql, MongoDBService nosql, FileStorageService fs, Iterable<ScientificObjectLogicExtendedRules> logicRulesExtensions) {
+        this(sparql, nosql, fs);
+        this.logicRulesExtensions = logicRulesExtensions;
     }
     //#endregion
 
@@ -122,6 +134,12 @@ public class ScientificObjectLogic {
             MoveModel move,
             AccountModel currentUser
     ) throws Exception {
+        for (ScientificObjectLogicExtendedRules extendedRules : logicRulesExtensions) {
+            if (extendedRules.applyRulesToThisType(model.getType())){
+                extendedRules.createRule(model);
+            }
+        }
+
         // Define the graph (global or XP)
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         ExperimentModel experiment;

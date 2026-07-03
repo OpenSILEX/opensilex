@@ -11,11 +11,14 @@
 package org.opensilex.yvan;
 
 import org.apache.jena.riot.Lang;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.core.scientificObject.bll.ScientificObjectLogicExtendedRules;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.yvan.ontology.YvanOntology;
+import org.opensilex.yvan.spidermutagen.bll.SpiderMutagenLogicExtendedRules;
 
 import java.util.List;
 
@@ -38,4 +41,8 @@ public class YvanModule extends OpenSilexModule implements APIExtension, SPARQLE
         return list;
     }
 
+    @Override
+    public void bindServices(AbstractBinder binder) {
+        binder.bind(SpiderMutagenLogicExtendedRules.class).to(ScientificObjectLogicExtendedRules.class);
+    }
 }

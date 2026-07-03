@@ -111,6 +111,8 @@ public class ScientificObjectAPI {
     @Inject
     private FileStorageService fs;
 
+    @Inject ScientificObjectLogic logic;
+
     @POST
     @Path("by_uris")
     @ApiOperation("Get scientific objet list of a given experiment URI")
@@ -381,7 +383,6 @@ public class ScientificObjectAPI {
             @NotNull
             @Valid ScientificObjectCreationDTO scientificObjectDto
     ) throws Exception {
-        ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
 
         ScientificObjectModel soModel = scientificObjectDto.newModel();
         MoveModel moveModel = null;
@@ -392,7 +393,7 @@ public class ScientificObjectAPI {
             }
             var creationDate = scientificObjectDto.getRelations().stream().filter(rel -> SPARQLDeserializers.compareURIs(Oeso.hasCreationDate.getURI(), rel.getProperty()))
                     .findFirst().map(rel -> LocalDate.parse(rel.getValue())).orElse(null);
-            moveModel = soLogic.getCompatibilityMoveModel(
+            moveModel = logic.getCompatibilityMoveModel(
                     scientificObjectDto.getExperiment(),
                     creationDate,
                     GeospatialDAO.geoJsonToGeometry(scientificObjectDto.getGeometry()),
@@ -403,7 +404,7 @@ public class ScientificObjectAPI {
         }
 
         try {
-            URI soURI = soLogic.createScientificObject(
+            URI soURI = logic.createScientificObject(
                     soModel,
                     scientificObjectDto.getExperiment(),
                     scientificObjectDto.getRelations(),

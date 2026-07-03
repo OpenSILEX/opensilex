@@ -139,11 +139,11 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             //placed in a Map of Format URI -> List(LocationObservationModels)
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURIFromGeospatial = makeNewLocationObservationsFromGeospatialModels();
 
-            //2 - Now Fetch all old Moves for every ScientificObject but also other stuff, normally it should just be Devices
-            Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
-
-            //3 - Create a move in RDF4J for each location from geospatial Collection
+            //2 - Create a move in RDF4J for each location from geospatial Collection
             List<MoveModel> newMoves = sparqlCreateSoMoves(locationObservationsPerURIFromGeospatial);
+
+            //3 - Now Fetch all old Moves for every ScientificObject but also other stuff, normally it should just be Devices
+            Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
 
             //4 - Make new Location Observations for old existing Moves, combine them with locationObservationsPerURIFromGeospatial and return all in a new Map
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURI = makeLocationObservationsFromExistingMoves(locationObservationsPerURIFromGeospatial, moveDetailsList);

@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <CreateButton
-      @click="personForm.showCreateForm()"
+      @click="onCreateButtonClick"
       :label="t('component.person.add')"
       class="createButton">
     </CreateButton>
@@ -10,14 +10,14 @@
       <template v-slot>
         <PersonList
           ref="personList"
-          @onEdit="showEditForm($event)"
+          @onEdit="onPersonListEdit($event)"
         ></PersonList>
       </template>
     </PageContent>
 
     <ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
-      ref="PersonForm"
+      ref="personForm"
       component="opensilex-PersonForm"
       createTitle="component.person.add"
       editTitle="component.person.update"
@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { useStore } from "vuex";
-import { computed, ref } from "vue";
+import {computed, Ref, ref, useTemplateRef} from "vue";
 import {OpenSilexStore} from "@/models/Store";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import PageContent from "@/components/layout/PageContent.vue";
@@ -41,16 +41,23 @@ import {useI18n} from "vue-i18n";
 const store = useStore() as OpenSilexStore;
 const { t } = useI18n();
 
-const personForm = ref<any>();
-const personList: any = ref(null);
+const personForm = useTemplateRef<InstanceType<typeof ModalForm>>('personForm');
+const personList = useTemplateRef<InstanceType<typeof PersonList>>('personList');
 
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
 
-function showEditForm(dto){
-  let copydto = JSON.parse(JSON.stringify(dto));
-  this.personForm.showEditForm(copydto);
+//#region Event handlers and watchers
+function onCreateButtonClick(){
+  personForm.value.showCreateForm()
 }
+
+function onPersonListEdit(dto){
+  let copydto = JSON.parse(JSON.stringify(dto));
+  personForm.value.showEditForm(copydto);
+}
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

@@ -107,4 +107,8 @@ onMounted(() => {
     refresh();
   }
 
+defineExpose({
+  refresh,
+})
+
 </script>

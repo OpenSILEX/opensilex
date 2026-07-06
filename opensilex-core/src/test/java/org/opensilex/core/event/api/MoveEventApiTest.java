@@ -28,7 +28,6 @@ import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.SecurityModule;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;

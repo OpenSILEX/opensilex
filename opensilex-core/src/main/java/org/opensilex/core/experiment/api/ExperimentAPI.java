@@ -1169,8 +1169,6 @@ public class ExperimentAPI {
     /**
      * @return  a list of experiments corresponding to the given URIs provided in the request body.
      * This method replaces the deprecated GET variant which used query parameters.
-     *
-     * @param dto DTO containing the list of URIs of experiments to fetch.
      */
     @POST
     @Path("by_uris")

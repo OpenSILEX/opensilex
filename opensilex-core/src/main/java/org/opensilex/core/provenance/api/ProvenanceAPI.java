@@ -328,8 +328,6 @@ public class ProvenanceAPI {
     /**
      * @return  a list of provenances corresponding to the given URIs provided in the request body.
      * This method replaces the deprecated GET variant which used query parameters.
-     *
-     * @param dto DTO containing the list of URIs of provenances to fetch.
      */
     @POST
     @Path("by_uris")

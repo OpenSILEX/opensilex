@@ -281,7 +281,7 @@ public class GroupAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getGroupsByURI(
             @ApiParam(value = "Groups URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -321,7 +321,7 @@ public class GroupAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchGroupsByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris

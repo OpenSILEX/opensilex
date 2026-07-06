@@ -149,7 +149,7 @@ public class UnitAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return units", response = UnitDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getUnitsByURIs(
             @ApiParam(value = "Units URIs", required = true) @QueryParam(UnitAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
@@ -197,7 +197,7 @@ public class UnitAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return units", response = UnitDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchUnitsByURIs(
             @ApiParam(value = "Units URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto

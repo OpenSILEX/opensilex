@@ -452,7 +452,7 @@ public class FactorAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return factors list", response = FactorGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getFactorsByURIs(
             @ApiParam(value = "Factors URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -496,7 +496,7 @@ public class FactorAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return factors list", response = FactorGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchFactorsByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris

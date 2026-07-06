@@ -149,7 +149,7 @@ public class EntityAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getEntitiesByURIs(
             @ApiParam(value = "Entities URIs", required = true) @QueryParam(EntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
@@ -197,7 +197,7 @@ public class EntityAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchEntitiesByURIs(
             @ApiParam(value = "Entities URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto

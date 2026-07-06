@@ -1,40 +1,45 @@
 <template>
   <div class="container-fluid">
-    <opensilex-CreateButton
+    <CreateButton
       @click="personForm.showCreateForm()"
-      label="PersonView.create"
+      :label="t('component.person.add')"
       class="createButton">
-    </opensilex-CreateButton>
+    </CreateButton>
 
-    <opensilex-PageContent>
+    <PageContent>
       <template v-slot>
-        <opensilex-PersonList
+        <PersonList
           ref="personList"
           @onEdit="showEditForm($event)"
-        ></opensilex-PersonList>
+        ></PersonList>
       </template>
-    </opensilex-PageContent>
+    </PageContent>
 
-    <opensilex-ModalForm
+    <ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
       ref="PersonForm"
       component="opensilex-PersonForm"
-      createTitle="PersonView.create"
-      editTitle="PersonView.update"
+      createTitle="component.person.add"
+      editTitle="component.person.update"
       icon="ik#ik-user"
       @onCreate="personList.refresh()"
       @onUpdate="personList.refresh()"
-    ></opensilex-ModalForm>
+    ></ModalForm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useStore } from "vuex";
 import { computed, ref } from "vue";
-import {OpenSilexStore} from "../../models/Store";
+import {OpenSilexStore} from "@/models/Store";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import PersonList from "@/components/persons/PersonList.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import {useI18n} from "vue-i18n";
 
 const store = useStore() as OpenSilexStore;
-
+const { t } = useI18n();
 
 const personForm = ref<any>();
 const personList: any = ref(null);
@@ -55,17 +60,3 @@ function showEditForm(dto){
   margin-top: -15px
 }
 </style>
-
-<i18n>
-en:
-  PersonView:
-    description: Manage persons
-    create: Add a person
-    update: Update a person
-
-fr:
-  PersonView:
-    description: Gérer les personnes
-    create: Ajouter une personne
-    update: Modifier une personne
-</i18n>

@@ -408,7 +408,6 @@
             "persons": "persons",
             "add": "Add person",
             "update": "Update person",
-            "delete": "Delete person",
             "first-name": "first name",
             "last-name": "last name",
             "orcid":  "ORCID",

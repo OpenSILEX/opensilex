@@ -1,12 +1,12 @@
 <template>
   <div>
-    <opensilex-StringFilter
+    <StringFilter
         v-model:filter.sync="filter"
         @update="updateFilter()"
         placeholder="component.person.filter-placeholder"
-    ></opensilex-StringFilter>
+    ></StringFilter>
 
-    <opensilex-TableAsyncView
+    <TableAsyncView
         ref="tableRef"
         :searchMethod="searchPersons"
         :fields="fields"
@@ -14,14 +14,14 @@
     >
 
       <template #cell(last_name)="{data}">
-        <opensilex-PersonContact
+        <PersonContact
             :personContact="data.item"
             :customDisplayableName="data.item.last_name"
-        ></opensilex-PersonContact>
+        ></PersonContact>
       </template>
 
       <template #cell(orcid)="{data}">
-        <opensilex-UriLink
+        <UriLink
             v-if="data.item.orcid"
             :uri="data.item.orcid"
         />
@@ -32,16 +32,14 @@
       </template>
 
       <template #cell(actions)="{data}">
-        <b-button-group size="sm">
-          <opensilex-EditButton
+          <EditButton
               v-if="person.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
               @click="$emit('onEdit', data.item)"
               label="component.person.update"
               :small="true"
-          ></opensilex-EditButton>
-        </b-button-group>
+          ></EditButton>
       </template>
-    </opensilex-TableAsyncView>
+    </TableAsyncView>
   </div>
 </template>
 
@@ -52,6 +50,11 @@ import { useRoute } from 'vue-router';
 import { SecurityService } from "opensilex-security/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "../../models/Store";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import PersonContact from "@/components/persons/PersonContact.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
 
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const service = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");

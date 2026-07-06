@@ -409,7 +409,6 @@
             "persons": "personnes",
             "add": "Ajouter une personne",
             "update": "Modifier la personne",
-            "delete": "Supprimer la personne",
             "first-name": "prénom",
             "last-name": "nom",
             "orcid":  "ORCID",

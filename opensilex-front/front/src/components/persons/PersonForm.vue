@@ -1,13 +1,13 @@
 <template>
   <b-form>
     <!-- URI -->
-    <opensilex-UriForm
+    <UriForm
         :uri.sync="form.uri"
         label="component.person.person-uri"
         helpMessage="component.common.uri-help-message"
         :editMode="editMode"
         :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+    ></UriForm>
 
     <!-- orcid -->
     <b-form-group>
@@ -22,7 +22,7 @@
               v-model="form.orcid"
               type="text"
               :disabled="disable_orcid_field"
-              :placeholder="$t('component.person.orcid-placeholder')"
+              :placeholder="t('component.person.orcid-placeholder')"
           ></b-form-input>
           <b-input-group-append>
             <b-button
@@ -30,7 +30,7 @@
                 :class=" validOrcid ? 'createButton greenThemeColor' : '' "
                 @click="startOrcidSuggestion()"
             >
-              {{ $t('component.person.load-orcid-infos') }}
+              {{ t('component.person.load-orcid-infos') }}
             </b-button>
           </b-input-group-append>
         </b-input-group>
@@ -104,9 +104,12 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
 import OrcidSuggestionModal from "./OrcidSuggestionModal.vue";
+import UriForm from "@/components/common/forms/UriForm.vue";
+import {useI18n} from "vue-i18n";
 
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const { t } = useI18n();
 
 
 // const orcidModalRef: OrcidSuggestionModal = ref(null);

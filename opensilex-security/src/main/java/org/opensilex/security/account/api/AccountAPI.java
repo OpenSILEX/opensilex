@@ -334,8 +334,6 @@ public class AccountAPI {
     /**
      * @return a list of accounts corresponding to the given URIs provided in the request body.
      * This method replaces the deprecated GET variant which used query parameters.
-     *
-     * @param dto DTO containing the list of URIs of accounts to fetch.
      */
     @POST
     @Path("by_uris")

@@ -16,7 +16,6 @@ import org.opensilex.core.organisation.api.facility.*;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.integration.test.ServiceDescription;
-import org.opensilex.server.commonDTOs.URIsListPostDTO;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;

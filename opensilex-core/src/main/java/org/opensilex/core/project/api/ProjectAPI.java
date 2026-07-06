@@ -251,8 +251,6 @@ public class ProjectAPI {
     /**
      * @return  a list of projects corresponding to the given URIs provided in the request body.
      * This method replaces the deprecated GET variant which used query parameters.
-     *
-     * @param dto DTO containing the list of URIs of projects to fetch.
      */
     @POST
     @Path("by_uris")

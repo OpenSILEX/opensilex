@@ -480,8 +480,6 @@ public class FactorAPI {
     /**
      * @return  a list of factors corresponding to the given URIs provided in the request body.
      * This method replaces the deprecated GET variant which used query parameters.
-     *
-     * @param dto DTO containing the list of URIs of factors to fetch.
      */
     @POST
     @Path("by_uris")

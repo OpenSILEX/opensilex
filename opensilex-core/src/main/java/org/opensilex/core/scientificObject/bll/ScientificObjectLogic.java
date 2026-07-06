@@ -134,11 +134,6 @@ public class ScientificObjectLogic {
             MoveModel move,
             AccountModel currentUser
     ) throws Exception {
-        for (ScientificObjectLogicExtendedRules extendedRules : logicRulesExtensions) {
-            if (extendedRules.applyRulesToThisType(model.getType())){
-                extendedRules.createRule(model);
-            }
-        }
 
         // Define the graph (global or XP)
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
@@ -206,6 +201,12 @@ public class ScientificObjectLogic {
             Node graphNodeDefault = SPARQLDeserializers.nodeURI(defaultGraphURI);
             if (globalCopy && !sparql.uriExists(graphNodeDefault, soURI)) {
                 copyIntoGlobalGraph(Stream.of(object));
+            }
+
+            for (ScientificObjectLogicExtendedRules extendedRules : logicRulesExtensions) {
+                if (extendedRules.applyRulesToThisType(model.getType())){
+                    extendedRules.createRule(model);
+                }
             }
 
             return soURI;

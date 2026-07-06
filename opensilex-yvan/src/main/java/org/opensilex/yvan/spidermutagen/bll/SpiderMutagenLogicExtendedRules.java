@@ -15,19 +15,24 @@ import org.opensilex.core.scientificObject.bll.ScientificObjectLogicExtendedRule
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.yvan.ontology.YvanOntology;
 
 import javax.ws.rs.WebApplicationException;
 import java.net.URI;
+import java.util.List;
 
 @Service
 public class SpiderMutagenLogicExtendedRules implements ScientificObjectLogicExtendedRules {
     @Override
     public boolean applyRulesToThisType(URI typeURI) {
-        return SPARQLDeserializers.compareURIs(typeURI, "http://www.yvan.extension.org#SpiderMutagen");
+        return SPARQLDeserializers.compareURIs(typeURI, YvanOntology.SpiderMutagen.getURI());
     }
 
     @Override
     public void createRule(ScientificObjectModel model) throws WebApplicationException {
+        int legNumbers = Integer.parseInt(model.getRelation(YvanOntology.legsNumber).getValue());
+        List<String> linkedDevices = model.getRelations(YvanOntology.linkedDevice).map(SPARQLModelRelation::getValue).toList();
         throw new ConflictException("this is me");
     }
 

@@ -80,9 +80,9 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
 
 
-    public String path = DeviceAPI.PATH;
+    public static String path = DeviceAPI.PATH;
     public String getByUriPath = path + "/{uri}";
-    public String createPath = path;
+    public static String createPath = path;
     public String updatePath = path;
     public String deletePath = path + "/{uri}";
     public String facilityPath = path + "/{uri}/facility";
@@ -93,11 +93,21 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
     private static final URI sensingDeviceType = URI.create(Oeso.SensingDevice.toString());
 
-    public ServiceDescription search = new ServiceDescription(
-            DeviceAPI.class.getMethod("searchDevices", URI.class, boolean.class, String.class, URI.class, Integer.class, LocalDate.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
-            path
-    );
-    public ServiceDescription create = new ServiceDescription(DeviceAPI.class.getMethod("createDevice", DeviceCreationDTO.class, Boolean.class), createPath);
+    public static final ServiceDescription create;
+    public static final ServiceDescription search;
+
+    static {
+        try {
+            create = new ServiceDescription(
+                    DeviceAPI.class.getMethod("createDevice", DeviceCreationDTO.class, Boolean.class),
+                    createPath);
+            search = new ServiceDescription(
+                    DeviceAPI.class.getMethod("searchDevices", URI.class, boolean.class, String.class, URI.class, Integer.class, LocalDate.class, URI.class, String.class, String.class, String.class, String.class, List.class, int.class, int.class),
+                    path);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public DeviceAPITest() throws NoSuchMethodException {
     }

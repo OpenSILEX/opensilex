@@ -19,6 +19,8 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.device.api.DeviceAPITest;
+import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
@@ -39,6 +41,7 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.yvan.ontology.YvanOntology;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -79,7 +82,7 @@ public class SpiderMutagenLogicExtendedRulesTest extends AbstractMongoIntegratio
     }
     //#endregion
 
-    //#region test setup
+    //#region test setup and usefool methods
 
     private int soCount = 1;
     private URI experiment;
@@ -186,12 +189,31 @@ public class SpiderMutagenLogicExtendedRulesTest extends AbstractMongoIntegratio
         return dto;
     }
 
+    private URI createDevice() throws Exception {
+        var dto = new DeviceCreationDTO();
+        dto.setType(URI.create(Oeso.Device.getURI()));
+        dto.setName("Device");
+        dto.setDescription("description");
+        return new UserCallBuilder(DeviceAPITest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+    }
+
     //#endregion
 
     @Test
     public void testCreateSpiderMutagen() throws Exception {
+        URI deviceUri1 = createDevice();
+        URI deviceUri2 = createDevice();
+
         var dto = getCreationDTO();
-        dto.setType(URI.create("http://www.yvan.extension.org#SpiderMutagen"));
+        dto.setType(URI.create(YvanOntology.SpiderMutagen.getURI()));
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "8", false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri2.toString(), false)
+        ));
 
         new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
                 .setBody(dto)

@@ -44,7 +44,8 @@ public class URICodec implements Codec<URI> {
                 // queries (up to 30% additional processing time). This SHOULD NOT be a compatibility problem, because
                 // users of query response from MongoDB MUST NOT assume that the returned URI is either in short or
                 // long form. URIs should always be compared using the SPARQLDeserializers.compareURIs` method.
-                return new URI(strURI);
+                // return new URI(strURI);
+                return SPARQLDeserializers.formatURI(new URI(strURI));
             }
         } catch (URISyntaxException ex) {
             LOGGER.warn("Exception while decoding mongodb URI (should never append", ex);

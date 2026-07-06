@@ -179,7 +179,7 @@ public class VariablesGroupAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return variables groups", response = VariablesGroupGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -226,7 +226,7 @@ public class VariablesGroupAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return variables groups", response = VariablesGroupGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

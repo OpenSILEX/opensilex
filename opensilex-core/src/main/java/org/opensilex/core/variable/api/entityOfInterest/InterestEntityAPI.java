@@ -148,7 +148,7 @@ public class InterestEntityAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return entities of interest", response = InterestEntityDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity of interest not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Entity of interest not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getInterestEntitiesByURIs(
             @ApiParam(value = "Entities of interest URIs", required = true) @QueryParam(InterestEntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
@@ -196,7 +196,7 @@ public class InterestEntityAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return entities of interest", response = InterestEntityDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity of interest not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Entity of interest not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchInterestEntitiesByURIs(
             @ApiParam(value = "Entities of interest URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto

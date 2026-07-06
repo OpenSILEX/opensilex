@@ -307,7 +307,7 @@ public class ProvenanceAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -336,7 +336,7 @@ public class ProvenanceAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchProvenancesByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris

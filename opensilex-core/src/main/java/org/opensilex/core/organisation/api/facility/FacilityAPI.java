@@ -227,7 +227,7 @@ public class FacilityAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getFacilitiesByURI(
             @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
@@ -261,7 +261,7 @@ public class FacilityAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchFacilitiesByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris) throws Exception {

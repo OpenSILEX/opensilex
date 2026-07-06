@@ -355,7 +355,7 @@ public class GermplasmAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return factors list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
 
     public Response searchGermplasmsByURIs(

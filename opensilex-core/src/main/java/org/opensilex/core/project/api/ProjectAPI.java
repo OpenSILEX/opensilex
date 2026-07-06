@@ -223,7 +223,7 @@ public class ProjectAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return projects", response = ProjectGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getProjectsByURI(
             @ApiParam(value = "Projects URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -263,7 +263,7 @@ public class ProjectAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return projects", response = ProjectGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchProjectsByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris

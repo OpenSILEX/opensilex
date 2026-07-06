@@ -1141,7 +1141,7 @@ public class ExperimentAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getExperimentsByURIs(
             @ApiParam(value = "Experiments URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -1181,7 +1181,7 @@ public class ExperimentAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchExperimentsByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris

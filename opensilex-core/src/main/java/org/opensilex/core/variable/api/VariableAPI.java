@@ -412,7 +412,7 @@ public class VariableAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return variables", response = VariableDetailsDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getVariablesByURIs(
             @ApiParam(value = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris
@@ -451,7 +451,7 @@ public class VariableAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return variables", response = VariableDetailsDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchVariablesByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris

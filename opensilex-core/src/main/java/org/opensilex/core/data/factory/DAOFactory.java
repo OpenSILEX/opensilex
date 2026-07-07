@@ -78,7 +78,7 @@ public class DAOFactory {
      * @return A {@code ExperimentDAO} instance.
      */
     public ExperimentDAO createExperimentDAO() {
-        return new ExperimentDAO(sparql, nosql);
+        return new ExperimentDAO(sparql, nosql, fs);
     }
 
     /**

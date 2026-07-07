@@ -597,7 +597,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         //Perform first import
         performBasicImportOfOSWithLocations(facility1, facility2, null, osWithLocationsImportCsvFilename1);
         //Create some extra move on one of the imported OSs with some dates
-        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), user);
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), user, getFs());
         MoveModel extraMove = new MoveModel();
         extraMove.setIsInstant(Boolean.TRUE);
         InstantModel movesInstantModel = new InstantModel();
@@ -740,7 +740,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
     }
 
     private ListWithPagination<MoveModel> fetchAllLocationTestsMoves() throws Exception{
-        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), user);
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), user, getFs());
         List<URI> importedOSsURIList = Arrays.asList(
                 osUriWithLocationWithCoordinates1,
                 osUriWithLocationWithCoordinates2,

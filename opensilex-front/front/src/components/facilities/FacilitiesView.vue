@@ -299,7 +299,8 @@ export default class FacilitiesView extends Vue {
           let message = this.$i18n.t("OrganizationFacilityForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
           this.$opensilex.showSuccessToast(message);
           this.$emit("onDelete", uri);
-        });
+        })
+      .catch((error) => this.$opensilex.errorHandler(error));
   }
 
   public async refresh(): Promise<void> {

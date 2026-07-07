@@ -2779,4 +2779,44 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new ConflictException("URI <"+instanceURI+"> is linked with other resources");
         }
     }
+
+    /**
+     * Basically the same method as
+     * @see SPARQLService#requireUriIsNotLinkedWithOtherResourcesInRDF(URI, List).
+     * It runs a request looking at all triples who have the instanceURI as Object (not subject or predicate)
+     * But we instead return a list of the relations in question, by using the same request in a
+     * Select instead of an Ask.
+     *
+     * @param instanceURI The URI we are checking
+     * @param predicateUrisToExclude Any predicates that we want to ignore
+     * @return The list of Triples whom are all reverse relations for the URI in question.
+     * @throws SPARQLException if something went wrong during request
+     */
+    public List<Triple> getUriLinksWithOtherResources(URI instanceURI, List<String> predicateUrisToExclude) throws SPARQLException {
+        Node uriNode = SPARQLDeserializers.nodeURI(instanceURI);
+        Var pVar = SPARQLQueryHelper.makeVar("?p");
+        Var sVar = SPARQLQueryHelper.makeVar("?s");
+
+        SelectBuilder isLinked = new SelectBuilder()
+                .addVar(sVar)
+                .addVar(pVar)
+                .addWhere(sVar, pVar, uriNode);
+
+        if (Objects.nonNull(predicateUrisToExclude)) {
+            predicateUrisToExclude.forEach(uri -> {
+                Node predicateUri = SPARQLDeserializers.nodeURI(uri);
+                isLinked.addFilter(new ExprFactory().ne(pVar.getVarName(), predicateUri));
+            });
+        }
+        return executeSelectQuery(isLinked)
+                .stream()
+                .map(
+                        e -> Triple.create(
+                                NodeFactory.createURI(SPARQLDeserializers.getShortURI(e.getStringValue(sVar.getVarName()))),
+                                NodeFactory.createURI(SPARQLDeserializers.getShortURI(e.getStringValue(pVar.getVarName()))),
+                                NodeFactory.createURI(SPARQLDeserializers.getShortURI(instanceURI))
+                        )
+                )
+                .toList();
+    }
 }

@@ -135,7 +135,7 @@ public class DataLogic {
         // use FacilityLogic.getList as this goes via SparqlSchemaSearch and uses a Filters.in for the uris which does
         // not throw an error when some uris are not a subtype of Facility, unlike the sparql service loadListByURIs which
         //uses Values clause.
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, user, fs);
         List<FacilityModel> foundFacilities = facilityLogic.getList(
                 targets,
                 user,
@@ -404,7 +404,7 @@ public class DataLogic {
     }
 
     public void update(DataModel model) throws Exception {
-        DataValidation validation = new DataValidation(Collections.singletonList(model), sparql, nosql, user);
+        DataValidation validation = new DataValidation(Collections.singletonList(model), sparql, nosql, user, fs);
         validation.validate();
         dao.update(model);
     }
@@ -744,7 +744,7 @@ public class DataLogic {
 
         DataPostInsert postInsert;
         if (!csvImport) {
-            DataValidation validation = new DataValidation(models, sparql, nosql, user);
+            DataValidation validation = new DataValidation(models, sparql, nosql, user, fs);
             postInsert = validation.validate();
         }else{
             postInsert = new DataPostInsert();
@@ -759,7 +759,7 @@ public class DataLogic {
                 (session) -> {
                     //Update the facilities
                     if(!CollectionUtils.isEmpty(facilitiesToUpdate)){
-                        new FacilityLogic(sparql, nosql.getServiceV2()).updateMany(facilitiesToUpdate);
+                        new FacilityLogic(sparql, nosql, user, fs).updateMany(facilitiesToUpdate);
                     }
                     return createManyNoTransaction(
                             session,
@@ -811,7 +811,7 @@ public class DataLogic {
         if (csvImport) {
             csvValidation.setNbLinesImported(models.size());
             //If the data import was successful, post the annotations on objects
-            AnnotationDAO annotationDAO = new AnnotationDAO(sparql, nosql);
+            AnnotationDAO annotationDAO = new AnnotationDAO(sparql, nosql, fs);
             annotationDAO.create(csvValidation.getAnnotationsOnObjects());
         }
         return 0;

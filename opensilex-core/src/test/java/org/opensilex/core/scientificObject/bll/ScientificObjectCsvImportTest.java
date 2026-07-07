@@ -27,6 +27,7 @@ import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.position.api.PositionGetDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -34,6 +35,7 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -919,7 +921,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         Assert.assertFalse(validation.hasErrors());
         Assert.assertEquals(1, validation.getNbObjectImported());
 
-        var soList = new UserCallBuilder(ScientificObjectAPITest.searchWithGeometry)
+        var soList = new UserCallBuilder(ScientificObjectAPITest.search)
                 .addParam("experiment", experimentWithFacility.getUri())
                 .buildAdmin()
                 .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {})
@@ -927,7 +929,14 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
                 .getResult();
         Assert.assertEquals(1, soList.size());
         var so = soList.get(0);
-        Assert.assertTrue(SPARQLDeserializers.compareURIs(facilityInXP.getUri(), so.getLocation().getTo()));
+
+        var position = new UserCallBuilder(ScientificObjectAPITest.getPosition)
+                .setUriInPath(so.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<PositionGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        Assert.assertTrue(SPARQLDeserializers.compareURIs(facilityInXP.getUri(), position.getLocation().getTo()));
     }
 
     @Test
@@ -977,8 +986,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         Assert.assertFalse(validation.hasErrors());
         Assert.assertEquals(1, validation.getNbObjectImported());
 
-
-        var soList = new UserCallBuilder(ScientificObjectAPITest.searchWithGeometry)
+        var soList = new UserCallBuilder(ScientificObjectAPITest.search)
                 .addParam("experiment", experimentWithFacility.getUri())
                 .buildAdmin()
                 .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {})
@@ -986,6 +994,14 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
                 .getResult();
         Assert.assertEquals(1, soList.size());
         var so = soList.get(0);
+
+        var position = new UserCallBuilder(ScientificObjectAPITest.getPosition)
+                .setUriInPath(so.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<PositionGetDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+        Assert.assertTrue(SPARQLDeserializers.compareURIs(facilityInXP.getUri(), position.getLocation().getTo()));
 
         CSVValidationModel reimportValidation = testImport("compatibility/os_reimport_compat_is_hosted_should_fail.csv", experiment.getUri(), user, Map.of(
                 TEMPLATE_URI_PLACEHOLDER, so.getUri(),

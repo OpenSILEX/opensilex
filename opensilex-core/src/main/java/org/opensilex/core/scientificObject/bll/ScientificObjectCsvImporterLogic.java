@@ -170,12 +170,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         this.currentUser = user;
         this.experiment = experiment;
-        experimentDAO = new ExperimentDAO(sparql, mongoDB);
+        experimentDAO = new ExperimentDAO(sparql, mongoDB, fs);
         germplasmDAO = new GermplasmDAO(sparql, mongoDB);
 
-        moveLogic = new MoveLogic(sparql, mongoDB, user, session);
+        moveLogic = new MoveLogic(sparql, mongoDB, user, session, fs);
         this.locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-        this.locationObservationLogic = new LocationObservationLogic(mongoDB.getServiceV2(), sparql);
+        this.locationObservationLogic = new LocationObservationLogic(mongoDB, sparql, fs);
         scientificObjectDAO = new ScientificObjectDAO(sparql);
         this.scientificObjectLogic = new ScientificObjectLogic(sparql, mongoDB, fs);
 

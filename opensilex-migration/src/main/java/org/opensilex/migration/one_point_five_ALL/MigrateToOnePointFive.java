@@ -2,6 +2,7 @@ package org.opensilex.migration.one_point_five_ALL;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.opensilex.OpenSilex;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
@@ -50,6 +51,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        FileStorageService fs = opensilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
         Logger logger = getLogger(MigrateToOnePointFive.class);
         //Initialize the sub-part migration classes
         var facilitiesLinkToVariablesAndDevicesMigration = new FacilitiesLinkToVariablesAndDevicesMigration(
@@ -72,7 +74,7 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
             watch.start();
             new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
                 facilitiesLinkToVariablesAndDevicesMigration.executeWithinTransaction(sparql, mongodb, session);
-                sciObjsAndMovesLocationMigration.executeWithinTransaction(sparql, mongodb, session);
+                sciObjsAndMovesLocationMigration.executeWithinTransaction(sparql, mongodb, fs, session);
                 sciObjAndXpLinkMigration.executeWithinTransaction(sparql);
                 facilitiesLocationsMigration.executeWithinTransaction(sparql, mongodb, session);
                 germplasmAttributeUpdateRights.executeWithinTransaction(sparql, mongodb.getServiceV2(), session);

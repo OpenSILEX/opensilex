@@ -41,6 +41,7 @@ import org.opensilex.core.ontology.Time;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -77,6 +78,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
     private OpenSilex opensilex;
     private SPARQLService sparql;
     private MongoDBService mongodb;
+    private FileStorageService fs;
     private final Logger logger;
 
     private static final String OLD_MOVE_COLLECTION = "move";
@@ -125,9 +127,10 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         this.opensilex = opensilex;
     }
 
-    public void executeWithinTransaction(SPARQLService sparql, MongoDBService mongodb, ClientSession session) throws Exception {
+    public void executeWithinTransaction(SPARQLService sparql, MongoDBService mongodb, FileStorageService fs, ClientSession session) throws Exception {
         this.sparql = sparql;
         this.mongodb = mongodb;
+        this.fs = fs;
 
         if (wasMigrationPreviouslyRun()) {
             logger.info("The migration seems to have already been performed. Nothing will be done.");
@@ -477,7 +480,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             }
             if (moveDetailsAsSPARQLResult.getStringValue(LocationModel.TO_FIELD) != null) {
                 too = URI.create(moveDetailsAsSPARQLResult.getStringValue(LocationModel.TO_FIELD));
-                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+                LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
                 //Create a temporary model just to be able to call checkHasGeom
                 LocationObservationModel temp =  new LocationObservationModel();
                 LocationModel tempLocationModel = new LocationModel();

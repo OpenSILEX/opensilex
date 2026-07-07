@@ -188,7 +188,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         SPARQLService sparql = newSparqlService();
 
         //create experiment
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService());
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService(), getFs());
         ExperimentModel xp =  ExperimentAPITest.getCreationDTO().newModel();
         experimentDAO.create(xp);
         List<URI> experiments = Collections.singletonList(xp.getUri());

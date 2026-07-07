@@ -69,20 +69,21 @@ public class MigrateToOnePointFive implements OpenSilexModuleUpdate {
         //Execute them
         var watch = new StopWatch();
         try {
+            watch.start();
             new SparqlMongoTransaction(sparql, mongodb.getServiceV2()).execute(session -> {
-                watch.start();
                 facilitiesLinkToVariablesAndDevicesMigration.executeWithinTransaction(sparql, mongodb, session);
                 sciObjsAndMovesLocationMigration.executeWithinTransaction(sparql, mongodb, session);
                 sciObjAndXpLinkMigration.executeWithinTransaction(sparql);
                 facilitiesLocationsMigration.executeWithinTransaction(sparql, mongodb, session);
                 germplasmAttributeUpdateRights.executeWithinTransaction(sparql, mongodb.getServiceV2(), session);
                 changeTypeParametersUri.execute();
-                watch.stop();
                 return null;
             });
+            watch.stop();
 
             logger.info("Migration successfully completed");
         } catch (Exception e) {
+            watch.stop();
             try {
                 logger.error("Error while migrating to 1.5. No changes were saved on the databases", e);
             } catch (Exception exception) {

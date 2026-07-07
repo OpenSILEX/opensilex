@@ -67,10 +67,10 @@
         </div>
         <!--Uri global search-->
         <opensilex-Button
-          @click="$emit('uriGlobalSearch')"
+          @click="toggleUriSearchBoxState"
           :label="$t('component.header.uriSearchHoverMessage')"
           class="burgerMenu-searchIcon ik ik-search"
-          :class="{ 'selected-searchicon': searchBoxIsActive }"
+          :class="{ 'selected-searchicon': uriSearchBoxVisible }"
           icon="ik-search"
         ></opensilex-Button>
         <div>
@@ -126,9 +126,9 @@
             <!--Uri global search-->
             <b-button
               class="searchicon"
-              :class="{ 'selected-searchicon': searchBoxIsActive }"
+              :class="{ 'selected-searchicon': uriSearchBoxVisible }"
               :title="$t('component.header.uriSearchHoverMessage')"
-              @click="$emit('uriGlobalSearch')"
+              @click="toggleUriSearchBoxState"
             >
               URI
               <i class="icon ik ik-search"></i>
@@ -191,7 +191,6 @@ import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 import store from "../../models/Store";
 
-
 @Component
 export default class DefaultHeaderComponent extends Vue {
   $i18n: any;
@@ -203,14 +202,19 @@ export default class DefaultHeaderComponent extends Vue {
   title: any;
   description: any;
 
-  @Prop()
-  searchBoxIsActive: boolean;
+  toggleUriSearchBoxState(){
+    this.$store.state.uriSearchBoxVisible = !this.$store.state.uriSearchBoxVisible;
+  }
 
   /**
    * Return the current connected user
    */
   get user() {
     return this.$store.state.user;
+  }
+
+  get uriSearchBoxVisible(){
+    return this.$store.state.uriSearchBoxVisible;
   }
 
   /**

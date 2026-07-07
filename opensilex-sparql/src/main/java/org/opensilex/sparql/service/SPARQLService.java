@@ -2782,7 +2782,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * Basically the same method as
-     * @see SPARQLService#requireUriIsNotLinkedWithOtherResourcesInRDF(URI, List)
+     * @see SPARQLService#requireUriIsNotLinkedWithOtherResourcesInRDF(URI, List).
+     * It runs a request looking at all triples who have the instanceURI as Object (not subject or predicate)
      * But we instead return a list of the relations in question, by using the same request in a
      * Select instead of an Ask.
      *

@@ -432,11 +432,11 @@ public class FacilityLogic {
                     )
             );
             for (Triple existingOtherRdfLink : existingOtherRdfLinks) {
-                errorLinkDetails.append("[ ");
-                errorLinkDetails.append(existingOtherRdfLink.getSubject().toString()).append(" , ");
-                errorLinkDetails.append(existingOtherRdfLink.getPredicate().toString()).append(" , ");
-                errorLinkDetails.append(existingOtherRdfLink.getObject().toString()).append(" ]");
-                errorLinkDetails.append("\n");
+                errorLinkDetails.append(String.format("[%s, %s, %s]\n",
+                        existingOtherRdfLink.getSubject(),
+                        existingOtherRdfLink.getPredicate(),
+                        existingOtherRdfLink.getObject()));
+
             }
         }
 

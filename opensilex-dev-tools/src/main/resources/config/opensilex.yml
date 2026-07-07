@@ -1,11 +1,11 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://phenome.inrae.fr/diaphen/
+    baseURIAlias: diaphen
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            repository: diaphen-3
 
 file-system:
     fs:
@@ -25,7 +25,7 @@ file-system:
                     config:
                         host: localhost
                         port: 8668
-                        database: opensilex
+                        database: diaphen-3
             # customPath:
             #     datafile/: irods
 
@@ -34,7 +34,7 @@ big-data:
         config:
             host: localhost
             port: 8668
-            database: opensilex
+            database: diaphen-3
     #            timezone: Europe/Paris
 
 phisws:

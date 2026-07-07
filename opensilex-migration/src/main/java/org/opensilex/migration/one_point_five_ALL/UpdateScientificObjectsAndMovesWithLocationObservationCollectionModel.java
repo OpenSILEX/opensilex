@@ -22,10 +22,14 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.bson.Document;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.location.bll.LocationObservationLogic;
@@ -34,14 +38,16 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SOSA;
 import org.opensilex.core.ontology.Time;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.utils.StringUriMap;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -49,21 +55,27 @@ import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
-public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel {
+public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel implements OpenSilexModuleUpdate {
 
+    private OpenSilex opensilex;
     private SPARQLService sparql;
     private MongoDBService mongodb;
     private FileStorageService fs;
@@ -75,30 +87,75 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
     public static String DESCRIPTION = "Update ScientificObjects and Devices to use the new Location system. Do this by reading old Moves (includes the isHosted property for ScientificObjects as a move was created for each isHosted) and geospatial mongo collection.";
 
-    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger, FileStorageService fs) {
-        this.sparql = sparql;
-        this.mongodb = mongodb;
-        this.logger = logger;
-        this.fs = fs;
+    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel() {
+        this(LoggerFactory.getLogger(UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel.class));
     }
 
-    public void execute(ClientSession session) throws Exception {
+    public UpdateScientificObjectsAndMovesWithLocationObservationCollectionModel(Logger logger) {
+        this.logger = logger;
+    }
+
+    @Override
+    public OffsetDateTime getDate() {
+        return OffsetDateTime.now();
+    }
+
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    @Override
+    public void execute() throws OpensilexModuleUpdateException {
+        var factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        var sparql = factory.provide();
+        var mongo = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        FileStorageService fs = opensilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+
+        try {
+            new SparqlMongoTransaction(sparql, mongo.getServiceV2()).execute(session -> {
+                executeWithinTransaction(sparql, mongo, fs, session);
+                return null;
+            });
+        } catch (Exception e) {
+            logger.error("Error during scientific objects observation collection migration", e);
+            throw new OpensilexModuleUpdateException(this, e);
+        }
+    }
+
+    @Override
+    public void setOpensilex(OpenSilex opensilex) {
+        this.opensilex = opensilex;
+    }
+
+    public void executeWithinTransaction(SPARQLService sparql, MongoDBService mongodb, FileStorageService fs, ClientSession session) throws Exception {
+        this.sparql = sparql;
+        this.mongodb = mongodb;
+        this.fs = fs;
+
+        if (wasMigrationPreviouslyRun()) {
+            logger.info("The migration seems to have already been performed. Nothing will be done.");
+            return;
+        }
+
         try {
             //1 - For every existing ScientificObject  URI fetch all old GeospatialModels, create new LocationObservationModels,
             //placed in a Map of Format URI -> List(LocationObservationModels)
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURIFromGeospatial = makeNewLocationObservationsFromGeospatialModels();
 
-            //2 - Now Fetch all old Moves for every ScientificObject but also other stuff, normally it should just be Devices
-            Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
-
-            //3 - Create a move in RDF4J for each location from geospatial Collection
+            //2 - Create a move in RDF4J for each location from geospatial Collection
             List<MoveModel> newMoves = sparqlCreateSoMoves(locationObservationsPerURIFromGeospatial);
+
+            //3 - Now Fetch all old Moves for every ScientificObject but also other stuff, normally it should just be Devices
+            Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
 
             //4 - Make new Location Observations for old existing Moves, combine them with locationObservationsPerURIFromGeospatial and return all in a new Map
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURI = makeLocationObservationsFromExistingMoves(locationObservationsPerURIFromGeospatial, moveDetailsList);
             if(locationObservationsPerURI.isEmpty()){
                 return;
             }
+            logger.debug("Sleeping to avoid stressing RDF4J...");
+            Thread.sleep(10000);
             //5 - Add collections for each OS that has at least one LocationObservation. Return in a Map of format OS URI -> ObservationCOLLECTION URI
             StringUriMap<URI> soCollectionMap = sparqlAddLocationCollection(locationObservationsPerURI);
             //6 - Complete location observation models for each SO and insert to Location collection
@@ -198,7 +255,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      * locations (in correct new format) for every existing ScientificObject.
      *
      */
-    private StringUriMap<List<LocationObservationModel>> makeNewLocationObservationsFromGeospatialModels() throws SPARQLException {
+    private StringUriMap<List<LocationObservationModel>> makeNewLocationObservationsFromGeospatialModels() throws Exception {
         //Get OS subClasses
         List<URI> soRdfType =  getOsSubTypes();
 
@@ -209,6 +266,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         List<GeospatialModel> soFromGeospatial = geospatialCollection.find(Filters.in(SPARQLResourceModel.TYPE_FIELD, soRdfType)).into(new ArrayList<>());
 
         StringUriMap<List<LocationObservationModel>> soLocationListMap = new StringUriMap<>();
+        StringUriMap<ExperimentModel> experimentMap = new StringUriMap<>();
 
         // Mapping FeatureOfInterest and locations
         // from geospatial collection
@@ -226,6 +284,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             try {
                 if(!SPARQLDeserializers.compareURIs(geo.getGraph(), sparql.getDefaultGraphURI(ScientificObjectModel.class))){
                     locationObservation.setExperimentUri(geo.getGraph());
+                    experimentMap.put(geo.getGraph(), null);
                 }
             } catch (SPARQLException ignore) {
                 //There should always be a default OS graph right?
@@ -233,6 +292,24 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
             soLocationListMap.put(geo.getUri(), List.of(locationObservation));
         });
+
+        // Assign the correct date to the location. We take the creation date if it exists, or the start date of the experiment otherwise
+        var expeDao = new ExperimentDAO(sparql, mongodb, fs);
+        var soDao = new ScientificObjectDAO(sparql);
+
+        expeDao.getByURIs(experimentMap.keySet().stream().map(URI::create).toList(), AccountModel.getSystemUser())
+                .forEach(xp -> experimentMap.put(xp.getUri(), xp));
+        var soModelList = soDao.searchByURIs(null, soLocationListMap.keySet().stream().map(URI::create).toList(), AccountModel.getSystemUser(), false, null);
+        soModelList.forEach(so -> soLocationListMap.get(so.getUri()).forEach(location -> {
+            if (so.getCreationDate() != null) {
+                location.setEndDate(so.getCreationDate().atStartOfDay().toInstant(ZoneOffset.UTC));
+            } else if (location.getExperimentUri() != null) {
+                var xp = experimentMap.get(location.getExperimentUri());
+                if (xp != null && xp.getStartDate() != null) {
+                    location.setEndDate(xp.getStartDate().atStartOfDay().toInstant(ZoneOffset.UTC));
+                }
+            }
+        }));
 
         return soLocationListMap;
     }
@@ -332,6 +409,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             MoveEventDAO moveDao = new MoveEventDAO(sparql, mongodb);
 
             List<MoveModel> moveModels = new ArrayList<>();
+            var moveGraph = sparql.getDefaultGraph(MoveModel.class);
 
             soLocationListMap.values().stream()
                     .flatMap(Collection::stream)
@@ -342,20 +420,17 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
 
                         if (location.getEndDate() != null && location.getUri() == null) {
                             MoveModel moveModel = new MoveModel();
-                            moveModel.setEnd(defaultEnd);
+                            var instantModel = new InstantModel();
+                            instantModel.setDateTimeStamp(location.getEndDate().atOffset(ZoneOffset.UTC));
+                            moveModel.setEnd(instantModel);
                             moveModel.setIsInstant(true);
                             moveModel.setTargets(Collections.singletonList(location.getFeatureOfInterest()));
+                            moveModel.addRelation(URI.create(moveGraph.getURI()), URI.create(OWL.versionInfo.getURI()), String.class, MigrateToOnePointFive.VERSION_INFO);
                             moveModels.add(moveModel);
                         }
                     });
 
-            List<MoveModel> createdMoves = moveDao.create(moveModels);
-            return createdMoves;
-
-        } catch (SPARQLException e) {
-            throw new RuntimeException(e);
-        } catch (SPARQLDeserializerNotFoundException e) {
-            throw new RuntimeException(e);
+            return moveDao.create(moveModels);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

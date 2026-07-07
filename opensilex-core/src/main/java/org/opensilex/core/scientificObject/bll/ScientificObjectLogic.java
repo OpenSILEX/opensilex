@@ -459,7 +459,7 @@ public class ScientificObjectLogic {
                     soList,
                     (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
                     end,
-                    null,
+                    true,
                     null
             );
         }

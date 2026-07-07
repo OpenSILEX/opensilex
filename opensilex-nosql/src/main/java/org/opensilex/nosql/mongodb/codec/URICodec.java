@@ -39,12 +39,6 @@ public class URICodec implements Codec<URI> {
         try {
             String strURI = reader.readString();
             if (strURI != null && !strURI.isEmpty()) {
-                // The decoder previously called `SPARQLDeserializers.formatURI` to ensure consistent formatting on the
-                // returned URIs. I removed it because the method is very slow and has a significant impact on large
-                // queries (up to 30% additional processing time). This SHOULD NOT be a compatibility problem, because
-                // users of query response from MongoDB MUST NOT assume that the returned URI is either in short or
-                // long form. URIs should always be compared using the SPARQLDeserializers.compareURIs` method.
-                // return new URI(strURI);
                 return SPARQLDeserializers.formatURI(new URI(strURI));
             }
         } catch (URISyntaxException ex) {

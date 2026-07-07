@@ -9,7 +9,6 @@ package org.opensilex.core.data.dal;
 import com.apicatalog.jsonld.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
@@ -706,7 +705,7 @@ public class DataDAO {
         
         //user access
         if (!user.isAdmin()) {
-            ExperimentDAO expDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO expDAO = new ExperimentDAO(sparql, nosql, fs);
             Set<URI> userExperiments = expDAO.getUserExperiments(user);                        
 
             if (experiments != null && !experiments.isEmpty()) {

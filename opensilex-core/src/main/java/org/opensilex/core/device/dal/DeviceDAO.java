@@ -452,7 +452,7 @@ public class DeviceDAO {
     }
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, fs);
 
         MoveModel moveEvent = moveLogic.getLastMoveAfter(deviceURI, null);
 
@@ -478,7 +478,7 @@ public class DeviceDAO {
             if (lastPosition.getLocation().getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getLocation().getTo().toString()));
 
-                FacilityLogic infraLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+                FacilityLogic infraLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
                 facility = infraLogic.get(facilityUri, currentUser);
             }
         }

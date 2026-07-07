@@ -110,8 +110,6 @@ const securityService: SecurityService = $opensilex.getService<SecurityService>(
 const { t } = useI18n();
 
 
-// const orcidModalRef: OrcidSuggestionModal = ref(null);
-
 let uriGenerated = true;
 
 const props = withDefaults(

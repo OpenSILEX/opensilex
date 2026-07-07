@@ -29,8 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { useStore } from "vuex";
-import {computed, Ref, ref, useTemplateRef} from "vue";
+import {useStore} from "vuex";
+import {computed, useTemplateRef} from "vue";
 import {OpenSilexStore} from "@/models/Store";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import PageContent from "@/components/layout/PageContent.vue";

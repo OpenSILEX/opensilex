@@ -1,5 +1,5 @@
 <template>
-  <b-form>
+  <n-form :rules="rules">
     <!-- URI -->
     <UriForm
         :uri.sync="form.uri"
@@ -9,77 +9,71 @@
         :generated.sync="uriGenerated"
     ></UriForm>
 
-    <!-- orcid -->
-    <b-form-group>
-      <div>
-        <opensilex-FormInputLabelHelper
-            label="component.person.orcid"
-            helpMessage="component.person.orcid-help-message"
-            class="checkbox">
-        </opensilex-FormInputLabelHelper>
-        <b-input-group>
-          <b-form-input
-              v-model="form.orcid"
-              type="text"
-              :disabled="disable_orcid_field"
-              :placeholder="t('component.person.orcid-placeholder')"
-          ></b-form-input>
-          <b-input-group-append>
-            <b-button
-                :disabled="! validOrcid"
-                :class=" validOrcid ? 'createButton greenThemeColor' : '' "
-                @click="startOrcidSuggestion()"
-            >
-              {{ t('component.person.load-orcid-infos') }}
-            </b-button>
-          </b-input-group-append>
-        </b-input-group>
-      </div>
-    </b-form-group>
 
+      <FormInputLabelHelper
+          label="component.person.orcid"
+          helpMessage="component.person.orcid-help-message"
+          class="checkbox">
+      </FormInputLabelHelper>
+    <div class="row">
+        <input-form class="orcid-field"
+            v-model:value="form.orcid"
+            type="text"
+            :disabled="disable_orcid_field"
+            :placeholder="t('component.person.orcid-placeholder')"
+        ></input-form>
+
+          <Button
+              label="component.person.load-orcid-infos"
+              :disabled="! validOrcid"
+              :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
+              @click="startOrcidSuggestion()"
+          />
+    </div>
     <opensilex-OrcidSuggestionModal
         ref="orcidModalRef"
         @selectionDone="fillFormWithNoNull"
     />
+    <!-- orcid -->
 
     <!-- First name -->
-    <opensilex-InputForm
+    <InputForm
         :value.sync="form.first_name"
         label="component.person.first-name"
         type="text"
         :required="true"
         placeholder="component.person.form-first-name-placeholder"
-    ></opensilex-InputForm>
+    ></InputForm>
 
     <!-- Last name -->
-    <opensilex-InputForm
+    <InputForm
         :value.sync="form.last_name"
         label="component.person.last-name"
         type="text"
         :required="true"
         placeholder="component.person.form-last-name-placeholder"
-    ></opensilex-InputForm>
+    ></InputForm>
 
     <!-- Email -->
-    <opensilex-InputForm
+    <InputForm
         :value.sync="form.email"
         label="component.person.email-address"
         type="email"
         rules="email"
         placeholder="component.person.form-email-placeholder"
         autocomplete="new-password"
-    ></opensilex-InputForm>
+    ></InputForm>
 
     <!-- affiliation -->
-    <opensilex-InputForm
+    <InputForm
         :value.sync="form.affiliation"
         label="component.person.affiliation"
         placeholder="component.person.form-affiliation-placeholder"
         type="text"
-    ></opensilex-InputForm>
+    ></InputForm>
 
     <!-- phone number -->
-    <opensilex-FormField
+    <FormField
         :rules="phoneIsValid ? '' : 'falsy' "
         label="component.person.phone_number"
     >
@@ -93,19 +87,23 @@
             @input="updatePhoneNumber"
         ></vue-tel-input>
       </template>
-    </opensilex-FormField>
+    </FormField>
 
-  </b-form>
+  </n-form>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, onMounted, WritableComputedRef, ComputedRef } from "vue";
+import {computed, ComputedRef, inject, WritableComputedRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
-import OrcidSuggestionModal from "./OrcidSuggestionModal.vue";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import {useI18n} from "vue-i18n";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import FormField from "@/components/common/forms/FormField.vue";
+import {NForm} from "naive-ui";
+import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
+import Button from "@/components/common/buttons/Button.vue";
 
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -134,6 +132,11 @@ defineProps<{
   }),
 }
 );
+
+const rules = {
+  uri: {required: true},
+  parent: {required: true}
+}
 
   const disable_orcid_field: boolean = false
   const phoneIsValid: boolean = true
@@ -262,7 +265,17 @@ defineProps<{
 
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+.orcid-field {
+  max-width: 60%;
+}
 
+.orcid-button {
+  max-width: 10%;
+}
+
+.orcid-button .button-label {
+  margin-left: 0;
+}
 </style>
 

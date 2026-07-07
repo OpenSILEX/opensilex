@@ -40,7 +40,6 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.metadata.MetaDataDaoV2;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.metadata.MetadataSearchFilter;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -1086,7 +1085,7 @@ public class DeviceAPI {
         // it will still always be included in facilities that used to have it
 
         //First fetch the correct LocationObservations, whose Location's 'to' field is our Facility
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
         LocationObservationSearchFilter locationObservationSearchFilter = new LocationObservationSearchFilter();
         locationObservationSearchFilter.setTo(facilityUri);
         final int pageSizePerIter = 50;

@@ -18,8 +18,10 @@ import org.opensilex.core.location.dal.*;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -45,14 +47,18 @@ public class LocationObservationLogic {
     private final LocationObservationCollectionLogic collectionLogic;
 
     private final MongoDBServiceV2 nosql;
+    private final MongoDBService nosqlV1;
     private final SPARQLService sparql;
+    private final FileStorageService fs;
 
     //#region constructor
-    public LocationObservationLogic(MongoDBServiceV2 nosql, SPARQLService sparql) {
-        this.locationObservationDAO = new LocationObservationDAO(nosql);
+    public LocationObservationLogic(MongoDBService nosqlV1, SPARQLService sparql, FileStorageService fs) {
+        this.locationObservationDAO = new LocationObservationDAO(nosqlV1.getServiceV2());
         this.collectionLogic = new LocationObservationCollectionLogic(sparql);
-        this.nosql = nosql;
+        this.nosqlV1 = nosqlV1;
+        this.nosql = nosqlV1.getServiceV2();
         this.sparql = sparql;
+        this.fs = fs;
     }
     //#endregion
 
@@ -100,7 +106,7 @@ public class LocationObservationLogic {
         //Validate that from/to facilities exist
         for(LocationObservationModel observation : observations) {
             if(observation.getLocation()!=null && (observation.getLocation().getFrom()!=null || observation.getLocation().getTo()!=null)) {
-                FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+                FacilityLogic facilityLogic = new FacilityLogic(sparql, nosqlV1, currentUser, fs);
                 List<URI> facilityUrisToCheck = new ArrayList<>();
                 if(observation.getLocation().getFrom()!=null){
                     facilityUrisToCheck.add(observation.getLocation().getFrom());
@@ -514,7 +520,7 @@ public class LocationObservationLogic {
     ) throws NoSuchElementException, SPARQLException {
 
         Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionPerFeatureOfInterest(targetUris);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosqlV1, sparql, fs);
 
         return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                 targetCollectionMap,

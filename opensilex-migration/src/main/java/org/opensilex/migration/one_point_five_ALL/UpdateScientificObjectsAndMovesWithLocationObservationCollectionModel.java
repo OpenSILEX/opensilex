@@ -110,10 +110,11 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         var factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         var sparql = factory.provide();
         var mongo = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        FileStorageService fs = opensilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
 
         try {
             new SparqlMongoTransaction(sparql, mongo.getServiceV2()).execute(session -> {
-                executeWithinTransaction(sparql, mongo, session);
+                executeWithinTransaction(sparql, mongo, fs, session);
                 return null;
             });
         } catch (Exception e) {
@@ -293,7 +294,7 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
         });
 
         // Assign the correct date to the location. We take the creation date if it exists, or the start date of the experiment otherwise
-        var expeDao = new ExperimentDAO(sparql, mongodb);
+        var expeDao = new ExperimentDAO(sparql, mongodb, fs);
         var soDao = new ScientificObjectDAO(sparql);
 
         expeDao.getByURIs(experimentMap.keySet().stream().map(URI::create).toList(), AccountModel.getSystemUser())

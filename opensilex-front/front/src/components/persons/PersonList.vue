@@ -34,7 +34,7 @@
       <template #cell(actions)="{data}">
           <EditButton
               v-if="person.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
-              @click="$emit('onEdit', data.item)"
+              @click="emit('onEdit', data.item)"
               label="component.person.update"
               :small="true"
           ></EditButton>
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, onMounted } from "vue";
+import {computed, inject, ref, onMounted, useTemplateRef} from "vue";
 import { useStore } from "vuex";
 import { useRoute } from 'vue-router';
 import { SecurityService } from "opensilex-security/index";
@@ -55,9 +55,10 @@ import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import PersonContact from "@/components/persons/PersonContact.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
+import {PersonDTO} from "opensilex-security/model/personDTO";
 
-const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
-const service = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
+const service = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const store = useStore() as OpenSilexStore;
 const route = useRoute();
     
@@ -78,7 +79,14 @@ const fields = [
 ];
 //#endregion
 
-const tableRef = ref();
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
+
+//#region Emits
+const emit = defineEmits<{
+  (e: "onEdit", payload: PersonDTO): void
+}>()
+//#endregion
+
 
 onMounted(() => {
   let query: any = route.query;
@@ -103,7 +111,7 @@ onMounted(() => {
   }
 
   function updateFilter() {
-    $opensilex.updateURLParameter("filter", filter, "");
+    opensilex.updateURLParameter("filter", filter, "");
     refresh();
   }
 

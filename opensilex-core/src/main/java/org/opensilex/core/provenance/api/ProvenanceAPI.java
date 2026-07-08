@@ -18,6 +18,7 @@ import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -87,6 +88,9 @@ public class ProvenanceAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private FileStorageService fs;
 
     @POST
     @ApiOperation("Add a provenance")
@@ -227,7 +231,7 @@ public class ProvenanceAPI {
         provenances.add(uri);
 
         DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, null);
-        DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql, fs);
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(currentUser).setProvenances(provenances);
 

@@ -77,10 +77,10 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         FileStorageService fs = openSilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
         AccountModel user = sparql.search(AccountModel.class, null).get(0);
 
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, user, fs);
         PersonDAO personDAO = new PersonDAO(sparql);
         ProjectDAO projectDAO = new ProjectDAO(sparql);
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
 
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs, user);
         BaseVariableDAO<CharacteristicModel> characteristicDAO = new BaseVariableDAO<>(CharacteristicModel.class, sparql);

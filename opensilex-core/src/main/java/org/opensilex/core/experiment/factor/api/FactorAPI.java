@@ -18,6 +18,7 @@ import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -89,6 +90,9 @@ public class FactorAPI {
     @Inject
     private MongoDBService nosql;
 
+    @Inject
+    private FileStorageService fs;
+    
     @CurrentUser
     AccountModel currentUser;
 
@@ -110,7 +114,7 @@ public class FactorAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createFactor(
             @ApiParam("Factor description") @Valid FactorCreationDTO dto) throws Exception {
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         ExperimentModel xpModel = experimentDAO.get(dto.getExperiment(), currentUser);
         FactorDAO dao = new FactorDAO(sparql);
         try {
@@ -161,7 +165,7 @@ public class FactorAPI {
         FactorModel model = dao.get(uri);
 
         if (model != null) {
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
             experimentDAO.validateExperimentAccess(model.getExperiment().getUri(), currentUser);
             FactorDetailsGetDTO dto = FactorDetailsGetDTO.fromModel(model);
             if (Objects.nonNull(model.getPublisher())){
@@ -196,7 +200,7 @@ public class FactorAPI {
         FactorModel model = dao.get(uri);
 
         if (model != null) {
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
             experimentDAO.validateExperimentAccess(model.getExperiment().getUri(), currentUser);
 
             FactorDetailsGetDTO dtoFromModel = FactorDetailsGetDTO.fromModel(model);
@@ -228,7 +232,7 @@ public class FactorAPI {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
         if (model != null) {
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
             experimentDAO.validateExperimentAccess(model.getExperiment().getUri(), currentUser);
 
             List<ExperimentModel> experiments = model.getAssociatedExperiments();
@@ -277,7 +281,7 @@ public class FactorAPI {
 
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         try {
             List<URI> experiments = null;
             if (experiment != null) {
@@ -361,7 +365,7 @@ public class FactorAPI {
             FactorDAO dao = new FactorDAO(sparql);
             FactorModel model = dao.get(uri);
             if (model != null) {
-                ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+                ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
                 experimentDAO.validateExperimentAccess(model.getExperiment().getUri(), currentUser);
                 // Get associated experiment URIs
                 List<ExperimentModel> associatedFactorExperimentURIs = model.getAssociatedExperiments();
@@ -408,7 +412,7 @@ public class FactorAPI {
             FactorDAO factorDao = new FactorDAO(sparql);
             FactorModel existingModel = factorDao.get(dto.getUri());
 
-            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
             experimentDAO.validateExperimentAccess(existingModel.getExperiment().getUri(), currentUser);
             FactorModel model = dto.newModel();
             List<FactorLevelModel> factorLevelsModels = new ArrayList<>();
@@ -456,7 +460,7 @@ public class FactorAPI {
         FactorDAO dao = new FactorDAO(sparql);
         List<FactorModel> models = dao.getList(uris);
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(currentUser);
         if (!models.isEmpty()) {
             List<FactorGetDTO> resultDTOList = new ArrayList<>(models.size());

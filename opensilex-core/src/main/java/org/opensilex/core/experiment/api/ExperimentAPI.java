@@ -169,7 +169,7 @@ public class ExperimentAPI {
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO dto
     ) throws Exception {
         try {
-            ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
             ExperimentModel model = dto.newModel();
             model.setPublisher(currentUser.getUri());
 
@@ -207,7 +207,7 @@ public class ExperimentAPI {
     public Response updateExperiment(
             @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
     ) throws Exception {
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
 
         ExperimentModel model = xpDto.newModel();
         dao.update(model, currentUser);
@@ -233,7 +233,7 @@ public class ExperimentAPI {
     public Response getExperiment(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
         ExperimentModel model = dao.get(xpUri, currentUser);
         ExperimentGetDTO dto = ExperimentGetDTO.fromModel(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -283,7 +283,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
 
         ExperimentSearchFilter filter = new ExperimentSearchFilter()
                 .setYear(year)
@@ -333,7 +333,7 @@ public class ExperimentAPI {
     public Response deleteExperiment(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
 
         checkExperimentDontContainDatasBeforeDeletion(xpUri);
 
@@ -375,7 +375,7 @@ public class ExperimentAPI {
     public Response getAvailableFacilities(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
         List<FacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
 
         List<FacilityGetDTO> dtoList = facilities.stream().map((item) -> FacilityGetDTO.getDTOFromModel(item, false)).collect(Collectors.toList());
@@ -394,7 +394,7 @@ public class ExperimentAPI {
     public Response getAvailableSpecies(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
         SpeciesDAO dao = new SpeciesDAO(sparql);
@@ -416,7 +416,7 @@ public class ExperimentAPI {
     public Response getAvailableFactors(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
         FactorDAO dao = new FactorDAO(sparql);
@@ -448,7 +448,7 @@ public class ExperimentAPI {
             @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
             @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
     ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
@@ -544,7 +544,7 @@ public class ExperimentAPI {
         }
 
         // test exp
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
@@ -659,7 +659,7 @@ public class ExperimentAPI {
         }
 
         // test exp
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
@@ -741,7 +741,7 @@ public class ExperimentAPI {
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
 
         // test exp
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
@@ -823,7 +823,7 @@ public class ExperimentAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         // test exp
         DataDAO dataDAO = new DataDAO(nosql,sparql,fs);
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
         // test prov
@@ -1104,7 +1104,7 @@ public class ExperimentAPI {
     ) throws Exception {
 
         // test exp
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
@@ -1146,7 +1146,7 @@ public class ExperimentAPI {
     public Response getExperimentsByURIs(
             @ApiParam(value = "Experiments URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
         List<ExperimentModel> models = dao.getByURIs(uris, currentUser);
 
         if (!models.isEmpty()) {
@@ -1225,7 +1225,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
 
         ListWithPagination<FundingModel> resultList = dao.searchFunding(
                 namePattern,

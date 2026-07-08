@@ -23,7 +23,8 @@ import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -84,7 +85,10 @@ public class FacilityAPI {
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBServiceV2 nosql;
+    private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -106,7 +110,7 @@ public class FacilityAPI {
             @ApiParam("Facility description") @Valid FacilityCreationDTO dto
     ) throws Exception {
         try {
-            FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+            FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
             FacilityModel facility = dto.newModel();
 
             List<LocationObservationModel> locations = new ArrayList<>();
@@ -163,7 +167,7 @@ public class FacilityAPI {
             @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response getAllFacilities() throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         FacilitySearchFilter searchFilter = new FacilitySearchFilter();
         searchFilter.setPageSize(0);
@@ -188,7 +192,7 @@ public class FacilityAPI {
     public Response getFacility(
             @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         FacilityModel model = facilityLogic.get(uri, currentUser);
         FacilityGetDTO facilityGetDTO = FacilityGetDTO.getDTOFromModel(
                 model,
@@ -231,7 +235,7 @@ public class FacilityAPI {
     })
     public Response getFacilitiesByURI(
             @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         List<FacilityModel> facilities = facilityLogic.getList(uris, currentUser);
 
@@ -298,7 +302,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.search(filter);
@@ -326,7 +330,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.minimalSearch(filter);
@@ -355,7 +359,7 @@ public class FacilityAPI {
     public Response deleteFacility(
             @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         facilityLogic.delete(uri, currentUser);
 
@@ -379,7 +383,7 @@ public class FacilityAPI {
             @ApiParam("Facility description")
             @Valid FacilityUpdateDTO dto
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         FacilityModel facility = dto.newModel();
 
@@ -425,7 +429,7 @@ public class FacilityAPI {
     public Response getFacilitiesWithGeometry(
             @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") String endDate
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         List<FacilityGetWithGeometryDTO> facilityDTOList = new ArrayList<>();
 
         Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getFacilitiesWithPosition(

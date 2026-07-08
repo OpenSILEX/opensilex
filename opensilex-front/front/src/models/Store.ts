@@ -104,6 +104,7 @@ let store = new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
+    uriSearchBoxVisible: false,
     openSilexRouter: null,
     config: defaultConfig,
     userConfig: defaultUserConfig,

@@ -135,6 +135,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2]
+
+### Fixed or optimized
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+> 
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1 (just below). 
+> 
+> If you are upgrading from 1.5.1, there's nothing to do.
+
+- (!1506) [Migration] Optimized migration to 1.5.x with large datasets
+- (!1506) [Map] Fixed geometry visualization for scientific objects with an associated facility
+
 ## [1.5.1]
 
 ### Fixed or optimized

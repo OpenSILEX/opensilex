@@ -1,5 +1,15 @@
 <template>
   <Modal ref="modal">
+    <template #header>
+      <div class="flex justify-between items-center">
+        <h4>
+          <slot name="icon">
+            <Icon icon="bi#bi-card-checklist" class="icon-title"/>
+          </slot>
+          {{ t('component.person.orcid-suggestion.title') }}
+        </h4>
+      </div>
+    </template>
 
     <!--  person fields -->
     <div>
@@ -95,6 +105,7 @@ import Button from "@/components/common/buttons/Button.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 export type Option = { id: string, label: string }
 

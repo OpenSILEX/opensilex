@@ -5,96 +5,110 @@
       :model="form"
       label-placement="top"
       :show-require-mark="true"
+      size="large"
   >
     <!-- URI -->
-    <UriForm
-        :uri.sync="form.uri"
-        label="component.person.person-uri"
-        helpMessage="component.common.uri-help-message"
-        :editMode="editMode"
-        :generated.sync="uriGenerated"
-    ></UriForm>
+    <n-form-item>
+      <UriForm
+          :uri.sync="form.uri"
+          label="component.person.person-uri"
+          helpMessage="component.common.uri-help-message"
+          :editMode="editMode"
+          :generated.sync="uriGenerated"
+      ></UriForm>
+    </n-form-item>
 
+    <n-form-item>
+      <FormInputLabelHelper
+          label="component.person.orcid"
+          helpMessage="component.person.orcid-help-message"
+          class="checkbox">
+      </FormInputLabelHelper>
+      <div class="row">
+        <input-form class="orcid-field"
+                    v-model:value="form.orcid"
+                    type="text"
+                    :disabled="disable_orcid_field"
+                    :placeholder="t('component.person.orcid-placeholder')"
+        ></input-form>
 
-    <FormInputLabelHelper
-        label="component.person.orcid"
-        helpMessage="component.person.orcid-help-message"
-        class="checkbox">
-    </FormInputLabelHelper>
-    <div class="row">
-      <input-form class="orcid-field"
-                  v-model:value="form.orcid"
-                  type="text"
-                  :disabled="disable_orcid_field"
-                  :placeholder="t('component.person.orcid-placeholder')"
-      ></input-form>
-
-      <Button
-          label="component.person.load-orcid-infos"
-          :disabled="! validOrcid"
-          :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
-          @click="startOrcidSuggestion()"
+        <Button
+            label="component.person.load-orcid-infos"
+            :disabled="! validOrcid"
+            :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
+            @click="startOrcidSuggestion()"
+        />
+      </div>
+      <OrcidSuggestionModal
+          :orcid="props.form.orcid"
+          v-model:display-modal="displayOrcidModal"
+          @selectionDone="fillFormWithNoNull"
       />
-    </div>
-    <OrcidSuggestionModal
-        :orcid="props.form.orcid"
-        v-model:display-modal="displayOrcidModal"
-        @selectionDone="fillFormWithNoNull"
-    />
+    </n-form-item>
     <!-- orcid -->
 
     <!-- First name -->
-    <InputForm
-        :value.sync="form.first_name"
-        label="component.person.first-name"
-        type="text"
-        :required="true"
-        :placeholder="t('component.person.form-first-name-placeholder')"
-    ></InputForm>
+    <n-form-item path="first_name">
+      <InputForm
+          v-model:value="form.first_name"
+          :label="t('component.person.first-name')"
+          type="text"
+          :required="true"
+          :placeholder="t('component.person.form-first-name-placeholder')"
+      ></InputForm>
+    </n-form-item>
 
     <!-- Last name -->
-    <InputForm
-        :value.sync="form.last_name"
-        label="component.person.last-name"
-        type="text"
-        :required="true"
-        :placeholder="t('component.person.form-last-name-placeholder')"
-    ></InputForm>
+    <n-form-item path="last_name">
+      <InputForm
+          v-model:value="form.last_name"
+          :label="t('component.person.last-name')"
+          type="text"
+          :required="true"
+          :placeholder="t('component.person.form-last-name-placeholder')"
+      ></InputForm>
+    </n-form-item>
 
     <!-- Email -->
-    <InputForm
-        :value.sync="form.email"
-        label="component.person.email-address"
-        type="email"
-        rules="email"
-        :placeholder="t('component.person.form-email-placeholder')"
-        autocomplete="new-password"
-    ></InputForm>
+    <n-form-item>
+      <InputForm
+          v-model:value="form.email"
+          label="component.person.email-address"
+          type="email"
+          rules="email"
+          :placeholder="t('component.person.form-email-placeholder')"
+          autocomplete="new-password"
+      ></InputForm>
+    </n-form-item>
 
     <!-- affiliation -->
-    <InputForm
-        :value.sync="form.affiliation"
-        label="component.person.affiliation"
-        :placeholder="t('component.person.form-affiliation-placeholder')"
-        type="text"
-    ></InputForm>
+    <n-form-item>
+      <InputForm
+          v-model:value="form.affiliation"
+          label="component.person.affiliation"
+          :placeholder="t('component.person.form-affiliation-placeholder')"
+          type="text"
+      ></InputForm>
+    </n-form-item>
 
     <!-- phone number -->
-    <FormField
-        :rules="phoneIsValid ? '' : 'falsy' "
-        label="component.person.phone_number"
-    >
-      <template v-slot:field="field">
-        <vue-tel-input
-            v-model="phone_number"
-            defaultCountry="FR"
-            :onlyCountries="['FR']"
-            validCharactersOnly
-            @validate="validatePhone"
-            @input="updatePhoneNumber"
-        ></vue-tel-input>
-      </template>
-    </FormField>
+    <n-form-item>
+      <FormField
+          :rules="phoneIsValid ? '' : 'falsy' "
+          label="component.person.phone_number"
+      >
+        <template v-slot:field="field">
+          <vue-tel-input
+              v-model="phone_number"
+              defaultCountry="FR"
+              :onlyCountries="['FR']"
+              validCharactersOnly
+              @validate="validatePhone"
+              @input="updatePhoneNumber"
+          ></vue-tel-input>
+        </template>
+      </FormField>
+    </n-form-item>
 
   </n-form>
 </template>
@@ -108,7 +122,7 @@ import UriForm from "@/components/common/forms/UriForm.vue";
 import {useI18n} from "vue-i18n";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormField from "@/components/common/forms/FormField.vue";
-import {NForm} from "naive-ui";
+import {NForm, NFormItem} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import Button from "@/components/common/buttons/Button.vue";
 import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
@@ -139,8 +153,8 @@ const props = withDefaults(
 );
 
 const rules = computed(() => ({
-  "first_name": requiredTrimmed('component.common.name'),
-  'last_name': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.title') }), trigger: ['blur','change'] },
+  "first_name": requiredTrimmed('component.person.first-name'),
+  'last_name': requiredTrimmed('component.person.last-name'),
 
 }))
 
@@ -157,6 +171,7 @@ const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 const emit = defineEmits<{
   (e: "onCreate", payload: PersonDTO): void
 }>()
+
 //#endregion
 
 function reset() {

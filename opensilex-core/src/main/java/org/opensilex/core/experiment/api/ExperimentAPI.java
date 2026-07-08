@@ -1189,7 +1189,7 @@ public class ExperimentAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
         }
 
-        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql, fs);
         List<ExperimentModel> models = dao.getByURIs(uris, currentUser);
 
         if (!models.isEmpty()) {

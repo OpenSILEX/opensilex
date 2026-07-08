@@ -272,7 +272,7 @@ public class FacilityAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
         }
 
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         List<FacilityModel> facilities = facilityLogic.getList(uris, currentUser);
 

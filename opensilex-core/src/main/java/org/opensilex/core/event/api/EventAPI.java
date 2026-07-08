@@ -589,8 +589,6 @@ public class EventAPI {
     /**
      * @return  a list of moves corresponding to the given URIs provided in the request body.
      * This method replaces the deprecated GET variant which used query parameters.
-     *
-     * @param dto DTO containing the list of URIs of moves to fetch.
      */
     @POST
     @Path(MOVE_PATH_PREFIX + "/by_uris")
@@ -610,7 +608,7 @@ public class EventAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
         }
 
-        var logic = new MoveLogic(sparql, nosql, currentUser);
+        var logic = new MoveLogic(sparql, nosql, currentUser, fs);
         var accountDao = new AccountDAO(sparql);
         //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
         //      to all services that need it.

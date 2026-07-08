@@ -10,30 +10,30 @@
     ></UriForm>
 
 
-      <FormInputLabelHelper
-          label="component.person.orcid"
-          helpMessage="component.person.orcid-help-message"
-          class="checkbox">
-      </FormInputLabelHelper>
+    <FormInputLabelHelper
+        label="component.person.orcid"
+        helpMessage="component.person.orcid-help-message"
+        class="checkbox">
+    </FormInputLabelHelper>
     <div class="row">
-        <input-form class="orcid-field"
-            v-model:value="form.orcid"
-            type="text"
-            :disabled="disable_orcid_field"
-            :placeholder="t('component.person.orcid-placeholder')"
-        ></input-form>
+      <input-form class="orcid-field"
+                  v-model:value="form.orcid"
+                  type="text"
+                  :disabled="disable_orcid_field"
+                  :placeholder="t('component.person.orcid-placeholder')"
+      ></input-form>
 
-          <Button
-              label="component.person.load-orcid-infos"
-              :disabled="! validOrcid"
-              :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
-              @click="startOrcidSuggestion()"
-          />
+      <Button
+          label="component.person.load-orcid-infos"
+          :disabled="! validOrcid"
+          :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
+          @click="startOrcidSuggestion()"
+      />
     </div>
-    <opensilex-OrcidSuggestionModal
-        ref="orcidModalRef"
+    <OrcidSuggestionModal
+        :orcid="props.form.orcid"
         @selectionDone="fillFormWithNoNull"
-    />
+        :display-modal="displayOrcidModal"/>
     <!-- orcid -->
 
     <!-- First name -->
@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, WritableComputedRef} from "vue";
+import {computed, ComputedRef, inject, nextTick, ref, WritableComputedRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
@@ -104,31 +104,30 @@ import FormField from "@/components/common/forms/FormField.vue";
 import {NForm} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import Button from "@/components/common/buttons/Button.vue";
+import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
 
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
-const { t } = useI18n();
+const {t} = useI18n();
 
-
-let uriGenerated = true;
 
 const props = withDefaults(
-defineProps<{
-  editMode?: boolean;
-  form: PersonDTO;
-}>(),
-{
-  editMode: false,
-  form: () => ({
-    uri: null,
-    email: null,
-    first_name: null,
-    last_name: null,
-    affiliation: null,
-    phone_number: null,
-    orcid: null
-  }),
-}
+    defineProps<{
+      editMode?: boolean;
+      form: PersonDTO;
+    }>(),
+    {
+      editMode: false,
+      form: () => ({
+        uri: null,
+        email: null,
+        first_name: null,
+        last_name: null,
+        affiliation: null,
+        phone_number: null,
+        orcid: null
+      }),
+    }
 );
 
 const rules = {
@@ -136,130 +135,139 @@ const rules = {
   parent: {required: true}
 }
 
-  const disable_orcid_field: boolean = false
-  const phoneIsValid: boolean = true
-  let formattedPhoneNumber: string = ""
+let uriGenerated = true;
+
+let displayOrcidModal = ref(false)
+let disable_orcid_field: boolean = false
+let phoneIsValid: boolean = true
+let formattedPhoneNumber = ref("")
 
 
-  function reset() {
-    this.uriGenerated = true;
-    this.$nextTick(() => {
-      this.disable_orcid_field = this.editMode && this.form.orcid !== null
-      this.formattedPhoneNumber = this.form.phone_number
-    })
-  }
+//#region Emits
+const emit = defineEmits<{
+  (e: "onCreate", payload: PersonDTO): void
+}>()
+//#endregion
 
-  // necessary because vue-tel-input crash if its v-model value is null
-  const phone_number: WritableComputedRef<string, String> = computed({
-    get: () => formattedPhoneNumber ? formattedPhoneNumber : "",
-    set: (number: string) => formattedPhoneNumber = number != '' ? number : null
+function reset() {
+  uriGenerated = true;
+  nextTick(() => {
+    disable_orcid_field = props.editMode && props.form.orcid !== null
+    formattedPhoneNumber.value = props.form.phone_number
   })
+}
 
-  const validOrcid: ComputedRef<boolean> = computed(() => {
-    //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X. Le tout précédé ou non du nom de domain de orcid
-    //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X ou https://orcid.org/0009-0006-6636-4714 ou https://orcid.org/0009-0006-6636-471X
-    let regexOrcid = /^(https:\/\/orcid.org\/)?([0-9]{4}-){3}[0-9]{3}[0-9X]$/
-    return regexOrcid.test(props.form.orcid)
-  })
+// necessary because vue-tel-input crash if its v-model value is null
+const phone_number: WritableComputedRef<string, String> = computed({
+  get: () => formattedPhoneNumber.value ? formattedPhoneNumber.value : "",
+  set: (number: string) => formattedPhoneNumber.value = number != '' ? number : null
+})
+
+const validOrcid: ComputedRef<boolean> = computed(() => {
+  //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X. Le tout précédé ou non du nom de domain de orcid
+  //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X ou https://orcid.org/0009-0006-6636-4714 ou https://orcid.org/0009-0006-6636-471X
+  let regexOrcid = /^(https:\/\/orcid.org\/)?([0-9]{4}-){3}[0-9]{3}[0-9X]$/
+  return regexOrcid.test(props.form.orcid)
+})
 
 
-  function getEmptyForm() {
-    return {
-      uri: null,
-      email: null,
-      first_name: null,
-      last_name: null,
-      affiliation: null,
-      phone_number: null,
-      orcid: null
-    };
+function getEmptyForm() {
+  return {
+    uri: null,
+    email: null,
+    first_name: null,
+    last_name: null,
+    affiliation: null,
+    phone_number: null,
+    orcid: null
+  };
+}
+
+async function create(form: PersonDTO) {
+  showLoader()
+  prepareFormBeforeSending(form)
+
+  try {
+    let response = await securityService.createPerson(form)
+    emit("onCreate", form)
+    return response
+  } catch (error) {
+    $opensilex.errorHandler(error);
+  } finally {
+    hideLoader()
   }
 
-  async function create(form: PersonDTO) {
-    this.showLoader()
-    this.prepareFormBeforeSending(form)
+}
 
-    try {
-      let response = await securityService.createPerson(form)
-      this.$emit("onCreate", form)
-      return response
-    } catch (error) {
-      this.$opensilex.errorHandler(error);
-    } finally {
-      this.hideLoader()
+async function update(form: PersonDTO) {
+  try {
+    showLoader()
+    prepareFormBeforeSending(form)
+
+    return await securityService.updatePerson(form)
+  } catch {
+    $opensilex.errorHandler
+  } finally {
+    hideLoader()
+  }
+
+}
+
+function getCompleteUrlOrcid(orcid): string {
+  if (orcid === "") {
+    return null;
+  }
+  //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
+  //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X
+  let regexOrcidWithoutCompleteUrl = /^([0-9]{4}-){3}[0-9]{3}[0-9X]$/
+  if (regexOrcidWithoutCompleteUrl.test(orcid)) {
+    return "https://orcid.org/" + orcid
+  }
+
+  return orcid
+}
+
+function replaceEmptyStringByNull(form): void {
+  if (form.email === "") {
+    form.email = null;
+  }
+}
+
+function fillFormWithNoNull(person: PersonDTO) {
+  for (const [key, value] of Object.entries(person)) {
+    if (value) {
+      props.form[key] = value
     }
-
   }
+}
 
-  async function update(form: PersonDTO) {
-    try {
-      this.showLoader()
-      this.prepareFormBeforeSending(form)
-
-      return await securityService.updatePerson(form)
-    } catch {
-      this.$opensilex.errorHandler
-    } finally {
-      this.hideLoader()
-    }
-
-  }
-
-  function getCompleteUrlOrcid(orcid): string {
-    if (orcid === "") {
-      return null;
-    }
-    //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
-    //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X
-    let regexOrcidWithoutCompleteUrl = /^([0-9]{4}-){3}[0-9]{3}[0-9X]$/
-    if (regexOrcidWithoutCompleteUrl.test(orcid)) {
-      return "https://orcid.org/" + orcid
-    }
-
-    return orcid
-  }
-
-  function replaceEmptyStringByNull(form): void {
-    if (form.email === "") {
-      form.email = null;
-    }
-  }
-
-  function fillFormWithNoNull(person: PersonDTO) {
-    for (const [key, value] of Object.entries(person)) {
-      if (value) {
-        this.form[key] = value
-      }
-    }
-  }
-
-  function startOrcidSuggestion(): void {
-    this.orcidModalRef.startOrcidSuggestion(this.form.orcid)
-  }
+function startOrcidSuggestion(): void {
+  displayOrcidModal.value = true
+}
 
 
-  function prepareFormBeforeSending(form: PersonDTO){
-    this.replaceEmptyStringByNull(form)
-    form.orcid = this.getCompleteUrlOrcid(form.orcid)
-  }
+function prepareFormBeforeSending(form: PersonDTO) {
+  replaceEmptyStringByNull(form)
+  props.form.orcid = getCompleteUrlOrcid(form.orcid)
+}
 
-  function validatePhone(phoneNumber): void{
-    this.phoneIsValid = phoneNumber?.valid
-  }
+function validatePhone(phoneNumber): void {
+  phoneIsValid = phoneNumber?.valid
+}
 
-  function updatePhoneNumber(number: string, phoneObject: any): void{
-    this.form.phone_number = phoneObject.number != "" ? phoneObject.number : null
-  }
+function updatePhoneNumber(number: string, phoneObject: any): void {
+  props.form.phone_number = phoneObject.number != "" ? phoneObject.number : null
+}
 
-  function showLoader() {
-    this.$opensilex.enableLoader();
-    this.$opensilex.showLoader();
-  }
+function showLoader() {
+  $opensilex.enableLoader();
+  $opensilex.showLoader();
+}
 
-  function hideLoader() {
-    this.$opensilex.hideLoader();
-    this.$opensilex.disableLoader();
-  } 
+function hideLoader() {
+  $opensilex.hideLoader();
+  $opensilex.disableLoader();
+}
 
 </script>
 

@@ -3,113 +3,17 @@
       v-model:show="displayModal"
       :title="t('component.person.orcid-suggestion.title')"
       @ok="sendInfos"
-      no-close-on-backdrop
-      no-close-on-esc
   >
-    <b-form>
-
-      <!--  firstName -->
-      <b-form-group>
-        <div>
-          <opensilex-FormInputLabelHelper
-              label="component.person.first-name"
-              helpMessage="component.person.orcid-suggestion.checkbox-help-message"
-          />
-          <b-input-group>
-            <b-form-input
-                v-model="person.first_name"
-                :disabled="!keepFirstName"
-                type="text"
-                :placeholder="t('component.person.orcid-suggestion.first-name-placeholder')"
-            ></b-form-input>
-            <b-input-group-append>
-              <b-form-checkbox
-                  v-model="keepFirstName"
-                  :value="true"
-                  :unchecked-value="false">
-                <opensilex-FormInputLabelHelper
-                    :label="t('component.person.orcid-suggestion.first-name-pickup')"
-                />
-              </b-form-checkbox>
-            </b-input-group-append>
-          </b-input-group>
-        </div>
-      </b-form-group>
-
-      <!--  lastName-->
-      <b-form-group>
-        <div>
-          <opensilex-FormInputLabelHelper
-              label="component.person.last-name"
-              helpMessage="component.person.orcid-suggestion.checkbox-help-message"
-          />
-          <b-input-group>
-            <b-form-input
-                v-model="person.last_name"
-                :disabled="!keepLastName"
-                type="text"
-                :placeholder="t('component.person.orcid-suggestion.last-name-placeholder')"
-            ></b-form-input>
-            <b-input-group-append>
-              <b-form-checkbox
-                  v-model="keepLastName"
-                  :value="true"
-                  :unchecked-value="false">
-                <opensilex-FormInputLabelHelper
-                    :label="t('component.person.orcid-suggestion.last-name-pickup')"
-                />
-              </b-form-checkbox>
-            </b-input-group-append>
-          </b-input-group>
-        </div>
-      </b-form-group>
-
-      <!--  mail -->
-      <b-form-group>
-        <opensilex-FormInputLabelHelper
-            label="component.person.email-address"
-            helpMessage="component.person.orcid-suggestion.selector-help-message"
-        />
-        <treeselect
-            :options="mailOptions"
-            v-model="person.email"
-        />
-      </b-form-group>
-
-      <!--  affiliation -->
-      <b-form-group>
-        <opensilex-FormInputLabelHelper
-            label="component.person.affiliation"
-            helpMessage="component.person.orcid-suggestion.selector-help-message"
-        />
-        <treeselect
-            :options="affiliationOptions"
-            v-model="person.affiliation"
-        />
-      </b-form-group>
-
-    </b-form>
-
-    <template v-slot:modal-footer="footer">
-      <b-button
-          variant="secondary"
-          @click="footer.cancel()"
-      >
-        {{ t('component.common.cancel') }}
-      </b-button>
-      <b-button
-          class="greenThemeColor"
-          @click="footer.ok()"
-      >
-        {{ t('component.common.ok') }}
-      </b-button>
+    <template #header>
+      <h3>header</h3>
     </template>
+    <div>aaaaaaaaaaaaaaaaa</div>
 
   </n-modal>
 </template>
 
 <script setup lang="ts">
-import {inject} from 'vue';
+import {inject, watch} from 'vue';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
@@ -117,11 +21,19 @@ import {useI18n} from "vue-i18n";
 
 export type Option = { id: string, label: string }
 
+//#region Plugins and services
 const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const {t} = useI18n();
+//#endregion
 
-let displayModal: boolean = false
+const props = defineProps({
+      orcid: String,
+    })
+
+
+//#region Data and computed
+const displayModal = defineModel<boolean>("displayModal", {default: false, required: true})
 
 let mailOptions: Array<Option> = []
 let affiliationOptions: Array<Option> = []
@@ -130,6 +42,7 @@ let keepLastName: boolean = true
 let keepFirstName: boolean = true
 
 let person: PersonDTO = getEmptyPerson()
+//#endregion
 
 //#region Emits
 const emit = defineEmits<{
@@ -137,17 +50,28 @@ const emit = defineEmits<{
 }>()
 //#endregion
 
+/**
+ * When the modal is opened, we start the suggestion process
+ */
+watch(
+    () => displayModal.value,
+    (display) => {
+      if (display) {
+        startOrcidSuggestion()
+      }
+    }
+);
 
-async function startOrcidSuggestion(orcid: string): void {
+async function startOrcidSuggestion(): Promise<void> {
   refreshPersonAndSelectors()
   keepLastName = true
   keepFirstName = true
-  displayModal = true
+  displayModal.value = true
 
   showLoader()
   try {
 
-    let orcidRecordDto = (await securityService.getOrcidRecord(orcid)).response.result
+    let orcidRecordDto = (await securityService.getOrcidRecord(props.orcid)).response.result
     person.last_name = orcidRecordDto.last_name
 
     person.first_name = orcidRecordDto.first_name

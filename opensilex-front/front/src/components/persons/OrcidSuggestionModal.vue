@@ -1,7 +1,7 @@
 <template>
   <Modal ref="modal">
 
-    <!--  firstName -->
+    <!--  person fields -->
     <div>
       <div class="input-checkbox-wrapper">
         <input-form
@@ -21,6 +21,49 @@
           />
         </n-checkbox>
       </div>
+
+      <div class="input-checkbox-wrapper">
+        <input-form
+            class="input"
+            v-model:value="person.last_name"
+            label="component.person.last-name"
+            helpMessage="component.person.orcid-suggestion.checkbox-help-message"
+            type="text"
+            :disabled="!keepLastName"
+            :placeholder="t('component.person.orcid-suggestion.last-name-placeholder')"
+        ></input-form>
+        <n-checkbox
+            class="checkbox"
+            v-model:checked="keepLastName">
+          <FormInputLabelHelper
+              :label="t('component.person.orcid-suggestion.last-name-pickup')"
+          />
+        </n-checkbox>
+      </div>
+
+      <!--  mail -->
+      <form-selector
+          ref="personSelector"
+          :label="t('component.person.email-address')"
+          :helpMessage="t('component.person.orcid-suggestion.selector-help-message')"
+          v-model:selected="person.email"
+          :multiple="false"
+          :options="mailOptions"
+          :placeholder="t('component.person.orcid-suggestion.selector-help-message')"
+          noResultsText="component.person.filter-search-no-result"
+      />
+
+      <!--  affiliation -->
+      <form-selector
+          ref="personSelector"
+          :label="t('component.person.affiliation')"
+          :helpMessage="t('component.person.orcid-suggestion.selector-help-message')"
+          v-model:selected="person.affiliation"
+          :multiple="false"
+          :options="affiliationOptions"
+          :placeholder="t('component.person.orcid-suggestion.selector-help-message')"
+          noResultsText="component.person.filter-search-no-result"
+      />
     </div>
 
 
@@ -51,6 +94,7 @@ import Modal from "@/components/common/views/Modal.vue";
 import Button from "@/components/common/buttons/Button.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 export type Option = { id: string, label: string }
 
@@ -161,6 +205,8 @@ function refreshPersonAndSelectors(): void {
   person.value = getEmptyPerson()
   mailOptions.value = []
   affiliationOptions.value = []
+  keepLastName.value = true
+  keepFirstName.value = true
 }
 
 function showLoader() {

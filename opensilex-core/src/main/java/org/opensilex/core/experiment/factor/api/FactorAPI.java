@@ -507,7 +507,7 @@ public class FactorAPI {
         FactorDAO dao = new FactorDAO(sparql);
         List<FactorModel> models = dao.getList(uris);
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(currentUser);
         if (!models.isEmpty()) {
             List<FactorGetDTO> resultDTOList = new ArrayList<>(models.size());

@@ -1,5 +1,11 @@
 <template>
-  <n-form :rules="rules">
+  <n-form
+      ref="formRef"
+      :rules="rules"
+      :model="form"
+      label-placement="top"
+      :show-require-mark="true"
+  >
     <!-- URI -->
     <UriForm
         :uri.sync="form.uri"
@@ -43,7 +49,7 @@
         label="component.person.first-name"
         type="text"
         :required="true"
-        placeholder="component.person.form-first-name-placeholder"
+        :placeholder="t('component.person.form-first-name-placeholder')"
     ></InputForm>
 
     <!-- Last name -->
@@ -52,7 +58,7 @@
         label="component.person.last-name"
         type="text"
         :required="true"
-        placeholder="component.person.form-last-name-placeholder"
+        :placeholder="t('component.person.form-last-name-placeholder')"
     ></InputForm>
 
     <!-- Email -->
@@ -61,7 +67,7 @@
         label="component.person.email-address"
         type="email"
         rules="email"
-        placeholder="component.person.form-email-placeholder"
+        :placeholder="t('component.person.form-email-placeholder')"
         autocomplete="new-password"
     ></InputForm>
 
@@ -69,7 +75,7 @@
     <InputForm
         :value.sync="form.affiliation"
         label="component.person.affiliation"
-        placeholder="component.person.form-affiliation-placeholder"
+        :placeholder="t('component.person.form-affiliation-placeholder')"
         type="text"
     ></InputForm>
 
@@ -94,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, nextTick, ref, WritableComputedRef} from "vue";
+import {computed, ComputedRef, inject, nextTick, ref, useTemplateRef, WritableComputedRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
@@ -106,6 +112,7 @@ import {NForm} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import Button from "@/components/common/buttons/Button.vue";
 import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
+import {requiredTrimmed} from "@/models/FormFieldsFormatter";
 
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -131,10 +138,11 @@ const props = withDefaults(
     }
 );
 
-const rules = {
-  uri: {required: true},
-  parent: {required: true}
-}
+const rules = computed(() => ({
+  "first_name": requiredTrimmed('component.common.name'),
+  'last_name': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.title') }), trigger: ['blur','change'] },
+
+}))
 
 let uriGenerated = true;
 
@@ -143,6 +151,7 @@ let disable_orcid_field: boolean = false
 let phoneIsValid: boolean = true
 let formattedPhoneNumber = ref("")
 
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 
 //#region Emits
 const emit = defineEmits<{
@@ -270,6 +279,22 @@ function hideLoader() {
   opensilex.disableLoader();
 }
 
+async function validate() {
+  try {
+    await formRef.value?.validate()
+    return true
+  } catch {
+    return false
+  }
+}
+
+defineExpose({
+  reset,
+  create,
+  update,
+  validate,
+  getEmptyForm
+})
 </script>
 
 <style lang="scss">

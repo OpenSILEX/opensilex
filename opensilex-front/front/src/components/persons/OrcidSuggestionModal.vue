@@ -55,8 +55,8 @@ import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper
 export type Option = { id: string, label: string }
 
 //#region Plugins and services
-const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
-const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const {t} = useI18n();
 //#endregion
 
@@ -75,7 +75,7 @@ const affiliationOptions = ref<Array<Option>>([])
 const keepLastName = ref<boolean>(true)
 const keepFirstName = ref<boolean>(true)
 
-let person: PersonDTO = getEmptyPerson()
+const person = ref<PersonDTO>(getEmptyPerson())
 //#endregion
 
 //#region Emits
@@ -107,18 +107,18 @@ async function startOrcidSuggestion(): Promise<void> {
   try {
 
     let orcidRecordDto = (await securityService.getOrcidRecord(props.orcid)).response.result
-    person.last_name = orcidRecordDto.last_name
+    person.value.last_name = orcidRecordDto.last_name
 
-    person.first_name = orcidRecordDto.first_name
+    person.value.first_name = orcidRecordDto.first_name
 
     mailOptions.value = extractOptionsFromArray(orcidRecordDto.emails)
-    person.email = mailOptions.value[0]?.id
+    person.value.email = mailOptions.value[0]?.id
 
     affiliationOptions.value = extractOptionsFromArray(orcidRecordDto.organizations)
-    person.affiliation = affiliationOptions.value[0] ? affiliationOptions.value[0].id : null
+    person.value.affiliation = affiliationOptions.value[0] ? affiliationOptions.value[0].id : null
 
   } catch (error) {
-    $opensilex.errorHandler(error);
+    opensilex.errorHandler(error);
   } finally {
     hideLoader()
   }
@@ -131,9 +131,9 @@ function extractOptionsFromArray(array: Array<string>): Array<Option> {
 }
 
 function sendInfosThenHideModal(): void {
-  person.last_name = keepLastName.value ? person.last_name : null
-  person.first_name = keepFirstName.value ? person.first_name : null
-  emit("selectionDone", person)
+  person.value.last_name = keepLastName.value ? person.value.last_name : null
+  person.value.first_name = keepFirstName.value ? person.value.first_name : null
+  emit("selectionDone", person.value)
   modalRef.value.hide()
   displayModal.value = false
 }
@@ -158,19 +158,19 @@ function cancelAndHideModal(): void {
 }
 
 function refreshPersonAndSelectors(): void {
-  person = getEmptyPerson()
+  person.value = getEmptyPerson()
   mailOptions.value = []
   affiliationOptions.value = []
 }
 
 function showLoader() {
-  $opensilex.enableLoader();
-  $opensilex.showLoader();
+  opensilex.enableLoader();
+  opensilex.showLoader();
 }
 
 function hideLoader() {
-  $opensilex.hideLoader();
-  $opensilex.disableLoader();
+  opensilex.hideLoader();
+  opensilex.disableLoader();
 }
 
 </script>

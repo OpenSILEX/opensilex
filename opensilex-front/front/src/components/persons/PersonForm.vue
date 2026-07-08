@@ -107,8 +107,8 @@ import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper
 import Button from "@/components/common/buttons/Button.vue";
 import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
 
-const $opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
-const securityService: SecurityService = $opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const {t} = useI18n();
 
 
@@ -193,7 +193,7 @@ async function create(form: PersonDTO) {
     emit("onCreate", form)
     return response
   } catch (error) {
-    $opensilex.errorHandler(error);
+    opensilex.errorHandler(error);
   } finally {
     hideLoader()
   }
@@ -207,7 +207,7 @@ async function update(form: PersonDTO) {
 
     return await securityService.updatePerson(form)
   } catch {
-    $opensilex.errorHandler
+    opensilex.errorHandler
   } finally {
     hideLoader()
   }
@@ -261,13 +261,13 @@ function updatePhoneNumber(number: string, phoneObject: any): void {
 }
 
 function showLoader() {
-  $opensilex.enableLoader();
-  $opensilex.showLoader();
+  opensilex.enableLoader();
+  opensilex.showLoader();
 }
 
 function hideLoader() {
-  $opensilex.hideLoader();
-  $opensilex.disableLoader();
+  opensilex.hideLoader();
+  opensilex.disableLoader();
 }
 
 </script>

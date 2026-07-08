@@ -1,23 +1,56 @@
 <template>
-  <n-modal
-      v-model:show="displayModal"
-      :title="t('component.person.orcid-suggestion.title')"
-      @ok="sendInfos"
-  >
-    <template #header>
-      <h3>header</h3>
-    </template>
-    <div>aaaaaaaaaaaaaaaaa</div>
+  <Modal ref="modal">
 
-  </n-modal>
+    <!--  firstName -->
+    <div>
+      <div class="input-checkbox-wrapper">
+        <input-form
+            class="input"
+            v-model:value="person.first_name"
+            label="component.person.first-name"
+            helpMessage="component.person.orcid-suggestion.checkbox-help-message"
+            type="text"
+            :disabled="!keepFirstName"
+            :placeholder="t('component.person.orcid-suggestion.first-name-placeholder')"
+        ></input-form>
+        <n-checkbox
+            class="checkbox"
+            v-model:value="keepFirstName">
+          <FormInputLabelHelper
+              :label="t('component.person.orcid-suggestion.first-name-pickup')"
+          />
+        </n-checkbox>
+      </div>
+    </div>
+
+
+    <template #footer>
+      <Button
+          label="component.common.close"
+          class="btn-secondary"
+          @click="cancelAndHideModal()"
+      />
+
+      <Button
+          label="component.common.validateSelection"
+          class="greenThemeColor"
+          @click="sendInfosThenHideModal()"
+      />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import {inject, watch} from 'vue';
+import {inject, useTemplateRef, watch} from 'vue';
+import {NCheckbox} from "naive-ui";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
 import {useI18n} from "vue-i18n";
+import Modal from "@/components/common/views/Modal.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 
 export type Option = { id: string, label: string }
 
@@ -28,9 +61,10 @@ const {t} = useI18n();
 //#endregion
 
 const props = defineProps({
-      orcid: String,
-    })
+  orcid: String,
+})
 
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modal');
 
 //#region Data and computed
 const displayModal = defineModel<boolean>("displayModal", {default: false, required: true})
@@ -58,6 +92,7 @@ watch(
     (display) => {
       if (display) {
         startOrcidSuggestion()
+        modalRef.value.show()
       }
     }
 );
@@ -95,13 +130,15 @@ function extractOptionsFromArray(array: Array<string>): Array<Option> {
   })
 }
 
-function sendInfos(): void {
+function sendInfosThenHideModal(): void {
   person.last_name = keepLastName ? person.last_name : null
   person.first_name = keepFirstName ? person.first_name : null
   emit("selectionDone", person)
+  modalRef.value.hide()
+  displayModal.value = false
 }
 
-function getEmptyPerson():PersonDTO {
+function getEmptyPerson(): PersonDTO {
   return {
     account: null,
     affiliation: null,
@@ -114,7 +151,13 @@ function getEmptyPerson():PersonDTO {
   }
 }
 
-function refreshPersonAndSelectors():void {
+function cancelAndHideModal(): void {
+  modalRef.value.hide()
+  displayModal.value = false
+  refreshPersonAndSelectors()
+}
+
+function refreshPersonAndSelectors(): void {
   person = getEmptyPerson()
   mailOptions = []
   affiliationOptions = []
@@ -134,9 +177,17 @@ function hideLoader() {
 
 <style scoped lang="scss">
 
-.input-group-append {
-  align-items: center;
-  padding-left: 1%;
+.input-checkbox-wrapper {
+  display: flex;
+  align-items: flex-end;
+}
+
+.input {
+  max-width: 50%;
+}
+
+.checkbox {
+  margin-left: 1%;
 }
 
 </style>

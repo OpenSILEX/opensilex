@@ -15,7 +15,7 @@
         ></input-form>
         <n-checkbox
             class="checkbox"
-            v-model:value="keepFirstName">
+            v-model:checked="keepFirstName">
           <FormInputLabelHelper
               :label="t('component.person.orcid-suggestion.first-name-pickup')"
           />
@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import {inject, useTemplateRef, watch} from 'vue';
+import {inject, useTemplateRef, watch, ref} from 'vue';
 import {NCheckbox} from "naive-ui";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
@@ -69,11 +69,11 @@ const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modal');
 //#region Data and computed
 const displayModal = defineModel<boolean>("displayModal", {default: false, required: true})
 
-let mailOptions: Array<Option> = []
-let affiliationOptions: Array<Option> = []
+const mailOptions = ref<Array<Option>>([])
+const affiliationOptions = ref<Array<Option>>([])
 
-let keepLastName: boolean = true
-let keepFirstName: boolean = true
+const keepLastName = ref<boolean>(true)
+const keepFirstName = ref<boolean>(true)
 
 let person: PersonDTO = getEmptyPerson()
 //#endregion
@@ -99,8 +99,8 @@ watch(
 
 async function startOrcidSuggestion(): Promise<void> {
   refreshPersonAndSelectors()
-  keepLastName = true
-  keepFirstName = true
+  keepLastName.value = true
+  keepFirstName.value = true
   displayModal.value = true
 
   showLoader()
@@ -111,11 +111,11 @@ async function startOrcidSuggestion(): Promise<void> {
 
     person.first_name = orcidRecordDto.first_name
 
-    mailOptions = extractOptionsFromArray(orcidRecordDto.emails)
-    person.email = mailOptions[0]?.id
+    mailOptions.value = extractOptionsFromArray(orcidRecordDto.emails)
+    person.email = mailOptions.value[0]?.id
 
-    affiliationOptions = extractOptionsFromArray(orcidRecordDto.organizations)
-    person.affiliation = affiliationOptions[0] ? affiliationOptions[0].id : null
+    affiliationOptions.value = extractOptionsFromArray(orcidRecordDto.organizations)
+    person.affiliation = affiliationOptions.value[0] ? affiliationOptions.value[0].id : null
 
   } catch (error) {
     $opensilex.errorHandler(error);
@@ -131,8 +131,8 @@ function extractOptionsFromArray(array: Array<string>): Array<Option> {
 }
 
 function sendInfosThenHideModal(): void {
-  person.last_name = keepLastName ? person.last_name : null
-  person.first_name = keepFirstName ? person.first_name : null
+  person.last_name = keepLastName.value ? person.last_name : null
+  person.first_name = keepFirstName.value ? person.first_name : null
   emit("selectionDone", person)
   modalRef.value.hide()
   displayModal.value = false
@@ -159,8 +159,8 @@ function cancelAndHideModal(): void {
 
 function refreshPersonAndSelectors(): void {
   person = getEmptyPerson()
-  mailOptions = []
-  affiliationOptions = []
+  mailOptions.value = []
+  affiliationOptions.value = []
 }
 
 function showLoader() {

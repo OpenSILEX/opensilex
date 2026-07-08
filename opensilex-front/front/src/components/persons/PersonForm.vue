@@ -32,8 +32,9 @@
     </div>
     <OrcidSuggestionModal
         :orcid="props.form.orcid"
+        v-model:display-modal="displayOrcidModal"
         @selectionDone="fillFormWithNoNull"
-        :display-modal="displayOrcidModal"/>
+    />
     <!-- orcid -->
 
     <!-- First name -->

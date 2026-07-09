@@ -439,7 +439,6 @@ public class ScientificObjectAPI {
             @NotNull
             @Valid ScientificObjectUpdateDTO scientificObjectDto
     ) throws Exception {
-        ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         ScientificObjectModel soModel = scientificObjectDto.newModel();
 
         if (scientificObjectDto.getGeometry() != null) {

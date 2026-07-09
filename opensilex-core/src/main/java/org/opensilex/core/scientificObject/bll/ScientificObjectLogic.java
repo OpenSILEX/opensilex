@@ -569,6 +569,12 @@ public class ScientificObjectLogic {
         }
         object.setLastUpdateDate(OffsetDateTime.now());
 
+        for (ScientificObjectLogicExtendedRules extendedRules : logicRulesExtensions) {
+            if (extendedRules.applyRulesToThisType(model.getType())){
+                extendedRules.updateRule(model);
+            }
+        }
+
         return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session -> {
             dao.update(graphNode, object, currentUser.getLanguage());
 

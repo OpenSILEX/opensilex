@@ -46,7 +46,7 @@ environment.
 
 NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md](./opensilex-doc/src/main/resources/installation/production.md)
 
-> ![WARNING]
+> [!WARNING]
 > The source code for versions prior to 1.5.2 will NOT build out of the box. If you want to work on a previous version
 > of OpenSILEX, please see the [additional instructions](opensilex-doc/src/main/resources/installation/development-old-versions.md).
 

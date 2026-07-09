@@ -1,6 +1,6 @@
 # Install OpenSilex for Development
 
-> ![WARNING]
+> [!WARNING]
 > The source code for versions prior to 1.5.2 will NOT build out of the box. If you want to work on a previous version
 > of OpenSILEX, please see the [additional instructions](development-old-versions.md).
 

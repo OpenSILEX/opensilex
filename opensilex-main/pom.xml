@@ -95,7 +95,7 @@
                             <goal>yarn</goal>
                         </goals>
                         <configuration>
-                            <arguments>global add typescript dts-generator</arguments>
+                            <arguments>global add typescript@6.0.3 dts-generator@3.0.0</arguments>
                         </configuration>
                         <phase>initialize</phase>
                     </execution>

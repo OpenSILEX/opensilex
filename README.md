@@ -1,37 +1,38 @@
 <!-- TOC -->
-- [OpenSILEX Developer's installation](#opensilex-developers-installation)
-- [Required software](#required-software)
-- [Check your installed software](#check-your-installed-software)
-- [Download sources](#download-sources)
-- [Build project](#build-project)
-- [Create opensilex command alias](#create-opensilex-command-alias)
-  - [Linux](#linux)
-  - [Windows](#windows)
-- [Setup configuration](#setup-configuration)
-- [Setup Databases with docker](#setup-databases-with-docker)
-- [Initialize system data](#initialize-system-data)
-  - [With Netbeans](#with-netbeans)
-  - [With command line](#with-command-line)
-- [Start OpenSILEX development server with Netbeans](#start-opensilex-development-server-with-netbeans)
-  - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code)
-  - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server)
-- [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
-  - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
-  - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
-- [Access to OpenSilex \& tools](#access-to-opensilex--tools)
-  - [OpenSilex Application](#opensilex-application)
-  - [RDF4J workbench](#rdf4j-workbench)
-  - [MongoDB](#mongodb)
-- [Generate documentation](#generate-documentation)
-- [Other maven build profiles and options](#other-maven-build-profiles-and-options)
-  - [Generate release](#generate-release)
-  - [Skip unit and integration tests](#skip-unit-and-integration-tests)
-  - [Skip Vue js build parts](#skip-vue-js-build-parts)
-  - [Generate documentation](#generate-documentation-1)
-  - [Generate documentation with security report audit](#generate-documentation-with-security-report-audit)
-  - [Check javascript security issues](#check-javascript-security-issues)
-  - [Special profile for Eclipse](#special-profile-for-eclipse)
-  - [Default configuration example](#default-configuration-example)
+* [Contributing to OpenSILEX](#contributing-to-opensilex)
+* [OpenSILEX Developer's installation](#opensilex-developers-installation)
+* [Required software](#required-software)
+* [Check your installed software](#check-your-installed-software)
+* [Download sources](#download-sources)
+* [Build project](#build-project)
+* [Create opensilex command alias](#create-opensilex-command-alias)
+  * [Linux](#linux)
+  * [Windows](#windows)
+* [Setup configuration](#setup-configuration)
+* [Setup Databases with docker](#setup-databases-with-docker)
+* [Initialize system data](#initialize-system-data)
+  * [With Netbeans](#with-netbeans)
+  * [With command line](#with-command-line)
+* [Start OpenSILEX development server with Netbeans](#start-opensilex-development-server-with-netbeans)
+  * [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code)
+  * [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server)
+* [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
+  * [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
+  * [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
+* [Access to OpenSilex & tools](#access-to-opensilex--tools)
+  * [OpenSilex Application](#opensilex-application)
+  * [RDF4J workbench](#rdf4j-workbench)
+  * [MongoDB](#mongodb)
+* [Generate documentation](#generate-documentation)
+* [Other maven build profiles and options](#other-maven-build-profiles-and-options)
+  * [Generate release](#generate-release)
+  * [Skip unit and integration tests](#skip-unit-and-integration-tests)
+  * [Skip Vue js build parts](#skip-vue-js-build-parts)
+  * [Generate documentation](#generate-documentation-1)
+  * [Generate documentation with security report audit](#generate-documentation-with-security-report-audit)
+  * [Check javascript security issues](#check-javascript-security-issues)
+  * [Special profile for Eclipse](#special-profile-for-eclipse)
+  * [Default configuration example](#default-configuration-example)
 <!-- TOC -->
 
 # Contributing to OpenSILEX
@@ -40,9 +41,14 @@ OpenSILEX is an open source project and we welcome contributions from the commun
 
 # OpenSILEX Developer's installation
 
-This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
+This repository contains source code for the OpenSILEX software. This file explains how to set up the development
+environment.
 
 NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md](./opensilex-doc/src/main/resources/installation/production.md)
+
+> ![WARNING]
+> The source code for versions prior to 1.5.2 will NOT build out of the box. If you want to work on a previous version
+> of OpenSILEX, please see the [additional instructions](opensilex-doc/src/main/resources/installation/development-old-versions.md).
 
 # Required software
 

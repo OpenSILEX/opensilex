@@ -15,7 +15,10 @@ import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.dal.DataDAO;
@@ -35,7 +38,9 @@ import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.scientificObject.api.*;
+import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
+import org.opensilex.core.scientificObject.api.ScientificObjectCreationDTO;
+import org.opensilex.core.scientificObject.api.ScientificObjectUpdateDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.integration.test.ServiceDescription;
@@ -47,11 +52,6 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.util.*;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 
 public class SpiderMutagenLogicExtendedRulesTest extends AbstractMongoIntegrationTest {
@@ -82,9 +82,144 @@ public class SpiderMutagenLogicExtendedRulesTest extends AbstractMongoIntegratio
     }
     //#endregion
 
-    //#region test setup and usefool methods
+    //#region tests
+    @Test
+    public void createUpdateOk() throws Exception {
+        URI deviceUri1 = createDevice();
+        URI deviceUri2 = createDevice();
 
+        var dto = getCreationDTO();
+        dto.setType(URI.create(YvanOntology.SpiderMutagen.getURI()));
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "8", false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri2.toString(), false)
+        ));
+
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        //update the number of legs and delete device 2 from the list of linked devices
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "4", false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.update)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.OK);
+    }
+
+    /**
+     * numberOfLegs and LinkedDevices ar not mandatory properties
+     */
+    @Test
+    public void createUpdateOkNoRelations() throws Exception {
+        var dto = getCreationDTO();
+        dto.setType(URI.create(YvanOntology.SpiderMutagen.getURI()));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.update)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.OK);
+    }
+
+
+
+    /**
+     * Test that a spider mutagen must have at least 2 legs
+     */
+    @Test
+    public void numberOfLegsMinConstraint() throws Exception {
+        //1 leg create test
+        var dto = getCreationDTO();
+        dto.setType(URI.create(YvanOntology.SpiderMutagen.getURI()));
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "1", false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.BAD_REQUEST);
+
+        //valide creation
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "2", false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        //0 leg update test
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "0", false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.update)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.BAD_REQUEST);
+    }
+
+    /**
+     * Test that a spider mutagen can't have more than 3 linked devices
+     */
+    @Test
+    public void numberOfLinkedDevicesMaxConstraint() throws Exception {
+        URI deviceUri1 = createDevice();
+        URI deviceUri2 = createDevice();
+        URI deviceUri3 = createDevice();
+        URI deviceUri4 = createDevice();
+
+        //too many linked device update test
+        var dto = getCreationDTO();
+        dto.setType(URI.create(YvanOntology.SpiderMutagen.getURI()));
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri2.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri3.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri4.toString(), false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.BAD_REQUEST);
+
+        //valide creation
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri2.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri3.toString(), false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+
+        //too many linked device update test
+        dto.setRelations(List.of(
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri2.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri3.toString(), false),
+                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri4.toString(), false)
+        ));
+        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.update)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.BAD_REQUEST);
+    }
+
+    //#endregion
+
+    //#region test setup and usefool methods
     private int soCount = 1;
+
     private URI experiment;
     private URI speciesUri;
 
@@ -200,25 +335,7 @@ public class SpiderMutagenLogicExtendedRulesTest extends AbstractMongoIntegratio
                 .executeCallAndReturnURI();
     }
 
+
     //#endregion
 
-    @Test
-    public void testCreateSpiderMutagen() throws Exception {
-        URI deviceUri1 = createDevice();
-        URI deviceUri2 = createDevice();
-
-        var dto = getCreationDTO();
-        dto.setType(URI.create(YvanOntology.SpiderMutagen.getURI()));
-        dto.setRelations(List.of(
-                new RDFObjectRelationDTO(URI.create(YvanOntology.legsNumber.getURI()), "8", false),
-                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri1.toString(), false),
-                new RDFObjectRelationDTO(URI.create(YvanOntology.linkedDevice.getURI()), deviceUri2.toString(), false)
-        ));
-
-        new UserCallBuilder(SpiderMutagenLogicExtendedRulesTest.create)
-                .setBody(dto)
-                .buildAdmin()
-                .executeCallAndAssertStatus(Response.Status.CONFLICT);
-
-    }
 }

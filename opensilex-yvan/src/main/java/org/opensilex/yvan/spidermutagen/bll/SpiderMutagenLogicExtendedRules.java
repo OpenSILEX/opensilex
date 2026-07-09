@@ -13,6 +13,7 @@ package org.opensilex.yvan.spidermutagen.bll;
 import org.jvnet.hk2.annotations.Service;
 import org.opensilex.core.scientificObject.bll.ScientificObjectLogicExtendedRules;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -31,18 +32,35 @@ public class SpiderMutagenLogicExtendedRules implements ScientificObjectLogicExt
 
     @Override
     public void createRule(ScientificObjectModel model) throws WebApplicationException {
-        int legNumbers = Integer.parseInt(model.getRelation(YvanOntology.legsNumber).getValue());
-        List<String> linkedDevices = model.getRelations(YvanOntology.linkedDevice).map(SPARQLModelRelation::getValue).toList();
-        throw new ConflictException("this is me");
+        validateSpiderMutagen(model);
     }
 
     @Override
     public void updateRule(ScientificObjectModel model) throws WebApplicationException {
-
+        validateSpiderMutagen(model);
     }
 
     @Override
     public void deleteRule(ScientificObjectModel model) throws WebApplicationException {
 
+    }
+
+    private void validateSpiderMutagen(ScientificObjectModel model) throws WebApplicationException {
+        if (model.getRelations() == null || model.getRelations().isEmpty()) return;
+
+        if (model.getRelation(YvanOntology.legsNumber) != null) {
+            int legNumbers = Integer.parseInt(model.getRelation(YvanOntology.legsNumber).getValue());
+            if (legNumbers < 2) {
+                throw new BadRequestException("a spider with less than 2 legs ? Too crazy to be allowed sorry.");
+            }
+        }
+
+        //it is useless to check if devices exist as it will be done by the core ScientificObject services.
+        if (model.getRelations(YvanOntology.linkedDevice) != null) {
+            List<String> linkedDevices = model.getRelations(YvanOntology.linkedDevice).map(SPARQLModelRelation::getValue).toList();
+            if (linkedDevices.size() > 3) {
+                throw new BadRequestException("This spider seems to have a lot of attention... max 3 devices allowed per spider.");
+            }
+        }
     }
 }

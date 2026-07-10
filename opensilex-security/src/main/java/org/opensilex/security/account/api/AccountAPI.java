@@ -347,7 +347,7 @@ public class AccountAPI {
             @ApiResponse(code = 404, message = "accounts not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchAccountsByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Account URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

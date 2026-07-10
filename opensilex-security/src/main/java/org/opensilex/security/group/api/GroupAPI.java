@@ -322,7 +322,7 @@ public class GroupAPI {
         @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchGroupsByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Group URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

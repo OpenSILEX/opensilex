@@ -342,7 +342,7 @@ public class PersonAPI {
             @ApiResponse(code = 404, message = "Persons not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchPersonsByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Person URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

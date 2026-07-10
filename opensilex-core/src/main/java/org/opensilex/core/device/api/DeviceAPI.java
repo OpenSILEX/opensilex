@@ -365,7 +365,7 @@ public class DeviceAPI {
             @ApiResponse(code = 404, message = "Device not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchDevicesByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Device URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

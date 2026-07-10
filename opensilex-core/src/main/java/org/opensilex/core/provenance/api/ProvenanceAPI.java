@@ -341,7 +341,7 @@ public class ProvenanceAPI {
             @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchProvenancesByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Provenance URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

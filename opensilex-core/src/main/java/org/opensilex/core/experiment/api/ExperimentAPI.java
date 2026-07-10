@@ -1182,7 +1182,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchExperimentsByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Experiment URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

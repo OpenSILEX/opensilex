@@ -264,7 +264,7 @@ public class ProjectAPI {
         @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchProjectsByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Project URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

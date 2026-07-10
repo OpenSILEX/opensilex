@@ -295,7 +295,7 @@ public class GermplasmGroupApi {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchGermplasmGroupByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Germplasm group URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

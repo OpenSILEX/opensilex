@@ -266,7 +266,7 @@ public class FacilityAPI {
             @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchFacilitiesByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris) throws Exception {
+            @ApiParam(value = "Facility URIs") List<URI> uris) throws Exception {
 
         if (uris == null || uris.isEmpty()) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();

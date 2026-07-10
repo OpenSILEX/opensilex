@@ -497,7 +497,7 @@ public class FactorAPI {
         @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchFactorsByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Factor URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

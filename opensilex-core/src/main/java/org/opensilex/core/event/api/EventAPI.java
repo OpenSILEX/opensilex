@@ -601,7 +601,7 @@ public class EventAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchMoveEventByUris(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Move URIs") List<URI> uris
     ) throws Exception {
 
         if (uris == null || uris.isEmpty()) {

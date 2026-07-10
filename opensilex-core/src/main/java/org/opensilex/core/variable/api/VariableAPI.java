@@ -454,7 +454,7 @@ public class VariableAPI {
             @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response searchVariablesByURIs(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @ApiParam(value = "Variable URIs") List<URI> uris
     ) throws Exception {
         VariableDAO dao = getDao();
         if (uris == null) {

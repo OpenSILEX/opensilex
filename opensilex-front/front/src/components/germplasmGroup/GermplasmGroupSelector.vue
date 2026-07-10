@@ -49,7 +49,7 @@ export default class GermplasmGroupSelector extends Vue {
 
   loadGermplasmGroups(group): Promise<Array<GermplasmGroupGetDTO>> {
     return this.$opensilex.getService<GermplasmService>("opensilex.GermplasmService")
-        .searchGermplasmGroupByURIs([group])
+        .searchGermplasmGroupByURIs(group)
         .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGroupGetDTO>>>) => {
           return http.response.result;
         })

@@ -19,31 +19,33 @@
     </n-form-item>
 
     <n-form-item>
-      <FormInputLabelHelper
-          label="component.person.orcid"
-          helpMessage="component.person.orcid-help-message"
-          class="checkbox">
-      </FormInputLabelHelper>
-      <div class="row">
-        <input-form class="orcid-field"
-                    v-model:value="form.orcid"
-                    type="text"
-                    :disabled="disable_orcid_field"
-                    :placeholder="t('component.person.orcid-placeholder')"
-        ></input-form>
+      <div class="item-and-label">
+        <FormInputLabelHelper
+            label="component.person.orcid"
+            helpMessage="component.person.orcid-help-message"
+        >
+        </FormInputLabelHelper>
+        <div class="row">
+          <input-form class="orcid-field"
+                      v-model:value="form.orcid"
+                      type="text"
+                      :disabled="disable_orcid_field"
+                      :placeholder="t('component.person.orcid-placeholder')"
+          ></input-form>
 
-        <Button
-            label="component.person.load-orcid-infos"
-            :disabled="! validOrcid"
-            :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
-            @click="startOrcidSuggestion()"
+          <Button
+              label="component.person.load-orcid-infos"
+              :disabled="! validOrcid"
+              :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
+              @click="startOrcidSuggestion()"
+          />
+        </div>
+        <OrcidSuggestionModal
+            :orcid="props.form.orcid"
+            v-model:display-modal="displayOrcidModal"
+            @selectionDone="fillFormWithNoNull"
         />
       </div>
-      <OrcidSuggestionModal
-          :orcid="props.form.orcid"
-          v-model:display-modal="displayOrcidModal"
-          @selectionDone="fillFormWithNoNull"
-      />
     </n-form-item>
     <!-- orcid -->
 

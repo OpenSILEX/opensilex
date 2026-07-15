@@ -239,7 +239,7 @@
                     </template>
 
                     <template v-slot:cell(name)="{data}">
-                        <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">
+                        <span class="lowSize variablesCheckboxMarginHighSize">
                              <opensilex-UriLink
                                  :uri="data.item.uri"
                                  :value="data.item.name"
@@ -247,7 +247,7 @@
                              ></opensilex-UriLink>
                         </span >
                         <br>
-                        <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">{{data.item.alternative_name}}</span>
+                        <span class="lowSize variablesCheckboxMarginHighSize">{{data.item.alternative_name}}</span>
                     </template>
 
                     <template v-slot:row-details="{data}">

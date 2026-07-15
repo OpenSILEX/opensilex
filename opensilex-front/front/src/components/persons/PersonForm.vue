@@ -72,12 +72,11 @@
     </n-form-item>
 
     <!-- Email -->
-    <n-form-item>
+    <n-form-item path="email">
       <InputForm
           v-model:value="form.email"
           label="component.person.email-address"
           type="email"
-          rules="email"
           :placeholder="t('component.person.form-email-placeholder')"
           autocomplete="new-password"
       ></InputForm>
@@ -96,7 +95,6 @@
     <!-- phone number -->
     <n-form-item>
       <FormField
-          :rules="phoneIsValid ? '' : 'falsy' "
           label="component.person.phone_number"
       >
         <template v-slot:field="field">
@@ -128,7 +126,7 @@ import {NForm, NFormItem} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import Button from "@/components/common/buttons/Button.vue";
 import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
-import {requiredTrimmed} from "@/models/FormFieldsFormatter";
+import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -157,6 +155,7 @@ const props = withDefaults(
 const rules = computed(() => ({
   "first_name": requiredTrimmed('component.person.first-name'),
   'last_name': requiredTrimmed('component.person.last-name'),
+  'email': validEmail(),
 
 }))
 

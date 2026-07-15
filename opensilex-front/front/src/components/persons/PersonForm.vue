@@ -315,6 +315,11 @@ defineExpose({
 </script>
 
 <style lang="scss">
+.item-and-label {
+  display: block;
+  width: 100%;
+}
+
 .orcid-field {
   max-width: 60%;
 }

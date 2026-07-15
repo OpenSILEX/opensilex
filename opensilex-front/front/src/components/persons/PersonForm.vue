@@ -51,19 +51,13 @@
 
     <!-- First name -->
     <n-form-item path="first_name">
-      <div class="item-and-label">
-        <FormInputLabelHelper
-            label="component.person.first-name"
-            helpMessage="component.person.first-name-help-message"
-        >
-        </FormInputLabelHelper>
-        <InputForm
-            v-model:value="form.first_name"
-            type="text"
-            :required="true"
-            :placeholder="t('component.person.form-first-name-placeholder')"
-        ></InputForm>
-      </div>
+      <InputForm
+          v-model:value="form.first_name"
+          :label="t('component.person.first-name')"
+          type="text"
+          :required="true"
+          :placeholder="t('component.person.form-first-name-placeholder')"
+      ></InputForm>
     </n-form-item>
 
     <!-- Last name -->
@@ -321,11 +315,6 @@ defineExpose({
 </script>
 
 <style lang="scss">
-.item-and-label {
-  display: block;
-  width: 100%;
-}
-
 .orcid-field {
   max-width: 60%;
 }

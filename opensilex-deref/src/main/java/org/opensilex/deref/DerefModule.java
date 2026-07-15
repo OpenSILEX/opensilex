@@ -1,5 +1,6 @@
 package org.opensilex.deref;
 
+import org.apache.catalina.startup.Tomcat;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.Server;
@@ -28,5 +29,8 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
         var valve = new DerefRewriteValve();
         context.getPipeline().addValve(valve);
         valve.initRules();
+
+        Tomcat.addServlet(context, "DerefServlet", new DerefServlet());
+        context.addServletMappingDecoded("/deref", "DerefServlet");
     }
 }

@@ -1,3 +1,8 @@
+/** naive UI override rule to avoid excessive vertical space between form elements */
+.n-form-item.n-form-item--top-labelled {
+  grid-template-rows: auto 1fr;
+}
+
 .form-group {
     .form-control-lg {
         font-size: 1.25em;

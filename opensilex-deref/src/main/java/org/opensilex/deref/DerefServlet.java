@@ -23,7 +23,7 @@ public class DerefServlet extends HttpServlet {
                         <p>The requested URI is <pre>%s</pre></p>
                     </body>
                 </html>
-                """, req.getRequestURL()));
+                """, req.getParameter("res")));
         out.close();
     }
 }

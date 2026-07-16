@@ -8,15 +8,22 @@ import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
+import org.opensilex.sparql.SPARQLModule;
+
+import java.net.URI;
 
 public class DerefModule extends OpenSilexModule implements ServerExtension {
-    public String getApplicationPathPrefix() {
+    private String getApplicationPathPrefix() {
         try {
             var cfg = getOpenSilex().getModuleConfig(ServerModule.class, ServerConfig.class);
             return cfg.pathPrefix();
         } catch (OpenSilexModuleNotFoundException ex) {
             return "";
         }
+    }
+
+    private URI getBaseUri() throws OpenSilexModuleNotFoundException {
+        return getOpenSilex().getModuleByClass(SPARQLModule.class).getGenerationPrefixURI();
     }
 
     @Override
@@ -30,7 +37,7 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
         var context = server.initApp(getApplicationPathPrefix() + "/id", "/", "/", DerefModule.class);
         context.setJarScanner(new IgnoreJarScanner());
 
-        var valve = new DerefRewriteValve();
+        var valve = new DerefRewriteValve(getBaseUri());
         context.getPipeline().addValve(valve);
         valve.initRules();
     }

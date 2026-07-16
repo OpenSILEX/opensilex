@@ -41,7 +41,7 @@
           />
         </div>
         <OrcidSuggestionModal
-            :orcid="props.form.orcid"
+            :form="orcidForm"
             v-model:display-modal="displayOrcidModal"
             @selectionDone="fillFormWithNoNull"
         />
@@ -128,7 +128,7 @@ import FormField from "@/components/common/forms/FormField.vue";
 import {NForm, NFormItem} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import Button from "@/components/common/buttons/Button.vue";
-import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
+import OrcidSuggestionModal, {Option, orcidSuggestionForm} from "@/components/persons/OrcidSuggestionModal.vue";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {VueTelInput} from "vue-tel-input";
 
@@ -176,9 +176,16 @@ const rules = computed(() => ({
 
 let uriGenerated = true;
 
-let displayOrcidModal = ref(false)
-let disable_orcid_field: boolean = false
-let phoneIsValid: boolean = true
+const displayOrcidModal = ref(false)
+const orcidForm = ref<orcidSuggestionForm>({
+  orcid: "",
+  first_name: "",
+  last_name: "",
+  mailOptions: [],
+  affiliationOptions: []
+})
+let disable_orcid_field = ref<boolean>(false)
+let phoneIsValid = ref<boolean>(true)
 
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 const phoneNumberNFormItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('phoneNumberNFormItemRef');
@@ -194,7 +201,7 @@ const emit = defineEmits<{
 function reset() {
   uriGenerated = true;
   nextTick(() => {
-    disable_orcid_field = props.editMode && props.form.orcid !== null
+    disable_orcid_field.value = props.editMode && props.form.orcid !== null
   })
 }
 
@@ -283,8 +290,37 @@ function fillFormWithNoNull(person: PersonDTO) {
   }
 }
 
-function startOrcidSuggestion(): void {
-  displayOrcidModal.value = true
+async function startOrcidSuggestion(): Promise<void> {
+  orcidForm.value = {
+    orcid: props.form.orcid,
+    last_name: "",
+    first_name: "",
+    mailOptions: [],
+    affiliationOptions: []
+  }
+
+  showLoader()
+  try {
+
+    let orcidRecordDto = (await securityService.getOrcidRecord(orcidForm.value.orcid)).response.result
+    orcidForm.value.last_name = orcidRecordDto.last_name
+    orcidForm.value.first_name = orcidRecordDto.first_name
+
+    orcidForm.value.mailOptions = extractOptionsFromArray(orcidRecordDto.emails)
+    orcidForm.value.affiliationOptions = extractOptionsFromArray(orcidRecordDto.organizations)
+
+    displayOrcidModal.value = true
+  } catch (error) {
+    opensilex.errorHandler(error);
+  } finally {
+    hideLoader()
+  }
+}
+
+function extractOptionsFromArray(array: Array<string>): Array<Option> {
+  return array.map(element => {
+    return {id: element, label: element}
+  })
 }
 
 

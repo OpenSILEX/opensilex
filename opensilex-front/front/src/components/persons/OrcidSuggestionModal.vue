@@ -16,7 +16,7 @@
       <div class="input-checkbox-wrapper">
         <input-form
             class="input"
-            v-model:value="person.first_name"
+            v-model:value="form.first_name"
             label="component.person.first-name"
             helpMessage="component.person.orcid-suggestion.checkbox-help-message"
             type="text"
@@ -35,7 +35,7 @@
       <div class="input-checkbox-wrapper">
         <input-form
             class="input"
-            v-model:value="person.last_name"
+            v-model:value="form.last_name"
             label="component.person.last-name"
             helpMessage="component.person.orcid-suggestion.checkbox-help-message"
             type="text"
@@ -53,24 +53,22 @@
 
       <!--  mail -->
       <form-selector
-          ref="personSelector"
           :label="t('component.person.email-address')"
           :helpMessage="t('component.person.orcid-suggestion.selector-help-message')"
-          v-model:selected="person.email"
+          v-model:selected="selectedMail"
           :multiple="false"
-          :options="mailOptions"
+          :options="form.mailOptions"
           :placeholder="t('component.person.orcid-suggestion.selector-help-message')"
           noResultsText="component.person.filter-search-no-result"
       />
 
       <!--  affiliation -->
       <form-selector
-          ref="personSelector"
           :label="t('component.person.affiliation')"
           :helpMessage="t('component.person.orcid-suggestion.selector-help-message')"
-          v-model:selected="person.affiliation"
+          v-model:selected="selectedAffiliation"
           :multiple="false"
-          :options="affiliationOptions"
+          :options="form.affiliationOptions"
           :placeholder="t('component.person.orcid-suggestion.selector-help-message')"
           noResultsText="component.person.filter-search-no-result"
       />
@@ -94,10 +92,8 @@
 </template>
 
 <script setup lang="ts">
-import {inject, useTemplateRef, watch, ref} from 'vue';
+import {ref, useTemplateRef, watch} from 'vue';
 import {NCheckbox} from "naive-ui";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
 import {useI18n} from "vue-i18n";
 import Modal from "@/components/common/views/Modal.vue";
@@ -108,29 +104,32 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import Icon from "@/components/common/views/Icon.vue";
 
 export type Option = { id: string, label: string }
+export type orcidSuggestionForm = {
+  orcid: string,
+  first_name: string,
+  last_name: string,
+  mailOptions: Array<Option>,
+  affiliationOptions: Array<Option>,
+}
 
 //#region Plugins and services
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
-const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const {t} = useI18n();
 //#endregion
 
-const props = defineProps({
-  orcid: String,
-})
+const props = defineProps<{
+  form: orcidSuggestionForm
+}>()
 
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modal');
 
 //#region Data and computed
 const displayModal = defineModel<boolean>("displayModal", {default: false, required: true})
 
-const mailOptions = ref<Array<Option>>([])
-const affiliationOptions = ref<Array<Option>>([])
-
 const keepLastName = ref<boolean>(true)
 const keepFirstName = ref<boolean>(true)
 
-const person = ref<PersonDTO>(getEmptyPerson())
+const selectedMail = ref<string>(null)
+const selectedAffiliation = ref<string>(null)
 //#endregion
 
 //#region Emits
@@ -146,88 +145,35 @@ watch(
     () => displayModal.value,
     (display) => {
       if (display) {
-        startOrcidSuggestion()
-        modalRef.value.show()
+        refreshValuesAndShow()
       }
     }
 );
 
-async function startOrcidSuggestion(): Promise<void> {
-  refreshPersonAndSelectors()
+function refreshValuesAndShow(){
   keepLastName.value = true
   keepFirstName.value = true
-  displayModal.value = true
+  selectedMail.value = props.form.mailOptions?.[0]?.label || null
+  selectedAffiliation.value = props.form.affiliationOptions?.[0]?.label || null
 
-  showLoader()
-  try {
-
-    let orcidRecordDto = (await securityService.getOrcidRecord(props.orcid)).response.result
-    person.value.last_name = orcidRecordDto.last_name
-
-    person.value.first_name = orcidRecordDto.first_name
-
-    mailOptions.value = extractOptionsFromArray(orcidRecordDto.emails)
-    person.value.email = mailOptions.value[0]?.id
-
-    affiliationOptions.value = extractOptionsFromArray(orcidRecordDto.organizations)
-    person.value.affiliation = affiliationOptions.value[0] ? affiliationOptions.value[0].id : null
-
-  } catch (error) {
-    opensilex.errorHandler(error);
-  } finally {
-    hideLoader()
-  }
-}
-
-function extractOptionsFromArray(array: Array<string>): Array<Option> {
-  return array.map(element => {
-    return {id: element, label: element}
-  })
+  modalRef.value.show()
 }
 
 function sendInfosThenHideModal(): void {
-  person.value.last_name = keepLastName.value ? person.value.last_name : null
-  person.value.first_name = keepFirstName.value ? person.value.first_name : null
-  emit("selectionDone", person.value)
+  const person = {
+    affiliation: selectedAffiliation.value,
+    email: selectedMail.value,
+    first_name: keepFirstName.value ? props.form.first_name : null,
+    last_name:keepLastName.value ? props.form.last_name : null,
+  }
+  emit("selectionDone", person)
   modalRef.value.hide()
   displayModal.value = false
-}
-
-function getEmptyPerson(): PersonDTO {
-  return {
-    account: null,
-    affiliation: null,
-    email: null,
-    first_name: null,
-    last_name: null,
-    orcid: null,
-    phone_number: null,
-    uri: null
-  }
 }
 
 function cancelAndHideModal(): void {
   modalRef.value.hide()
   displayModal.value = false
-  refreshPersonAndSelectors()
-}
-
-function refreshPersonAndSelectors(): void {
-  person.value = getEmptyPerson()
-  mailOptions.value = []
-  affiliationOptions.value = []
-  keepLastName.value = true
-  keepFirstName.value = true
-}
-
-function showLoader() {
-  opensilex.enableLoader();
-  opensilex.showLoader();
-}
-
-function hideLoader() {
-  opensilex.hideLoader();
-  opensilex.disableLoader();
 }
 
 </script>

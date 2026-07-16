@@ -68,7 +68,7 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
         var context = server.initApp(pathPrefix + "/id", "/", "/", DerefModule.class);
         context.setJarScanner(new IgnoreJarScanner());
 
-        var valve = new DerefRewriteValve(baseGenerationUri, docGenUri);
+        var valve = new DerefRewriteValve(baseGenerationUri, docGenUri, docGenUri);
         context.getPipeline().addValve(valve);
         valve.initRules();
     }

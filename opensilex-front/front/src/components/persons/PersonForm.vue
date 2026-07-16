@@ -93,18 +93,21 @@
     </n-form-item>
 
     <!-- phone number -->
-    <n-form-item>
+    <n-form-item
+        ref="phoneNumberNFormItemRef"
+        path="phone_number"
+    >
       <FormField
           label="component.person.phone_number"
       >
-        <template v-slot:field="field">
+        <template v-slot:field>
           <vue-tel-input
-              v-model="phone_number"
+              v-model="form.phone_number"
               defaultCountry="FR"
               :onlyCountries="['FR']"
               validCharactersOnly
-              @validate="validatePhone"
-              @input="updatePhoneNumber"
+              @validate="onVueTelInputValidate"
+              @blur="onVueTelInputBlur"
           ></vue-tel-input>
         </template>
       </FormField>
@@ -127,6 +130,7 @@ import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper
 import Button from "@/components/common/buttons/Button.vue";
 import OrcidSuggestionModal from "@/components/persons/OrcidSuggestionModal.vue";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {VueTelInput} from "vue-tel-input";
 
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -156,7 +160,18 @@ const rules = computed(() => ({
   "first_name": requiredTrimmed('component.person.first-name'),
   'last_name': requiredTrimmed('component.person.last-name'),
   'email': validEmail(),
-
+  'phone_number': {
+    validator(_rule, value) {
+      if (value == undefined || value.trim().length === 0){
+        return true
+      }
+      if (! phoneIsValid) {
+        return new Error(t('validations.phoneNumberError'))
+      }
+      return true
+    },
+    trigger: ['phone-number-valid-trigger']
+  },
 }))
 
 let uriGenerated = true;
@@ -164,9 +179,10 @@ let uriGenerated = true;
 let displayOrcidModal = ref(false)
 let disable_orcid_field: boolean = false
 let phoneIsValid: boolean = true
-let formattedPhoneNumber = ref("")
 
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
+const phoneNumberNFormItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('phoneNumberNFormItemRef');
+
 
 //#region Emits
 const emit = defineEmits<{
@@ -179,15 +195,8 @@ function reset() {
   uriGenerated = true;
   nextTick(() => {
     disable_orcid_field = props.editMode && props.form.orcid !== null
-    formattedPhoneNumber.value = props.form.phone_number
   })
 }
-
-// necessary because vue-tel-input crash if its v-model value is null
-const phone_number: WritableComputedRef<string, String> = computed({
-  get: () => formattedPhoneNumber.value ? formattedPhoneNumber.value : "",
-  set: (number: string) => formattedPhoneNumber.value = number != '' ? number : null
-})
 
 const validOrcid: ComputedRef<boolean> = computed(() => {
   //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X. Le tout précédé ou non du nom de domain de orcid
@@ -259,6 +268,13 @@ function replaceEmptyStringByNull(form): void {
   }
 }
 
+function formatPhoneNumber(phoneNumber: string): string{
+  if ( ! phoneNumber || phoneNumber.trim().length === 0) {
+    return null
+  }
+  return phoneNumber?.replace(/\s/g, '')
+}
+
 function fillFormWithNoNull(person: PersonDTO) {
   for (const [key, value] of Object.entries(person)) {
     if (value) {
@@ -275,14 +291,16 @@ function startOrcidSuggestion(): void {
 function prepareFormBeforeSending(form: PersonDTO) {
   replaceEmptyStringByNull(form)
   props.form.orcid = getCompleteUrlOrcid(form.orcid)
+  props.form.phone_number = formatPhoneNumber(form.phone_number)
 }
 
-function validatePhone(phoneNumber): void {
+function onVueTelInputValidate(phoneNumber): void {
   phoneIsValid = phoneNumber?.valid
+  phoneNumberNFormItemRef.value?.validate({ trigger: 'phone-number-valid-trigger' }) //trigger validation
 }
 
-function updatePhoneNumber(number: string, phoneObject: any): void {
-  props.form.phone_number = phoneObject.number != "" ? phoneObject.number : null
+function onVueTelInputBlur() {
+    phoneNumberNFormItemRef.value?.validate({ trigger: 'phone-number-valid-trigger' })
 }
 
 function showLoader() {

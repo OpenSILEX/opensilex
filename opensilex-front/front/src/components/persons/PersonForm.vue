@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, nextTick, ref, useTemplateRef, WritableComputedRef} from "vue";
+import {computed, ComputedRef, inject, nextTick, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";

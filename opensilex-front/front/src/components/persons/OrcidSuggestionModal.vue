@@ -111,31 +111,6 @@ export type orcidSuggestionForm = {
   mailOptions: Array<Option>,
   affiliationOptions: Array<Option>,
 }
-export type orcidModalTexts = {
-  title: string,
-  first_name: {
-    label: string,
-    helpMessage: string,
-    placeholder: string,
-    pickup: string,
-  },
-  last_name: {
-    label: string,
-    helpMessage: string,
-    placeholder: string,
-    pickup: string,
-  },
-  mail: {
-    label: string,
-    helpMessage: string,
-    noResults: string,
-  },
-  affiliation: {
-    label: string,
-    helpMessage: string,
-    noResults: string,
-  }
-}
 
 //#region Plugins and services
 const {t} = useI18n();

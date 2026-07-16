@@ -22,15 +22,24 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
     @Override
     public void initServer(Server server) throws Exception {
         ServerExtension.super.initServer(server);
+        initRedirect(server);
+        initDocGen(server);
+    }
 
+    private void initRedirect(Server server) throws Exception {
         var context = server.initApp(getApplicationPathPrefix() + "/id", "/", "/", DerefModule.class);
         context.setJarScanner(new IgnoreJarScanner());
 
         var valve = new DerefRewriteValve();
         context.getPipeline().addValve(valve);
         valve.initRules();
+    }
+
+    private void initDocGen(Server server) {
+        var context = server.initApp(getApplicationPathPrefix() + "/about", "/", "/", DerefModule.class);
+        context.setJarScanner(new IgnoreJarScanner());
 
         Tomcat.addServlet(context, "DerefServlet", new DerefServlet());
-        context.addServletMappingDecoded("/deref", "DerefServlet");
+        context.addServletMappingDecoded("/*", "DerefServlet");
     }
 }

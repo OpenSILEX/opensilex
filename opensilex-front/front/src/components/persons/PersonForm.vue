@@ -37,13 +37,13 @@
               label="component.person.load-orcid-infos"
               :disabled="! validOrcid"
               :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
-              @click="startOrcidSuggestion()"
+              @click="onShowOrcidModalButtonClick()"
           />
         </div>
         <OrcidSuggestionModal
             :form="orcidForm"
             v-model:display-modal="displayOrcidModal"
-            @selectionDone="fillFormWithNoNull"
+            @selectionDone="onOrcidModalSelectionDone"
         />
       </div>
     </n-form-item>
@@ -195,9 +195,9 @@ const phoneNumberNFormItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('
 const emit = defineEmits<{
   (e: "onCreate", payload: PersonDTO): void
 }>()
-
 //#endregion
 
+//#region methods
 function reset() {
   uriGenerated = true;
   nextTick(() => {
@@ -282,7 +282,42 @@ function formatPhoneNumber(phoneNumber: string): string{
   return phoneNumber?.replace(/\s/g, '')
 }
 
-function fillFormWithNoNull(person: PersonDTO) {
+function prepareFormBeforeSending(form: PersonDTO) {
+  replaceEmptyStringByNull(form)
+  props.form.orcid = getCompleteUrlOrcid(form.orcid)
+  props.form.phone_number = formatPhoneNumber(form.phone_number)
+}
+
+function showLoader() {
+  opensilex.enableLoader();
+  opensilex.showLoader();
+}
+
+function hideLoader() {
+  opensilex.hideLoader();
+  opensilex.disableLoader();
+}
+
+async function validate() {
+  try {
+    await formRef.value?.validate()
+    return true
+  } catch {
+    return false
+  }
+}
+
+function extractOptionsFromArray(array: Array<string>): Array<Option> {
+  return array.map(element => {
+    return {id: element, label: element}
+  })
+}
+//#endregion
+
+//#region event handler
+
+/** Fills the form with non-null values from the person object */
+function onOrcidModalSelectionDone(person: PersonDTO) {
   for (const [key, value] of Object.entries(person)) {
     if (value) {
       props.form[key] = value
@@ -290,7 +325,7 @@ function fillFormWithNoNull(person: PersonDTO) {
   }
 }
 
-async function startOrcidSuggestion(): Promise<void> {
+async function onShowOrcidModalButtonClick(): Promise<void> {
   orcidForm.value = {
     orcid: props.form.orcid,
     last_name: "",
@@ -317,18 +352,6 @@ async function startOrcidSuggestion(): Promise<void> {
   }
 }
 
-function extractOptionsFromArray(array: Array<string>): Array<Option> {
-  return array.map(element => {
-    return {id: element, label: element}
-  })
-}
-
-
-function prepareFormBeforeSending(form: PersonDTO) {
-  replaceEmptyStringByNull(form)
-  props.form.orcid = getCompleteUrlOrcid(form.orcid)
-  props.form.phone_number = formatPhoneNumber(form.phone_number)
-}
 
 function onVueTelInputValidate(phoneNumber): void {
   phoneIsValid = phoneNumber?.valid
@@ -338,25 +361,7 @@ function onVueTelInputValidate(phoneNumber): void {
 function onVueTelInputBlur() {
     phoneNumberNFormItemRef.value?.validate({ trigger: 'phone-number-valid-trigger' })
 }
-
-function showLoader() {
-  opensilex.enableLoader();
-  opensilex.showLoader();
-}
-
-function hideLoader() {
-  opensilex.hideLoader();
-  opensilex.disableLoader();
-}
-
-async function validate() {
-  try {
-    await formRef.value?.validate()
-    return true
-  } catch {
-    return false
-  }
-}
+//#endregion
 
 defineExpose({
   reset,

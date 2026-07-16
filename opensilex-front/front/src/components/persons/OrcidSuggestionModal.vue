@@ -79,13 +79,13 @@
       <Button
           label="component.common.close"
           class="btn-secondary"
-          @click="cancelAndHideModal()"
+          @click="onCancelButtonClick()"
       />
 
       <Button
           label="component.common.validateSelection"
           class="greenThemeColor"
-          @click="sendInfosThenHideModal()"
+          @click="onValidateButtonClick()"
       />
     </template>
   </Modal>
@@ -110,6 +110,31 @@ export type orcidSuggestionForm = {
   last_name: string,
   mailOptions: Array<Option>,
   affiliationOptions: Array<Option>,
+}
+export type orcidModalTexts = {
+  title: string,
+  first_name: {
+    label: string,
+    helpMessage: string,
+    placeholder: string,
+    pickup: string,
+  },
+  last_name: {
+    label: string,
+    helpMessage: string,
+    placeholder: string,
+    pickup: string,
+  },
+  mail: {
+    label: string,
+    helpMessage: string,
+    noResults: string,
+  },
+  affiliation: {
+    label: string,
+    helpMessage: string,
+    noResults: string,
+  }
 }
 
 //#region Plugins and services
@@ -159,7 +184,8 @@ function refreshValuesAndShow(){
   modalRef.value.show()
 }
 
-function sendInfosThenHideModal(): void {
+//#region event handlers
+function onValidateButtonClick(): void {
   const person = {
     affiliation: selectedAffiliation.value,
     email: selectedMail.value,
@@ -171,10 +197,11 @@ function sendInfosThenHideModal(): void {
   displayModal.value = false
 }
 
-function cancelAndHideModal(): void {
+function onCancelButtonClick(): void {
   modalRef.value.hide()
   displayModal.value = false
 }
+//#endregion
 
 </script>
 

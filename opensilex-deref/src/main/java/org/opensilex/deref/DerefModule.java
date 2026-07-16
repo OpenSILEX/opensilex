@@ -36,7 +36,7 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
     }
 
     private URI getDocGenUri() throws OpenSilexModuleNotFoundException {
-            return UriBuilder.fromPath(getServerPublicUri()).path("/about/").build();
+        return UriBuilder.fromPath(getServerPublicUri()).path("/about/").build();
     }
 
     /**

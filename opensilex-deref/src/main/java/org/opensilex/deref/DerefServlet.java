@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class DerefServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html");
 
         var resourceUri = req.getParameter("res");

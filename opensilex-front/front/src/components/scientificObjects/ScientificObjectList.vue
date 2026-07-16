@@ -54,10 +54,10 @@
         </strong>
       </div>
       <span> | </span>
-      <n-p>
+      <span>
         {{ t('ScientificObjectList.selected') }} :
         <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </n-p>
+      </span>
     </div>
   </n-space>
 

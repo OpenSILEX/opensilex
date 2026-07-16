@@ -694,6 +694,13 @@ body.modal-open {
     color: #fff;
 }
 
+.createButton {
+    margin-bottom: 10px;
+    margin-top: -15px;
+    margin-left: 0;
+    margin-right: 5px;
+}
+
 .createButton:hover {
     background-color: #018371;
     border-color:#018371;

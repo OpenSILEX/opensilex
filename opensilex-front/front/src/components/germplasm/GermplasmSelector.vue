@@ -29,7 +29,7 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t, locale } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'update:germplasm', value: string | string[] | undefined): void
+  (e: 'update:germplasm', value: string[] | undefined): void
   (e: 'select', value: any): void
   (e: 'deselect', value: any): void
   (e: 'clear'): void
@@ -37,7 +37,7 @@ const emit = defineEmits<{
 }>()
 
 const props = withDefaults(defineProps<{
-  germplasm?: string | string[]
+  germplasm?: string[]
   label?: string
   placeholder?: string
   required?: boolean

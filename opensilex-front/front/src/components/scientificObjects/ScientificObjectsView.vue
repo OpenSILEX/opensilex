@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <n-space class="container-fluid">
 
     <PageActions
       v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
@@ -23,163 +23,178 @@
       ></CreateButton>
 
 
-      <ScientificObjectCSVImporter
+<!--      <ScientificObjectCSVImporter
         ref="importForm"
         @csvImported="soList.refresh()"
-      ></ScientificObjectCSVImporter>
+      ></ScientificObjectCSVImporter>-->
     </PageActions>
 
 
     <PageContent
       class="pagecontent"
     >
-
-      <!-- Toggle Sidebar-->
-      <div
-        class="searchMenuContainer"
-        v-on:click="searchFiltersToggle = !searchFiltersToggle"
-        :title="searchFiltersPannelTitle()"
-      >
-        <div class="searchMenuIcon">
-          <i class="icon bi bi-search"></i>
-        </div>
-      </div>
-
-      <!-- FILTERS -->
-      <Transition>
-        <div v-show="searchFiltersToggle">
-
-          <SearchFilterField
-            @search="soList.refresh()"
-            @clear="reset()"
-            searchButtonLabel="component.common.search.search-button"
-            :showAdvancedSearch="true"
-            class="searchFilterField"
+      <n-layout has-sider class="so-layout">
+        <n-space class="mb-2 me-1" align="top">
+          <n-button
+            quaternary
+            circle
+            @click="searchFiltersToggle = !searchFiltersToggle"
+            :title="searchFiltersPannelTitle()"
+            :class="{ greenThemeColor: searchFiltersToggle }"
+            class="globalFiltersSearchButton"
           >
-            <template v-slot:filters>
+            <i class="bi bi-search filtersGlobalSearchIcon"></i>
 
-              <!-- Name -->
-              <div>
-                <FilterField>
-                  <label for="name">{{ $t("component.common.name") }}</label>
-                  <StringFilter
-                    id="name"
-                    :filter.sync="filter.name"
-                    placeholder="ScientificObjectList.name-placeholder"
-                    class="searchFilter"
-                    @handlingEnterKey="soList.refresh()"
-                  ></StringFilter>
-                  <br>
-                </FilterField>
-              </div>
+            <div
+              v-show="searchFiltersToggle && activeFiltersCount > 0"
+              class="filters-count-badge"
+            >
+              ( {{ activeFiltersCount }} )
+            </div>
+          </n-button>
+        </n-space>
 
-              <!-- Experiments -->
-              <div>
-                <FilterField>
-                  <ExperimentSelector
-                    label="GermplasmList.filter.experiment"
-                    :multiple="false"
-                    :experiments.sync="filter.experiment"
-                    class="searchFilter"
-                    @handlingEnterKey="soList.refresh()"
-                    :key="resetExperimentSelectorKey"
-                  ></ExperimentSelector>
-                </FilterField>
-              </div>
+        <!-- FILTERS -->
+        <n-layout-sider
+          v-model:collapsed="searchFiltersToggle"
+          :collapsed-width="0"
+          :width="360"
+          collapse-mode="width"
+          show-trigger
+          bordered
+          class="device-sider"
+        >
+          <n-space class="p-3" vertical>
 
-              <!-- Types -->
-              <div>
-                <FilterField>
-                  <label for="type">{{ $t("component.common.type") }}</label>
-                  <ScientificObjectTypeSelector
-                    id="type"
-                    :types.sync="filter.types"
-                    :multiple="true"
-                    class="searchFilter"
-                  ></ScientificObjectTypeSelector>
-                </FilterField>
-              </div>
-            </template>
+            <n-form size="small" @submit.prevent.stop="soList.refresh()">
 
-            <template v-slot:advancedSearch>
+                <!-- Name -->
+              <n-form-item :label="t('component.common.name')"  class="compact-form-item">
+                <StringFilter
+                  id="name"
+                  v-model:filter="filter.name"
+                  :placeholder="t('ScientificObjectList.name-placeholder')"
+                  @handlingEnterKey="soList.refresh()"
+                  class="searchFilter"
+                />
+              </n-form-item>
 
-              <!-- Germplasm -->
-              <div>
-                <FilterField quarterWidth="false">
-                  <GermplasmSelectorWithFilter
-                    :germplasmsUris.sync="filter.germplasm"
-                  ></GermplasmSelectorWithFilter>
-                </FilterField>
-              </div>
+                <!-- Experiments -->
+              <n-form-item class="compact-form-item">
+                <opensilex-ExperimentSelector
+                  :label="t('component.experiment.view.title')"
+                  v-model:experiments="filter.experiment"
+                  :multiple="true"
+                  class="searchFilter"
+                  @handlingEnterKey="soList.refresh()"
+                  :key="resetExperimentSelectorKey"
+                />
+              </n-form-item>
 
-              <!-- Factors levels -->
-              <div>
-                <FilterField>
-                  <b-form-group>
-                    <label for="factorLevels">
-                      {{ $t("FactorLevelSelector.label") }}
-                    </label>
+                <!-- Types -->
+              <n-form-item
+                :label="$t('component.common.type')"
+                :show-feedback="false"
+                class="compact-form-item"
+              >
+                <opensilex-ScientificObjectTypeSelector
+                  id="type"
+                  v-model:types="filter.types"
+                  :multiple="true"
+                  class="searchFilter"
+                />
+              </n-form-item>
+
+              <!-- ADVANCED SEARCH STARTS HERE -->
+
+              <n-collapse
+                v-model:expanded-names="expandedNCollapseNames"
+                :accordion="false"
+                @update:expanded-names="onCollapseUpdate"
+                class="advancedFiltersSearch"
+              >
+                <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
+                  <!-- Germplasm -->
+                  <n-form-item :show-feedback="false" class="compact-form-item">
+                    <GermplasmSelector
+                      :multiple="false"
+                      :germplasm="filter.germplasm"
+                      :experiment="filter.experiment"
+                      class="searchFilter"
+                      @update:germplasm="filter.germplasm = $event"
+                      @handlingEnterKey="soList.refresh()"
+                    />
+                  </n-form-item>
+
+                  <!-- Factor levels -->
+                  <n-form-item :show-feedback="false" class="compact-form-item">
                     <FactorLevelSelector
-                      id="factorLevels"
-                      :factorLevels.sync="filter.factorLevels"
+                      :factorLevels="filter.factorLevels"
                       :multiple="true"
                       :required="false"
-                      :key="resetFactorLevelSelectorKey"
                       class="searchFilter"
-                    ></FactorLevelSelector>
-                  </b-form-group>
-                </FilterField>
-              </div>
+                      @update:factorLevels="filter.factorLevels = $event"
+                      @handlingEnterKey="soList.refresh()"
+                    />
+                  </n-form-item>
 
-              <!-- Exists -->
-              <div>
-                <FilterField>
-                  <DateForm
-                    :value.sync="filter.existenceDate"
-                    label="ScientificObjectList.existenceDate"
-                    class="searchFilter"
-                  ></DateForm>
-                </FilterField>
-              </div>
+                  <!-- Existence date -->
+                  <n-form-item
+                    :label="t('ScientificObjectModalList.filter.existenceDate')"
+                    :show-feedback="false"
+                  >
+                    <DateForm
+                      :value="filter.existenceDate"
+                      class="searchFilter"
+                      @update:value="filter.existenceDate = $event"
+                    />
+                  </n-form-item>
 
-              <!-- Created -->
-              <div>
-                <FilterField>
-                  <DateForm
-                    :value.sync="filter.creationDate"
-                    label="ScientificObjectList.creationDate"
-                    class="searchFilter"
-                  ></DateForm>
-                </FilterField>
-              </div>
+                  <br />
 
-              <!-- Criteria search -->
-              <div>
-                <FilterField quarterWidth="false">
-                  <CriteriaSearchModalCreator
-                    class="searchFilter"
-                    ref="criteriaSearchCreateModal"
-                    :criteria_dto.sync="filter.criteriaDto"
-                    :required="false"
-                    :requiredBlue="false"
-                  ></CriteriaSearchModalCreator>
-                </FilterField>
-              </div>
-            </template>
-          </SearchFilterField>
-        </div>
-      </Transition>
+                  <!-- Creation date -->
+                  <n-form-item
+                    :label="t('ScientificObjectModalList.filter.creationDate')"
+                    :show-feedback="false"
+                  >
+                    <DateForm
+                      :value="filter.creationDate"
+                      class="searchFilter"
+                      @update:value="filter.creationDate = $event"
+                    />
+                  </n-form-item>
 
-      <ScientificObjectList
-        ref="soList"
-        :searchFilter="filter"
-        @update="soForm.editScientificObject($event)"
-        @createDocument="createDocument"
-        @createEvents="createEvents"
-        @createMoves="createMoves"
-        class="scientificObjectList"
-      ></ScientificObjectList>
+                  <!-- Criteria search -->
+                  <n-form-item :show-feedback="false">
+                    <CriteriaSearchModalCreator
+                      ref="criteriaSearchCreateModal"
+                      class="searchFilter"
+                      :criteria_dto="filter.criteriaDto"
+                      :required="false"
+                      :requiredBlue="false"
+                      @update:criteria_dto="filter.criteriaDto = $event"
+                    />
+                  </n-form-item>
+                </n-collapse-item>
+              </n-collapse>
 
+            </n-form>
+          </n-space>
+        </n-layout-sider>
+
+        <n-layout-content class="so-content">
+          <ScientificObjectList
+            ref="soList"
+            :searchFilter="filter"
+            :isSelectable="true"
+            @update="soForm.editScientificObject($event)"
+            @createDocument="createDocument"
+            @createEvents="createEvents"
+            @createMoves="createMoves"
+            class="scientificObjectList"
+          ></ScientificObjectList>
+        </n-layout-content>
+      </n-layout>
     </PageContent>
 
     <ModalForm
@@ -206,7 +221,7 @@
       ref="soForm"
       @onUpdate="redirectToDetail"
     ></ScientificObjectForm>
-  </div>
+  </n-space>
 </template>
 
 <script setup lang="ts">
@@ -231,6 +246,18 @@ import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSel
 import DateForm from "@/components/common/forms/DateForm.vue";
 import ScientificObjectForm from "@/components/scientificObjects/ScientificObjectForm.vue";
 import ScientificObjectCSVImporter from "@/components/scientificObjects/ScientificObjectCSVImporter.vue";
+import {
+  NButton,
+  NCollapse,
+  NCollapseItem,
+  NForm,
+  NFormItem,
+  NLayout,
+  NLayoutContent,
+  NLayoutSider,
+  NSpace
+} from "naive-ui";
+import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
@@ -253,6 +280,8 @@ const filter = ref<ScientificObjectFilter>({
 const resetExperimentSelectorKey = ref(0);
 const resetFactorLevelSelectorKey = ref(0);
 const searchFiltersToggle = ref(false);
+const loadAdvancedSearchFilters = ref(false);
+const expandedNCollapseNames = ref<string[]>([])
 //#endregion
 //#region Template refs
 const soForm = ref<InstanceType<typeof ScientificObjectForm> | null>(null);
@@ -266,6 +295,25 @@ const criteriaSearchCreateModal = ref<InstanceType<typeof CriteriaSearchModalCre
 //#region Computed
 const user = computed(() => $store.state.user);
 const credentials = computed(() => $store.state.credentials);
+
+const activeFiltersCount = computed(() => {
+
+  const staticFilters = [
+    filter.value.name,
+    filter.value.experiment,
+    filter.value.germplasm,
+    filter.value.factorLevels,
+    filter.value.types,
+    filter.value.existenceDate,
+    filter.value.creationDate,
+    filter.value.criteriaDto.criteria_list
+  ]
+
+  return staticFilters.filter(v => {
+    if (Array.isArray(v)) return v.length > 0
+    return v !== undefined && v !== null && String(v).trim() !== ''
+  }).length
+})
 //#endregion
 //#region Functions
 function searchFiltersPannelTitle(): string {
@@ -344,14 +392,54 @@ function reset(): void {
   resetExperimentSelectorKey.value++;
   resetFactorLevelSelectorKey.value++;
 }
+
+function onCollapseUpdate(names: string[]) {
+  expandedNCollapseNames.value = names
+  if (names.includes('adv')) {
+    loadAdvancedSearchFilters.value = true
+  }
+}
 //#endregion
 
 </script>
 
 <style scoped lang="scss">
 
-.createButton{
-  margin-bottom: 10px;
-  margin-top: -15px;
+.so-layout {
+  height: 100%;
+  background: transparent;
 }
+
+.so-sider,
+.so-content {
+  height: 100%;
+}
+
+.so-sider {
+  background: #fff;
+  overflow: auto;
+}
+
+.so-content {
+  overflow: auto;
+  padding-left: 12px;
+}
+
+.filtersGlobalSearchIcon {
+  font-size: 1.2em;
+}
+
+.globalFiltersSearchButton {
+  width: 40px;
+  height: 55px;
+}
+
+.globalFiltersSearchButton span {
+  display: block !important;
+}
+
+.advancedFiltersSearch {
+  margin-top: 10px;
+}
+
 </style>

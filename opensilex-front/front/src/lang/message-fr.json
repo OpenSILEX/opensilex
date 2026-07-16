@@ -765,6 +765,7 @@
             },
             "view": {
                 "title": "Expérimentation",
+                "experiment-experiments": "Expérimentation(s)",
                 "list": {
                     "previous": "Consulter l'expérimentation précédente",
                     "next": "Consulter l'expérimentation suivante",

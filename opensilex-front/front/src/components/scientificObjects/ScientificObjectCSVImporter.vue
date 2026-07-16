@@ -78,7 +78,9 @@ const props = defineProps<Props>();
 //#endregion
 
 //#region Emits
-const emit = defineEmits<["csvImported"]>();
+const emit = defineEmits<{
+  csvImported: () => void;
+}>();
 //#endregion
 
 //#region Computed

@@ -127,7 +127,12 @@ interface Props {
 const props = withDefaults(
   defineProps<Props>(),
   {
-    form: () => (getEmptyForm())
+    form: () => ( {
+      uri: null,
+      rdf_type: null,
+      name: "",
+      relations: []
+    })
   }
 );
 //#endregion
@@ -137,15 +142,6 @@ const props = withDefaults(
 /*function reset() {
   uriGenerated.value = true;
 }*/
-
-function getEmptyForm(): OntologyObjectFormModel {
-  return {
-    uri: null,
-    rdf_type: null,
-    name: "",
-    relations: []
-  };
-}
 
 function setBaseType(type: string, parentType: string) {
   baseType.value = parentType;

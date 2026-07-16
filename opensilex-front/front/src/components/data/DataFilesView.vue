@@ -87,7 +87,7 @@
                 <!-- Experiments -->
                 <n-form-item class="compact-form-item">
                   <opensilex-ExperimentSelector
-                    :label="t('DataFilesView.filter.experiments')"
+                    :label="t('component.experiment.view.experiment-experiments')"
                     v-model:experiments="filter.experiments"
                     :multiple="true"
                     @select="updateSOFilter"
@@ -480,7 +480,6 @@ en:
     fileName-placeholder: Enter file name
     imagesView: View
     filter:
-      experiments: Experiment(s)
       provenance: Provenance
       rdfType-placeholder: Select the datafile type
       scientificObjects: Scientific object(s)
@@ -496,7 +495,6 @@ fr:
     fileName-placeholder: Saisir un nom de fichier
     imagesView: Visualisation
     filter:
-      experiments: Expérimentation(s)
       provenance: Provenance
       rdfType-placeholder: Sélectionner le type de fichier
       scientificObjects: Objet(s) scientifique(s)

@@ -1,5 +1,5 @@
 ontologies:
-    baseURI: http://localhost:6666/
+    baseURI: http://localhost:8666/
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory

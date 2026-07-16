@@ -12,6 +12,7 @@ import org.opensilex.sparql.SPARQLModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
 public class DerefModule extends OpenSilexModule implements ServerExtension {
@@ -34,6 +35,10 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
         return getOpenSilex().getModuleByClass(ServerModule.class).getBaseURL();
     }
 
+    private URI getDocGenUri() throws OpenSilexModuleNotFoundException {
+            return UriBuilder.fromPath(getServerPublicUri()).path("/about/").build();
+    }
+
     /**
      * @param server Unstarted server instance
      * @throws IllegalStateException if the base generation URI does not start with the instance public URI
@@ -45,6 +50,7 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
         var generationBaseUri = getGenerationBaseUri();
         var pathPrefix = getApplicationPathPrefix();
         var serverPublicUri = getServerPublicUri();
+        var docGenUri = getDocGenUri();
 
         if (!generationBaseUri.toString().startsWith(serverPublicUri)) {
             var errorMessage = String.format(
@@ -54,15 +60,15 @@ public class DerefModule extends OpenSilexModule implements ServerExtension {
             throw new IllegalStateException(errorMessage);
         }
 
-        initRedirect(server, pathPrefix, generationBaseUri);
+        initRedirect(server, pathPrefix, generationBaseUri, docGenUri);
         initDocGen(server, pathPrefix);
     }
 
-    private void initRedirect(Server server, String pathPrefix, URI baseGenerationUri) throws Exception {
+    private void initRedirect(Server server, String pathPrefix, URI baseGenerationUri, URI docGenUri) throws Exception {
         var context = server.initApp(pathPrefix + "/id", "/", "/", DerefModule.class);
         context.setJarScanner(new IgnoreJarScanner());
 
-        var valve = new DerefRewriteValve(baseGenerationUri);
+        var valve = new DerefRewriteValve(baseGenerationUri, docGenUri);
         context.getPipeline().addValve(valve);
         valve.initRules();
     }

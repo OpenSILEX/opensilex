@@ -9,10 +9,12 @@ import java.net.URI;
 
 public class DerefRewriteValve extends RewriteValve {
     private final URI baseUri;
+    private final URI docGenUri;
 
-    public DerefRewriteValve(URI baseUri) {
+    public DerefRewriteValve(URI baseUri, URI docGenUri) {
         super();
         this.baseUri = baseUri;
+        this.docGenUri = docGenUri;
     }
 
 
@@ -26,6 +28,6 @@ public class DerefRewriteValve extends RewriteValve {
     }
 
     private String getRewriteRules() {
-        return String.format("RewriteRule .* http://example.org/myredirect?res=%s%%{REQUEST_PATH} [R=303,L]", baseUri);
+        return String.format("RewriteRule .* %s?res=%s%%{REQUEST_PATH} [R=303,L]", docGenUri, baseUri);
     }
 }

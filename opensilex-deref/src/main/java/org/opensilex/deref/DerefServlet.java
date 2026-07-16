@@ -20,7 +20,7 @@ public class DerefServlet extends HttpServlet {
                     </head>
                     <body>
                         <h1>Deref</h1>
-                        <p>The requested URI is <pre>%s</pre></p>
+                        <p>The requested URI is <code>%s</code></p>
                     </body>
                 </html>
                 """, req.getParameter("res")));

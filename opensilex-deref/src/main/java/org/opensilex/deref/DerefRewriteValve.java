@@ -28,6 +28,7 @@ public class DerefRewriteValve extends RewriteValve {
                     RewriteRule .* http://example.org/myredirect [R=303,L,NE]
                     RewriteCond %{REQUEST_PATH} ^/example3/$
                     RewriteRule .* http://example.org/myredirect [R=303,L,NE]
+                    RewriteRule .* http://example.org/myredirect?res=%{REQUEST_URI}&host=${REMOTE_HOST} [R=303,L]
                 """;
 
     }

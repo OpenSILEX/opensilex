@@ -120,7 +120,7 @@ public class ScientificObjectAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
-    public Response getScientificObjectsListByUris(
+    public Response searchScientificObjectsListByUris(
             @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
             @ApiParam(value = "Scientific object uris") List<URI> objectsURI
     ) throws Exception {

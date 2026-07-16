@@ -342,11 +342,9 @@ public class GermplasmAPI {
     }
 
     /**
-     * * Return a list of germplasms corresponding to the given URIs
+     * @return  a list of germplasms corresponding to the given URIs
      *
      * @param uris list of germplasms uri
-     * @return Corresponding list of germplasms
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @POST
     @Path("by_uris")
@@ -357,10 +355,10 @@ public class GermplasmAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return factors list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
 
-    public Response getGermplasmsByURI(
+    public Response searchGermplasmsByURIs(
             @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
 

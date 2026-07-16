@@ -263,7 +263,7 @@ export default class VariableVisualizationTab extends Vue {
     if (this.variable) {
       return this.$opensilex
           .getService("opensilex.DevicesService")
-          .getDeviceByUris(this.form.device)
+          .searchDevicesByURIs(this.form.device)
           .then(http => {
             this.devicesInfo = http.response.result;
             this.buildSeries();

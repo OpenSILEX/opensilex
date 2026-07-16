@@ -22,12 +22,15 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.*;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
@@ -434,12 +437,12 @@ public class FactorAPI {
     }
 
     /**
-     * * Return a list of factors corresponding to the given URIs
+     * @return  a list of factors corresponding to the given URIs
      *
      * @param uris list of factors uri
-     * @return Corresponding list of factors
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get a list of factors by their URIs")
@@ -449,11 +452,58 @@ public class FactorAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return factors list", response = FactorGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getFactorsByURIs(
             @ApiParam(value = "Factors URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        FactorDAO dao = new FactorDAO(sparql);
+        List<FactorModel> models = dao.getList(uris);
+
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
+        Set<URI> userExperiments = experimentDAO.getUserExperiments(currentUser);
+        if (!models.isEmpty()) {
+            List<FactorGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                if (userExperiments.contains(result.getExperiment().getUri())) {
+                    resultDTOList.add(FactorGetDTO.fromModel(result));
+                }
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Factors not found",
+                    "Unknown factor URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * @return  a list of factors corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get a list of factors by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return factors list", response = FactorGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchFactorsByURIs(
+            @ApiParam(value = "Factor URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         FactorDAO dao = new FactorDAO(sparql);
         List<FactorModel> models = dao.getList(uris);
 

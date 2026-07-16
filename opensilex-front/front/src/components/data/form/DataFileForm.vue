@@ -390,7 +390,7 @@ export default class DataFileForm extends Vue {
     let target = this.form.target;
 
     try {
-      const http = await this.serviceOS.getScientificObjectsListByUris(contextURI, [target]);
+      const http = await this.serviceOS.searchScientificObjectsListByUris(contextURI, [target]);
 
       const foundObjects = http?.response?.result || [];
 

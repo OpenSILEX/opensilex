@@ -24,6 +24,7 @@ import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {EntityGetDTO} from "opensilex-core/index";
+import {GetByUrisWithSharedResourceInstanceDTO} from "opensilex-core/model/getByUrisWithSharedResourceInstanceDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import FormSelector from "../../common/forms/FormSelector.vue";
@@ -89,8 +90,12 @@ export default class EntitySelector extends Vue {
       return Promise.resolve([{ uri, name: this.tutorialLabels[uri] || "" } as any]);
     }
 
+    const urisAndSharedResourceDto: GetByUrisWithSharedResourceInstanceDTO = {
+      uris: entities,
+      sharedResourceInstance: this.sharedResourceInstance
+    }
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-      .getEntitiesByURIs(entities, this.sharedResourceInstance)
+      .searchEntitiesByURIs(urisAndSharedResourceDto)
       .then(http => http.response.result)
       .catch(this.$opensilex.errorHandler);
   }

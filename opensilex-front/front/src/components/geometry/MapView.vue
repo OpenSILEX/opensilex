@@ -1639,7 +1639,7 @@ export default class MapView extends Vue {
   getDeviceDetails(listURI, listDevicePositions) {
     //get details of each device loaded
     this.devicesService
-        .getDeviceByUris(listURI)
+        .searchDevicesByURIs(listURI)
         .then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
           let res = http.response.result;
           listDevicePositions.forEach((devicePosition) => {

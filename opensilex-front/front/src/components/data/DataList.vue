@@ -309,7 +309,7 @@ export default class DataList extends Vue {
 
                         if (variablesToLoad.length > 0) {
                             let promiseVariable = this.variablesService
-                                .getVariablesByURIs(variablesToLoad)
+                                .searchVariablesByURIs(variablesToLoad)
                                 .then((httpObj) => {
                                     for (let j in httpObj.response.result) {
                                         let variable = httpObj.response.result[j];
@@ -322,7 +322,7 @@ export default class DataList extends Vue {
 
                         if (provenancesToLoad.length > 0) {
                             let promiseProvenance = this.dataService
-                                .getProvenancesByURIs(provenancesToLoad)
+                                .searchProvenancesByURIs(provenancesToLoad)
                                 .then((httpObj) => {
                                     for (let j in httpObj.response.result) {
                                         let prov = httpObj.response.result[j];

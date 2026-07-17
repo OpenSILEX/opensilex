@@ -157,7 +157,9 @@ async function create(form: SiteCreationDTO) {
     if (error?.status === 409) {
       $opensilex.errorHandler(error, t('SiteForm.siteAlreadyExists'))
     } else {
-      error.response.result.message = "Find the error yourself ;)"
+      if (error.response) {
+        error.response.result.message = "Find the error yourself ;)"
+      }
       $opensilex.errorHandler(error)
     }
     throw error

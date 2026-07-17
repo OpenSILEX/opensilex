@@ -20,7 +20,7 @@
 
     <!-- Description -->
     <InputForm
-      v-model:value="formState.description"
+      :value="formState.description"
       label="component.common.description"
       type="text"
       :placeholder="t('component.common.description')"
@@ -94,7 +94,7 @@ function emptySiteForm(): SiteCreationDTO {
   return {
     uri: undefined,
     rdf_type: undefined,
-    name: undefined,
+    name: "undefined",
     description: undefined,
     address: undefined,
     organizations: [],
@@ -147,9 +147,10 @@ function getEmptyForm(): SiteCreationDTO {
 
 async function create(form: SiteCreationDTO) {
   $opensilex.showLoader()
+  form.organizations = null;
   try {
     const service = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
-    const http = await service.createSite(form) as unknown as HttpResponse<OpenSilexResponse<string>>
+    const http = await service.createSit(form) as unknown as HttpResponse<OpenSilexResponse<string>>
     form.uri = (http as any).response.result
     return form
   } catch (error: any) {

@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Button
+  <Button
     v-if="!automaticToogle"
     @click="$emit('click', {})"
     variant="outline-success"
@@ -11,9 +11,9 @@
       <opensilex-Icon v-if="!detailVisible" icon="fa#eye" />
       <opensilex-Icon v-else icon="fa#eye-slash" />
     </template>
-  </opensilex-Button>
+  </Button>
 
-  <opensilex-Button
+  <Button
     v-else
     @click="automaticToogleClick"
     variant="outline-success"
@@ -25,11 +25,16 @@
       <opensilex-Icon v-if="automaticSwitch" icon="fa#eye" />
       <opensilex-Icon v-else icon="fa#eye-slash" />
     </template>
-  </opensilex-Button>
+  </Button>
 </template>
 
 <script lang="ts" setup>
 import { ref }  from 'vue';
+import Button from "@/components/common/buttons/Button.vue";
+
+export type DetailWrapperObject<T> = {
+  item: T;
+}
 
 const props = defineProps<{
   label: string;

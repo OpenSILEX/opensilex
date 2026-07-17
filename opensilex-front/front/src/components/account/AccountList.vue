@@ -63,9 +63,9 @@
             ></b-check>
           </div>
           <DetailButton
-            @click="showUsersGroups(data)"
+            @click="onShowDetailClick(data)"
             label="component.account.details"
-            :detailVisible="data.detailsShowing"
+            :detailVisible="!!data.item._showdetails"
             :small="true"
           ></DetailButton>
           <EditButton
@@ -96,14 +96,13 @@ import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {AccountUpdateDTO} from "opensilex-security/model/accountUpdateDTO";
 import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {SlotDetails} from "@/components/common/views/TableAsyncView.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "@/models/Store";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import PersonContact from "@/components/persons/PersonContact.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
-import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import DetailButton, {DetailWrapperObject} from "@/components/common/buttons/DetailButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import {useI18n} from "vue-i18n";
@@ -212,7 +211,7 @@ function displayEnableButton(accountRow: any): boolean {
     && !isUserConnected;
 }
 
-async function showUsersGroups(data: SlotDetails<AccountGetDTO>): Promise<void> {
+async function onShowDetailClick(data): Promise<void> {
   const accountUri: string = data.item.uri;
 
   if (!groupDetailsByAccountUri.value[accountUri]) {
@@ -220,8 +219,8 @@ async function showUsersGroups(data: SlotDetails<AccountGetDTO>): Promise<void> 
     const groups: NamedResourceDTO[] = groupResponse.response.result;
     groupDetailsByAccountUri.value[accountUri] = groups;
   }
-
-  data.toggleDetails();
+  data.item._showdetails = !data.item._showdetails;
+  console.log("groupDetailsByAccountUri.value", groupDetailsByAccountUri.value[accountUri]);
 }
 //#endregion
 

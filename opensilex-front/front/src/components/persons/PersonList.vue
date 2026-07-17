@@ -111,7 +111,7 @@ onMounted(() => {
   }
 
   function updateFilter() {
-    opensilex.updateURLParameter("filter", filter, "");
+    opensilex.updateURLParameter("filter", filter.value, "");
     refresh();
   }
 

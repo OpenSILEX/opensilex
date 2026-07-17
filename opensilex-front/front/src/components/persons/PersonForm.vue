@@ -269,7 +269,7 @@ function getCompleteUrlOrcid(orcid): string {
   return orcid
 }
 
-function replaceEmptyStringByNull(form): void {
+function replaceEmptyStringByNull(form: PersonDTO ): void {
   if (form.email === "") {
     form.email = null;
   }

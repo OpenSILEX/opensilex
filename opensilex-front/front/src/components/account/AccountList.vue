@@ -1,32 +1,32 @@
 <template>
   <div>
-     <StringFilter
-      v-model:filter="filter"
-      @update="updateFilter()"
-      placeholder="component.account.filter-placeholder"
-      :debounce="300"
-      :lazy="false"
+    <StringFilter
+        v-model:filter="filter"
+        @update="updateFilter()"
+        placeholder="component.account.filter-placeholder"
+        :debounce="300"
+        :lazy="false"
     ></StringFilter>
 
     <TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchAccounts"
-      :fields="fields"
-      defaultSortBy="email"
+        ref="tableRef"
+        :searchMethod="searchAccounts"
+        :fields="fields"
+        defaultSortBy="email"
     >
       <template #cell(uri)="{data}">
         <UriLink
-          :uri="data.item.uri"
-          :value="data.item.uri"
-          :noExternalLink="true"
-          :isClickable="false"
+            :uri="data.item.uri"
+            :value="data.item.uri"
+            :noExternalLink="true"
+            :isClickable="false"
         ></UriLink>
       </template>
 
       <template #cell(last_name)="{data}">
         <PersonContact
-          v-if="personByAccountUri[data.item.uri]"
-          :personContact="personByAccountUri[data.item.uri]"
+            v-if="personByAccountUri[data.item.uri]"
+            :personContact="personByAccountUri[data.item.uri]"
         />
         <div v-else/>
       </template>
@@ -44,31 +44,32 @@
         <strong class="capitalize-first-letter">{{ t("component.account.user-groups") }}:</strong>
         <ul>
           <li
-            v-for="groupDetail in groupDetailsByAccountUri[data.item.uri]"
-            :key="groupDetail.uri"
-          >{{ groupDetail.name }}</li>
+              v-for="groupDetail in groupDetailsByAccountUri[data.item.uri]"
+              :key="groupDetail.uri"
+          >{{ groupDetail.name }}
+          </li>
         </ul>
       </template>
 
       <template #cell(actions)="{data}">
         <n-button-group>
           <DetailButton
-            @click="onShowDetailClick(data)"
-            label="component.account.details"
-            :detailVisible="!!data.item._showDetails"
-            :small="true"
+              @click="onShowDetailClick(data)"
+              label="component.account.details"
+              :detailVisible="!!data.item._showDetails"
+              :small="true"
           ></DetailButton>
           <EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
-            @click="emit('onEdit', data.item)"
-            label="component.account.update"
-            :small="true"
+              v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
+              @click="emit('onEdit', data.item)"
+              label="component.account.update"
+              :small="true"
           ></EditButton>
           <DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_DELETE_ID)"
-            @click="deleteAccount(data.item.uri)"
-            label="component.account.delete"
-            :small="true"
+              v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_DELETE_ID)"
+              @click="deleteAccount(data.item.uri)"
+              label="component.account.delete"
+              :small="true"
           ></DeleteButton>
           <div class="checkEnable"
                :title="data.item.enable ? t('component.account.enable') : t('component.account.disable')">
@@ -129,8 +130,8 @@ const fields = [
   {label: "component.common.actions", key: "actions", class: "table-actions"}
 ];
 
-const personByAccountUri = ref<{[id: string]: PersonDTO | null}>({});
-const groupDetailsByAccountUri = ref<{[id: string]: NamedResourceDTO[]}>({});
+const personByAccountUri = ref<{ [id: string]: PersonDTO | null }>({});
+const groupDetailsByAccountUri = ref<{ [id: string]: NamedResourceDTO[] }>({});
 //#endregion
 
 //#region Emits
@@ -158,13 +159,13 @@ function refresh(): void {
 
 async function searchAccounts(options: any): Promise<any> {
   const accountsResponse = await service.searchAccounts(
-    filter.value,
-    options.orderBy,
-    options.currentPage,
-    options.pageSize
+      filter.value,
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
   );
 
-  const key_personUri_value_accountUri: {[id: string]: string} = {};
+  const key_personUri_value_accountUri: { [id: string]: string } = {};
 
   accountsResponse.response.result.forEach((account: any) => {
     personByAccountUri.value[account.uri] = null;
@@ -178,7 +179,7 @@ async function searchAccounts(options: any): Promise<any> {
   return accountsResponse;
 }
 
-async function mapPersonsWithAccount(key_personUri_value_accountUri: {[id: string]: string}): Promise<void> {
+async function mapPersonsWithAccount(key_personUri_value_accountUri: { [id: string]: string }): Promise<void> {
   if (Object.keys(key_personUri_value_accountUri).length !== 0) {
     const personsResponse = await service.getPersonsByURI(Object.keys(key_personUri_value_accountUri));
     personsResponse.response.result.forEach((person: PersonDTO) => {
@@ -191,23 +192,23 @@ async function mapPersonsWithAccount(key_personUri_value_accountUri: {[id: strin
 function deleteAccount(uri: string): void {
   opensilex.showLoader();
   service.deleteAccount(uri)
-    .then(() => refresh())
-    .catch((error: any) => opensilex.errorHandler(error))
-    .finally(() => opensilex.hideLoader());
+      .then(() => refresh())
+      .catch((error: any) => opensilex.errorHandler(error))
+      .finally(() => opensilex.hideLoader());
 }
 
 function changeEnable(dto: AccountUpdateDTO): void {
   dto.enable = !dto.enable;
   service.updateAccount(dto)
-    .catch((error: any) => opensilex.errorHandler(error));
+      .catch((error: any) => opensilex.errorHandler(error));
 }
 
 function displayEnableButton(accountRow: RowWithData<AccountGetDTO>): boolean {
   const account = accountRow.item;
   const isUserConnected = account.email === user.value.getEmail();
   return user.value.hasCredential(credentials.value.CREDENTIAL_ACCOUNT_MODIFICATION_ID)
-    && !account.admin
-    && !isUserConnected;
+      && !account.admin
+      && !isUserConnected;
 }
 
 async function onShowDetailClick(data: RowWithData<AccountGetDTO>): Promise<void> {
@@ -220,6 +221,7 @@ async function onShowDetailClick(data: RowWithData<AccountGetDTO>): Promise<void
   }
   data.item._showDetails = !data.item._showDetails;
 }
+
 //#endregion
 
 //#region Exposed methods

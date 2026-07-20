@@ -26,6 +26,8 @@
         :key="componentRefreshKey"
         :editMode="editMode"
         :data="data"
+        :baseType="baseType"
+        :currentType="currentType"
       >
         <slot name="customFields" :form="form" :editMode="editMode" />
       </component>
@@ -63,7 +65,9 @@ const props = defineProps({
   updateAction: Function,
   successMessage: [String, Function],
   overrideSuccessMessage: Boolean,
-  initForm: Function
+  initForm: Function,
+  currentType: String,
+  baseType: String
 })
 
 const emit = defineEmits(['hide', 'onCreate', 'onUpdate', 'onSuccess'])

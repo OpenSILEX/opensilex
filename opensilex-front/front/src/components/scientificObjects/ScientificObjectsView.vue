@@ -81,7 +81,7 @@
 
                 <!-- Experiments -->
               <n-form-item class="compact-form-item">
-                <opensilex-ExperimentSelector
+                <ExperimentSelector
                   :label="t('component.experiment.view.title')"
                   v-model:experiments="filter.experiment"
                   :multiple="true"
@@ -97,7 +97,7 @@
                 :show-feedback="false"
                 class="compact-form-item"
               >
-                <opensilex-ScientificObjectTypeSelector
+                <ScientificObjectTypeSelector
                   id="type"
                   v-model:types="filter.types"
                   :multiple="true"
@@ -216,11 +216,6 @@
       :targets="selectedUris"
       :isMove="true"
     ></EventCsvForm>
-
-    <ScientificObjectForm
-      ref="soForm"
-      @onUpdate="redirectToDetail"
-    ></ScientificObjectForm>
   </n-space>
 </template>
 
@@ -260,7 +255,6 @@ import {
 import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
 
 //#region Constant values
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const $store = useStore();
 const { t } = useI18n();
 const $router = useRouter();

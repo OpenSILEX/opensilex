@@ -28,7 +28,6 @@
     <!-- Type -->
     <n-form-item path="rdf_type" ref="rdfTypeItem">
       <TypeForm
-        :key="form?.rdf_type ?? 'no-type'"
         v-if="baseType"
         v-model:type="form.rdf_type"
         :baseType="baseType"
@@ -45,7 +44,7 @@
       v-if="baseType && loadCustomProperties"
       ref="ontologyRelationsForm"
       :rdfType="form.rdf_type"
-      :typeToLoad="pendingType"
+      :typeToLoad="currentType"
       :relations="form.relations"
       :excludedProperties="excludedProperties"
       :customComponentProps="customComponentProps"
@@ -60,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, watch} from "vue";
+import {computed, inject, onMounted, onUnmounted, ref, watch} from "vue";
 import OntologyRelationsForm from "./OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
@@ -70,6 +69,10 @@ import type {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationD
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
+import {
+  NForm,
+  NFormItem
+} from 'naive-ui'
 import {FormItemInst} from "naive-ui";
 import {useI18n} from "vue-i18n";
 
@@ -78,7 +81,6 @@ import {useI18n} from "vue-i18n";
  */
 
 //#region Constant values
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const { t } = useI18n();
 
 export interface OntologyObjectFormModel{
@@ -101,11 +103,6 @@ const excludedProperties = ref<Set<string>>(new Set<string>([
 
 const customComponentProps = ref<Map<string, Map<string, any>>>(new Map<string, Map<string, any>>());
 
-const baseType = ref<string>(null);
-const pendingType = ref<string | null>(null);
-
-const context = ref<string>("");
-
 const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => void>(
   (relation: MultiValuedRDFObjectRelation) => {}
 );
@@ -121,7 +118,10 @@ const rdfTypeItem = ref<FormItemInst | null>(null)
 //#region Props
 interface Props {
   editMode: boolean,
-  form?: OntologyObjectFormModel
+  form: OntologyObjectFormModel,
+  context?: string,
+  currentType: string,
+  baseType: string
 }
 
 const props = withDefaults(
@@ -138,22 +138,6 @@ const props = withDefaults(
 //#endregion
 
 //#region functions
-//TODO MAX delete or uncomment, Commented out as wasnt used here or in ScientificObjectForm
-/*function reset() {
-  uriGenerated.value = true;
-}*/
-
-function setBaseType(type: string, parentType: string) {
-  baseType.value = parentType;
-  //Simply set pending type which is passed as prop to OntologyRelationsForm, in there it's watched and will update the UI
-  pendingType.value = type;
-}
-
-//TODO MAX these setters seem suspisous, it would probably be better to have simple props no?
-
-function setContext(context) {
-  context.value = context;
-}
 
 function setInitHandler(handler) {
   initHandler.value = handler;
@@ -208,24 +192,13 @@ watch(
 
 //#region Exposed
 defineExpose({
-  setContext,
   setInitHandler,
   updateRelations,
   setExcludedProperties,
-  setBaseType,
   setCustomComponentProps,
   setLoadCustomProperties
 })
 //#endregion
-
-/*
-TODO MAX There were no usages of this in this component or in ScientificObjectForm so leaving it commented out for now
-propertyFilter = property => property;
-
-setTypePropertyFilterHandler(handler) {
-  this.propertyFilter = handler;
-}*/
-
 
 </script>
 

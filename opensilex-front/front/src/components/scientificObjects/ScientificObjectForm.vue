@@ -8,8 +8,11 @@
     icon="ik#ik-target"
     :createAction="callScientificObjectCreation"
     :updateAction="callScientificObjectUpdate"
+    :context="context"
     @onCreate="$emit('onCreate', $event)"
     @onUpdate="$emit('onUpdate', $event)"
+    :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+    :currentType="currentType || $opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
   >
   </ModalForm>
 </template>
@@ -40,15 +43,11 @@ const soService: ScientificObjectsService = $opensilex.getService<ScientificObje
 //endregion
 
 //#region Props
-//TODO MAX find out if pointless prop (Not defined in ScientificObjectsView
 interface Props {
-  context?: any
+  context?: string
 }
 
-const props = withDefaults(
-  defineProps<Props>(),
-  {context: {}}
-);
+const props = defineProps<Props>();
 
 //endregion
 
@@ -56,8 +55,14 @@ const props = withDefaults(
 const modalForm = ref<InstanceType<typeof ModalForm>>(null);
 //endregion
 
+//#region reactive data
+//Data to track what type of OS is being created or updated
+const currentType = ref<string>(null);
+//#endregion
+
 //#region Public methods & Expose
 function createScientificObject(parentURI?) {
+
   let form: OntologyObjectFormInstance = modalForm.value.getFormRef();
   initOntologyObjectForm(form, undefined);
 
@@ -81,6 +86,7 @@ function editScientificObject(objectURI: string) {
       let form: OntologyObjectFormInstance = modalForm.value.getFormRef();
       let os: ScientificObjectDetailDTO = http.response.result;
 
+      currentType.value = os.rdf_type;
       initOntologyObjectForm(form, os.rdf_type);
       excludeCurrentURIFromParentSelector(objectURI, form);
       let publisher: UserGetDTO = os.publisher;
@@ -107,16 +113,9 @@ function initOntologyObjectForm(form: OntologyObjectFormInstance, type: string) 
     Rdfs.getShortURI(Rdfs.LABEL) // let OntologyObjectForm handle rdfs:label by default
   ]);
 
-  let xp: string = getExperimentURI();
-  form.setContext(xp)
-  if (!type) {
-    form.setBaseType($opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI, $opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
-  } else {
-    form.setBaseType(type, $opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
-  }
   form.setExcludedProperties(excludedProperties);
 
-  if (!xp) {
+  if (!props.context) {
     form.setLoadCustomProperties(false);
   }
 }
@@ -132,10 +131,7 @@ function excludeCurrentURIFromParentSelector(objectURI: string, form: OntologyOb
 }
 
 function getExperimentURI() {
-  if (props.context && props.context.experimentURI) {
-    return props.context.experimentURI;
-  }
-  return undefined;
+  return props.context;
 }
 
 function callScientificObjectCreation(form: ScientificObjectCreationDTO) {

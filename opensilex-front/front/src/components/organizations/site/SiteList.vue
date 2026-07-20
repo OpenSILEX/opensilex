@@ -52,7 +52,7 @@
       </template>
 
       <template #cell(actions)="{ data }">
-        <n-button-group size="small" class="btn-group">
+        <n-button-group size="small" class="btn-group btn-group-sm">
           <EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
             @click="emitOnEdit(data.item)"
@@ -115,7 +115,7 @@ const filter = ref<string>('')
 
 const fields = computed(() => [
   { key: 'name', label: 'component.common.name', sortable: true },
-  { key: 'city', label: t('SiteList.address'), sortable: true },
+  { key: 'city', label: t('SiteList.address') },
   { key: 'facilities', label: t('SiteList.facilities') },
   { key: 'actions', label: 'component.common.actions' }
 ])

@@ -20,7 +20,7 @@
       :filter="filter"
       @update:filter="(v) => (filter = v)"
       @update="onStringFilterUpdate"
-      :placeholder="t('SiteList.filter-placeholder')"
+      :placeholder="t('component.common.search.filter.by-name')"
       :lazy="false"
     />
 
@@ -115,8 +115,8 @@ const filter = ref<string>('')
 
 const fields = computed(() => [
   { key: 'name', label: 'component.common.name', sortable: true },
-  { key: 'city', label: t('SiteList.address') },
-  { key: 'facilities', label: t('SiteList.facilities') },
+  { key: 'city', label: t('component.site.city') },
+  { key: 'facilities', label: t('component.site.facilities') },
   { key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 0} }
 ])
 
@@ -147,7 +147,7 @@ async function onDeleteClick(dto: any) {
   try {
     await service.deleteSite(dto.uri)
     refresh()
-    $opensilex.showSuccessToast('component.common.delete')
+    $opensilex.showSuccessToast(t('component.common.success.delete-success-message-with-template', {uri: dto.uri}))
   } catch (e) {
     $opensilex.errorHandler(e)
   }
@@ -178,16 +178,3 @@ defineExpose({
   white-space: nowrap;
 }
 </style>
-
-<i18n>
-en:
-  SiteList:
-    address: City
-    filter-placeholder: Filter by name
-    facilities: Facilities
-fr:
-  SiteList:
-    address: Ville
-    filter-placeholder: Filtrer par nom
-    facilities: Installations
-</i18n>

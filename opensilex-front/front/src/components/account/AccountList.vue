@@ -65,7 +65,7 @@
           <DetailButton
             @click="onShowDetailClick(data)"
             label="component.account.details"
-            :detailVisible="!!data.item._showdetails"
+            :detailVisible="!!data.item._showDetails"
             :small="true"
           ></DetailButton>
           <EditButton
@@ -99,7 +99,7 @@ import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {OpenSilexStore} from "@/models/Store";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
-import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import PersonContact from "@/components/persons/PersonContact.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DetailButton, {DetailWrapperObject} from "@/components/common/buttons/DetailButton.vue";
@@ -211,7 +211,7 @@ function displayEnableButton(accountRow: any): boolean {
     && !isUserConnected;
 }
 
-async function onShowDetailClick(data): Promise<void> {
+async function onShowDetailClick(data: RowWithData<AccountGetDTO>): Promise<void> {
   const accountUri: string = data.item.uri;
 
   if (!groupDetailsByAccountUri.value[accountUri]) {
@@ -219,8 +219,7 @@ async function onShowDetailClick(data): Promise<void> {
     const groups: NamedResourceDTO[] = groupResponse.response.result;
     groupDetailsByAccountUri.value[accountUri] = groups;
   }
-  data.item._showdetails = !data.item._showdetails;
-  console.log("groupDetailsByAccountUri.value", groupDetailsByAccountUri.value[accountUri]);
+  data.item._showDetails = !data.item._showDetails;
 }
 //#endregion
 

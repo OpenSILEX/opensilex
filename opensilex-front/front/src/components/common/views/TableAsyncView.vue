@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
+  <opensilex-Overlay :show="isSearching">
     <div class="card">
   
 
@@ -94,6 +94,12 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type HttpResponse from "../../../lib/HttpResponse";
 import { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui';
+
+export type RowWithData<T> = {
+  item: T & {
+    _showDetails?: boolean;
+  };
+};
 
 // Props
 const props = defineProps<{

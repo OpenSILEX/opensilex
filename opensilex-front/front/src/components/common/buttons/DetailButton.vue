@@ -32,10 +32,6 @@
 import { ref }  from 'vue';
 import Button from "@/components/common/buttons/Button.vue";
 
-export type DetailWrapperObject<T> = {
-  item: T;
-}
-
 const props = defineProps<{
   label: string;
   small?: boolean;

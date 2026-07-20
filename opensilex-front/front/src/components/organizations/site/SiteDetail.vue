@@ -232,6 +232,7 @@ fr:
   edit: Modifier le site
   delete: Supprimer le site
   SiteDetail:
+    organizations: Organisations
     facilities: Installations environnementales
     groups: Groupes
     noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.

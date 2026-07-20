@@ -217,7 +217,7 @@ const fields = computed(() => {
   }
 
   if (props.withActions) {
-    f.push({ key: 'actions', label: t('component.common.actions'), sortable: false, resizable: false, naiveProps: {width: 0} })
+    f.push({ key: 'actions', label: t('component.common.actions'), sortable: false, resizable: false, naiveProps: {width: 100} })
   }
   return f
 })

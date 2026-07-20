@@ -245,13 +245,12 @@ textarea {
     outline: none !important;
 }
 a {
+  text-decoration: none;
+  transition: color .2s;
+  &:hover, &:focus, &:active {
+    text-decoration: underline;
     color: #212121;
-    @include transition(color .2s);
-    &:hover, &:focus, &:active {
-        outline: 0;
-        text-decoration: none;
-        color: #212121;
-    }
+  }
 }
 $empty: transparent;
 $default: #d6d6d6;

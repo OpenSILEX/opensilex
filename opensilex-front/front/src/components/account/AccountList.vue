@@ -51,16 +51,13 @@
       </template>
 
       <template #cell(actions)="{data}">
-        <b-button-group size="sm">
+        <n-button-group>
           <div class="checkEnable"
             :title="data.item.enable ? t('component.account.enable') : t('component.account.disable')">
-            <b-check
-              @change="changeEnable(data.item)"
-              v-if="displayEnableButton(data.item)"
-              :checked="data.item.enable"
-              variant="outline-success"
-              switch
-            ></b-check>
+            <n-switch
+                v-if="displayEnableButton(data)"
+                @update:value="changeEnable(data.item)"
+                v-model:value="data.item.enable"/>
           </div>
           <DetailButton
             @click="onShowDetailClick(data)"
@@ -80,14 +77,14 @@
             label="component.account.delete"
             :small="true"
           ></DeleteButton>
-        </b-button-group>
+        </n-button-group>
       </template>
     </TableAsyncView>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, onMounted, useTemplateRef} from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
 import {SecurityService} from "opensilex-security/index";
@@ -102,10 +99,11 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import PersonContact from "@/components/persons/PersonContact.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
-import DetailButton, {DetailWrapperObject} from "@/components/common/buttons/DetailButton.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import {useI18n} from "vue-i18n";
+import {NButtonGroup, NSwitch} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const service = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -204,10 +202,11 @@ function changeEnable(dto: AccountUpdateDTO): void {
     .catch((error: any) => opensilex.errorHandler(error));
 }
 
-function displayEnableButton(accountRow: any): boolean {
-  const isUserConnected = accountRow.email === user.value.email;
+function displayEnableButton(accountRow: RowWithData<AccountGetDTO>): boolean {
+  const account = accountRow.item;
+  const isUserConnected = account.email === user.value.getEmail();
   return user.value.hasCredential(credentials.value.CREDENTIAL_ACCOUNT_MODIFICATION_ID)
-    && !accountRow.admin
+    && !account.admin
     && !isUserConnected;
 }
 
@@ -236,5 +235,6 @@ defineExpose({
 .checkEnable {
   display: flex;
   align-items: center;
+  margin-right: 3%;
 }
 </style>

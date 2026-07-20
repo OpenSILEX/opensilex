@@ -3,7 +3,7 @@
     <CreateButton
       v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       @click="onCreateButtonClick()"
-      :label="t('AccountView.create')"
+      :label="t('component.account.add')"
       class="createButton">
     </CreateButton>
 
@@ -20,8 +20,8 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       ref="accountForm"
       component="opensilex-AccountForm"
-      createTitle="AccountView.create"
-      editTitle="AccountView.update"
+      createTitle="component.account.add"
+      editTitle="component.account.update"
       icon="ik#ik-user"
       :lazy="true"
       @onCreate="accountList.refresh()"
@@ -72,19 +72,3 @@ function onAccountListEdit(dto: any): void {
   margin-top: -15px
 }
 </style>
-
-<i18n>
-en:
-  AccountView:
-    title: Accounts
-    description: Manage and configure accounts
-    create: Add account
-    update: Update account
-
-fr:
-  AccountView:
-    title: Comptes
-    description: Gérer et configurer les comptes
-    create: Ajouter un compte
-    update: Modifier le compte
-</i18n>

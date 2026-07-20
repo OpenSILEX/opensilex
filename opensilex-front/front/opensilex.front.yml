@@ -244,9 +244,9 @@ menu:
           component: opensilex-AccountView
           credentials:
             - account-access
-          icon: bi#bi-user
-          title: AccountView.title
-          description: AccountView.description
+          icon: bi#bi-person-lock
+          title: component.menu.security.accounts
+          description: component.account.description
       - id: groups
         label: component.menu.security.groups
         route:

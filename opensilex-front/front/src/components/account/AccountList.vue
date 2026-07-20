@@ -52,13 +52,6 @@
 
       <template #cell(actions)="{data}">
         <n-button-group>
-          <div class="checkEnable"
-            :title="data.item.enable ? t('component.account.enable') : t('component.account.disable')">
-            <n-switch
-                v-if="displayEnableButton(data)"
-                @update:value="changeEnable(data.item)"
-                v-model:value="data.item.enable"/>
-          </div>
           <DetailButton
             @click="onShowDetailClick(data)"
             label="component.account.details"
@@ -77,6 +70,13 @@
             label="component.account.delete"
             :small="true"
           ></DeleteButton>
+          <div class="checkEnable"
+               :title="data.item.enable ? t('component.account.enable') : t('component.account.disable')">
+            <n-switch
+                v-if="displayEnableButton(data)"
+                @update:value="changeEnable(data.item)"
+                v-model:value="data.item.enable"/>
+          </div>
         </n-button-group>
       </template>
     </TableAsyncView>
@@ -235,6 +235,6 @@ defineExpose({
 .checkEnable {
   display: flex;
   align-items: center;
-  margin-right: 3%;
+  margin-left: 3%;
 }
 </style>

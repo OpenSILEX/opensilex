@@ -1,13 +1,13 @@
 <template>
-  <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
+  <Overlay :show="isSearching && !isGlobalLoaderVisible">
     <div class="card">
-  
+
 
       <!-- Header si table sélectionnable -->
       <div v-if="isSelectable && showHeaderCount && tableRef" class="card-header d-flex justify-content-between align-items-center">
         <div>
           <h3 class="d-inline me-2">
-            <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
+            <Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
             {{ t(labelNumberOfSelectedRow) }}
           </h3>
           <span v-if="!maximumSelectedRows && selectMode !== 'single'" class="badge rounded-pill greenThemeColor">
@@ -38,7 +38,7 @@
               {{ t('component.common.list.pagination.nbEntries', {
                 limit: start,
                 offset: end,
-                totalRow: n(total)  
+                totalRow: n(total)
               }) }}
             </span>
           </strong>
@@ -54,46 +54,46 @@
       <!-- <n-p>
         {{ t('TableAsyncView.selected')}} : <span class="badge badge-pill greenThemeColor">{{ checkedRowKeys.length }} </span>
       </n-p> -->
-      
+
 
 
       <!-- Table with Naive UI -->
       <n-data-table
-        ref="tableRef"
-        :columns="naiveColumns"
-        :data="tableData"
-        :loading="isSearching"
-        :pagination="pagination"
-        :remote="true"
-        :row-key="row => row.uri"
-        @row-click="onRowClickedSafe"
-        :row-props="(row) => ({
+          ref="tableRef"
+          :columns="naiveColumns"
+          :data="tableData"
+          :loading="isSearching"
+          :pagination="pagination"
+          :remote="true"
+          :striped="true"
+          :row-key="row => row.uri"
+          @row-click="onRowClickedSafe"
+          :row-props="(row) => ({
           style: row.__isDetailsRow ? '' : 'cursor: pointer'
         })"
-        :checked-row-keys="checkedRowKeys"
-        @update:checked-row-keys="onCheckedRowKeysChange"
-        @update:page="onPageChange"
-        @update:page-size="onPageSizeChange"
-        :sorter="defaultSorter"
-        @update:sorter="onSortChange"
+          :checked-row-keys="checkedRowKeys"
+          @update:checked-row-keys="onCheckedRowKeysChange"
+          @update:page="onPageChange"
+          @update:page-size="onPageSizeChange"
+          :sorter="defaultSorter"
+          @update:sorter="onSortChange"
       />
-
-
     </div>
-  </opensilex-Overlay>
+  </Overlay>
 </template>
 
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, inject, nextTick, useSlots} from "vue";
-import { useRoute } from "vue-router";
-import { useI18n } from "vue-i18n";
-import type { OrderBy } from "opensilex-core/index";
-import type { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
+import {computed, inject, nextTick, onMounted, ref, useSlots} from "vue";
+import {useRoute} from "vue-router";
+import {useI18n} from "vue-i18n";
+import type {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type HttpResponse from "../../../lib/HttpResponse";
-import { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { NButton, NTag, NDataTable, DataTableRowKey } from 'naive-ui';
+import {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {DataTableRowKey, NDataTable} from 'naive-ui';
+import Overlay from "@/components/layout/Overlay.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 // Props
 const props = defineProps<{
@@ -611,5 +611,5 @@ en:
 fr:
     TableAsyncView:
         selected: Élements Sélectionnés
-       
+
 </i18n>

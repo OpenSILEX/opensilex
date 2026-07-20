@@ -16,7 +16,7 @@
     </div>
 
 
-    <opensilex-StringFilter
+    <StringFilter
       :filter="filter"
       @update:filter="(v) => (filter = v)"
       @update="onStringFilterUpdate"
@@ -24,14 +24,14 @@
       :lazy="false"
     />
 
-    <opensilex-TableAsyncView
+    <TableAsyncView
       ref="tableRef"
       :searchMethod="searchSites"
       :fields="fields"
       defaultSortBy="name"
     >
       <template #cell(name)="{ data }">
-        <opensilex-UriLink
+        <UriLink
           :uri="data.item.uri"
           :value="data.item.name"
           :to="{ path: '/organization/site/details/' + encodeURIComponent(data.item.uri) }"
@@ -43,7 +43,7 @@
       </template>
 
       <template #cell(facilities)="{ data }">
-        <opensilex-FacilitiesModalList
+        <FacilitiesModalList
           :facilities="data.item.facilities"
           :currentSite="data.item"
           :hostNameForTitle="data.item.name"
@@ -52,14 +52,14 @@
       </template>
 
       <template #cell(actions)="{ data }">
-        <n-button-group size="small">
-          <opensilex-EditButton
+        <n-button-group size="small" class="btn-group">
+          <EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
             @click="emitOnEdit(data.item)"
             label="component.site.update"
             :small="true"
           />
-          <opensilex-DeleteButton
+          <DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
             @click="onDeleteClick(data.item)"
             label="component.site.delete"
@@ -67,7 +67,7 @@
           />
         </n-button-group>
       </template>
-    </opensilex-TableAsyncView>
+    </TableAsyncView>
   </div>
 </template>
 
@@ -79,6 +79,12 @@ import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { OrganizationsService } from 'opensilex-core/api/organizations.service'
 import DTOConverter from '../../../models/DTOConverter'
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import FacilitiesModalList from "@/components/facilities/FacilitiesModalList.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', dto: any): void

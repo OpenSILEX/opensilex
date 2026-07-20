@@ -117,7 +117,7 @@ const fields = computed(() => [
   { key: 'name', label: 'component.common.name', sortable: true },
   { key: 'city', label: t('SiteList.address') },
   { key: 'facilities', label: t('SiteList.facilities') },
-  { key: 'actions', label: 'component.common.actions' }
+  { key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 0} }
 ])
 
 onMounted(() => {

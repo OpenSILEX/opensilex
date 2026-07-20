@@ -105,7 +105,9 @@ const props = defineProps<{
     key: string,
     isSelect: boolean,
     label?: string,
-    sortable?: boolean
+    sortable?: boolean,
+    resizable?: boolean,
+    naiveProps?: object
   }>,
   fieldKeyToSortableModelLabelMap?: Record<string, string>,
   searchMethod: Function,
@@ -515,9 +517,10 @@ const tableData = computed(() => {
  */
 const naiveColumns = computed(() => {
   const dynamicCols = props.fields.map((field, colIndex: number) => ({
+    ...field.naiveProps,
     title: t(field.label),
     key: field.key,
-    resizable: true,
+    resizable: field.resizable ?? true,
     sorter: field.sortable ? (a, b) => {
       if (a.__isDetailsRow || b.__isDetailsRow) return 0;
 

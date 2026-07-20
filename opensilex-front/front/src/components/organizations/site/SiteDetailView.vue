@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid" v-if="selected">
-    <opensilex-PageHeader
+    <PageHeader
       icon="bi#bi-geo-alt"
       :hasIcon="true"
       :title="selected.name"
@@ -8,11 +8,11 @@
       class="detail-element-header"
     />
 
-    <opensilex-PageActions :tabs="false" :returnButton="true" />
+    <PageActions :tabs="false" :returnButton="true" />
 
     <div id="detail-content">
       <div id="left-side">
-        <opensilex-SiteDetail
+        <SiteDetail
           :selected="selected"
           :withActions="true"
           @onUpdate="refresh"
@@ -21,7 +21,7 @@
       </div>
 
       <div id="right-side">
-        <opensilex-FacilitiesView
+        <FacilitiesView
           :withActions="true"
           :site="selected"
           :isSelectable="false"
@@ -47,6 +47,10 @@ import type { OpenSilexResponse } from "../../../lib/HttpResponse";
 import type { OrganizationsService } from "opensilex-core/api/organizations.service";
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { SiteGetDTO } from "opensilex-core/index";
+import PageHeader from "@/components/layout/PageHeader.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import SiteDetail from "@/components/organizations/site/SiteDetail.vue";
+import FacilitiesView from "@/components/facilities/FacilitiesView.vue";
 
 const route = useRoute();
 const router = useRouter();

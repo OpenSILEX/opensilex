@@ -98,17 +98,11 @@ import {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider} from 'naive-ui';
 import Overlay from "@/components/layout/Overlay.vue";
 import Icon from "@/components/common/views/Icon.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 // Props
 const props = defineProps<{
-  fields: Array<{
-    key: string,
-    isSelect: boolean,
-    label?: string,
-    sortable?: boolean,
-    resizable?: boolean,
-    naiveProps?: object
-  }>,
+  fields: Array<TableField>,
   fieldKeyToSortableModelLabelMap?: Record<string, string>,
   searchMethod: Function,
   useQueryParams?: boolean,

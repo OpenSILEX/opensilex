@@ -52,7 +52,7 @@
       </template>
 
       <template #cell(actions)="{data}">
-        <n-button-group>
+        <n-button-group class="btn-group btn-group-sm">
           <DetailButton
               @click="onShowDetailClick(data)"
               label="component.account.details"

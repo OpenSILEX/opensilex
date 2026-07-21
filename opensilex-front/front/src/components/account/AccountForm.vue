@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Modal ref="modalRef">
+  <Modal ref="modalRef">
     <template #header>
       <FormHeader :title="computedTitle" :tutorial="!editMode" :icon="null" />
     </template>
@@ -86,7 +86,7 @@
     <template #footer>
       <FormFooter @cancel="hide" @submit="submitModal" />
     </template>
-  </opensilex-Modal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -106,6 +106,8 @@ import {NForm, NFormItem} from "naive-ui";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
+import useModalForm from "@/composables/useModalForm";
+import Modal from "@/components/common/views/Modal.vue";
 
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -145,72 +147,9 @@ const props = withDefaults(
 
 const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
 
-// local modal state
+// refs used by composable
 const modalRef = ref<any>(null)
-const editMode = ref<boolean>(props.editMode ?? false)
-const form = ref<AccountFormDTO>(getEmptyForm())
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
-
-const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
-
-async function submitModal() {
-  try {
-    // 1) validation
-    if (formRef.value) await formRef.value.validate()
-    // 2) custom validate (none here)
-  } catch (errors) {
-    return
-  }
-
-  let submitAction: Function | undefined = editMode.value ? update : create
-  const result = submitAction?.(form.value)
-
-  Promise.resolve(result)
-    .then((res) => {
-      if (res !== false) {
-        // success message handled inside create/update
-        if (editMode.value) emit('onUpdate', res)
-        else emit('onCreate', res)
-        hide()
-        emit('hide')
-        emit('onSuccess')
-      }
-    })
-    .catch((err) => {
-      opensilex.errorHandler(err)
-    })
-}
-
-function hide() {
-  modalRef.value?.hide()
-}
-
-function getFormRef() {
-  return {
-    validate: validate,
-    getEmptyForm
-  }
-}
-
-function showCreateForm(passedForm?: any) {
-  editMode.value = false
-  nextTick(() => {
-    form.value = passedForm ?? getEmptyForm()
-    if (passedForm === undefined && props.form) form.value = JSON.parse(JSON.stringify(props.form))
-    reset()
-    formRef.value?.restoreValidation?.()
-    modalRef.value?.show()
-  })
-}
-
-function showEditForm(editForm: any) {
-  editMode.value = true
-  nextTick(() => {
-    form.value = editForm
-    reset()
-    modalRef.value?.show()
-  })
-}
 
 //#region datas
 let uriGenerated = ref<boolean>(true);
@@ -223,6 +162,7 @@ const rules = computed(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
+      // composable exposes editMode, use that in rule resolution below by referencing the reactive returned editMode
       if (!editMode.value && (!value || value.toString().trim().length === 0)) {
         return new Error(t('validations.requiredField'));
       }
@@ -257,17 +197,17 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
     }
     return personLabel;
   }
-  return form.value.linked_person || "";
+  return modalFormApi.form.value.linked_person || "";
 });
 //#endregion
 
 onMounted(() => {
   // initialize local form from props
-  form.value = props.form ? JSON.parse(JSON.stringify(props.form)) : getEmptyForm()
+  modalFormApi.form.value = props.form ? JSON.parse(JSON.stringify(props.form)) : getEmptyForm()
   reset();
 });
 
-//#region Methods
+//#region Methods (create/update/reset/validate etc.)
 function getEmptyForm(): AccountFormDTO {
   return {
     uri: null,
@@ -299,9 +239,9 @@ async function validate(): Promise<boolean> {
 }
 
 async function reset(): Promise<void> {
-  if (form.value.linked_person) {
+  if (modalFormApi.form.value.linked_person) {
     try {
-      const response = await securityService.getPerson(form.value.linked_person);
+      const response = await securityService.getPerson(modalFormApi.form.value.linked_person);
       linkedPerson.value = response.response.result;
     } catch (error) {
       opensilex.errorHandler(error);
@@ -310,8 +250,8 @@ async function reset(): Promise<void> {
     linkedPerson.value = null;
   }
 
-  const isCreationForm: boolean = !editMode.value;
-  const canAddAPerson: boolean = !form.value.linked_person;
+  const isCreationForm: boolean = !modalFormApi.editMode.value;
+  const canAddAPerson: boolean = !modalFormApi.form.value.linked_person;
   canSelectAPerson.value = isCreationForm || canAddAPerson;
 }
 
@@ -320,7 +260,7 @@ async function create(formData: AccountFormDTO) {
   try {
     return await securityService.createAccount(formData);
   } catch (error) {
-    opensilex.errorHandler(error);
+    throw error
   } finally {
     hideLoader();
   }
@@ -336,19 +276,39 @@ async function update(formData: AccountFormDTO) {
   try {
     return await securityService.updateAccount(formData);
   } catch (error) {
-    opensilex.errorHandler(error);
+    throw error
   } finally {
     hideLoader();
   }
 }
 //#endregion
 
+// use composable
+const modalFormApi = useModalForm({
+  modalRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  isValid: validate,
+  onCreate: (res: any) => emit('onCreate', res),
+  onUpdate: (res: any) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+  onHide: () => emit('hide')
+})
+
+const form = modalFormApi.form
+const editMode = modalFormApi.editMode
+const submitModal = modalFormApi.submit
+const hide = modalFormApi.hide
+const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
+
 //#region Expose
 defineExpose({
-  showCreateForm,
-  showEditForm,
-  getFormRef,
-  hide
+  showCreateForm: modalFormApi.showCreateForm,
+  showEditForm: modalFormApi.showEditForm,
+  getFormRef: () => ({ validate, getEmptyForm }),
+  hide: modalFormApi.hide
 });
 //#endregion
 </script>

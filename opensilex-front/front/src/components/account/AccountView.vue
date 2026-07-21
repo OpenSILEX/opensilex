@@ -16,16 +16,12 @@
       </template>
     </PageContent>
 
-    <ModalForm
+    <AccountForm
       v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       ref="accountForm"
-      component="opensilex-AccountForm"
-      createTitle="component.account.add"
-      editTitle="component.account.update"
-      icon="ik#ik-user"
       @onCreate="accountList.refresh()"
       @onUpdate="accountList.refresh()"
-    ></ModalForm>
+    ></AccountForm>
   </div>
 </template>
 
@@ -38,12 +34,13 @@ import PageContent from "@/components/layout/PageContent.vue";
 import AccountList from "@/components/account/AccountList.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import {useI18n} from "vue-i18n";
+import AccountForm from "@/components/account/AccountForm.vue";
 
 const store = useStore() as OpenSilexStore;
 const { t } = useI18n();
 
 //#region Refs
-const accountForm = useTemplateRef<InstanceType<typeof ModalForm>>('accountForm');
+const accountForm = useTemplateRef<InstanceType<typeof AccountForm>>('accountForm');
 const accountList = useTemplateRef<InstanceType<typeof AccountList>>('accountList');
 //#endregion
 
@@ -54,12 +51,12 @@ const credentials = computed(() => store.state.credentials);
 
 //#region Event handlers and watchers
 function onCreateButtonClick(): void {
-  accountForm.value?.showCreateForm();
+  accountForm.value.showCreateForm();
 }
 
 function onAccountListEdit(dto: any): void {
   const copydto = JSON.parse(JSON.stringify(dto));
-  accountForm.value?.showEditForm(copydto);
+  accountForm.value.showEditForm(copydto);
 }
 //#endregion
 </script>

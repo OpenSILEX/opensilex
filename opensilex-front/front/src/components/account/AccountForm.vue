@@ -1,82 +1,92 @@
 <template>
-  <n-form
-      ref="formRef"
-      :rules="rules"
-      :model="form"
-      label-placement="top"
-      :show-require-mark="true"
-      size="large"
-  >
-    <!-- URI -->
-    <n-form-item>
-      <UriForm
-          :uri.sync="form.uri"
-          label="component.account.account-uri"
-          helpMessage="component.common.uri-help-message"
-          :editMode="editMode"
-          :generated.sync="uriGenerated"
-      ></UriForm>
-    </n-form-item>
+  <opensilex-Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="computedTitle" :tutorial="!editMode" :icon="null" />
+    </template>
 
-    <!-- Email -->
-    <n-form-item path="email">
-      <InputForm
-          v-model:value="form.email"
-          label="component.account.email-address"
-          type="email"
-          :placeholder="t('component.account.form-email-placeholder')"
-          autocomplete="email"
-      ></InputForm>
-    </n-form-item>
+    <n-form
+        ref="formRef"
+        :rules="rules"
+        :model="form"
+        label-placement="top"
+        :show-require-mark="true"
+        size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+            :uri.sync="form.uri"
+            label="component.account.account-uri"
+            helpMessage="component.common.uri-help-message"
+            :editMode="editMode"
+            :generated.sync="uriGenerated"
+        ></UriForm>
+      </n-form-item>
 
-    <!-- Password -->
-    <n-form-item path="password">
-      <InputForm
-          v-model:value="form.password"
-          label="component.account.password"
-          type="password"
-          :required="!editMode"
-          :placeholder="t('component.account.form-password-placeholder')"
-          autocomplete="new-password"
-      ></InputForm>
-    </n-form-item>
+      <!-- Email -->
+      <n-form-item path="email">
+        <InputForm
+            v-model:value="form.email"
+            label="component.account.email-address"
+            type="email"
+            :placeholder="t('component.account.form-email-placeholder')"
+            autocomplete="email"
+        ></InputForm>
+      </n-form-item>
 
-    <!-- Default language -->
-      <FormSelector
-          v-model:selected="form.language"
-          :options="languages"
-          :required="true"
-          label="component.account.default-lang"
-          :placeholder="t('component.common.select-lang')"
-          path="language"
-      ></FormSelector>
+      <!-- Password -->
+      <n-form-item path="password">
+        <InputForm
+            v-model:value="form.password"
+            label="component.account.password"
+            type="password"
+            :required="!editMode"
+            :placeholder="t('component.account.form-password-placeholder')"
+            autocomplete="new-password"
+        ></InputForm>
+      </n-form-item>
 
-    <!-- Admin flag -->
-    <n-form-item v-if="isUserAdmin">
-      <CheckboxForm
-          v-model:value="form.admin"
-          label="component.account.admin"
-          title="component.account.form-admin-option-label"
-      ></CheckboxForm>
-    </n-form-item>
+      <!-- Default language -->
+        <FormSelector
+            v-model:selected="form.language"
+            :options="languages"
+            :required="true"
+            label="component.account.default-lang"
+            :placeholder="t('component.common.select-lang')"
+            path="language"
+        ></FormSelector>
 
-    <!-- linked person -->
-      <PersonSelector
-          v-if="canSelectAPerson"
-          v-model:persons="form.linked_person"
-          label="component.account.linked-person"
-          helpMessage="component.account.person-selector.help-message"
-          :getOnlyPersonsWithoutAccount="true"
-          :allowAddPerson="true"
-      ></PersonSelector>
-      <InputForm
-          v-else
-          :value="linkedPersonString"
-          label="component.account.linked-person"
-          disabled
-      ></InputForm>
+      <!-- Admin flag -->
+      <n-form-item v-if="isUserAdmin">
+        <CheckboxForm
+            v-model:value="form.admin"
+            label="component.account.admin"
+            title="component.account.form-admin-option-label"
+        ></CheckboxForm>
+      </n-form-item>
 
-  </n-form>
+      <!-- linked person -->
+        <PersonSelector
+            v-if="canSelectAPerson"
+            v-model:persons="form.linked_person"
+            label="component.account.linked-person"
+            helpMessage="component.account.person-selector.help-message"
+            :getOnlyPersonsWithoutAccount="true"
+            :allowAddPerson="true"
+        ></PersonSelector>
+        <InputForm
+            v-else
+            :value="linkedPersonString"
+            label="component.account.linked-person"
+            disabled
+        ></InputForm>
+
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="hide" @submit="submitModal" />
+    </template>
+  </opensilex-Modal>
 </template>
 
 <script setup lang="ts">
@@ -90,6 +100,8 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
 import {NForm, NFormItem} from "naive-ui";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
@@ -104,7 +116,7 @@ const {t, availableLocales} = useI18n();
 interface AccountFormDTO {
   uri: string | null;
   email: string;
-  password: string;
+  password: string | null;
   language: string;
   admin: boolean;
   linked_person: string | null;
@@ -115,7 +127,7 @@ interface AccountFormDTO {
 const props = withDefaults(
     defineProps<{
       editMode?: boolean;
-      form: AccountFormDTO;
+      form?: AccountFormDTO;
     }>(),
     {
       editMode: false,
@@ -131,11 +143,79 @@ const props = withDefaults(
 );
 //#endregion
 
+const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
+
+// local modal state
+const modalRef = ref<any>(null)
+const editMode = ref<boolean>(props.editMode ?? false)
+const form = ref<AccountFormDTO>(getEmptyForm())
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+
+const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
+
+async function submitModal() {
+  try {
+    // 1) validation
+    if (formRef.value) await formRef.value.validate()
+    // 2) custom validate (none here)
+  } catch (errors) {
+    return
+  }
+
+  let submitAction: Function | undefined = editMode.value ? update : create
+  const result = submitAction?.(form.value)
+
+  Promise.resolve(result)
+    .then((res) => {
+      if (res !== false) {
+        // success message handled inside create/update
+        if (editMode.value) emit('onUpdate', res)
+        else emit('onCreate', res)
+        hide()
+        emit('hide')
+        emit('onSuccess')
+      }
+    })
+    .catch((err) => {
+      opensilex.errorHandler(err)
+    })
+}
+
+function hide() {
+  modalRef.value?.hide()
+}
+
+function getFormRef() {
+  return {
+    validate: validate,
+    getEmptyForm
+  }
+}
+
+function showCreateForm(passedForm?: any) {
+  editMode.value = false
+  nextTick(() => {
+    form.value = passedForm ?? getEmptyForm()
+    if (passedForm === undefined && props.form) form.value = JSON.parse(JSON.stringify(props.form))
+    reset()
+    formRef.value?.restoreValidation?.()
+    modalRef.value?.show()
+  })
+}
+
+function showEditForm(editForm: any) {
+  editMode.value = true
+  nextTick(() => {
+    form.value = editForm
+    reset()
+    modalRef.value?.show()
+  })
+}
+
 //#region datas
 let uriGenerated = ref<boolean>(true);
 const linkedPerson = ref<PersonDTO | null>(null);
 const canSelectAPerson = ref(false);
-const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 //#endregion
 
 //#region Computed
@@ -143,7 +223,7 @@ const rules = computed(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
-      if (!props.editMode && (!value || value.trim().length === 0)) {
+      if (!editMode.value && (!value || value.toString().trim().length === 0)) {
         return new Error(t('validations.requiredField'));
       }
       return true;
@@ -177,11 +257,13 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
     }
     return personLabel;
   }
-  return props.form.linked_person || "";
+  return form.value.linked_person || "";
 });
 //#endregion
 
 onMounted(() => {
+  // initialize local form from props
+  form.value = props.form ? JSON.parse(JSON.stringify(props.form)) : getEmptyForm()
   reset();
 });
 
@@ -217,24 +299,26 @@ async function validate(): Promise<boolean> {
 }
 
 async function reset(): Promise<void> {
-  if (props.form.linked_person) {
+  if (form.value.linked_person) {
     try {
-      const response = await securityService.getPerson(props.form.linked_person);
+      const response = await securityService.getPerson(form.value.linked_person);
       linkedPerson.value = response.response.result;
     } catch (error) {
       opensilex.errorHandler(error);
     }
+  } else {
+    linkedPerson.value = null;
   }
 
-  const isCreationForm: boolean = !props.editMode;
-  const canAddAPerson: boolean = !props.form.linked_person;
+  const isCreationForm: boolean = !editMode.value;
+  const canAddAPerson: boolean = !form.value.linked_person;
   canSelectAPerson.value = isCreationForm || canAddAPerson;
 }
 
-async function create(form: AccountFormDTO) {
+async function create(formData: AccountFormDTO) {
   showLoader();
   try {
-    return await securityService.createAccount(form);
+    return await securityService.createAccount(formData);
   } catch (error) {
     opensilex.errorHandler(error);
   } finally {
@@ -242,15 +326,15 @@ async function create(form: AccountFormDTO) {
   }
 }
 
-async function update(form: AccountFormDTO) {
+async function update(formData: AccountFormDTO) {
   showLoader();
   
-  if (form.password === "") {
-    form.password = null;
+  if (formData.password === "") {
+    formData.password = null;
   }
   
   try {
-    return await securityService.updateAccount(form);
+    return await securityService.updateAccount(formData);
   } catch (error) {
     opensilex.errorHandler(error);
   } finally {
@@ -261,11 +345,10 @@ async function update(form: AccountFormDTO) {
 
 //#region Expose
 defineExpose({
-  reset,
-  create,
-  update,
-  validate,
-  getEmptyForm
+  showCreateForm,
+  showEditForm,
+  getFormRef,
+  hide
 });
 //#endregion
 </script>

@@ -661,7 +661,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
         for (int colIdx = CSV_PROPERTIES_BEGIN_INDEX; colIdx < row.length; colIdx++) {
 
-            CsvHeader.ColumnInfoFromIndex columnInfo = csvHeader.getColumn(colIdx- CSV_PROPERTIES_BEGIN_INDEX);
+            CsvHeader.ColumnInfoFromIndex columnInfo = csvHeader.getColumn(colIdx- CSV_PROPERTIES_BEGIN_INDEX, colIdx);
 
             if(columnInfo.getColumnAsUri() != null){
                 //First and main case, the column corresponds to a property on model

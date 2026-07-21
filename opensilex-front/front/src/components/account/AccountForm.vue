@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, onMounted, ref, useTemplateRef} from "vue";
+import {computed, ComputedRef, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
@@ -106,7 +106,7 @@ import {NForm, NFormItem} from "naive-ui";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
-import useModalForm from "@/composables/useModalForm";
+import useModalFormLogic from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
 
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
@@ -147,7 +147,7 @@ const props = withDefaults(
 
 const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
 
-// refs used by composable
+
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
 const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
@@ -197,15 +197,9 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
     }
     return personLabel;
   }
-  return modalFormApi.form.value.linked_person || "";
+  return modalFormLogic.form.value.linked_person || "";
 });
 //#endregion
-
-onMounted(() => {
-  // initialize local form from props
-  modalFormApi.form.value = props.form ? JSON.parse(JSON.stringify(props.form)) : getEmptyForm()
-  reset();
-});
 
 //#region Methods (create/update/reset/validate etc.)
 function getEmptyForm(): AccountFormDTO {
@@ -230,9 +224,9 @@ function hideLoader(): void {
 }
 
 async function reset(): Promise<void> {
-  if (modalFormApi.form.value.linked_person) {
+  if (modalFormLogic.form.value.linked_person) {
     try {
-      const response = await securityService.getPerson(modalFormApi.form.value.linked_person);
+      const response = await securityService.getPerson(modalFormLogic.form.value.linked_person);
       linkedPerson.value = response.response.result;
     } catch (error) {
       opensilex.errorHandler(error);
@@ -241,8 +235,8 @@ async function reset(): Promise<void> {
     linkedPerson.value = null;
   }
 
-  const isCreationForm: boolean = !modalFormApi.editMode.value;
-  const canAddAPerson: boolean = !modalFormApi.form.value.linked_person;
+  const isCreationForm: boolean = !modalFormLogic.editMode.value;
+  const canAddAPerson: boolean = !modalFormLogic.form.value.linked_person;
   canSelectAPerson.value = isCreationForm || canAddAPerson;
 }
 
@@ -275,7 +269,7 @@ async function update(formData: AccountFormDTO) {
 //#endregion
 
 // use composable
-const modalFormApi = useModalForm({
+const modalFormLogic = useModalFormLogic({
   modalRef,
   nFormRef,
   getEmptyForm,
@@ -288,18 +282,18 @@ const modalFormApi = useModalForm({
   onHide: () => emit('hide')
 })
 
-const form = modalFormApi.form
-const editMode = modalFormApi.editMode
-const submitModal = modalFormApi.submit
-const hide = modalFormApi.hide
+const form = modalFormLogic.form
+const editMode = modalFormLogic.editMode
+const submitModal = modalFormLogic.submit
+const hide = modalFormLogic.hide
 const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
 
 //#region Expose
 defineExpose({
-  showCreateForm: modalFormApi.showCreateForm,
-  showEditForm: modalFormApi.showEditForm,
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm,
   getFormRef: () => ({ validate, getEmptyForm }),
-  hide: modalFormApi.hide
+  hide: modalFormLogic.hide
 });
 //#endregion
 </script>

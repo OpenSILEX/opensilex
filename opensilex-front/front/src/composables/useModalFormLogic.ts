@@ -9,7 +9,7 @@ type UseModalFormOptions = {
   getEmptyForm: () => any
   create: (form: any) => Promise<any>
   update: (form: any) => Promise<any>
-  reset?: () => Promise<void> | void
+  reset: () => Promise<void> | void
   successMessage?: string | ((form: any) => string)
   overrideSuccessMessage?: boolean
   onCreate: (res: any) => void
@@ -18,7 +18,7 @@ type UseModalFormOptions = {
   onHide?: () => void
 }
 
-export default function useModalForm(options: UseModalFormOptions) {
+export default function useModalFormLogic(options: UseModalFormOptions) {
   const opensilex: any = inject('$opensilex')
   const { t } = useI18n()
 

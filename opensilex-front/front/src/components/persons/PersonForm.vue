@@ -78,7 +78,7 @@
           label="component.person.email-address"
           type="email"
           :placeholder="t('component.person.form-email-placeholder')"
-          autocomplete="new-password"
+          autocomplete="email"
       ></InputForm>
     </n-form-item>
 
@@ -247,8 +247,8 @@ async function update(form: PersonDTO) {
     prepareFormBeforeSending(form)
 
     return await securityService.updatePerson(form)
-  } catch {
-    opensilex.errorHandler
+  } catch (error) {
+    opensilex.errorHandler(error);
   } finally {
     hideLoader()
   }

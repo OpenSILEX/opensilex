@@ -23,7 +23,6 @@
       createTitle="component.account.add"
       editTitle="component.account.update"
       icon="ik#ik-user"
-      :lazy="true"
       @onCreate="accountList.refresh()"
       @onUpdate="accountList.refresh()"
     ></ModalForm>

@@ -1,14 +1,15 @@
-import { ref, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { inject } from 'vue'
+import {inject, ref, TemplateRef} from 'vue'
+import {useI18n} from 'vue-i18n'
+import Modal from "@/components/common/views/Modal.vue";
+import {NForm} from "naive-ui";
 
 type UseModalFormOptions = {
-  modalRef: any
+  modalRef: TemplateRef<InstanceType<typeof Modal>>
+  nFormRef: TemplateRef<InstanceType<typeof NForm>>
   getEmptyForm: () => any
   create: (form: any) => Promise<any>
   update: (form: any) => Promise<any>
   reset?: () => Promise<void> | void
-  isValid: () => Promise<boolean> | boolean
   successMessage?: string | ((form: any) => string)
   overrideSuccessMessage?: boolean
   onCreate: (res: any) => void
@@ -26,7 +27,7 @@ export default function useModalForm(options: UseModalFormOptions) {
 
   async function submit() {
     try {
-      const ok =  await options.isValid()
+      const ok =  options.nFormRef.value.validate()
       if (!ok) return
     } catch (err) {
       return

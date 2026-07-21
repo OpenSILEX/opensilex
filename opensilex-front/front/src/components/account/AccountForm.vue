@@ -148,8 +148,8 @@ const props = withDefaults(
 const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
 
 // refs used by composable
-const modalRef = ref<any>(null)
-const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
 //#region datas
 let uriGenerated = ref<boolean>(true);
@@ -229,15 +229,6 @@ function hideLoader(): void {
   opensilex.disableLoader();
 }
 
-async function validate(): Promise<boolean> {
-  try {
-    await formRef.value?.validate();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function reset(): Promise<void> {
   if (modalFormApi.form.value.linked_person) {
     try {
@@ -286,11 +277,11 @@ async function update(formData: AccountFormDTO) {
 // use composable
 const modalFormApi = useModalForm({
   modalRef,
+  nFormRef,
   getEmptyForm,
   create,
   update,
   reset,
-  isValid: validate,
   onCreate: (res: any) => emit('onCreate', res),
   onUpdate: (res: any) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),

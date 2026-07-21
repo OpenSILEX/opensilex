@@ -1024,7 +1024,6 @@ defineExpose({
 <i18n>
 en:
   ScientificObjectList:
-    name-placeholder: Enter name
     selected: Selected Scientific Objects
     selected-all: All scientific objects
     description: Manage and configure scientific objects
@@ -1066,7 +1065,6 @@ en:
     export-all: Export all
 fr:
   ScientificObjectList:
-    name-placeholder: Saisir un nom
     selected: Objets Scientifiques Sélectionnés
     selected-all: Tout les objets scientifiques
     description: Gérer et configurer les objets scientifiques

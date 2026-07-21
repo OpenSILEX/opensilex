@@ -200,7 +200,7 @@ const props = withDefaults(defineProps<{
   successImportMsg?: string
   customColumns?: any[]
 }>(), {
-  title: 'OntologyCsvImporter.import',
+  title: 'component.common.import-files.csv-import',
   validateCSV: () => Promise.reject('validateCSV property is mandatory'),
   uploadCSV: () => Promise.reject('uploadCSV property is mandatory'),
   customColumns: () => []
@@ -546,7 +546,6 @@ hr {
 <i18n>
 en:
   OntologyCsvImporter:
-    import: CSV Import
     object-type: object type
     object-type-placeholder: Type here to search in object types
     expectedFormat: Expected CSV format
@@ -589,7 +588,6 @@ en:
     missingToValue: "Cannot declare a move with a 'From' value but without a 'To' value."
 fr:
   OntologyCsvImporter:
-    import: Import CSV
     object-type: type d'objet
     object-type-placeholder: Utiliser cette zone pour rechercher un type d'objet
     expectedFormat: Format de fichier CSV attendu

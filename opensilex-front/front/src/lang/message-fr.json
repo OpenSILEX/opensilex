@@ -54,6 +54,7 @@
                 "end":"Fin",
                 "period":"Période",
                 "year":"année",
+                "creationDate": "Date de création",
                 "period-descriptions":{
                     "day": "24 dernieres heures",
                     "week": "Derniere semaine",
@@ -161,7 +162,8 @@
                 "csv-file": "Charger un CSV",
                 "csv-template": "Télécharger un gabarit",
                 "select-button": "Sélectionner",
-                "generate-template": "Générer un gabarit"
+                "generate-template": "Générer un gabarit",
+                "csv-import": "Import CSV"
             },
             "tabulator": {
                 "reset-table": "Vider la table",
@@ -232,6 +234,7 @@
             },
             "forms-generic-placeholders": {
                 "uri-label": "URI de l'objet",
+                "name-placeholder": "Saisir un nom",
                 "form-name-placeholder": "Saisir le nom de l'objet",
                 "form-type-placeholder": "Sélectionner le type de l'objet"
             }
@@ -851,11 +854,21 @@
                 }
             },
             "import" : {
-                "success-message": "objet(s) scientifique importé(s)"
+                "success-message": "objet(s) scientifique importé(s)",
+                "import-scientific-objects": "Importer des objets scientifiques"
             },
             "help-messages": {
                 "uri-help": "URI de l'objet scientifique (auto-générée si vide)",
                 "type-help": "URI du type d'objet scientifique"
+            },
+            "filters": {
+                "existenceDate": "Date d'existence"
+            },
+            "actions": {
+                "add": "Ajouter un objet scientifique",
+                "update": "Mettre à jour un objet scientifique",
+                "edit": "Mettre à jour l'objet scientifique",
+                "delete": "Supprimer l'objet scientifique"
             }
         },
         "skos": {

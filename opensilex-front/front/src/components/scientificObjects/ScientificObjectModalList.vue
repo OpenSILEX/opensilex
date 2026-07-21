@@ -45,7 +45,7 @@
               <n-form-item :label="t('component.common.name')" class="compact-form-item">
                 <opensilex-StringFilter
                   :filter="filter.name"
-                  :placeholder="t('ScientificObjectModalList.filter.name')"
+                  :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
                   class="searchFilter"
                   @update:filter="filter.name = $event"
                   @handlingEnterKey="refresh"
@@ -57,7 +57,7 @@
                 <opensilex-ExperimentSelector
                   :multiple="false"
                   :experiments="filter.experiment"
-                  :label="t('ScientificObjectModalList.filter.experiments')"
+                  :label="t('component.experiment.view.experiment-experiments')"
                   class="searchFilter"
                   @update:experiments="filter.experiment = $event"
                   @handlingEnterKey="refresh"
@@ -112,7 +112,7 @@
 
                   <!-- Existence date -->
                   <n-form-item
-                    :label="t('ScientificObjectModalList.filter.existenceDate')"
+                    :label="t('component.scientificObjects.filters.existenceDate')"
                     :show-feedback="false"
                   >
                     <opensilex-DateForm
@@ -126,7 +126,7 @@
 
                   <!-- Creation date -->
                   <n-form-item
-                    :label="t('ScientificObjectModalList.filter.creationDate')"
+                    :label="t('component.common.date-time.creationDate')"
                     :show-feedback="false"
                   >
                     <opensilex-DateForm
@@ -580,21 +580,3 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 </style>
-
-<i18n>
-en:
-  ScientificObjectModalList:
-    filter:
-      experiments: Experiment(s)
-      name: Enter name
-      creationDate: Creation date
-      existenceDate: Object exists
-
-fr:
-  ScientificObjectModalList:
-    filter:
-      experiments: Expérimentation(s)
-      name: Saisir un nom
-      creationDate: Date de création
-      existenceDate: Date d'existence
-</i18n>

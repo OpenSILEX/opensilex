@@ -7,7 +7,7 @@
 
       <CreateButton
         @click="soForm.createScientificObject()"
-        label="ExperimentScientificObjects.create-scientific-object"
+        label="component.scientificObjects.actions.add"
         class="createButton greenThemeColor"
       ></CreateButton>
       <ScientificObjectForm
@@ -18,7 +18,7 @@
 
       <CreateButton
         @click="importForm.show()"
-        label="OntologyCsvImporter.import"
+        label="component.common.import-files.csv-import"
         class="createButton greenThemeColor"
       ></CreateButton>
 
@@ -73,7 +73,7 @@
                 <StringFilter
                   id="name"
                   v-model:filter="filter.name"
-                  :placeholder="t('ScientificObjectList.name-placeholder')"
+                  :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
                   @handlingEnterKey="soList.refresh()"
                   class="searchFilter"
                 />
@@ -140,7 +140,7 @@
 
                   <!-- Existence date -->
                   <n-form-item
-                    :label="t('ScientificObjectModalList.filter.existenceDate')"
+                    :label="t('component.scientificObjects.filters.existenceDate')"
                     :show-feedback="false"
                   >
                     <DateForm
@@ -154,7 +154,7 @@
 
                   <!-- Creation date -->
                   <n-form-item
-                    :label="t('ScientificObjectModalList.filter.creationDate')"
+                    :label="t('component.common.date-time.creationDate')"
                     :show-feedback="false"
                   >
                     <DateForm

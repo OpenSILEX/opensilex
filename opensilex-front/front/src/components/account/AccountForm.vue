@@ -164,7 +164,7 @@ const rules = computed(() => ({
     validator(_rule, value) {
       // composable exposes editMode, use that in rule resolution below by referencing the reactive returned editMode
       if (!editMode.value && (!value || value.toString().trim().length === 0)) {
-        return new Error(t('validations.requiredField'));
+        return new Error(t('validations.required_if', {_field_: t('component.account.password')}));
       }
       return true;
     },

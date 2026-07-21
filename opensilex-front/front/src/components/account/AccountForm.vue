@@ -1,210 +1,281 @@
 <template>
-  <b-form>
+  <n-form
+      ref="formRef"
+      :rules="rules"
+      :model="form"
+      label-placement="top"
+      :show-require-mark="true"
+      size="large"
+  >
     <!-- URI -->
-    <opensilex-UriForm
-        :uri.sync="form.uri"
-        label="component.account.account-uri"
-        helpMessage="component.common.uri-help-message"
-        :editMode="editMode"
-        :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+    <n-form-item>
+      <UriForm
+          :uri.sync="form.uri"
+          label="component.account.account-uri"
+          helpMessage="component.common.uri-help-message"
+          :editMode="editMode"
+          :generated.sync="uriGenerated"
+      ></UriForm>
+    </n-form-item>
 
     <!-- Email -->
-    <opensilex-InputForm
-        :value.sync="form.email"
-        label="component.account.email-address"
-        type="email"
-        :required="true"
-        rules="email"
-        placeholder="component.account.form-email-placeholder"
-        autocomplete="new-password"
-    ></opensilex-InputForm>
+    <n-form-item path="email">
+      <InputForm
+          v-model:value="form.email"
+          label="component.account.email-address"
+          type="email"
+          :required="true"
+          :placeholder="t('component.account.form-email-placeholder')"
+          autocomplete="new-password"
+      ></InputForm>
+    </n-form-item>
 
     <!-- Password -->
-    <opensilex-InputForm
-        :value.sync="form.password"
-        label="component.account.password"
-        type="password"
-        :required="!this.editMode"
-        placeholder="component.account.form-password-placeholder"
-        autocomplete="new-password"
-    ></opensilex-InputForm>
+    <n-form-item path="password">
+      <InputForm
+          v-model:value="form.password"
+          label="component.account.password"
+          type="password"
+          :required="!editMode"
+          :placeholder="t('component.account.form-password-placeholder')"
+          autocomplete="new-password"
+      ></InputForm>
+    </n-form-item>
 
     <!-- Default language -->
-    <opensilex-FormSelector
-        :selected.sync="form.language"
-        :options="languages"
-        :required="true"
-        label="component.account.default-lang"
-        placeholder="component.common.select-lang"
-    ></opensilex-FormSelector>
+    <n-form-item path="language">
+      <FormSelector
+          v-model:selected="form.language"
+          :options="languages"
+          :required="true"
+          label="component.account.default-lang"
+          :placeholder="t('component.common.select-lang')"
+      ></FormSelector>
+    </n-form-item>
 
     <!-- Admin flag -->
-    <opensilex-CheckboxForm
-        v-if="user.isAdmin()"
-        :value.sync="form.admin"
-        label="component.account.admin"
-        title="component.account.form-admin-option-label"
-    ></opensilex-CheckboxForm>
+    <n-form-item v-if="isUserAdmin">
+      <CheckboxForm
+          v-model:value="form.admin"
+          label="component.account.admin"
+          title="component.account.form-admin-option-label"
+      ></CheckboxForm>
+    </n-form-item>
 
-    <!-- persons -->
-    <opensilex-PersonSelector
-        :key="changeToReloadPersonSelector"
-        v-if="canSelectAPerson"
-        :persons.sync="form.linked_person"
-        label="component.account.linked-person"
-        helpMessage="component.account.person-selector.help-message"
-        getOnlyPersonsWithoutAccount="true"
-        :allowAddPerson="true"
-        @onCreate="changeToReloadPersonSelector++"
-        :disabled="true"
-    ></opensilex-PersonSelector>
-    <opensilex-InputForm
-        v-else
-        :value.sync="linkedPersonString"
-        label="component.account.linked-person"
-        disabled
-    ></opensilex-InputForm>
+    <!-- linked person -->
+    <n-form-item>
+      <PersonSelector
+          :key="changeToReloadPersonSelector"
+          v-if="canSelectAPerson"
+          v-model:persons="form.linked_person"
+          label="component.account.linked-person"
+          helpMessage="component.account.person-selector.help-message"
+          :getOnlyPersonsWithoutAccount="true"
+          :allowAddPerson="true"
+          @onCreate="changeToReloadPersonSelector++"
+          :disabled="true"
+      ></PersonSelector>
+      <InputForm
+          v-else
+          :value="linkedPersonString"
+          label="component.account.linked-person"
+          disabled
+      ></InputForm>
+    </n-form-item>
 
-
-  </b-form>
+  </n-form>
 </template>
 
-<script lang="ts">
-import {Component, Prop} from "vue-property-decorator";
-import Vue from "vue";
+<script setup lang="ts">
+import {computed, ComputedRef, inject, nextTick, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
-import {OpenSilexStore} from "../../models/Store";
-import {PersonDTO} from "opensilex-security/model/personDTO";
+import {PersonDTO} from "opensilex-security/index";
+import UriForm from "@/components/common/forms/UriForm.vue";
+import {useI18n} from "vue-i18n";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
+import PersonSelector from "@/components/persons/PersonSelector.vue";
+import {NForm} from "naive-ui";
+import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {useStore} from "vuex";
+import {OpenSilexStore} from "@/models/Store";
 
-@Component
-export default class AccountForm extends Vue {
-  $opensilex: OpenSilexVuePlugin
-  $securityService: SecurityService
-  $store: OpenSilexStore
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const store = useStore() as OpenSilexStore;
+const {t, availableLocales} = useI18n();
 
-  get user() {
-    return this.$store.state.user;
-  }
+//#region Types
+interface AccountFormDTO {
+  uri: string | null;
+  email: string;
+  password: string;
+  language: string;
+  admin: boolean;
+  linked_person: string | null;
+}
+//#endregion
 
-  get languages() {
-    let langs = [];
-    Object.keys(this.$i18n.messages).forEach(key => {
-      langs.push({
-        id: key,
-        label: this.$t("component.header.language." + key)
-      });
-    });
-    return langs;
-  }
-
-  uriGenerated = true;
-
-  @Prop()
-  editMode;
-
-  @Prop({
-    default: () => {
-      return {
+//#region Props
+const props = withDefaults(
+    defineProps<{
+      editMode?: boolean;
+      form: AccountFormDTO;
+    }>(),
+    {
+      editMode: false,
+      form: () => ({
         uri: null,
         email: "",
-        linked_person: "",
+        linked_person: null,
         admin: false,
         password: "",
         language: "en"
-      };
+      }),
     }
-  })
-  form;
+);
+//#endregion
 
-  changeToReloadPersonSelector: number = 0;
+//#region Refs
+let uriGenerated: boolean = true;
+const changeToReloadPersonSelector = ref<number>(0);
+const linkedPerson = ref<PersonDTO | null>(null);
+const canSelectAPerson = ref<boolean>(false);
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
+//#endregion
 
-  linkedPerson: PersonDTO = null;
-
-  canSelectAPerson: boolean;
-
-  reset() {
-    this.changeToReloadPersonSelector++
-    this.$nextTick( () => {
-      if (this.form.linked_person){
-        this.$securityService.getPerson(this.form.linked_person)
-            .then( response => {
-              this.linkedPerson = response.response.result
-            })
+//#region Computed
+const rules = computed(() => ({
+  "email": validEmail(),
+  'password': {
+    validator(_rule, value) {
+      if (!props.editMode && (!value || value.trim().length === 0)) {
+        return new Error(t('validations.requiredField'));
       }
+      return true;
+    },
+    trigger: ['blur', 'input']
+  },
+  'language': requiredTrimmed('component.account.default-lang'),
+}));
 
-      let isCreationForm: boolean = ! this.editMode
-      let canAddAPerson: boolean = ! this.form.linked_person
-      this.canSelectAPerson = isCreationForm || canAddAPerson
-    })
-  }
+const languages: ComputedRef<Array<{id: string; label: string}>> = computed(() => {
+  const langs: Array<{id: string; label: string}> = [];
+  console.log(availableLocales)
+  availableLocales.forEach( locale => {
+    langs.push({
+      id: locale,
+      label: t("component.header.language." + locale)
+    });
+  });
+  return langs;
+});
 
-  created() {
-    this.$securityService = this.$opensilex.getService("opensilex.SecurityService")
-  }
+const isUserAdmin: ComputedRef<boolean> = computed(() => {
+  const user = store.state.user;
+  return user && typeof user.isAdmin === 'function' ? user.isAdmin() : false;
+});
 
-  get linkedPersonString(): string{
-    if (this.linkedPerson){
-      let personLabel = this.linkedPerson.first_name + " " + this.linkedPerson.last_name;
-      if (this.linkedPerson.email !== null) {
-        personLabel += " <" + this.linkedPerson.email + ">";
-      }
-      return personLabel
+const linkedPersonString: ComputedRef<string> = computed(() => {
+  if (linkedPerson.value) {
+    let personLabel = linkedPerson.value.first_name + " " + linkedPerson.value.last_name;
+    if (linkedPerson.value.email !== null) {
+      personLabel += " <" + linkedPerson.value.email + ">";
     }
-
-    return this.form.linked_person
+    return personLabel;
   }
+  return props.form.linked_person || "";
+});
+//#endregion
 
-  getEmptyForm() {
-    return {
-      uri: null,
-      email: "",
-      linked_person: null,
-      admin: false,
-      password: "",
-      language: "en"
-    };
-  }
-
-  async create(form) {
-    this.showLoader()
-    try {
-      return await this.$securityService.createAccount(form)
-    } catch(error){
-      this.$opensilex.errorHandler(error);
-    } finally {
-      this.hideLoader()
-    }
-  }
-
-  async update(form) {
-    this.showLoader()
-
-    if (form.password === "") {
-      form.password = null;
-    }
-    try {
-      return await this.$securityService.updateAccount(form)
-    } catch(error){
-      this.$opensilex.errorHandler(error);
-    } finally {
-      this.hideLoader()
-    }
-
-  }
-
-  showLoader() {
-    this.$opensilex.enableLoader();
-    this.$opensilex.showLoader();
-  }
-
-  hideLoader() {
-    this.$opensilex.hideLoader();
-    this.$opensilex.disableLoader();
-  }
-
+//#region Methods
+function getEmptyForm(): AccountFormDTO {
+  return {
+    uri: null,
+    email: "",
+    linked_person: null,
+    admin: false,
+    password: "",
+    language: "en"
+  };
 }
+
+function showLoader(): void {
+  opensilex.enableLoader();
+  opensilex.showLoader();
+}
+
+function hideLoader(): void {
+  opensilex.hideLoader();
+  opensilex.disableLoader();
+}
+
+async function validate(): Promise<boolean> {
+  try {
+    await formRef.value?.validate();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function reset(): Promise<void> {
+  changeToReloadPersonSelector.value++;
+  await nextTick();
+  
+  if (props.form.linked_person) {
+    try {
+      const response = await securityService.getPerson(props.form.linked_person);
+      linkedPerson.value = response.response.result;
+    } catch (error) {
+      opensilex.errorHandler(error);
+    }
+  }
+
+  const isCreationForm: boolean = !props.editMode;
+  const canAddAPerson: boolean = !props.form.linked_person;
+  canSelectAPerson.value = isCreationForm || canAddAPerson;
+}
+
+async function create(form: AccountFormDTO) {
+  showLoader();
+  try {
+    return await securityService.createAccount(form);
+  } catch (error) {
+    opensilex.errorHandler(error);
+  } finally {
+    hideLoader();
+  }
+}
+
+async function update(form: AccountFormDTO) {
+  showLoader();
+  
+  if (form.password === "") {
+    form.password = null;
+  }
+  
+  try {
+    return await securityService.updateAccount(form);
+  } catch (error) {
+    opensilex.errorHandler(error);
+  } finally {
+    hideLoader();
+  }
+}
+//#endregion
+
+//#region Expose
+defineExpose({
+  reset,
+  create,
+  update,
+  validate,
+  getEmptyForm
+});
+//#endregion
 </script>
 
 <style scoped lang="scss">

@@ -1,77 +1,89 @@
 <template>
-  <n-form v-if="form.name_translations" :rules="rules">
-    <InputForm
-        v-model:value="form.uri"
-        label="component.common.uri"
-        type="text"
-        rules="url"
-        :disabled="editMode"
-        :required="true"
-    ></InputForm>
+  <n-form
+      ref="formRef"
+      v-if="form.name_translations"
+      :rules="rules"
+      :model="form"
+  >
+    <n-form-item path="uri">
+      <InputForm
+          v-model:value="form.uri"
+          label="component.common.uri"
+          type="text"
+          rules="url"
+          :disabled="editMode"
+          :required="true"
+      ></InputForm>
+    </n-form-item>
 
-    <FormSelector
-        v-model:selected="form.parent"
-        path="parent"
-        :options="parentOptions"
-        checkStrategy="parent"
-        :required="true"
-        label="component.common.parent"
-        :filterable="true"
-    ></FormSelector>
+    <n-form-item path="parent">
+      <FormSelector
+          v-model:selected="form.parent"
+          path="parent"
+          :options="parentOptions"
+          checkStrategy="parent"
+          label="component.common.parent"
+          :filterable="true"
+          :required="true"
+      ></FormSelector>
+    </n-form-item>
 
-    <InputForm
-        v-model:value="form.name_translations.en"
-        :label="t('OntologyClassForm.labelEN')"
-        type="text"
-        :required="true"
-    ></InputForm>
+    <n-form-item path="name_translations.en">
+      <InputForm
+          v-model:value="form.name_translations.en"
+          :label="t('OntologyClassForm.labelEN')"
+          :required="true"
+          type="text"
+      ></InputForm>
+    </n-form-item>
 
-    <TextAreaForm
-        v-model:value="form.comment_translations.en"
-        :label="t('OntologyClassForm.commentEN')"
-        :required="true"
-        @keydown.native.enter.stop
-    ></TextAreaForm>
+    <n-form-item path="comment_translations.en">
+      <TextAreaForm
+          v-model:value="form.comment_translations.en"
+          :label="t('OntologyClassForm.commentEN')"
+          @keydown.native.enter.stop
+      ></TextAreaForm>
+    </n-form-item>
 
-    <InputForm
-        v-model:value="form.name_translations.fr"
-        :label="t('OntologyClassForm.labelFR')"
-        type="text"
-        :required="true"
-    ></InputForm>
+    <n-form-item path="name_translations.fr">
+      <InputForm
+          v-model:value="form.name_translations.fr"
+          :label="t('OntologyClassForm.labelFR')"
+          :required="true"
+          type="text"
+      ></InputForm>
+    </n-form-item>
 
-    <TextAreaForm
-        v-model:value="form.comment_translations.fr"
-        :label="t('OntologyClassForm.commentFR')"
-        :required="true"
-        @keydown.native.enter.stop
-    ></TextAreaForm>
+    <n-form-item path="comment_translations.fr">
+      <TextAreaForm
+          v-model:value="form.comment_translations.fr"
+          :label="t('OntologyClassForm.commentFR')"
+          @keydown.native.enter.stop
+      ></TextAreaForm>
+    </n-form-item>
 
-    <!-- is abstract -->
-    <!-- <opensilex-CheckboxForm
-      :value.sync="form.is_abstract"
-      title="OntologyClassForm.abstract-type"
-    ></opensilex-CheckboxForm> -->
-
-    <IconForm
-        v-model:value="form.icon"
-        :label="t('OntologyClassForm.icon')"
-    ></IconForm>
+    <n-form-item path="icon">
+      <IconForm
+          v-model:value="form.icon"
+          :label="t('OntologyClassForm.icon')"
+      ></IconForm>
+    </n-form-item>
   </n-form>
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, watchEffect} from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef, watch, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {VueJsOntologyExtensionService} from "@/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NForm} from "naive-ui";
+import {NForm, NFormItem} from "naive-ui";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import IconForm from "@/components/common/forms/IconForm.vue";
+import {requiredTrimmed} from "@/models/FormFieldsFormatter";
 
 //#region Public
 const props = defineProps<{
@@ -97,8 +109,13 @@ const form = defineModel("form", {
 defineExpose({
   getEmptyForm,
   create,
-  update
+  update,
+  validate
 })
+
+const emit = defineEmits<{
+  validationChanged: [boolean]
+}>()
 //#endregion
 
 //#region Private
@@ -119,12 +136,20 @@ const parentOptions = computed(() => {
   }
 })
 
+onMounted(() => {
+  emit('validationChanged', false)
+})
 
-const rules = {
-  uri: {required: true},
-  parent: {required: true}
-}
+const rules = ref({
+  uri: {required: true, trigger: ['blur', 'input']},
+  parent: {required: true, trigger: ['blur', 'input']},
+  name_translations: {
+    en: requiredTrimmed('OntologyClassForm.labelEN'),
+    fr: requiredTrimmed('OntologyClassForm.labelFR')
+  }
+});
 
+const formRef = useTemplateRef<InstanceType<typeof NForm>>("formRef");
 
 watchEffect(() => {
   if (props.data.parentUri) {
@@ -136,12 +161,18 @@ watchEffect(() => {
   }
 })
 
+watch(form.value, async () => {
+  const isValid = await validate();
+  console.log(`Form changed : valid = ${isValid}`);
+  emit('validationChanged', isValid);
+})
+
 function getEmptyForm() {
   return {
     uri: null,
     parent: null,
     name: null,
-    name_translations: {en: null, fr: null},
+    name_translations: {en: "", fr: ""},
     comment: null,
     comment_translations: {en: "", fr: ""},
     icon: null,
@@ -174,11 +205,19 @@ function update(form) {
   return service
       .updateRDFType(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        let message = t("OntologyClassView.the-type") + " " + uri + t("component.common.success.update-success-message");
+        let message = t("OntologyClassView.the-type") + " " + http.response.result + t("component.common.success.update-success-message");
         opensilex.showSuccessToast(message);
       })
       .catch(opensilex.errorHandler);
+}
+
+async function validate(): Promise<boolean> {
+  try {
+    const errors = await formRef.value.validate();
+    return !errors.warnings;
+  } catch (error) {
+    return false;
+  }
 }
 
 //#endregion

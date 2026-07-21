@@ -1,14 +1,14 @@
 <template>
-  <opensilex-Modal ref="modalRef">
+  <Modal ref="modalRef">
     <template #header>
       <div class="flex justify-between items-center">
         <h4>
           <slot name="icon">
-            <opensilex-Icon :icon="icon" class="icon-title" />
+            <Icon :icon="icon" class="icon-title" />
           </slot>
           {{ translatedTitle }}
         </h4>
-        <opensilex-HelpButton
+        <HelpButton
           v-if="tutorial && !editMode"
           label="component.tutorial.name"
           class="modalFormTutorial"
@@ -18,24 +18,27 @@
       </div>
     </template>
 
-    <n-form :model="form" :rules="rules" ref="formRef">
-      <component
-        ref="componentRef"
-        :is="component"
-        v-model:form="form"
-        :key="componentRefreshKey"
-        :editMode="editMode"
-        :data="data"
-      >
-        <slot name="customFields" :form="form" :editMode="editMode" />
-      </component>
-    </n-form>
+    <component
+      ref="componentRef"
+      :is="component"
+      v-model:form="form"
+      :key="componentRefreshKey"
+      :editMode="editMode"
+      :data="data"
+      @validationChanged="isValid = $event"
+    >
+      <slot name="customFields" :form="form" :editMode="editMode" />
+    </component>
 
     <template #footer>
       <button class="btn btn-secondary" @click="hide">{{ t('component.common.cancel') }}</button>
-      <button class="btn greenThemeColor" @click="validate">{{ t('component.common.ok') }}</button>
+      <button
+          class="btn greenThemeColor"
+          @click="submit"
+          :disabled="!isValid"
+      >{{ t('component.common.ok') }}</button>
     </template>
-  </opensilex-Modal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -43,14 +46,17 @@ import {computed, inject, nextTick, ref, useTemplateRef} from 'vue'
 import {useI18n} from 'vue-i18n'
 import type {FormInst} from 'naive-ui'
 import {NForm} from 'naive-ui'
-import type {OpenSilexVuePlugin} from '@/models/OpenSilexVuePlugin'
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import Modal from "@/components/common/views/Modal.vue";
+import Icon from "@/components/common/views/Icon.vue";
+import HelpButton from "@/components/common/buttons/HelpButton.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
 
 const modalRef = ref()
-const formRef = ref<FormInst | null>(null)
 const componentRef = useTemplateRef<any>('componentRef')
+const isValid = ref<boolean>(true);
 
 const props = defineProps({
   component: { type: [String, Object], required: true },
@@ -71,7 +77,6 @@ const emit = defineEmits(['hide', 'onCreate', 'onUpdate', 'onSuccess'])
 
 const editMode = ref(false)
 const form = ref<Record<string, any>>()
-const rules = ref<Record<string, any>>({})
 const componentRefreshKey = ref(0)
 
 const translatedTitle = computed(() => {
@@ -83,15 +88,8 @@ function getFormRef() {
   return componentRef.value
 }
 
-async function validate() {
+async function submit() {
   try {
-    // 1) Validation Naive UI (si des rules sont définies)
-    if (formRef.value) {
-      // Si aucune règle, validate() résout immédiatement
-      await formRef.value.validate()
-    }
-
-    // 2) Validation custom optionnelle du composant enfant
     const child = getFormRef()
     if (child?.validate) {
       const ok = await child.validate()
@@ -107,11 +105,9 @@ async function validate() {
 
   // si on arrive ici, le formulaire est considéré valide
   let submit = props.createAction ?? getFormRef()?.create
-  let event: 'onCreate' | 'onUpdate' = 'onCreate'
 
   if (editMode.value) {
     submit = props.updateAction ?? getFormRef()?.update
-    event = 'onUpdate'
   }
 
   const result = submit?.(form.value)
@@ -162,8 +158,6 @@ function showCreateForm(passedForm?: any) {
       form.value = props.initForm(form.value)
     }
     getFormRef()?.reset?.()
-    // reconstruire le formulaire pour éviter les champs remplis par des valeurs precedentes
-    formRef.value?.restoreValidation?.()
     componentRefreshKey.value++
     modalRef.value?.show()
   })

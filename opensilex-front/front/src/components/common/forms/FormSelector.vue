@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :required="required"
     :requiredBlue="requiredBlue"
     :label="label"
@@ -7,71 +7,69 @@
   >
     <template #field="{ id }">
       <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
-      <n-form-item :path="path" :show-label="false">
-        <div class="select-button-container">
-          <opensilex-CustomTreeselect
-            ref="customTreeselect"
-            v-bind="$attrs"
-            v-model:selected="selectedProxy"
-            :searchMethod="searchMethod"
-            :resultLimit="resultLimit"
-            :multiple="multiple"
-            :checkable="checkable"
-            :checkStrategy="checkStrategy"
-            :placeholder="placeholder"
-            :disabled="disabled"
-            :optionsLoadingMethod="optionsLoadingMethod"
-            :options="options"
-            :viewHandler="viewHandler"
-            :conversionMethod="conversionMethod"
-            :defaultSelectedValue="defaultSelectedValue"
-            :showCount="showCount"
-            :actionHandler="actionHandler"
-            :disableBranchNodes="disableBranchNodes"
-            :itemLoadingMethod="itemLoadingMethod || undefined"
-            class="select-main"
-            @totalCount="updateTotalCount"
-            @resultCount="updateResultCount"
-            @close="onBlur"
-            @select="(v) => emit('select', v)"
-            @deselect="(v) => emit('deselect', v)"
-          >
-            <template #after-list>
-              <n-button
-                v-if="resultCount < totalCount && !showAllResults"
-                text
-                size="small"
-                class="refineSearchMessage"
-                @mousedown.prevent.stop
-                @click="loadMoreItems"
-              >
-                {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
-              </n-button>
-            </template>
-          </opensilex-CustomTreeselect>
+      <div class="select-button-container">
+        <CustomTreeselect
+          ref="customTreeselect"
+          v-bind="$attrs"
+          v-model:selected="selectedProxy"
+          :searchMethod="searchMethod"
+          :resultLimit="resultLimit"
+          :multiple="multiple"
+          :checkable="checkable"
+          :checkStrategy="checkStrategy"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :optionsLoadingMethod="optionsLoadingMethod"
+          :options="options"
+          :viewHandler="viewHandler"
+          :conversionMethod="conversionMethod"
+          :defaultSelectedValue="defaultSelectedValue"
+          :showCount="showCount"
+          :actionHandler="actionHandler"
+          :disableBranchNodes="disableBranchNodes"
+          :itemLoadingMethod="itemLoadingMethod || undefined"
+          class="select-main"
+          @totalCount="updateTotalCount"
+          @resultCount="updateResultCount"
+          @close="onBlur"
+          @select="(v) => emit('select', v)"
+          @deselect="(v) => emit('deselect', v)"
+        >
+          <template #after-list>
+            <n-button
+              v-if="resultCount < totalCount && !showAllResults"
+              text
+              size="small"
+              class="refineSearchMessage"
+              @mousedown.prevent.stop
+              @click="loadMoreItems"
+            >
+              {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
+            </n-button>
+          </template>
+        </CustomTreeselect>
 
-          <div v-if="!actionHandler && viewHandler" class="select-side-button">
-            <opensilex-DetailButton
-              @click="viewHandler"
-              :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
-              :small="true"
-              class="greenThemeColor"
-            />
-          </div>
-
-          <div v-else-if="actionHandler" class="select-side-button">
-            <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
-            <opensilex-DetailButton
-              v-if="viewHandler"
-              @click="viewHandler"
-              :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
-              :small="true"
-            />
-          </div>
+        <div v-if="!actionHandler && viewHandler" class="select-side-button">
+          <DetailButton
+            @click="viewHandler"
+            :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
+            :small="true"
+            class="greenThemeColor"
+          />
         </div>
-      </n-form-item>
+
+        <div v-else-if="actionHandler" class="select-side-button">
+          <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
+          <DetailButton
+            v-if="viewHandler"
+            @click="viewHandler"
+            :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
+            :small="true"
+          />
+        </div>
+      </div>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
@@ -79,9 +77,9 @@ import { computed, nextTick, onMounted, ref, watch, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NFormItem } from 'naive-ui'
 import CustomTreeselect from './CustomTreeselect.vue'
-
-// API interne Naive UI pour accéder au NForm parent
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import FormField from "@/components/common/forms/FormField.vue";
 
 const { t } = useI18n()
 

@@ -5,7 +5,7 @@
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
   >
       <!-- Bouton Create Document -->
-    <opensilex-CreateButton
+    <CreateButton
       v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
       size="small"
       label="component.common.addDocument"
@@ -85,13 +85,13 @@
           </n-form-item>
 
           <n-space justify="end" class="mt-2">
-            <opensilex-Button
+            <Button
               class="resetButton"
               :label="t('component.common.search.clear-button')"
               icon="bi-x-lg"
               @click="resetFilters"
             />
-            <opensilex-Button
+            <Button
               class="greenThemeColor"
               :label="t('component.common.search.search-button')"
               icon="bi-search"
@@ -104,7 +104,7 @@
 
     <!-- Contenu Liste -->
     <n-layout-content class="document-content">
-      <opensilex-TableAsyncView
+      <TableAsyncView
         ref="tableRef"
         :searchMethod="loadData"
         :fields="fields"
@@ -117,7 +117,7 @@
         @selectall="emit('selectall', $event)"
       >
         <template #cell(title)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.title"
             :to="{ path: '/document/details/' + encodeURIComponent(data.item.uri) }"
@@ -126,7 +126,7 @@
         </template>
 
         <template #cell(date)="{ data }">
-          <opensilex-DateView :value="data.item.date" />
+          <DateView :value="data.item.date" />
         </template>
 
         <template #cell(authors)="{ data }">
@@ -137,14 +137,14 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group size="small">
-            <opensilex-EditButton
+          <n-button-group size="small" class="btn-group btn-group-sm">
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="editDocument(data.item.uri)"
               label="component.document.update"
               :small="true"
             />
-            <opensilex-DeprecatedButton
+            <DeprecatedButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="toggleDeprecated(data.item.uri)"
               :small="true"
@@ -152,10 +152,10 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
       <!-- Formulaire Creation Document -->
-      <opensilex-ModalForm
+      <ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentForm"
         component="opensilex-DocumentForm"
@@ -175,6 +175,15 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { DocumentsService } from 'opensilex-core/index'
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import DeprecatedButton from "@/components/common/buttons/DeprecatedButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DateView from "@/components/common/views/DateView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 const emit = defineEmits<{
   (e: 'onEdit', document: any): void
@@ -225,12 +234,12 @@ const activeFiltersCount = computed(() =>
 )
 
 const fields = computed(() => {
-  const tableFields: any[] = [
+  const tableFields: TableField[] = [
     { key: 'title', label: 'component.common.title', sortable: true },
     { key: 'date', label: 'component.common.date', sortable: true },
     { key: 'authors', label: 'component.common.authors' },
   ]
-  if (!props.noActions) tableFields.push({ key: 'actions', label: 'component.common.actions' })
+  if (!props.noActions) tableFields.push({ key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 100} })
   return tableFields
 })
 

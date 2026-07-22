@@ -2,23 +2,28 @@ import {inject, ref, TemplateRef} from 'vue'
 import {useI18n} from 'vue-i18n'
 import Modal from "@/components/common/views/Modal.vue";
 import {NForm} from "naive-ui";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
-type UseModalFormOptions = {
+
+type UseModalFormOptions<T> = {
   modalRef: TemplateRef<InstanceType<typeof Modal>>
   nFormRef: TemplateRef<InstanceType<typeof NForm>>
-  getEmptyForm: () => any
-  create: (form: any) => Promise<any>
-  update: (form: any) => Promise<any>
+  getEmptyForm: () => T
+  create: (form: T) => Promise<HttpResponse<OpenSilexResponse>>
+  update: (form: T) => Promise<HttpResponse<OpenSilexResponse>>
   reset: () => Promise<void> | void
-  successMessage?: string | ((form: any) => string)
+  successMessage?: string
   overrideSuccessMessage?: boolean
-  onCreate: (res: any) => void
-  onUpdate: (res: any) => void
+  onCreate: (form: HttpResponse<OpenSilexResponse>) => void
+  onUpdate: (form: HttpResponse<OpenSilexResponse>) => void
   onSuccess?: () => void
   onHide?: () => void
 }
 
-export default function useModalFormLogic(options: UseModalFormOptions) {
+/**
+ * UseModalFormLogic is a composable that handles the logic of a modal form. Parametric type T is the type of the form, usually a DTO.
+ */
+export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
   const opensilex: any = inject('$opensilex')
   const { t } = useI18n()
 
@@ -40,9 +45,7 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
       const result = await Promise.resolve(submitAction?.(form.value))
       if (result !== false) {
         // success message
-        let msg = typeof options.successMessage === 'function'
-          ? options.successMessage(form.value)
-          : (options.successMessage ?? t('component.common.element'))
+        let msg = (options.successMessage ?? t('component.common.element'))
 
         if (!options.overrideSuccessMessage) {
           msg += t(editMode.value
@@ -71,7 +74,7 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
     options.onHide?.()
   }
 
-  function showCreateForm(passedForm?: any) {
+  function showCreateForm(passedForm?: T) {
     editMode.value = false
     form.value = passedForm ?? options.getEmptyForm()
     options.reset()
@@ -79,7 +82,7 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
     options.modalRef.value.show()
   }
 
-  function showEditForm(editForm: any) {
+  function showEditForm(editForm: T) {
     editMode.value = true
     form.value = editForm
     options.reset()

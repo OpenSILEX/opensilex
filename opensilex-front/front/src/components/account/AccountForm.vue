@@ -182,15 +182,15 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
 //#endregion
 
 //#region modalFormLogic composable
-const modalFormLogic = useModalFormLogic({
+const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   modalRef,
   nFormRef,
   getEmptyForm,
   create,
   update,
   reset,
-  onCreate: (res: any) => emit('onCreate', res),
-  onUpdate: (res: any) => emit('onUpdate', res),
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),
   onHide: () => emit('hide')
 })

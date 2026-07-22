@@ -78,7 +78,7 @@
           label="component.person.email-address"
           type="email"
           :placeholder="t('component.person.form-email-placeholder')"
-          autocomplete="new-password"
+          autocomplete="email"
       ></InputForm>
     </n-form-item>
 
@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, nextTick, ref, useTemplateRef} from "vue";
+import {computed, ComputedRef, inject, nextTick, onMounted, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
@@ -174,8 +174,7 @@ const rules = computed(() => ({
   },
 }))
 
-let uriGenerated = true;
-
+let uriGenerated = ref<boolean>(true);
 const displayOrcidModal = ref(false)
 const orcidForm = ref<orcidSuggestionForm>({
   orcid: "",
@@ -199,7 +198,7 @@ const emit = defineEmits<{
 
 //#region methods
 function reset() {
-  uriGenerated = true;
+  uriGenerated.value = true;
   nextTick(() => {
     disable_orcid_field.value = props.editMode && props.form.orcid !== null
   })
@@ -247,8 +246,8 @@ async function update(form: PersonDTO) {
     prepareFormBeforeSending(form)
 
     return await securityService.updatePerson(form)
-  } catch {
-    opensilex.errorHandler
+  } catch (error) {
+    opensilex.errorHandler(error);
   } finally {
     hideLoader()
   }
@@ -269,7 +268,7 @@ function getCompleteUrlOrcid(orcid): string {
   return orcid
 }
 
-function replaceEmptyStringByNull(form): void {
+function replaceEmptyStringByNull(form: PersonDTO ): void {
   if (form.email === "") {
     form.email = null;
   }

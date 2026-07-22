@@ -1,5 +1,5 @@
 <template>
-  <Overlay :show="isSearching && !isGlobalLoaderVisible">
+  <Overlay :show="isSearching">
     <div class="card">
 
 
@@ -99,6 +99,12 @@ import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider} from
 import Overlay from "@/components/layout/Overlay.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import {TableField} from "@/components/common/views/TableField";
+
+export type RowWithData<T> = {
+  item: T & {
+    _showDetails?: boolean;
+  };
+};
 
 // Props
 const props = defineProps<{

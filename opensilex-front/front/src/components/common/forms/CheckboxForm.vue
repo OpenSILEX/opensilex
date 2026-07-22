@@ -1,6 +1,5 @@
 <template>
-  <opensilex-FormField
-    :rules="rules"
+  <FormField
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
@@ -28,12 +27,13 @@
         </span>
       </label>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import FormField from "@/components/common/forms/FormField.vue";
 
 const props = defineProps<{
   value?: boolean;             // v-model:value

@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageContent>
+    <PageContent>
       <!-- Barre Actions / Counts / Selection -->
       <n-space
         class="listActionButtons"
@@ -142,7 +142,7 @@
                 v-if="filter.agent_type === 'vocabulary:Operator'"
                 label='Agent'
               >
-                <opensilex-PersonSelector
+                <PersonSelector
                   v-model:persons="filter.agents"
                   :multiple="true"
                   class="searchFilter"
@@ -154,7 +154,7 @@
                 v-else-if="filter.agent_type"
                 label='Agent'
               >
-                <opensilex-DeviceSelector
+                <DeviceSelector
                   ref="deviceSelector"
                   v-model:value="filter.agents"
                   :multiple="true"
@@ -165,13 +165,13 @@
               </n-form-item>
 
               <n-space justify="end" class="mt-2">
-                <opensilex-Button
+                <Button
                   class="resetButton"
                   :label="t('component.common.search.clear-button')"
                   icon="bi-x-lg"
                   @click="resetFilters"
                 />
-                <opensilex-Button
+                <Button
                   class="greenThemeColor"
                   :label="t('component.common.search.search-button')"
                   icon="bi-search"
@@ -184,7 +184,7 @@
 
         <!-- Contenu Liste -->
         <n-layout-content class="provenance-content">
-          <opensilex-TableAsyncView
+          <TableAsyncView
             ref="tableRef"
             :searchMethod="loadData"
             :fields="fields"
@@ -201,7 +201,7 @@
             @refreshed="onRefreshed"
           >
             <template #cell(name)="{ data }">
-              <opensilex-UriLink
+              <UriLink
                 :uri="data.item.uri"
                 :value="data.item.name"
                 :to="{ path: '/provenances/details/' + encodeURIComponent(data.item.uri) }"
@@ -218,7 +218,7 @@
             </template>
 
             <template #cell(activity_start_date)="{ data }">
-              <opensilex-DateView
+              <DateView
                 :value="
                   data.item.prov_activity != null && data.item.prov_activity.length > 0
                     ? data.item.prov_activity[0].start_date
@@ -228,7 +228,7 @@
             </template>
 
             <template #cell(activity_end_date)="{ data }">
-              <opensilex-DateView
+              <DateView
                 :value="
                   data.item.prov_activity != null && data.item.prov_activity.length > 0
                     ? data.item.prov_activity[0].end_date
@@ -238,14 +238,14 @@
             </template>
 
             <template #cell(actions)="{ data }">
-              <n-button-group size="small">
-                <opensilex-EditButton
+              <n-button-group size="small" class="btn-group btn-group-sm">
+                <EditButton
                   v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
                   @click="emit('onEdit', data.item.uri)"
                   :label="t('ProvenanceList.update')"
                   :small="true"
                 />
-                <opensilex-DeleteButton
+                <DeleteButton
                   v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
                   @click="deleteProvenance(data.item.uri)"
                   :label="t('ProvenanceList.delete')"
@@ -253,10 +253,10 @@
                 />
               </n-button-group>
             </template>
-          </opensilex-TableAsyncView>
+          </TableAsyncView>
 
           <!-- Formulaire Creation Document -->
-          <opensilex-ModalForm
+          <ModalForm
             ref="documentForm"
             component="opensilex-DocumentForm"
             createTitle="component.common.addDocument"
@@ -266,7 +266,7 @@
           />
         </n-layout-content>
       </n-layout>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -289,6 +289,16 @@ import {
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import Prov from '../../ontologies/Prov'
+import PageContent from "@/components/layout/PageContent.vue";
+import PersonSelector from "@/components/persons/PersonSelector.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import DateView from "@/components/common/views/DateView.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 const emit = defineEmits<{
   (e: 'onEdit', uri: string): void
@@ -368,7 +378,7 @@ const activeFiltersCount = computed(() => {
 })
 
 const fields = computed(() => {
-  const tableFields: any[] = [
+  const tableFields: TableField[] = [
     { key: 'name', label: 'component.common.name', sortable: true },
     { key: 'activity_type', label: t('ProvenanceList.activity_type'), sortable: true },
     { key: 'activity_start_date', label: t('ProvenanceList.activity_start_date'), sortable: true },
@@ -376,7 +386,7 @@ const fields = computed(() => {
   ]
 
   if (!props.noActions) {
-    tableFields.push({ key: 'actions', label: 'component.common.actions' })
+    tableFields.push({ key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 100} })
   }
 
   return tableFields

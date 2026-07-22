@@ -143,7 +143,7 @@ import {useStore} from "vuex";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
-import {DataTableColumns, NList, NListItem, NTooltip, NConfigProvider} from "naive-ui";
+import {DataTableColumns, NList, NListItem, NTooltip, NConfigProvider, NButtonGroup} from "naive-ui";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
@@ -207,11 +207,16 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   {
     title: t("component.common.actions"),
     key: "actions",
-    render: (data: VueRDFTypePropertyDTO) => h(DeleteButton, {
-      onClick: () => deleteClassPropertyRestriction(data.uri),
-      label: t('OntologyClassDetail.deleteProperty'),
-      small: true
-    })
+    render: (data: VueRDFTypePropertyDTO) =>
+        h(NButtonGroup, {
+              size: "small",
+              className: "btn-group btn-group-sm"
+            },
+            h(DeleteButton, {
+              onClick: () => deleteClassPropertyRestriction(data.uri),
+              label: t('OntologyClassDetail.deleteProperty'),
+              small: true
+            }))
   },
 ];
 const customPropertyOrder = ref<Array<VueRDFTypePropertyDTO>>([]);

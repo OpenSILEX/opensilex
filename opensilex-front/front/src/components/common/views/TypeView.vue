@@ -2,9 +2,9 @@
   <div class="static-field">
     <span :class="['field-view-title', customClass]">{{ t("component.common.type") }}</span>
     <span class="static-field-line">
-      <opensilex-Icon :icon="$opensilex?.getRDFIcon(type)" />
-      <!-- &nbsp; -->
-      <opensilex-UriLink
+      <Icon :icon="$opensilex?.getRDFIcon(type)" />
+       &nbsp;
+      <UriLink
         v-if="copyableTypeUri"
         :uri="$opensilex?.getShortUri(type)"
         :value="typeLabel"
@@ -19,6 +19,8 @@
 import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
+import Icon from "@/components/common/views/Icon.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
 
 const props = defineProps<{
   type: string;

@@ -123,11 +123,10 @@ onMounted(() => {
   emit('validationChanged', false);
 });
 
-watch(form.value, async () => {
+watch(form, async () => {
   const isValid = await validate();
-  console.log(`Form changed : valid = ${isValid}`);
   emit('validationChanged', isValid);
-});
+}, {deep: true});
 
 watchEffect(() => {
   ontologyService.getLinkableProperties(props.data.classUri, props.data.domain).then((http) => {

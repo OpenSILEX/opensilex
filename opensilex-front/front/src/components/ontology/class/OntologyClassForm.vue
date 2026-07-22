@@ -83,7 +83,7 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import IconForm from "@/components/common/forms/IconForm.vue";
-import {requiredTrimmed} from "@/models/FormFieldsFormatter";
+import {required, requiredTrimmed} from "@/models/FormFieldsFormatter";
 
 //#region Public
 const props = defineProps<{
@@ -141,8 +141,8 @@ onMounted(() => {
 })
 
 const rules = ref({
-  uri: {required: true, trigger: ['blur', 'input']},
-  parent: {required: true, trigger: ['blur', 'input']},
+  uri: required('component.common.uri'),
+  parent: required('component.common.parent'),
   name_translations: {
     en: requiredTrimmed('OntologyClassForm.labelEN'),
     fr: requiredTrimmed('OntologyClassForm.labelFR')
@@ -161,11 +161,10 @@ watchEffect(() => {
   }
 })
 
-watch(form.value, async () => {
+watch(form, async () => {
   const isValid = await validate();
-  console.log(`Form changed : valid = ${isValid}`);
   emit('validationChanged', isValid);
-})
+}, {deep: true})
 
 function getEmptyForm() {
   return {

@@ -98,7 +98,7 @@
         <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
           <!-- Name -->
           <n-form-item :label="t('DeviceList.filter.namePattern')"  class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.name"
               :placeholder="t('DeviceList.filter.namePattern-placeholder')"
               class="searchFilter"
@@ -108,7 +108,7 @@
 
           <!-- Type -->
           <n-form-item  class="compact-form-item">
-            <opensilex-TypeForm
+            <TypeForm
               v-model:type="filter.rdf_type"
               :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
               :placeholder="t('DeviceList.filter.rdfTypes-placeholder')"
@@ -130,7 +130,7 @@
                 :label="property.name ?? property.uri"
                 class="compact-form-item"
               >
-                <opensilex-StringFilter
+                <StringFilter
                   v-model:filter="dynamicPropertyFilters[property.uri]"
                   :placeholder="property.name ?? property.uri"
                   class="searchFilter"
@@ -142,7 +142,7 @@
 
           <!-- Variables -->
           <n-form-item :label="t('DeviceList.filter.variable')">
-            <opensilex-VariableSelectorWithFilter
+            <VariableSelectorWithFilter
               v-model:variables="filter.variable"
               :placeholder="t('DeviceList.filter.variable-placeholder')"
               maximumSelectedRows="1"
@@ -152,7 +152,7 @@
 
           <!-- Start up -->
           <n-form-item :label="t('DeviceList.filter.start_up')" class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.start_up"
               :placeholder="t('DeviceList.filter.start_up-placeholder')"
               type="number"
@@ -163,7 +163,7 @@
 
           <!-- Facility -->
           <n-form-item  class="compact-form-item">
-            <opensilex-FormSelector
+            <FormSelector
               :label="t('DeviceList.filter.facility')"
               :placeholder="t('DeviceList.filter.facility-placeholder')"
               :multiple="false"
@@ -176,7 +176,7 @@
 
           <!-- Brand -->
           <n-form-item :label="t('DeviceList.filter.brand')"  class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.brand"
               :placeholder="t('DeviceList.filter.brand-placeholder')"
               class="searchFilter"
@@ -186,7 +186,7 @@
 
           <!-- Model -->
           <n-form-item :label="t('DeviceList.filter.model')"  class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.model"
               :placeholder="t('DeviceList.filter.model-placeholder')"
               class="searchFilter"
@@ -196,7 +196,7 @@
 
           <!-- Metadata key -->
           <n-form-item :label="t('DeviceList.filter.metadataKey')"  class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.metadataKey"
               :placeholder="t('DeviceList.filter.metadataKey-placeholder')"
               class="searchFilter"
@@ -206,7 +206,7 @@
 
           <!-- Metadata value -->
           <n-form-item :label="t('DeviceList.filter.metadataValue')"  class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.metadataValue"
               :placeholder="t('DeviceList.filter.metadataValue-placeholder')"
               class="searchFilter"
@@ -215,13 +215,13 @@
           </n-form-item>
 
           <n-space justify="end" class="mt-2">
-            <opensilex-Button
+            <Button
               class="resetButton"
               :label="t('component.common.search.clear-button')"
               icon="bi-x-lg"
               @click="reset"
             />
-            <opensilex-Button
+            <Button
               class="greenThemeColor"
               :label="t('component.common.search.search-button')"
               icon="bi-search"
@@ -234,7 +234,7 @@
 
     <!-- Contenu Liste -->
     <n-layout-content class="device-content">
-      <opensilex-TableAsyncView
+      <TableAsyncView
         ref="tableRef"
         :searchMethod="searchDevices"
         :fields="fields"
@@ -246,7 +246,7 @@
         @refreshed="onRefreshed"
       >
         <template #cell(name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.name"
             :to="{ path: '/device/details/' + encodeURIComponent(data.item.uri) }"
@@ -254,14 +254,14 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group size="small">
-            <opensilex-EditButton
+          <n-button-group size="small" class="btn-group btn-group-sm">
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               @click="editDevice(data.item.uri)"
               label="DeviceList.update"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
               label="DeviceList.delete"
               :small="true"
@@ -269,9 +269,9 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
-      <opensilex-ModalForm
+      <ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
         component="opensilex-DocumentForm"
@@ -281,12 +281,12 @@
         icon="bi#bi-file-earmark-text"
       />
 
-      <opensilex-DeviceModalForm
+      <DeviceModalForm
         ref="deviceFormRef"
         @onUpdate="updateSelectedDevice"
       />
 
-      <opensilex-VariableModalList
+      <VariableModalList
         v-if="showVariableForm"
         ref="variableSelectionRef"
         label="label"
@@ -295,13 +295,13 @@
         @onValidate="editDeviceVar"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="showEventForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="eventCsvFormRef"
         :targets="selectedUris"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="showMoveForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="moveCsvFormRef"
         :targets="selectedUris"
@@ -338,6 +338,20 @@ import {
   type FacilityGetDTO
 } from 'opensilex-core/index'
 import { OrganizationsService } from 'opensilex-core/api/organizations.service'
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import VariableModalList from "@/components/variables/VariableModalList.vue";
+import DeviceModalForm from "@/components/devices/form/DeviceModalForm.vue";
+import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
@@ -393,7 +407,7 @@ const dynamicTypeProperties = ref<VueRDFTypePropertyDTO[]>([])
 // valeurs saisies par l’utilisateur, indexées par URI de propriété
 const dynamicPropertyFilters = ref<Record<string, string | undefined>>({})
 
-const fields = [
+const fields: Array<TableField> = [
   {
     key: 'name',
     label: t('DeviceList.name'),
@@ -411,7 +425,11 @@ const fields = [
   },
   {
     key: 'actions',
-    label: 'component.common.actions'
+    label: 'component.common.actions',
+    resizable: false,
+    naiveProps: {
+      width: 100
+    }
   }
 ]
 

@@ -1,89 +1,96 @@
 <template>
-  <n-form>
-
-    <InputForm
-        v-model:value="data.classUri"
-        label="component.common.type"
-        type="text"
-        :disabled="true"
-    ></InputForm>
+  <n-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+  >
+    <n-form-item>
+      <InputForm
+          v-model:value="data.classUri"
+          label="component.common.type"
+          type="text"
+          :disabled="true"
+      ></InputForm>
+    </n-form-item>
 
     <!-- Parent -->
-    <FormSelector
-        v-model:selected="form.property"
-        :options="propertiesOptions"
-        :required="true"
-        :label="t('OntologyClassPropertyForm.property')"
-        :helpMessage="t('OntologyClassPropertyForm.property-help')"
-        @update:selected="updateIsListProperty"
-    ></FormSelector>
+    <n-form-item path="property">
+      <FormSelector
+          v-model:selected="form.property"
+          :options="propertiesOptions"
+          :required="true"
+          :label="t('OntologyClassPropertyForm.property')"
+          :helpMessage="t('OntologyClassPropertyForm.property-help')"
+          @update:selected="updateIsListProperty"
+      ></FormSelector>
+    </n-form-item>
 
 
     <!-- is_required -->
-    <FormField
-        :required="true"
-        :label="t('OntologyClassPropertyForm.required')"
-        :helpMessage="t('OntologyClassPropertyForm.required-help')"
-    >
-      <template #field>
-        <n-switch
-            v-model:value="form.is_required"
-            size="small"
-        ></n-switch>
-      </template>
-    </FormField>
+    <n-form-item path="is_required">
+      <FormField
+          :label="t('OntologyClassPropertyForm.required')"
+          :helpMessage="t('OntologyClassPropertyForm.required-help')"
+      >
+        <template #field>
+          <n-switch
+              v-model:value="form.is_required"
+              size="small"
+          ></n-switch>
+        </template>
+      </FormField>
+    </n-form-item>
 
     <!-- is_list -->
-    <FormField
-        :required="true"
-        :label="t('OntologyClassPropertyForm.list')"
-        :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
-    >
-      <template #field>
-        <n-switch
-            :disabled="dataTypeProperties.indexOf(form.property) >= 0"
-            v-model:value="form.is_list"
-            size="small"
-        ></n-switch>
-      </template>
-    </FormField>
+    <n-form-item path="is_list">
+      <FormField
+          :label="t('OntologyClassPropertyForm.list')"
+          :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
+      >
+        <template #field>
+          <n-switch
+              :disabled="dataTypeProperties.indexOf(form.property) >= 0"
+              v-model:value="form.is_list"
+              size="small"
+          ></n-switch>
+        </template>
+      </FormField>
+    </n-form-item>
 
   </n-form>
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, watchEffect} from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef, watch, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
-import {NSwitch, NForm} from "naive-ui";
+import {NSwitch, NForm, NFormItem, FormRules} from "naive-ui";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormField from "@/components/common/forms/FormField.vue";
+import {required} from "@/models/FormFieldsFormatter";
 
 //#region Public
 const props = withDefaults(defineProps<{
   editMode: boolean,
-  form: any,
   data: {
     domain: string,
     classUri: string
   }
-}>(), {
-  form: {
-    property: null,
-    is_required: false,
-    is_list: false
-  }
-});
+}>(), {});
 
 defineExpose({
   getEmptyForm,
   create,
   update
-})
+});
+
+const emit = defineEmits<{
+  validationChanged: [boolean]
+}>();
 //#endregion
 
 //#region Private
@@ -91,8 +98,15 @@ const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
 const {t} = useI18n();
 
+const formRef = useTemplateRef<InstanceType<typeof NForm>>("formRef")
+
 const availableProperties = ref();
 const dataTypeProperties = ref([]);
+const form = ref({
+  property: undefined,
+  is_required: false,
+  is_list: false
+})
 
 const propertiesOptions = computed(() => {
   return buildTreeListOptions(
@@ -101,6 +115,19 @@ const propertiesOptions = computed(() => {
   );
 })
 
+const rules = ref<FormRules>({
+  property: required('OntologyClassPropertyForm.property')
+});
+
+onMounted(() => {
+  emit('validationChanged', false);
+});
+
+watch(form.value, async () => {
+  const isValid = await validate();
+  console.log(`Form changed : valid = ${isValid}`);
+  emit('validationChanged', isValid);
+});
 
 watchEffect(() => {
   ontologyService.getLinkableProperties(props.data.classUri, props.data.domain).then((http) => {
@@ -129,13 +156,13 @@ function setProperties(properties: ResourceTreeDTO[]) {
 }
 
 function updateIsListProperty() {
-  if (!props.form.property || !dataTypeProperties) {
+  if (!form.value.property || !dataTypeProperties) {
     return;
   }
 
   // if the property is a data property then set is_list to false, since we don't actually handle generics list component for data-property
-  if (isDataProperty(props.form.property)) {
-    props.form.is_list = false;
+  if (isDataProperty(form.value.property)) {
+    form.value.is_list = false;
   }
 }
 
@@ -223,6 +250,14 @@ function buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
   return option;
 }
 
+async function validate(): Promise<boolean> {
+  try {
+    const errors = await formRef.value.validate();
+    return !errors.warnings;
+  } catch (error) {
+    return false;
+  }
+}
 //#endregion
 </script>
 

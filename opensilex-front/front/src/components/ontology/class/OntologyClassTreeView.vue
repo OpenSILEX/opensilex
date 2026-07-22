@@ -13,18 +13,20 @@
     </template>
 
     <template #buttons="{ node }">
-      <AddChildButton
-          v-if="user.isAdmin()"
-          @click="emit('createChildClass' ,node.data.uri)"
-          :label="t('OntologyClassTreeView.add-child')"
-          :small="true"
-      ></AddChildButton>
-      <DeleteButton
-          v-if="isManagedClass(node.data.uri) && user.isAdmin()"
-          @click="emit('deleteRDFType', node.data)"
-          :label="t('OntologyClassTreeView.delete')"
-          :small="true"
-      ></DeleteButton>
+      <n-button-group size="small" class="btn-group btn-group-sm">
+        <AddChildButton
+            v-if="user.isAdmin()"
+            @click="emit('createChildClass' ,node.data.uri)"
+            :label="t('OntologyClassTreeView.add-child')"
+            :small="true"
+        ></AddChildButton>
+        <DeleteButton
+            v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+            @click="emit('deleteRDFType', node.data)"
+            :label="t('OntologyClassTreeView.delete')"
+            :small="true"
+        ></DeleteButton>
+      </n-button-group>
     </template>
   </TreeView>
 </template>

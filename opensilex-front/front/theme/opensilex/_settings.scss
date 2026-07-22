@@ -3,6 +3,9 @@ html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
   -webkit-text-size-adjust: 100%; /* 2 */
+
+  //global colors
+  --color-dark: #212121;
 }
 body {
   margin: 0;
@@ -245,14 +248,14 @@ textarea {
     outline: none !important;
 }
 a {
+  text-decoration: none;
+  transition: color .2s;
+  &:hover, &:focus, &:active {
+    text-decoration: underline;
     color: #212121;
-    @include transition(color .2s);
-    &:hover, &:focus, &:active {
-        outline: 0;
-        text-decoration: none;
-        color: #212121;
-    }
+  }
 }
+
 $empty: transparent;
 $default: #d6d6d6;
 $primary: #007bff;
@@ -265,7 +268,7 @@ $inverse: #4c5667;
 $purple: #BF55EC;
 $pink: #f76397;
 $white: #ffffff;
-$dark: #212121;
+$dark: var(--color-dark);
 $grey: #9aa0ac;
 $aqua: #3ec5d6;
 $blue: #19B5FE;

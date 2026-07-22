@@ -36,6 +36,7 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
     const submitAction = editMode.value ? options.update : options.create
 
     try {
+      showLoader()
       const result = await Promise.resolve(submitAction?.(form.value))
       if (result !== false) {
         // success message
@@ -60,6 +61,8 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
       }
     } catch (err) {
       opensilex?.errorHandler?.(err)
+    } finally {
+      hideLoader()
     }
   }
 
@@ -72,6 +75,7 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
     editMode.value = false
     form.value = passedForm ?? options.getEmptyForm()
     options.reset()
+    options.nFormRef.value.restoreValidation()
     options.modalRef.value.show()
   }
 
@@ -79,7 +83,18 @@ export default function useModalFormLogic(options: UseModalFormOptions) {
     editMode.value = true
     form.value = editForm
     options.reset()
+    options.nFormRef.value.restoreValidation()
     options.modalRef.value.show?.()
+  }
+
+  function showLoader(): void {
+    opensilex.enableLoader();
+    opensilex.showLoader();
+  }
+
+  function hideLoader(): void {
+    opensilex.hideLoader();
+    opensilex.disableLoader();
   }
 
   return {

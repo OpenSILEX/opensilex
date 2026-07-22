@@ -125,26 +125,6 @@ interface AccountFormDTO {
 }
 //#endregion
 
-//#region Props
-const props = withDefaults(
-    defineProps<{
-      editMode?: boolean;
-      form?: AccountFormDTO;
-    }>(),
-    {
-      editMode: false,
-      form: () => ({
-        uri: null,
-        email: "",
-        linked_person: null,
-        admin: false,
-        password: "",
-        language: "en"
-      }),
-    }
-);
-//#endregion
-
 const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
 
 
@@ -201,7 +181,28 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
 });
 //#endregion
 
-//#region Methods (create/update/reset/validate etc.)
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic({
+  modalRef,
+  nFormRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  onCreate: (res: any) => emit('onCreate', res),
+  onUpdate: (res: any) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+  onHide: () => emit('hide')
+})
+
+const form = modalFormLogic.form
+const editMode = modalFormLogic.editMode
+const submitModal = modalFormLogic.submit
+const hide = modalFormLogic.hide
+const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
+//#endregion
+
+//#region Methods
 function getEmptyForm(): AccountFormDTO {
   return {
     uri: null,
@@ -211,16 +212,6 @@ function getEmptyForm(): AccountFormDTO {
     password: "",
     language: "en"
   };
-}
-
-function showLoader(): void {
-  opensilex.enableLoader();
-  opensilex.showLoader();
-}
-
-function hideLoader(): void {
-  opensilex.hideLoader();
-  opensilex.disableLoader();
 }
 
 async function reset(): Promise<void> {
@@ -241,58 +232,21 @@ async function reset(): Promise<void> {
 }
 
 async function create(formData: AccountFormDTO) {
-  showLoader();
-  try {
     return await securityService.createAccount(formData);
-  } catch (error) {
-    throw error
-  } finally {
-    hideLoader();
-  }
 }
 
 async function update(formData: AccountFormDTO) {
-  showLoader();
-  
   if (formData.password === "") {
     formData.password = null;
   }
-  
-  try {
-    return await securityService.updateAccount(formData);
-  } catch (error) {
-    throw error
-  } finally {
-    hideLoader();
-  }
+  return await securityService.updateAccount(formData);
 }
 //#endregion
-
-// use composable
-const modalFormLogic = useModalFormLogic({
-  modalRef,
-  nFormRef,
-  getEmptyForm,
-  create,
-  update,
-  reset,
-  onCreate: (res: any) => emit('onCreate', res),
-  onUpdate: (res: any) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
-  onHide: () => emit('hide')
-})
-
-const form = modalFormLogic.form
-const editMode = modalFormLogic.editMode
-const submitModal = modalFormLogic.submit
-const hide = modalFormLogic.hide
-const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
 
 //#region Expose
 defineExpose({
   showCreateForm: modalFormLogic.showCreateForm,
   showEditForm: modalFormLogic.showEditForm,
-  getFormRef: () => ({ validate, getEmptyForm }),
   hide: modalFormLogic.hide
 });
 //#endregion

@@ -147,7 +147,7 @@ const fields = computed(() => [
   { key: 'authors', label: t('DocumentTabList.author'), sortable: true },
   { key: 'date', label: t('DocumentTabList.date'), sortable: true },
   { key: 'rdf_type_name', label: t('DocumentTabList.type'), sortable: true },
-  { key: 'actions', label: t('component.common.actions') }
+  { key: 'actions', label: t('component.common.actions'), sortable: false }
 ]);
 
 

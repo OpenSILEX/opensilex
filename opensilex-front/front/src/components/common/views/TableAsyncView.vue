@@ -620,6 +620,10 @@ defineExpose({
 .title-icon {
   position: relative;
 }
+
+.table-responsive a {
+  color: #007bff;
+}
 </style>
 
 <i18n>

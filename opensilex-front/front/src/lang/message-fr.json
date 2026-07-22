@@ -950,7 +950,25 @@
             }
         },
         "document": {
-            "nopreview": "Pas de prévisualisation possible"
+            "nopreview": "Pas de prévisualisation possible",
+            "selected": "Document(s) sélectionné(s)",
+            "selected-all": "Tous les documents",
+            "display": "Affichage",
+            "label-filter": "Rechercher des documents",
+            "filter-title-placeholder": "Filtrer par titre",
+            "filter-date-placeholder": "Filtrer par date",
+            "date": "Année",
+            "filter-author-placeholder": "Filtrer par auteur",
+            "author": "Auteur",
+            "filter-keywords-placeholder": "Filtrer par mots-clés",
+            "keywords": "Mots-clés",
+            "targets-placeholder": "Entrez l'URI concerné",
+            "targets": "Cible",
+            "deprecated": "Obsolète",
+            "download": "Télécharger le fichier",
+            "browseSource": "Naviguer à la source",
+            "title-placeholder": "Saisir un titre",
+            "searchAll-placeholder": "Recherche par titre et mot-clé"
         },
         "organization": {
             "exception": {

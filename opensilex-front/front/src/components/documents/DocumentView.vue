@@ -1,15 +1,10 @@
 <template>
-  <div class="container-fluid py-3">
-
-
-
+  <div class="container-fluid">
     <opensilex-PageContent>
-      <template v-slot>
         <opensilex-DocumentList
           ref="documentListRef"
           :redirectAfterCreation="true"
         ></opensilex-DocumentList>
-      </template>
     </opensilex-PageContent>
   </div>
 </template>
@@ -24,6 +19,7 @@ const router = useRouter()
 
 // refs 
 const documentListRef = ref<any>(null)
+const documentForm = ref<any>(null)
 
 // user + credentials  
 const user = computed(() => store.state.user)

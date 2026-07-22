@@ -32,7 +32,6 @@ import {OpenSilexStore} from "@/models/Store";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import AccountList from "@/components/account/AccountList.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import {useI18n} from "vue-i18n";
 import AccountForm from "@/components/account/AccountForm.vue";
 

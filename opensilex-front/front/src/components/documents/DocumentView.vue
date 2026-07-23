@@ -10,16 +10,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import DocumentList from "@/components/document/DocumentList.vue";
 
 const store = useStore()
 const router = useRouter()
 
 // refs 
-const documentListRef = ref<any>(null)
-const documentForm = ref<any>(null)
+const documentListRef = useTemplateRef<InstanceType<typeof DocumentList>>("documentListRef")
 
 // user + credentials  
 const user = computed(() => store.state.user)

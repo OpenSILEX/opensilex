@@ -90,7 +90,7 @@
             <n-form-item class="compact-form-item" :label="t('component.document.targets')">
               <n-input
                 v-model:value="filter.targets"
-                :placeholder="t('component.document.title-placeholder')"
+                :placeholder="t('component.document.targets-placeholder')"
                 @keydown.enter.prevent.stop="applyFilters"
                 class="searchFilter"
               />
@@ -148,8 +148,8 @@
     <n-layout-content class="document-content">
       <div class="pageActionsBtns">
         <opensilex-CreateButton
-          v-if="user.hasCredential(props.modificationCredentialId)"
-          @click="createDocument"
+          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+          @click="documentForm.showCreateForm(initForm())"
           :label="t('component.common.addDocument')"
           class="createButton"
         />
@@ -196,14 +196,14 @@
         <template #cell(actions)="{ data }">
           <div class="btn-group btn-group-sm">
             <opensilex-EditButton
-              v-if="user.hasCredential(props.modificationCredentialId)"
+              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="() => editDocument(data.item.uri)"
               label="component.document.update"
               :small="true"
             />
 
             <opensilex-DeprecatedButton
-              v-if="user.hasCredential(props.modificationCredentialId)"
+              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               :deprecated="data.item.deprecated"
               @click="() => deprecatedDocument(data.item.uri)"
               :small="true"
@@ -246,12 +246,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { DocumentsService } from 'opensilex-core/index'
+import DocumentForm from "@/components/document/DocumentForm.vue";
+
 import {
   NLayout,
   NLayoutSider,
@@ -292,7 +294,7 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const service = $opensilex.getService<DocumentsService>('opensilex.DocumentsService')
 
 const tableRef = ref<any>(null)
-const documentForm = ref<any>(null)
+const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>("documentForm")
 
 const filtersCollapsed = ref(true)
 

@@ -964,10 +964,10 @@
             "keywords": "Mots-clés",
             "targets-placeholder": "Entrez l'URI concerné",
             "targets": "Cible",
-            "deprecated": "Obsolète",
+            "filter-deprecated": "Obsolète",
             "download": "Télécharger le fichier",
             "browseSource": "Naviguer à la source",
-            "title-placeholder": "Saisir un titre",
+            "update": "Éditer le document",
             "searchAll-placeholder": "Recherche par titre et mot-clé"
         },
         "organization": {

@@ -227,7 +227,7 @@
               variant="outline-info"
             />
 
-          </div>
+          </n-button-group>
         </template>
       </opensilex-TableAsyncView>
 

@@ -75,7 +75,7 @@
                     icon="bi-link-45deg"
                     variant="outline-info"
                   />
-                </div>
+                </n-button-group>
               </template>
             </opensilex-TableAsyncView>
           </template>

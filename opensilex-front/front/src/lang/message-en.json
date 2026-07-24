@@ -893,7 +893,26 @@
             "external-already-existing": "Already associated reference"
         },
         "document": {
-            "nopreview": "No preview possible"
+            "nopreview": "No preview possible",
+            "selected": "Selected Document(s)",
+            "selected-all": "All documents",
+            "display": "Display",
+            "label-filter": "Search documents",
+            "filter-title-placeholder": "Filter by title",
+            "filter-date-placeholder": "Filter by date",
+            "date": "Year",
+            "filter-author-placeholder": "Filter by author",
+            "author": "Author",
+            "filter-keywords-placeholder": "Filter by keywords",
+            "keywords": "Keywords",
+            "targets-placeholder": "Enter target's URI",
+            "targets": "Target",
+            "filter-deprecated": "Deprecated",
+            "download": "Download file",
+            "browseSource": "Browse source",
+            "update": "Update document",
+            "searchAll-placeholder": "Search by title and keyword" 
+
         },
         "organization": {
             "exception": {

@@ -1,13 +1,13 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="modalFormLogic.formTitle.value" :tutorial="!editMode" :icon="null" />
+      <FormHeader :title="modalFormLogic.formTitle.value" :icon="null" />
     </template>
 
     <n-form
         ref="formRef"
         :rules="rules"
-        :model="form"
+        :model="modalFormLogic.form.value"
         label-placement="top"
         :show-require-mark="true"
         size="large"
@@ -15,10 +15,10 @@
       <!-- URI -->
       <n-form-item>
         <UriForm
-            :uri.sync="form.uri"
+            :uri.sync="modalFormLogic.form.value.uri"
             label="component.account.account-uri"
             helpMessage="component.common.uri-help-message"
-            :editMode="editMode"
+            :editMode="modalFormLogic.editMode.value"
             :generated.sync="uriGenerated"
         ></UriForm>
       </n-form-item>
@@ -26,7 +26,7 @@
       <!-- Email -->
       <n-form-item path="email">
         <InputForm
-            v-model:value="form.email"
+            v-model:value="modalFormLogic.form.value.email"
             label="component.account.email-address"
             type="email"
             :placeholder="t('component.account.form-email-placeholder')"
@@ -37,10 +37,10 @@
       <!-- Password -->
       <n-form-item path="password">
         <InputForm
-            v-model:value="form.password"
+            v-model:value="modalFormLogic.form.value.password"
             label="component.account.password"
             type="password"
-            :required="!editMode"
+            :required="!modalFormLogic.editMode"
             :placeholder="t('component.account.form-password-placeholder')"
             autocomplete="new-password"
         ></InputForm>
@@ -48,7 +48,7 @@
 
       <!-- Default language -->
         <FormSelector
-            v-model:selected="form.language"
+            v-model:selected="modalFormLogic.form.value.language"
             :options="languages"
             :required="true"
             label="component.account.default-lang"
@@ -59,7 +59,7 @@
       <!-- Admin flag -->
       <n-form-item v-if="isUserAdmin">
         <CheckboxForm
-            v-model:value="form.admin"
+            v-model:value="modalFormLogic.form.value.admin"
             label="component.account.admin"
             title="component.account.form-admin-option-label"
         ></CheckboxForm>
@@ -68,7 +68,7 @@
       <!-- linked person -->
         <PersonSelector
             v-if="canSelectAPerson"
-            v-model:persons="form.linked_person"
+            v-model:persons="modalFormLogic.form.value.linked_person"
             label="component.account.linked-person"
             helpMessage="component.account.person-selector.help-message"
             :getOnlyPersonsWithoutAccount="true"
@@ -84,7 +84,7 @@
     </n-form>
 
     <template #footer>
-      <FormFooter @cancel="hide" @submit="submitModal" />
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
     </template>
   </Modal>
 </template>
@@ -143,7 +143,7 @@ const rules = computed(() => ({
   'password': {
     validator(_rule, value) {
       // composable exposes editMode, use that in rule resolution below by referencing the reactive returned editMode
-      if (!editMode.value && (!value || value.toString().trim().length === 0)) {
+      if (!modalFormLogic.editMode.value && (!value || value.toString().trim().length === 0)) {
         return new Error(t('validations.required_if', {_field_: t('component.account.password')}));
       }
       return true;
@@ -199,11 +199,6 @@ const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   onSuccess: () => emit('onSuccess'),
   onHide: () => emit('hide')
 })
-
-const form = modalFormLogic.form
-const editMode = modalFormLogic.editMode
-const submitModal = modalFormLogic.submit
-const hide = modalFormLogic.hide
 //#endregion
 
 //#region Methods

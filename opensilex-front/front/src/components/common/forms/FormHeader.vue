@@ -2,11 +2,11 @@
   <div class="flex justify-between items-center">
     <h4>
       <slot name="icon">
-        <opensilex-Icon :icon="icon" class="icon-title" v-if="icon" />
+        <Icon :icon="icon" class="icon-title" v-if="icon" />
       </slot>
       {{ title }}
     </h4>
-    <opensilex-HelpButton
+    <HelpButton
       v-if="tutorial"
       label="component.tutorial.name"
       class="modalFormTutorial"
@@ -17,15 +17,25 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-  title: { type: String, required: true },
-  icon: String,
-  tutorial: { type: Boolean, default: false },
-  helpAction: Function
-})
+import HelpButton from "@/components/common/buttons/HelpButton.vue";
+
+
+const props = withDefaults(
+    defineProps<{
+      title: string,
+      icon?: String,
+      tutorial?: boolean,
+      startTutorial?: Function
+    }>(),
+    {
+      tutorial: false
+    }
+)
+
+
 
 function onHelp() {
-  props.helpAction?.()
+  props.startTutorial?.()
 }
 </script>
 

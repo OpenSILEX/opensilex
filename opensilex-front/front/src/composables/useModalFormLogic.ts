@@ -1,4 +1,4 @@
-import {inject, ref, TemplateRef} from 'vue'
+import {computed, inject, ref, TemplateRef} from 'vue'
 import {useI18n} from 'vue-i18n'
 import Modal from "@/components/common/views/Modal.vue";
 import {NForm} from "naive-ui";
@@ -12,6 +12,8 @@ type UseModalFormOptions<T> = {
   create: (form: T) => Promise<HttpResponse<OpenSilexResponse>>
   update: (form: T) => Promise<HttpResponse<OpenSilexResponse>>
   reset: () => Promise<void> | void
+  addTitle: string
+  editTitle: string
   successMessage?: string
   overrideSuccessMessage?: boolean
   onCreate: (form: HttpResponse<OpenSilexResponse>) => void
@@ -29,6 +31,8 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
 
   const form = ref(options.getEmptyForm())
   const editMode = ref(false)
+
+  const formTitle = computed(() => t(editMode.value ? 'component.account.update' : 'component.account.add'))
 
   async function submit() {
     try {
@@ -106,6 +110,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
     showCreateForm,
     showEditForm,
     hide,
-    submit
+    submit,
+    formTitle,
   }
 }

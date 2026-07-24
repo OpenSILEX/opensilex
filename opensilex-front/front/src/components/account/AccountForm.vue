@@ -1,7 +1,7 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="computedTitle" :tutorial="!editMode" :icon="null" />
+      <FormHeader :title="modalFormLogic.formTitle.value" :tutorial="!editMode" :icon="null" />
     </template>
 
     <n-form
@@ -179,6 +179,9 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
   }
   return modalFormLogic.form.value.linked_person || "";
 });
+
+const addTitle =  t('component.account.add')
+const editTitle = t('component.account.edit')
 //#endregion
 
 //#region modalFormLogic composable
@@ -189,6 +192,8 @@ const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   create,
   update,
   reset,
+  addTitle: addTitle,
+  editTitle: editTitle,
   onCreate: (res) => emit('onCreate', res),
   onUpdate: (res) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),
@@ -199,7 +204,6 @@ const form = modalFormLogic.form
 const editMode = modalFormLogic.editMode
 const submitModal = modalFormLogic.submit
 const hide = modalFormLogic.hide
-const computedTitle = computed(() => t(editMode.value ? 'component.account.edit-title' : 'component.account.create-title'))
 //#endregion
 
 //#region Methods

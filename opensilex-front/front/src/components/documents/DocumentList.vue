@@ -194,7 +194,7 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <div class="btn-group btn-group-sm">
+          <n-button-group size="small" class="btn-group btn-group-sm">
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="() => editDocument(data.item.uri)"
@@ -326,7 +326,7 @@ const fields = computed(() => [
   { key: 'uri', label: 'component.common.title', sortable: true },
   { key: 'date', label: 'component.common.date', sortable: true },
   { key: 'rdf_type_name', label: 'component.common.type', sortable: true },
-  { key: 'actions', label: 'component.common.actions', sortable: false }
+  { key: 'actions', label: 'component.common.actions', resizable:false, sortable: false, naiveProps: {width: 100}}
 ]);
 
 const paginationInfo = computed(() => {

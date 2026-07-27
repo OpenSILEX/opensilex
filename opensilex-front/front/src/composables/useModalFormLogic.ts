@@ -47,7 +47,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
     try {
       showLoader()
       const result = await Promise.resolve(submitAction?.(form.value))
-      if (result !== false) {
+      if (result != null) {
         // success message
         let msg = (options.successMessage ?? t('component.common.element'))
 

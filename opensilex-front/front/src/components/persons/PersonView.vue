@@ -15,16 +15,13 @@
       </template>
     </PageContent>
 
-    <ModalForm
+    <PersonForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
       ref="personForm"
-      component="opensilex-PersonForm"
-      createTitle="component.person.add"
-      editTitle="component.person.update"
-      icon="ik#ik-user"
-      @onCreate="personList.refresh()"
-      @onUpdate="personList.refresh()"
-    ></ModalForm>
+      :createTitle="t('component.person.add')"
+      :editTitle="t('component.person.update')"
+      @onSuccess="personList.refresh()"
+    />
   </div>
 </template>
 
@@ -35,6 +32,7 @@ import {OpenSilexStore} from "@/models/Store";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import PersonList from "@/components/persons/PersonList.vue";
+import PersonForm from "@/components/persons/PersonForm.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import {useI18n} from "vue-i18n";
 

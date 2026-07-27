@@ -60,6 +60,7 @@ import type { DeviceCreationDTO } from 'opensilex-core/index'
 import DeviceForm from "@/components/devices/form/DeviceForm.vue";
 import DeviceCsvForm from "@/components/devices/csv/DeviceCsvForm.vue";
 import DeviceList from "@/components/devices/DeviceList.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 const store = useStore()
 const router = useRouter()
@@ -81,8 +82,8 @@ function showCsvForm() {
   })
 }
 
-function displayAfterCreation(device: DeviceCreationDTO) {
-  const uri = device?.uri
+function displayAfterCreation(response: HttpResponse<OpenSilexResponse<string>>) {
+  const uri = response?.response?.result
   if (!uri) return
 
   router.push({

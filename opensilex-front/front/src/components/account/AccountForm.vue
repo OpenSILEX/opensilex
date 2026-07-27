@@ -1,7 +1,7 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="modalFormLogic.formTitle.value" :icon="null" />
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-person-lock" />
     </template>
 
     <n-form
@@ -120,6 +120,11 @@ interface AccountFormDTO {
 }
 
 const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
+
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>();
 //#endregion
 
 //#region Private
@@ -180,9 +185,6 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
   }
   return modalFormLogic.form.value.linked_person || "";
 });
-
-const addTitle =  t('component.account.add')
-const editTitle = t('component.account.edit')
 //#endregion
 
 //#region modalFormLogic composable
@@ -193,8 +195,8 @@ const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   create,
   update,
   reset,
-  addTitle: addTitle,
-  editTitle: editTitle,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
   onCreate: (res) => emit('onCreate', res),
   onUpdate: (res) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),

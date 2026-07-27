@@ -19,9 +19,10 @@
     <AccountForm
       v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       ref="accountForm"
-      @onCreate="accountList.refresh()"
-      @onUpdate="accountList.refresh()"
-    ></AccountForm>
+      :create-title="t('component.account.add')"
+      :edit-title="t('component.account.edit')"
+      @onSuccess="accountList.refresh()"
+    />
   </div>
 </template>
 

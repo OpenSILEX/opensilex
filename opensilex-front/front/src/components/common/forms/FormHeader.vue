@@ -18,12 +18,13 @@
 
 <script setup lang="ts">
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 
 const props = withDefaults(
     defineProps<{
       title: string,
-      icon?: String,
+      icon?: string,
       tutorial?: boolean,
       startTutorial?: Function
     }>(),

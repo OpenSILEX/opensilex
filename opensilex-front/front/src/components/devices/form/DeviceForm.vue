@@ -151,9 +151,14 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import DateRangePickerForm from "@/components/common/forms/DateRangePickerForm.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 //#region Public
-const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
 
 const props = defineProps<{
   createTitle: string,
@@ -218,7 +223,6 @@ const modalFormLogic = useModalFormLogic<DeviceCreationDTO>({
   onCreate: (res) => emit('onCreate', res),
   onUpdate: (res) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),
-  onHide: () => emit('hide')
 })
 //#endregion
 

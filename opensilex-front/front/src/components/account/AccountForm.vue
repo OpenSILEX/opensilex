@@ -108,6 +108,7 @@ import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
 import useModalFormLogic from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 //#region Public
 interface AccountFormDTO {
@@ -119,7 +120,11 @@ interface AccountFormDTO {
   linked_person: string | null;
 }
 
-const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
 
 const props = defineProps<{
   createTitle: string,
@@ -200,7 +205,6 @@ const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   onCreate: (res) => emit('onCreate', res),
   onUpdate: (res) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),
-  onHide: () => emit('hide')
 })
 //#endregion
 

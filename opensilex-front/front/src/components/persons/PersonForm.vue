@@ -145,9 +145,14 @@ import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
 import useModalFormLogic from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 //#region Public
-const emit = defineEmits(['onCreate','onUpdate','onSuccess'])
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
 
 const props = defineProps<{
   createTitle: string,

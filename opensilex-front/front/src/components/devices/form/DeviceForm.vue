@@ -158,6 +158,7 @@ const emit = defineEmits<{
   (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
   (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
   (e: 'onSuccess'): void
+  (e: 'onHide'): void
 }>()
 
 const props = defineProps<{
@@ -223,6 +224,7 @@ const modalFormLogic = useModalFormLogic<DeviceCreationDTO>({
   onCreate: (res) => emit('onCreate', res),
   onUpdate: (res) => emit('onUpdate', res),
   onSuccess: () => emit('onSuccess'),
+  onHide: () => emit('onHide')
 })
 //#endregion
 

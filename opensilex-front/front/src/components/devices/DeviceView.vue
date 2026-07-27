@@ -25,12 +25,14 @@
         </n-tooltip>
       </h5>
 
-      <opensilex-DeviceModalForm
+      <DeviceForm
         ref="modalFormRef"
         @onCreate="displayAfterCreation"
+        :createTitle="t('DeviceModalForm.add')"
+        :editTitle="t('DeviceModalForm.update')"
       />
 
-      <opensilex-DeviceCsvForm
+      <DeviceCsvForm
         v-if="renderCsvForm"
         ref="csvFormRef"
         @csvImported="deviceListRef?.refresh?.()"
@@ -38,7 +40,7 @@
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <opensilex-DeviceList ref="deviceListRef" />
+      <DeviceList ref="deviceListRef" />
     </opensilex-PageContent>
   </div>
 </template>
@@ -51,10 +53,13 @@ import { useRouter } from 'vue-router'
 import { NTooltip } from 'naive-ui'
 // @ts-ignore
 import type { DeviceCreationDTO } from 'opensilex-core/index'
+import DeviceForm from "@/components/devices/form/DeviceForm.vue";
+import DeviceCsvForm from "@/components/devices/csv/DeviceCsvForm.vue";
+import DeviceList from "@/components/devices/DeviceList.vue";
 
 const store = useStore()
 const router = useRouter()
-const { t, n } = useI18n();
+const { t } = useI18n();
 
 const renderCsvForm = ref(false)
 

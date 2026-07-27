@@ -32,7 +32,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
   const form = ref(options.getEmptyForm())
   const editMode = ref(false)
 
-  const formTitle = computed(() => t(editMode.value ? 'component.account.update' : 'component.account.add'))
+  const formTitle = computed(() => t(editMode.value ? options.editTitle : options.addTitle))
 
   async function submit() {
     try {

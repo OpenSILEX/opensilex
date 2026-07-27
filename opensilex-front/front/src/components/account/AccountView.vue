@@ -19,8 +19,8 @@
     <AccountForm
       v-if="user.hasCredential(credentials.CREDENTIAL_ACCOUNT_MODIFICATION_ID)"
       ref="accountForm"
-      :create-title="t('component.account.add')"
-      :edit-title="t('component.account.edit')"
+      :createTitle="t('component.account.add')"
+      :editTitle="t('component.account.edit')"
       @onSuccess="accountList.refresh()"
     />
   </div>

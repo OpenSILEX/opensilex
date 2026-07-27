@@ -282,6 +282,7 @@
       />
 
       <DeviceForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
         ref="deviceFormRef"
         :createTitle="t('component.device.add')"
         :editTitle="t('component.device.update')"

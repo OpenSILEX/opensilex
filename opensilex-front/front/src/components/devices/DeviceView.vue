@@ -26,6 +26,7 @@
       </h5>
 
       <DeviceForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
         ref="deviceFormRef"
         @onCreate="displayAfterCreation"
         :createTitle="t('component.device.add')"

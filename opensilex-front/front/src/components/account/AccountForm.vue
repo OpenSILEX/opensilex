@@ -246,8 +246,7 @@ async function update(formData: AccountFormDTO) {
 //#endregion
 defineExpose({
   showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm,
-  hide: modalFormLogic.hide
+  showEditForm: modalFormLogic.showEditForm
 });
 </script>
 

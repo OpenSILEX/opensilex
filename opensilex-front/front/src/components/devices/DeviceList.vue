@@ -257,8 +257,8 @@
           <n-button-group size="small" class="btn-group btn-group-sm">
             <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              @click="editDevice(data.item.uri)"
-              label="DeviceList.update"
+              @click="editDevice(data)"
+              :label="t('component.device.update')"
               :small="true"
             />
             <DeleteButton
@@ -281,8 +281,10 @@
         icon="bi#bi-file-earmark-text"
       />
 
-      <DeviceModalForm
+      <DeviceForm
         ref="deviceFormRef"
+        :createTitle="t('component.device.add')"
+        :editTitle="t('component.device.update')"
         @onUpdate="updateSelectedDevice"
       />
 
@@ -312,46 +314,42 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
-import type { VueJsOntologyExtensionService, VueRDFTypePropertyDTO } from 'opensilex-core'
-import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import {computed, inject, nextTick, onMounted, ref, watch} from 'vue'
+import type {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from 'opensilex-core'
+import {useI18n} from 'vue-i18n'
+import {useRoute} from 'vue-router'
+import {useStore} from 'vuex'
 import {
-  NLayout,
-  NLayoutSider,
-  NLayoutContent,
+  NButton,
+  NButtonGroup,
+  NCollapse,
+  NCollapseItem,
+  NDropdown,
   NForm,
   NFormItem,
-  NButton,
-  NDropdown,
-  NSpace,
-  NButtonGroup,
-  NCollapse, 
-  NCollapseItem,
-  NP
+  NLayout,
+  NLayoutContent,
+  NLayoutSider,
+  NSpace
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import {
-  DevicesService,
-  type DeviceGetDetailsDTO,
-  type FacilityGetDTO
-} from 'opensilex-core/index'
-import { OrganizationsService } from 'opensilex-core/api/organizations.service'
+import {type DeviceGetDetailsDTO, DevicesService, type FacilityGetDTO} from 'opensilex-core/index'
+import {OrganizationsService} from 'opensilex-core/api/organizations.service'
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import Button from "@/components/common/buttons/Button.vue";
-import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import VariableModalList from "@/components/variables/VariableModalList.vue";
-import DeviceModalForm from "@/components/devices/form/DeviceModalForm.vue";
 import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
 import {TableField} from "@/components/common/views/TableField";
+import DeviceForm from "@/components/devices/form/DeviceForm.vue";
+import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
 
 const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
@@ -562,8 +560,8 @@ function updateSelectedDevice() {
   }
 }
 
-function editDevice(uri: string) {
-  deviceFormRef.value?.showEditForm?.(uri)
+function editDevice(rowData: RowWithData<DeviceCreationDTO>) {
+  deviceFormRef.value?.showEditForm?.(rowData.item)
 }
 
 function addMetadataFilter() {

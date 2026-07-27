@@ -91,24 +91,3 @@ defineExpose({
   showEditForm
 })
 </script>
-
-<i18n>
-en:
-    DeviceModalForm:
-        title: Devices
-        description: Manage Devices
-        add: Add device
-        update: Update device
-        delete: Delete device
-        devices-help: Devices include objects, machines, electrical, electronic or mechanical devices, etc.
-        name: The device
-fr:
-    DeviceModalForm:
-        title: Appareils
-        description: Gestion des appareils
-        add: Ajouter un appareil
-        update: Editer un appareil
-        delete: Supprimer un appareil
-        devices-help: Les appareils sont des objets, machines, dispositifs électriques, électroniques, mécaniques, etc.
-        name: L'appareil
-</i18n>

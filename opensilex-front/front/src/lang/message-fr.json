@@ -981,7 +981,9 @@
         "device": {
             "description": "Gestion des appareils",
             "all_devices": "Tout les appareils",
-            "select_devices": "Choisir des dispositifs"
+            "select_devices": "Choisir des dispositifs",
+            "add": "Ajouter un appareil",
+            "update": "Editer un appareil"
         },
         "site": {
             "description": "Gérer et configurer les sites",

@@ -925,7 +925,9 @@
         "device": {
             "description": "Manage Devices",
             "all_devices": "All Devices",
-            "select_devices": "Select Devices"
+            "select_devices": "Select Devices",
+            "add": "Add device",
+            "update": "Update device"
         },
         "site": {
             "description": "Manage and configure sites",

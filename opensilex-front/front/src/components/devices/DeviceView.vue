@@ -6,7 +6,7 @@
     >
       <opensilex-CreateButton
         :label="t('Device.add')"
-        @click="modalFormRef?.showCreateForm?.()"
+        @click="deviceFormRef?.showCreateForm?.()"
         class="createButton"
       />
 
@@ -26,10 +26,10 @@
       </h5>
 
       <DeviceForm
-        ref="modalFormRef"
+        ref="deviceFormRef"
         @onCreate="displayAfterCreation"
-        :createTitle="t('DeviceModalForm.add')"
-        :editTitle="t('DeviceModalForm.update')"
+        :createTitle="t('component.device.add')"
+        :editTitle="t('component.device.update')"
       />
 
       <DeviceCsvForm
@@ -40,7 +40,10 @@
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <DeviceList ref="deviceListRef" />
+      <DeviceList
+          ref="deviceListRef"
+          @onUpdate="onDeviceListUpdate"
+      />
     </opensilex-PageContent>
   </div>
 </template>
@@ -63,7 +66,7 @@ const { t } = useI18n();
 
 const renderCsvForm = ref(false)
 
-const modalFormRef = ref<any>(null)
+const deviceFormRef = ref<any>(null)
 const csvFormRef = ref<any>(null)
 const deviceListRef = ref<any>(null)
 
@@ -84,6 +87,11 @@ function displayAfterCreation(device: DeviceCreationDTO) {
   router.push({
     path: '/device/details/' + encodeURIComponent(uri)
   })
+}
+
+function onDeviceListUpdate(dto: any): void {
+  const copydto = JSON.parse(JSON.stringify(dto));
+  deviceFormRef.value.showEditForm(copydto);
 }
 </script>
 

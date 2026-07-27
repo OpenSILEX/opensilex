@@ -109,12 +109,7 @@ import {OpenSilexStore} from "@/models/Store";
 import useModalFormLogic from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
 
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
-const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
-const store = useStore() as OpenSilexStore;
-const {t, availableLocales} = useI18n();
-
-//#region Types
+//#region Public
 interface AccountFormDTO {
   uri: string | null;
   email: string;
@@ -123,11 +118,18 @@ interface AccountFormDTO {
   admin: boolean;
   linked_person: string | null;
 }
-//#endregion
 
 const emit = defineEmits(['hide','onCreate','onUpdate','onSuccess'])
+//#endregion
 
+//#region Private
 
+//#region Plugin and services
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const store = useStore() as OpenSilexStore;
+const {t, availableLocales} = useI18n();
+//#endregion
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
 const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
@@ -142,7 +144,6 @@ const rules = computed(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
-      // composable exposes editMode, use that in rule resolution below by referencing the reactive returned editMode
       if (!modalFormLogic.editMode.value && (!value || value.toString().trim().length === 0)) {
         return new Error(t('validations.required_if', {_field_: t('component.account.password')}));
       }
@@ -242,13 +243,12 @@ async function update(formData: AccountFormDTO) {
 }
 //#endregion
 
-//#region Expose
+//#endregion
 defineExpose({
   showCreateForm: modalFormLogic.showCreateForm,
   showEditForm: modalFormLogic.showEditForm,
   hide: modalFormLogic.hide
 });
-//#endregion
 </script>
 
 <style scoped lang="scss">

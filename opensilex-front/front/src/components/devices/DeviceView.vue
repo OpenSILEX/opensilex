@@ -6,7 +6,7 @@
     >
       <opensilex-CreateButton
         :label="t('Device.add')"
-        @click="modalFormRef?.showCreateForm?.()"
+        @click="deviceFormRef?.showCreateForm?.()"
         class="createButton"
       />
 
@@ -25,12 +25,15 @@
         </n-tooltip>
       </h5>
 
-      <opensilex-DeviceModalForm
-        ref="modalFormRef"
+      <DeviceForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+        ref="deviceFormRef"
         @onCreate="displayAfterCreation"
+        :createTitle="t('component.device.add')"
+        :editTitle="t('component.device.update')"
       />
 
-      <opensilex-DeviceCsvForm
+      <DeviceCsvForm
         v-if="renderCsvForm"
         ref="csvFormRef"
         @csvImported="deviceListRef?.refresh?.()"
@@ -38,7 +41,10 @@
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <opensilex-DeviceList ref="deviceListRef" />
+      <DeviceList
+          ref="deviceListRef"
+          @onUpdate="onDeviceListUpdate"
+      />
     </opensilex-PageContent>
   </div>
 </template>
@@ -51,14 +57,18 @@ import { useRouter } from 'vue-router'
 import { NTooltip } from 'naive-ui'
 // @ts-ignore
 import type { DeviceCreationDTO } from 'opensilex-core/index'
+import DeviceForm from "@/components/devices/form/DeviceForm.vue";
+import DeviceCsvForm from "@/components/devices/csv/DeviceCsvForm.vue";
+import DeviceList from "@/components/devices/DeviceList.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 const store = useStore()
 const router = useRouter()
-const { t, n } = useI18n();
+const { t } = useI18n();
 
 const renderCsvForm = ref(false)
 
-const modalFormRef = ref<any>(null)
+const deviceFormRef = ref<any>(null)
 const csvFormRef = ref<any>(null)
 const deviceListRef = ref<any>(null)
 
@@ -72,13 +82,18 @@ function showCsvForm() {
   })
 }
 
-function displayAfterCreation(device: DeviceCreationDTO) {
-  const uri = device?.uri
+function displayAfterCreation(response: HttpResponse<OpenSilexResponse<string>>) {
+  const uri = response?.response?.result
   if (!uri) return
 
   router.push({
     path: '/device/details/' + encodeURIComponent(uri)
   })
+}
+
+function onDeviceListUpdate(dto: any): void {
+  const copydto = JSON.parse(JSON.stringify(dto));
+  deviceFormRef.value.showEditForm(copydto);
 }
 </script>
 

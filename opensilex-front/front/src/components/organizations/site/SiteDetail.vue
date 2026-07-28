@@ -4,19 +4,19 @@
     <div v-if="selected" class="card">
       <div class="card-header d-flex align-items-start justify-content-between">
         <h3 class="mb-0">
-          <opensilex-Icon icon="bi#bi-clipboard" />
+          <Icon icon="bi#bi-clipboard" />
           {{ t("component.common.details-label") }}
         </h3>
 
         <div v-if="withActions" class="card-header-right">
           <div class="btn-group" role="group" aria-label="actions">
-            <opensilex-EditButton
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
               @click="editSite"
               label="component.site.update"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
               @click="deleteSite"
               label="component.site.delete"
@@ -28,23 +28,23 @@
 
       <div class="card-body">
         <!-- URI -->
-        <opensilex-UriView
+        <UriView
           :uri="selected.uri"
           :value="selected.uri"
           :to="{ path: '/organization/site/details/' + encodeURIComponent(selected.uri) }"
         />
 
         <!-- Name -->
-        <opensilex-StringView label="component.common.name" :value="selected.name" />
+        <StringView label="component.common.name" :value="selected.name" />
 
         <!-- Description -->
-        <opensilex-StringView label="component.common.description" :value="selected.description" />
+        <StringView label="component.common.description" :value="selected.description" />
 
         <!-- Type -->
-        <opensilex-TypeView :type="selected.rdf_type" :typeLabel="selected.rdf_type_name" />
+        <TypeView :type="selected.rdf_type" :typeLabel="selected.rdf_type_name" />
 
         <!-- Organizations -->
-        <opensilex-UriListView
+        <UriListView
           v-if="hasOrganizations"
           :list="organizationUriList"
           :label="t('SiteDetail.organizations')"
@@ -52,7 +52,7 @@
         />
 
         <!-- Groups -->
-        <opensilex-UriListView
+        <UriListView
           v-if="hasGroups"
           :label="t('SiteDetail.groups')"
           :list="groupUriList"
@@ -60,7 +60,7 @@
         />
 
         <!-- Address -->
-        <opensilex-AddressView
+        <AddressView
           v-if="selected.address"
           :address="selected.address"
           :geometry="selected.geometry"
@@ -77,7 +77,7 @@
         </div>
 
         <!-- Metadata -->
-        <opensilex-MetadataView
+        <MetadataView
           v-if="selected.publisher && selected.publisher.uri"
           :publisher="selected.publisher"
           :publicationDate="selected.publication_date"
@@ -87,16 +87,12 @@
     </div>
 
     <!-- Modal form -->
-    <opensilex-ModalForm
+    <SiteForm
       ref="siteForm"
-      component="opensilex-SiteForm"
       createTitle="add"
       editTitle="edit"
-      icon="bi#bi-geo-alt"
       @onCreate="(e) => emit('onCreate', e)"
       @onUpdate="(e) => emit('onUpdate', e)"
-      :initForm="initForm"
-      :lazy="true"
     />
   </div>
 </template>
@@ -111,6 +107,17 @@ import type { OrganizationsService } from "opensilex-core/api/organizations.serv
 import DTOConverter from "../../../models/DTOConverter";
 import type OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type { SiteGetDTO, SiteUpdateDTO } from "opensilex-core/index";
+import Icon from "@/components/common/views/Icon.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import UriView from "@/components/common/views/UriView.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import TypeView from "@/components/common/views/TypeView.vue";
+import UriListView from "@/components/common/views/UriListView.vue";
+import AddressView from "@/components/common/views/AddressView.vue";
+import MetadataView from "@/components/common/views/MetadataView.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import SiteForm from "@/components/organizations/site/SiteForm.vue";
 
 // Props
 const props = withDefaults(
@@ -185,6 +192,7 @@ function editSite() {
     .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
       const editDto: SiteUpdateDTO =
         DTOConverter.extractURIFromResourceProperties(http.response.result);
+      initForm(editDto)
       siteForm.value?.showEditForm?.(editDto);
     })
     .catch(opensilex.errorHandler);
@@ -200,7 +208,7 @@ function deleteSite() {
 }
 
 function initForm(form: any) {
-  form.organizations = props.selected?.organizations;
+  form.organizations = props.selected?.organizations.map((org: any) => org.uri) ?? [];
 }
 </script>
 
@@ -209,19 +217,14 @@ function initForm(form: any) {
 
 <i18n>
 en:
-  add: Add site
-  edit: Update site
-  delete: Delete site
   SiteDetail:
     organizations: Organizations
     facilities: Facilities
     groups: Groups
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
-  add: Ajouter un site
-  edit: Modifier le site
-  delete: Supprimer le site
   SiteDetail:
+    organizations: Organisations
     facilities: Installations environnementales
     groups: Groupes
     noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.

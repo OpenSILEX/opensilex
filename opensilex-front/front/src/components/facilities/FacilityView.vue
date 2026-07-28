@@ -4,7 +4,7 @@
       icon="bi#bi-globe"
       :hasIcon="true"
       :title="name"
-      description="component.facility.view.title"
+      description="component.facility.title"
       class= "detail-element-header"
     ></PageHeader>
 

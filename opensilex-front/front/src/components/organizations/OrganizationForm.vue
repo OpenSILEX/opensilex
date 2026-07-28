@@ -1,72 +1,84 @@
 <template>
-  <n-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-  >
-    <!-- URI -->
-    <UriForm
-      v-model:uri="form.uri"
-      :label="t('OrganizationForm.organization-uri')"
-      helpMessage="component.common.uri-help-message"
-      :editMode="editMode"
-      v-model:generated="uriGenerated"
-    />
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-geo-alt" />
+    </template>
 
-    <!-- Name -->
-    <n-form-item path="name" class="compact-form-item">
-      <InputForm
-        path="name"
-        v-model:value="form.name"
-        label="component.common.name"
-        type="text"
-        :required="true"
-        :placeholder="t('OrganizationForm.form-name-placeholder')"
+    <n-form
+        ref="formRef"
+        :rules="rules"
+        :model="modalFormLogic.form.value"
+        label-placement="top"
+        :show-require-mark="true"
+        size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+            :uri.sync="modalFormLogic.form.value.uri"
+            label="component.common.uri"
+            helpMessage="component.common.uri-help-message"
+            :editMode="modalFormLogic.editMode.value"
+            :generated.sync="uriGenerated"
+        ></UriForm>
+      </n-form-item>
+
+      <!-- Name -->
+      <n-form-item path="name">
+        <InputForm
+          v-model:value="modalFormLogic.form.value.name"
+          label="component.common.name"
+          type="text"
+          :required="true"
+          :placeholder="t('OrganizationForm.form-name-placeholder')"
+        />
+      </n-form-item>
+
+      <!-- Type -->
+      <n-form-item path="rdf_type">
+        <TypeForm
+          v-model:type="modalFormLogic.form.value.rdf_type"
+          :baseType="opensilex.Foaf.ORGANIZATION_TYPE_URI"
+          :ignoreRoot="false"
+          :required="true"
+          :tree="true"
+          :placeholder="t('OrganizationForm.form-type-placeholder')"
+        />
+      </n-form-item>
+
+      <!-- Parents -->
+      <FormSelector
+        v-if="parentOptionsReady"
+        v-model:selected="modalFormLogic.form.value.parents"
+        :options="parentOptions"
+        :multiple="true"
+        label="component.common.parent"
+        :placeholder="t('OrganizationForm.form-parent-placeholder')"
       />
-    </n-form-item>
 
-    <!-- Type -->
-    <n-form-item path="rdf_type" class="compact-form-item">
-      <TypeForm
-        v-model:type="form.rdf_type"
-        :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
-        :ignoreRoot="false"
-        :required="true"
-        :tree="true"
-        :placeholder="t('OrganizationForm.form-type-placeholder')"
+      <!-- Groups -->
+      <GroupSelector
+        v-model:groups="modalFormLogic.form.value.groups"
+        :label="t('component.group.title')"
+        :multiple="true"
       />
-    </n-form-item>
 
-    <!-- Parents -->
-    <FormSelector
-      v-if="parentOptionsReady"
-      v-model:selected="form.parents"
-      :options="parentOptions"
-      :multiple="true"
-      label="component.common.parent"
-      :placeholder="t('OrganizationForm.form-parent-placeholder')"
-    />
+      <!-- Facilities -->
+      <FacilitySelector
+        v-model:facilities="modalFormLogic.form.value.facilities"
+        :label="t('component.facility.title')"
+        :multiple="true"
+      />
+    </n-form>
 
-    <!-- Groupes -->
-    <GroupSelector
-      v-model:groups="form.groups"
-      :label="t('OrganizationForm.form-group-label')"
-      :multiple="true"
-    />
-
-    <!-- Facilities -->
-    <FacilitySelector
-      v-model:facilities="form.facilities"
-      :label="t('OrganizationForm.form-facilities-label')"
-      :multiple="true"
-    />
-  </n-form>
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, onMounted } from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
 import { NForm, NFormItem } from "naive-ui";
 import type OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import type HttpResponse from "../../lib/HttpResponse";
@@ -76,67 +88,94 @@ import { OrganizationsService } from "opensilex-core/api/organizations.service";
 import type { OrganizationCreationDTO } from "opensilex-core/model/organizationCreationDTO";
 import type { OrganizationUpdateDTO } from "opensilex-core/model/organizationUpdateDTO";
 import { useI18n } from "vue-i18n";
-import { requiredTrimmed } from "../../models/FormFieldsFormatter";
+import {required, requiredTrimmed} from "../../models/FormFieldsFormatter";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
 import GroupSelector from "@/components/groups/GroupSelector.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
+import Modal from "@/components/common/views/Modal.vue";
+import useModalFormLogic from "@/composables/useModalFormLogic";
 
+//#region Public
 type OrganizationFormModel = OrganizationCreationDTO & {
+  uri: string | null;
   rdf_type_name?: string;
 };
 
-const props = withDefaults(
-  defineProps<{
-    editMode?: boolean;
-    form: OrganizationFormModel;
-  }>(),
-  {
-    editMode: false,
-    form: () => ({
-      uri: null,
-      rdf_type: null,
-      name: "",
-      parents: [],
-      groups: [],
-      facilities: [],
-    }),
-  }
-);
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>();
 
-const { t } = useI18n();
-const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
-const service = $opensilex.getService<OrganizationsService>(
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>();
+//#endregion
+
+//#region Private
+
+//#region Plugin and services
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
+const service = opensilex.getService<OrganizationsService>(
   "opensilex-core.OrganizationsService"
 );
+const { t } = useI18n();
+//#endregion
 
-const formRef = ref();
-const uriGenerated = ref(true);
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef');
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
+
+//#region Datas
+let uriGenerated = ref<boolean>(true);
 const parentOrganizations = ref<OrganizationDagDTO[]>([]);
+//#endregion
 
-const form = computed({
-  get: () => props.form,
-  set: () => {},
-});
-
+//#region Computed
 const rules = computed(() => ({
-  name: requiredTrimmed("component.common.name"),
-  rdf_type: {
-    required: true,
-    message: t("validations.required_if", {
-      _field_: t("OrganizationForm.form-type-label"),
-    }),
-    trigger: ["change", "blur"],
-  },
+  "name": requiredTrimmed("component.common.name"),
+  "rdf_type": required("component.common.type")
 }));
 
+const parentOptionsReady = computed(() => parentOrganizations.value.length > 0);
+
+const parentOptions = computed(() => {
+  if (modalFormLogic.editMode.value) {
+    return opensilex.buildTreeFromDag(parentOrganizations.value, {
+      disableSubTree: modalFormLogic.form.value.uri,
+    });
+  }
+  return opensilex.buildTreeFromDag(parentOrganizations.value);
+});
+//#endregion
+
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<OrganizationFormModel>({
+  modalRef,
+  nFormRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+});
+//#endregion
+
+//#region Methods
 onMounted(() => {
   loadParentOrganizations();
 });
 
-function getEmptyForm(): OrganizationCreationDTO {
+function getEmptyForm(): OrganizationFormModel {
   return {
     uri: null,
     rdf_type: null,
@@ -147,131 +186,40 @@ function getEmptyForm(): OrganizationCreationDTO {
   };
 }
 
-function setParentOrganizations(organizations: OrganizationDagDTO[]) {
-  parentOrganizations.value = organizations;
-}
-
-function loadParentOrganizations() {
-  return service
-    .searchOrganizations()
-    .then((http: HttpResponse<OpenSilexResponse<OrganizationDagDTO[]>>) => {
-      setParentOrganizations(http.response.result);
-    })
-    .catch($opensilex.errorHandler);
-}
-
-const parentOptionsReady = computed(() => parentOrganizations.value.length > 0);
-
-function reset() {
+async function reset(): Promise<void> {
   uriGenerated.value = true;
-  if (parentOrganizations.value == null) {
-    loadParentOrganizations();
-  }
 }
-
-function init() {
-  if (parentOrganizations.value == null) {
-    loadParentOrganizations();
-  }
-}
-
-const parentOptions = computed(() => {
-  if (props.editMode) {
-    return $opensilex.buildTreeFromDag(parentOrganizations.value, {
-      disableSubTree: form.value.uri,
-    });
-  }
-
-  return $opensilex.buildTreeFromDag(parentOrganizations.value);
-});
 
 function cleanFormBeforeSend(targetForm: OrganizationCreationDTO | OrganizationUpdateDTO) {
   targetForm.parents = (targetForm.parents || []).filter((parent) => parent);
 }
 
-async function validateForm() {
-  try {
-    await formRef.value?.validate();
-    return true;
-  } catch {
-    return false;
-  }
+async function loadParentOrganizations(): Promise<void> {
+  const http = await service.searchOrganizations();
+  parentOrganizations.value = http.response.result;
 }
 
-async function create(targetForm: OrganizationCreationDTO) {
-  const isValid = await validateForm();
-  if (!isValid) {
-    return Promise.reject(new Error("Form validation failed"));
-  }
-
+async function create(targetForm: OrganizationFormModel) {
   cleanFormBeforeSend(targetForm);
-
-  try {
-    const http = await $opensilex
-      .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .createOrganization(targetForm);
-
-    const uri = (http as HttpResponse<OpenSilexResponse<string>>).response.result;
-    targetForm.uri = uri;
-    return targetForm;
-  } catch (error: any) {
-    if (error?.status === 409) {
-      $opensilex.errorHandler(
-        error,
-        t("OrganizationForm.organization-already-exists")
-      );
-    } else {
-      $opensilex.errorHandler(error);
-    }
-    return Promise.reject(error);
-  }
+  return await service.createOrganization(targetForm);
 }
 
-async function update(targetForm: OrganizationUpdateDTO & { rdf_type_name?: string }) {
-  const isValid = await validateForm();
-  if (!isValid) {
-    return Promise.reject(new Error("Form validation failed"));
-  }
-
+async function update(targetForm: OrganizationFormModel) {
   cleanFormBeforeSend(targetForm);
   delete targetForm.rdf_type_name;
-
-  try {
-    await $opensilex
-      .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .updateOrganization(targetForm);
-
-    const message =
-      t("OrganizationForm.name") +
-      " " +
-      targetForm.name +
-      " " +
-      t("component.common.success.update-success-message");
-
-    $opensilex.showSuccessToast(message);
-    return targetForm;
-  } catch (error) {
-    $opensilex.errorHandler(error);
-    return Promise.reject(error);
-  }
+  return service.updateOrganization(targetForm);
 }
+//#endregion
 
+//#endregion
 defineExpose({
-  reset,
-  init,
-  getEmptyForm,
-  create,
-  update,
-  validate: validateForm,
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm
 });
 </script>
 
 <style scoped lang="scss">
-// neutralisation des classes injectées par naive dans les <n-form-item> qui créent des espaces indésirés entre les champs
-:deep(.compact-form-item) {
-  --n-label-height: 0px !important;
-  --n-label-padding: 0 !important;
-}
+
 </style>
 
 <i18n>
@@ -281,20 +229,14 @@ en:
     organization-uri: Organization URI
     form-name-placeholder: Enter organization name
     form-type-placeholder: Select organization type
-    form-type-label: Type
     form-parent-placeholder: Select parent organization
     organization-already-exists: Organization already exists with this URI
-    form-group-label: Groups
-    form-facilities-label: Facilities
 fr:
   OrganizationForm:
     name: L'organisation
     organization-uri: URI de l'organisation
     form-name-placeholder: Saisir le nom de l'organisation
     form-type-placeholder: Sélectionner le type d'organisation
-    form-type-label: Type
     form-parent-placeholder: Sélectionner l'organisation parente
     organization-already-exists: Une organisation existe déjà avec cette URI
-    form-group-label: Groupes
-    form-facilities-label: Installations environnementales
 </i18n>

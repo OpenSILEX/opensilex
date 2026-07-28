@@ -320,6 +320,8 @@ import type { OpenSilexResponse } from '@/lib/HttpResponse'
 import type { EventDetailsDTO } from 'opensilex-core/index'
 import { EventsService } from 'opensilex-core/api/events.service'
 import { OntologyService } from 'opensilex-core/api/ontology.service'
+import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 
 type EventFilter = {
   target: string | undefined
@@ -648,7 +650,7 @@ function isMove(event: any) {
   )
 }
 
-function getEventPromise(event: any): Promise<HttpResponse<OpenSilexResponse<any>>> {
+function getEventPromise(event: EventGetDTO): Promise<HttpResponse<OpenSilexResponse>> {
   if (isMove(event)) {
     // return eventService.getEventDetails(event.uri)
     return eventService.getMoveEvent(event.uri)
@@ -656,8 +658,8 @@ function getEventPromise(event: any): Promise<HttpResponse<OpenSilexResponse<any
   return eventService.getEventDetails(event.uri)
 }
 
-async function showEventView(event: any) {
-  const http = await getEventPromise(event)
+async function showEventView(event: RowWithData<EventGetDTO>) {
+  const http = await getEventPromise(event.item)
   await eventModalViewRef.value?.show?.(http)
 }
 

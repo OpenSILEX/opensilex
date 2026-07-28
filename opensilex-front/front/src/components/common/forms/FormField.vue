@@ -1,7 +1,7 @@
 <template>
   <div class="form-field" :class="{ required }">
     <div class="helperAndBlueStar">
-      <opensilex-FormInputLabelHelper
+      <FormInputLabelHelper
         v-if="label"
         :label="label"
         :helpMessage="helpMessage"
@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import { ref, onBeforeMount, inject } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 
 const props = defineProps<{
   label?: string

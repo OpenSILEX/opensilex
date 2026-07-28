@@ -66,7 +66,7 @@
                     <div class="action-group">
                         <opensilex-DetailButton
                             v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                            @click="showDetails(data.item)"
+                            @click="showDetails(data)"
                             :label="t('Annotation.details')"
                             :title="t('Annotation.details')"
                             :small="true"
@@ -118,6 +118,7 @@ import type { AnnotationsService } from 'opensilex-core/api/annotations.service'
 import type { SecurityService } from 'opensilex-security/api/security.service';
 import type { UserGetDTO } from 'opensilex-security/index';
 import type { AccountGetDTO } from 'opensilex-security/model/accountGetDTO';
+import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 
 // Props
 const props = withDefaults(defineProps<{
@@ -304,7 +305,8 @@ async function editAnnotation(annotation: AnnotationGetDTO) {
   }
 }
 
-function showDetails(annotation: AnnotationGetDTO) {
+function showDetails(row: RowWithData<AnnotationGetDTO>) {
+  const annotation = row.item
   selectedAnnotation.value = {
     uri: annotation.uri,
     motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined,

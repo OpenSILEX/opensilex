@@ -16,22 +16,22 @@
     </div>
 
 
-    <opensilex-StringFilter
+    <StringFilter
       :filter="filter"
       @update:filter="(v) => (filter = v)"
       @update="onStringFilterUpdate"
-      :placeholder="t('SiteList.filter-placeholder')"
+      :placeholder="t('component.common.search.filter.by-name')"
       :lazy="false"
     />
 
-    <opensilex-TableAsyncView
+    <TableAsyncView
       ref="tableRef"
       :searchMethod="searchSites"
       :fields="fields"
       defaultSortBy="name"
     >
       <template #cell(name)="{ data }">
-        <opensilex-UriLink
+        <UriLink
           :uri="data.item.uri"
           :value="data.item.name"
           :to="{ path: '/organization/site/details/' + encodeURIComponent(data.item.uri) }"
@@ -43,7 +43,7 @@
       </template>
 
       <template #cell(facilities)="{ data }">
-        <opensilex-FacilitiesModalList
+        <FacilitiesModalList
           :facilities="data.item.facilities"
           :currentSite="data.item"
           :hostNameForTitle="data.item.name"
@@ -52,14 +52,14 @@
       </template>
 
       <template #cell(actions)="{ data }">
-        <n-button-group size="small">
-          <opensilex-EditButton
+        <n-button-group size="small" class="btn-group btn-group-sm">
+          <EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
             @click="emitOnEdit(data.item)"
             label="component.site.update"
             :small="true"
           />
-          <opensilex-DeleteButton
+          <DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)"
             @click="onDeleteClick(data.item)"
             label="component.site.delete"
@@ -67,7 +67,7 @@
           />
         </n-button-group>
       </template>
-    </opensilex-TableAsyncView>
+    </TableAsyncView>
   </div>
 </template>
 
@@ -79,6 +79,12 @@ import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { OrganizationsService } from 'opensilex-core/api/organizations.service'
 import DTOConverter from '../../../models/DTOConverter'
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import FacilitiesModalList from "@/components/facilities/FacilitiesModalList.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', dto: any): void
@@ -109,9 +115,9 @@ const filter = ref<string>('')
 
 const fields = computed(() => [
   { key: 'name', label: 'component.common.name', sortable: true },
-  { key: 'city', label: t('SiteList.address'), sortable: true },
-  { key: 'facilities', label: t('SiteList.facilities') },
-  { key: 'actions', label: 'component.common.actions' }
+  { key: 'city', label: t('component.site.city') },
+  { key: 'facilities', label: t('component.site.facilities') },
+  { key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 100} }
 ])
 
 onMounted(() => {
@@ -141,7 +147,7 @@ async function onDeleteClick(dto: any) {
   try {
     await service.deleteSite(dto.uri)
     refresh()
-    $opensilex.showSuccessToast('component.common.delete')
+    $opensilex.showSuccessToast(t('component.common.success.delete-success-message-with-template', {uri: dto.uri}))
   } catch (e) {
     $opensilex.errorHandler(e)
   }
@@ -172,16 +178,3 @@ defineExpose({
   white-space: nowrap;
 }
 </style>
-
-<i18n>
-en:
-  SiteList:
-    address: City
-    filter-placeholder: Filter by name
-    facilities: Facilities
-fr:
-  SiteList:
-    address: Ville
-    filter-placeholder: Filtrer par nom
-    facilities: Installations
-</i18n>

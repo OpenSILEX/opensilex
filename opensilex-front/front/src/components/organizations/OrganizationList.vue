@@ -107,13 +107,13 @@
 
     <!-- Contenu liste -->
     <n-layout-content class="organization-content">
-      <opensilex-TableView
+      <TableView
         :items="organizations"
         :fields="fields"
         sortBy="name"
       >
         <template #cell(name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.name"
             :to="{ path: '/organization/details/' + encodeURIComponent(data.item.uri) }"
@@ -125,7 +125,7 @@
         </template>
 
         <template #cell(facilities)="{ data }">
-          <opensilex-FacilitiesModalList
+          <FacilitiesModalList
             :facilities="data.item.facilities"
             :hostNameForTitle="data.item.name"
             @onCRUD="refresh"
@@ -133,14 +133,14 @@
         </template>
 
         <template #cell(actions)="{ data }" v-if="!props.disableActions">
-          <n-button-group size="small">
-            <opensilex-EditButton
+          <n-button-group size="small" class="btn-group btn-group-sm">
+            <EditButton
               v-if="user?.hasCredential(credentials?.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
               @click="emitOnEdit(data.item)"
               label="component.organization.update"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user?.hasCredential(credentials?.CREDENTIAL_ORGANIZATION_DELETE_ID)"
               @click="onDeleteClick(data.item)"
               label="component.organization.delete"
@@ -148,7 +148,7 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableView>
+      </TableView>
     </n-layout-content>
   </n-layout>
 </template>
@@ -177,6 +177,12 @@ import type { OrganizationGetDTO } from "opensilex-core/model/organizationGetDTO
 import type { OrganizationDagDTO } from "opensilex-core/model/organizationDagDTO";
 import type { OrganizationUpdateDTO } from "opensilex-core/model/organizationUpdateDTO";
 import { OrganizationsService } from "opensilex-core/api/organizations.service";
+import TableView from "@/components/common/views/TableView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import FacilitiesModalList from "@/components/facilities/FacilitiesModalList.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 interface OrganizationListFilter {
   name: string | undefined;
@@ -238,14 +244,14 @@ const activeFiltersCount = computed(() => {
 });
 
 const fields = computed(() => {
-  const tableFields: any[] = [
+  const tableFields: TableField[] = [
     { key: "name", label: t("component.common.name"), sortable: true },
     { key: "rdf_type_name", label: "Type", sortable: true },
     { key: "facilities", label: t("OrganizationList.facilities") },
   ];
 
   if (!props.disableActions) {
-    tableFields.push({ key: "actions", label: t("component.common.actions") });
+    tableFields.push({ key: "actions", label: t("component.common.actions"), resizable: false, naiveProps: {width: 100} });
   }
 
   return tableFields;

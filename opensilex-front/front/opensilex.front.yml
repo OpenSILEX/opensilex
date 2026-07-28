@@ -70,8 +70,8 @@ menu:
           credentials:
             - person-access
           icon: bi#bi-person
-          title: PersonView.title
-          description: PersonView.description
+          title: component.menu.security.persons
+          description: component.person.description
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -244,9 +244,9 @@ menu:
           component: opensilex-AccountView
           credentials:
             - account-access
-          icon: bi#bi-user
-          title: AccountView.title
-          description: AccountView.description
+          icon: bi#bi-person-lock
+          title: component.menu.security.accounts
+          description: component.account.description
       - id: groups
         label: component.menu.security.groups
         route:

@@ -7,7 +7,7 @@
     <!-- Liste inline (séparée par des virgules) -->
     <span class="static-field-line" v-if="inline">
       <template v-for="(value, index) in list" :key="value.uri || index">
-        <opensilex-UriLink v-bind="value" :allowCopy="allowCopy" />
+        <UriLink v-bind="value" :allowCopy="allowCopy" />
         <span v-if="index + 1 < list.length">, </span>
       </template>
     </span>
@@ -15,7 +15,7 @@
     <!-- Liste à puces -->
     <ul v-else>
       <li v-for="(value, index) in list" :key="value.uri || index">
-        <opensilex-UriLink v-bind="value" />
+        <UriLink v-bind="value" />
       </li>
     </ul>
   </div>
@@ -25,6 +25,7 @@
 import { withDefaults, defineProps } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { UriLinkDestination } from './UriLink.vue'
+import UriLink from "@/components/common/views/UriLink.vue";
 
 export interface UriLinkDescription {
   uri: string
@@ -36,10 +37,11 @@ export interface UriLinkDescription {
 const props = withDefaults(defineProps<{
     label: string
   list: UriLinkDescription[]
-  allowCopy: boolean
+  allowCopy?: boolean
   inline?: boolean
 }>(), {
   inline: true,
+  allowCopy: true,
   list: () => []
 })
 

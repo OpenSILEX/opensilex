@@ -45,7 +45,7 @@
               </template>
 
               <template #cell(actions)="{ data }">
-                <div class="btn-group btn-group-sm">
+                <n-button-group size="small" class="btn-group btn-group-sm">
                   <opensilex-EditButton
                     v-if="user.hasCredential(props.modificationCredentialId)"
                     @click="() => editDocument(data.item.uri)"
@@ -75,7 +75,7 @@
                     icon="bi-link-45deg"
                     variant="outline-info"
                   />
-                </div>
+                </n-button-group>
               </template>
             </opensilex-TableAsyncView>
           </template>
@@ -147,7 +147,7 @@ const fields = computed(() => [
   { key: 'authors', label: t('DocumentTabList.author'), sortable: true },
   { key: 'date', label: t('DocumentTabList.date'), sortable: true },
   { key: 'rdf_type_name', label: t('DocumentTabList.type'), sortable: true },
-  { key: 'actions', label: t('component.common.actions') }
+  { key: 'actions', label: t('component.common.actions'), resizable:false, sortable: false, naiveProps: {width: 100}}
 ]);
 
 

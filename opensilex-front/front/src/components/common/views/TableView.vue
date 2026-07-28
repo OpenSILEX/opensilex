@@ -32,7 +32,7 @@
       </div>
 
       <!-- Tableau -->
-      <n-config-provider>
+      <n-config-provider :theme-overrides="nThemeOverrides">
         <n-data-table
             :columns="normalizedFields"
             :data="pagedItems"
@@ -70,32 +70,50 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, computed, watch, h, inject} from 'vue';
-import { useI18n } from 'vue-i18n';
-import { NDataTable, NPagination, NConfigProvider } from 'naive-ui';
-import { onMounted, useSlots } from 'vue';
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {computed, onMounted, ref, useSlots, watch} from 'vue';
+import {useI18n} from 'vue-i18n';
+import {GlobalThemeOverrides, NConfigProvider, NDataTable, NPagination} from 'naive-ui';
+import {TableField} from "@/components/common/views/TableField";
+import {bool} from "yup";
 
 const slots = useSlots();
+
+/**
+ * See https://www.naiveui.com/en-US/light/docs/customize-theme for theme customization
+ */
+const nThemeOverrides: GlobalThemeOverrides = {
+  DataTable: {
+    tdPaddingMedium: "8px 12px"
+  }
+};
 
 onMounted(() => {
   console.log('🧪 Slots disponibles dans TableView:', Object.keys(slots));
 });
 
 
-const props = defineProps({
-  items: { type: Array, default: () => [] },
-  fields: Array,
-  defaultSortBy: { type: String, default: 'name' },
-  filterPlaceholder: { type: String, default: 'TableView.filter.placeholder' },
-  globalFilterField: { type: Boolean, default: false },
-  showCount: { type: Boolean, default: true },
-  withPagination: { type: Boolean, default: true },
-  sortBy: String,
-  scrollX: { type: String, default: undefined },
-  sortDesc: { type: Boolean, default: false },
-  selectable: { type: Boolean, default: false },
-  customRenderers: { type: Object, default: () => ({}) }
+const props = withDefaults(defineProps<{
+  items: Array<any>,
+  fields: Array<TableField>,
+  defaultSortBy?: string,
+  filterPlaceholder?: string,
+  globalFilterField?: boolean,
+  showCount?: boolean,
+  withPagination?: boolean,
+  sortBy: string,
+  scrollX: string,
+  sortDesc?: boolean,
+  selectable?: boolean,
+  customRenderers?: any
+}>(), {
+  defaultSortBy: "name",
+  filterPlaceholder: "TableView.filter.placeholder",
+  globalFilterField: false,
+  showCount: true,
+  withPagination: true,
+  sortDesc: false,
+  selectable: false,
+  customRenderers: {}
 });
 
 
@@ -213,14 +231,16 @@ function getCellTemplateName(key: string) {
 
 // Colonnes avec option de tri
 const normalizedFields = computed(() =>
-  (props.fields || []).map((field: any) => {
+  (props.fields || []).map((field) => {
     const key = field.key
     const slotName = `cell(${key})`
 
     return {
+      ...field.naiveProps,
       key,
       title: field.label,
       isSelect: field.isSelect,
+      resizable: field.resizable ?? true,
       sorter: field.sortable || false,
 
       // priorité :

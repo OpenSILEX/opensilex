@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :rules="rules"
     :required="required"
     :label="label || 'component.common.type'"
@@ -7,7 +7,7 @@
   >
     <template #field="{ id: fieldId, validator }">
       <div :id="fieldId" @keydown.enter.stop="$emit('handlingEnterKey')">
-        <opensilex-CustomTreeselect
+        <CustomTreeselect
           v-model:selected="selectedIds"
           :filterable="true"
           :options="typesOptions"
@@ -23,7 +23,7 @@
         />
       </div>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
@@ -34,6 +34,8 @@ import { useI18n } from 'vue-i18n'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { OntologyService, ResourceTreeDTO } from 'opensilex-core'
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
+import FormField from "@/components/common/forms/FormField.vue";
+import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 
 const props = withDefaults(defineProps<{
   type?: string | string[]

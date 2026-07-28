@@ -153,6 +153,7 @@
                 "update-success-message": " a été modifié(e)",
                 "update-success-with-template": "{uri} a été mis à jour",
                 "delete-success-message": " a été supprimé(e)",
+                "delete-success-message-with-template": "{uri} a été supprimé",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entités, {variablesCount} caractéristiques, {variablesCount} méthodes, {variablesCount} unités, {variablesCount} entités d'intérêt ont bien été importés."
             },
             "details": {
@@ -200,7 +201,10 @@
                 "badgeHelpMessage": "Ce badge représente le nombre d'éléments sélectionnés sur le maximum permis.",
                 "clear-button": "Réinitialiser",
                 "noDataFound": "Pas de données trouvées",
-                "limitSizeMessageBasic" : "Il y a {count} données. Seules les 50 000 premières valeurs sont affichées."
+                "limitSizeMessageBasic" : "Il y a {count} données. Seules les 50 000 premières valeurs sont affichées.",
+                "filter": {
+                    "by-name": "Filtrer par nom"
+                }
             },
             "filter-search-no-result": "Désolé, aucun élément ne correspond à votre recherche.",
             "help-button": "Aide",
@@ -430,7 +434,6 @@
             "persons": "personnes",
             "add": "Ajouter une personne",
             "update": "Modifier la personne",
-            "delete": "Supprimer la personne",
             "first-name": "prénom",
             "last-name": "nom",
             "orcid":  "ORCID",
@@ -617,6 +620,7 @@
             }
         },
         "group": {
+            "title": "Groupes",
             "description": "Gérer et configurer les groupes",
             "view-groups": "voir les groupes",
             "group-uri": "URI du groupe",
@@ -1005,9 +1009,28 @@
             }
         },
         "document": {
-            "nopreview": "Pas de prévisualisation possible"
+            "nopreview": "Pas de prévisualisation possible",
+            "selected": "Document(s) sélectionné(s)",
+            "selected-all": "Tous les documents",
+            "display": "Affichage",
+            "label-filter": "Rechercher des documents",
+            "filter-title-placeholder": "Filtrer par titre",
+            "filter-date-placeholder": "Filtrer par date",
+            "date": "Année",
+            "filter-author-placeholder": "Filtrer par auteur",
+            "author": "Auteur",
+            "filter-keywords-placeholder": "Filtrer par mots-clés",
+            "keywords": "Mots-clés",
+            "targets-placeholder": "Entrez l'URI concerné",
+            "targets": "Cible",
+            "filter-deprecated": "Obsolète",
+            "download": "Télécharger le fichier",
+            "browseSource": "Naviguer à la source",
+            "update": "Éditer le document",
+            "searchAll-placeholder": "Recherche par titre et mot-clé"
         },
         "organization": {
+            "title": "Organisation",
             "exception": {
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
                 "siteFacilityInvalidAddress": "Le site '{site}' et l'installation environnementale '{facility}' doivent avoir la même adresse."
@@ -1018,6 +1041,8 @@
         "device": {
             "description": "Gestion des appareils",
             "all_devices": "Tout les appareils",
+            "add": "Ajouter un appareil",
+            "update": "Editer un appareil"
             "select_devices": "Choisir des dispositifs",
             "import" : {
                 "success-message": "appareil(s) importé(s)",
@@ -1044,19 +1069,22 @@
             }
         },
         "site": {
+            "title": "Sites",
             "description": "Gérer et configurer les sites",
+            "create": "Ajouter un site",
             "update": "Modifier le site",
-            "delete": "Supprimer le site"
-
+            "delete": "Supprimer le site",
+            "city": "Ville",
+            "facilities": "Installations"
         },
         "facility": {
+            "title": "Installation environnementale",
             "warning": {
                 "facility-should-have-unique-site": "Il est déconseillé d'associer une installation environnementale à plusieurs sites. Veuillez vérifier à quel site appartient cette facility.",
                 "facility-default-date": "Date par défaut"
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
             "view": {
-                "title": "Installation environnementale",
                 "list": {
                     "previous": "Consulter l'infrastructure précédente",
                     "next": "Consulter l'infrastructure suivante",
@@ -1081,8 +1109,10 @@
             "no-data": "Aucune donnée trouvée pour cette période"
         },
         "datafile": {
-            "description": "Voir les fichiers de données",
-            "download-image" : "Télecharger l'image"
+          "create": "Ajouter un fichier de données",
+          "update": "Modifier un fichier de donnée",
+          "description": "Voir les fichiers de données",
+          "download-image" : "Télecharger l'image"
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"
@@ -1289,6 +1319,8 @@
         "url": "Le champ {_field_} doit être une URL valide",
         "required_if": "Le champ {_field_} est obligatoire",
         "emailOrUrl": "Le champ {_field_} doit être une URL ou une adresse email valide",
+        "emailError": "Adresse email non valide",
+        "phoneNumberError": "Numéro de téléphone non valide",
         "decimal": "Le champ {_field_} doit contenir une valeur décimale",
         "wkt": "Le champ {_field_} doit être au format WKT",
         "containsPoint" : "Les coordonnées doivent être une géométrie de type 'POINT'",

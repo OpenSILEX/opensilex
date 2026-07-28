@@ -1,6 +1,7 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="experimentSelector"
+    :path="path"
     :required="required"
     :label="label"
     v-model:selected="experimentsURI"
@@ -22,6 +23,7 @@ import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { ExperimentGetListDTO } from 'opensilex-core/index'
 import { useI18n } from 'vue-i18n'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
@@ -39,6 +41,7 @@ const props = withDefaults(defineProps<{
   label?: string
   multiple?: boolean
   required?: boolean
+  path?: string
 }>(), {
   label: 'component.experiment.experiment',
   multiple: false,

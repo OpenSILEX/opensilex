@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-FormSelector
+    <FormSelector
       ref="personSelector"
       :label="label"
       :helpMessage="helpMessage"
@@ -17,14 +17,11 @@
       @deselect="onDeselect"
     />
 
-    <opensilex-ModalForm
+    <PersonForm
       v-if="canAddPerson"
-      :static="false"
       ref="personForm"
-      component="opensilex-PersonForm"
-      createTitle="PersonView.create"
-      editTitle="PersonView.update"
-      icon="ik#ik-user"
+      :createTitle="t('component.person.add')"
+      :editTitle="t('component.person.update')"
       @onCreate="setCreatedPerson"
     />
   </div>
@@ -40,6 +37,8 @@ import type { SecurityService, PersonDTO } from 'opensilex-security/index'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import { useI18n } from 'vue-i18n'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import PersonForm from "@/components/persons/PersonForm.vue";
 
 // types
 type SelectNode = { label: string; id: string; isDisabled?: boolean }

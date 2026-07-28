@@ -650,6 +650,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.common.actions'),
       key: 'actions',
+      width: 100,
       render(row) {
         return h('div', { class: 'btn-group btn-group-sm', role: 'group' }, [
           h(DetailButton, {

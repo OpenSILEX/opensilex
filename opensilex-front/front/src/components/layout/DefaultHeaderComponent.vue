@@ -423,6 +423,7 @@ margin-top: 5px
 }
 
 .settingsButton {
+  color: var(--color-dark);
   font-size: 1.2em;
   font-weight: bold;
   border: none;

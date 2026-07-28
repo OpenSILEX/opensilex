@@ -152,6 +152,7 @@
                 "update-success-message": " has been updated",
                 "update-success-with-template": "{uri} has been updated",
                 "delete-success-message": "has been deleted",
+                "delete-success-message-with-template": "{uri} has been deleted",
                 "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} entity of interest have been imported."
             },
             "details": {
@@ -199,7 +200,10 @@
                 "badgeHelpMessage": "This badge represents the number of items selected out of the maximum that is allowed.",
                 "clear-button": "Reset",
                 "noDataFound": "No data found",
-                "limitSizeMessageBasic" : "There are {count} data. Only the 50 000 first data are displayed."
+                "limitSizeMessageBasic" : "There are {count} data. Only the 50 000 first data are displayed.",
+                "filter": {
+                    "by-name": "Filter by name"
+                }
             },
             "filter-search-no-result": "Sorry, no results match your search.",
             "help-button": "Help",
@@ -429,7 +433,6 @@
             "persons": "persons",
             "add": "Add person",
             "update": "Update person",
-            "delete": "Delete person",
             "first-name": "first name",
             "last-name": "last name",
             "orcid":  "ORCID",
@@ -612,6 +615,7 @@
             }
         },
         "group": {
+            "title": "Groups",
             "description": "Manage and configure groups",
             "view-groups": "View groups",
             "group-uri": "Group URI",
@@ -947,9 +951,29 @@
             "external-already-existing": "Already associated reference"
         },
         "document": {
-            "nopreview": "No preview possible"
+            "nopreview": "No preview possible",
+            "selected": "Selected Document(s)",
+            "selected-all": "All documents",
+            "display": "Display",
+            "label-filter": "Search documents",
+            "filter-title-placeholder": "Filter by title",
+            "filter-date-placeholder": "Filter by date",
+            "date": "Year",
+            "filter-author-placeholder": "Filter by author",
+            "author": "Author",
+            "filter-keywords-placeholder": "Filter by keywords",
+            "keywords": "Keywords",
+            "targets-placeholder": "Enter target's URI",
+            "targets": "Target",
+            "filter-deprecated": "Deprecated",
+            "download": "Download file",
+            "browseSource": "Browse source",
+            "update": "Update document",
+            "searchAll-placeholder": "Search by title and keyword"
+
         },
         "organization": {
+            "title": "Organizations",
             "exception": {
                 "siteMustHaveParent": "A site must have at least one parent organization.",
                 "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
@@ -961,6 +985,8 @@
             "description": "Manage Devices",
             "all_devices": "All Devices",
             "select_devices": "Select Devices",
+            "add": "Add device",
+            "update": "Update device",
             "import" : {
                 "success-message": "device(s) imported",
                 "title": "Import device(s)",
@@ -986,19 +1012,22 @@
             }
         },
         "site": {
+            "title": "Sites",
             "description": "Manage and configure sites",
+            "create": "Add site",
             "update": "Update site",
-            "delete": "Delete site"
-
+            "delete": "Delete site",
+            "city": "City",
+            "facilities": "Facilities"
         },
         "facility": {
-            "warning": {
+          "title": "Facility",
+          "warning": {
                 "facility-should-have-unique-site": "It is not recommended to associate a facility with multiple sites. Please verify which site this facility belongs to.",
                 "facility-default-date": "Default date"
             },
             "filter-placeholder": "Search facilities...",
             "view": {
-                "title": "Facility",
                 "list": {
                     "previous": "Consult the previous facility",
                     "next": "Consult the next facility",
@@ -1023,6 +1052,8 @@
             "no-data": "No data found for this period"
         },
         "datafile": {
+            "create": "Add data file",
+            "update": "Update data file",
             "description": "View datafiles",
             "download-image" : "Download image"
         },
@@ -1231,6 +1262,8 @@
         "url": "The {_field_} field must be a valid URL",
         "required_if": "The {_field_} field is required",
         "emailOrUrl": "The {_field_} field must be a valid URL or email address",
+        "emailError": "Invalid email address",
+        "phoneNumberError": "Invalid phone number",
         "decimal": "The {_field_} field must contain only decimal values",
         "wkt": "The {_field_} field must be a valid WKT geometry",
         "containsPoint": "Coordinates must be 'POINT' type geometry",

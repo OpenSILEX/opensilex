@@ -1,32 +1,28 @@
 <template>
   <div class="container-fluid">
-    <opensilex-CreateButton
+    <CreateButton
       id="createSiteButton"
       @click="onCreateClick"
-      :label="t('SiteView.create')"
+      :label="t('component.site.create')"
       class="createButton"
     />
 
-    <opensilex-PageContent>
+    <PageContent>
       <template v-slot>
-        <opensilex-SiteList
+        <SiteList
           ref="siteListRef"
           @onEdit="onSiteListEdit"
           :organizationsForFilter="organizationsForFilter"
         />
       </template>
-    </opensilex-PageContent>
+    </PageContent>
 
-    <opensilex-ModalForm
+    <SiteForm
       v-if="user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
       ref="siteFormRef"
-      lazy="true"
-      component="opensilex-SiteForm"
-      :createTitle="t('SiteView.create')"
-      editTitle="component.site.update"
-      icon="ik#ik-map-pin"
-      @onCreate="siteListRef?.refresh?.()"
-      @onUpdate="siteListRef?.refresh?.()"
+      :createTitle="t('component.site.create')"
+      :editTitle="t('component.site.update')"
+      @onSuccess="siteListRef?.refresh?.()"
     />
   </div>
 </template>
@@ -35,6 +31,10 @@
 import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useI18n } from "vue-i18n";
+import PageContent from "@/components/layout/PageContent.vue";
+import SiteList from "@/components/organizations/site/SiteList.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import SiteForm from "@/components/organizations/site/SiteForm.vue";
 
 // Props
 const props = defineProps<{
@@ -67,16 +67,3 @@ function onCreateClick() {
   margin-top: -15px;
 }
 </style>
-
-<i18n>
-en:
-  SiteView:
-    title: "Sites"
-    description: "Manage and configure sites"
-    create: "Add site"
-fr:
-  SiteView:
-    title: "Sites"
-    description: "Gérer et configurer les sites"
-    create: "Ajouter un site"
-</i18n>

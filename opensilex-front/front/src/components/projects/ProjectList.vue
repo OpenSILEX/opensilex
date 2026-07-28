@@ -135,13 +135,13 @@
           </n-form-item>
 
           <n-space justify="end" class="mt-2">
-            <opensilex-Button
+            <Button
               class="resetButton"
               :label="t('component.common.search.clear-button')"
               icon="bi-x-lg"
               @click="resetFilters"
             />
-            <opensilex-Button
+            <Button
               class="greenThemeColor"
               :label="t('component.common.search.search-button')"
               icon="bi-search"
@@ -154,7 +154,7 @@
 
     <!-- Contenu Liste -->
     <n-layout-content class="project-content">
-      <opensilex-TableAsyncView
+      <TableAsyncView
         ref="tableRef"
         :searchMethod="loadData"
         :fields="fields"
@@ -168,7 +168,7 @@
         @selectall="emit('selectall', $event)"
       >
         <template #cell(name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.name"
             :to="{ path: '/project/details/' + encodeURIComponent(data.item.uri) }"
@@ -177,11 +177,11 @@
         </template>
 
         <template #cell(start_date)="{ data }">
-          <opensilex-DateView :value="data.item.start_date" />
+          <DateView :value="data.item.start_date" />
         </template>
 
         <template #cell(end_date)="{ data }">
-          <opensilex-DateView :value="data.item.end_date" />
+          <DateView :value="data.item.end_date" />
         </template>
 
         <template #cell(state)="{ data }">
@@ -198,14 +198,14 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group size="small">
-            <opensilex-EditButton
+          <n-button-group size="small" class="btn-group btn-group-sm">
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
               @click="emit('onEdit', data.item)"
               label="component.project.update"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
               @click="deleteProject(data.item.uri)"
               label="component.project.delete"
@@ -213,10 +213,10 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
       <!-- Formulaire Creation Document -->
-      <opensilex-ModalForm
+      <ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
         ref="documentForm"
         component="opensilex-DocumentForm"
@@ -241,6 +241,14 @@ import {
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { ProjectsService } from 'opensilex-core/index'
+import Button from "@/components/common/buttons/Button.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import DateView from "@/components/common/views/DateView.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 const emit = defineEmits<{
   (e: 'onEdit', project: any): void
@@ -300,7 +308,7 @@ const activeFiltersCount = computed(() => {
 
 /** champs TableAsyncView */
 const fields = computed(() => {
-  const tableFields: any[] = [
+  const tableFields: TableField[] = [
     { key: 'name', label: 'component.common.name', sortable: true },
     { key: 'shortname', label: 'component.project.shortname', sortable: true },
     { key: 'start_date', label: 'component.common.date-time.startDate', sortable: true },
@@ -308,7 +316,7 @@ const fields = computed(() => {
     { key: 'financial_funding', label: 'component.project.financialFunding', sortable: true },
     { key: 'state', label: 'component.common.state' }
   ]
-  if (!props.noActions) tableFields.push({ key: 'actions', label: 'component.common.actions' })
+  if (!props.noActions) tableFields.push({ key: 'actions', label: 'component.common.actions', resizable: false, naiveProps: {width: 100} })
   return tableFields
 })
 

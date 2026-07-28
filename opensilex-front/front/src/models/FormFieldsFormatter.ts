@@ -23,21 +23,18 @@ export function requiredTrimmed(fieldLabelKey: string) {
 }
 
 /**
- * Returns a validation rule that requires at list one non-null object in an array. Useful for every selector field.
+ * Returns a validation rule that requires a value to be non-null (and non-empty if the value is an array). Useful for every selector field and object fields.
+ * For string values, use requiredTrimmed instead.
  * @param fieldLabelKey is used to personalize the error message saying which field is required.
  */
-export function requiredArray(fieldLabelKey: string) {
+export function required(fieldLabelKey: string) {
   const {t} = useI18n()
   return {
-    validator: (_rule: any, value: Array<any>) => {
-      if (Array.isArray(value) && value.length > 0) {
-        return true
-      }
-      return new Error(
-          t('validations.required_if', {_field_: t(fieldLabelKey)})
-      )
-    },
-    trigger: ['input', 'blur']
+    required: true,
+    message: t("validations.required_if", {
+      _field_: t(fieldLabelKey),
+    }),
+    trigger: ["change", "blur"],
   }
 }
 

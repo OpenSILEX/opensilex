@@ -30,6 +30,7 @@
             label="component.account.email-address"
             type="email"
             :placeholder="t('component.account.form-email-placeholder')"
+            required
             autocomplete="email"
         ></InputForm>
       </n-form-item>
@@ -40,7 +41,7 @@
             v-model:value="modalFormLogic.form.value.password"
             label="component.account.password"
             type="password"
-            :required="!modalFormLogic.editMode"
+            :required="!modalFormLogic.editMode.value"
             :placeholder="t('component.account.form-password-placeholder')"
             autocomplete="new-password"
         ></InputForm>

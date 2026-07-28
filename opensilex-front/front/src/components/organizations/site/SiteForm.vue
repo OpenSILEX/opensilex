@@ -113,7 +113,7 @@ import type { SiteUpdateDTO } from 'opensilex-core/model/siteUpdateDTO'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse } from '@/lib/HttpResponse'
 import { NForm, NFormItem } from 'naive-ui'
-import {requiredArray, requiredTrimmed} from '@/models/FormFieldsFormatter'
+import {required, requiredTrimmed} from '@/models/FormFieldsFormatter'
 
 import UriForm from "@/components/common/forms/UriForm.vue"
 import InputForm from "@/components/common/forms/InputForm.vue"
@@ -156,7 +156,7 @@ const hasAddress = computed(() => !!modalFormLogic.form.value.address)
 
 const rules = computed(() => ({
   name: requiredTrimmed('component.common.name'),
-  organizations: requiredArray('component.organization.title')
+  organizations: required('component.organization.title')
 }))
 //#endregion
 

@@ -971,6 +971,7 @@
             "searchAll-placeholder": "Recherche par titre et mot-clé"
         },
         "organization": {
+            "title": "Organisation",
             "exception": {
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
                 "siteFacilityInvalidAddress": "Le site '{site}' et l'installation environnementale '{facility}' doivent avoir la même adresse."
@@ -986,7 +987,9 @@
             "update": "Editer un appareil"
         },
         "site": {
+            "title": "Sites",
             "description": "Gérer et configurer les sites",
+            "create": "Ajouter un site",
             "update": "Modifier le site",
             "delete": "Supprimer le site",
             "city": "Ville",

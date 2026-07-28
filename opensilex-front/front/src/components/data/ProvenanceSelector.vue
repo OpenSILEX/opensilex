@@ -1,6 +1,7 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="formSelector"
+    :path="path"
     :label="label"
     v-model:selected="provenancesURI"
     :multiple="multiple"
@@ -36,6 +37,7 @@ import type {
   OpenSilexResponse,
   ProvenanceGetDTO
 } from 'opensilex-core/index'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 const props = withDefaults(defineProps<{
   provenances?: any
@@ -48,6 +50,7 @@ const props = withDefaults(defineProps<{
   viewHandlerDetailsVisible?: boolean
   scientificObject?: string
   device?: string
+  path?: string
 }>(), {
   provenances: undefined,
   label: 'component.data.provenance.search',

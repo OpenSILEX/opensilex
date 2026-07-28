@@ -1,6 +1,12 @@
+/**
+ * Handy functions to pass as form validation rules for n-form
+ */
 import {useI18n} from 'vue-i18n';
 
-// génère une règle "obligatoire" qui ignore les chaînes d'espaces, typiquement pour un champ "Name" par exemple
+/**
+ * Returns a validation rule that requires a non-empty string. Typically used for a "Name" field, for example.
+ * @param fieldLabelKey is used to personalize the error message saying which field is required.
+ */
 export function requiredTrimmed(fieldLabelKey: string) {
   const {t} = useI18n()
   return {
@@ -13,6 +19,22 @@ export function requiredTrimmed(fieldLabelKey: string) {
       )
     },
     trigger: ['input', 'blur']
+  }
+}
+
+/**
+ * Returns a validation rule that requires a value to be non-null (and non-empty if the value is an array). Useful for every selector field and object fields.
+ * For string values, use requiredTrimmed instead.
+ * @param fieldLabelKey is used to personalize the error message saying which field is required.
+ */
+export function required(fieldLabelKey: string) {
+  const {t} = useI18n()
+  return {
+    required: true,
+    message: t("validations.required_if", {
+      _field_: t(fieldLabelKey),
+    }),
+    trigger: ["change", "blur"],
   }
 }
 

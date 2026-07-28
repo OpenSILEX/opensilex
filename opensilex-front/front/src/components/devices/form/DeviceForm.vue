@@ -1,113 +1,134 @@
 <template>
-  <n-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-  >
-    <!-- URI -->
-    <opensilex-UriForm
-      v-model:uri="form.uri"
-      :label="t('DeviceForm.uri')"
-      :editMode="editMode"
-      v-model:generated="uriGenerated"
-      :helpMessage="t('DeviceForm.uri-help')"
-    />
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="ik#ik-thermometer" />
+    </template>
 
-    <!-- Type -->
-    <n-form-item path="rdf_type">
-      <opensilex-TypeForm
-        v-model:type="form.rdf_type"
-        :baseType="baseType"
-        :helpMessage="t('DeviceForm.type-help')"
-        :required="true"
-        :multiple="false"
-        :disabled="editMode"
-        :ignoreRoot="false"
-        @select="typeSwitch($event.id, false)"
-      />
-    </n-form-item>
+    <n-form
+      ref="formRef"
+      :model="modalFormLogic.form.value"
+      :rules="rules"
+      label-placement="top"
+      :show-require-mark="true"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+          v-model:uri="modalFormLogic.form.value.uri"
+          :label="t('DeviceForm.uri')"
+          :editMode="modalFormLogic.editMode.value"
+          v-model:generated="uriGenerated"
+          :helpMessage="t('DeviceForm.uri-help')"
+        />
+      </n-form-item>
 
-    <!-- name -->
-    <n-form-item :label="t('component.common.name')" path="name">
-      <opensilex-InputForm
-        v-model:value="form.name"
-        type="text"
-        :helpMessage="t('DeviceForm.name-help')"
-        :required="true"
-      />
-    </n-form-item>
+      <!-- Type -->
+      <n-form-item path="rdf_type">
+        <TypeForm
+          v-model:type="modalFormLogic.form.value.rdf_type"
+          :baseType="baseType"
+          :helpMessage="t('DeviceForm.type-help')"
+          :required="true"
+          :multiple="false"
+          :disabled="modalFormLogic.editMode.value"
+          :ignoreRoot="false"
+          @select="typeSwitch($event.id, false)"
+        />
+      </n-form-item>
 
-    <!-- description -->
-    <opensilex-TextAreaForm
-      v-model:value="form.description"
-      :label="t('DeviceForm.description')"
-      type="text"
-      :helpMessage="t('DeviceForm.description-help')"
-      @keydown.enter.stop
-    />
+      <!-- name -->
+      <n-form-item :label="t('component.common.name')" path="name">
+        <InputForm
+          v-model:value="modalFormLogic.form.value.name"
+          type="text"
+          :helpMessage="t('DeviceForm.name-help')"
+          :required="true"
+        />
+      </n-form-item>
 
-    <!-- brand -->
-    <opensilex-InputForm
-      v-model:value="form.brand"
-      :label="t('DeviceForm.brand')"
-      type="text"
-      :helpMessage="t('DeviceForm.brand-help')"
-    />
+      <!-- description -->
+      <n-form-item>
+        <TextAreaForm
+          v-model:value="modalFormLogic.form.value.description"
+          :label="t('DeviceForm.description')"
+          type="text"
+          :helpMessage="t('DeviceForm.description-help')"
+          @keydown.enter.stop
+        />
+      </n-form-item>
 
-    <!-- constructor_model -->
-    <opensilex-InputForm
-      v-model:value="form.constructor_model"
-      :label="t('DeviceForm.constructor_model')"
-      type="text"
-      :helpMessage="t('DeviceForm.constructor_model-help')"
-    />
+      <!-- brand -->
+      <n-form-item>
+        <InputForm
+          v-model:value="modalFormLogic.form.value.brand"
+          :label="t('DeviceForm.brand')"
+          type="text"
+          :helpMessage="t('DeviceForm.brand-help')"
+        />
+      </n-form-item>
 
-    <!-- serial_number -->
-    <opensilex-InputForm
-      v-model:value="form.serial_number"
-      :label="t('DeviceForm.serial_number')"
-      type="text"
-      :helpMessage="t('DeviceForm.serial_number-help')"
-    />
+      <!-- constructor_model -->
+      <n-form-item>
+        <InputForm
+          v-model:value="modalFormLogic.form.value.constructor_model"
+          :label="t('DeviceForm.constructor_model')"
+          type="text"
+          :helpMessage="t('DeviceForm.constructor_model-help')"
+        />
+      </n-form-item>
 
-    <!-- person_in_charge -->
-    <opensilex-PersonSelector
-      v-model:persons="form.person_in_charge"
-      :label="t('DeviceForm.person_in_charge')"
-      :helpMessage="t('DeviceForm.person_in_charge-help')"
-    />
+      <!-- serial_number -->
+      <n-form-item>
+        <InputForm
+          v-model:value="modalFormLogic.form.value.serial_number"
+          :label="t('DeviceForm.serial_number')"
+          type="text"
+          :helpMessage="t('DeviceForm.serial_number-help')"
+        />
+      </n-form-item>
 
-    <!-- Period -->
-    <opensilex-DateRangePickerForm
-      v-model:start="form.start_up"
-      v-model:end="form.removal"
-      :labelStart="t('DeviceForm.start_up')"
-      :labelEnd="t('DeviceForm.removal')"
-      :helpMessageStart="t('DeviceForm.start_up-help')"
-      :helpMessageEnd="t('DeviceForm.removal-help')"
-    />
+      <!-- person_in_charge -->
+        <PersonSelector
+          v-model:persons="modalFormLogic.form.value.person_in_charge"
+          :label="t('DeviceForm.person_in_charge')"
+          :helpMessage="t('DeviceForm.person_in_charge-help')"
+        />
 
-    <opensilex-OntologyRelationsForm
-      ref="ontologyRelationsForm"
-      :rdfType="form.rdf_type"
-      :relations="form.relations"
-      :excludedProperties="excludedProperties"
-      :baseType="baseType"
-      :editMode="editMode"
-    />
+      <!-- Period -->
+        <DateRangePickerForm
+          v-model:start="modalFormLogic.form.value.start_up"
+          v-model:end="modalFormLogic.form.value.removal"
+          :labelStart="t('DeviceForm.start_up')"
+          :labelEnd="t('DeviceForm.removal')"
+          :helpMessageStart="t('DeviceForm.start_up-help')"
+          :helpMessageEnd="t('DeviceForm.removal-help')"
+        />
 
-    <!-- metadata -->
-    <opensilex-AttributesTable
-      ref="attributeTable"
-      :attributesArray="attributesArray"
-    />
-  </n-form>
+        <OntologyRelationsForm
+          ref="ontologyRelationsForm"
+          :rdfType="modalFormLogic.form.value.rdf_type"
+          :relations="modalFormLogic.form.value.relations"
+          :excludedProperties="excludedProperties"
+          :baseType="baseType"
+          :editMode="modalFormLogic.editMode.value"
+        />
+
+      <!-- metadata -->
+        <AttributesTable
+          ref="attributeTable"
+          :attributesArray="attributesArray"
+        />
+
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, useTemplateRef } from 'vue'
 import { useStore } from 'vuex'
 import { NForm, NFormItem } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
@@ -120,17 +141,42 @@ import { requiredTrimmed } from '../../../models/FormFieldsFormatter'
 import type { DevicesService } from 'opensilex-core/api/devices.service'
 import type { DeviceCreationDTO } from 'opensilex-core/index'
 
-const props = defineProps<{
-  editMode?: boolean
-  form?: DeviceCreationDTO
+import FormHeader from '@/components/common/forms/FormHeader.vue'
+import FormFooter from '@/components/common/forms/FormFooter.vue'
+import useModalFormLogic from '@/composables/useModalFormLogic'
+import Modal from '@/components/common/views/Modal.vue'
+import UriForm from "@/components/common/forms/UriForm.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
+import PersonSelector from "@/components/persons/PersonSelector.vue";
+import DateRangePickerForm from "@/components/common/forms/DateRangePickerForm.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+
+//#region Public
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+  (e: 'onHide'): void
 }>()
+
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>();
+//#endregion
+
+//#region Private
 
 const store = useStore()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const service = $opensilex.getService<DevicesService>('opensilex.DevicesService')
 const { t } = useI18n()
 
-const formRef = ref<any>(null)
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+
 const attributeTable = ref<InstanceType<typeof AttributesTable> | any>(null)
 const ontologyRelationsForm = ref<InstanceType<typeof OntologyRelationsForm> | any>(null)
 
@@ -150,16 +196,39 @@ const excludedProperties = new Set<string>([
   $opensilex.Oeso.REMOVAL
 ])
 
-const form = computed<DeviceCreationDTO>({
-  get() {
-    return props.form ?? getEmptyForm()
-  },
-  set() {
-  }
-})
-
 const attributesArray = ref<any[]>([])
 
+//#endregion
+
+//#region Computed / rules
+const rules = computed(() => ({
+  rdf_type: {
+    required: true,
+    message: t('validations.required_if', { _field_: t('DeviceForm.type') }),
+    trigger: ['change', 'blur']
+  },
+  name: requiredTrimmed('component.common.name')
+}))
+//#endregion
+
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<DeviceCreationDTO>({
+  modalRef,
+  nFormRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+  onHide: () => emit('onHide')
+})
+//#endregion
+
+//#region Methods
 function getEmptyForm(): DeviceCreationDTO {
   return {
     uri: undefined,
@@ -182,37 +251,15 @@ function reset() {
   attributeTable.value?.resetTable?.()
 }
 
-async function create(formArg: DeviceCreationDTO) {
-  try {
-    formArg.metadata = attributeTable.value?.pushAttributes?.()
-    const http = await service.createDevice(false, formArg)
-    formArg.uri = (http as any).response.result
-    return formArg
-  } catch (error) {
-    $opensilex.errorHandler(error)
-    return false
-  }
+async function create(form: DeviceCreationDTO) {
+  form.metadata = attributeTable.value?.pushAttributes?.()
+  return await service.createDevice(false, form)
 }
 
-async function update(formArg: DeviceCreationDTO) {
-  try {
-    formArg.metadata = attributeTable.value?.pushAttributes?.()
-    await service.updateDevice(formArg)
-    return formArg
-  } catch (error) {
-    $opensilex.errorHandler(error)
-    return false
-  }
+async function update(form: DeviceCreationDTO) {
+  form.metadata = attributeTable.value?.pushAttributes?.()
+  return await service.updateDevice(form)
 }
-
-const rules = computed(() => ({
-  rdf_type: {
-    required: true,
-    message: t('validations.required_if', { _field_: t('DeviceForm.type') }),
-    trigger: ['change', 'blur']
-  },
-  name: requiredTrimmed('component.common.name')
-}))
 
 function loadAttributes(metadata: Record<string, string>) {
   attributesArray.value = readAttributes(metadata)
@@ -221,27 +268,20 @@ function loadAttributes(metadata: Record<string, string>) {
 function typeSwitch(type: string, initialLoad: boolean) {
   ontologyRelationsForm.value?.typeSwitch?.(type, initialLoad)
 }
-
-async function validate() {
-  try {
-    await formRef.value?.validate()
-    return true
-  } catch {
-    return false
-  }
-}
+//#endregion
 
 defineExpose({
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm,
+  hide: modalFormLogic.hide,
   user,
   reset,
   create,
   update,
   readAttributes: loadAttributes,
-  validate,
   getEmptyForm
 })
 </script>
-
 <style scoped lang="scss">
 </style>
 

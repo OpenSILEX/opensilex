@@ -1,5 +1,6 @@
 <template>
   <FormSelector
+    :path="path"
     :label="label"
     :required="required"
     v-model:selected="organizationsURI"
@@ -32,6 +33,7 @@ const props = withDefaults(
     multiple?: boolean
     excludeOrganizationURI?: string
     required?: boolean
+    path?: string
   }>(),
   {
     organizations: () => [],

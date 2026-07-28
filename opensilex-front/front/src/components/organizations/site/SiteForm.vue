@@ -1,78 +1,110 @@
 <template>
-  <div>
-    <!-- URI -->
-    <UriForm
-      v-model:uri="formState.uri"
-      label="component.common.uri"
-      helpMessage="component.common.uri-help-message"
-      :editMode="editMode"
-      v-model:generated="uriGenerated"
-    />
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-geo-alt" />
+    </template>
 
-    <!-- Name -->
-    <InputForm
-      v-model:value="formState.name"
-      label="component.common.name"
-      type="text"
-      :required="true"
-      :placeholder="t('SiteForm.form-name-placeholder')"
-    />
+    <n-form
+      ref="formRef"
+      :rules="rules"
+      :model="modalFormLogic.form.value"
+      label-placement="top"
+      :show-require-mark="true"
+      size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+          :uri.sync="modalFormLogic.form.value.uri"
+          label="component.common.uri"
+          helpMessage="component.common.uri-help-message"
+          :editMode="modalFormLogic.editMode.value"
+          v-model:generated="uriGenerated"
+        />
+      </n-form-item>
 
-    <!-- Description -->
-    <InputForm
-      v-model:value="formState.description"
-      label="component.common.description"
-      type="text"
-      :placeholder="t('component.common.description')"
-    />
+      <!-- Name -->
+      <n-form-item path="name">
+        <InputForm
+          v-model:value="modalFormLogic.form.value.name"
+          label="component.common.name"
+          type="text"
+          :required="true"
+          :placeholder="t('SiteForm.form-name-placeholder')"
+        />
+      </n-form-item>
 
-    <!-- Organizations -->
-    <OrganizationSelector
-      ref="organizationSelectorRef"
-      :label="t('SiteForm.organizations')"
-      v-model:organizations="formState.organizations"
-      :multiple="true"
-      :required="true"
-      checkStrategy="all"
-    />
+      <!-- Description -->
+      <n-form-item>
+        <InputForm
+          v-model:value="modalFormLogic.form.value.description"
+          label="component.common.description"
+          type="text"
+          :placeholder="t('component.common.description')"
+        />
+      </n-form-item>
 
-    <!-- Facilities -->
-    <FacilitySelector
-      :label="t('SiteForm.facilities')"
-      v-model:facilities="formState.facilities"
-      :multiple="true"
-    />
+      <!-- Organizations -->
+        <OrganizationSelector
+          path="organizations"
+          ref="organizationSelectorRef"
+          :label="t('SiteForm.organizations')"
+          v-model:organizations="modalFormLogic.form.value.organizations"
+          :multiple="true"
+          :required="true"
+          checkStrategy="all"
+        />
 
-    <!-- Groups -->
-    <GroupSelector
-      :label="t('SiteForm.groups')"
-      v-model:groups="formState.groups"
-      :multiple="true"
-      :helpMessage="t('SiteForm.groups-help-message')"
-    />
+      <!-- Facilities -->
+        <FacilitySelector
+          :label="t('SiteForm.facilities')"
+          v-model:facilities="modalFormLogic.form.value.facilities"
+          :multiple="true"
+        />
 
-    <!-- Address toggle (Bootstrap switch) -->
-    <div class="form-check form-switch my-2">
-  <input
-    class="form-check-input"
-    type="checkbox"
-    role="switch"
-    id="site-address-toggle"
-    :checked="hasAddress"
-    @change="toggleAddress"
-  />
-  <label class="form-check-label" for="site-address-toggle">
-    {{ t('SiteForm.toggleAddress') }}
-  </label>
-</div>
+      <!-- Groups -->
+        <GroupSelector
+          :label="t('SiteForm.groups')"
+          v-model:groups="modalFormLogic.form.value.groups"
+          :multiple="true"
+          :helpMessage="t('SiteForm.groups-help-message')"
+        />
 
-    <!-- Address -->
-    <AddressForm v-if="hasAddress" v-model:address="formState.address" />
-  </div>
+      <!-- Address toggle -->
+      <n-form-item>
+        <div class="form-check form-switch my-2">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="site-address-toggle"
+            :checked="hasAddress"
+            @change="toggleAddress"
+          />
+          <label class="form-check-label" for="site-address-toggle">
+            {{ t('SiteForm.toggleAddress') }}
+          </label>
+        </div>
+      </n-form-item>
+
+      <!-- Address -->
+      <n-form-item v-if="hasAddress">
+        <AddressForm
+            v-if="hasAddress"
+            v-model:address="modalFormLogic.form.value.address"
+        />
+      </n-form-item>
+
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { OrganizationsService } from 'opensilex-core/api/organizations.service'
@@ -80,17 +112,72 @@ import type { SiteCreationDTO } from 'opensilex-core/index'
 import type { SiteUpdateDTO } from 'opensilex-core/model/siteUpdateDTO'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse } from '@/lib/HttpResponse'
-import UriForm from "@/components/common/forms/UriForm.vue";
-import InputForm from "@/components/common/forms/InputForm.vue";
-import OrganizationSelector from "@/components/organizations/OrganizationSelector.vue";
-import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
-import GroupSelector from "@/components/groups/GroupSelector.vue";
-import AddressForm from "@/components/common/forms/AddressForm.vue";
+import { NForm, NFormItem } from 'naive-ui'
+import {required, requiredTrimmed} from '@/models/FormFieldsFormatter'
 
+import UriForm from "@/components/common/forms/UriForm.vue"
+import InputForm from "@/components/common/forms/InputForm.vue"
+import OrganizationSelector from "@/components/organizations/OrganizationSelector.vue"
+import FacilitySelector from "@/components/facilities/FacilitySelector.vue"
+import GroupSelector from "@/components/groups/GroupSelector.vue"
+import AddressForm from "@/components/common/forms/AddressForm.vue"
+import FormHeader from "@/components/common/forms/FormHeader.vue"
+import FormFooter from "@/components/common/forms/FormFooter.vue"
+import useModalFormLogic from "@/composables/useModalFormLogic"
+import Modal from "@/components/common/views/Modal.vue"
+
+//#region Public
+
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
+
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>();
+//#endregion
+
+//#region Private
 const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
-function emptySiteForm(): SiteCreationDTO {
+//#region Data & computed
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+const organizationSelectorRef = ref<any>(null)
+
+const uriGenerated = ref(true)
+
+
+const hasAddress = computed(() => !!modalFormLogic.form.value.address)
+
+const rules = computed(() => ({
+  name: requiredTrimmed('component.common.name'),
+  organizations: required('component.organization.title')
+}))
+//#endregion
+
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<SiteCreationDTO>({
+  modalRef,
+  nFormRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess')
+})
+//#endregion
+
+//#region Methods
+function getEmptyForm(): SiteCreationDTO {
   return {
     uri: undefined,
     rdf_type: undefined,
@@ -100,86 +187,37 @@ function emptySiteForm(): SiteCreationDTO {
     organizations: [],
     facilities: [],
     groups: []
-  } as any
-}
+  } as any}
 
-const props = defineProps<{
-  editMode?: boolean
-  form?: SiteCreationDTO
-}>()
-
-const formState = ref<SiteCreationDTO>(props.form ?? emptySiteForm())
-
-// quand le Wizard remplace form (showCreateForm/showEditForm), on resynchronise la référence
-watch(
-  () => props.form,
-  (v) => {
-    formState.value = v ?? emptySiteForm()
-  },
-  { deep: false }
-)
-
-const editMode = computed(() => !!props.editMode)
-const uriGenerated = ref(true)
-
-// toggle dérivé du form
-const hasAddress = computed(() => !!formState.value.address)
-
-function toggleAddress(event: Event) {
-  const checked = (event.target as HTMLInputElement).checked
-  formState.value.address = checked
-    ? (formState.value.address ?? {})
-    : undefined
-}
-
-
-// refs
-const organizationSelectorRef = ref<any>(null)
-
-// Attendue par WizardForm/parents
 function reset() {
   organizationSelectorRef.value?.reset?.()
 }
 
-function getEmptyForm(): SiteCreationDTO {
-  return emptySiteForm()
-}
-
 async function create(form: SiteCreationDTO) {
-  $opensilex.showLoader()
-  try {
-    const service = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
-    const http = await service.createSite(form) as unknown as HttpResponse<OpenSilexResponse<string>>
-    form.uri = (http as any).response.result
-    return form
-  } catch (error: any) {
-    if (error?.status === 409) {
-      $opensilex.errorHandler(error, t('SiteForm.siteAlreadyExists'))
-    } else {
-      $opensilex.errorHandler(error)
-    }
-    throw error
-  } finally {
-    $opensilex.hideLoader()
-  }
+  const service = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
+  return  await service.createSite(form) as unknown as HttpResponse<OpenSilexResponse<string>>
 }
 
 async function update(form: SiteUpdateDTO) {
-  $opensilex.enableLoader?.()
-  $opensilex.showLoader()
-  try {
-    delete (form as any).rdf_type_name
-    const service = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
-    return await service.updateSite(form)
-  } catch (e) {
-    $opensilex.errorHandler(e as any)
-    throw e
-  } finally {
-    $opensilex.hideLoader()
-  }
+  delete (form as any).rdf_type_name
+  const service = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService')
+  return await service.updateSite(form)
 }
 
-defineExpose({ reset, create, update, getEmptyForm })
+function toggleAddress(event: Event) {
+  const checked = (event.target as HTMLInputElement).checked
+  modalFormLogic.form.value.address = checked
+    ? (modalFormLogic.form.value.address ?? {})
+    : undefined
+}
+//#endregion
+
+//#endregion
+
+defineExpose({
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm
+})
 </script>
 
 

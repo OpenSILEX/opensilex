@@ -1,52 +1,49 @@
 <template>
   <div class="container-fluid">
-    <opensilex-CreateButton
+    <CreateButton
       id="createOrgaButton"
       @click="onCreateClick"
       :label="t('OrganizationView.create')"
       class="createButton"
     />
 
-    <opensilex-PageContent>
-      <opensilex-OrganizationList
+    <PageContent>
+      <OrganizationListComponent
         ref="organizationList"
         @onEdit="onOrganizationListEdit"
       />
-    </opensilex-PageContent>
+    </PageContent>
 
-    <opensilex-ModalForm
+    <OrganizationFormComponent
       v-if="user?.hasCredential(credentials?.CREDENTIAL_ORGANIZATION_MODIFICATION_ID)"
       ref="organizationForm"
-      :lazy="true"
-      component="opensilex-OrganizationForm"
       :createTitle="t('OrganizationView.create')"
       :editTitle="t('OrganizationView.update')"
-      icon="bi#bi-geo-alt"
-      @onCreate="refreshList"
-      @onUpdate="refreshList"
+      @onSuccess="refreshList"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, getCurrentInstance } from "vue";
+import { computed, useTemplateRef } from "vue";
 import type OrganizationList from "@/components/organizations/OrganizationList.vue";
+import type OrganizationForm from "@/components/organizations/OrganizationForm.vue";
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n'
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import OrganizationListComponent from "@/components/organizations/OrganizationList.vue";
+import OrganizationFormComponent from "@/components/organizations/OrganizationForm.vue";
 
-const instance = getCurrentInstance();
 const store = useStore();
 const { t } = useI18n()
 
-// refs
-const organizationForm = ref<any>(null);
-const organizationList = ref<InstanceType<typeof OrganizationList> | null>(null);
+const organizationForm = useTemplateRef<InstanceType<typeof OrganizationFormComponent>>('organizationForm');
+const organizationList = useTemplateRef<InstanceType<typeof OrganizationListComponent>>('organizationList');
 
-// computed
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 
-// handlers
 function onOrganizationListEdit(dto: any) {
   organizationForm.value?.showEditForm(dto);
 }

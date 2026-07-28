@@ -599,6 +599,7 @@
             }
         },
         "group": {
+            "title": "Groupes",
             "description": "Gérer et configurer les groupes",
             "view-groups": "voir les groupes",
             "group-uri": "URI du groupe",
@@ -971,6 +972,7 @@
             "searchAll-placeholder": "Recherche par titre et mot-clé"
         },
         "organization": {
+            "title": "Organisation",
             "exception": {
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
                 "siteFacilityInvalidAddress": "Le site '{site}' et l'installation environnementale '{facility}' doivent avoir la même adresse."
@@ -981,23 +983,27 @@
         "device": {
             "description": "Gestion des appareils",
             "all_devices": "Tout les appareils",
-            "select_devices": "Choisir des dispositifs"
+            "select_devices": "Choisir des dispositifs",
+            "add": "Ajouter un appareil",
+            "update": "Editer un appareil"
         },
         "site": {
+            "title": "Sites",
             "description": "Gérer et configurer les sites",
+            "create": "Ajouter un site",
             "update": "Modifier le site",
             "delete": "Supprimer le site",
             "city": "Ville",
             "facilities": "Installations"
         },
         "facility": {
+            "title": "Installation environnementale",
             "warning": {
                 "facility-should-have-unique-site": "Il est déconseillé d'associer une installation environnementale à plusieurs sites. Veuillez vérifier à quel site appartient cette facility.",
                 "facility-default-date": "Date par défaut"
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
             "view": {
-                "title": "Installation environnementale",
                 "list": {
                     "previous": "Consulter l'infrastructure précédente",
                     "next": "Consulter l'infrastructure suivante",
@@ -1022,8 +1028,10 @@
             "no-data": "Aucune donnée trouvée pour cette période"
         },
         "datafile": {
-            "description": "Voir les fichiers de données",
-            "download-image" : "Télecharger l'image"
+          "create": "Ajouter un fichier de données",
+          "update": "Modifier un fichier de donnée",
+          "description": "Voir les fichiers de données",
+          "download-image" : "Télecharger l'image"
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

@@ -1,86 +1,97 @@
 <template>
-  <n-form
-      ref="formRef"
-      :rules="rules"
-      :model="form"
-      label-placement="top"
-      :show-require-mark="true"
-      size="large"
-  >
-    <!-- URI -->
-    <n-form-item>
-      <UriForm
-          :uri.sync="form.uri"
-          label="component.account.account-uri"
-          helpMessage="component.common.uri-help-message"
-          :editMode="editMode"
-          :generated.sync="uriGenerated"
-      ></UriForm>
-    </n-form-item>
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-person-lock" />
+    </template>
 
-    <!-- Email -->
-    <n-form-item path="email">
-      <InputForm
-          v-model:value="form.email"
-          label="component.account.email-address"
-          type="email"
-          :placeholder="t('component.account.form-email-placeholder')"
-          autocomplete="email"
-      ></InputForm>
-    </n-form-item>
+    <n-form
+        ref="formRef"
+        :rules="rules"
+        :model="modalFormLogic.form.value"
+        label-placement="top"
+        :show-require-mark="true"
+        size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+            :uri.sync="modalFormLogic.form.value.uri"
+            label="component.account.account-uri"
+            helpMessage="component.common.uri-help-message"
+            :editMode="modalFormLogic.editMode.value"
+            :generated.sync="uriGenerated"
+        ></UriForm>
+      </n-form-item>
 
-    <!-- Password -->
-    <n-form-item path="password">
-      <InputForm
-          v-model:value="form.password"
-          label="component.account.password"
-          type="password"
-          :required="!editMode"
-          :placeholder="t('component.account.form-password-placeholder')"
-          autocomplete="new-password"
-      ></InputForm>
-    </n-form-item>
+      <!-- Email -->
+      <n-form-item path="email">
+        <InputForm
+            v-model:value="modalFormLogic.form.value.email"
+            label="component.account.email-address"
+            type="email"
+            :placeholder="t('component.account.form-email-placeholder')"
+            required
+            autocomplete="email"
+        ></InputForm>
+      </n-form-item>
 
-    <!-- Default language -->
-      <FormSelector
-          v-model:selected="form.language"
-          :options="languages"
-          :required="true"
-          label="component.account.default-lang"
-          :placeholder="t('component.common.select-lang')"
-          path="language"
-      ></FormSelector>
+      <!-- Password -->
+      <n-form-item path="password">
+        <InputForm
+            v-model:value="modalFormLogic.form.value.password"
+            label="component.account.password"
+            type="password"
+            :required="!modalFormLogic.editMode.value"
+            :placeholder="t('component.account.form-password-placeholder')"
+            autocomplete="new-password"
+        ></InputForm>
+      </n-form-item>
 
-    <!-- Admin flag -->
-    <n-form-item v-if="isUserAdmin">
-      <CheckboxForm
-          v-model:value="form.admin"
-          label="component.account.admin"
-          title="component.account.form-admin-option-label"
-      ></CheckboxForm>
-    </n-form-item>
+      <!-- Default language -->
+        <FormSelector
+            v-model:selected="modalFormLogic.form.value.language"
+            :options="languages"
+            :required="true"
+            label="component.account.default-lang"
+            :placeholder="t('component.common.select-lang')"
+            path="language"
+        ></FormSelector>
 
-    <!-- linked person -->
-      <PersonSelector
-          v-if="canSelectAPerson"
-          v-model:persons="form.linked_person"
-          label="component.account.linked-person"
-          helpMessage="component.account.person-selector.help-message"
-          :getOnlyPersonsWithoutAccount="true"
-          :allowAddPerson="true"
-      ></PersonSelector>
-      <InputForm
-          v-else
-          :value="linkedPersonString"
-          label="component.account.linked-person"
-          disabled
-      ></InputForm>
+      <!-- Admin flag -->
+      <n-form-item v-if="isUserAdmin">
+        <CheckboxForm
+            v-model:value="modalFormLogic.form.value.admin"
+            label="component.account.admin"
+            title="component.account.form-admin-option-label"
+        ></CheckboxForm>
+      </n-form-item>
 
-  </n-form>
+      <!-- linked person -->
+        <PersonSelector
+            v-if="canSelectAPerson"
+            v-model:persons="modalFormLogic.form.value.linked_person"
+            label="component.account.linked-person"
+            helpMessage="component.account.person-selector.help-message"
+            :getOnlyPersonsWithoutAccount="true"
+            :allowAddPerson="true"
+        ></PersonSelector>
+        <InputForm
+            v-else
+            :value="linkedPersonString"
+            label="component.account.linked-person"
+            disabled
+        ></InputForm>
+
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, nextTick, onMounted, ref, useTemplateRef} from "vue";
+import {computed, ComputedRef, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {PersonDTO} from "opensilex-security/index";
@@ -90,52 +101,53 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
 import {NForm, NFormItem} from "naive-ui";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
+import useModalFormLogic from "@/composables/useModalFormLogic";
+import Modal from "@/components/common/views/Modal.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
-const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
-const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
-const store = useStore() as OpenSilexStore;
-const {t, availableLocales} = useI18n();
-
-//#region Types
+//#region Public
 interface AccountFormDTO {
   uri: string | null;
   email: string;
-  password: string;
+  password: string | null;
   language: string;
   admin: boolean;
   linked_person: string | null;
 }
+
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
+
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>();
 //#endregion
 
-//#region Props
-const props = withDefaults(
-    defineProps<{
-      editMode?: boolean;
-      form: AccountFormDTO;
-    }>(),
-    {
-      editMode: false,
-      form: () => ({
-        uri: null,
-        email: "",
-        linked_person: null,
-        admin: false,
-        password: "",
-        language: "en"
-      }),
-    }
-);
+//#region Private
+
+//#region Plugin and services
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const store = useStore() as OpenSilexStore;
+const {t, availableLocales} = useI18n();
 //#endregion
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
 //#region datas
 let uriGenerated = ref<boolean>(true);
 const linkedPerson = ref<PersonDTO | null>(null);
 const canSelectAPerson = ref(false);
-const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef');
 //#endregion
 
 //#region Computed
@@ -143,8 +155,8 @@ const rules = computed(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
-      if (!props.editMode && (!value || value.trim().length === 0)) {
-        return new Error(t('validations.requiredField'));
+      if (!modalFormLogic.editMode.value && (!value || value.toString().trim().length === 0)) {
+        return new Error(t('validations.required_if', {_field_: t('component.account.password')}));
       }
       return true;
     },
@@ -177,13 +189,25 @@ const linkedPersonString: ComputedRef<string> = computed(() => {
     }
     return personLabel;
   }
-  return props.form.linked_person || "";
+  return modalFormLogic.form.value.linked_person || "";
 });
 //#endregion
 
-onMounted(() => {
-  reset();
-});
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<AccountFormDTO>({
+  modalRef,
+  nFormRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+})
+//#endregion
 
 //#region Methods
 function getEmptyForm(): AccountFormDTO {
@@ -197,77 +221,40 @@ function getEmptyForm(): AccountFormDTO {
   };
 }
 
-function showLoader(): void {
-  opensilex.enableLoader();
-  opensilex.showLoader();
-}
-
-function hideLoader(): void {
-  opensilex.hideLoader();
-  opensilex.disableLoader();
-}
-
-async function validate(): Promise<boolean> {
-  try {
-    await formRef.value?.validate();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function reset(): Promise<void> {
-  if (props.form.linked_person) {
+  if (modalFormLogic.form.value.linked_person) {
     try {
-      const response = await securityService.getPerson(props.form.linked_person);
+      const response = await securityService.getPerson(modalFormLogic.form.value.linked_person);
       linkedPerson.value = response.response.result;
     } catch (error) {
       opensilex.errorHandler(error);
     }
+  } else {
+    linkedPerson.value = null;
   }
 
-  const isCreationForm: boolean = !props.editMode;
-  const canAddAPerson: boolean = !props.form.linked_person;
+  const isCreationForm: boolean = !modalFormLogic.editMode.value;
+  const canAddAPerson: boolean = !modalFormLogic.form.value.linked_person;
   canSelectAPerson.value = isCreationForm || canAddAPerson;
 }
 
-async function create(form: AccountFormDTO) {
-  showLoader();
-  try {
-    return await securityService.createAccount(form);
-  } catch (error) {
-    opensilex.errorHandler(error);
-  } finally {
-    hideLoader();
-  }
+async function create(formData: AccountFormDTO) {
+    return await securityService.createAccount(formData);
 }
 
-async function update(form: AccountFormDTO) {
-  showLoader();
-  
-  if (form.password === "") {
-    form.password = null;
+async function update(formData: AccountFormDTO) {
+  if (formData.password === "") {
+    formData.password = null;
   }
-  
-  try {
-    return await securityService.updateAccount(form);
-  } catch (error) {
-    opensilex.errorHandler(error);
-  } finally {
-    hideLoader();
-  }
+  return await securityService.updateAccount(formData);
 }
 //#endregion
 
-//#region Expose
+//#endregion
 defineExpose({
-  reset,
-  create,
-  update,
-  validate,
-  getEmptyForm
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm
 });
-//#endregion
 </script>
 
 <style scoped lang="scss">

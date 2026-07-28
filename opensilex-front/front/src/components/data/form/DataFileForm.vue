@@ -1,149 +1,137 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageContent>
-      <n-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-placement="top"
-        :show-require-mark="true"
-        size="small"
-      >
-        <!-- type -->
-        <n-form-item path="rdf_type" ref="rdfTypeItem">
-          <opensilex-TypeForm
-            :key="form.rdf_type ?? 'no-type'"
-            v-model:type="form.rdf_type"
-            :baseType="Oeso.DATAFILE_TYPE_URI"
-            :helpMessage="t('DataFileForm.type-help')"
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-file-earmark-text" />
+    </template>
+
+    <n-form
+      ref="formRef"
+      :model="modalFormLogic.form.value"
+      :rules="rules"
+      label-placement="top"
+      :show-require-mark="true"
+      size="small"
+    >
+      <!-- type -->
+      <n-form-item path="rdf_type" ref="rdfTypeItem">
+        <TypeForm
+          :key="modalFormLogic.form.value.rdf_type ?? 'no-type'"
+          v-model:type="modalFormLogic.form.value.rdf_type"
+          :baseType="Oeso.DATAFILE_TYPE_URI"
+          :helpMessage="t('DataFileForm.type-help')"
+          :required="true"
+        />
+      </n-form-item>
+
+      <template v-if="modalFormLogic.form.value.rdf_type">
+        <!-- format -->
+        <n-form-item label="Format">
+          <n-radio-group v-model:value="selectedFormat">
+            <n-space>
+              <n-radio
+                v-for="option in formats"
+                :key="option.id"
+                :value="option.id"
+              >
+                {{ option.label }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+
+        <!-- provenance -->
+          <ProvenanceSelector
+            path="provenance"
+            ref="provenanceSelector"
+            v-model:provenances="modalFormLogic.form.value.provenance"
+            :label="t('DataFileForm.provenance')"
+            :multiple="false"
+            @clear="reset"
+            :actionHandler="
+              user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)
+                ? showProvenanceCreateForm
+                : undefined
+            "
+            :required="true"
+          />
+
+        <!-- experiment -->
+          <ExperimentSelector
+            path="experiments"
+            :label="t('DataFileForm.experiment')"
+            v-model:experiments="modalFormLogic.form.value.experiments"
+            :required="true"
+          />
+
+        <!-- File source -->
+        <n-form-item label="Source">
+          <n-radio-group v-model:value="selectedSource">
+            <n-space>
+              <n-radio
+                v-for="option in sources"
+                :key="option.id"
+                :value="option.id"
+              >
+                {{ option.label }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+
+        <!-- File -->
+        <n-form-item v-if="!modalFormLogic.editMode.value && selectedSource === 'file'" path="file" ref="fileItem">
+          <FileInputForm
+            v-model:file="modalFormLogic.form.value.file"
+            :label="t('DataFileForm.fileDX')"
+            type="file"
+            :browse-text="t('DataFileForm.browse')"
+            :required="true"
+            rules="size:100000"
+            :helpMessage="helpMessageFile"
+          />
+        </n-form-item>
+
+        <!-- External source -->
+        <n-form-item v-if="!modalFormLogic.editMode.value && selectedSource === 'external'" path="file" ref="externalSourceItem">
+          <InputForm
+            :label="t('DataFileForm.external-source')"
+            type="text"
+            v-model:value="modalFormLogic.form.value.file"
             :required="true"
           />
         </n-form-item>
-        <br>
 
-        <template v-if="form.rdf_type">
-            <!-- format -->
-            <n-form-item label="Format">
-            <n-radio-group v-model:value="selectedFormat">
-                <n-space>
-                <n-radio
-                    v-for="option in formats"
-                    :key="option.id"
-                    :value="option.id"
-                >
-                    {{ option.label }}
-                </n-radio>
-                </n-space>
-            </n-radio-group>
-            </n-form-item>
+        <!-- date -->
+        <n-form-item v-if="selectedFormat === 'all' || selectedSource === 'external'" path="date" ref="dateItem">
+          <DateForm
+            v-model:value="modalFormLogic.form.value.date"
+            :helpMessage="t('DataFileForm.date-help')"
+            :label="t('DataFileForm.date')"
+            :required="true"
+          />
+        </n-form-item>
 
-            <!-- provenance -->
-            <n-form-item path="provenance" ref="provenanceItem">
-            <opensilex-ProvenanceSelector
-                ref="provenanceSelector"
-                v-model:provenances="form.provenance"
-                :label="t('DataFileForm.provenance')"
-                :multiple="false"
-                @clear="reset"
-                :actionHandler="
-                user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)
-                    ? showProvenanceCreateForm
-                    : undefined
-                "
-                :required="true"
-            />
-            </n-form-item>
+        <!-- targets -->
+        <n-form-item v-if="selectedFormat === 'all' || selectedSource === 'external'" path="target">
+          <InputForm
+            v-model:value="modalFormLogic.form.value.target"
+            :baseType="Oeso.targets"
+            :label="t('DataFileForm.targets')"
+            :helpMessage="t('DataFileForm.targets-help')"
+            type="text"
+          />
+        </n-form-item>
+      </template>
+    </n-form>
 
-            <!-- experiment -->
-            <n-form-item v-if="!tabExperimentMode" path="experiments" ref="experimentsItem">
-            <opensilex-ExperimentSelector
-                :label="t('DataFileForm.experiment')"
-                v-model:experiments="form.experiments"
-                :required="true"
-            />
-            </n-form-item>
-            <br>
-
-            <!-- File source -->
-            <n-form-item label="Source">
-            <n-radio-group v-model:value="selectedSource">
-                <n-space>
-                <n-radio
-                    v-for="option in sources"
-                    :key="option.id"
-                    :value="option.id"
-                >
-                    {{ option.label }}
-                </n-radio>
-                </n-space>
-            </n-radio-group>
-            </n-form-item>
-
-            <!-- File -->
-            <n-form-item v-if="!editMode && selectedSource === 'file'" path="file" ref="fileItem">
-            <opensilex-FileInputForm
-                v-model:file="form.file"
-                :label="t('DataFileForm.fileDX')"
-                type="file"
-                :browse-text="t('DataFileForm.browse')"
-                :required="true"
-                rules="size:100000"
-                :helpMessage="helpMessageFile"
-            />
-            </n-form-item>
-
-            <!-- External source -->
-            <n-form-item v-if="!editMode && selectedSource === 'external'" path="file" ref="externalSourceItem">
-            <opensilex-InputForm
-                :label="t('DataFileForm.external-source')"
-                type="text"
-                v-model:value="form.file"
-                :required="true"
-            />
-            </n-form-item>
-
-            <!-- date -->
-            <n-form-item v-if="selectedFormat === 'all' || selectedSource === 'external'" path="date" ref="dateItem">
-            <opensilex-DateForm
-                v-model:value="form.date"
-                :helpMessage="t('DataFileForm.date-help')"
-                :label="t('DataFileForm.date')"
-                :required="true"
-            />
-            </n-form-item>
-
-            <!-- targets -->
-            <n-form-item v-if="selectedFormat === 'all' || selectedSource === 'external'" path="target">
-            <opensilex-InputForm
-                v-model:value="form.target"
-                :baseType="Oeso.targets"
-                :label="t('DataFileForm.targets')"
-                :helpMessage="t('DataFileForm.targets-help')"
-                type="text"
-            />
-            </n-form-item>
-        </template>
-      </n-form>
-
-      <opensilex-ModalForm
-        ref="provenanceForm"
-        component="opensilex-ProvenanceForm"
-        :createTitle="t('DataFileForm.add-provenance')"
-        :editTitle="t('DataFileForm.update-provenance')"
-        icon="fa#seedling"
-        modalSize="lg"
-        @hide="validateProvenanceForm = true"
-        :initForm="initForm"
-        :successMessage="successMessage"
-        :validationDisabled="validateProvenanceForm"
-        @onCreate="afterCreateProvenance"
-      />
-    </opensilex-PageContent>
-  </div>
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, nextTick, watch } from 'vue'
+import { computed, inject, ref, nextTick, watch, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import {
@@ -161,61 +149,62 @@ import type {
   ScientificObjectsService
 } from 'opensilex-core/index'
 import type { DataService } from 'opensilex-core/api/data.service'
+import TypeForm from '@/components/common/forms/TypeForm.vue'
+import ProvenanceSelector from '@/components/data/ProvenanceSelector.vue'
+import ExperimentSelector from '@/components/experiments/ExperimentSelector.vue'
+import FileInputForm from '@/components/common/forms/FileInputForm.vue'
+import InputForm from '@/components/common/forms/InputForm.vue'
+import DateForm from '@/components/common/forms/DateForm.vue'
+import Modal from '@/components/common/views/Modal.vue'
+import FormHeader from '@/components/common/forms/FormHeader.vue'
+import FormFooter from '@/components/common/forms/FormFooter.vue'
+import useModalFormLogic from '@/composables/useModalFormLogic'
+
+//#region Public
+type DataFileFormModel = {
+  rdf_type: string | null
+  provenance: any
+  experiments: any[]
+  file: File | string | null
+  date: string | null
+  target: string | null
+}
 
 const emit = defineEmits<{
-  (e: 'onCreate', form: any): void
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
 }>()
 
-const props = withDefaults(defineProps<{
-  data?: any
-  editMode?: boolean
-  form?: any
-}>(), {
-  data: undefined,
-  editMode: false,
-  form: () => ({
-    rdf_type: null,
-    provenance: null,
-    experiments: [],
-    file: null,
-    date: null,
-    target: null
-  })
-})
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string,
+  tabExperimentMode?: boolean
+}>()
+//#endregion
 
+//#region Private
+
+//#region Plugin and services
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const Oeso = opensilex.Oeso
 const { t } = useI18n()
 const store = useStore()
-
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const Oeso = $opensilex.Oeso
-
-const serviceOS = $opensilex.getService<ScientificObjectsService>(
+const dataService = opensilex.getService<DataService>('opensilex.DataService')
+const serviceOS = opensilex.getService<ScientificObjectsService>(
   'opensilex.ScientificObjectsService'
 )
+//#endregion
 
-const selectedProvenance = ref<any>(null)
-const selectedFormat = ref<'all' | 'DX' | 'CSV'>('DX')
-const selectedSource = ref<'file' | 'external'>('file')
-const validateProvenanceForm = ref(true)
-const provenance = ref<any>(null)
-
-const provenanceForm = ref<any>(null)
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 const provenanceSelector = ref<any>(null)
 
-const form = props.form
+//#region Datas & computed
+const selectedFormat = ref<'all' | 'DX' | 'CSV'>('DX')
+const selectedSource = ref<'file' | 'external'>('file')
 
-const formRef = ref<FormInst | null>(null)
-const rdfTypeItem = ref<FormItemInst | null>(null)
-const provenanceItem = ref<FormItemInst | null>(null)
-const experimentsItem = ref<FormItemInst | null>(null)
-const fileItem = ref<FormItemInst | null>(null)
-const externalSourceItem = ref<FormItemInst | null>(null)
-const dateItem = ref<FormItemInst | null>(null)
-
-const tabExperimentMode = computed(() => {
-  return props.data?.tabExperimentMode === true
-})
-
+const tabExperimentMode = computed(() => props.tabExperimentMode === true)
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
 
@@ -325,31 +314,25 @@ const rules = computed(() => ({
     }
   }
 }))
+//#endregion
 
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<DataFileFormModel>({
+  modalRef,
+  nFormRef: formRef,
+  getEmptyForm,
+  create,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+})
+//#endregion
 
-const successMessage = computed(() => undefined)
-
-function initForm() {
-  return {
-    uri: null,
-    name: null,
-    description: null,
-    experiments: [],
-    activity_type: null,
-    activity_start_date: null,
-    activity_end_date: null,
-    activity_uri: null,
-    agentTypes: [],
-    agents: [
-      {
-        uris: [],
-        rdf_type: null
-      }
-    ]
-  }
-}
-
-function getEmptyForm() {
+//#region Methods
+function getEmptyForm(): DataFileFormModel {
   return {
     rdf_type: null,
     provenance: null,
@@ -360,258 +343,65 @@ function getEmptyForm() {
   }
 }
 
-function reset() {
-  selectedProvenance.value = null
+async function reset(): Promise<void> {
+  selectedFormat.value = 'DX'
+  selectedSource.value = 'file'
 }
 
-function normalizeForm() {
+function normalizeForm(form: DataFileFormModel) {
   if (form.date === '') {
-    form.date = undefined
+    form.date = null
   }
 
   if (form.target === '') {
-    form.target = undefined
+    form.target = null
   }
 }
 
-function getExperimentArray() {
-  return Array.isArray(form.experiments)
-    ? form.experiments
-    : form.experiments
-      ? [form.experiments]
+function getExperimentArray(experiments: any) {
+  return Array.isArray(experiments)
+    ? experiments
+    : experiments
+      ? [experiments]
       : []
 }
 
-function getProvenanceUri() {
-  if (!form.provenance) {
+function getProvenanceUri(provenance: any) {
+  if (!provenance) {
     return undefined
   }
 
-  if (typeof form.provenance === 'string') {
-    return form.provenance
+  if (typeof provenance === 'string') {
+    return provenance
   }
 
-  return form.provenance.uri ?? form.provenance.id
-}
-
-async function create(submittedForm: any) {
-  normalizeForm()
-
-  const isValid = await validate()
-
-  if (!isValid) {
-    return false
-  }
-
-  const canCheckTarget =
-    selectedSource.value === 'external' || selectedFormat.value === 'all'
-
-  if (canCheckTarget && form.target) {
-    const valid = await checkOSinExperiment()
-
-    if (!valid) {
-      return false
-    }
-  }
-
-  if (selectedFormat.value === 'DX' && selectedSource.value === 'file') {
-    return createDxFile(submittedForm)
-  }
-
-  if (selectedFormat.value === 'CSV' && selectedSource.value === 'file') {
-    return createCsvSpectraFile(submittedForm)
-  }
-
-  if (selectedFormat.value === 'all' && selectedSource.value === 'file') {
-    return createGenericFile(submittedForm)
-  }
-
-  if (selectedSource.value === 'external') {
-    return createExternalSource(submittedForm)
-  }
-
-  return false
-}
-
-function createDxFile(submittedForm: any) {
-  return $opensilex.uploadFileToService(
-    '/core/datafiles/upload-dx',
-    {
-      rdf_type: form.rdf_type,
-      provenance: form.provenance,
-      experiments: [form.experiments],
-      file: form.file
-    },
-    null,
-    false
-  )
-    .then((uploadResponse: any) => {
-      if (!uploadResponse || !uploadResponse.result) {
-        throw new Error('File upload failed.')
-      }
-
-      return $opensilex
-        .getService<DataService>('opensilex.DataService')
-        .postDataFilePaths(uploadResponse.result)
-    })
-    .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-      const uri = http.response.result
-
-      submittedForm.uri = uri
-
-      console.debug('Datafile created', uri)
-      emit('onCreate', submittedForm)
-
-      $opensilex.showSuccessToast('File uploaded and processed successfully.')
-    })
-    .catch(handleCreateError)
-}
-
-function createCsvSpectraFile(submittedForm: any) {
-  return $opensilex.uploadFileToService(
-    '/core/datafiles/upload-spectra-csv',
-    {
-      rdf_type: form.rdf_type,
-      provenance: form.provenance,
-      experiments: [form.experiments],
-      file: form.file
-    },
-    null,
-    false
-  )
-    .then((uploadResponse: any) => {
-      if (!uploadResponse || !uploadResponse.result) {
-        throw new Error('File upload failed.')
-      }
-
-      return $opensilex
-        .getService<DataService>('opensilex.DataService')
-        .postDataFilePaths(uploadResponse.result)
-    })
-    .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-      const uri = http.response.result
-
-      submittedForm.uri = uri
-
-      console.debug('Datafile created', uri)
-      emit('onCreate', submittedForm)
-
-      $opensilex.showSuccessToast('File uploaded and processed successfully.')
-    })
-    .catch(handleCreateError)
-}
-
-function createGenericFile(submittedForm: any) {
-  return $opensilex.uploadFileToService(
-    '/core/datafiles',
-    {
-      description: {
-        rdf_type: form.rdf_type,
-        provenance: {
-          uri: getProvenanceUri(),
-          experiments: getExperimentArray()
-        },
-        date: form.date,
-        target: form.target
-      },
-      file: form.file
-    },
-    null,
-    false
-  )
-    .then((http: any) => {
-      const uri = http.result
-
-      submittedForm.uri = uri
-
-      console.debug('Datafile created', uri)
-
-      return submittedForm
-    })
-    .catch(handleCreateError)
-}
-
-function createExternalSource(submittedForm: any) {
-  return $opensilex
-    .getService<DataService>('opensilex.DataService')
-    .postDataFilePaths([
-      {
-        rdf_type: form.rdf_type,
-        provenance: {
-          uri: getProvenanceUri(),
-          experiments: getExperimentArray()
-        },
-        date: form.date,
-        target: form.target,
-        relative_path: form.file
-      }
-    ])
-    .then((http: any) => {
-      const uri = http.result ?? http.response?.result
-
-      submittedForm.uri = uri
-
-      console.debug('Datafile created', uri)
-
-      return submittedForm
-    })
-    .catch(handleCreateError)
-}
-
-function handleCreateError(error: any) {
-  if (error.status === 409) {
-    console.error('DataFile already exists', error)
-
-    $opensilex.errorHandler(
-      error,
-      t('DataFileForm.error.datafile-already-exists')
-    )
-  } else {
-    $opensilex.errorHandler(error)
-  }
+  return provenance.uri ?? provenance.id
 }
 
 function showProvenanceCreateForm() {
-  validateProvenanceForm.value = false
-  provenanceForm.value?.showCreateForm?.()
+  // This would be handled by a separate ProvenanceForm component if needed
+  // For now, kept as placeholder for potential integration
 }
 
-function afterCreateProvenance(data: any) {
-  provenance.value = data
-  form.provenance = data.uri
-
-  nextTick(() => {
-    provenanceSelector.value?.refresh?.()
-  })
-}
-
-async function checkOSinExperiment() {
+async function checkOSinExperiment(form: DataFileFormModel) {
   const contextURI = form.experiments
   const target = form.target
 
-  try {
-    const http = await serviceOS.getScientificObjectsListByUris(
-      contextURI,
-      [target]
+  const http = await serviceOS.getScientificObjectsListByUris(
+    contextURI,
+    [target]
+  )
+
+  const foundObjects = http?.response?.result || []
+
+  if (foundObjects.length === 0) {
+    opensilex.showErrorToast(
+      t('DataFileForm.error.object-not-in-experiment')
     )
-
-    const foundObjects = http?.response?.result || []
-
-    if (foundObjects.length === 0) {
-      $opensilex.showErrorToast(
-        t('DataFileForm.error.object-not-in-experiment')
-      )
-
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('Error checking the object:', error)
-    $opensilex.errorHandler(error)
-
     return false
   }
+
+  return true
 }
 
 function isFilled(value: unknown) {
@@ -634,86 +424,148 @@ function isFilled(value: unknown) {
   return true
 }
 
-watch(
-  () => form.rdf_type,
-  () => {
-    rdfTypeItem.value?.restoreValidation()
-  },
-  { flush: 'post' }
-)
+async function create(submittedForm: DataFileFormModel) {
+  normalizeForm(submittedForm)
 
-watch(
-  () => form.provenance,
-  () => {
-    provenanceItem.value?.restoreValidation()
-  },
-  { flush: 'post' }
-)
+  const canCheckTarget =
+    selectedSource.value === 'external' || selectedFormat.value === 'all'
 
-watch(
-  () => form.experiments,
-  () => {
-    experimentsItem.value?.restoreValidation()
-  },
-  { deep: true, flush: 'post' }
-)
-
-watch(
-  () => form.file,
-  () => {
-    fileItem.value?.restoreValidation()
-    externalSourceItem.value?.restoreValidation()
-  },
-  { flush: 'post' }
-)
-
-watch(
-  () => form.date,
-  () => {
-    dateItem.value?.restoreValidation()
-  },
-  { flush: 'post' }
-)
-
-watch(
-  [selectedFormat, selectedSource],
-  async () => {
-    await nextTick()
-    formRef.value?.restoreValidation()
-  },
-  { flush: 'post' }
-)
-
-async function validate() {
-  try {
-    await formRef.value?.validate()
-    return true
-  } catch {
-    return false
+  if (canCheckTarget && submittedForm.target) {
+    const valid = await checkOSinExperiment(submittedForm)
+    if (!valid) {
+      return Promise.reject(new Error('Target validation failed'))
+    }
   }
+
+  if (selectedFormat.value === 'DX' && selectedSource.value === 'file') {
+    return createDxFile(submittedForm)
+  }
+
+  if (selectedFormat.value === 'CSV' && selectedSource.value === 'file') {
+    return createCsvSpectraFile(submittedForm)
+  }
+
+  if (selectedFormat.value === 'all' && selectedSource.value === 'file') {
+    return createGenericFile(submittedForm)
+  }
+
+  if (selectedSource.value === 'external') {
+    return createExternalSource(submittedForm)
+  }
+
+  return Promise.reject(new Error('Invalid file format or source'))
 }
 
+function createDxFile(submittedForm: DataFileFormModel) {
+  return opensilex.uploadFileToService(
+    '/core/datafiles/upload-dx',
+    {
+      rdf_type: submittedForm.rdf_type,
+      provenance: submittedForm.provenance,
+      experiments: [submittedForm.experiments],
+      file: submittedForm.file
+    },
+    null,
+    false
+  )
+    .then((uploadResponse: any) => {
+      if (!uploadResponse || !uploadResponse.result) {
+        throw new Error('File upload failed.')
+      }
+
+      return dataService.postDataFilePaths(uploadResponse.result)
+    })
+    .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      const uri = http.response.result
+      submittedForm.uri = uri
+      console.debug('Datafile created', uri)
+      opensilex.showSuccessToast('File uploaded and processed successfully.')
+      return submittedForm
+    })
+}
+
+function createCsvSpectraFile(submittedForm: DataFileFormModel) {
+  return opensilex.uploadFileToService(
+    '/core/datafiles/upload-spectra-csv',
+    {
+      rdf_type: submittedForm.rdf_type,
+      provenance: submittedForm.provenance,
+      experiments: [submittedForm.experiments],
+      file: submittedForm.file
+    },
+    null,
+    false
+  )
+    .then((uploadResponse: any) => {
+      if (!uploadResponse || !uploadResponse.result) {
+        throw new Error('File upload failed.')
+      }
+
+      return dataService.postDataFilePaths(uploadResponse.result)
+    })
+    .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      const uri = http.response.result
+      submittedForm.uri = uri
+      console.debug('Datafile created', uri)
+      opensilex.showSuccessToast('File uploaded and processed successfully.')
+      return submittedForm
+    })
+}
+
+function createGenericFile(submittedForm: DataFileFormModel) {
+  return opensilex.uploadFileToService(
+    '/core/datafiles',
+    {
+      description: {
+        rdf_type: submittedForm.rdf_type,
+        provenance: {
+          uri: getProvenanceUri(submittedForm.provenance),
+          experiments: getExperimentArray(submittedForm.experiments)
+        },
+        date: submittedForm.date,
+        target: submittedForm.target
+      },
+      file: submittedForm.file
+    },
+    null,
+    false
+  )
+    .then((http: any) => {
+      const uri = http.result
+      submittedForm.uri = uri
+      console.debug('Datafile created', uri)
+      return submittedForm
+    })
+}
+
+function createExternalSource(submittedForm: DataFileFormModel) {
+  return dataService.postDataFilePaths([
+    {
+      rdf_type: submittedForm.rdf_type,
+      provenance: {
+        uri: getProvenanceUri(submittedForm.provenance),
+        experiments: getExperimentArray(submittedForm.experiments)
+      },
+      date: submittedForm.date,
+      target: submittedForm.target,
+      relative_path: submittedForm.file
+    }
+  ])
+    .then((http: any) => {
+      const uri = http.result ?? http.response?.result
+      submittedForm.uri = uri
+      console.debug('Datafile created', uri)
+      return submittedForm
+    })
+}
+//#endregion
+
+//#endregion
 defineExpose({
-  create,
-  validate,
-  getEmptyForm,
-  reset
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm
 })
 </script>
-
-<style scoped lang="scss">
-/* neutralisation des classes injectées par naive dans les <n-form-item> qui créent des espaces indésirés entre les champs */
-:deep(.n-form-item-feedback-wrapper) {
-  min-height: 0 !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-}
-
-:deep(.n-form-item-feedback) {
-  margin-top: 2px !important;
-  line-height: 1.2 !important;
-}
-</style>
 
 <i18n>
 en:

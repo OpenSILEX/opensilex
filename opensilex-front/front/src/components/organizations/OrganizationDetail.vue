@@ -1,102 +1,98 @@
 <template>
   <div>
-        <opensilex-Card
-        v-if="selected"
-        icon="bi-clipboard"
-        :no-footer="true"
-        :label="t('component.common.informations')"
-        >
-        <template #rightHeader>
-            <opensilex-EditButton
-            v-if="
-                withActions &&
-                user?.hasCredential(
-                credentials?.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
-                )
-            "
-            @click="editOrganization"
-            label="component.organization.update"
-            :small="true"
-            />
-            <opensilex-DeleteButton
-            v-if="
-                withActions &&
-                user?.hasCredential(
-                credentials?.CREDENTIAL_ORGANIZATION_DELETE_ID
-                )
-            "
-            @click="deleteOrganization"
-            label="component.organization.delete"
-            :small="true"
-            />
-        </template>
+    <Card
+      v-if="selected"
+      icon="bi-clipboard"
+      :no-footer="true"
+      :label="t('component.common.informations')"
+    >
+      <template #rightHeader>
+        <EditButton
+          v-if="
+              withActions &&
+              user?.hasCredential(
+              credentials?.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
+              )
+          "
+          @click="editOrganization"
+          label="component.organization.update"
+          :small="true"
+        />
+        <DeleteButton
+          v-if="
+              withActions &&
+              user?.hasCredential(
+              credentials?.CREDENTIAL_ORGANIZATION_DELETE_ID
+              )
+          "
+          @click="deleteOrganization"
+          label="component.organization.delete"
+          :small="true"
+        />
+      </template>
 
-        <template #body>
-            <div class="detailsCard">
-            <!-- URI -->
-            <opensilex-UriView
-                :uri="selected.uri"
-                :value="selected.uri"
-                :to="{
-                path: '/organization/details/' + encodeURIComponent(selected.uri),
-                }"
-            />
+      <template #body>
+        <div class="detailsCard">
+          <!-- URI -->
+          <UriView
+              :uri="selected.uri"
+              :value="selected.uri"
+              :to="{
+              path: '/organization/details/' + encodeURIComponent(selected.uri),
+              }"
+          />
 
-            <!-- Name -->
-            <opensilex-StringView
-                label="component.common.name"
-                :value="selected.name"
-            />
+          <!-- Name -->
+          <StringView
+              label="component.common.name"
+              :value="selected.name"
+          />
 
-            <!-- Type -->
-            <opensilex-TypeView
-                :type="selected.rdf_type"
-                :typeLabel="selected.rdf_type_name"
-            />
+          <!-- Type -->
+          <TypeView
+              :type="selected.rdf_type"
+              :typeLabel="selected.rdf_type_name"
+          />
 
-            <!-- Parents -->
-            <opensilex-UriListView
-                v-if="hasParents"
-                :label="t('OrganizationDetail.parentOrganizations')"
-                :list="parentUriList"
-                :inline="false"
-            />
+          <!-- Parents -->
+          <UriListView
+              v-if="hasParents"
+              :label="t('OrganizationDetail.parentOrganizations')"
+              :list="parentUriList"
+              :inline="false"
+          />
 
-            <!-- Groups -->
-            <opensilex-UriListView
-                v-if="hasGroups"
-                :label="t('OrganizationDetail.groups.label')"
-                :list="groupUriList"
-                :inline="false"
-            />
+          <!-- Groups -->
+          <UriListView
+              v-if="hasGroups"
+              :label="t('OrganizationDetail.groups.label')"
+              :list="groupUriList"
+              :inline="false"
+          />
 
-            <!-- Expe -->
-            <opensilex-UriListView
-                v-if="hasExperiments"
-                :label="t('OrganizationDetail.experiments.label')"
-                :list="experimentUriList"
-                :inline="false"
-            />
+          <!-- Expe -->
+          <UriListView
+              v-if="hasExperiments"
+              :label="t('OrganizationDetail.experiments.label')"
+              :list="experimentUriList"
+              :inline="false"
+          />
 
-            <!-- Metadata -->
-            <opensilex-MetadataView
-                v-if="selected.publisher && selected.publisher.uri"
-                :publisher="selected.publisher"
-                :publicationDate="selected.publication_date"
-                :lastUpdatedDate="selected.last_updated_date"
-            />
-            </div>
-        </template>
-        </opensilex-Card>
+          <!-- Metadata -->
+          <MetadataView
+              v-if="selected.publisher && selected.publisher.uri"
+              :publisher="selected.publisher"
+              :publicationDate="selected.publication_date"
+              :lastUpdatedDate="selected.last_updated_date"
+          />
+        </div>
+      </template>
+    </Card>
 
-    <opensilex-ModalForm
+    <OrganizationForm
       ref="organizationForm"
-      component="opensilex-OrganizationForm"
-      createTitle="OrganizationDetail.add"
-      editTitle="component.organization.update"
-      icon="ik#ik-globe"
-      :initForm="setParents"
-      :lazy="true"
+      :createTitle="t('OrganizationDetail.add')"
+      :editTitle="t('component.organization.update')"
       @onCreate="emit('onCreate', $event)"
       @onUpdate="emit('onUpdate', $event)"
     />
@@ -104,16 +100,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
-// import { NCard, NButtonGroup } from "naive-ui";
 import type HttpResponse from "../../lib/HttpResponse";
 import type { OpenSilexResponse } from "../../lib/HttpResponse";
 import type OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import { inject } from "vue";
 import DTOConverter from "../../models/DTOConverter";
 import { OrganizationsService } from "opensilex-core/api/organizations.service";
 import type { OrganizationGetDTO } from "opensilex-core/index";
+import Card from "@/components/common/views/Card.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import UriView from "@/components/common/views/UriView.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import TypeView from "@/components/common/views/TypeView.vue";
+import UriListView from "@/components/common/views/UriListView.vue";
+import MetadataView from "@/components/common/views/MetadataView.vue";
+import OrganizationForm from "@/components/organizations/OrganizationForm.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -133,12 +138,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const store = useStore();
-const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
-const organizationService = $opensilex.getService<OrganizationsService>(
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
+const organizationService = opensilex.getService<OrganizationsService>(
   "opensilex-core.OrganizationsService"
 );
 
-const organizationForm = ref<any>(null);
+const organizationForm = useTemplateRef<InstanceType<typeof OrganizationForm>>('organizationForm');
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
@@ -193,26 +198,16 @@ function editOrganization() {
       );
       organizationForm.value?.showEditForm(editDto);
     })
-    .catch($opensilex.errorHandler);
+    .catch(opensilex.errorHandler);
 }
 
 function deleteOrganization() {
   emit("onDelete");
 }
 
-function setParents(form: any) {
-  form.parents = props.selected?.parents ?? [];
-}
-
-function setOrganization(form: any) {
-  form.groups = (props.selected?.groups ?? []).map((group: any) => group.uri);
-}
-
 defineExpose({
   editOrganization,
   deleteOrganization,
-  setParents,
-  setOrganization,
 });
 </script>
 

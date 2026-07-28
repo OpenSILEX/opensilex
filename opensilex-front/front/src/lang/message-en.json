@@ -594,6 +594,7 @@
             }
         },
         "group": {
+            "title": "Groups",
             "description": "Manage and configure groups",
             "view-groups": "View groups",
             "group-uri": "Group URI",
@@ -915,6 +916,7 @@
 
         },
         "organization": {
+            "title": "Organizations",
             "exception": {
                 "siteMustHaveParent": "A site must have at least one parent organization.",
                 "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
@@ -925,23 +927,27 @@
         "device": {
             "description": "Manage Devices",
             "all_devices": "All Devices",
-            "select_devices": "Select Devices"
+            "select_devices": "Select Devices",
+            "add": "Add device",
+            "update": "Update device"
         },
         "site": {
+            "title": "Sites",
             "description": "Manage and configure sites",
+            "create": "Add site",
             "update": "Update site",
             "delete": "Delete site",
             "city": "City",
             "facilities": "Facilities"
         },
         "facility": {
-            "warning": {
+          "title": "Facility",
+          "warning": {
                 "facility-should-have-unique-site": "It is not recommended to associate a facility with multiple sites. Please verify which site this facility belongs to.",
                 "facility-default-date": "Default date"
             },
             "filter-placeholder": "Search facilities...",
             "view": {
-                "title": "Facility",
                 "list": {
                     "previous": "Consult the previous facility",
                     "next": "Consult the next facility",
@@ -966,6 +972,8 @@
             "no-data": "No data found for this period"
         },
         "datafile": {
+            "create": "Add data file",
+            "update": "Update data file",
             "description": "View datafiles",
             "download-image" : "Download image"
         },

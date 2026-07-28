@@ -87,16 +87,12 @@
     </div>
 
     <!-- Modal form -->
-    <ModalForm
+    <SiteForm
       ref="siteForm"
-      component="opensilex-SiteForm"
       createTitle="add"
       editTitle="edit"
-      icon="bi#bi-geo-alt"
       @onCreate="(e) => emit('onCreate', e)"
       @onUpdate="(e) => emit('onUpdate', e)"
-      :initForm="initForm"
-      :lazy="true"
     />
   </div>
 </template>
@@ -121,6 +117,7 @@ import UriListView from "@/components/common/views/UriListView.vue";
 import AddressView from "@/components/common/views/AddressView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
+import SiteForm from "@/components/organizations/site/SiteForm.vue";
 
 // Props
 const props = withDefaults(
@@ -195,6 +192,7 @@ function editSite() {
     .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
       const editDto: SiteUpdateDTO =
         DTOConverter.extractURIFromResourceProperties(http.response.result);
+      initForm(editDto)
       siteForm.value?.showEditForm?.(editDto);
     })
     .catch(opensilex.errorHandler);
@@ -210,7 +208,7 @@ function deleteSite() {
 }
 
 function initForm(form: any) {
-  form.organizations = props.selected?.organizations;
+  form.organizations = props.selected?.organizations.map((org: any) => org.uri) ?? [];
 }
 </script>
 
@@ -219,18 +217,12 @@ function initForm(form: any) {
 
 <i18n>
 en:
-  add: Add site
-  edit: Update site
-  delete: Delete site
   SiteDetail:
     organizations: Organizations
     facilities: Facilities
     groups: Groups
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
-  add: Ajouter un site
-  edit: Modifier le site
-  delete: Supprimer le site
   SiteDetail:
     organizations: Organisations
     facilities: Installations environnementales

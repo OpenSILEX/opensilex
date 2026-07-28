@@ -150,8 +150,6 @@ en:
   ProvenanceView:
     add: Add provenance
     update: Update provenance
-    description: Describe data provenance
-    name: Name
     activity_type: Activity type
     agent_type: Agent type
     agent: Agent
@@ -168,8 +166,6 @@ fr:
   ProvenanceView:
     add: Ajouter une provenance
     update: Modifier une provenance
-    description: Décrire la provenance de données
-    name: Nom
     activity_type: Type d'activité
     agent_type: Type d'agent
     agent: Agent

@@ -74,8 +74,8 @@
             <n-form-item>
               <DateTimeForm
                 v-model:value="modalFormLogic.form.value.activity_start_date"
-                :label="t('ProvenanceForm.start')"
-                :helpMessage="t('ProvenanceForm.start-help')"
+                :label="t('component.common.date-time.startDate')"
+                :helpMessage="t('component.common.date-time.startDate')"
               />
             </n-form-item>
           </n-grid-item>
@@ -84,8 +84,8 @@
             <n-form-item>
               <DateTimeForm
                 v-model:value="modalFormLogic.form.value.activity_end_date"
-                :label="t('ProvenanceForm.end')"
-                :helpMessage="t('ProvenanceForm.end-help')"
+                :label="t('component.common.date-time.endDate')"
+                :helpMessage="t('component.common.date-time.endDate')"
               />
             </n-form-item>
           </n-grid-item>
@@ -314,11 +314,6 @@ en:
     agent-placeholder: Select agents
     activity: Activity
     activity-type-label: Activity type
-    start: Start Date
-    start-help: Start Date
-    end: End Date
-    end-date: End Date
-    end-help: End Date
     agents: Provenance agents
     add-agent: Add an agent
     type-placeholder: Select a type of activity
@@ -337,11 +332,6 @@ fr:
     agent-placeholder: Selectionner agents
     activity: Activité
     activity-type-label: Type d'activité
-    start: Date de début
-    start-help: Date de début
-    end: Date de fin
-    end-date: Date de fin
-    end-help: Date de fin
     agents: Agents de la provenance
     add-agent: Ajouter un agent
     type-placeholder: Selectionner un type d'activité

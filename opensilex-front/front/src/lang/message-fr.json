@@ -67,6 +67,7 @@
             "yes": "oui",
             "no": "non",
             "ok": "OK",
+            "or": "ou",
             "clear": "Vider",
             "close": "Fermer",
             "cancel": "Annuler",
@@ -163,7 +164,18 @@
                 "csv-template": "Télécharger un gabarit",
                 "select-button": "Sélectionner",
                 "generate-template": "Générer un gabarit",
-                "csv-import": "Import CSV"
+                "csv-import": "Import CSV",
+                "expected-format": "Format attendu",
+                "help-text-common": {
+                    "line-1": "Vous pouvez insérer ou mettre à jour vos données à partir de cette ligne.",
+                    "line-2": "Les deux premières lignes de contenu CSV seront ignorées.",
+                    "accepted_separators": "Les séparateurs CSV acceptés :",
+                    "decimal-separator": "Le séparateur décimal est le suivant : {decimalSeparator}",
+                    "timezone-help": "Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).",
+                    "blank-values-help": "Les valeurs vides et les identifiant de colonnes inconnus seront ignorées.",
+                    "order-no-matter": "L'ordre des colonnes n'a pas d'importance.",
+                    "multiple-values": "Si une propriété peut avoir plusieurs valeurs, ajoutez une colonne pour chaque avec la même URI."
+                }
             },
             "tabulator": {
                 "reset-table": "Vider la table",
@@ -853,13 +865,32 @@
                     "has-child" :"L'objet scientifique {scientific_object} ne peut être supprimé car il cet objet a des enfants. Vous devez les supprimer d'abord (ça peut paraitre cruel mais il le faut)"
                 }
             },
+            "geometry" : {
+                "startHelp" : "Le moment à partir duquel l'objet avait cette position.",
+                "endHelp" : "Le moment à partir duquel l'objet n'avait plus cette position. \nOBLIGATOIRE SI au moins un champ de location a été saisie."
+            },
+
             "import" : {
                 "success-message": "objet(s) scientifique importé(s)",
-                "import-scientific-objects": "Importer des objets scientifiques"
+                "import-scientific-objects": "Importer des objets scientifiques",
+                "help-column-headers": {
+                    "hasCreationDate-help": "Date de création (format: AAAA-MM-JJ)",
+                    "hasDestructionDate-help": "Date de destruction (format: AAAA-MM-JJ)",
+                    "isPartOf-help": "URI ou nom du parent",
+                    "properties-help": "Propriétés specifiques du type d'objet scientifique..."
+                },
+                "help-text": {
+                    "custom-properties": "Vous pouvez ajouter de nouvelles colonnes correspondant aux propriétés particulières des objets scientifiques",
+                    "geospatial-line-1": "Vous avez maintenant la posibilité d'importer une position initiale en utilisant les nouvelles colonnes.",
+                    "geospatial-line-2": "Vous avez aussi la possibilité de mettre à jour cette position initiale, entièrement s'il n'y a qu'une seule position existante, ou partiellement avec des dates qui collent dans le cas où de multiples positions existent.",
+                    "geospatial-line-3": "Si les en-têtes de géospatialisantion sont présentes dans le CSV, mais que toutes les valeurs de géospatialisation sont vides pour une ligne, alors le système considère que c'est une suppression de position.",
+                    "geospatial-line-4": "Si les en-têtes et colonnes de géospatialisantion sont complétement absentes, alors aucune opération sera réaliser sur la géospatialisation."
+                }
             },
             "help-messages": {
                 "uri-help": "URI de l'objet scientifique (auto-générée si vide)",
-                "type-help": "URI du type d'objet scientifique"
+                "type-help": "URI du type d'objet scientifique",
+                "name-help" : "Nom de l'objet scientifique"
             },
             "filters": {
                 "existenceDate": "Date d'existence"
@@ -990,11 +1021,23 @@
             "select_devices": "Choisir des dispositifs",
             "import" : {
                 "success-message": "appareil(s) importé(s)",
-                "title": "Importer des appareils"
+                "title": "Importer des appareils",
+                "help-text": {
+                    "custom-properties": "Vous pouvez ajouter de nouvelles colonnes correspondant aux propriétés particulières des équipements.",
+                    "measures-help": "Seuls les sous-types Capteurs ou les appareils avec la propriété vocabulary:measures peuvent être associés à une variable.",
+                    "brand-help": "Marque de l'appareil",
+                    "constructor_model-help": "Modèle constructeur de l'appareil",
+                    "serial_number-help": "Numéro de série de l'appareil",
+                    "removal-help": "Date de mise hors service de l'appareil",
+                    "start_up-help": "Date d'obtention de l'appareil",
+                    "person_in_charge-help": "Personne responsable de l'appareil",
+                    "properties-help": "Propriétés specifiques du type d'objet d'équipement..."
+                }
             },
             "help-messages": {
                 "uri-help": "URI de l'équipement (auto-générée si vide)",
-                "type-help": "URI du type d'équipement"
+                "type-help": "URI du type d'équipement",
+                "name-help": "Nom de l'équipement"
             },
             "form-placeholders": {
                 "rdfTypes-placeholder": "Sélectionner un type d'appareil"

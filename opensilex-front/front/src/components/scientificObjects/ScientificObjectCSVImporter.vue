@@ -6,7 +6,7 @@
       successImportMsg="component.scientificObjects.import.success-message"
       :validateCSV="validateCSV"
       :uploadCSV="uploadCSV"
-      @csvImported="onCsvImported($event)"
+      @csvImported="onCsvImported()"
     >
       <template #icon>
         <Icon icon="bi#bi-bullseye" class="icon-title"/>
@@ -49,6 +49,8 @@ import GenerateEventTemplate from "../../components/events/form/csv/GenerateEven
 import {computed, inject, ref} from "vue";
 import Icon from "@/components/common/views/Icon.vue";
 import Button from "@/components/common/buttons/Button.vue";
+import {MOVE_DESCRIPTION_GENERATOR_BY_HEADER} from "@/components/events/form/csv/EventTemplateConstants";
+import ScientificObjectImportHelp from "@/components/scientificObjects/ScientificObjectImportHelp.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
@@ -57,7 +59,7 @@ const $store = useStore();
 const moveDescriptionGeneratorsPerMoveHeader: Map<string, DescriptionGeneratorInformation> = new Map<string, DescriptionGeneratorInformation>([
   ["start_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.startHelp", required: false, example: "component.events.start-example"}],
   ["end_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.endHelp", required: false, example: "component.events.start-example"}],
-  ...GenerateEventTemplate.MOVE_DESCRIPTION_GENERATOR_BY_HEADER
+  ...Array.from(MOVE_DESCRIPTION_GENERATOR_BY_HEADER.entries())
 ]);
 
 const SCIENTIFIC_OBJECT_URI_EXAMPLE: string = "http://opensilex.org/id/scientific-object/so-name1";
@@ -79,7 +81,7 @@ const props = defineProps<Props>();
 
 //#region Emits
 const emit = defineEmits<{
-  csvImported: () => void;
+  (e: "csvImported"): void;
 }>();
 //#endregion
 
@@ -135,8 +137,8 @@ function show() {
 //#endregion
 
 //#region Event handlers
-function onCsvImported(response) {
-  emit("csvImported", response);
+function onCsvImported() {
+  emit("csvImported");
 }
 //#endregion
 

@@ -23,10 +23,10 @@
       ></CreateButton>
 
 
-<!--      <ScientificObjectCSVImporter
+      <ScientificObjectCSVImporter
         ref="importForm"
         @csvImported="soList.refresh()"
-      ></ScientificObjectCSVImporter>-->
+      ></ScientificObjectCSVImporter>
     </PageActions>
 
 
@@ -93,7 +93,7 @@
 
                 <!-- Types -->
               <n-form-item
-                :label="$t('component.common.type')"
+                :label="t('component.common.type')"
                 :show-feedback="false"
                 class="compact-form-item"
               >

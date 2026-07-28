@@ -1,109 +1,143 @@
 <template>
-  <n-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-  >
-    <!-- Help message -->
-    <div class="divHelpMsg">
-      <p>
-        {{ t('ProvenanceForm.help-msg') }}
-        <router-link target="_blank" :to="{ path: '/devices' }">
-          <span class="helpMsg">{{ t('component.menu.devices') }}</span>
-        </router-link>
-      </p>
-    </div>
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="fa#seedling" />
+    </template>
 
-    <!-- URI -->
-    <opensilex-UriForm
-      v-model:uri="form.uri"
-      label="component.common.uri-or-url"
-      :editMode="editMode"
-      v-model:generated="uriGeneratedModel"
-    />
+    <n-form
+      ref="formRef"
+      :model="modalFormLogic.form.value"
+      :rules="rules"
+      label-placement="top"
+      :show-require-mark="true"
+      size="large"
+    >
+      <!-- Help message -->
+      <div class="divHelpMsg">
+        <p>
+          {{ t('ProvenanceForm.help-msg') }}
+          <router-link target="_blank" :to="{ path: '/devices' }">
+            <span class="helpMsg">{{ t('component.menu.devices') }}</span>
+          </router-link>
+        </p>
+      </div>
 
-    <!-- Name -->
-    <n-form-item path="name" class="compact-form-item">
-      <opensilex-InputForm
-        v-model:value="form.name"
-        :label="t('ProvenanceForm.name')"
-        :helpMessage="t('ProvenanceForm.name-help')"
-        type="text"
-        :placeholder="t('ProvenanceForm.name-placeholder')"
-        :required="!disableValidation"
-      />
-    </n-form-item>
-
-    <!-- Description -->
-    <opensilex-TextAreaForm
-      v-model:value="form.description"
-      :helpMessage="t('ProvenanceForm.description-help')"
-      :label="t('ProvenanceForm.description')"
-      :placeholder="t('ProvenanceForm.description-placeholder')"
-      @keydown.enter.stop
-    />
-
-    <!-- Activity -->
-    <n-card :title="t('ProvenanceForm.activity')" class="activityCard">
-      <!-- Type -->
-      <n-form-item path="activity_type" class="compact-form-item">
-        <opensilex-TypeForm
-          v-model:type="form.activity_type"
-          :baseType="Prov.ACTIVITY_TYPE_URI"
-          :required="!disableValidation"
-          :helpMessage="t('ProvenanceForm.type-help')"
-          :placeholder="t('ProvenanceForm.type-placeholder')"
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+          :uri.sync="modalFormLogic.form.value.uri"
+          label="component.common.uri-or-url"
+          :editMode="modalFormLogic.editMode.value"
+          :generated.sync="uriGenerated"
         />
       </n-form-item>
 
-      <!-- Start / End -->
-      <n-grid :cols="2" :x-gap="12" responsive="screen" item-responsive>
-        <n-grid-item span="2 m:1">
-          <opensilex-DateTimeForm
-            v-model:value="form.activity_start_date"
-            :label="t('ProvenanceForm.start')"
-            :helpMessage="t('ProvenanceForm.start-help')"
+      <!-- Name -->
+      <n-form-item path="name">
+        <InputForm
+          v-model:value="modalFormLogic.form.value.name"
+          :label="t('component.common.name')"
+          :helpMessage="t('ProvenanceForm.name-help')"
+          type="text"
+          :placeholder="t('ProvenanceForm.name-placeholder')"
+          :required="true"
+        />
+      </n-form-item>
+
+      <!-- Description -->
+      <n-form-item>
+        <TextAreaForm
+          v-model:value="modalFormLogic.form.value.description"
+          :helpMessage="t('ProvenanceForm.description-help')"
+          :label="t('component.common.description')"
+          :placeholder="t('ProvenanceForm.description-placeholder')"
+          @keydown.enter.stop
+        />
+      </n-form-item>
+
+      <!-- Activity -->
+      <n-card :title="t('ProvenanceForm.activity')" class="activityCard">
+        <!-- Type -->
+        <n-form-item path="activity_type">
+          <TypeForm
+            v-model:type="modalFormLogic.form.value.activity_type"
+            :baseType="Prov.ACTIVITY_TYPE_URI"
+            :required="true"
+            :helpMessage="t('ProvenanceForm.type-help')"
+            :placeholder="t('ProvenanceForm.type-placeholder')"
           />
-        </n-grid-item>
+        </n-form-item>
 
-        <n-grid-item span="2 m:1">
-          <opensilex-DateTimeForm
-            v-model:value="form.activity_end_date"
-            :label="t('ProvenanceForm.end')"
-            :helpMessage="t('ProvenanceForm.end-help')"
+        <!-- Start / End -->
+        <n-grid :cols="2" :x-gap="12" responsive="screen" item-responsive>
+          <n-grid-item span="2 m:1">
+            <n-form-item>
+              <DateTimeForm
+                v-model:value="modalFormLogic.form.value.activity_start_date"
+                :label="t('ProvenanceForm.start')"
+                :helpMessage="t('ProvenanceForm.start-help')"
+              />
+            </n-form-item>
+          </n-grid-item>
+
+          <n-grid-item span="2 m:1">
+            <n-form-item>
+              <DateTimeForm
+                v-model:value="modalFormLogic.form.value.activity_end_date"
+                :label="t('ProvenanceForm.end')"
+                :helpMessage="t('ProvenanceForm.end-help')"
+              />
+            </n-form-item>
+          </n-grid-item>
+        </n-grid>
+
+        <!-- Activity URI -->
+        <n-form-item>
+          <InputForm
+            v-model:value="modalFormLogic.form.value.activity_uri"
+            label="url"
+            type="url"
+            rules="url"
+            :helpMessage="t('ProvenanceForm.url-help')"
           />
-        </n-grid-item>
-      </n-grid>
+        </n-form-item>
+      </n-card>
 
-      <!-- Activity URI -->
-      <opensilex-InputForm
-        v-model:value="form.activity_uri"
-        label="url"
-        type="url"
-        rules="url"
-        :helpMessage="t('ProvenanceForm.url-help')"
-      />
-    </n-card>
+      <!-- Agents -->
+      <n-form-item>
+        <ProvenanceAgentForm
+          v-model:values="modalFormLogic.form.value.agents"
+          :key="lang"
+        />
+      </n-form-item>
+    </n-form>
 
-    <!-- Agents -->
-    <opensilex-ProvenanceAgentForm
-      v-model:values="form.agents"
-      :key="lang"
-    />
-  </n-form>
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import { NForm, NFormItem, NCard, NGrid, NGridItem } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import { requiredTrimmed } from '../../../models/FormFieldsFormatter'
+import {requiredObjectOrLists, requiredTrimmed} from '../../../models/FormFieldsFormatter'
 import Prov from '../../../ontologies/Prov'
+import UriForm from '@/components/common/forms/UriForm.vue'
+import InputForm from '@/components/common/forms/InputForm.vue'
+import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
+import TypeForm from '@/components/common/forms/TypeForm.vue'
+import DateTimeForm from '@/components/common/forms/DateTimeForm.vue'
+import ProvenanceAgentForm from '@/components/data/form/ProvenanceAgentForm.vue'
+import Modal from '@/components/common/views/Modal.vue'
+import FormHeader from '@/components/common/forms/FormHeader.vue'
+import FormFooter from '@/components/common/forms/FormFooter.vue'
+import useModalFormLogic from '@/composables/useModalFormLogic'
 
+//#region Public
 type ProvenanceAgentGroup = {
   uris: string[]
   rdf_type: string | null
@@ -125,78 +159,58 @@ type ProvenanceFormModel = {
   last_updated_date?: any
 }
 
-const props = withDefaults(
-  defineProps<{
-    form: ProvenanceFormModel
-    editMode?: boolean
-    uriGenerated?: boolean
-    disableValidation?: boolean
-  }>(),
-  {
-    form: () => ({
-      uri: null,
-      name: null,
-      description: null,
-      experiments: [],
-      activity_type: null,
-      activity_start_date: null,
-      activity_end_date: null,
-      activity_uri: null,
-      agentTypes: [],
-      agents: [
-        {
-          uris: [],
-          rdf_type: null
-        }
-      ]
-    }),
-    editMode: false,
-    uriGenerated: true,
-    disableValidation: false
-  }
-)
-
 const emit = defineEmits<{
-  (e: 'update:form', value: ProvenanceFormModel): void
-  (e: 'update:uriGenerated', value: boolean): void
+  (e: 'onUpdate', payload: any): void
+  (e: 'onCreate', payload: any): void
+  (e: 'onSuccess'): void
 }>()
 
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>()
+//#endregion
+
+//#region Private
+
+//#region Plugin and services
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const dataService = opensilex.getService<any>('opensilex.DataService')
 const store = useStore()
 const { t } = useI18n()
+//#endregion
 
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const service = $opensilex.getService<any>('opensilex.DataService')
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
-const formRef = ref<any>(null)
+//#region Datas & computed
+let uriGenerated = ref<boolean>(true)
+
 const lang = computed(() => store.getters.language)
 
-const form = computed({
-  get: () => props.form,
-  set: (value: ProvenanceFormModel) => emit('update:form', value)
+const rules = computed(() => ({
+  name: requiredTrimmed('component.common.name'),
+  activity_type: requiredObjectOrLists('ProvenanceForm.activity-type-label')
+}))
+//#endregion
+
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<ProvenanceFormModel>({
+  modalRef,
+  nFormRef: formRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
 })
+//#endregion
 
-const uriGeneratedModel = computed({
-  get: () => props.uriGenerated,
-  set: (value: boolean) => emit('update:uriGenerated', value)
-})
-
-const rules = computed(() => {
-  if (props.disableValidation) {
-    return {}
-  }
-
-  return {
-    name: requiredTrimmed('ProvenanceForm.name'),
-    activity_type: {
-      required: true,
-      message: t('validations.required_if', {
-        _field_: t('ProvenanceForm.activity-type-label')
-      }),
-      trigger: ['change', 'blur']
-    }
-  }
-})
-
+//#region Methods
 function getEmptyForm(): ProvenanceFormModel {
   return {
     uri: null,
@@ -215,6 +229,10 @@ function getEmptyForm(): ProvenanceFormModel {
       }
     ]
   }
+}
+
+async function reset(): Promise<void> {
+  uriGenerated.value = true
 }
 
 function flattenAgents(sourceForm: ProvenanceFormModel) {
@@ -259,78 +277,36 @@ function buildPayload(sourceForm: ProvenanceFormModel, includeMetadata = false) 
   return provenance
 }
 
-async function validateForm() {
-  try {
-    await formRef.value?.validate()
-    return true
-  } catch {
-    return false
-  }
-}
-
 async function create(sourceForm: ProvenanceFormModel) {
-  const isValid = await validateForm()
-  if (!isValid) {
-    return Promise.reject(new Error('Form validation failed'))
-  }
-
   const provenance = buildPayload(sourceForm, false)
-  const http = await service.createProvenance(provenance)
-  const uri = http.response.result
-  provenance.uri = uri
-  return provenance
+  return  await dataService.createProvenance(provenance)
 }
 
 async function update(sourceForm: ProvenanceFormModel) {
-  const isValid = await validateForm()
-  if (!isValid) {
-    return Promise.reject(new Error('Form validation failed'))
-  }
-
   const provenance = buildPayload(sourceForm, true)
-  const http = await service.updateProvenance(provenance)
-  const uri = http.response.result
-  provenance.uri = uri
-  return provenance
+  return  await dataService.updateProvenance(provenance)
 }
+//#endregion
 
+//#endregion
 defineExpose({
-  getEmptyForm,
-  create,
-  update,
-  validate: validateForm
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm
 })
 </script>
 
 <style scoped lang="scss">
-.helpMsg {
-  color: #007bff;
-  margin: 0;
-  padding: 0;
-}
-
-.divHelpMsg {
-  margin-bottom: 12px;
-}
-
 .activityCard {
   margin-top: 12px;
   margin-bottom: 12px;
-}
-
-:deep(.compact-form-item) {
-  --n-label-height: 0px !important;
-  --n-label-padding: 0 !important;
 }
 </style>
 
 <i18n>
 en:
   ProvenanceForm:
-    name: Name
     name-help: Enter a name
     name-placeholder: Enter a name
-    description: Description
     description-help: Describe provenance
     description-placeholder: Describe provenance
     agent: Agent
@@ -352,10 +328,8 @@ en:
 
 fr:
   ProvenanceForm:
-    name: Nom
     name-help: Entrer un nom
     name-placeholder: Entrer un nom
-    description: Description
     description-help: Décrire la provenance
     description-placeholder: Décrire la provenance
     agent: Agent

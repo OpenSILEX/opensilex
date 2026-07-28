@@ -1,32 +1,28 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageActions
+    <PageActions
       v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
     >
-      <opensilex-CreateButton
+      <CreateButton
         @click="provenanceFormRef?.showCreateForm?.()"
         :label="t('ProvenanceView.add')"
         class="createButton"
       />
-    </opensilex-PageActions>
+    </PageActions>
 
-    <opensilex-PageContent>
-      <opensilex-ProvenanceList
+    <PageContent>
+      <ProvenanceList
         ref="provListRef"
         @onEdit="editProvenance"
         @onDelete="deleteProvenance"
       />
-    </opensilex-PageContent>
+    </PageContent>
 
-    <opensilex-ModalForm
+    <ProvenanceForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
       ref="provenanceFormRef"
-      component="opensilex-ProvenanceForm"
       :createTitle="t('ProvenanceView.add')"
       :editTitle="t('ProvenanceView.update')"
-      icon="fa#seedling"
-      modalSize="lg"
-      :successMessage="successMessage"
       :key="lang"
       @onCreate="provListRef?.refresh?.()"
       @onUpdate="provListRef?.updateSelectedProvenance?.()"
@@ -35,18 +31,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import PageActions from '@/components/layout/PageActions.vue'
+import PageContent from '@/components/layout/PageContent.vue'
+import CreateButton from '@/components/common/buttons/CreateButton.vue'
+import ProvenanceList from '@/components/data/ProvenanceList.vue'
+import ProvenanceForm from '@/components/data/form/ProvenanceForm.vue'
 
 const store = useStore()
 const { t, locale } = useI18n()
 
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const service = $opensilex.getService<any>('opensilex.DataService')
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const service = opensilex.getService<any>('opensilex.DataService')
 
-const provenanceFormRef = ref<any>(null)
+const provenanceFormRef = useTemplateRef<InstanceType<typeof ProvenanceForm>>('provenanceFormRef')
 const provListRef = ref<any>(null)
 
 const user = computed(() => store.state.user)
@@ -59,7 +60,7 @@ async function editProvenance(uri: string) {
     const updateForm = convertDtoBeforeEditForm(http.response.result)
     provenanceFormRef.value?.showEditForm?.(updateForm)
   } catch (error: any) {
-    $opensilex.errorHandler(error)
+    opensilex.errorHandler(error)
   }
 }
 
@@ -121,12 +122,12 @@ async function deleteProvenance(uri: string) {
       `${t('ProvenanceView.delete-message')} ${uri} ` +
       `${t('component.common.success.delete-success-message')}`
 
-    $opensilex.showSuccessToast(message)
+    opensilex.showSuccessToast(message)
   } catch (error: any) {
     if (error?.response?.result?.message) {
-      $opensilex.errorHandler(error, error.response.result.message)
+      opensilex.errorHandler(error, error.response.result.message)
     } else {
-      $opensilex.errorHandler(error)
+      opensilex.errorHandler(error)
     }
   }
 }

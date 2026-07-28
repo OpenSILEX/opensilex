@@ -36,7 +36,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
 
   async function submit() {
     try {
-      const ok =  options.nFormRef.value.validate()
+      const ok =  await options.nFormRef.value.validate()
       if (!ok) return
     } catch (err) {
       return

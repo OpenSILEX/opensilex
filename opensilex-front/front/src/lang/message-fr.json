@@ -1028,8 +1028,10 @@
             "no-data": "Aucune donnée trouvée pour cette période"
         },
         "datafile": {
-            "description": "Voir les fichiers de données",
-            "download-image" : "Télecharger l'image"
+          "create": "Ajouter un fichier de données",
+          "update": "Modifier un fichier de donnée",
+          "description": "Voir les fichiers de données",
+          "download-image" : "Télecharger l'image"
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

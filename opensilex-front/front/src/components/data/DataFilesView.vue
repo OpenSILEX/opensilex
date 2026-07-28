@@ -1,14 +1,14 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageActions>
-      <opensilex-CreateButton
+    <PageActions>
+      <CreateButton
         @click="showCreateDataFileForm"
-        :label="t('DataFilesView.add')"
+        :label="t('component.datafile.create')"
         class="createButton"
       />
-    </opensilex-PageActions>
+    </PageActions>
 
-    <opensilex-PageContent class="pagecontent">
+    <PageContent class="pagecontent">
       <template #default>
         <n-layout has-sider class="datafiles-layout">
           <!-- Bouton loupe -->
@@ -61,7 +61,7 @@
 
                 <!-- Type -->
                 <n-form-item class="compact-form-item">
-                  <opensilex-TypeForm
+                  <TypeForm
                     v-if="filter.imagesView"
                     v-model:type="filter.rdf_type"
                     :baseType="Oeso.IMAGE_TYPE_URI"
@@ -72,7 +72,7 @@
                     @handlingEnterKey="refresh"
                   />
 
-                  <opensilex-TypeForm
+                  <TypeForm
                     v-else
                     v-model:type="filter.rdf_type"
                     :baseType="Oeso.DATAFILE_TYPE_URI"
@@ -86,7 +86,7 @@
 
                 <!-- Experiments -->
                 <n-form-item class="compact-form-item">
-                  <opensilex-ExperimentSelector
+                  <ExperimentSelector
                     :label="t('DataFilesView.filter.experiments')"
                     v-model:experiments="filter.experiments"
                     :multiple="true"
@@ -99,7 +99,7 @@
 
                 <!-- Scientific objects -->
                 <n-form-item class="compact-form-item">
-                  <opensilex-ModalFormSelector
+                  <ModalFormSelector
                     ref="soSelector"
                     :label="t('DataFilesView.filter.scientificObjects')"
                     :placeholder="t('DataFilesView.filter.scientificObjects-placeholder')"
@@ -118,7 +118,7 @@
 
                 <!-- Start Date -->
                 <n-form-item class="compact-form-item">
-                  <opensilex-DateTimeForm
+                  <DateTimeForm
                     v-model:value="filter.start_date"
                     label="component.common.date-time.begin"
                     name="startDate"
@@ -129,7 +129,7 @@
 
                 <!-- End Date -->
                 <n-form-item class="compact-form-item">
-                  <opensilex-DateTimeForm
+                  <DateTimeForm
                     v-model:value="filter.end_date"
                     label="component.common.date-time.end"
                     name="endDate"
@@ -142,7 +142,7 @@
 
                 <!-- Provenance -->
                 <n-form-item class="compact-form-item">
-                  <opensilex-DatafileProvenanceSelector
+                  <DatafileProvenanceSelector
                     ref="provSelector"
                     v-model:provenances="filter.provenance"
                     :label="t('DataFilesView.filter.provenance')"
@@ -160,7 +160,7 @@
                   />
                 </n-form-item>
 
-                <opensilex-ProvenanceDetails
+                <ProvenanceDetails
                   v-if="selectedProvenance && visibleDetails"
                   :provenance="selectedProvenance"
                   class="provenanceDetails"
@@ -175,13 +175,13 @@
                 </n-form-item>
 
                 <n-space justify="end" class="mt-2">
-                  <opensilex-Button
+                  <Button
                     class="resetButton"
                     :label="t('component.common.search.clear-button')"
                     icon="bi-x-lg"
                     @click="reset"
                   />
-                  <opensilex-Button
+                  <Button
                     class="greenThemeColor"
                     :label="t('component.common.search.search-button')"
                     icon="bi-search"
@@ -194,7 +194,7 @@
 
           <!-- Contenu Liste -->
           <n-layout-content class="project-content">
-            <opensilex-DataFilesImagesList
+            <DataFilesImagesList
               key="images-view"
               v-if="filter.imagesView"
               ref="datafilesImagesList"
@@ -202,7 +202,7 @@
               class="imagesList"
             />
 
-            <opensilex-DataFilesList
+            <DataFilesList
               v-else
               key="list-view"
               ref="datafilesList"
@@ -210,19 +210,16 @@
               class="datafilesList"
             />
 
-            <opensilex-ModalForm
+            <DataFileForm
               ref="datafileForm"
-              component="opensilex-DataFileForm"
-              editTitle="update"
-              :createTitle="t('DataFilesView.add')"
-              icon="bi#bi-file-earmark-text"
-              modalSize="lg"
+              :editTitle="t('component.datafile.update')"
+              :createTitle="t('component.datafile.create')"
               @onCreate="refresh"
             />
           </n-layout-content>
         </n-layout>
       </template>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -240,13 +237,25 @@ import {
   NButton,
   NSpace,
   NSwitch,
-  NCollapseTransition
 } from 'naive-ui'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { DataService, ProvenanceGetDTO } from 'opensilex-core/index'
 import type HttpResponse from '@/lib/HttpResponse'
-import type { OpenSilexResponse } from 'opensilex-core/index'
+import type { OpenSilexResponse} from "@/lib/HttpResponse";
+import DataFileForm from "@/components/data/form/DataFileForm.vue";
+import DataFilesList from "@/components/data/DataFilesList.vue";
+import DataFilesImagesList from "@/components/data/DataFilesImagesList.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
+import DatafileProvenanceSelector from "@/components/data/DatafileProvenanceSelector.vue";
+import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
+import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue";
+import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
 
 const { t } = useI18n()
 const store = useStore()
@@ -451,12 +460,6 @@ defineExpose({
   margin-top: 5px;
 }
 
-/* neutralisation des classes injectées par naive dans les <n-form-item> qui créent des espaces indésirés entre les champs */
-:deep(.compact-form-item) {
-  --n-label-height: 0px !important;
-  --n-label-padding: 0 !important;
-}
-
 :deep(.scientificObjectsSelector .chip-area) {
   max-width: 100%;
   overflow: hidden;
@@ -473,7 +476,6 @@ defineExpose({
 <i18n>
 en:
   DataFilesView:
-    add: Add datafiles
     description: View datafiles
     details: view datafile metadata
     fileName: File Name
@@ -489,7 +491,6 @@ en:
 
 fr:
   DataFilesView:
-    add: Ajouter un fichier de données
     description: Voir les fichiers de données
     details: Voir les métadonnées du fichier
     fileName: Nom de fichier

@@ -972,6 +972,8 @@
             "no-data": "No data found for this period"
         },
         "datafile": {
+            "create": "Add data file",
+            "update": "Update data file",
             "description": "View datafiles",
             "download-image" : "Download image"
         },

@@ -51,9 +51,11 @@
     />
 
     <!-- Composant de crea/edit variable (invisible) -->
-    <opensilex-VariableCreate
-      ref="variableCreate"
+    <VariableForm
+      ref="variableForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+      :createTitle="'component.variable.add'"
+      :editTitle="'component.variable.edit'"
       @onCreate="afterVariableSaved"
       @onUpdate="afterVariableSaved"
     />
@@ -137,7 +139,8 @@ import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import { useStore } from 'vuex'
 
 // imports de composants de formulaires
-import VariableCreate from './form/VariableCreate.vue'
+import VariableForm from './form/VariableForm.vue'
+import DTOConverter from '../../models/DTOConverter'
 import VariableGroupCreate from './form/VariableGroupCreate.vue'
 import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
 import AgroportalEntityOfInterestForm from './agroportal/AgroportalEntityOfInterestForm.vue'
@@ -185,7 +188,7 @@ const tabComponents = Object.fromEntries(
 // ----------------------
 const formRefs: Record<string, Ref<any>> = {
   // modales
-  variableCreate: ref(null),
+  variableForm: ref(null),
   entityForm: ref(null),
   characteristicForm: ref(null),
   methodForm: ref(null),
@@ -199,7 +202,7 @@ tabDefinitions.forEach(tab => {
   formRefs[tab.refKey] = ref(null)
 })
 
-const variableCreate = formRefs['variableCreate']
+const variableForm = formRefs['variableForm']
 const variableGroupForm = formRefs['variableGroupForm']
 const entityForm = formRefs['entityForm']
 const interestEntityForm = formRefs['interestEntityForm']
@@ -257,7 +260,7 @@ function closeHelpModal() {
 const loadGroupForm = ref(false)
 
 const tabRefMap: Record<string, Ref<any>> = {
-  variables: formRefs['variableCreate'],
+  variables: formRefs['variableForm'],
   entities: formRefs['entityForm'],
   interestEntity: formRefs['interestEntityForm'],
   characteristics: formRefs['characteristicForm'],
@@ -366,7 +369,8 @@ async function onEditVariable(uri: string) {
     currentEditRequest = null
 
     if (getResult?.response) {
-      formRefs['variableCreate'].value?.showEditForm(getResult.response.result)
+      const editForm = DTOConverter.extractURIFromResourceProperties(getResult.response.result)
+      formRefs['variableForm'].value?.showEditForm(editForm)
     }
   } catch (e) {
     console.error(e)

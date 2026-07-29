@@ -15,9 +15,11 @@
               :small="true"
             />
 
-            <opensilex-VariableCreate
+            <VariableForm
               v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
               ref="variableForm"
+              :createTitle="'component.variable.add'"
+              :editTitle="'component.variable.edit'"
               @onUpdate="$emit('onUpdate', $event)"
             />
 
@@ -191,6 +193,7 @@ import { useI18n } from 'vue-i18n';
 
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import DTOConverter from '../../models/DTOConverter';
+import VariableForm from '@/components/variables/form/VariableForm.vue'
 
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import type {
@@ -256,14 +259,9 @@ const isGermplasmMenuExcluded = computed(() => {
 
 // Actions
 function showEditForm() {
-  const uri = mutableVariable.value?.uri as string;
-  if (!uri) return;
-
-  getCountDataPromise(uri).then((http) => {
-    const count = http?.response?.result ?? 0;
-    const copy = JSON.parse(JSON.stringify(mutableVariable.value));
-    variableForm.value?.showEditForm?.(copy, count);
-  }).catch(opensilex.errorHandler);
+  const copy = JSON.parse(JSON.stringify(mutableVariable.value));
+  const formCopy = DTOConverter.extractURIFromResourceProperties(copy);
+  variableForm.value?.showEditForm?.(formCopy);
 }
 
 function update(updatedVar: VariableDetailsDTO) {

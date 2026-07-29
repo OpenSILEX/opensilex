@@ -238,7 +238,6 @@
                 :helpMessage="$t('component.variable.dataType.datatype-help')"
                 :itemLoadingMethod="loadDataType"
                 :conversionMethod="objectToSelectNode"
-                :disabled="hasLinkedData"
                 :options="datatypesNodes"
               />
           </div>
@@ -376,7 +375,6 @@ const sampleList = ref([
 ].map(sample => ({ id: t(`component.variable.dimensionValues.${sample}`), label: t(`component.variable.dimensionValues.${sample}`) })))
 
 const isGermplasmMenuExcluded = computed(() => opensilex.getConfig().menuExclusions.includes('germplasm'))
-const hasLinkedData = computed(() => modalFormLogic.form.value?.linked_data_nb > 0)
 
 const rules = computed(() => ({
   entity:        { required: true, message: t('validations.required_if', { _field_: t('component.variable.entity.entity') }), trigger: ['change','blur'] },

@@ -2,12 +2,13 @@
  * Handy functions to pass as form validation rules for n-form
  */
 import {useI18n} from 'vue-i18n';
+import {FormItemRule} from "naive-ui";
 
 /**
  * Returns a validation rule that requires a non-empty string. Typically used for a "Name" field, for example.
  * @param fieldLabelKey is used to personalize the error message saying which field is required.
  */
-export function requiredTrimmed(fieldLabelKey: string) {
+export function requiredTrimmed(fieldLabelKey: string): FormItemRule {
   const {t} = useI18n()
   return {
     validator: (_rule: any, value: string) => {
@@ -27,7 +28,7 @@ export function requiredTrimmed(fieldLabelKey: string) {
  * For string values, use requiredTrimmed instead.
  * @param fieldLabelKey is used to personalize the error message saying which field is required.
  */
-export function required(fieldLabelKey: string) {
+export function requiredObjectOrLists(fieldLabelKey: string): FormItemRule {
   const {t} = useI18n()
   return {
     required: true,
@@ -38,7 +39,7 @@ export function required(fieldLabelKey: string) {
   }
 }
 
-export function validEmail() {
+export function validEmail(): FormItemRule {
   const {t} = useI18n()
 
   return {

@@ -29,8 +29,6 @@ const props = defineProps<{
   required?: boolean
   /** Étoile bleue (comportement existant) */
   requiredBlue?: boolean
-  /** Conservé pour compat, non utilisé ici (validation déplacée dans les enfants / NFormItem) */
-  rules?: string | (() => string)
 }>()
 
 const $opensilex = inject<OpenSilexVuePlugin>('opensilex')

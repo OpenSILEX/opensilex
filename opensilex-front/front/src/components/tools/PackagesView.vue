@@ -1,11 +1,11 @@
 <template>
   <div>
-    <opensilex-PageContent>
+    <PageContent>
       <n-card content-style="padding: 0;">
         <template #header>
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-github package-card-icon" aria-hidden="true"></i>
-            <span>{{ t("PackagesView.details", { version: versionInfo.version }) }}</span>
+            <span>{{ t("component.packages.details", { version: versionInfo.version }) }}</span>
           </div>
         </template>
 
@@ -19,11 +19,11 @@
               />
             </div>
             <div class="col-4 col-md-3 fw-bold">
-              {{ t("PackagesView.python-generated") }}
+              {{ t("component.packages.python-generated") }}
             </div>
             <div class="col">
-              <opensilex-UriView
-                :title="t('PackagesView.python-generated')"
+              <UriView
+                :title="t('component.packages.python-generated')"
                 :uri="pythonVersion"
                 :value="`Version ${versionInfo.version ?? ''}`"
                 target="_blank"
@@ -40,11 +40,11 @@
               />
             </div>
             <div class="col-4 col-md-3 fw-bold">
-              {{ t("PackagesView.r-generated") }}
+              {{ t("component.packages.r-generated") }}
             </div>
             <div class="col">
-              <opensilex-UriView
-                :title="t('PackagesView.r-generated')"
+              <UriView
+                :title="t('component.packages.r-generated')"
                 :uri="rVersion"
                 :value="`Version ${versionInfo.version ?? ''}`"
                 target="_blank"
@@ -61,11 +61,11 @@
               />
             </div>
             <div class="col-4 col-md-3 fw-bold">
-              {{ t("PackagesView.dart-generated") }}
+              {{ t("component.packages.dart-generated") }}
             </div>
             <div class="col">
-              <opensilex-UriView
-                :title="t('PackagesView.dart-generated')"
+              <UriView
+                :title="t('component.packages.dart-generated')"
                 :uri="dartVersion"
                 :value="`Version ${versionInfo.version ?? ''}`"
                 target="_blank"
@@ -74,7 +74,7 @@
           </div>
         </div>
       </n-card>
-    </opensilex-PageContent>
+    </PageContent>
   </div>
 </template>
 
@@ -84,6 +84,8 @@ import { NCard } from "naive-ui";
 // @ts-ignore
 import type { VersionInfoDTO } from "opensilex-core/index";
 import { useI18n } from "vue-i18n";
+import UriView from "@/components/common/views/UriView.vue";
+import PageContent from "@/components/layout/PageContent.vue";
 
 const { t } = useI18n();
 
@@ -124,24 +126,3 @@ const dartVersion = computed(
   object-fit: contain;
 }
 </style>
-
-<i18n>
-en:
-  PackagesView:
-    title: Packages
-    description: Set of packages that allows access to the webservice
-    details: Packages compatible with version {version}
-    python-generated: Python Package
-    r-generated: R Package
-    dart-generated: Dart Package
-    version: Version
-fr:
-  PackagesView:
-    title: Librairies
-    description: Ensemble de bibliothèque logicielles qui permet l'accès au webservice
-    details: Librairies compatibles avec la version {version}
-    python-generated: Librairie Python
-    r-generated: Librairie R
-    dart-generated: Librairie Dart
-    version: Version
-</i18n>

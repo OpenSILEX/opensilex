@@ -27,12 +27,10 @@ const props = withDefaults(defineProps<{
   customClass?: string;
   allowCopy?: boolean;
 }>(), {
+  title: 'component.common.uri',
+  customClass: '',
   allowCopy: true
 });
-
-// default value
-const title = props.title || 'component.common.uri';
-const customClass = props.customClass || '';
 
 //  events
 const emit = defineEmits<{

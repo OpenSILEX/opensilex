@@ -34,7 +34,7 @@
       class="pagecontent"
     >
       <n-layout has-sider class="so-layout">
-        <n-space class="mb-2 me-1" align="top">
+        <n-space class="mb-2 me-1" align="start">
           <n-button
             quaternary
             circle

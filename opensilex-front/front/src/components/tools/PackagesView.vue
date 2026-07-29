@@ -18,9 +18,6 @@
                 class="package-logo"
               />
             </div>
-            <div class="col-4 col-md-3 fw-bold">
-              {{ t("component.packages.python-generated") }}
-            </div>
             <div class="col">
               <UriView
                 :title="t('component.packages.python-generated')"
@@ -39,9 +36,6 @@
                 class="package-logo"
               />
             </div>
-            <div class="col-4 col-md-3 fw-bold">
-              {{ t("component.packages.r-generated") }}
-            </div>
             <div class="col">
               <UriView
                 :title="t('component.packages.r-generated')"
@@ -59,9 +53,6 @@
                 alt="Dart logo"
                 class="package-logo"
               />
-            </div>
-            <div class="col-4 col-md-3 fw-bold">
-              {{ t("component.packages.dart-generated") }}
             </div>
             <div class="col">
               <UriView

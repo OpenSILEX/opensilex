@@ -105,6 +105,7 @@ import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import {useI18n} from "vue-i18n";
 import {NButtonGroup, NSwitch} from "naive-ui";
+import {TableField} from "@/components/common/views/TableField";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const service = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -122,12 +123,12 @@ const credentials = computed(() => store.state.credentials);
 
 const filter = ref<string>("");
 
-const fields = [
+const fields: Array<TableField> = [
   {key: "uri", label: "component.common.uri"},
   {key: "last_name", label: "component.account.linked-person"},
   {key: "email", label: "component.account.email", sortable: true},
   {key: "admin", label: "component.account.admin", sortable: true},
-  {label: "component.common.actions", key: "actions", class: "table-actions"}
+  {label: "component.common.actions", key: "actions", resizable: false, naiveProps: {width: 100} }
 ];
 
 const personByAccountUri = ref<{ [id: string]: PersonDTO | null }>({});

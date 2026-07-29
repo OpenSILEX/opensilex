@@ -1049,11 +1049,29 @@
         },
         "system": {
             "title": "System",
-            "description": "Information about information system"
+            "details": "System details",
+            "info": "Information",
+            "version": "Version",
+            "project": "Project homepage",
+            "contact": "Contact e-mail",
+            "api-docs": "Web API",
+            "git-commit": "Last commit Id",
+            "git-commit-copy": "Copy last commit Id",
+            "description": "Description",
+            "title-description": "Informations about information system",
+            "license": "Software license",
+            "loaded-modules": "Loaded modules",
+            "copyright": "Copyright",
+            "name": "Name"
         },
         "packages": {
             "title": "Packages",
-            "description": "Set of packages that allows access to the webservice"
+            "description": "Set of packages that allow access to the web service",
+            "details": "Packages compatible with version {version}",
+            "python-generated": "Python Package",
+            "r-generated": "R Package",
+            "dart-generated": "Dart Package",
+            "version": "Version"
         },
         "GDPR": {
             "title": "GDPR",

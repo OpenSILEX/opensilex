@@ -50,11 +50,11 @@
       <!-- Default language -->
         <FormSelector
             v-model:selected="modalFormLogic.form.value.language"
+            path="language"
             :options="languages"
             :required="true"
             label="component.account.default-lang"
             :placeholder="t('component.common.select-lang')"
-            path="language"
         ></FormSelector>
 
       <!-- Admin flag -->
@@ -104,7 +104,7 @@ import PersonSelector from "@/components/persons/PersonSelector.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
 import {NForm, NFormItem} from "naive-ui";
-import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {requiredObjectOrLists, requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
 import useModalFormLogic from "@/composables/useModalFormLogic";
@@ -162,7 +162,7 @@ const rules = computed(() => ({
     },
     trigger: ['blur', 'input']
   },
-  'language': requiredTrimmed('component.account.default-lang'),
+  'language': requiredObjectOrLists('component.account.default-lang'),
 }));
 
 const languages: ComputedRef<Array<{id: string; label: string}>> = computed(() => {

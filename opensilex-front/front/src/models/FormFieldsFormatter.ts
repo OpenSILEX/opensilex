@@ -28,7 +28,7 @@ export function requiredTrimmed(fieldLabelKey: string): FormItemRule {
  * For string values, use requiredTrimmed instead.
  * @param fieldLabelKey is used to personalize the error message saying which field is required.
  */
-export function required(fieldLabelKey: string): FormItemRule {
+export function requiredObjectOrLists(fieldLabelKey: string): FormItemRule {
   const {t} = useI18n()
   return {
     required: true,

@@ -1053,7 +1053,12 @@
         },
         "packages": {
             "title": "Packages",
-            "description": "Set of packages that allows access to the webservice"
+            "description": "Set of packages that allow access to the web service",
+            "details": "Packages compatible with version {version}",
+            "python-generated": "Python Package",
+            "r-generated": "R Package",
+            "dart-generated": "Dart Package",
+            "version": "Version"
         },
         "GDPR": {
             "title": "GDPR",

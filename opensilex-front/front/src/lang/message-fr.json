@@ -1109,7 +1109,12 @@
         },
         "packages": {
             "title": "Librairies",
-            "description": "Ensemble de bibliothèque logicielles qui permet l'accès au webservice"
+            "description": "Ensemble de bibliothèques logicielles qui permettent l'accès au web service",
+            "details": "Librairies compatibles avec la version {version}",
+            "python-generated": "Librairie Python",
+            "r-generated": "Librairie R",
+            "dart-generated": "Librairie Dart",
+            "version": "Version"
         },
         "GDPR": {
             "title": "RGPD",

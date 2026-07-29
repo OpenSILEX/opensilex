@@ -36,6 +36,7 @@ import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import { useI18n } from 'vue-i18n'
+import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
 
 const { cookies: $cookies } = useCookies();
 
@@ -1434,7 +1435,7 @@ export default class OpenSilexVuePlugin {
 
 
 
-    public versionInfo: any = [];
+    public versionInfo?: VersionInfoDTO = undefined;
 
     public loadVersionInfo() {
         return new Promise((resolve, reject) => {

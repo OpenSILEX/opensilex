@@ -1105,7 +1105,20 @@
         },
         "system": {
             "title": "Système",
-            "description": "Informations à propos du système d'information"
+            "details": "Détails du système",
+            "info": "Informations",
+            "version": "Version",
+            "project": "Page du projet",
+            "contact": "E-mail du contact",
+            "api-docs": "API Web",
+            "git-commit": "Dernier id commit",
+            "git-commit-copy": "Copier le dernier id commit",
+            "description": "Description",
+            "title-description": "Informations à propos du système d'information",
+            "license": "Licence logicielle",
+            "loaded-modules": "Modules chargés",
+            "copyright": "Copyright",
+            "name": "Nom"
         },
         "packages": {
             "title": "Librairies",

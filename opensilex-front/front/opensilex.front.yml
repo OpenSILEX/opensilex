@@ -279,7 +279,7 @@ menu:
             - is-admin
           icon: bi#bi-layers
           title: component.system.title
-          description: component.system.description
+          description: component.system.title-description
       - id: gdpr
         label: component.menu.about.gdpr
         route:

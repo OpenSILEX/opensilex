@@ -10,7 +10,7 @@
       :steps="tutorialSteps"
       @onSkip="continueFormEditing"
       @onFinish="continueFormEditing"
-      :editMode="modalFormLogic.editMode.value"
+      :editMode="modalFormLogic.isEditMode.value"
       class="variableFormTutorial"
     />
 
@@ -28,7 +28,7 @@
             v-model:uri="modalFormLogic.form.value.uri"
             :generated="uriGenerated"
             @update:generated="val => uriGenerated = val"
-            :editMode="modalFormLogic.editMode.value"
+            :editMode="modalFormLogic.isEditMode.value"
             label="component.common.uri"
             class="v-step-uri"
           />
@@ -47,7 +47,7 @@
                 v-model:selected="modalFormLogic.form.value.entity"
                 :multiple="false"
                 :required="true"
-                :actionHandler="modalFormLogic.editMode.value ? undefined : showEntityCreateForm"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showEntityCreateForm"
                 :searchMethod="searchEntities"
                 @select="updateEntity"
                 :itemLoadingMethod="loadEntity"
@@ -69,7 +69,7 @@
                 label="component.variable.entityOfInterest.entityOfInterest"
                 :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
                 v-model:selected="modalFormLogic.form.value.entity_of_interest"
-                :actionHandler="modalFormLogic.editMode.value ? undefined : showInterestEntityCreateForm"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showInterestEntityCreateForm"
                 :helpMessage="$t('component.variable.entityOfInterest.interestEntity-help')"
                 :searchMethod="searchInterestEntities"
                 :itemLoadingMethod="loadInterestEntity"
@@ -95,7 +95,7 @@
                 :multiple="false"
                 :required="true"
                 @select="updateCharacteristic"
-                :actionHandler="modalFormLogic.editMode.value ? undefined : showCharacteristicCreateForm"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showCharacteristicCreateForm"
                 :helpMessage="$t('component.variable.characteristic.characteristic-help')"
                 :searchMethod="searchCharacteristics"
                 :itemLoadingMethod="loadCharacteristic"
@@ -134,7 +134,7 @@
                 v-model:selected="modalFormLogic.form.value.method"
                 :helpMessage="$t('component.variable.method.method-help')"
                 noResultsText="VariableForm.no-method"
-                :actionHandler="modalFormLogic.editMode.value ? undefined : showMethodCreateForm"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showMethodCreateForm"
                 @select="updateMethod"
                 :searchMethod="searchMethods"
                 :itemLoadingMethod="loadMethod"
@@ -186,7 +186,7 @@
                 v-model:selected="modalFormLogic.form.value.unit"
                 @select="updateUnit"
                 :helpMessage="$t('component.variable.unit.unit-help')"
-                :actionHandler="modalFormLogic.editMode.value ? undefined : showUnitCreateForm"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showUnitCreateForm"
                 :searchMethod="searchUnits"
                 :itemLoadingMethod="loadUnit"
                 :conversionMethod="objectToSelectNode"
@@ -539,7 +539,7 @@ function getEmptyForm(): VariableCreationDTO {
 
 async function reset(): Promise<void> {
   uriGenerated.value = true
-  if (variableTutorial.value && !modalFormLogic.editMode.value) {
+  if (variableTutorial.value && !modalFormLogic.isEditMode.value) {
     variableTutorial.value.stop()
   }
 }
@@ -580,7 +580,7 @@ function updateUnit(val: any) {
 }
 
 function updateName() {
-  if (modalFormLogic.editMode.value) return
+  if (modalFormLogic.isEditMode.value) return
 
   const parts: string[] = []
   if (selectedEntityName.value) parts.push(selectedEntityName.value.split(' ')[0])
@@ -612,7 +612,7 @@ function updateVariableTrait(form: any) {
 }
 
 function showTraitForm() {
-  modalFormLogic.editMode.value
+  modalFormLogic.isEditMode.value
     ? traitForm.value?.showEditForm(getEmptyTraitForm())
     : traitForm.value?.showCreateForm()
 }

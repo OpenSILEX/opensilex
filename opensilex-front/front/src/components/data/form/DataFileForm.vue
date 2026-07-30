@@ -79,7 +79,7 @@
         </n-form-item>
 
         <!-- File -->
-        <n-form-item v-if="!modalFormLogic.editMode.value && selectedSource === 'file'" path="file" ref="fileItem">
+        <n-form-item v-if="!modalFormLogic.isEditMode.value && selectedSource === 'file'" path="file" ref="fileItem">
           <FileInputForm
             v-model:file="modalFormLogic.form.value.file"
             :label="t('DataFileForm.fileDX')"
@@ -92,7 +92,7 @@
         </n-form-item>
 
         <!-- External source -->
-        <n-form-item v-if="!modalFormLogic.editMode.value && selectedSource === 'external'" path="file" ref="externalSourceItem">
+        <n-form-item v-if="!modalFormLogic.isEditMode.value && selectedSource === 'external'" path="file" ref="externalSourceItem">
           <InputForm
             :label="t('DataFileForm.external-source')"
             type="text"

@@ -27,7 +27,7 @@
         <UriForm
           :uri.sync="modalFormLogic.form.value.uri"
           label="component.common.uri-or-url"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
           :generated.sync="uriGenerated"
         />
       </n-form-item>

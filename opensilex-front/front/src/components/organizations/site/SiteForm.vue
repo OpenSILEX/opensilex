@@ -18,7 +18,7 @@
           :uri.sync="modalFormLogic.form.value.uri"
           label="component.common.uri"
           helpMessage="component.common.uri-help-message"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
           v-model:generated="uriGenerated"
         />
       </n-form-item>

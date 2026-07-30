@@ -20,7 +20,7 @@
               :generated="uriGenerated"
               @update:generated="val => uriGenerated = val"
               label="component.common.uri"
-              :editMode="modalFormLogic.editMode.value"
+              :editMode="modalFormLogic.isEditMode.value"
               :helpMessage="t('component.common.uri-help-message')"
               :required="true"
             />
@@ -37,7 +37,7 @@
               :baseType="baseType"
               :ignoreRoot="false"
               :required="false"
-              :disabled="modalFormLogic.editMode.value"
+              :disabled="modalFormLogic.isEditMode.value"
               :placeholder="t('EventForm.type-placeholder')"
               @select="typeSwitch($event.id, false)"
               @open="customOptionsTypes"
@@ -96,7 +96,7 @@
         :relations="modalFormLogic.form.value.relations"
         :excludedProperties="excludedProperties"
         :baseType="baseType"
-        :editMode="modalFormLogic.editMode.value"
+        :editMode="modalFormLogic.isEditMode.value"
         :context="context"
       />
 

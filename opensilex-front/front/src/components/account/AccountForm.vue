@@ -18,7 +18,7 @@
             :uri.sync="modalFormLogic.form.value.uri"
             label="component.account.account-uri"
             helpMessage="component.common.uri-help-message"
-            :editMode="modalFormLogic.editMode.value"
+            :editMode="modalFormLogic.isEditMode.value"
             :generated.sync="uriGenerated"
         ></UriForm>
       </n-form-item>
@@ -41,7 +41,7 @@
             v-model:value="modalFormLogic.form.value.password"
             label="component.account.password"
             type="password"
-            :required="!modalFormLogic.editMode.value"
+            :required="!modalFormLogic.isEditMode.value"
             :placeholder="t('component.account.form-password-placeholder')"
             autocomplete="new-password"
         ></InputForm>
@@ -110,6 +110,7 @@ import {OpenSilexStore} from "@/models/Store";
 import useModalFormLogic from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import {AccountCreationDTO} from "opensilex-security/model/accountCreationDTO";
 
 //#region Public
 interface AccountFormDTO {
@@ -123,7 +124,7 @@ interface AccountFormDTO {
 
 const emit = defineEmits<{
   (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse<AccountCreationDTO>>): void
   (e: 'onSuccess'): void
 }>()
 
@@ -155,7 +156,7 @@ const rules = computed(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
-      if (!modalFormLogic.editMode.value && (!value || value.toString().trim().length === 0)) {
+      if (!modalFormLogic.isEditMode.value && (!value || value.toString().trim().length === 0)) {
         return new Error(t('validations.required_if', {_field_: t('component.account.password')}));
       }
       return true;
@@ -233,7 +234,7 @@ async function reset(): Promise<void> {
     linkedPerson.value = null;
   }
 
-  const isCreationForm: boolean = !modalFormLogic.editMode.value;
+  const isCreationForm: boolean = !modalFormLogic.isEditMode.value;
   const canAddAPerson: boolean = !modalFormLogic.form.value.linked_person;
   canSelectAPerson.value = isCreationForm || canAddAPerson;
 }

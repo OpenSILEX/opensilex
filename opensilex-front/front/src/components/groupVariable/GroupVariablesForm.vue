@@ -18,7 +18,7 @@
           v-model:uri="modalFormLogic.form.value.uri"
           :generated="uriGenerated"
           @update:generated="val => uriGenerated = val"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
           :helpMessage="t('component.common.uri-help-message')"
           label="component.group.group-uri"
         />
@@ -50,7 +50,7 @@
         ref="variablesSelectorRef"
         v-model:variables-with-labels="variablesWithLabels"
         v-model:variables="modalFormLogic.form.value.variables"
-        :editMode="modalFormLogic.editMode.value"
+        :editMode="modalFormLogic.isEditMode.value"
         :label="t('component.variable.title')"
         :placeholder="t('component.variable.placeholder-multiple')"
       />

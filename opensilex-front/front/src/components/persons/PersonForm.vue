@@ -18,7 +18,7 @@
             :uri.sync="modalFormLogic.form.value.uri"
             label="component.person.person-uri"
             helpMessage="component.common.uri-help-message"
-            :editMode="modalFormLogic.editMode.value"
+            :editMode="modalFormLogic.isEditMode.value"
             :generated.sync="uriGenerated"
         ></UriForm>
       </n-form-item>
@@ -244,7 +244,7 @@ function getEmptyForm(): PersonDTO {
 async function reset(): Promise<void> {
   // when editing, disable ORCID field if present
   nextTick(() => {
-    disable_orcid_field.value = modalFormLogic.editMode.value && !!modalFormLogic.form.value.orcid
+    disable_orcid_field.value = modalFormLogic.isEditMode.value && !!modalFormLogic.form.value.orcid
   })
 }
 

@@ -18,7 +18,7 @@
           v-model:uri="modalFormLogic.form.value.uri"
           :generated="uriGenerated"
           @update:generated="val => uriGenerated = val"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
           :helpMessage="t('component.common.uri-help-message')"
           label="component.common.uri"
         />

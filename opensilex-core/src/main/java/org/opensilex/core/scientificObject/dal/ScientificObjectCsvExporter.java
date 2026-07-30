@@ -77,11 +77,11 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
             if(correspondingMove.getStart() == null){
                 return;
             }
-            lineBuffer[colIdx] = correspondingMove.getStart().getDateTimeStamp().toLocalDate().toString();
+            lineBuffer[colIdx] = correspondingMove.getStart().getDateTimeStamp().toString();
             return;
         }
         if(column.equals(ScientificObjectCsvImporterLogic.MOVE_END_FIELD_UNIQUE_HEADER)){
-            lineBuffer[colIdx] = correspondingMove.getEnd().getDateTimeStamp().toLocalDate().toString();
+            lineBuffer[colIdx] = correspondingMove.getEnd().getDateTimeStamp().toString();
             return;
         }
         LocationModel movesLocation = correspondingMove.getLocationObservation().getLocation();

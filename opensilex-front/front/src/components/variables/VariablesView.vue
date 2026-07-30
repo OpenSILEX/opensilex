@@ -111,8 +111,8 @@
     <GroupVariablesForm
       ref="variableGroupForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-      createTitle="component.variable.groupVariable.add-groupVariable"
-      editTitle="component.variable.groupVariable.edit"
+      :createTitle="t('component.variable.groupVariable.add-groupVariable')"
+      :editTitle="t('component.variable.groupVariable.edit')"
       @onCreate="form => onExternalResourceCreatedOrUpdated('groups', form)"
       @onUpdate="form => onExternalResourceCreatedOrUpdated('groups', form)"
     />
@@ -132,23 +132,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, computed, inject, defineAsyncComponent, nextTick, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
-import { useRoute, useRouter } from 'vue-router'
-import { VariablesService, DataService } from 'opensilex-core/index'
-import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
-import { useStore } from 'vuex'
+import {computed, defineAsyncComponent, inject, nextTick, ref, type Ref, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import {useRoute, useRouter} from 'vue-router'
+import {DataService, VariablesService} from 'opensilex-core/index'
+import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse'
+import {useStore} from 'vuex'
 
 // imports de composants de formulaires
 import VariableForm from './form/VariableForm.vue'
 import DTOConverter from '../../models/DTOConverter'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
-import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
-import AgroportalEntityOfInterestForm from './agroportal/AgroportalEntityOfInterestForm.vue'
-import AgroportalCharacteristicForm from './agroportal/AgroportalCharacteristicForm.vue'
-import AgroportalMethodForm from './agroportal/AgroportalMethodForm.vue'
-import AgroportalUnitForm from './agroportal/AgroportalUnitForm.vue'
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const variablesService = opensilex.getService<VariablesService>('opensilex.VariablesService')

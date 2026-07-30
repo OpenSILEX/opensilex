@@ -268,17 +268,30 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, h, inject, reactive, onMounted, resolveComponent, computed, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { NButton, NTag, NDataTable, DataTableRowKey, NInput, NForm, NFormItem, NSelect, NCheckbox, NCollapse, NCollapseItem, NLayout, NLayoutSider, NLayoutContent, NSpace } from 'naive-ui'
-import { VariablesService } from 'opensilex-core'
-import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO'
+import {computed, h, inject, nextTick, onMounted, reactive, ref, resolveComponent, useTemplateRef, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {
+  DataTableRowKey,
+  NButton,
+  NCollapse,
+  NCollapseItem,
+  NDataTable,
+  NForm,
+  NFormItem,
+  NInput,
+  NLayout,
+  NLayoutContent,
+  NLayoutSider,
+  NSpace
+} from 'naive-ui'
+import {VariablesService} from 'opensilex-core'
+import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 
 /** Refs UI */
 const groupVariableSelection = ref()
-const groupVariablesForm = ref<InstanceType<typeof GroupVariablesForm> | null>(null)
+const groupVariablesForm = useTemplateRef<InstanceType<typeof GroupVariablesForm>>("groupVariablesForm")
 
 /** Services & i18n */
 const { t, n } = useI18n()

@@ -53,8 +53,6 @@
         :editMode="modalFormLogic.editMode.value"
         :label="t('component.variable.title')"
         :placeholder="t('component.variable.placeholder-multiple')"
-        @hideSelector="$emit('hideSelector')"
-        @shownSelector="$emit('shownSelector')"
       />
     </n-form>
 
@@ -65,15 +63,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, useTemplateRef, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { NForm, NFormItem } from 'naive-ui'
-import { requiredTrimmed } from '@/models/FormFieldsFormatter'
+import {computed, inject, ref, useTemplateRef} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {NForm, NFormItem} from 'naive-ui'
+import {requiredTrimmed} from '@/models/FormFieldsFormatter'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type { VariablesService } from 'opensilex-core'
-import type { VariablesGroupCreationDTO } from 'opensilex-core/model/variablesGroupCreationDTO'
-import HttpResponse, { OpenSilexResponse } from '@/lib/HttpResponse'
+import type {VariablesService} from 'opensilex-core'
+import type {VariablesGroupCreationDTO} from 'opensilex-core/model/variablesGroupCreationDTO'
+import HttpResponse, {OpenSilexResponse} from '@/lib/HttpResponse'
 
 import Modal from '@/components/common/views/Modal.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
@@ -83,6 +81,7 @@ import InputForm from '@/components/common/forms/InputForm.vue'
 import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
 import VariableSelectorWithFilter from '@/components/variables/views/VariableSelectorWithFilter.vue'
 import useModalFormLogic from '@/composables/useModalFormLogic'
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 
 //#region Public
 const emit = defineEmits<{
@@ -156,7 +155,7 @@ async function create(formData: VariablesGroupCreationDTO) {
   return await service.createVariablesGroup(formData)
 }
 
-async function update(formData: VariablesGroupCreationDTO) {
+async function update(formData: VariablesGroupUpdateDTO) {
   return await service.updateVariablesGroup(formData)
 }
 

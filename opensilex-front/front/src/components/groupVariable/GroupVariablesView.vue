@@ -96,13 +96,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeMount, resolveComponent, onMounted, inject, defineExpose, nextTick, watch, h} from 'vue';
-import { useI18n } from 'vue-i18n';
-import { VariablesService, NamedResourceDTO } from 'opensilex-core/index';
-import HttpResponse, { OpenSilexResponse } from '../../../lib/HttpResponse';
+import {computed, h, inject, nextTick, onBeforeMount, onMounted, ref, resolveComponent, watch} from 'vue';
+import {useI18n} from 'vue-i18n';
+import {NamedResourceDTO, VariablesService} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { NInput, NList, NListItem, NSpace } from 'naive-ui';
+import {NInput, NList, NListItem, NSpace} from 'naive-ui';
 import GroupVariablesForm from './GroupVariablesForm.vue';
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -207,7 +207,7 @@ async function onDeleteGroup(group: any) {
 
 // Formulaire crea
 function showCreateForm() {
-    groupFormRef.value?.showCreateForm?.()
+    groupFormRef.value.showCreateForm()
 }
 
 // Formulaire édit
@@ -229,9 +229,7 @@ function showCreateForm() {
      }))
    };
 
-   nextTick(() => {
-     groupFormRef.value?.showEditForm?.(formData);
-   });
+   groupFormRef.value?.showEditForm?.(formData);
  }
 
 async function onFormSuccess(form?: any) {

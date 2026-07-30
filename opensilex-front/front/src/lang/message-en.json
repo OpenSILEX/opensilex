@@ -436,6 +436,8 @@
             }
         },
         "annotation" : {
+            "add": "Add annotation",
+            "edit": "Edit annotation",
             "details": "Details annotation",
             "motivation": "Motivation",
             "publisher": "Publisher",

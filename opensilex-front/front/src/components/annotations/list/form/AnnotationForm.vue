@@ -1,128 +1,138 @@
 <template>
-  <n-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-  >
-    <!-- URI -->
-    <opensilex-UriForm
-      v-model:uri="form.uri"
-      :generated="localUriGenerated"
-      @update:generated="val => (localUriGenerated = val)"
-      :editMode="editMode"
-      :helpMessage="$t('component.common.uri-help-message')"
-      label="component.common.uri"
-    />
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="fa#vials" />
+    </template>
 
-    <!-- Motivation -->
-    <n-form-item :show-label="false" path="motivation">
-      <opensilex-FormSelector
-        v-model:selected="form.motivation"
-        :required="true"
-        :multiple="false"
-        :disabled="viewMode"
-        :options="motivations"
-        :itemLoadingMethod="loadMotivation"
-        :label="'component.annotation.motivation'"
-        :noResultsText="t('component.annotation.no-motivation')"
-        :helpMessage="t('component.annotation.motivation-help')"
-        :placeholder="t('component.annotation.select-motivation')"
-      />
-    </n-form-item>
+    <n-form
+      ref="formRef"
+      :model="modalFormLogic.form.value"
+      :rules="rules"
+      label-placement="top"
+      :show-require-mark="true"
+      size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+          v-model:uri="modalFormLogic.form.value.uri"
+          :generated="uriGenerated"
+          @update:generated="val => uriGenerated = val"
+          :editMode="modalFormLogic.isEditMode.value"
+          :helpMessage="t('component.common.uri-help-message')"
+          label="component.common.uri"
+        />
+      </n-form-item>
 
-    <!-- Description -->
-    <n-form-item :label="$t('component.annotation.description')" path="description">
-      <opensilex-TextAreaForm
-        v-model:value="form.description"
-        :required="true"
-        @keydown.enter.stop
-        :placeholder="t('component.common.set-description')"
-      />
-    </n-form-item>
-  </n-form>
+      <!-- Motivation -->
+        <FormSelector
+          path="motivation"
+          v-model:selected="modalFormLogic.form.value.motivation"
+          :required="true"
+          :multiple="false"
+          :options="motivations"
+          :itemLoadingMethod="loadMotivation"
+          :label="'component.annotation.motivation'"
+          :noResultsText="t('component.annotation.no-motivation')"
+          :helpMessage="t('component.annotation.motivation-help')"
+          :placeholder="t('component.annotation.select-motivation')"
+        />
+
+      <!-- Description -->
+      <n-form-item path="description">
+        <TextAreaForm
+          v-model:value="modalFormLogic.form.value.description"
+          :label="t('component.annotation.description')"
+          :required="true"
+          @keydown.enter.stop
+          :placeholder="t('component.common.set-description')"
+        />
+      </n-form-item>
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onBeforeUnmount, withDefaults, defineProps } from 'vue'
-import { useStore } from 'vuex'
+import { ref, computed, inject, onMounted, onBeforeUnmount, watch, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { FormInst } from 'naive-ui'
+import { useStore } from 'vuex'
 import { NForm, NFormItem } from 'naive-ui'
-import { requiredTrimmed } from  "../../../../models/FormFieldsFormatter"
+import {requiredObjectOrLists, requiredTrimmed} from '@/models/FormFieldsFormatter'
 
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
-import HttpResponse, { OpenSilexResponse } from 'opensilex-security/HttpResponse'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import type { AnnotationsService } from 'opensilex-core/api/annotations.service'
 import type { AnnotationCreationDTO, NamedResourceDTO } from 'opensilex-core/index'
 
-const props = withDefaults(defineProps<{
-  editMode?: boolean
-  uriGenerated?: boolean
-  form: AnnotationCreationDTO
-}>(), {
-  editMode: false,
-  uriGenerated: true,
-  form: () => ({
-    uri: undefined,
-    motivation: undefined,
-    targets: [],
-    description: undefined
-  } as AnnotationCreationDTO)
-})
+import UriForm from '@/components/common/forms/UriForm.vue'
+import FormSelector from '@/components/common/forms/FormSelector.vue'
+import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
+import FormHeader from '@/components/common/forms/FormHeader.vue'
+import FormFooter from '@/components/common/forms/FormFooter.vue'
+import Modal from '@/components/common/views/Modal.vue'
+import useModalFormLogic from '@/composables/useModalFormLogic'
+import {AnnotationUpdateDTO} from "opensilex-core/model/annotationUpdateDTO";
 
-const emit = defineEmits<{}>()
+//#region Public
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
+
+const props = defineProps<{
+  createTitle: string
+  editTitle: string
+}>()
+//#endregion
+
+//#region Private
+
+//#region Plugin and services
 const { t } = useI18n()
 const store = useStore()
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const service = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService')
+//#endregion
 
-// ---- Refs / état local
-const formRef = ref<FormInst | null>(null)
-const localUriGenerated = ref<boolean>(props.uriGenerated ?? true)
-const editMode = computed(() => !!props.editMode)
-const viewMode = ref(false)
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
+//#region Datas
+const uriGenerated = ref<boolean>(true)
 const motivations = ref<Array<{ label: string; id: string }>>([])
+//#endregion
 
-// ---- Règles Naive UI
+//#region Computed
 const rules = computed(() => ({
-  motivation: { required: true, message: t('validations.required_if', {_field_: t('component.annotation.motivation')}), trigger: 'change' },
-  description: requiredTrimmed('Description')
+  motivation: requiredObjectOrLists("component.annotation.motivation"),
+  description: requiredTrimmed('component.common.description')
 }))
+//#endregion
 
-// ---- Chargement des motivations
-function searchMotivations () {
-  service.searchMotivations(undefined, ['name=asc'], undefined, undefined)
-    .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-      motivations.value = (http?.response?.result ?? []).map(m => ({ label: m.name, id: m.uri }))
-    })
-    .catch(opensilex.errorHandler)
-}
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<AnnotationCreationDTO>({
+  modalRef,
+  nFormRef: formRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+})
+//#endregion
 
-/**
- * Supporte la valeur existante :
- *  - En édition, la valeur peut être un objet { uri, name } -> renvoie l’option correspondante et normalise en URI
- *  - Sinon, c’est déjà une URI -> renvoie l’option trouvée
- */
-function loadMotivation (selected: Array<any>): Array<any> | undefined {
-  if (!selected || selected.length === 0) return undefined
+//#region Methods
 
-  // Édition : valeur objet { uri, name }
-  if (selected[0]?.uri) {
-    const opt = { label: (props.form as any).motivation.name, id: (props.form as any).motivation.uri }
-    ;(props.form as any).motivation = (props.form as any).motivation.uri
-    return [opt]
-  }
-
-  // Création : valeur = URI
-  const found = motivations.value.find(m => m.id === selected[0])
-  return found ? [found] : undefined
-}
-
-// ---- API attendue par ModalForm (exposée)
-function getEmptyForm (): AnnotationCreationDTO {
+function getEmptyForm(): AnnotationCreationDTO {
   return {
     uri: undefined,
     motivation: undefined,
@@ -131,36 +141,71 @@ function getEmptyForm (): AnnotationCreationDTO {
   }
 }
 
-function reset () {
-  localUriGenerated.value = true
+async function reset(): Promise<void> {
+  uriGenerated.value = true
 }
 
-async function validate () {
-  try {
-    await formRef.value?.validate()
-    return true
-  } catch {
-    return false
+async function create(formData: AnnotationCreationDTO) {
+  return await service.createAnnotation(formData)
+}
+
+async function update(formData: AnnotationUpdateDTO) {
+  return await service.updateAnnotation(formData)
+}
+
+function showCreateForm(targetsArg: string[] = []) {
+  const annotationForm = getEmptyForm()
+  annotationForm.targets = targetsArg
+  modalFormLogic.showCreateForm(annotationForm)
+}
+
+function showEditForm(form: any) {
+  const normalized = JSON.parse(JSON.stringify(form))
+  if (normalized?.motivation && typeof normalized.motivation === 'object') {
+    normalized.motivation = normalized.motivation.uri
   }
+  modalFormLogic.showEditForm(normalized)
 }
 
-defineExpose({
-  getEmptyForm,
-  reset,
-  validate
-})
+function searchMotivations() {
+  service.searchMotivations(undefined, ['name=asc'], undefined, undefined)
+    .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+      motivations.value = (http?.response?.result ?? []).map(m => ({ label: m.name, id: m.uri }))
+    })
+    .catch(opensilex.errorHandler)
+}
 
-// ---- Lifecycle
-let unwatchLang: any
+function loadMotivation(selected: Array<any>): Array<any> | undefined {
+  if (!selected || selected.length === 0) return undefined
+
+  if (selected[0]?.uri) {
+    const opt = { label: (modalFormLogic.form.value as any).motivation.name, id: (modalFormLogic.form.value as any).motivation.uri }
+    ;(modalFormLogic.form.value as any).motivation = (modalFormLogic.form.value as any).motivation.uri
+    return [opt]
+  }
+
+  const found = motivations.value.find(m => m.id === selected[0])
+  return found ? [found] : undefined
+}
+//#endregion
+
+//#region Watchers & lifecycle
+const langUnwatch = watch(() => store.getters.language, () => searchMotivations())
+
 onMounted(() => {
   searchMotivations()
-  unwatchLang = store.watch(
-    () => store.getters.language,
-    () => searchMotivations()
-  )
 })
+
 onBeforeUnmount(() => {
-  unwatchLang && unwatchLang()
+  langUnwatch()
+})
+//#endregion
+
+//#endregion
+
+defineExpose({
+  showCreateForm,
+  showEditForm
 })
 </script>
 

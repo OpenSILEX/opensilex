@@ -1,351 +1,355 @@
 <template>
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="fa#vials" />
+    </template>
+
   <div id="v-step-global">
-    <opensilex-Tutorial
+    <Tutorial
       ref="variableTutorial"
       :steps="tutorialSteps"
       @onSkip="continueFormEditing"
       @onFinish="continueFormEditing"
-      :editMode="editMode"
+      :editMode="modalFormLogic.isEditMode.value"
       class="variableFormTutorial"
     />
 
-    <n-form
-      ref="formRef"
-      :model="form"
-      :rules="rules"
-      label-placement="top"
-      :show-require-mark="true"
-    >
-      <!-- URI -->
-      <opensilex-UriForm
-        v-model:uri="form.uri"
-        :generated="uriGenerated"
-        @update:generated="val => uriGenerated = val"
-        :editMode="editMode"
-        label="component.common.uri"
-        class="v-step-uri"
-      />
-
-      <div class="row">
-        <!-- ENTITY -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-entity">
-          <opensilex-EntitySelector
-            path="entity"                            
-            ref="entitySelector"
-            label="component.variable.entity.entity"
-            :placeholder="$t('component.variable.entity.entity-placeholder')"
-            :helpMessage="$t('component.variable.entity.entity-help')"
-            noResultsText="VariableForm.no-entity"
-            v-model:selected="form.entity"
-            :multiple="false"
-            :required="true"                             
-            :actionHandler="editMode ? undefined : showEntityCreateForm"
-            :searchMethod="searchEntities"
-            @select="updateEntity"
-            :itemLoadingMethod="loadEntity"
-            :conversionMethod="objectToSelectNode"
-            :disabled="false"
+      <n-form
+        ref="formRef"
+        :model="modalFormLogic.form.value"
+        :rules="rules"
+        label-placement="top"
+        :show-require-mark="true"
+        size="large"
+      >
+        <!-- URI -->
+        <n-form-item>
+          <UriForm
+            v-model:uri="modalFormLogic.form.value.uri"
+            :generated="uriGenerated"
+            @update:generated="val => uriGenerated = val"
+            :editMode="modalFormLogic.isEditMode.value"
+            label="component.common.uri"
+            class="v-step-uri"
           />
-            <opensilex-AgroportalEntityForm
+        </n-form-item>
+
+        <div class="row">
+          <!-- ENTITY -->
+          <div class="col-lg-6" id="v-step-entity">
+              <EntitySelector
+                path="entity"
+                ref="entitySelector"
+                label="component.variable.entity.entity"
+                :placeholder="$t('component.variable.entity.entity-placeholder')"
+                :helpMessage="$t('component.variable.entity.entity-help')"
+                noResultsText="VariableForm.no-entity"
+                v-model:selected="modalFormLogic.form.value.entity"
+                :multiple="false"
+                :required="true"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showEntityCreateForm"
+                :searchMethod="searchEntities"
+                @select="updateEntity"
+                :itemLoadingMethod="loadEntity"
+                :conversionMethod="objectToSelectNode"
+                :disabled="false"
+              />
+            <AgroportalEntityForm
               ref="entityForm"
               ontologies="entities"
               @onCreate="onEntityCreated"
               @onUpdate="onEntityCreated"
             />
-        </div>
+          </div>
 
-        <!-- INTEREST ENTITY -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-interestEntity">
-          <opensilex-InterestEntitySelector
-            path="entity_of_interest"                 
-            ref="interestEntitySelector"
-            label="component.variable.entityOfInterest.entityOfInterest"
-            :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
-            v-model:selected="form.entity_of_interest"
-            :multiple="false"
-            :required="false"
-            :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
-            :helpMessage="$t('component.variable.entityOfInterest.interestEntity-help')"
-            :searchMethod="searchInterestEntities"
-            :itemLoadingMethod="loadInterestEntity"
-            :conversionMethod="objectToSelectNode"
-            noResultsText="VariableForm.no-interestEntity"
-            :disabled="false"
-          />
-            <opensilex-AgroportalEntityOfInterestForm
+          <!-- INTEREST ENTITY -->
+          <div class="col-lg-6" id="v-step-interestEntity">
+              <InterestEntitySelector
+                ref="interestEntitySelector"
+                label="component.variable.entityOfInterest.entityOfInterest"
+                :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
+                v-model:selected="modalFormLogic.form.value.entity_of_interest"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showInterestEntityCreateForm"
+                :helpMessage="$t('component.variable.entityOfInterest.interestEntity-help')"
+                :searchMethod="searchInterestEntities"
+                :itemLoadingMethod="loadInterestEntity"
+                :conversionMethod="objectToSelectNode"
+                noResultsText="VariableForm.no-interestEntity"
+              />
+            <AgroportalEntityOfInterestForm
               ref="interestEntityForm"
               ontologies="entities"
               @onCreate="onEntityOfInterestCreated"
               @onUpdate="onEntityOfInterestCreated"
             />
-        </div>
+          </div>
 
-        <!-- CHARACTERISTIC -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-characteristic">
-          <opensilex-CharacteristicSelector
-            path="characteristic"                      
-            ref="characteristicSelector"
-            label="component.variable.characteristic.characteristic"
-            :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
-            v-model:selected="form.characteristic"
-            :multiple="false"
-            :required="true"                             
-            @select="updateCharacteristic"
-            :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
-            :helpMessage="$t('component.variable.characteristic.characteristic-help')"
-            :searchMethod="searchCharacteristics"
-            :itemLoadingMethod="loadCharacteristic"
-            :conversionMethod="objectToSelectNode"
-            noResultsText="VariableForm.no-characteristic"
-            :disabled="false"
-          />
-            <opensilex-AgroportalCharacteristicForm
+          <!-- CHARACTERISTIC -->
+          <div class="col-lg-6" id="v-step-characteristic">
+              <CharacteristicSelector
+                path="characteristic"
+                ref="characteristicSelector"
+                label="component.variable.characteristic.characteristic"
+                :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
+                v-model:selected="modalFormLogic.form.value.characteristic"
+                :multiple="false"
+                :required="true"
+                @select="updateCharacteristic"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showCharacteristicCreateForm"
+                :helpMessage="$t('component.variable.characteristic.characteristic-help')"
+                :searchMethod="searchCharacteristics"
+                :itemLoadingMethod="loadCharacteristic"
+                :conversionMethod="objectToSelectNode"
+                noResultsText="VariableForm.no-characteristic"
+              />
+            <AgroportalCharacteristicForm
               ref="characteristicForm"
               ontologies="entities"
               @onCreate="onCharacteristicCreated"
               @onUpdate="onCharacteristicCreated"
             />
-        </div>
+          </div>
 
-        <!-- SPECIES (facultatif) -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-species">
-          <opensilex-SpeciesSelector
-            v-if="!isGermplasmMenuExcluded"
-            path="species"                                
-            label="component.variable.species.species"
-            :placeholder="$t('component.variable.species.select-multiple-placeholder')"
-            :multiple="true"
-            :checkable="true"
-            v-model:selected="form.species"
-          />
-        </div>
+          <!-- SPECIES -->
+          <div class="col-lg-6" id="v-step-species">
+              <SpeciesSelector
+                v-if="!isGermplasmMenuExcluded"
+                label="component.variable.species.species"
+                :placeholder="$t('component.variable.species.select-multiple-placeholder')"
+                :multiple="true"
+                :checkable="true"
+                v-model:selected="modalFormLogic.form.value.species"
+              />
+          </div>
 
-        <!-- METHOD -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-method">
-          <opensilex-MethodSelector
-            path="method"                                
-            ref="methodSelector"
-            label="component.variable.method.method"
-            :placeholder="$t('component.variable.method.method-placeholder')"
-            :multiple="false"
-            :required="true"                             
-            v-model:selected="form.method"
-            :helpMessage="$t('component.variable.method.method-help')"
-            noResultsText="VariableForm.no-method"
-            :actionHandler="editMode ? undefined : showMethodCreateForm"
-            @select="updateMethod"
-            :searchMethod="searchMethods"
-            :itemLoadingMethod="loadMethod"
-            :conversionMethod="objectToSelectNode"
-            :disabled="false"
-          />
-            <opensilex-AgroportalMethodForm
+          <!-- METHOD -->
+          <div class="col-lg-6" id="v-step-method">
+              <MethodSelector
+                path="method"
+                ref="methodSelector"
+                label="component.variable.method.method"
+                :placeholder="$t('component.variable.method.method-placeholder')"
+                :multiple="false"
+                :required="true"
+                v-model:selected="modalFormLogic.form.value.method"
+                :helpMessage="$t('component.variable.method.method-help')"
+                noResultsText="VariableForm.no-method"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showMethodCreateForm"
+                @select="updateMethod"
+                :searchMethod="searchMethods"
+                :itemLoadingMethod="loadMethod"
+                :conversionMethod="objectToSelectNode"
+              />
+            <AgroportalMethodForm
               ref="methodForm"
               ontologies="entities"
               @onCreate="onMethodCreated"
               @onUpdate="onMethodCreated"
             />
-        </div>
+          </div>
 
-        <!-- TRAIT BUTTON -->
-        <div class="col-lg-6 variableFormSelectors" id="traitButton">
-          <opensilex-Button
-            label="component.variable.trait-button"
-            helpMessage="component.variable.trait-button-help"
-            @click="showTraitForm"
-            :small="false"
-            icon="fa#globe-americas"
-            class="greenThemeColor"
+          <!-- TRAIT BUTTON -->
+          <div class="col-lg-6" id="traitButton">
+            <n-form-item>
+              <Button
+                label="component.variable.trait-button"
+                helpMessage="component.variable.trait-button-help"
+                @click="showTraitForm"
+                :small="false"
+                icon="fa#globe-americas"
+                class="greenThemeColor"
+              />
+            </n-form-item>
+          </div>
+
+          <WizardForm
+            ref="traitForm"
+            :steps="traitSteps"
+            createTitle="VariableForm.trait-form-create-title"
+            editTitle="VariableForm.trait-form-edit-title"
+            modalSize="full"
+            :static="false"
+            :initForm="getEmptyTraitForm"
+            :createAction="updateVariableTrait"
+            :updateAction="updateVariableTrait"
           />
-        </div>
 
-        <opensilex-WizardForm
-          ref="traitForm"
-          :steps="traitSteps"
-          createTitle="VariableForm.trait-form-create-title"
-          editTitle="VariableForm.trait-form-edit-title"
-          modalSize="full"
-          :static="false"
-          :initForm="getEmptyTraitForm"
-          :createAction="updateVariableTrait"
-          :updateAction="updateVariableTrait"
-        />
-
-        <!-- UNIT -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-unit">
-          <opensilex-UnitSelector
-            path="unit"                                 
-            ref="unitSelector"
-            label="component.variable.unit.unit"
-            :placeholder="$t('component.variable.unit.unit-placeholder')"
-            :multiple="false"
-            :required="true"                             
-            v-model:selected="form.unit"
-            @select="updateUnit"
-            :helpMessage="$t('component.variable.unit.unit-help')"
-            :actionHandler="editMode ? undefined : showUnitCreateForm"
-            :searchMethod="searchUnits"
-            :itemLoadingMethod="loadUnit"
-            :conversionMethod="objectToSelectNode"
-            noResultsText="VariableForm.no-unit"
-            :disabled="false"
-          />
-            <opensilex-AgroportalUnitForm
+          <!-- UNIT -->
+          <div class="col-lg-6" id="v-step-unit">
+              <UnitSelector
+                path="unit"
+                ref="unitSelector"
+                label="component.variable.unit.unit"
+                :placeholder="$t('component.variable.unit.unit-placeholder')"
+                :multiple="false"
+                :required="true"
+                v-model:selected="modalFormLogic.form.value.unit"
+                @select="updateUnit"
+                :helpMessage="$t('component.variable.unit.unit-help')"
+                :actionHandler="modalFormLogic.isEditMode.value ? undefined : showUnitCreateForm"
+                :searchMethod="searchUnits"
+                :itemLoadingMethod="loadUnit"
+                :conversionMethod="objectToSelectNode"
+                noResultsText="VariableForm.no-unit"
+              />
+            <AgroportalUnitForm
               ref="unitForm"
               ontologies="unit"
               @onCreate="onUnitCreated"
               @onUpdate="onUnitCreated"
             />
-        </div>
-      </div>
-
-      <hr />
-
-      <div class="row">
-        <!-- NAME -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-name">
-          <n-form-item :label="$t('component.common.name')" path="name">
-            <opensilex-InputForm
-              v-model:value="form.name"
-              type="text"
-              :required="true"
-            />
-          </n-form-item>
+          </div>
         </div>
 
-        <!-- ALT NAME -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-alt">
-          <opensilex-InputForm
-            v-model:value="form.alternative_name"
-            label="component.variable.altName"
-            type="text"
-          />
-        </div>
+        <hr />
 
-        <!-- DATATYPE -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-datatype">
-          <!-- Si VariableDataTypeSelector utilise FormSelector en interne,
-               donner la prop `path="datatype"`.
-               Sinon on l’enveloppe comme ci-dessous. -->
-          <!-- <n-form-item :label="$t('component.variable.dataType.data-type')" path="datatype"> -->
-            <opensilex-VariableDataTypeSelector
-              path="datatype"
-              v-model:selected="form.datatype"
-              :label="'component.variable.dataType.data-type'"
-              :placeholder="$t('component.variable.dataType.datatype-placeholder')"
-              :required="true"
-              :helpMessage="$t('component.variable.dataType.datatype-help')"
-              :itemLoadingMethod="loadDataType"
-              :conversionMethod="objectToSelectNode"
-              :disabled="hasLinkedData"
-              :options="datatypesNodes"
-            />
+        <div class="row">
+          <!-- NAME -->
+          <div class="col-lg-6" id="v-step-name">
+            <n-form-item path="name">
+              <InputForm
+                v-model:value="modalFormLogic.form.value.name"
+                label="component.common.name"
+                type="text"
+                :required="true"
+              />
+            </n-form-item>
+          </div>
 
-          <!-- </n-form-item> -->
-        </div>
+          <!-- ALT NAME -->
+          <div class="col-lg-6" id="v-step-alt">
+            <n-form-item>
+              <InputForm
+                v-model:value="modalFormLogic.form.value.alternative_name"
+                label="component.variable.altName"
+                type="text"
+              />
+            </n-form-item>
+          </div>
 
-        <!-- TIME INTERVAL (pas requis) -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-time-interval">
-          <opensilex-VariableTimeIntervalSelector
-            label="component.variable.timeInterval.time-interval"
-            v-model:selected="form.time_interval"
-            :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
-          />
-        </div>
+          <!-- DATATYPE -->
+          <div class="col-lg-6" id="v-step-datatype">
+              <VariableDataTypeSelector
+                path="datatype"
+                v-model:selected="modalFormLogic.form.value.datatype"
+                :label="'component.variable.dataType.data-type'"
+                :placeholder="$t('component.variable.dataType.datatype-placeholder')"
+                :required="true"
+                :helpMessage="$t('component.variable.dataType.datatype-help')"
+                :itemLoadingMethod="loadDataType"
+                :conversionMethod="objectToSelectNode"
+                :options="datatypesNodes"
+              />
+          </div>
 
-        <!-- SAMPLING INTERVAL -->
-        <div class="col-lg-6 variableFormSelectors" id="v-step-sampling-interval">
-          <opensilex-FormSelector
-            path="sampling_interval"                      
-            label="component.variable.samplingInterval.sampling-interval"
-            v-model:selected="form.sampling_interval"
-            :multiple="false"
-            :options="sampleList"
-            :placeholder="$t('component.variable.samplingInterval.sampling-interval-placeholder')"
-            :helpMessage="$t('component.variable.samplingInterval.sampling-interval-help')"
-          />
-        </div>
+          <!-- TIME INTERVAL -->
+          <div class="col-lg-6" id="v-step-time-interval">
+              <VariableTimeIntervalSelector
+                label="component.variable.timeInterval.time-interval"
+                v-model:selected="modalFormLogic.form.value.time_interval"
+                :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
+              />
+          </div>
 
-        <!-- DESCRIPTION -->
-        <div class="col-xl-12" id="v-step-description">
-          <opensilex-TextAreaForm
-            v-model:value="form.description"
-            label="component.common.description"
-            @keydown.enter.stop
-          />
+          <!-- SAMPLING INTERVAL -->
+          <div class="col-lg-6" id="v-step-sampling-interval">
+              <FormSelector
+                label="component.variable.samplingInterval.sampling-interval"
+                v-model:selected="modalFormLogic.form.value.sampling_interval"
+                :multiple="false"
+                :options="sampleList"
+                :placeholder="$t('component.variable.samplingInterval.sampling-interval-placeholder')"
+                :helpMessage="$t('component.variable.samplingInterval.sampling-interval-help')"
+              />
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="col-xl-12" id="v-step-description">
+            <n-form-item>
+              <TextAreaForm
+                v-model:value="modalFormLogic.form.value.description"
+                label="component.common.description"
+                @keydown.enter.stop
+              />
+            </n-form-item>
+          </div>
         </div>
-      </div>
-    </n-form>
-  </div>
+      </n-form>
+    </div>
+
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch, inject } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, inject, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NForm, NFormItem } from 'naive-ui'
 import {
-  CharacteristicCreationDTO,
-  EntityCreationDTO,
-  InterestEntityCreationDTO,
-  MethodCreationDTO,
-  NamedResourceDTO,
-  UnitCreationDTO,
   VariableDatatypeDTO,
   VariablesService
 } from 'opensilex-core'
-import { DataService } from 'opensilex-core/api/data.service'
-import { VariableCreationDTO } from 'opensilex-core/model/variableCreationDTO'
-import type { ValidationObserverInstance } from '@vee-validate/components'
-import type { HttpResponse, OpenSilexResponse } from 'opensilex-core/HttpResponse'
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin"
-import { requiredTrimmed } from  "../../../models/FormFieldsFormatter"
-import AgroportalEntityForm from './../agroportal/AgroportalEntityForm.vue'
-import AgroportalEntityOfInterestForm from './../agroportal/AgroportalEntityOfInterestForm.vue'
-import AgroportalCharacteristicForm from './../agroportal/AgroportalCharacteristicForm.vue'
-import AgroportalMethodForm from './../agroportal/AgroportalMethodForm.vue'
-import AgroportalUnitForm from './../agroportal/AgroportalUnitForm.vue'
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import { requiredTrimmed } from '@/models/FormFieldsFormatter'
 
-const props = defineProps({
-  editMode: Boolean,
-  uriGenerated: { type: Boolean, default: true },
-  form: {
-    type: Object as () => VariableCreationDTO,
-    default: () => ({
-      uri: undefined,
-      alternative_name: undefined,
-      name: undefined,
-      entity: undefined,
-      entity_of_interest: undefined,
-      characteristic: undefined,
-      description: undefined,
-      time_interval: undefined,
-      sampling_interval: undefined,
-      datatype: undefined,
-      trait: undefined,
-      trait_name: undefined,
-      method: undefined,
-      unit: undefined,
-      exact_match: [],
-      close_match: [],
-      broad_match: [],
-      narrow_match: [],
-      species: undefined,
-      linked_data_nb: 0
-    })
-  }
-})
+import Tutorial from '@/components/common/views/Tutorial.vue'
+import UriForm from '@/components/common/forms/UriForm.vue'
+import InputForm from '@/components/common/forms/InputForm.vue'
+import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
+import FormSelector from '@/components/common/forms/FormSelector.vue'
+import FormHeader from '@/components/common/forms/FormHeader.vue'
+import FormFooter from '@/components/common/forms/FormFooter.vue'
+import Button from '@/components/common/buttons/Button.vue'
+import WizardForm from '@/components/common/forms/WizardForm.vue'
+import Modal from '@/components/common/views/Modal.vue'
+import useModalFormLogic from '@/composables/useModalFormLogic'
 
-const emit = defineEmits(['onCreate','onUpdate'])
+import EntitySelector from './EntitySelector.vue'
+import InterestEntitySelector from './InterestEntitySelector.vue'
+import CharacteristicSelector from './CharacteristicSelector.vue'
+import MethodSelector from './MethodSelector.vue'
+import UnitSelector from './UnitSelector.vue'
+import VariableDataTypeSelector from './VariableDataTypeSelector.vue'
+import VariableTimeIntervalSelector from './VariableTimeIntervalSelector.vue'
 
-/* Services */
-const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
-const $store = inject<any>('$store')!
+import SpeciesSelector from '@/components/species/SpeciesSelector.vue'
+import AgroportalEntityForm from '@/components/variables/agroportal/AgroportalEntityForm.vue'
+import AgroportalEntityOfInterestForm from '@/components/variables/agroportal/AgroportalEntityOfInterestForm.vue'
+import AgroportalCharacteristicForm from '@/components/variables/agroportal/AgroportalCharacteristicForm.vue'
+import AgroportalMethodForm from '@/components/variables/agroportal/AgroportalMethodForm.vue'
+import AgroportalUnitForm from '@/components/variables/agroportal/AgroportalUnitForm.vue'
+import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
+import {VariableUpdateDTO} from "opensilex-core/model/variableUpdateDTO";
+
+//#region Public
+const emit = defineEmits<{
+  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
+  (e: 'onSuccess'): void
+}>()
+
+const props = defineProps<{
+  createTitle: string,
+  editTitle: string
+}>()
+//#endregion
+
+//#region Private
+
+//#region Plugin and services
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const service = opensilex.getService<VariablesService>('opensilex.VariablesService')
 const { t, locale } = useI18n()
-const service = $opensilex.getService<VariablesService>('opensilex.VariablesService')
-const dataService = $opensilex.getService<DataService>('opensilex-core.DataService')
+//#endregion
 
-/* Refs */
-const validatorRef = ref<InstanceType<typeof ValidationObserverInstance>>()
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+
+//#region Datas & computed
+let uriGenerated = ref<boolean>(true)
 const variableTutorial = ref()
 const entitySelector = ref()
 const interestEntitySelector = ref()
@@ -363,254 +367,15 @@ const unitForm = ref()
 const savedVariable = ref<VariableCreationDTO>()
 const traitSteps = [{ component: 'opensilex-TraitForm' }]
 
-/* Datatypes */
 const datatypes = ref<VariableDatatypeDTO[]>([])
 const datatypesNodes = ref<any[]>([])
-
-/* Lists */
-const periodList = ref([
-  'millisecond','second','minute','hour','day','week','month','year','unique'
-].map(period => ({ id: t(`component.variable.dimensionValues.${period}`), label: t(`component.variable.dimensionValues.${period}`) })))
 
 const sampleList = ref([
   'mm','cm','m','km','field','region'
 ].map(sample => ({ id: t(`component.variable.dimensionValues.${sample}`), label: t(`component.variable.dimensionValues.${sample}`) })))
 
-/* Autogenerated name */
-const selectedEntityName = ref<string>()
-const selectedCharacteristicName = ref<string>()
-const selectedMethodName = ref<string>()
-const selectedUnitName = ref<string>()
+const isGermplasmMenuExcluded = computed(() => opensilex.getConfig().menuExclusions.includes('germplasm'))
 
-function updateEntity(val: any) {
-  selectedEntityName.value = val?.label
-  updateName()
-}
-function updateCharacteristic(val: any) {
-  selectedCharacteristicName.value = val?.label
-  updateName()
-}
-function updateMethod(val: any) {
-  selectedMethodName.value = val?.label
-  updateName()
-}
-function updateUnit(val: any) {
-  selectedUnitName.value = val?.label
-  updateName()
-}
-
-function updateName() {
-  if (props.editMode) return
-
-  const parts: string[] = []
-  if (selectedEntityName.value) parts.push(selectedEntityName.value.split(' ')[0])
-  if (selectedCharacteristicName.value) parts.push(selectedCharacteristicName.value)
-  if (selectedMethodName.value) parts.push(selectedMethodName.value)
-  if (selectedUnitName.value) parts.push(selectedUnitName.value)
-
-  if (parts.length) {
-    props.form.name = parts.join('_')
-    props.form.alternative_name = parts.slice(0, 2).join('_')
-  } else {
-    props.form.name = undefined
-    props.form.alternative_name = undefined
-  }
-}
-
-/* Trait */
-function getEmptyTraitForm(){ return { trait: props.form.trait, trait_name: props.form.trait_name } }
-function updateVariableTrait(form:any){
-  const bothFilled = !!form.trait && !!form.trait_name
-  if(bothFilled || (!form.trait && !form.trait_name)){
-    props.form.trait = form.trait; props.form.trait_name = form.trait_name
-  }
-}
-
-/* Datatypes load */
-function loadDatatypes () {
-  if (!datatypes.value.length) {
-    service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
-      datatypes.value = res.response.result               // <-- DTOs
-      updateDatatypeNodes()
-    })
-  } else {
-    updateDatatypeNodes()
-  }
-}
-
-function updateDatatypeNodes () {
-  datatypesNodes.value = datatypes.value.map(dto => ({
-    id: dto.uri,
-    label: capitalize(t(dto.name))
-  }))
-}
-
-async function loadDataType (uris: string[]) {
-  if (!datatypes.value.length) {
-    await service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
-      datatypes.value = res.response.result
-      updateDatatypeNodes()
-    })
-  }
-  const set = new Set(uris)
-  return datatypes.value.filter(dto => set.has(dto.uri))   // <-- DTOs back
-}
-
-/* Helpers */
-function objectToSelectNode(dto:any){ return dto ? { id: dto.uri, label: dto.name } : null }
-function capitalize(str:string){ return str.charAt(0).toUpperCase() + str.slice(1) }
-
-const langUnwatch = watch(() => locale.value, loadDatatypes)
-
-onMounted(() => {
-  loadDatatypes()
-})
-onBeforeUnmount(() => {
-  langUnwatch()
-})
-
-
-/* Tutorial helpers */
-function reset(){ 
-  validatorRef.value?.reset(); 
-  if(variableTutorial.value && !props.editMode){ 
-    variableTutorial.value.stop() 
-  } 
-}
-
-function validate(){ 
-  return validatorRef.value?.validate() 
-}
-
-function tutorial(){ 
-  savedVariable.value = JSON.parse(JSON.stringify(props.form)); 
-  variableTutorial.value?.start() 
-}
-
-function continueFormEditing(){ 
-  if(savedVariable.value){ 
-    Object.assign(props.form, savedVariable.value) 
-  } 
-}
-
-/* Computeds */
-const isGermplasmMenuExcluded = computed(() => $opensilex.getConfig().menuExclusions.includes('germplasm'))
-const hasLinkedData = computed(() => props.form?.linked_data_nb > 0)
-
-/* API calls (search/load) */
-function searchEntities(name:string,page:number,pageSize:number){ 
-  return service.searchEntities(name, ['name=asc'], page, pageSize) 
-}
-
-function loadEntity(uris:Array<string|{uri:string}>){
-  if(!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if(typeof item === 'object' && 'uri' in item){ 
-    return [props.form.entity] 
-  }
-  return service.getEntity(item).then(
-    res => [res.response.result]
-  )
-}
-function searchInterestEntities(name:string,page:number,pageSize:number){ 
-  return service.searchInterestEntity(name, ['name=asc'], page, pageSize) 
-}
-
-function loadInterestEntity(uris:Array<string|{uri:string}>){
-  if(!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if(typeof item === 'object' && 'uri' in item){ 
-    return [props.form.entity_of_interest] 
-  }
-  return service.getInterestEntity(item).then(res => [res.response.result])
-}
-
-function searchCharacteristics(name:string,page:number,pageSize:number){
-  return service.searchCharacteristics(name, ['name=asc'], page, pageSize)
-}
-
-function loadCharacteristic(uris:Array<string|{uri:string}>){
-  if(!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if(typeof item === 'object' && 'uri' in item){
-    return [props.form.characteristic] 
-  }
-  return service.getCharacteristic(item).then(res => [res.response.result])
-}
-
-function searchMethods(name:string,page:number,pageSize:number){ 
-  return service.searchMethods(name, ['name=asc'], page, pageSize) 
-}
-
-function loadMethod(uris:Array<string|{uri:string}>){
-  if(!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if(typeof item === 'object' && 'uri' in item){ 
-    return [props.form.method] 
-  }
-  return service.getMethod(item).then(res => [res.response.result])
-}
-
-function searchUnits(name:string,page:number,pageSize:number){ 
-  return service.searchUnits(name, ['name=asc'], page, pageSize) 
-}
-
-function loadUnit(uris:Array<string|{uri:string}>){
-  if(!uris || uris.length !== 1) return undefined
-  const item = uris[0]
-  if(typeof item === 'object' && 'uri' in item){ 
-    return [props.form.unit] 
-  }
-  return service.getUnit(item).then(res => [res.response.result])
-}
-
-function onEntityCreated(newEntityForm: any) {
-  // newEntityForm vient d'AgroportalCreateForm > contient au minimum `uri` et `name`
-  if (!newEntityForm?.uri) return
-  // 1. on met l’URI dans le formulaire de la variable
-  props.form.entity = newEntityForm.uri
-
-  // 2. on met à jour le nom auto-généré de la variable :
-  selectedEntityName.value = newEntityForm.name
-  updateName()
-}
-
-function onEntityOfInterestCreated(newInterestEntityForm: any) {
-  if (!newInterestEntityForm?.uri) return
-  props.form.entity_of_interest = newInterestEntityForm.uri
-}
-
-function onCharacteristicCreated(newCharacteristicForm: any) {
-  if (!newCharacteristicForm?.uri) return
-  props.form.characteristic = newCharacteristicForm.uri
-  selectedCharacteristicName.value = newCharacteristicForm.name
-  updateName()
-}
-
-function onMethodCreated(newMethodForm: any) {
-  if (!newMethodForm?.uri) return
-  props.form.method = newMethodForm.uri
-  selectedMethodName.value = newMethodForm.name
-  updateName()
-}
-
-function onUnitCreated(newUnitForm: any) {
-  if (!newUnitForm?.uri) return
-  props.form.unit = newUnitForm.uri
-  selectedUnitName.value = newUnitForm.name
-  updateName()
-}
-
-/* Create modals */
-function showEntityCreateForm(){ entityForm.value?.showCreateForm() }
-function showInterestEntityCreateForm(){ interestEntityForm.value?.showCreateForm() }
-function showCharacteristicCreateForm(){ characteristicForm.value?.showCreateForm() }
-function showMethodCreateForm(){ methodForm.value?.showCreateForm() }
-function showUnitCreateForm(){ unitForm.value?.showCreateForm() }
-function showTraitForm(){ props.editMode ? traitForm.value?.showEditForm(getEmptyTraitForm()) : traitForm.value?.showCreateForm() }
-
-/* NForm rules */
-const formRef = ref()
 const rules = computed(() => ({
   entity:        { required: true, message: t('validations.required_if', { _field_: t('component.variable.entity.entity') }), trigger: ['change','blur'] },
   characteristic:{ required: true, message: t('validations.required_if', { _field_: t('component.variable.characteristic.characteristic') }), trigger: ['change','blur'] },
@@ -619,16 +384,7 @@ const rules = computed(() => ({
   name:          requiredTrimmed('component.common.name'),
   datatype:      { required: true, message: t('validations.required_if', { _field_: t('component.variable.dataType.data-type') }), trigger: ['change','blur'] },
 }))
-
-async function validateForm() {
-  try { 
-    await formRef.value?.validate();
-    return true 
-  } catch { 
-    return false 
-  }
-}
-
+//#region tutorial steps
 const tutorialSteps = [
   {
     target: '#v-step-global .v-step-uri' ,
@@ -733,17 +489,313 @@ const tutorialSteps = [
     params: { placement: 'top' }
   }
 ]
+//#endregion
 
-defineExpose({ 
-  validate: validateForm,
-  tutorial
+//#endregion
+
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<VariableCreationDTO>({
+  modalRef,
+  nFormRef: formRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  addTitle: props.createTitle,
+  editTitle: props.editTitle,
+  onCreate: (res) => emit('onCreate', res),
+  onUpdate: (res) => emit('onUpdate', res),
+  onSuccess: () => emit('onSuccess'),
+})
+//#endregion
+
+//#region Methods
+
+//#region Form lifecycle
+function getEmptyForm(): VariableCreationDTO {
+  return {
+    uri: null,
+    alternative_name: null,
+    name: null,
+    entity: null,
+    entity_of_interest: null,
+    characteristic: null,
+    description: null,
+    time_interval: null,
+    sampling_interval: null,
+    datatype: null,
+    trait: null,
+    trait_name: null,
+    method: null,
+    unit: null,
+    exact_match: [],
+    close_match: [],
+    broad_match: [],
+    narrow_match: [],
+    species: null,
+    linked_data_nb: 0
+  }
+}
+
+async function reset(): Promise<void> {
+  uriGenerated.value = true
+  if (variableTutorial.value && !modalFormLogic.isEditMode.value) {
+    variableTutorial.value.stop()
+  }
+}
+
+async function create(formData: VariableCreationDTO) {
+  return await service.createVariable(formData)
+}
+
+async function update(formData: VariableUpdateDTO) {
+  return await service.updateVariable(formData)
+}
+//#endregion
+
+//#region Autogenerated name
+const selectedEntityName = ref<string>()
+const selectedCharacteristicName = ref<string>()
+const selectedMethodName = ref<string>()
+const selectedUnitName = ref<string>()
+
+function updateEntity(val: any) {
+  selectedEntityName.value = val?.label
+  updateName()
+}
+
+function updateCharacteristic(val: any) {
+  selectedCharacteristicName.value = val?.label
+  updateName()
+}
+
+function updateMethod(val: any) {
+  selectedMethodName.value = val?.label
+  updateName()
+}
+
+function updateUnit(val: any) {
+  selectedUnitName.value = val?.label
+  updateName()
+}
+
+function updateName() {
+  if (modalFormLogic.isEditMode.value) return
+
+  const parts: string[] = []
+  if (selectedEntityName.value) parts.push(selectedEntityName.value.split(' ')[0])
+  if (selectedCharacteristicName.value) parts.push(selectedCharacteristicName.value)
+  if (selectedMethodName.value) parts.push(selectedMethodName.value)
+  if (selectedUnitName.value) parts.push(selectedUnitName.value)
+
+  if (parts.length) {
+    modalFormLogic.form.value.name = parts.join('_')
+    modalFormLogic.form.value.alternative_name = parts.slice(0, 2).join('_')
+  } else {
+    modalFormLogic.form.value.name = null
+    modalFormLogic.form.value.alternative_name = null
+  }
+}
+//#endregion
+
+//#region Trait
+function getEmptyTraitForm() {
+  return { trait: modalFormLogic.form.value.trait, trait_name: modalFormLogic.form.value.trait_name }
+}
+
+function updateVariableTrait(form: any) {
+  const bothFilled = !!form.trait && !!form.trait_name
+  if (bothFilled || (!form.trait && !form.trait_name)) {
+    modalFormLogic.form.value.trait = form.trait
+    modalFormLogic.form.value.trait_name = form.trait_name
+  }
+}
+
+function showTraitForm() {
+  modalFormLogic.isEditMode.value
+    ? traitForm.value?.showEditForm(getEmptyTraitForm())
+    : traitForm.value?.showCreateForm()
+}
+//#endregion
+
+//#region Datatypes
+function loadDatatypes() {
+  if (!datatypes.value.length) {
+    service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
+      datatypes.value = res.response.result
+      updateDatatypeNodes()
+    })
+  } else {
+    updateDatatypeNodes()
+  }
+}
+
+function updateDatatypeNodes() {
+  datatypesNodes.value = datatypes.value.map(dto => ({
+    id: dto.uri,
+    label: capitalize(t(dto.name))
+  }))
+}
+
+async function loadDataType(uris: string[]) {
+  if (!datatypes.value.length) {
+    await service.getDatatypes().then((res: HttpResponse<OpenSilexResponse<VariableDatatypeDTO[]>>) => {
+      datatypes.value = res.response.result
+      updateDatatypeNodes()
+    })
+  }
+  const set = new Set(uris)
+  return datatypes.value.filter(dto => set.has(dto.uri))
+}
+//#endregion
+
+//#region Helpers
+function objectToSelectNode(dto: any) { return dto ? { id: dto.uri, label: dto.name } : null }
+function capitalize(str: string) { return str.charAt(0).toUpperCase() + str.slice(1) }
+//#endregion
+
+//#region Tutorial
+function continueFormEditing() {
+  if (savedVariable.value) {
+    Object.assign(modalFormLogic.form.value, savedVariable.value)
+  }
+}
+//#endregion
+
+//#region API calls (search / load)
+function searchEntities(name: string, page: number, pageSize: number) {
+  return service.searchEntities(name, ['name=asc'], page, pageSize)
+}
+
+function loadEntity(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined
+  const item = uris[0]
+  if (typeof item === 'object' && 'uri' in item) {
+    return [modalFormLogic.form.value.entity]
+  }
+  return service.getEntity(item).then(res => [res.response.result])
+}
+
+function searchInterestEntities(name: string, page: number, pageSize: number) {
+  return service.searchInterestEntity(name, ['name=asc'], page, pageSize)
+}
+
+function loadInterestEntity(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined
+  const item = uris[0]
+  if (typeof item === 'object' && 'uri' in item) {
+    return [modalFormLogic.form.value.entity_of_interest]
+  }
+  return service.getInterestEntity(item).then(res => [res.response.result])
+}
+
+function searchCharacteristics(name: string, page: number, pageSize: number) {
+  return service.searchCharacteristics(name, ['name=asc'], page, pageSize)
+}
+
+function loadCharacteristic(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined
+  const item = uris[0]
+  if (typeof item === 'object' && 'uri' in item) {
+    return [modalFormLogic.form.value.characteristic]
+  }
+  return service.getCharacteristic(item).then(res => [res.response.result])
+}
+
+function searchMethods(name: string, page: number, pageSize: number) {
+  return service.searchMethods(name, ['name=asc'], page, pageSize)
+}
+
+function loadMethod(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined
+  const item = uris[0]
+  if (typeof item === 'object' && 'uri' in item) {
+    return [modalFormLogic.form.value.method]
+  }
+  return service.getMethod(item).then(res => [res.response.result])
+}
+
+function searchUnits(name: string, page: number, pageSize: number) {
+  return service.searchUnits(name, ['name=asc'], page, pageSize)
+}
+
+function loadUnit(uris: Array<string | { uri: string }>) {
+  if (!uris || uris.length !== 1) return undefined
+  const item = uris[0]
+  if (typeof item === 'object' && 'uri' in item) {
+    return [modalFormLogic.form.value.unit]
+  }
+  return service.getUnit(item).then(res => [res.response.result])
+}
+//#endregion
+
+//#region Agroportal entity creation handlers
+function onEntityCreated(newEntityForm: any) {
+  if (!newEntityForm?.uri) return
+  modalFormLogic.form.value.entity = newEntityForm.uri
+  selectedEntityName.value = newEntityForm.name
+  updateName()
+}
+
+function onEntityOfInterestCreated(newInterestEntityForm: any) {
+  if (!newInterestEntityForm?.uri) return
+  modalFormLogic.form.value.entity_of_interest = newInterestEntityForm.uri
+}
+
+function onCharacteristicCreated(newCharacteristicForm: any) {
+  if (!newCharacteristicForm?.uri) return
+  modalFormLogic.form.value.characteristic = newCharacteristicForm.uri
+  selectedCharacteristicName.value = newCharacteristicForm.name
+  updateName()
+}
+
+function onMethodCreated(newMethodForm: any) {
+  if (!newMethodForm?.uri) return
+  modalFormLogic.form.value.method = newMethodForm.uri
+  selectedMethodName.value = newMethodForm.name
+  updateName()
+}
+
+function onUnitCreated(newUnitForm: any) {
+  if (!newUnitForm?.uri) return
+  modalFormLogic.form.value.unit = newUnitForm.uri
+  selectedUnitName.value = newUnitForm.name
+  updateName()
+}
+//#endregion
+
+//#region Create modals
+function showEntityCreateForm() { entityForm.value?.showCreateForm() }
+function showInterestEntityCreateForm() { interestEntityForm.value?.showCreateForm() }
+function showCharacteristicCreateForm() { characteristicForm.value?.showCreateForm() }
+function showMethodCreateForm() { methodForm.value?.showCreateForm() }
+function showUnitCreateForm() { unitForm.value?.showCreateForm() }
+//#endregion
+
+//#endregion
+
+//#region Watchers & lifecycle
+const langUnwatch = watch(() => locale.value, loadDatatypes)
+
+onMounted(() => {
+  loadDatatypes()
 })
 
+onBeforeUnmount(() => {
+  langUnwatch()
+})
+//#endregion
+
+//#endregion
+
+defineExpose({
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm
+})
 </script>
 
 <style scoped>
 #traitButton { padding-top: 23px; }
-.variableFormSelectors { margin-bottom: 15px; }
 </style>
 
 <i18n>

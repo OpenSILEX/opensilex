@@ -18,7 +18,7 @@
             :uri.sync="modalFormLogic.form.value.uri"
             label="component.common.uri"
             helpMessage="component.common.uri-help-message"
-            :editMode="modalFormLogic.editMode.value"
+            :editMode="modalFormLogic.isEditMode.value"
             :generated.sync="uriGenerated"
         ></UriForm>
       </n-form-item>
@@ -145,7 +145,7 @@ const rules = computed(() => ({
 const parentOptionsReady = computed(() => parentOrganizations.value.length > 0);
 
 const parentOptions = computed(() => {
-  if (modalFormLogic.editMode.value) {
+  if (modalFormLogic.isEditMode.value) {
     return opensilex.buildTreeFromDag(parentOrganizations.value, {
       disableSubTree: modalFormLogic.form.value.uri,
     });

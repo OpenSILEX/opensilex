@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-3">
-    <opensilex-PageHeader
+    <PageHeader
       icon="fa#seedling"
       :hasIcon="true"
       :title="name"
@@ -8,7 +8,7 @@
       class="detail-element-header"
     />
 
-    <opensilex-PageActions :returnButton="true">
+    <PageActions :returnButton="true">
       <nav class="tabs mb-3">
         <button
           v-for="tab in tabs"
@@ -34,9 +34,9 @@
           </span>
         </button>
       </nav>
-    </opensilex-PageActions>
+    </PageActions>
 
-    <opensilex-PageContent>
+    <PageContent>
     <component
       v-if="currentTabComponent && uri"
       :is="currentTabComponent"
@@ -44,17 +44,13 @@
       v-bind="currentTabProps"
       v-on="currentTabListeners"
     />
-    </opensilex-PageContent>
+    </PageContent>
 
-    <opensilex-ModalForm
+    <ProvenanceForm
       ref="provenanceForm"
-      component="opensilex-ProvenanceForm"
       :createTitle="t('ProvenanceDetailsPage.add')"
       :editTitle="t('ProvenanceDetailsPage.update')"
-      icon="fa#seedling"
-      modalSize="lg"
       @onUpdate="loadProvenance"
-      :successMessage="successMessage"
     />
   </div>
 </template>
@@ -82,6 +78,10 @@ import type {
 } from 'opensilex-core/index'
 import type { AnnotationsService } from 'opensilex-core/api/annotations.service'
 import type { DocumentsService } from 'opensilex-core/api/documents.service'
+import PageHeader from '@/components/layout/PageHeader.vue'
+import PageActions from '@/components/layout/PageActions.vue'
+import PageContent from '@/components/layout/PageContent.vue'
+import ProvenanceForm from './form/ProvenanceForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -106,7 +106,7 @@ const provenance = ref<ProvenanceGetDTO>({
   prov_agent: []
 } as ProvenanceGetDTO)
 
-const provenanceForm = ref<any>(null)
+const provenanceForm = ref<InstanceType<typeof ProvenanceForm>>(null)
 
 // Services
 const dataService = opensilex.getService<DataService>('opensilex.DataService')
@@ -429,10 +429,6 @@ async function deleteProvenance() {
       opensilex.errorHandler(error)
     }
   }
-}
-
-function successMessage(form: any) {
-  return t('ProvenanceDetailsPage.success-message') + ' ' + form.name
 }
 
 onMounted(() => {

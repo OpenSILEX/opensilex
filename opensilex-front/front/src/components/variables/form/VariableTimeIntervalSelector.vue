@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     :label="label"
     v-model:selected="timeIntervalURI"
     :options="periodList"
@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 // Props
 const props = defineProps<{

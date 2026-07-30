@@ -16,7 +16,7 @@
         <UriForm
           v-model:uri="modalFormLogic.form.value.uri"
           :label="t('DeviceForm.uri')"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
           v-model:generated="uriGenerated"
           :helpMessage="t('DeviceForm.uri-help')"
         />
@@ -30,7 +30,7 @@
           :helpMessage="t('DeviceForm.type-help')"
           :required="true"
           :multiple="false"
-          :disabled="modalFormLogic.editMode.value"
+          :disabled="modalFormLogic.isEditMode.value"
           :ignoreRoot="false"
           @select="typeSwitch($event.id, false)"
         />
@@ -110,7 +110,7 @@
           :relations="modalFormLogic.form.value.relations"
           :excludedProperties="excludedProperties"
           :baseType="baseType"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
         />
 
       <!-- metadata -->

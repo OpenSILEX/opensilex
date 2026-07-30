@@ -261,7 +261,7 @@ public class SiteLogic {
      * @param siteModel the site to get
      * @return The location observation model
      */
-    public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) throws NotFoundException{
+    public LocationObservationModel getSiteLocationObservationModel(SiteModel siteModel) {
         if(siteModel.getLocationObservationCollection() != null) {
             LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosqlV1, sparql, fs);
             return locationObservationLogic.getASpecificLocationObservation(siteModel.getLocationObservationCollection().getUri(), null, null);

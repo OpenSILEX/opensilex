@@ -437,6 +437,8 @@
             }
         },
         "annotation" : {
+            "add": "Ajouter une annotation",
+            "edit": "Éditer l'annotation",
             "details": "Détails de l'annotation",
             "motivation": "Motivation",
             "publisher": "Publieur",

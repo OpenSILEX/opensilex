@@ -69,7 +69,7 @@ const credentials = computed(() => store.state.credentials);
 
 
 let filter = ref("");
-const fields : Array<TableField> = [
+const fields: Array<TableField> = [
   {key: "last_name", label: "component.person.last-name", sortable: true},
   {key: "first_name", label: "component.person.first-name", sortable: true},
   {key: "email", label: "component.person.email", sortable: true},

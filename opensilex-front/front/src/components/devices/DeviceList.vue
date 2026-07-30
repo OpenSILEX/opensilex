@@ -998,7 +998,6 @@ en:
     alertSelectSize: The selection has too many lines, 1000 lines maximum
     addEvent: Add event
     add-multiple: Add events
-    addAnnotation: Add annotation
     addMove: Move
     showMap: Show in a map
     alertBadDeviceType: The selected type doesn't match with add variable
@@ -1044,7 +1043,6 @@ fr:
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
     addEvent: Ajouter un évènement
-    addAnnotation: Ajouter une annotation
     addMove: Déplacement
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable

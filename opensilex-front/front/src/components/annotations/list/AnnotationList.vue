@@ -2,10 +2,10 @@
   <div>
     <!-- Actions -->
     <div class="pageActionsBtns">
-      <opensilex-CreateButton
+      <CreateButton
         v-if="user.hasCredential(modificationCredentialId)"
-        :label="t('Annotation.add')"
-        @click="annotationModalForm?.showCreateForm?.([target])"
+        :label="t('component.annotation.add')"
+        @click="annotationFormRef?.showCreateForm?.([target])"
         class="createButton greenThemeColor"
       />
     </div>
@@ -33,9 +33,9 @@
     </n-space>
 
     <!-- Table -->
-    <opensilex-PageContent v-if="renderComponent">
+    <PageContent v-if="renderComponent">
         <template #default>
-            <opensilex-TableAsyncView
+            <TableAsyncView
                 ref="tableRef"
                 :searchMethod="search"
                 :fields="fields"
@@ -43,11 +43,11 @@
             >
                 <!-- colonnes -->
                 <template #cell(published)="{ data }">
-                    <opensilex-TextView :value="formatDate(data.item.published)" label="" />
+                    <TextView :value="formatDate(data.item.published)" label="" />
                 </template>
 
                 <template #cell(publisher)="{ data }">
-                    <opensilex-PersonContact
+                    <PersonContact
                         v-if="data.item.publisher && accountsByUri.get(data.item.publisher)"
                         :personContact="accountsByUri.get(data.item.publisher)"
                         :customDisplayableName="getAccountNames(data.item.publisher)"
@@ -55,7 +55,7 @@
                 </template>
 
                 <template #cell-description="{ data }">
-                    <opensilex-TextView v-if="data.item.description" :value="data.item.description" />
+                    <TextView v-if="data.item.description" :value="data.item.description" />
                 </template>
 
                 <template v-if="displayTargetColumn" #cell-targets="{ data }">
@@ -64,20 +64,20 @@
 
                 <template v-if="enableActions" #cell(actions)="{ data }">
                     <div class="action-group">
-                        <opensilex-DetailButton
+                        <DetailButton
                             v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
                             @click="showDetails(data)"
                             :label="t('Annotation.details')"
                             :title="t('Annotation.details')"
                             :small="true"
                         />
-                        <opensilex-EditButton
+                        <EditButton
                             v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
                             @click="editAnnotation(data.item)"
-                            :label="t('Annotation.edit')"
+                            :label="t('component.annotation.edit')"
                             :small="true"
                         />
-                        <opensilex-DeleteButton
+                        <DeleteButton
                             v-if="!deleteCredentialId || user.hasCredential(deleteCredentialId)"
                             @click="deleteAnnotation(data.item.uri)"
                             :label="t('Annotation.delete')"
@@ -85,12 +85,12 @@
                         />
                     </div>
                 </template>
-            </opensilex-TableAsyncView>
+            </TableAsyncView>
         </template>
-    </opensilex-PageContent>
+    </PageContent>
 
     <!-- Détails en modal -->
-    <opensilex-AnnotationDetails
+    <AnnotationDetails
       v-if="selectedAnnotation"
       :value="isModalVisible"
       :annotationDetails="selectedAnnotation"
@@ -98,8 +98,10 @@
     />
 
     <!-- Formulaire création/édition -->
-    <opensilex-AnnotationModalForm
-      ref="annotationModalForm"
+    <AnnotationForm
+      ref="annotationFormRef"
+      :createTitle="t('component.annotation.add')"
+      :editTitle="t('component.annotation.edit')"
       @onCreate="onAnnotationCreated"
       @onUpdate="onAnnotationUpdated"
     />
@@ -107,18 +109,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import {computed, ComputedRef, inject, nextTick, onBeforeUnmount, ref, useTemplateRef, watch} from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import {AnnotationGetDTO} from 'opensilex-core/index';
 import type { AnnotationsService } from 'opensilex-core/api/annotations.service';
 import type { SecurityService } from 'opensilex-security/api/security.service';
 import type { UserGetDTO } from 'opensilex-security/index';
 import type { AccountGetDTO } from 'opensilex-security/model/accountGetDTO';
-import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import TextView from "@/components/common/views/TextView.vue";
+import PersonContact from "@/components/persons/PersonContact.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import AnnotationDetails from "@/components/annotations/list/form/AnnotationDetails.vue";
+import AnnotationForm from "@/components/annotations/list/form/AnnotationForm.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {TableField} from "@/components/common/views/TableField";
 
 // Props
 const props = withDefaults(defineProps<{
@@ -186,7 +198,7 @@ const user = computed(() => store.state.user);
 
 // Refs
 const tableRef = ref<any>(null);
-const annotationModalForm = ref<any>(null);
+const annotationFormRef = useTemplateRef<InstanceType<typeof AnnotationForm>>('annotationFormRef');
 
 // État local
 const accountsByUri = ref<Map<string, AccountGetDTO>>(new Map());
@@ -200,13 +212,13 @@ function formatDate(dateStr: string): string {
 }
 
 // Champs table
-const fields = computed(() => {
-  const f: Array<{ key: string; label: string; sortable: boolean }> = [];
+const fields: ComputedRef<Array<TableField>> = computed(() => {
+  const f: Array<TableField> = [];
   if (props.columnsToDisplay.has('published'))   f.push({ key: 'published',   label: t('Annotation.published'),   sortable: true  });
   if (props.columnsToDisplay.has('publisher'))   f.push({ key: 'publisher',   label: t('Annotation.publisher'),   sortable: false });
   if (props.columnsToDisplay.has('description')) f.push({ key: 'description', label: t('Annotation.description'), sortable: true  });
   if (props.columnsToDisplay.has('targets'))     f.push({ key: 'targets',     label: t('Annotation.targets'),     sortable: true  });
-  if (props.enableActions)                       f.push({ key: 'actions',     label: t('component.common.actions'), sortable: false });
+  if (props.enableActions)                       f.push({ key: 'actions',     label: t('component.common.actions'), sortable: false, resizable: false, naiveProps: {width: 100} });
   return f;
 });
 
@@ -286,11 +298,6 @@ function refresh() {
   tableRef.value?.refresh?.();
 }
 
-// Edit / Details / Delete
-// function editAnnotation(annotation: AnnotationGetDTO) {
-//   const copy = JSON.parse(JSON.stringify(annotation));
-//   annotationModalForm.value?.showEditForm?.(copy);
-// }
 async function editAnnotation(annotation: AnnotationGetDTO) {
   try {
     const uri = annotation?.uri
@@ -299,7 +306,7 @@ async function editAnnotation(annotation: AnnotationGetDTO) {
     const http = await annotationService.getAnnotation(uri)
     const selectedAnnotation = http.response.result
 
-    annotationModalForm.value?.showEditForm?.(JSON.parse(JSON.stringify(selectedAnnotation)))
+    annotationFormRef.value?.showEditForm?.(JSON.parse(JSON.stringify(selectedAnnotation)))
   } catch (e) {
     opensilex.errorHandler(e)
   }
@@ -363,8 +370,6 @@ defineExpose({ refresh });
 en:
   Annotation:
     name: The annotation
-    add: Add annotation
-    edit: Edit annotation
     delete: Delete annotation
     details: Details annotation
     motivation: Motivation
@@ -379,8 +384,6 @@ en:
 fr:
   Annotation:
     name: L'annotation
-    add: Ajouter une annotation
-    edit: Éditer l'annotation
     delete: Supprimer l'annotation
     details: Détailler l'annotation
     motivation: Motivation

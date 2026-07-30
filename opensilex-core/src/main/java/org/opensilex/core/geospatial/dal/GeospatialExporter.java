@@ -18,10 +18,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.ParseException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -54,10 +51,14 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
         public String getLabel() {return this.label;}
     }
 
-    public static final Class<Polygon> POLY = Polygon.class;
-    public static final Class<LineString> LINE = LineString.class;
-    public static final Class<Point> POINT = Point.class;
-    public static final List<Class<? extends Geometry>> typeList = Arrays.asList(POLY,LINE,POINT);
+    public static final List<Class<? extends Geometry>> typeList = Arrays.asList(
+            Polygon.class,
+            LineString.class,
+            Point.class,
+            MultiPolygon.class,
+            MultiLineString.class,
+            MultiPoint.class
+    );
     public static final URI COMMENT= URI.create(SPARQLDeserializers.getShortURI(RDFS.comment.getURI()));
     private static final Logger LOGGER = LoggerFactory.getLogger(GeospatialExporter.class);
 

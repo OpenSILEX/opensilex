@@ -89,11 +89,11 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
             lineBuffer[colIdx] = movesLocation.getFrom() == null ? "" : SPARQLDeserializers.getShortURI(movesLocation.getFrom());
             return;
         }
-        if(column.equals(LocationModel.TO_FIELD)){
+        if(column.equals(LocationModel.TO_FIELD) || column.equals(SPARQLDeserializers.getShortURI(Oeso.isHosted.toString()))){
             lineBuffer[colIdx] = movesLocation.getTo() == null ? "" : SPARQLDeserializers.getShortURI(movesLocation.getTo());
             return;
         }
-        if(column.equals(LocationModel.GEOMETRY_FIELD)){
+        if(column.equals(LocationModel.GEOMETRY_FIELD) || column.equals(SPARQLDeserializers.getShortURI(Oeso.hasGeometry.toString()))){
             lineBuffer[colIdx] = movesLocation.getGeometry() == null ? "" : GeospatialDAO.geometryToWkt(movesLocation.getGeometry());
             return;
         }
@@ -112,6 +112,7 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
         if(column.equals(LocationModel.TEXTUAL_POSITION_FIELD)){
             lineBuffer[colIdx] = movesLocation.getTextualPosition();
         }
+
     }
 
     private void factorLevelWriteRegistration(){
@@ -152,27 +153,6 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
         customRelationWrite(Oeso.hasDestructionDate.getURI(), object ->
                 object.getDestructionDate() != null ? object.getDestructionDate().toString() : null
         );
-
-        customRelationWrite(Oeso.hasGeometry.getURI(), object -> {
-            var move = this.initialMovePerTarget.get(object.getUri());
-            if (move != null) {
-                try {
-                    return GeospatialDAO.geometryToWkt(move.getLocationObservation().getLocation().getGeometry());
-                } catch (JsonProcessingException | ParseException e) {
-                    return null;
-                }
-            }
-            return null;
-        });
-
-        customRelationWrite(Oeso.isHosted.getURI(), object ->{
-            var move = this.initialMovePerTarget.get(object.getUri());
-            if (move != null) {
-                var facilityUri = move.getLocationObservation().getLocation().getTo();
-                return facilityUri != null ? SPARQLDeserializers.formatURI(facilityUri).toString() : null;
-            }
-            return null;
-        });
     }
 
 

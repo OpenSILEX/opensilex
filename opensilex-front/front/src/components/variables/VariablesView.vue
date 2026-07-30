@@ -108,9 +108,11 @@
     />
 
     <!-- Modale de création/édition d’un groupe de variables -->
-    <opensilex-VariableGroupCreate
+    <GroupVariablesForm
       ref="variableGroupForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+      createTitle="component.variable.groupVariable.add-groupVariable"
+      editTitle="component.variable.groupVariable.edit"
       @onCreate="form => onExternalResourceCreatedOrUpdated('groups', form)"
       @onUpdate="form => onExternalResourceCreatedOrUpdated('groups', form)"
     />
@@ -141,7 +143,7 @@ import { useStore } from 'vuex'
 // imports de composants de formulaires
 import VariableForm from './form/VariableForm.vue'
 import DTOConverter from '../../models/DTOConverter'
-import VariableGroupCreate from './form/VariableGroupCreate.vue'
+import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
 import AgroportalEntityOfInterestForm from './agroportal/AgroportalEntityOfInterestForm.vue'
 import AgroportalCharacteristicForm from './agroportal/AgroportalCharacteristicForm.vue'

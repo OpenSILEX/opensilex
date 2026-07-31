@@ -124,7 +124,7 @@ import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import { NForm, NFormItem, NCard, NGrid, NGridItem } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import {requiredObjectOrLists, requiredTrimmed} from '../../../models/FormFieldsFormatter'
+import {required, requiredTrimmed} from '../../../models/FormFieldsFormatter'
 import Prov from '../../../ontologies/Prov'
 import UriForm from '@/components/common/forms/UriForm.vue'
 import InputForm from '@/components/common/forms/InputForm.vue'
@@ -190,7 +190,7 @@ const lang = computed(() => store.getters.language)
 
 const rules = computed(() => ({
   name: requiredTrimmed('component.common.name'),
-  activity_type: requiredObjectOrLists('ProvenanceForm.activity-type-label')
+  activity_type: required('ProvenanceForm.activity-type-label')
 }))
 //#endregion
 

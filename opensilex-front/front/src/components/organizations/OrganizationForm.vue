@@ -88,7 +88,7 @@ import { OrganizationsService } from "opensilex-core/api/organizations.service";
 import type { OrganizationCreationDTO } from "opensilex-core/model/organizationCreationDTO";
 import type { OrganizationUpdateDTO } from "opensilex-core/model/organizationUpdateDTO";
 import { useI18n } from "vue-i18n";
-import {requiredObjectOrLists, requiredTrimmed} from "../../models/FormFieldsFormatter";
+import {required, requiredTrimmed} from "../../models/FormFieldsFormatter";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
@@ -139,7 +139,7 @@ const parentOrganizations = ref<OrganizationDagDTO[]>([]);
 //#region Computed
 const rules = computed(() => ({
   "name": requiredTrimmed("component.common.name"),
-  "rdf_type": requiredObjectOrLists("component.common.type")
+  "rdf_type": required("component.common.type")
 }));
 
 const parentOptionsReady = computed(() => parentOrganizations.value.length > 0);

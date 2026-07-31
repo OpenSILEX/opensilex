@@ -61,7 +61,7 @@ import { ref, computed, inject, onMounted, onBeforeUnmount, watch, useTemplateRe
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import { NForm, NFormItem } from 'naive-ui'
-import {requiredObjectOrLists, requiredTrimmed} from '@/models/FormFieldsFormatter'
+import {required, requiredTrimmed} from '@/models/FormFieldsFormatter'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
@@ -109,7 +109,7 @@ const motivations = ref<Array<{ label: string; id: string }>>([])
 
 //#region Computed
 const rules = computed(() => ({
-  motivation: requiredObjectOrLists("component.annotation.motivation"),
+  motivation: required("component.annotation.motivation"),
   description: requiredTrimmed('component.common.description')
 }))
 //#endregion

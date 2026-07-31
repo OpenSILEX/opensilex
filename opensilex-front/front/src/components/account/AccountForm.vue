@@ -103,8 +103,8 @@ import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
-import {NForm, NFormItem} from "naive-ui";
-import {requiredObjectOrLists, requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {FormRules, NForm, NFormItem} from "naive-ui";
+import {required, requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
 import useModalFormLogic from "@/composables/useModalFormLogic";
@@ -152,7 +152,7 @@ const canSelectAPerson = ref(false);
 //#endregion
 
 //#region Computed
-const rules = computed(() => ({
+const rules = computed<FormRules>(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
@@ -163,7 +163,7 @@ const rules = computed(() => ({
     },
     trigger: ['blur', 'input']
   },
-  'language': requiredObjectOrLists('component.account.default-lang'),
+  'language': required('component.account.default-lang'),
 }));
 
 const languages: ComputedRef<Array<{id: string; label: string}>> = computed(() => {

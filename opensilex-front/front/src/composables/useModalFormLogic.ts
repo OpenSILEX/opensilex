@@ -5,6 +5,17 @@ import {NForm} from "naive-ui";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 
+export interface ModalFormEmits {
+  onUpdate: [payload: HttpResponse<OpenSilexResponse>],
+  onCreate: [payload: HttpResponse<OpenSilexResponse>],
+  onSuccess: []
+}
+
+export interface ModalFormProps {
+  createTitle: string,
+  editTitle: string
+}
+
 type UseModalFormOptions<T> = {
   modalRef: TemplateRef<InstanceType<typeof Modal>>
   nFormRef: TemplateRef<InstanceType<typeof NForm>>
@@ -12,14 +23,14 @@ type UseModalFormOptions<T> = {
   getEmptyForm: () => T
   create: (form: T) => Promise<HttpResponse<OpenSilexResponse>>
   update: (form: T) => Promise<HttpResponse<OpenSilexResponse>>
-  /**called before opening modal on creation and edit mode. Use it if you need to update some interne data before showing the form. isEditMode can be safely called in the reset function.*/
-  reset: () => Promise<void> | void
   addTitle: string
   editTitle: string
   successMessage?: string
   overrideSuccessMessage?: boolean
   onCreate: (form: HttpResponse<OpenSilexResponse>) => void
   onUpdate: (form: HttpResponse<OpenSilexResponse>) => void
+  /**called before opening modal on creation and edit mode. Use it if you need to update some interne data before showing the form. isEditMode can be safely called in the reset function.*/
+  reset?: () => Promise<void> | void
   onSuccess?: () => void
   onHide?: () => void
 }
@@ -48,7 +59,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
 
     try {
       showLoader()
-      const result = await Promise.resolve(submitAction?.(form.value))
+      const result = await submitAction?.(form.value)
       if (result != null) {
         // success message
         let msg = (options.successMessage ?? t('component.common.element'))
@@ -61,8 +72,11 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
 
         opensilex.showSuccessToast(msg)
 
-        if (isEditMode.value) options.onUpdate(result)
-        else options.onCreate(result)
+        if (isEditMode.value) {
+          options.onUpdate(result)
+        } else {
+          options.onCreate(result)
+        }
 
         options.onSuccess?.()
         options.modalRef.value.hide?.()
@@ -83,7 +97,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
   function showCreateForm(passedForm?: T) {
     isEditMode.value = false
     form.value = passedForm ?? options.getEmptyForm()
-    options.reset()
+    options.reset?.()
     options.nFormRef.value.restoreValidation()
     options.modalRef.value.show()
   }
@@ -91,7 +105,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
   function showEditForm(editForm: T) {
     isEditMode.value = true
     form.value = editForm
-    options.reset()
+    options.reset?.()
     options.nFormRef.value.restoreValidation()
     options.modalRef.value.show?.()
   }

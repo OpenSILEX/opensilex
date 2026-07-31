@@ -24,18 +24,38 @@ export function requiredTrimmed(fieldLabelKey: string): FormItemRule {
 }
 
 /**
- * Returns a validation rule that requires a value to be non-null (and non-empty if the value is an array). Useful for every selector field and object fields.
- * For string values, use requiredTrimmed instead.
+ * Returns a validation rule that requires a value to be non-null. Useful for single selector field and object fields.
+ * For string values, use {@link requiredTrimmed} instead.
+ * For arrays (for example, in multiple selectors), use {@link requiredNotEmpty} instead.
+ *
  * @param fieldLabelKey is used to personalize the error message saying which field is required.
  */
-export function requiredObjectOrLists(fieldLabelKey: string): FormItemRule {
+export function required(fieldLabelKey: string): FormItemRule {
   const {t} = useI18n()
   return {
     required: true,
     message: t("validations.required_if", {
       _field_: t(fieldLabelKey),
     }),
-    trigger: ["change", "blur"],
+    trigger: ["input", "blur"],
+  }
+}
+
+/**
+ * Creates a validation rule that checks if an array is not empty.
+ *
+ * @param fieldLabelKey
+ */
+export function requiredNotEmpty(fieldLabelKey: string): FormItemRule {
+  const {t} = useI18n();
+  return {
+    validator: (_rule, value: Array<unknown>) => {
+      return value.length > 0;
+    },
+    message: t("validations.required_if", {
+      _field_: t(fieldLabelKey),
+    }),
+    trigger: ["input", "blur"]
   }
 }
 

@@ -171,7 +171,9 @@ type DataFileFormModel = {
 }
 
 const emit = defineEmits<ModalFormEmits>();
-const props = defineProps<ModalFormProps>();
+const props = defineProps<ModalFormProps & {
+  tabExperimentMode?: boolean
+}>();
 //#endregion
 
 //#region Private

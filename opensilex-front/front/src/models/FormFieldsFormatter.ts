@@ -42,7 +42,7 @@ export function required(fieldLabelKey: string): FormItemRule {
 }
 
 /**
- * Creates a validation rule that checks if an array is not empty.
+ * Creates a validation rule that requires an array to be non-empty
  *
  * @param fieldLabelKey
  */

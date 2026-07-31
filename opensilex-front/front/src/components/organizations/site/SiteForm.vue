@@ -1,51 +1,51 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="formTitle" icon="bi#bi-geo-alt" />
+      <FormHeader :title="formTitle" icon="bi#bi-geo-alt"/>
     </template>
 
     <n-form
-      ref="formRef"
-      :rules="rules"
-      :model="form"
-      label-placement="top"
-      :show-require-mark="true"
-      size="large"
+        ref="formRef"
+        :rules="rules"
+        :model="form"
+        label-placement="top"
+        :show-require-mark="true"
+        size="large"
     >
       <!-- URI -->
       <n-form-item>
         <UriForm
-          :uri.sync="form.uri"
-          label="component.common.uri"
-          helpMessage="component.common.uri-help-message"
-          :editMode="isEditMode"
-          :generated="true"
+            :uri.sync="form.uri"
+            label="component.common.uri"
+            helpMessage="component.common.uri-help-message"
+            :editMode="isEditMode"
+            :generated="true"
         />
       </n-form-item>
 
       <!-- Name -->
       <n-form-item path="name">
         <InputForm
-          v-model:value="form.name"
-          label="component.common.name"
-          type="text"
-          :required="true"
-          :placeholder="t('SiteForm.form-name-placeholder')"
+            v-model:value="form.name"
+            label="component.common.name"
+            type="text"
+            :required="true"
+            :placeholder="t('SiteForm.form-name-placeholder')"
         />
       </n-form-item>
 
       <!-- Description -->
       <n-form-item>
         <InputForm
-          v-model:value="form.description"
-          label="component.common.description"
-          type="text"
-          :placeholder="t('component.common.description')"
+            v-model:value="form.description"
+            label="component.common.description"
+            type="text"
+            :placeholder="t('component.common.description')"
         />
       </n-form-item>
 
       <!-- Organizations -->
-        <OrganizationSelector
+      <OrganizationSelector
           path="organizations"
           ref="organizationSelectorRef"
           :label="t('SiteForm.organizations')"
@@ -53,33 +53,33 @@
           :multiple="true"
           :required="true"
           checkStrategy="all"
-        />
+      />
 
       <!-- Facilities -->
-        <FacilitySelector
+      <FacilitySelector
           :label="t('SiteForm.facilities')"
           v-model:facilities="form.facilities"
           :multiple="true"
-        />
+      />
 
       <!-- Groups -->
-        <GroupSelector
+      <GroupSelector
           :label="t('SiteForm.groups')"
           v-model:groups="form.groups"
           :multiple="true"
           :helpMessage="t('SiteForm.groups-help-message')"
-        />
+      />
 
       <!-- Address toggle -->
       <n-form-item>
         <div class="form-check form-switch my-2">
           <input
-            class="form-check-input"
-            type="checkbox"
-            role="switch"
-            id="site-address-toggle"
-            :checked="hasAddress"
-            @change="toggleAddress"
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="site-address-toggle"
+              :checked="hasAddress"
+              @change="toggleAddress"
           />
           <label class="form-check-label" for="site-address-toggle">
             {{ t('SiteForm.toggleAddress') }}
@@ -98,7 +98,7 @@
     </n-form>
 
     <template #footer>
-      <FormFooter @cancel="hide" @submit="submit" />
+      <FormFooter @cancel="hide" @submit="submit"/>
     </template>
   </Modal>
 </template>
@@ -130,7 +130,7 @@ const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
-const { t } = useI18n()
+const {t} = useI18n()
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex');
 const service = opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
 
@@ -144,7 +144,7 @@ const rules = computed(() => ({
 //#endregion
 
 //#region modalFormLogic composable
-const { form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide} = useModalFormLogic<SiteCreationDTO>({
+const {form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide} = useModalFormLogic<SiteCreationDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>('modalRef'),
   nFormRef: useTemplateRef<InstanceType<typeof NForm>>('formRef'),
   getEmptyForm: () => ({
@@ -162,11 +162,8 @@ const { form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide}
     delete form.rdf_type_name;
     return service.updateSite(form as SiteUpdateDTO);
   },
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess')
+  props,
+  emit
 })
 //#endregion
 
@@ -174,9 +171,10 @@ const { form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide}
 function toggleAddress(event: Event) {
   const checked = (event.target as HTMLInputElement).checked
   form.value.address = checked
-    ? (form.value.address ?? {})
-    : undefined
+      ? (form.value.address ?? {})
+      : undefined
 }
+
 //#endregion
 
 //#endregion

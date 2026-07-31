@@ -80,20 +80,12 @@ import UriForm from '@/components/common/forms/UriForm.vue'
 import InputForm from '@/components/common/forms/InputForm.vue'
 import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
 import VariableSelectorWithFilter from '@/components/variables/views/VariableSelectorWithFilter.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 
 //#region Public
-const emit = defineEmits<{
-  onUpdate: [payload: HttpResponse<OpenSilexResponse>],
-  onCreate: [payload: HttpResponse<OpenSilexResponse>],
-  onSuccess
-}>()
-
-const props = defineProps<{
-  createTitle: string
-  editTitle: string
-}>()
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -127,11 +119,8 @@ const modalFormLogic = useModalFormLogic<VariablesGroupCreationDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

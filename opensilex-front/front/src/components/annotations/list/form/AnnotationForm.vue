@@ -74,20 +74,12 @@ import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
 import Modal from '@/components/common/views/Modal.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 import {AnnotationUpdateDTO} from "opensilex-core/model/annotationUpdateDTO";
 
 //#region Public
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string
-  editTitle: string
-}>()
+const emit = defineEmits<ModalFormEmits>()
+const props = defineProps<ModalFormProps>()
 //#endregion
 
 //#region Private
@@ -122,11 +114,8 @@ const modalFormLogic = useModalFormLogic<AnnotationCreationDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

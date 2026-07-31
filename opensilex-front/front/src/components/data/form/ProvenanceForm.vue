@@ -135,7 +135,7 @@ import ProvenanceAgentForm from '@/components/data/form/ProvenanceAgentForm.vue'
 import Modal from '@/components/common/views/Modal.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 
 //#region Public
 type ProvenanceAgentGroup = {
@@ -159,16 +159,8 @@ type ProvenanceFormModel = {
   last_updated_date?: any
 }
 
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: any): void
-  (e: 'onCreate', payload: any): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>()
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -202,11 +194,8 @@ const modalFormLogic = useModalFormLogic<ProvenanceFormModel>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

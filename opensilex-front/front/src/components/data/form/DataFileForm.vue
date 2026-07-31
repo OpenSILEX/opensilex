@@ -158,7 +158,7 @@ import DateForm from '@/components/common/forms/DateForm.vue'
 import Modal from '@/components/common/views/Modal.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 
 //#region Public
 type DataFileFormModel = {
@@ -170,17 +170,8 @@ type DataFileFormModel = {
   target: string | null
 }
 
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string,
-  tabExperimentMode?: boolean
-}>()
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -323,11 +314,8 @@ const modalFormLogic = useModalFormLogic<DataFileFormModel>({
   getEmptyForm,
   create,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

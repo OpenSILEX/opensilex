@@ -143,21 +143,13 @@ import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {VueTelInput} from "vue-tel-input";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
-import useModalFormLogic from "@/composables/useModalFormLogic";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 //#region Public
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>();
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -220,11 +212,8 @@ const modalFormLogic = useModalFormLogic<PersonDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

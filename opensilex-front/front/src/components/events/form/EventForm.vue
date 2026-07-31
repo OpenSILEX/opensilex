@@ -139,18 +139,11 @@ import TagInputForm from '@/components/common/forms/TagInputForm.vue'
 import DateTimeRangeForm from '@/components/common/forms/DateTimeRangeForm.vue'
 import OntologyRelationsForm from '@/components/ontology/OntologyRelationsForm.vue'
 import MoveForm from '@/components/events/form/MoveForm.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 
 //#region Public
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string
-  editTitle: string
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps & {
   linkedToAreaForm?: boolean
   context?: string
   target?: string;
@@ -228,11 +221,8 @@ const modalFormLogic = useModalFormLogic<MoveCreationDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

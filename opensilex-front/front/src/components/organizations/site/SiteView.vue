@@ -22,6 +22,7 @@
       ref="siteFormRef"
       :createTitle="t('component.site.create')"
       :editTitle="t('component.site.update')"
+      :initialOrganizations="organizationsForFilter"
       @onSuccess="siteListRef?.refresh?.()"
     />
   </div>

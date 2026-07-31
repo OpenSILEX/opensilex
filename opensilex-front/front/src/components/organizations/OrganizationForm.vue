@@ -88,7 +88,7 @@ import { OrganizationsService } from "opensilex-core/api/organizations.service";
 import type { OrganizationCreationDTO } from "opensilex-core/model/organizationCreationDTO";
 import type { OrganizationUpdateDTO } from "opensilex-core/model/organizationUpdateDTO";
 import { useI18n } from "vue-i18n";
-import {requiredObjectOrLists, requiredTrimmed} from "../../models/FormFieldsFormatter";
+import {required, requiredTrimmed} from "../../models/FormFieldsFormatter";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
@@ -98,7 +98,7 @@ import FormFooter from "@/components/common/forms/FormFooter.vue";
 import GroupSelector from "@/components/groups/GroupSelector.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
 import Modal from "@/components/common/views/Modal.vue";
-import useModalFormLogic from "@/composables/useModalFormLogic";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
 
 //#region Public
 type OrganizationFormModel = OrganizationCreationDTO & {
@@ -106,16 +106,8 @@ type OrganizationFormModel = OrganizationCreationDTO & {
   rdf_type_name?: string;
 };
 
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-}>();
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>();
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -139,7 +131,7 @@ const parentOrganizations = ref<OrganizationDagDTO[]>([]);
 //#region Computed
 const rules = computed(() => ({
   "name": requiredTrimmed("component.common.name"),
-  "rdf_type": requiredObjectOrLists("component.common.type")
+  "rdf_type": required("component.common.type")
 }));
 
 const parentOptionsReady = computed(() => parentOrganizations.value.length > 0);
@@ -162,11 +154,8 @@ const modalFormLogic = useModalFormLogic<OrganizationFormModel>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 });
 //#endregion
 

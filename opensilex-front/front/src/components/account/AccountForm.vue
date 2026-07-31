@@ -103,11 +103,11 @@ import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
-import {NForm, NFormItem} from "naive-ui";
-import {requiredObjectOrLists, requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {FormRules, NForm, NFormItem} from "naive-ui";
+import {required, requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
-import useModalFormLogic from "@/composables/useModalFormLogic";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {AccountCreationDTO} from "opensilex-security/model/accountCreationDTO";
@@ -122,16 +122,8 @@ interface AccountFormDTO {
   linked_person: string | null;
 }
 
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse<AccountCreationDTO>>): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>();
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -152,7 +144,7 @@ const canSelectAPerson = ref(false);
 //#endregion
 
 //#region Computed
-const rules = computed(() => ({
+const rules = computed<FormRules>(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
@@ -163,7 +155,7 @@ const rules = computed(() => ({
     },
     trigger: ['blur', 'input']
   },
-  'language': requiredObjectOrLists('component.account.default-lang'),
+  'language': required('component.account.default-lang'),
 }));
 
 const languages: ComputedRef<Array<{id: string; label: string}>> = computed(() => {
@@ -202,11 +194,8 @@ const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

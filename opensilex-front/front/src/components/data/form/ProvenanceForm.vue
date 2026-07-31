@@ -124,7 +124,7 @@ import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import { NForm, NFormItem, NCard, NGrid, NGridItem } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import {requiredObjectOrLists, requiredTrimmed} from '../../../models/FormFieldsFormatter'
+import {required, requiredTrimmed} from '../../../models/FormFieldsFormatter'
 import Prov from '../../../ontologies/Prov'
 import UriForm from '@/components/common/forms/UriForm.vue'
 import InputForm from '@/components/common/forms/InputForm.vue'
@@ -135,7 +135,7 @@ import ProvenanceAgentForm from '@/components/data/form/ProvenanceAgentForm.vue'
 import Modal from '@/components/common/views/Modal.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 
 //#region Public
 type ProvenanceAgentGroup = {
@@ -159,16 +159,8 @@ type ProvenanceFormModel = {
   last_updated_date?: any
 }
 
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: any): void
-  (e: 'onCreate', payload: any): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>()
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -190,7 +182,7 @@ const lang = computed(() => store.getters.language)
 
 const rules = computed(() => ({
   name: requiredTrimmed('component.common.name'),
-  activity_type: requiredObjectOrLists('ProvenanceForm.activity-type-label')
+  activity_type: required('ProvenanceForm.activity-type-label')
 }))
 //#endregion
 
@@ -202,11 +194,8 @@ const modalFormLogic = useModalFormLogic<ProvenanceFormModel>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 

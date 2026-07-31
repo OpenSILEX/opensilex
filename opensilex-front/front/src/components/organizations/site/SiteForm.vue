@@ -126,7 +126,9 @@ import Modal from "@/components/common/views/Modal.vue"
 
 //#region Public
 const emit = defineEmits<ModalFormEmits>();
-const props = defineProps<ModalFormProps>();
+const props = defineProps<ModalFormProps & {
+  initialOrganizations?: Array<string>
+}>();
 //#endregion
 
 //#region Private
@@ -153,7 +155,7 @@ const {form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide} 
     name: undefined,
     description: undefined,
     address: undefined,
-    organizations: [],
+    organizations: props.initialOrganizations ?? [],
     facilities: [],
     groups: []
   }),

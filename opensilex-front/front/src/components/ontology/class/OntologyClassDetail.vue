@@ -17,8 +17,6 @@
             label="component.common.comment"
             :value="selected.comment"
         ></TextView>
-        <!-- Abstract type -->
-        <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.is_abstract"></opensilex-BooleanView> -->
         <!-- Icon identifier -->
         <IconView
             :label="t('OntologyClassDetail.icon')"

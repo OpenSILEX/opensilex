@@ -15,7 +15,7 @@
       <!-- URI -->
       <n-form-item>
         <UriForm
-            :uri.sync="form.uri"
+            v-model:uri="form.uri"
             label="component.common.uri"
             helpMessage="component.common.uri-help-message"
             :editMode="isEditMode"

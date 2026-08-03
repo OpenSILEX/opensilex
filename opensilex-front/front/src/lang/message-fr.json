@@ -1040,6 +1040,17 @@
         },
         "ontology": {
             "class" : {
+                "abstract-type": "Type abstrait",
+                "label": {
+                    "en": "Nom anglais",
+                    "fr": "Nom français"
+                },
+                "comment": {
+                    "en": "Description anglaise",
+                    "fr": "Description française"
+                },
+                "object-type-already-exists": "Un type d'objet existe déjà avec la même URI",
+                "icon": "Icône",
                 "exception" : {
                     "delete" : {
                         "not-custom-class" : "Le type {class} n'est pas une classe personnalisée. Vous n'avez pas la permission de supprimer un type declaré au sein d'une ontologie utilisée par OpenSILEX",

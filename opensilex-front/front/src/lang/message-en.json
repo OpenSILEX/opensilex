@@ -984,6 +984,17 @@
         },
         "ontology": {
             "class" : {
+                "abstract-type": "Abstract type",
+                "label": {
+                    "en": "English name",
+                    "fr": "French name"
+                },
+                "comment": {
+                    "en": "English description",
+                    "fr": "French description"
+                },
+                "object-type-already-exists": "Object type with same URI already exists",
+                "icon": "Icon",
                 "exception" : {
                     "delete" : {
                         "not-custom-class" : "The class {class} is not a custom class. You don't have the permission to delete class declared inside OpenSILEX ontologies",

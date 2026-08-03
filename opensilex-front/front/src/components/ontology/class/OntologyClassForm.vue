@@ -1,13 +1,19 @@
 <template>
-  <n-form v-if="form.name_translations" :rules="rules">
-    <InputForm
-        v-model:value="form.uri"
-        label="component.common.uri"
-        type="text"
-        rules="url"
-        :disabled="editMode"
-        :required="true"
-    ></InputForm>
+  <n-form
+      ref="nForm"
+      v-if="form.name_translations"
+      :model="form"
+      :rules="rules"
+  >
+    <n-form-item path="uri">
+      <InputForm
+          v-model:value="form.uri"
+          label="component.common.uri"
+          type="text"
+          :disabled="editMode"
+          :required="true"
+      ></InputForm>
+    </n-form-item>
 
     <FormSelector
         v-model:selected="form.parent"
@@ -19,43 +25,45 @@
         :filterable="true"
     ></FormSelector>
 
-    <InputForm
-        v-model:value="form.name_translations.en"
-        :label="t('OntologyClassForm.labelEN')"
-        type="text"
-        :required="true"
-    ></InputForm>
+    <n-form-item path="name_translations.en">
+      <InputForm
+          v-model:value="form.name_translations.en"
+          :label="t('component.ontology.class.label.en')"
+          type="text"
+          :required="true"
+      ></InputForm>
+    </n-form-item>
 
-    <TextAreaForm
-        v-model:value="form.comment_translations.en"
-        :label="t('OntologyClassForm.commentEN')"
-        :required="true"
-        @keydown.native.enter.stop
-    ></TextAreaForm>
+    <n-form-item path="comment_translations.en">
+      <TextAreaForm
+          v-model:value="form.comment_translations.en"
+          :label="t('component.ontology.class.comment.en')"
+          :required="true"
+          @keydown.native.enter.stop
+      ></TextAreaForm>
+    </n-form-item>
 
-    <InputForm
-        v-model:value="form.name_translations.fr"
-        :label="t('OntologyClassForm.labelFR')"
-        type="text"
-        :required="true"
-    ></InputForm>
+    <n-form-item path="name_translations.fr">
+      <InputForm
+          v-model:value="form.name_translations.fr"
+          :label="t('component.ontology.class.label.fr')"
+          type="text"
+          :required="true"
+      ></InputForm>
+    </n-form-item>
 
-    <TextAreaForm
-        v-model:value="form.comment_translations.fr"
-        :label="t('OntologyClassForm.commentFR')"
-        :required="true"
-        @keydown.native.enter.stop
-    ></TextAreaForm>
-
-    <!-- is abstract -->
-    <!-- <opensilex-CheckboxForm
-      :value.sync="form.is_abstract"
-      title="OntologyClassForm.abstract-type"
-    ></opensilex-CheckboxForm> -->
+    <n-form-item path="comment_translations.fr">
+      <TextAreaForm
+          v-model:value="form.comment_translations.fr"
+          :label="t('component.ontology.class.comment.fr')"
+          :required="true"
+          @keydown.native.enter.stop
+      ></TextAreaForm>
+    </n-form-item>
 
     <IconForm
         v-model:value="form.icon"
-        :label="t('OntologyClassForm.icon')"
+        :label="t('component.ontology.class.icon')"
     ></IconForm>
   </n-form>
 </template>
@@ -66,12 +74,13 @@ import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {VueJsOntologyExtensionService} from "@/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NForm} from "naive-ui";
+import {FormRules, NForm, NFormItem} from "naive-ui";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import IconForm from "@/components/common/forms/IconForm.vue";
+import {required} from "@/models/FormFieldsFormatter";
 
 //#region Public
 const props = defineProps<{
@@ -120,11 +129,18 @@ const parentOptions = computed(() => {
 })
 
 
-const rules = {
-  uri: {required: true},
-  parent: {required: true}
+const rules: FormRules = {
+  uri: required("component.common.uri"),
+  parent: required("component.common.parent"),
+  name_translations: {
+    en: required("component.ontology.class.label.en"),
+    fr: required("component.ontology.class.label.fr"),
+  },
+  comment_translations: {
+    en: required("component.ontology.class.comment.en"),
+    fr: required("component.ontology.class.comment.fr"),
+  }
 }
-
 
 watchEffect(() => {
   if (props.data.parentUri) {
@@ -162,7 +178,7 @@ function create(form) {
           console.error("Object type already exists", error);
           opensilex.errorHandler(
               error,
-              t("OntologyClassForm.object-type-already-exists")
+              t("component.ontology.class.object-type-already-exists")
           );
         } else {
           opensilex.errorHandler(error);

@@ -24,16 +24,16 @@
           v-model:selected="form.property"
           :options="propertiesOptions"
           :required="true"
-          :label="t('OntologyClassPropertyForm.property')"
-          :helpMessage="t('OntologyClassPropertyForm.property-help')"
+          :label="t('component.ontology.property.property')"
+          :helpMessage="t('component.ontology.property.property-help')"
           @update:selected="updateIsListProperty"
       ></FormSelector>
 
       <!-- is_required -->
       <n-form-item path="is_required">
         <FormField
-            :label="t('OntologyClassPropertyForm.required')"
-            :helpMessage="t('OntologyClassPropertyForm.required-help')"
+            :label="t('component.ontology.property.required')"
+            :helpMessage="t('component.ontology.property.required-help')"
         >
           <template #field>
             <n-switch
@@ -47,8 +47,8 @@
       <!-- is_list -->
       <n-form-item path="is_list">
         <FormField
-            :label="t('OntologyClassPropertyForm.list')"
-            :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
+            :label="t('component.ontology.property.list')"
+            :helpMessage="t('component.ontology.property.is-list-help')"
         >
           <template #field>
             <n-switch
@@ -107,7 +107,7 @@ const {t} = useI18n();
 const availableProperties = ref();
 const dataTypeProperties = ref([]);
 const rules: FormRules = {
-  property: required(t('OntologyClassPropertyForm.property'))
+  property: required(t('component.ontology.property.property'))
 }
 
 const propertiesOptions = computed(() => {
@@ -211,8 +211,8 @@ function buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
 
   let dataProperty = isDataProperty(resourceTree.uri);
   let propertyType = dataProperty ?
-      t("OntologyClassPropertyForm.dataProperty") :
-      t("OntologyClassPropertyForm.objectProperty");
+      t("component.ontology.property.dataProperty") :
+      t("component.ontology.property.objectProperty");
 
   let option = {
     id: resourceTree.uri,
@@ -248,29 +248,3 @@ defineExpose({
 
 <style scoped lang="scss">
 </style>
-
-
-<i18n>
-en:
-  OntologyClassPropertyForm:
-    property: Property
-    link-success-msg: 'The property {0} has been added to {0} type'
-    property-help: Select the property to associate to the type. Only properties which are not already associated, are selectable.
-    required-help: Check this checkbox to make this property required for the selected type.
-    is-list-help: Check this checkbox in order to use multiple values. Currently only object-properties are supported.
-    required: Required
-    list: List of values
-    dataProperty: Data property
-    objectProperty: Object property
-fr:
-  OntologyClassPropertyForm:
-    property: Propriété
-    link-success-msg: 'La propriété {0} a été ajoutée au type {1}'
-    property-help: 'Selectionner la propriété à associer au type. Seul les propriétés qui ne sont pas déjà associées, sont sélectionnables.'
-    required-help: Cocher cette case pour rendre cette propriété obligatoire pour le type selectionné
-    is-list-help: 'Cocher cette case pour pouvoir utiliser une liste de valeurs. Seul les propriétés "objets" sont supportés.'
-    required: Obligatoire
-    list: Liste de valeurs
-    dataProperty: Propriété litérale
-    objectProperty: Relation vers un objet
-</i18n>

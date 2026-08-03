@@ -1054,6 +1054,22 @@
                 },
                 "object-type-already-exists": "Un type d'objet existe déjà avec la même URI",
                 "icon": "Icône",
+                "detail": {
+                    "title": "Détail du type d'objet",
+                    "required": "Obligatoire",
+                    "icon": "Icône",
+                    "list": "Liste de valeurs",
+                    "inherited": "Héritée",
+                    "properties": "Propriétés",
+                    "setPropertiesOrder": "Définir l'ordre des propriétés",
+                    "objectProperties": "Relations vers des objets",
+                    "addProperty": "Ajouter une propriété au type",
+                    "add-property-help": "Ajouter une propriété existante pour ce type",
+                    "deleteProperty": "Supprimer la propriété",
+                    "property-link-delete": "La propriété a été supprimée du type",
+                    "setPropertiesOrderInfo": "Vous pouvez définir l'ordre d'affichage des propriétés par glisser-déposer dans la liste ci-dessous",
+                    "properties-help": "Liste de toutes les propriétés qui peuvent s'appliquer au type selectionné. Y compris les propriétés héritées et les propriétés qui ne sont pas spécifiques au type (ex: nom ou description)"
+                },
                 "exception" : {
                     "delete" : {
                         "not-custom-class" : "Le type {class} n'est pas une classe personnalisée. Vous n'avez pas la permission de supprimer un type declaré au sein d'une ontologie utilisée par OpenSILEX",
@@ -1065,6 +1081,15 @@
                 }
             },
             "property" : {
+                "property": "Propriété",
+                "link-success-msg": "La propriété {0} a été ajoutée au type {1}",
+                "property-help": "Selectionner la propriété à associer au type. Seul les propriétés qui ne sont pas déjà associées, sont sélectionnables.",
+                "required-help": "Cocher cette case pour rendre cette propriété obligatoire pour le type selectionné",
+                "is-list-help": "Cocher cette case pour pouvoir utiliser une liste de valeurs. Seul les propriétés \"objets\" sont supportés.",
+                "required": "Obligatoire",
+                "list": "Liste de valeurs",
+                "dataProperty": "Propriété litérale",
+                "objectProperty": "Relation vers un objet",
                 "exception" : {
                     "delete" : {
                         "instance-exists" : "Une ou plusieurs ressources utilisent la propriété {property}. Vous devez les supprimer d'abord",

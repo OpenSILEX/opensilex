@@ -998,6 +998,22 @@
                 },
                 "object-type-already-exists": "Object type with same URI already exists",
                 "icon": "Icon",
+                "detail": {
+                    "title": "Object type detail",
+                    "required": "Required",
+                    "icon": "Icon",
+                    "list": "List of values",
+                    "inherited": "Inherited",
+                    "properties": "Properties",
+                    "setPropertiesOrder": "Set properties order",
+                    "objectProperties": "Object properties",
+                    "addProperty": "Add property to type",
+                    "add-property-help": "Link existing property to the type",
+                    "deleteProperty": "Delete property",
+                    "setPropertiesOrderInfo": "You can define properties display order by drag & drop them in the list below",
+                    "properties-help": "List of all properties which can apply on the selected type. Including inherited properties and properties which are not specific to the type (ex: name or description)",
+                    "property-link-delete": "The property has been deleted from type"
+                },
                 "exception" : {
                     "delete" : {
                         "not-custom-class" : "The class {class} is not a custom class. You don't have the permission to delete class declared inside OpenSILEX ontologies",
@@ -1009,6 +1025,15 @@
                 }
             },
             "property" : {
+                "property": "Property",
+                "link-success-msg": "The property {0} has been added to {0} type",
+                "property-help": "Select the property to associate to the type. Only properties which are not already associated, are selectable.",
+                "required-help": "Check this checkbox to make this property required for the selected type.",
+                "is-list-help": "Check this checkbox in order to use multiple values. Currently only object-properties are supported.",
+                "required": "Required",
+                "list": "List of values",
+                "dataProperty": "Data property",
+                "objectProperty": "Object property",
                 "exception" : {
                     "delete" : {
                         "instance-exists" : "Some objects use the property {property} You must delete these relations first",

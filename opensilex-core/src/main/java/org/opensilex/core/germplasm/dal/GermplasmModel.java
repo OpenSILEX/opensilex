@@ -91,6 +91,15 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
 
     @SPARQLProperty(
             ontology = Oeso.class,
+            property = "fromSpecies",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    private List<GermplasmModel> speciesChildren;
+    public static final String SPECIES_CHILDREN_SPARQL_VAR = "speciesChildren";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
             property = "fromVariety"
     )
     GermplasmModel variety;
@@ -213,6 +222,14 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
 
     public void setSpecies(GermplasmModel species) {
         this.species = species;
+    }
+
+    public List<GermplasmModel> getSpeciesChildren() {
+        return speciesChildren;
+    }
+
+    public void setSpeciesChildren(List<GermplasmModel> speciesChildren) {
+        this.speciesChildren = speciesChildren;
     }
 
     public GermplasmModel getVariety() {

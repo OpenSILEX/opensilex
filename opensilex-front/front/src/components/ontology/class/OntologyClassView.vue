@@ -17,20 +17,14 @@
                 class="createButton">
             </CreateButton>
 
-            <ModalForm
+            <OntologyClassForm
                 ref="classForm"
-                component="opensilex-OntologyClassForm"
                 :createTitle="t('OntologyClassView.add')"
                 :editTitle="t('OntologyClassView.update')"
-                :initForm="initForm"
-                @onCreate="refresh()"
-                @onUpdate="refresh()"
-                successMessage="OntologyClassView.the-type"
-                :icon="icon"
-                :data="{
-                  parentUri: rdfType
-                }"
-            ></ModalForm>
+                :parentUri="rdfType"
+                @onCreate="refresh"
+                @onUpdate="refresh"
+            ></OntologyClassForm>
           </div>
 
           <StringFilter
@@ -80,6 +74,7 @@ import OntologyClassDetail from "@/components/ontology/class/OntologyClassDetail
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import Card from "@/components/common/views/Card.vue";
+import OntologyClassForm from "@/components/ontology/class/OntologyClassForm.vue";
 
 //#region Public
 const props = defineProps<{

@@ -13,14 +13,14 @@
             <CreateButton
                 v-if="user.isAdmin()"
                 @click="showCreateForm()"
-                :label="t('OntologyClassView.add')"
+                :label="t('component.ontology.class.add')"
                 class="createButton">
             </CreateButton>
 
             <OntologyClassForm
                 ref="classForm"
-                :createTitle="t('OntologyClassView.add')"
-                :editTitle="t('OntologyClassView.update')"
+                :createTitle="t('component.ontology.class.add')"
+                :editTitle="t('component.ontology.class.update')"
                 :parentUri="rdfType"
                 @onCreate="refresh"
                 @onUpdate="refresh"
@@ -30,7 +30,7 @@
           <StringFilter
               v-model:filter="nameFilter"
               @update="updateFilter()"
-              :placeholder="t('OntologyClassView.search')"
+              :placeholder="t('component.ontology.class.search')"
               :debounce="300"
               :lazy="false"
           ></StringFilter>
@@ -127,7 +127,7 @@ function deleteRDFType(data) {
   service.value
       .deleteRDFType(data.uri)
       .then(_ => {
-        let message = t("OntologyClassView.the-type") + " " + data.name + t("component.common.success.delete-success-message");
+        let message = t("component.common.success.delete-success-message-with-template", {uri: data.name});
         opensilex.showSuccessToast(message);
         selected.value = undefined;
         refresh();

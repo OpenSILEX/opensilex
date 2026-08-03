@@ -984,6 +984,9 @@
         },
         "ontology": {
             "class" : {
+                "add": "Create type",
+                "update": "Update type",
+                "search": "Search and select a type",
                 "abstract-type": "Abstract type",
                 "label": {
                     "en": "English name",

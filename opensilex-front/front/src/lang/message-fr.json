@@ -1040,6 +1040,9 @@
         },
         "ontology": {
             "class" : {
+                "add": "Créer un type",
+                "update": "Mettre à jour le type",
+                "search": "Rechercher et sélectionner un type",
                 "abstract-type": "Type abstrait",
                 "label": {
                     "en": "Nom anglais",

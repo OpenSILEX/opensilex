@@ -91,7 +91,6 @@ const {t} = useI18n();
 
 const service = ref<VueJsOntologyExtensionService>();
 const nameFilter = ref<string>("");
-const parentURI = ref<string>("");
 const selected = ref<VueRDFTypeDTO | undefined>();
 
 const user = computed(() => store.state.user);
@@ -112,14 +111,8 @@ onBeforeUnmount(() => {
   unwatchLang();
 })
 
-function initForm(form): any {
-  form.parent = parentURI.value;
-  return form;
-}
-
 function showCreateForm(parentTypeURI?: string) {
-  parentURI.value = parentTypeURI;
-  classForm.value.showCreateForm();
+  classForm.value.showCreateForm(parentTypeURI);
 }
 
 function showEditForm(data) {

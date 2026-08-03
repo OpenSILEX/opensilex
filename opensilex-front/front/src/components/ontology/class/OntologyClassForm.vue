@@ -135,17 +135,10 @@ const parentOptions = computed(() => {
   }
 })
 
-const {form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide} = useModalFormLogic<VueRDFTypeDTO>({
+const {form, formTitle, showCreateForm: innerShowCreateForm, showEditForm, isEditMode, submit, hide} = useModalFormLogic<VueRDFTypeDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>("modal"),
   nFormRef: useTemplateRef("nForm"),
-  getEmptyForm: () =>  ({
-    uri: undefined,
-    parent: undefined,
-    name_translations: {en: "", fr: ""},
-    comment_translations: {en: "", fr: ""},
-    icon: undefined,
-    is_abstract: false
-  }),
+  getEmptyForm,
   create: service.createRDFType.bind(service),
   update: service.updateRDFType.bind(service),
   props,
@@ -163,6 +156,23 @@ watch(() => props.parentUri, () => {
     })
   }
 }, { immediate: true });
+
+function getEmptyForm(): VueRDFTypeDTO {
+  return {
+    uri: undefined,
+    parent: undefined,
+    name_translations: {en: "", fr: ""},
+    comment_translations: {en: "", fr: ""},
+    icon: undefined,
+    is_abstract: false
+  };
+}
+
+function showCreateForm(selectedParentUri?: string): void {
+  const createForm = getEmptyForm();
+  createForm.parent = selectedParentUri;
+  innerShowCreateForm(createForm);
+}
 //#endregion
 
 defineExpose({

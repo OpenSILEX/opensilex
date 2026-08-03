@@ -121,6 +121,8 @@
             :editTitle="t('OntologyClassDetail.updateProperty')"
             :domain="rdfType"
             :classUri="selected.uri"
+            @onCreate="emit('onDetailChange')"
+            @onUpdate="emit('onDetailChange')"
         ></OntologyClassPropertyForm>
       </div>
 

@@ -128,7 +128,6 @@ const {
   formTitle,
   showCreateForm,
   showEditForm,
-  isEditMode,
   submit,
   hide
 } = useModalFormLogic<OntologyClassPropertyFormType>({

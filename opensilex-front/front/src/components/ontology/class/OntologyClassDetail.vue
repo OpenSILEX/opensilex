@@ -115,19 +115,13 @@
           </n-config-provider>
         </div>
 
-        <ModalForm
+        <OntologyClassPropertyForm
             ref="classPropertyForm"
-            component="opensilex-OntologyClassPropertyForm"
             :createTitle="t('OntologyClassDetail.addProperty')"
             :editTitle="t('OntologyClassDetail.updateProperty')"
-            @onCreate="$emit('onDetailChange')"
-            @onUpdate="$emit('onDetailChange')"
-            :successMessage="t('OntologyClassView.the-type')"
-            :data="{
-              domain: rdfType,
-              classUri: selected.uri
-            }"
-        ></ModalForm>
+            :domain="rdfType"
+            :classUri="selected.uri"
+        ></OntologyClassPropertyForm>
       </div>
 
     </template>
@@ -154,6 +148,7 @@ import Card from "@/components/common/views/Card.vue";
 import StringView from "@/components/common/views/StringView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
 import Button from "@/components/common/buttons/Button.vue";
+import OntologyClassPropertyForm from "@/components/ontology/class/OntologyClassPropertyForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");

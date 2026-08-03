@@ -1,89 +1,102 @@
 <template>
-  <n-form>
+  <Modal ref="modal">
+    <template #header>
+      <FormHeader :title="formTitle" icon="bi#bi-geo-alt"/>
+    </template>
 
-    <InputForm
-        v-model:value="data.classUri"
-        label="component.common.type"
-        type="text"
-        :disabled="true"
-    ></InputForm>
-
-    <!-- Parent -->
-    <FormSelector
-        v-model:selected="form.property"
-        :options="propertiesOptions"
-        :required="true"
-        :label="t('OntologyClassPropertyForm.property')"
-        :helpMessage="t('OntologyClassPropertyForm.property-help')"
-        @update:selected="updateIsListProperty"
-    ></FormSelector>
-
-
-    <!-- is_required -->
-    <FormField
-        :required="true"
-        :label="t('OntologyClassPropertyForm.required')"
-        :helpMessage="t('OntologyClassPropertyForm.required-help')"
+    <n-form
+        ref="nForm"
+        :rules="rules"
+        :model="form"
     >
-      <template #field>
-        <n-switch
-            v-model:value="form.is_required"
-            size="small"
-        ></n-switch>
-      </template>
-    </FormField>
+      <n-form-item>
+        <InputForm
+            :value="classUri"
+            label="component.common.type"
+            type="text"
+            :disabled="true"
+        ></InputForm>
+      </n-form-item>
 
-    <!-- is_list -->
-    <FormField
-        :required="true"
-        :label="t('OntologyClassPropertyForm.list')"
-        :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
-    >
-      <template #field>
-        <n-switch
-            :disabled="dataTypeProperties.indexOf(form.property) >= 0"
-            v-model:value="form.is_list"
-            size="small"
-        ></n-switch>
-      </template>
-    </FormField>
+      <!-- Parent -->
+      <FormSelector
+          path="property"
+          v-model:selected="form.property"
+          :options="propertiesOptions"
+          :required="true"
+          :label="t('OntologyClassPropertyForm.property')"
+          :helpMessage="t('OntologyClassPropertyForm.property-help')"
+          @update:selected="updateIsListProperty"
+      ></FormSelector>
 
-  </n-form>
+      <!-- is_required -->
+      <n-form-item path="is_required">
+        <FormField
+            :label="t('OntologyClassPropertyForm.required')"
+            :helpMessage="t('OntologyClassPropertyForm.required-help')"
+        >
+          <template #field>
+            <n-switch
+                v-model:value="form.is_required"
+                size="small"
+            ></n-switch>
+          </template>
+        </FormField>
+      </n-form-item>
+
+      <!-- is_list -->
+      <n-form-item path="is_list">
+        <FormField
+            :label="t('OntologyClassPropertyForm.list')"
+            :helpMessage="t('OntologyClassPropertyForm.is-list-help')"
+        >
+          <template #field>
+            <n-switch
+                :disabled="dataTypeProperties.indexOf(form.property) >= 0"
+                v-model:value="form.is_list"
+                size="small"
+            ></n-switch>
+          </template>
+        </FormField>
+      </n-form-item>
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="hide" @submit="submit"/>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, watchEffect} from "vue";
+import {computed, inject, ref, useTemplateRef, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
-import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
-import {NSwitch, NForm} from "naive-ui";
+import {NForm, NSwitch, NFormItem, FormRules} from "naive-ui";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormField from "@/components/common/forms/FormField.vue";
+import Modal from "@/components/common/views/Modal.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
+import {required} from "@/models/FormFieldsFormatter";
 
 //#region Public
-const props = withDefaults(defineProps<{
-  editMode: boolean,
-  form: any,
-  data: {
-    domain: string,
-    classUri: string
-  }
-}>(), {
-  form: {
-    property: null,
-    is_required: false,
-    is_list: false
-  }
-});
+const props = withDefaults(defineProps<ModalFormProps & {
+  domain: string,
+  classUri: string
+}>(), {});
 
-defineExpose({
-  getEmptyForm,
-  create,
-  update
-})
+const emit = defineEmits<ModalFormEmits>();
+
+export interface OntologyClassPropertyFormType {
+  property: string,
+  is_required: boolean,
+  is_list: boolean
+}
+
 //#endregion
 
 //#region Private
@@ -93,6 +106,9 @@ const {t} = useI18n();
 
 const availableProperties = ref();
 const dataTypeProperties = ref([]);
+const rules: FormRules = {
+  property: required(t('OntologyClassPropertyForm.property'))
+}
 
 const propertiesOptions = computed(() => {
   return buildTreeListOptions(
@@ -101,21 +117,33 @@ const propertiesOptions = computed(() => {
   );
 })
 
-
 watchEffect(() => {
-  ontologyService.getLinkableProperties(props.data.classUri, props.data.domain).then((http) => {
+  ontologyService.getLinkableProperties(props.classUri, props.domain).then((http) => {
     setProperties(http.response.result);
   });
 });
 
-
-function getEmptyForm() {
-  return {
-    property: null,
+const {
+  form,
+  formTitle,
+  showCreateForm,
+  showEditForm,
+  isEditMode,
+  submit,
+  hide
+} = useModalFormLogic<OntologyClassPropertyFormType>({
+  modalRef: useTemplateRef<InstanceType<typeof Modal>>('modal'),
+  nFormRef: useTemplateRef<InstanceType<typeof NForm>>('nForm'),
+  getEmptyForm: () => ({
+    property: undefined,
     is_required: false,
     is_list: false,
-  };
-}
+  }),
+  create,
+  update,
+  props,
+  emit
+});
 
 function setProperties(properties: ResourceTreeDTO[]) {
   availableProperties.value = properties;
@@ -129,50 +157,38 @@ function setProperties(properties: ResourceTreeDTO[]) {
 }
 
 function updateIsListProperty() {
-  if (!props.form.property || !dataTypeProperties) {
+  if (!form.value.property || !dataTypeProperties) {
     return;
   }
 
   // if the property is a data property then set is_list to false, since we don't actually handle generics list component for data-property
-  if (isDataProperty(props.form.property)) {
-    props.form.is_list = false;
+  if (isDataProperty(form.value.property)) {
+    form.value.is_list = false;
   }
 }
 
-function create(form) {
+function create(form: OntologyClassPropertyFormType) {
   let propertyForm = {
-    rdf_type: props.data.classUri,
+    rdf_type: props.classUri,
     property: form.property,
     required: form.is_required,
     list: form.is_list,
-    domain: props.data.domain
+    domain: props.domain
   };
 
-  return ontologyService
-      .addClassPropertyRestriction(propertyForm)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let msg = t("OntologyClassPropertyForm.link-success-msg", [form.property, form.rdf_type]).toString();
-        opensilex.showSuccessToast(msg);
-      })
-      .catch(opensilex.errorHandler);
+  return ontologyService.addClassPropertyRestriction(propertyForm);
 }
 
-function update(form) {
+function update(form: OntologyClassPropertyFormType) {
   let propertyForm = {
-    rdf_type: props.data.classUri,
+    rdf_type: props.classUri,
     property: form.property,
     required: form.is_required,
     list: form.is_list,
-    domain: props.data.domain
+    domain: props.domain
   };
 
-  return ontologyService
-      .updateClassPropertyRestriction(propertyForm)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let msg = t("OntologyClassPropertyForm.link-success-msg", form.property, form.rdf_type).toString();
-        opensilex.showSuccessToast(msg);
-      })
-      .catch(opensilex.errorHandler);
+  return ontologyService.updateClassPropertyRestriction(propertyForm);
 }
 
 function buildTreeListOptions(resourceTrees: Array<any>, excludeProperties) {
@@ -224,6 +240,11 @@ function buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
 }
 
 //#endregion
+
+defineExpose({
+  showCreateForm,
+  showEditForm
+})
 </script>
 
 <style scoped lang="scss">

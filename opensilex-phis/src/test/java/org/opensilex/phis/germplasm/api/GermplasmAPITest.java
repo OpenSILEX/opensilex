@@ -10,10 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.opensilex.core.germplasm.api.BaseGermplasmAPITest;
-import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
-import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
-import org.opensilex.core.germplasm.api.GermplasmGetSingleDTO;
+import org.opensilex.core.germplasm.api.*;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -31,6 +28,7 @@ import java.util.Map;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -232,5 +230,47 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
         // check uri still exists
         Response getResult3 = getJsonGetByUriResponseAsAdmin(target(uriPath), uriNotToDelete.toString());
         assertEquals(Status.OK.getStatusCode(), getResult3.getStatus());
+    }
+
+    @Test
+    public void updateSpeciesShouldNotAlterVariety() throws Exception {
+        var speciesDto = new GermplasmCreationDTO();
+        speciesDto.setRdfType(URI.create(Oeso.Species.getURI()));
+        speciesDto.setName("species");
+        var speciesUri = new UserCallBuilder(create)
+                .setBody(speciesDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertNotNull(speciesUri);
+
+        var varietyDto = new GermplasmCreationDTO();
+        varietyDto.setRdfType(URI.create(Oeso.Variety.getURI()));
+        varietyDto.setName("variety");
+        varietyDto.setSpecies(speciesUri);
+        var varietyUri = new UserCallBuilder(create)
+                .setBody(varietyDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        assertNotNull(varietyUri);
+
+        var updateSpeciesDto = new GermplasmUpdateDTO();
+        updateSpeciesDto.setUri(speciesUri.toString());
+        updateSpeciesDto.setName("updated species");
+        updateSpeciesDto.setRdfType(URI.create(Oeso.Species.getURI()));
+        try (var response = new UserCallBuilder(update)
+                .setBody(updateSpeciesDto)
+                .buildAdmin()
+                .executeCall()) {
+            assertEquals(Status.OK.getStatusCode(), response.getStatus());
+
+            var variety = new UserCallBuilder(get)
+                    .setUriInPath(varietyUri)
+                    .buildAdmin()
+                    .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                    .getDeserializedResponse()
+                    .getResult();
+            assertNotNull("Species of the variety should still exist after updating the species", variety.getSpecies());
+            assertTrue(SPARQLDeserializers.compareURIs(speciesUri, variety.getSpecies()));
+        }
     }
 }

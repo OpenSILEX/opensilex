@@ -233,7 +233,7 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
     }
 
     @Test
-    public void updateSpeciesShouldNotAlterVariety() throws Exception {
+    public void updateSpeciesShouldNotAlterAssociatedGermplasms() throws Exception {
         var speciesDto = new GermplasmCreationDTO();
         speciesDto.setRdfType(URI.create(Oeso.Species.getURI()));
         speciesDto.setName("species");
@@ -241,7 +241,6 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                 .setBody(speciesDto)
                 .buildAdmin()
                 .executeCallAndReturnURI();
-        assertNotNull(speciesUri);
 
         var varietyDto = new GermplasmCreationDTO();
         varietyDto.setRdfType(URI.create(Oeso.Variety.getURI()));
@@ -251,12 +250,11 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                 .setBody(varietyDto)
                 .buildAdmin()
                 .executeCallAndReturnURI();
-        assertNotNull(varietyUri);
 
         var updateSpeciesDto = new GermplasmUpdateDTO();
         updateSpeciesDto.setUri(speciesUri.toString());
         updateSpeciesDto.setName("updated species");
-        updateSpeciesDto.setRdfType(URI.create(Oeso.Species.getURI()));
+        updateSpeciesDto.setRdfType(speciesDto.getRdfType());
         try (var response = new UserCallBuilder(update)
                 .setBody(updateSpeciesDto)
                 .buildAdmin()
@@ -271,6 +269,120 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
                     .getResult();
             assertNotNull("Species of the variety should still exist after updating the species", variety.getSpecies());
             assertTrue(SPARQLDeserializers.compareURIs(speciesUri, variety.getSpecies()));
+        }
+    }
+
+    @Test
+    public void updateVarietyShouldNotAlterAssociatedGermplasms() throws Exception {
+        var speciesDto = new GermplasmCreationDTO();
+        speciesDto.setRdfType(URI.create(Oeso.Species.getURI()));
+        speciesDto.setName("species");
+        var speciesUri = new UserCallBuilder(create)
+                .setBody(speciesDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var varietyDto = new GermplasmCreationDTO();
+        varietyDto.setRdfType(URI.create(Oeso.Variety.getURI()));
+        varietyDto.setName("variety");
+        varietyDto.setSpecies(speciesUri);
+        var varietyUri = new UserCallBuilder(create)
+                .setBody(varietyDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var accessionDto = new GermplasmCreationDTO();
+        accessionDto.setRdfType(URI.create(Oeso.Accession.getURI()));
+        accessionDto.setName("accession");
+        accessionDto.setSpecies(speciesUri);
+        accessionDto.setVariety(varietyUri);
+        var accessionUri = new UserCallBuilder(create)
+                .setBody(accessionDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var updateVarietyDto = new GermplasmUpdateDTO();
+        updateVarietyDto.setUri(varietyUri.toString());
+        updateVarietyDto.setName("updated variety");
+        updateVarietyDto.setRdfType(varietyDto.getRdfType());
+        updateVarietyDto.setSpecies(varietyDto.getSpecies());
+        try (var response = new UserCallBuilder(update)
+                .setBody(updateVarietyDto)
+                .buildAdmin()
+                .executeCall()) {
+            assertEquals(Status.OK.getStatusCode(), response.getStatus());
+
+            var accession = new UserCallBuilder(get)
+                    .setUriInPath(accessionUri)
+                    .buildAdmin()
+                    .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                    .getDeserializedResponse()
+                    .getResult();
+            assertNotNull("Variety of the accession should still exist after updating the variety", accession.getVariety());
+            assertTrue(SPARQLDeserializers.compareURIs(varietyUri, accession.getVariety()));
+        }
+    }
+
+    @Test
+    public void updateAccessionShouldNotAlterAssociatedGermplasms() throws Exception {
+        var speciesDto = new GermplasmCreationDTO();
+        speciesDto.setRdfType(URI.create(Oeso.Species.getURI()));
+        speciesDto.setName("species");
+        var speciesUri = new UserCallBuilder(create)
+                .setBody(speciesDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var varietyDto = new GermplasmCreationDTO();
+        varietyDto.setRdfType(URI.create(Oeso.Variety.getURI()));
+        varietyDto.setName("variety");
+        varietyDto.setSpecies(speciesUri);
+        var varietyUri = new UserCallBuilder(create)
+                .setBody(varietyDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var accessionDto = new GermplasmCreationDTO();
+        accessionDto.setRdfType(URI.create(Oeso.Accession.getURI()));
+        accessionDto.setName("accession");
+        accessionDto.setSpecies(speciesUri);
+        accessionDto.setVariety(varietyUri);
+        var accessionUri = new UserCallBuilder(create)
+                .setBody(accessionDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var lotDto = new GermplasmCreationDTO();
+        lotDto.setRdfType(URI.create(Oeso.PlantMaterialLot.getURI()));
+        lotDto.setName("plant material lot");
+        lotDto.setSpecies(speciesUri);
+        lotDto.setVariety(varietyUri);
+        lotDto.setAccession(accessionUri);
+        var lotUri = new UserCallBuilder(create)
+                .setBody(lotDto)
+                .buildAdmin()
+                .executeCallAndReturnURI();
+
+        var updateAccessionDto = new GermplasmUpdateDTO();
+        updateAccessionDto.setUri(accessionUri.toString());
+        updateAccessionDto.setName("updated accession");
+        updateAccessionDto.setRdfType(accessionDto.getRdfType());
+        updateAccessionDto.setSpecies(accessionDto.getSpecies());
+        updateAccessionDto.setVariety(accessionDto.getVariety());
+        try (var response = new UserCallBuilder(update)
+                .setBody(updateAccessionDto)
+                .buildAdmin()
+                .executeCall()) {
+            assertEquals(Status.OK.getStatusCode(), response.getStatus());
+
+            var lot = new UserCallBuilder(get)
+                    .setUriInPath(lotUri)
+                    .buildAdmin()
+                    .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                    .getDeserializedResponse()
+                    .getResult();
+            assertNotNull("Accession of the germplasm should still exist after updating the accession", lot.getAccession());
+            assertTrue(SPARQLDeserializers.compareURIs(accessionUri, lot.getAccession()));
         }
     }
 }

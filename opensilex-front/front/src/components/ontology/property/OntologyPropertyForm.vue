@@ -1,161 +1,172 @@
 <template>
-  <n-form v-if="form.name_translations">
-    <InputForm
-        v-model:value="form.uri"
-        label="component.common.uri"
-        type="text"
-        rules="url"
-        :disabled="editMode"
-        :required="true"
-    ></InputForm>
+  <Modal ref="modal">
+    <template #header>
+      <FormHeader :title="formTitle" icon="bi#bi-geo-alt"/>
+    </template>
 
-    <hr/>
+    <n-form
+        ref="nForm"
+        :model="form"
+        :rules="rules"
+        v-if="form.name_translations"
+    >
+      <n-form-item path="uri">
+        <InputForm
+            v-model:value="form.uri"
+            label="component.common.uri"
+            type="text"
+            rules="url"
+            :disabled="isEditMode"
+            :required="true"
+        ></InputForm>
+      </n-form-item>
 
-    <div class="row">
+      <hr/>
 
-      <div class="col-lg-6">
-        <label for="datatypeRadio">
+      <div class="row">
+        <div class="col-lg-6">
+          <n-form-item path="rdf_type">
+            <n-radio-group v-model:value="form.rdf_type" id="datatypeRadio">
+              <div>
+                <n-radio
+                    :value="OWL.DATATYPE_PROPERTY_URI"
+                    :label="t('OntologyPropertyForm.dataProperty')"
+                >
+                </n-radio>
+              </div>
+              <div>
+                <n-radio
+                    :value="OWL.OBJECT_PROPERTY_URI"
+                    :label="t('OntologyPropertyForm.objectProperty')"
+                >
+                </n-radio>
+              </div>
+              <div>
+                <n-radio
+                    :value="null"
+                    :label="t('OntologyPropertyForm.inheritedType')"
+                >
+                </n-radio>
+              </div>
+            </n-radio-group>
+          </n-form-item>
+        </div>
+        <div class="col-lg-6">
+          <FormSelector
+              v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
+              path="range"
+              :label="t('OntologyPropertyForm.data-type')"
+              :required="true"
+              v-model:selected="form.range"
+              :options="dataTypes"
+              :filterable="true"
+              :helpMessage="t('OntologyPropertyForm.dataProperty-help')"
+          ></FormSelector>
 
-        </label>
-        <n-radio-group v-model:value="form.rdf_type" id="datatypeRadio">
-          <div>
-            <n-radio
-                :value="OWL.DATATYPE_PROPERTY_URI"
-                :label="t('OntologyPropertyForm.dataProperty')"
-            >
-            </n-radio>
-          </div>
-          <div>
-            <n-radio
-                :value="OWL.OBJECT_PROPERTY_URI"
-                :label="t('OntologyPropertyForm.objectProperty')"
-            >
-            </n-radio>
-          </div>
-          <div>
-            <n-radio
-                :value="null"
-                :label="t('OntologyPropertyForm.inheritedType')"
-            >
-            </n-radio>
-          </div>
-        </n-radio-group>
+          <FormSelector
+              v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
+              path="range"
+              :label="t('OntologyPropertyForm.object-type')"
+              :required="true"
+              v-model:selected="form.range"
+              :options="objectTypes"
+              :filterable="true"
+              :helpMessage="t('OntologyPropertyForm.objectProperty-help')"
+          ></FormSelector>
+
+          <FormSelector
+              v-if="form.rdf_type == null"
+              path="range"
+              :label="t('component.common.parent')"
+              :required="true"
+              v-model:selected="form.parent"
+              :options="parentOptions"
+              :filterable="true"
+              :helpMessage="t('OntologyPropertyForm.parent-help')"
+          ></FormSelector>
+
+          <n-form-item path="domain">
+            <TypeForm
+                v-model:type="form.domain"
+                :required="true"
+                :baseType="domain"
+                :ignoreRoot="false"
+                :label="t('OntologyPropertyForm.domain')"
+                :helpMessage="t('OntologyPropertyForm.domain-help')"
+            ></TypeForm>
+          </n-form-item>
+        </div>
       </div>
-      <div class="col-lg-6">
-        <FormSelector
-            v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
-            :label="t('OntologyPropertyForm.data-type')"
-            :required="true"
-            v-model:selected="form.range"
-            :options="dataTypes"
-            :filterable="true"
-            :helpMessage="t('OntologyPropertyForm.dataProperty-help')"
-        ></FormSelector>
 
-        <FormSelector
-            v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
-            :label="t('OntologyPropertyForm.object-type')"
-            :required="true"
-            v-model:selected="form.range"
-            :options="objectTypes"
-            :filterable="true"
-            :helpMessage="t('OntologyPropertyForm.objectProperty-help')"
-        ></FormSelector>
+      <hr/>
 
-        <FormSelector
-            v-if="form.rdf_type == null"
-            :label="t('component.common.parent')"
-            :required="true"
-            v-model:selected="form.parent"
-            :options="parentOptions"
-            :filterable="true"
-            :helpMessage="t('OntologyPropertyForm.parent-help')"
-        ></FormSelector>
+      <n-form-item path="name_translations.en">
+        <InputForm
+            v-model:value="form.name_translations.en"
+            :label="t('OntologyPropertyForm.labelEN')"
+            type="text"
+            :required="enLangRequired"
+        ></InputForm>
+      </n-form-item>
 
-        <TypeForm
-            v-model:type="form.domain"
-            :baseType="data.domain"
-            :ignoreRoot="false"
-            :label="t('OntologyPropertyForm.domain')"
-            :helpMessage="t('OntologyPropertyForm.domain-help')"
-        ></TypeForm>
-      </div>
+      <n-form-item path="comment_translations.en">
+        <TextAreaForm
+            v-model:value="form.comment_translations.en"
+            :label="t('OntologyPropertyForm.commentEN')"
+            :required="false"
+            @keydown.native.enter.stop
+        ></TextAreaForm>
+      </n-form-item>
 
-    </div>
+      <n-form-item path="name_translations.fr">
+        <InputForm
+            v-model:value="form.name_translations.fr"
+            :label="t('OntologyPropertyForm.labelFR')"
+            type="text"
+            :required="otherLangRequired"
+        ></InputForm>
+      </n-form-item>
 
-
-    <hr/>
-    <InputForm
-        v-model:value="form.name_translations.en"
-        :label="t('OntologyPropertyForm.labelEN')"
-        type="text"
-        :required="enLangRequired"
-    ></InputForm>
-
-    <TextAreaForm
-        v-model:value="form.comment_translations.en"
-        :label="t('OntologyPropertyForm.commentEN')"
-        :required="false"
-        @keydown.native.enter.stop
-    ></TextAreaForm>
-
-    <InputForm
-        v-model:value="form.name_translations.fr"
-        :label="t('OntologyPropertyForm.labelFR')"
-        type="text"
-        :required="otherLangRequired"
-    ></InputForm>
-
-    <TextAreaForm
-        v-model:value="form.comment_translations.fr"
-        :label="t('OntologyPropertyForm.commentFR')"
-        :required="false"
-        @keydown.native.enter.stop
-    ></TextAreaForm>
-
-  </n-form>
+      <n-form-item path="comment_translations.fr">
+        <TextAreaForm
+            v-model:value="form.comment_translations.fr"
+            :label="t('OntologyPropertyForm.commentFR')"
+            :required="false"
+            @keydown.native.enter.stop
+        ></TextAreaForm>
+      </n-form-item>
+    </n-form>
+    <template #footer>
+      <FormFooter @cancel="hide" @submit="submit"/>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, watchEffect} from "vue";
+import {computed, inject, ref, useTemplateRef, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
 import OWL from "@/ontologies/OWL";
-import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NForm, NRadio, NRadioGroup} from "naive-ui";
+import {FormRules, NForm, NFormItem, NRadio, NRadioGroup} from "naive-ui";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
+import Modal from "@/components/common/views/Modal.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
+import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
+import { required } from "@/models/FormFieldsFormatter";
 
 //#region Public
-
-const props = defineProps<{
-  editMode: boolean
-  data: {
-    domain: string
-  }
+const props = defineProps<ModalFormProps & {
+  domain: string
 }>();
 
-const form = defineModel("form", {
-  default: {
-    uri: null,
-    rdf_type: OWL.DATATYPE_PROPERTY_URI,
-    parent: null,
-    name_translations: {en: null, fr: null},
-    comment_translations: {en: "", fr: ""},
-    domain: null,
-    range: null
-  }
-});
-
-defineExpose({
-  getEmptyForm,
-  create,
-  update
-})
+const emit = defineEmits<ModalFormEmits>();
 //#endregion
 
 //#region Private
@@ -163,15 +174,26 @@ const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
 const {t} = useI18n();
+
 const lang = computed(() => store.state.lang);
 const enLangRequired = computed(() => lang.value === "en");
 const otherLangRequired = computed(() => lang.value !== "en");
+
+const rules: FormRules = {
+  uri: required("component.common.uri"),
+  domain: required("OntologyPropertyForm.domain"),
+  range: required("OntologyPropertyForm.range"),
+  name_translations: {
+    en: enLangRequired.value ? required("OntologyPropertyForm.labelEN") : undefined,
+    fr: otherLangRequired.value ? required("OntologyPropertyForm.labelFR") : undefined,
+  }
+};
 
 const availableParents = ref([]);
 const rdfTypeByParentURI = ref({});
 
 const parentOptions = computed(() => {
-  if (props.editMode) {
+  if (isEditMode) {
     return opensilex.buildTreeListOptions(availableParents.value, {
       disableSubTree: form.value.uri
     });
@@ -217,10 +239,9 @@ const objectTypes = computed(() => {
   return types;
 })
 
-
 watchEffect(() => {
-  if (props.data.domain) {
-    ontologyService.getProperties(props.data.domain, undefined, true).then(http => {
+  if (props.domain) {
+    ontologyService.getProperties(props.domain, undefined, true).then(http => {
       if (http.response.result.length > 0) {
         const dtoList = http.response.result;
         availableParents.value = dtoList;
@@ -233,15 +254,25 @@ watchEffect(() => {
 });
 
 
-function getEmptyForm() {
+const {form, formTitle, expose, isEditMode, submit, hide} = useModalFormLogic<RDFPropertyDTO>({
+  modalRef: useTemplateRef<InstanceType<typeof Modal>>("modal"),
+  nFormRef: useTemplateRef("nForm"),
+  getEmptyForm,
+  create: ontologyService.createProperty.bind(ontologyService),
+  update: ontologyService.updateProperty.bind(ontologyService),
+  props,
+  emit
+});
+
+function getEmptyForm(): RDFPropertyDTO {
   return {
-    uri: null,
+    uri: undefined,
     rdf_type: OWL.DATATYPE_PROPERTY_URI,
-    parent: null,
-    name_translations: {},
+    parent: undefined,
+    name_translations: {en: "", fr: ""},
     comment_translations: {en: "", fr: ""},
-    domain: null,
-    range: null
+    domain: undefined,
+    range: undefined
   };
 }
 
@@ -256,49 +287,18 @@ function sortTypesByLabel(types: Array<{ id: string, label: string }>): void {
   });
 }
 
-function computeFormToSend(form) {
-  let sentForm = {...form};
-
-  if (!sentForm.rdf_type) {
-    sentForm.rdf_type = rdfTypeByParentURI.value[form.parent];
-  } else {
-    sentForm.parent = null;
-  }
-
-  return sentForm;
-}
-
-function create(form) {
-  return ontologyService.createProperty(computeFormToSend(form))
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        let message = t("OntologyPropertyView.the-property") + " " + uri + t("component.common.success.creation-success-message");
-        opensilex.showSuccessToast(message);
-      })
-      .catch(error => {
-        if (error.status == 409) {
-          console.error("Property already exists", error);
-          opensilex.errorHandler(
-              error,
-              t("OntologyPropertyForm.property-already-exists")
-          );
-        } else {
-          opensilex.errorHandler(error);
-        }
-      });
-}
-
-function update(form) {
-  return ontologyService.updateProperty(computeFormToSend(form))
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        let message = t("OntologyPropertyView.the-property") + " " + uri + t("component.common.success.update-success-message");
-        opensilex.showSuccessToast(message);
-      })
-      .catch(opensilex.errorHandler);
+function showCreateForm(selectedParentUri?: string): void {
+  const createForm = getEmptyForm();
+  createForm.parent = selectedParentUri;
+  expose.showCreateForm(createForm);
 }
 
 //#endregion
+
+defineExpose({
+  showCreateForm,
+  ...expose
+})
 </script>
 
 <style scoped lang="scss">
@@ -316,6 +316,7 @@ en:
     dataProperty-help: 'Property which relate resource (e.g. device,scientific object, facility) to literal data (integer,decimal,date,string,etc)'
     object-type: Object class
     objectProperty-help: 'Property which relate resource (e.g. device,scientific object, facility) to other resource (e.g. device,scientific object, facility)'
+    range: 'Range'
     parent-help: 'Parent'
     labelEN: English name
     labelFR: French name
@@ -335,6 +336,7 @@ fr:
     dataProperty-help: 'Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) '
     object-type: Classe d'objet
     objectProperty-help: 'Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource'
+    range: 'Portée'
     parent-help: 'Parent'
     labelEN: Nom anglais
     labelFR: Nom français

@@ -15,21 +15,14 @@
                 class="createButton"
             ></CreateButton>
 
-            <ModalForm
+            <OntologyPropertyForm
                 ref="propertyForm"
-                component="opensilex-OntologyPropertyForm"
-                :createTitle="t('OntologyPropertyView.add')"
-                :editTitle="t('OntologyPropertyView.update')"
-                :initForm="initForm"
-                @onCreate="refresh()"
-                @onUpdate="refresh()"
-                :successMessage="t('OntologyPropertyView.the-property')"
-                :icon="icon"
-                :data="{
-                  domain: rdfType,
-                  parentUri: parentURI
-                }"
-            ></ModalForm>
+                :create-title="t('OntologyPropertyView.add')"
+                :edit-title="t('OntologyPropertyView.update')"
+                :domain="rdfType"
+                @onCreate="refresh"
+                @onUpdate="refresh"
+            ></OntologyPropertyForm>
           </div>
 
           <StringFilter
@@ -74,6 +67,7 @@ import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import OntologyPropertyDetail from "@/components/ontology/property/OntologyPropertyDetail.vue";
+import OntologyPropertyForm from "@/components/ontology/property/OntologyPropertyForm.vue";
 
 //#region Public
 const props = defineProps<{
@@ -117,9 +111,7 @@ function onSelectionChanged(selection: RDFPropertyGetDTO) {
 }
 
 function showCreateForm(parentTypeURI?) {
-  console.log("Show create form", parentTypeURI);
-  parentURI.value = parentTypeURI;
-  propertyForm.value.showCreateForm();
+  propertyForm.value.showCreateForm(parentTypeURI);
 }
 
 function showEditForm(data) {

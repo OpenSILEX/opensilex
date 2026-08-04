@@ -30,21 +30,21 @@
               <div>
                 <n-radio
                     :value="OWL.DATATYPE_PROPERTY_URI"
-                    :label="t('OntologyPropertyForm.dataProperty')"
+                    :label="t('component.ontology.property.form.dataProperty')"
                 >
                 </n-radio>
               </div>
               <div>
                 <n-radio
                     :value="OWL.OBJECT_PROPERTY_URI"
-                    :label="t('OntologyPropertyForm.objectProperty')"
+                    :label="t('component.ontology.property.form.objectProperty')"
                 >
                 </n-radio>
               </div>
               <div>
                 <n-radio
                     :value="null"
-                    :label="t('OntologyPropertyForm.inheritedType')"
+                    :label="t('component.ontology.property.form.inheritedType')"
                 >
                 </n-radio>
               </div>
@@ -55,23 +55,23 @@
           <FormSelector
               v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
               path="range"
-              :label="t('OntologyPropertyForm.data-type')"
+              :label="t('component.ontology.property.form.data-type')"
               :required="true"
               v-model:selected="form.range"
               :options="dataTypes"
               :filterable="true"
-              :helpMessage="t('OntologyPropertyForm.dataProperty-help')"
+              :helpMessage="t('component.ontology.property.form.dataProperty-help')"
           ></FormSelector>
 
           <FormSelector
               v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
               path="range"
-              :label="t('OntologyPropertyForm.object-type')"
+              :label="t('component.ontology.property.form.object-type')"
               :required="true"
               v-model:selected="form.range"
               :options="objectTypes"
               :filterable="true"
-              :helpMessage="t('OntologyPropertyForm.objectProperty-help')"
+              :helpMessage="t('component.ontology.property.form.objectProperty-help')"
           ></FormSelector>
 
           <FormSelector
@@ -82,7 +82,7 @@
               v-model:selected="form.parent"
               :options="parentOptions"
               :filterable="true"
-              :helpMessage="t('OntologyPropertyForm.parent-help')"
+              :helpMessage="t('component.ontology.property.form.parent-help')"
           ></FormSelector>
 
           <n-form-item path="domain">
@@ -91,8 +91,8 @@
                 :required="true"
                 :baseType="domain"
                 :ignoreRoot="false"
-                :label="t('OntologyPropertyForm.domain')"
-                :helpMessage="t('OntologyPropertyForm.domain-help')"
+                :label="t('component.ontology.property.form.domain')"
+                :helpMessage="t('component.ontology.property.form.domain-help')"
             ></TypeForm>
           </n-form-item>
         </div>
@@ -103,7 +103,7 @@
       <n-form-item path="name_translations.en">
         <InputForm
             v-model:value="form.name_translations.en"
-            :label="t('OntologyPropertyForm.labelEN')"
+            :label="t('component.ontology.property.form.label.en')"
             type="text"
             :required="enLangRequired"
         ></InputForm>
@@ -112,7 +112,7 @@
       <n-form-item path="comment_translations.en">
         <TextAreaForm
             v-model:value="form.comment_translations.en"
-            :label="t('OntologyPropertyForm.commentEN')"
+            :label="t('component.ontology.property.form.comment.en')"
             :required="false"
             @keydown.native.enter.stop
         ></TextAreaForm>
@@ -121,7 +121,7 @@
       <n-form-item path="name_translations.fr">
         <InputForm
             v-model:value="form.name_translations.fr"
-            :label="t('OntologyPropertyForm.labelFR')"
+            :label="t('component.ontology.property.form.label.fr')"
             type="text"
             :required="otherLangRequired"
         ></InputForm>
@@ -130,7 +130,7 @@
       <n-form-item path="comment_translations.fr">
         <TextAreaForm
             v-model:value="form.comment_translations.fr"
-            :label="t('OntologyPropertyForm.commentFR')"
+            :label="t('component.ontology.property.form.comment.fr')"
             :required="false"
             @keydown.native.enter.stop
         ></TextAreaForm>
@@ -181,11 +181,11 @@ const otherLangRequired = computed(() => lang.value !== "en");
 
 const rules: FormRules = {
   uri: required("component.common.uri"),
-  domain: required("OntologyPropertyForm.domain"),
-  range: required("OntologyPropertyForm.range"),
+  domain: required("component.ontology.property.form.domain"),
+  range: required("component.ontology.property.form.range"),
   name_translations: {
-    en: enLangRequired.value ? required("OntologyPropertyForm.labelEN") : undefined,
-    fr: otherLangRequired.value ? required("OntologyPropertyForm.labelFR") : undefined,
+    en: enLangRequired.value ? required("component.ontology.property.form.label.en") : undefined,
+    fr: otherLangRequired.value ? required("component.ontology.property.form.label.fr") : undefined,
   }
 };
 
@@ -307,47 +307,3 @@ defineExpose({
 
 <style scoped lang="scss">
 </style>
-
-
-<i18n>
-en:
-  OntologyPropertyForm:
-    propertyType: Property Type
-    dataProperty: Data property
-    objectProperty: Object property
-    inheritedType: Type inherited from parent
-    data-type: Data type
-    dataProperty-help: 'Property which relate resource (e.g. device,scientific object, facility) to literal data (integer,decimal,date,string,etc)'
-    object-type: Object class
-    objectProperty-help: 'Property which relate resource (e.g. device,scientific object, facility) to other resource (e.g. device,scientific object, facility)'
-    range: 'Range'
-    parent-help: 'Parent'
-    labelEN: English name
-    labelFR: French name
-    commentEN: English description
-    commentFR: French description
-    property-already-exists: 'Property with same URI already exists'
-    domain: Domain
-    domain-help: 'Type concerned by the property. The property can be linked to the domain and on all domain descendant'
-
-fr:
-  OntologyPropertyForm:
-    propertyType: Type de propriété
-    dataProperty: Propriété litérale
-    objectProperty: Relation vers un objet
-    inheritedType: Type hérité du parent
-    data-type: Type de donnée
-    dataProperty-help: 'Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) '
-    object-type: Classe d'objet
-    objectProperty-help: 'Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource'
-    range: 'Portée'
-    parent-help: 'Parent'
-    labelEN: Nom anglais
-    labelFR: Nom français
-    commentEN: Description anglaise
-    commentFR: Description française
-    property-already-exists: Une propriété existe déjà avec la même URI
-    domain: Domaine
-    domain-help: 'Type concerné par la propriété. La propriété peut être liée au domaine choisi et à tous les descendants du domaine'
-
-</i18n>

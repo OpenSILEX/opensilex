@@ -1034,6 +1034,29 @@
                 "list": "List of values",
                 "dataProperty": "Data property",
                 "objectProperty": "Object property",
+                "form": {
+                    "propertyType": "Property Type",
+                    "dataProperty": "Data property",
+                    "objectProperty": "Object property",
+                    "inheritedType": "Type inherited from parent",
+                    "data-type": "Data type",
+                    "dataProperty-help": "Property which relate resource (e.g. device,scientific object, facility) to literal data (integer,decimal,date,string,etc)",
+                    "object-type": "Object class",
+                    "objectProperty-help": "Property which relate resource (e.g. device,scientific object, facility) to other resource (e.g. device,scientific object, facility)",
+                    "range": "Range",
+                    "parent-help": "Parent",
+                    "label": {
+                        "en": "English name",
+                        "fr": "French name"
+                    },
+                    "comment": {
+                        "en": "English description",
+                        "fr": "French description"
+                    },
+                    "property-already-exists": "Property with same URI already exists",
+                    "domain": "Domain",
+                    "domain-help": "Type concerned by the property. The property can be linked to the domain and on all domain descendant"
+                },
                 "exception" : {
                     "delete" : {
                         "instance-exists" : "Some objects use the property {property} You must delete these relations first",

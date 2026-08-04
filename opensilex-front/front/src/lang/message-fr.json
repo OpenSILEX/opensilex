@@ -1090,6 +1090,29 @@
                 "list": "Liste de valeurs",
                 "dataProperty": "Propriété litérale",
                 "objectProperty": "Relation vers un objet",
+                "form": {
+                    "propertyType": "Type de propriété",
+                    "dataProperty": "Propriété litérale",
+                    "objectProperty": "Relation vers un objet",
+                    "inheritedType": "Type hérité du parent",
+                    "data-type": "Type de donnée",
+                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) ",
+                    "object-type": "Classe d'objet",
+                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource",
+                    "range": "Portée",
+                    "parent-help": "Parent",
+                    "label": {
+                        "en": "Nom anglais",
+                        "fr": "Nom français"
+                    },
+                    "comment": {
+                        "en": "Description anglaise",
+                        "fr": "Description française"
+                    },
+                    "property-already-exists": "Une propriété existe déjà avec la même URI",
+                    "domain": "Domaine",
+                    "domain-help": "Type concerné par la propriété. La propriété peut être liée au domaine choisi et à tous les descendants du domaine"
+                },
                 "exception" : {
                     "delete" : {
                         "instance-exists" : "Une ou plusieurs ressources utilisent la propriété {property}. Vous devez les supprimer d'abord",

@@ -254,7 +254,7 @@ watchEffect(() => {
 });
 
 
-const {form, formTitle, expose, isEditMode, submit, hide} = useModalFormLogic<RDFPropertyDTO>({
+const {form, formTitle, exposed, isEditMode, submit, hide} = useModalFormLogic<RDFPropertyDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>("modal"),
   nFormRef: useTemplateRef("nForm"),
   getEmptyForm,
@@ -287,18 +287,22 @@ function sortTypesByLabel(types: Array<{ id: string, label: string }>): void {
   });
 }
 
-function showCreateForm(selectedParentUri?: string): void {
+function showCreateForm(options: {
+  parentUri?: string,
+  domainUri: string
+}): void {
   const createForm = getEmptyForm();
-  createForm.parent = selectedParentUri;
-  expose.showCreateForm(createForm);
+  createForm.parent = options.parentUri;
+  createForm.domain = options.domainUri;
+  exposed.showCreateForm(createForm);
 }
 
 //#endregion
 
 defineExpose({
-  showCreateForm,
-  ...expose
-})
+  ...exposed,
+  showCreateForm
+});
 </script>
 
 <style scoped lang="scss">

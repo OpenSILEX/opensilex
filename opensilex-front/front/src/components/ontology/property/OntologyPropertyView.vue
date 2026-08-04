@@ -88,12 +88,11 @@ const nameFilter = ref("");
 const selected = ref<RDFPropertyGetDTO>();
 const parentURI = ref("");
 
-const propertyForm = useTemplateRef("propertyForm");
+const propertyForm = useTemplateRef<InstanceType<typeof OntologyPropertyForm>>("propertyForm");
 const propertiesTree = useTemplateRef<InstanceType<typeof OntologyPropertyTreeView>>("propertiesTree");
 
 
 function initForm(form: RDFPropertyDTO): RDFPropertyDTO {
-  console.log("Init form !!", parentURI.value)
   form.parent = parentURI.value;
   if (OWL.hasParent(form.parent)) {
     form.rdf_type = null;
@@ -110,8 +109,11 @@ function onSelectionChanged(selection: RDFPropertyGetDTO) {
   selected.value = selection;
 }
 
-function showCreateForm(parentTypeURI?) {
-  propertyForm.value.showCreateForm(parentTypeURI);
+function showCreateForm(parentTypeURI?: string) {
+  propertyForm.value.showCreateForm({
+    parentUri: parentTypeURI,
+    domainUri: props.rdfType
+  });
 }
 
 function showEditForm(data) {

@@ -135,7 +135,7 @@ const parentOptions = computed(() => {
   }
 })
 
-const {form, formTitle, showCreateForm: innerShowCreateForm, showEditForm, isEditMode, submit, hide} = useModalFormLogic<VueRDFTypeDTO>({
+const {form, formTitle, exposed, isEditMode, submit, hide} = useModalFormLogic<VueRDFTypeDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>("modal"),
   nFormRef: useTemplateRef("nForm"),
   getEmptyForm,
@@ -171,14 +171,14 @@ function getEmptyForm(): VueRDFTypeDTO {
 function showCreateForm(selectedParentUri?: string): void {
   const createForm = getEmptyForm();
   createForm.parent = selectedParentUri;
-  innerShowCreateForm(createForm);
+  exposed.showCreateForm(createForm);
 }
 //#endregion
 
 defineExpose({
-  showCreateForm,
-  showEditForm
-})
+  ...exposed,
+  showCreateForm
+});
 </script>
 
 <style scoped lang="scss">

@@ -146,7 +146,7 @@ const rules = computed(() => ({
 //#endregion
 
 //#region modalFormLogic composable
-const {form, formTitle, showCreateForm, showEditForm, isEditMode, submit, hide} = useModalFormLogic<SiteCreationDTO>({
+const {form, formTitle, exposed, isEditMode, submit, hide} = useModalFormLogic<SiteCreationDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>('modalRef'),
   nFormRef: useTemplateRef<InstanceType<typeof NForm>>('formRef'),
   getEmptyForm: () => ({
@@ -181,10 +181,7 @@ function toggleAddress(event: Event) {
 
 //#endregion
 
-defineExpose({
-  showCreateForm,
-  showEditForm
-});
+defineExpose(exposed);
 </script>
 
 

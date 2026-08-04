@@ -126,7 +126,7 @@ export default function useModalFormLogic<T>(options: UseModalFormOptions<T>) {
     hide,
     submit,
     formTitle,
-    expose: {
+    exposed: {
       showCreateForm,
       showEditForm
     }

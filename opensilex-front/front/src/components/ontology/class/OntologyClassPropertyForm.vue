@@ -126,8 +126,7 @@ watchEffect(() => {
 const {
   form,
   formTitle,
-  showCreateForm,
-  showEditForm,
+  exposed,
   submit,
   hide
 } = useModalFormLogic<OntologyClassPropertyFormType>({
@@ -240,10 +239,7 @@ function buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
 
 //#endregion
 
-defineExpose({
-  showCreateForm,
-  showEditForm
-})
+defineExpose(exposed)
 </script>
 
 <style scoped lang="scss">

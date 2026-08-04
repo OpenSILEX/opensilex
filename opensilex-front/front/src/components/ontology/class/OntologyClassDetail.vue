@@ -1,7 +1,7 @@
 <template>
   <Card v-if="selected">
     <template #header>
-      <h3>{{ t("OntologyClassDetail.title") }}</h3>
+      <h3>{{ t("component.ontology.class.detail.title") }}</h3>
     </template>
     <template #body>
       <div>
@@ -17,11 +17,9 @@
             label="component.common.comment"
             :value="selected.comment"
         ></TextView>
-        <!-- Abstract type -->
-        <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.is_abstract"></opensilex-BooleanView> -->
         <!-- Icon identifier -->
         <IconView
-            :label="t('OntologyClassDetail.icon')"
+            :label="t('component.ontology.class.detail.icon')"
             :value="selected.icon"
         ></IconView>
         <MetadataView
@@ -37,7 +35,7 @@
         <div class="static-field row">
           <div class="col-lg-8">
             <span class="field-view-title" style="float: none">
-              {{ t("OntologyClassDetail.properties") }}
+              {{ t("component.ontology.class.detail.properties") }}
               <n-tooltip
                   trigger="hover"
               >
@@ -46,7 +44,7 @@
                       icon="question-circle"
                   />
                 </template>
-                {{ t("OntologyClassDetail.properties-help") }}
+                {{ t("component.ontology.class.detail.properties-help") }}
               </n-tooltip>
             </span>
           </div>
@@ -58,8 +56,8 @@
                 class="greenThemeColor addPropertyButton"
                 icon="ik#ik-plus"
                 :small="false"
-                :label="t('OntologyClassDetail.addProperty')"
-                helpMessage="OntologyClassDetail.add-property-help"
+                :label="t('component.ontology.class.detail.addProperty')"
+                helpMessage="component.ontology.class.detail.add-property-help"
             ></Button>
             &nbsp;
             <Button
@@ -68,7 +66,7 @@
                 class="greenThemeColor"
                 icon="fa#pencil-alt"
                 :small="false"
-                :label="t('OntologyClassDetail.setPropertiesOrder')"
+                :label="t('component.ontology.class.detail.setPropertiesOrder')"
             ></Button>
           </div>
         </div>
@@ -80,10 +78,10 @@
           >
             <template #header>
               <h4>
-                {{ t("OntologyClassDetail.setPropertiesOrder") }}
+                {{ t("component.ontology.class.detail.setPropertiesOrder") }}
               </h4>
             </template>
-            <p>{{ t("OntologyClassDetail.setPropertiesOrderInfo") }}:</p>
+            <p>{{ t("component.ontology.class.detail.setPropertiesOrderInfo") }}:</p>
             <n-list bordered>
               <VueDraggable v-model="customPropertyOrder">
                 <n-list-item
@@ -117,19 +115,15 @@
           </n-config-provider>
         </div>
 
-        <ModalForm
+        <OntologyClassPropertyForm
             ref="classPropertyForm"
-            component="opensilex-OntologyClassPropertyForm"
-            :createTitle="t('OntologyClassDetail.addProperty')"
-            :editTitle="t('OntologyClassDetail.updateProperty')"
-            @onCreate="$emit('onDetailChange')"
-            @onUpdate="$emit('onDetailChange')"
-            :successMessage="t('OntologyClassView.the-type')"
-            :data="{
-              domain: rdfType,
-              classUri: selected.uri
-            }"
-        ></ModalForm>
+            :createTitle="t('component.ontology.class.detail.addProperty')"
+            :editTitle="t('component.ontology.class.detail.updateProperty')"
+            :domain="rdfType"
+            :classUri="selected.uri"
+            @onCreate="emit('onDetailChange')"
+            @onUpdate="emit('onDetailChange')"
+        ></OntologyClassPropertyForm>
       </div>
 
     </template>
@@ -156,6 +150,7 @@ import Card from "@/components/common/views/Card.vue";
 import StringView from "@/components/common/views/StringView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
 import Button from "@/components/common/buttons/Button.vue";
+import OntologyClassPropertyForm from "@/components/ontology/class/OntologyClassPropertyForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -191,17 +186,17 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
   },
   {
     key: "is_required",
-    title: t("OntologyClassDetail.required"),
+    title: t("component.ontology.class.detail.required"),
     render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_required)
   },
   {
     key: "is_list",
-    title: t("OntologyClassDetail.list"),
+    title: t("component.ontology.class.detail.list"),
     render: (data: VueRDFTypePropertyDTO) => renderBool(data.is_list)
   },
   {
     key: "inherited",
-    title: t("OntologyClassDetail.inherited"),
+    title: t("component.ontology.class.detail.inherited"),
     render: (data: VueRDFTypePropertyDTO) => renderBool(data.inherited)
   },
   {
@@ -214,7 +209,7 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
             },
             h(DeleteButton, {
               onClick: () => deleteClassPropertyRestriction(data.uri),
-              label: t('OntologyClassDetail.deleteProperty'),
+              label: t('component.ontology.class.detail.deleteProperty'),
               small: true
             }))
   },
@@ -271,7 +266,7 @@ function showClassPropertyForm() {
 function deleteClassPropertyRestriction(propertyURI) {
   ontologyService.deleteClassPropertyRestriction(props.selected.uri, propertyURI)
       .then(() => {
-        let message = propertyURI + " : " + t("OntologyClassDetail.property-link-delete");
+        let message = propertyURI + " : " + t("component.ontology.class.detail.property-link-delete");
         opensilex.showSuccessToast(message);
         emit("onDetailChange");
       })
@@ -323,40 +318,4 @@ function startSetPropertiesOrder() {
   color: #f1f1f1
 }
 </style>
-
-
-<i18n>
-en:
-  OntologyClassDetail:
-    title: Object type detail
-    required: Required
-    icon: Icon
-    list: List of values
-    inherited: Inherited
-    properties: Properties
-    setPropertiesOrder: Set properties order
-    objectProperties: Object properties
-    addProperty: Add property to type
-    add-property-help: Link existing property to the type
-    deleteProperty: Delete property
-    setPropertiesOrderInfo: You can define properties display order by drag & drop them in the list below
-    properties-help: "List of all properties which can apply on the selected type. Including inherited properties and properties which are not specific to the type (ex: name or description)"
-    property-link-delete: "The property has been deleted from type"
-fr:
-  OntologyClassDetail:
-    title: Détail du type d'objet
-    required: Obligatoire
-    icon: Icône
-    list: Liste de valeurs
-    inherited: Héritée
-    properties: Propriétés
-    setPropertiesOrder: Définir l'ordre des propriétés
-    objectProperties: Relations vers des objets
-    addProperty: Ajouter une propriété au type
-    add-property-help: Ajouter une propriété existante pour ce type
-    deleteProperty: Supprimer la propriété
-    property-link-delete: "La propriété a été supprimée du type"
-    setPropertiesOrderInfo: Vous pouvez définir l'ordre d'affichage des propriétés par glisser-déposer dans la liste ci-dessous
-    properties-help: "Liste de toutes les propriétés qui peuvent s'appliquer au type selectionné. Y compris les propriétés héritées et les propriétés qui ne sont pas spécifiques au type (ex: nom ou description)"
-</i18n>
 

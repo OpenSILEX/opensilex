@@ -37,7 +37,6 @@ const props = withDefaults(defineProps<{
   placeholder?: string
   required?: boolean
   disabled?: boolean
-  rules?: string | Function
   autocomplete?: string
 }>(), {
   required: false,

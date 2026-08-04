@@ -53,9 +53,9 @@ const {t} = useI18n();
 
 const typeValue = computed(() => {
   if (OWL.isDatatypeProperty(props.selected.rdf_type)) {
-    return t("OntologyPropertyForm.dataProperty");
+    return t("component.ontology.property.form.dataProperty");
   } else {
-    return t("OntologyPropertyForm.objectProperty");
+    return t("component.ontology.property.form.objectProperty");
   }
 });
 

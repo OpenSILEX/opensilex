@@ -1,6 +1,6 @@
 package org.opensilex.core.annotation.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.annotation.dal.MotivationModel;
 
 import java.net.URI;
@@ -18,7 +18,7 @@ public class MotivationGetDTO {
         name = model.getName();
     }
 
-    @ApiModelProperty(value = "URI of the motivation", example = "http://www.w3.org/ns/oa#describing")
+    @Schema(description = "URI of the motivation", example = "http://www.w3.org/ns/oa#describing")
     public URI getUri() {
         return uri;
     }
@@ -27,7 +27,7 @@ public class MotivationGetDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Name of the annotation motivation", example = "describing")
+    @Schema(description = "Name of the annotation motivation", example = "describing")
     public String getName() {
         return name;
     }

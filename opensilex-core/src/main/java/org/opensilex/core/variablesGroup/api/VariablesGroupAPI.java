@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.variablesGroup.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.variable.api.VariableAPI;
@@ -44,7 +53,7 @@ import java.util.*;
  * @author Hamza IKIOU
  */
 
-@Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
+@Tag(name = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariablesGroupAPI.PATH)
 @ApiCredentialGroup(
         groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
@@ -70,19 +79,19 @@ public class VariablesGroupAPI {
     protected HttpServletRequest httpRequest;
 
     @POST
-    @ApiOperation("Add a variables group")
+    @Operation(summary = "Add a variables group")
     @ApiProtected
     @ApiCredential(
             credentialId = VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A variables group is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A variables group with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "A variables group is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A variables group with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)   
-    public Response createVariablesGroup(@ApiParam("Variables group description") @Valid VariablesGroupCreationDTO dto) throws Exception {
+    public Response createVariablesGroup(@Parameter(description = "Variables group description") @Valid VariablesGroupCreationDTO dto) throws Exception {
         try {
             VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
             VariablesGroupModel model = dto.newModel();
@@ -98,20 +107,20 @@ public class VariablesGroupAPI {
     }
 
     @GET
-    @ApiOperation(value = "Search variables groups")
+    @Operation(summary = "Search variables groups")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables groups", response = VariablesGroupGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return variables groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariablesGroupGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesGroups(
-            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name ,
-            @ApiParam(value = "Variable URI") @QueryParam("variableUri") URI variableUri ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Regex pattern for filtering by name") @QueryParam("name") String name ,
+            @Parameter(description = "Variable URI") @QueryParam("variableUri") URI variableUri ,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
@@ -143,15 +152,15 @@ public class VariablesGroupAPI {
    
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a variables group")
+    @Operation(summary = "Get a variables group")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variables group retrieved", response = VariablesGroupGetDTO.class),
-            @ApiResponse(code = 404, message = "Unknown variables group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Variables group retrieved", content = @Content(schema = @Schema(implementation = VariablesGroupGetDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown variables group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getVariablesGroup(@ApiParam(value = "Variables group URI", required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
+    public Response getVariablesGroup(@Parameter(description = "Variables group URI", required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
         VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
         VariablesGroupModel model = dao.get(uri);
         if (model == null) {
@@ -166,18 +175,18 @@ public class VariablesGroupAPI {
 
     @GET
     @Path(VariablesGroupAPI.GET_BY_URIS_PATH)
-    @ApiOperation("Get variables groups by their URIs")
+    @Operation(summary = "Get variables groups by their URIs")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables groups", response = VariablesGroupGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return variables groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariablesGroupGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Variables group not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)    
     public Response getVariablesGroupByURIs(
-            @ApiParam(value = "Variables group URIs", required = true) @QueryParam(VariablesGroupAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
-            @ApiParam(value = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Variables group URIs", required = true) @QueryParam(VariablesGroupAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @Parameter(description = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
@@ -204,19 +213,19 @@ public class VariablesGroupAPI {
     }
 
     @PUT
-    @ApiOperation("Update a variables group")
+    @Operation(summary = "Update a variables group")
     @ApiProtected
     @ApiCredential(
             credentialId = VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variables group updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown variables group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Variables group updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown variables group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateVariablesGroup(@ApiParam("Variables group description") @Valid VariablesGroupUpdateDTO dto) throws Exception {
+    public Response updateVariablesGroup(@Parameter(description = "Variables group description") @Valid VariablesGroupUpdateDTO dto) throws Exception {
         VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
         VariablesGroupModel model = dao.update(dto.newModel());
         return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
@@ -224,20 +233,20 @@ public class VariablesGroupAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a variables group")
+    @Operation(summary = "Delete a variables group")
     @ApiProtected
     @ApiCredential(
             credentialId = VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variables group deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown variables group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Variables group deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown variables group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteVariablesGroup(
-            @ApiParam(value = "Variables group URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Variables group URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
         dao.delete(uri);

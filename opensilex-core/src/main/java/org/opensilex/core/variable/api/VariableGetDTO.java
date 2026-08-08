@@ -7,7 +7,7 @@ package org.opensilex.core.variable.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
@@ -64,7 +64,7 @@ public class VariableGetDTO {
     @JsonProperty("sharedResourceInstance")
     private SharedResourceInstanceDTO sharedResourceInstance;
 
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
+    @Schema(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return uri;
     }
@@ -73,7 +73,7 @@ public class VariableGetDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(example = "Plant_Height")
+    @Schema(example = "Plant_Height")
     public String getName() {
         return name;
     }

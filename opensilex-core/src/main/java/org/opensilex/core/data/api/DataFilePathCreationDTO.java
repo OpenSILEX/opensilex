@@ -7,7 +7,7 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
@@ -23,7 +23,7 @@ import org.opensilex.core.exception.UnableToParseDateException;
 public class DataFilePathCreationDTO extends DataFileCreationDTO {
     @NotNull
     @JsonProperty("relative_path")
-    @ApiModelProperty(value = "path to the stored file", example = DataFilesAPI.DATAFILE_EXAMPLE_URI)
+    @Schema(description = "path to the stored file", example = DataFilesAPI.DATAFILE_EXAMPLE_URI)
     private String relativePath;
 
     public String getRelativePath() {

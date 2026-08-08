@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.document.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.io.FilenameUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -48,7 +57,7 @@ import java.util.Objects;
 /**
  * @author Fernandez Emilie
  */
-@Api(DocumentAPI.CREDENTIAL_DOCUMENT_GROUP_ID)
+@Tag(name = DocumentAPI.CREDENTIAL_DOCUMENT_GROUP_ID)
 @Path("/core/documents")
 @ApiCredentialGroup(
         groupId = DocumentAPI.CREDENTIAL_DOCUMENT_GROUP_ID,
@@ -87,8 +96,8 @@ public class DocumentAPI {
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the created Document {@link URI}
      */
     @POST
-    @ApiOperation(value = "Add a document", 
-    notes = "{ uri: http://opensilex.dev/set/documents#ProtocolExperimental, identifier: doi:10.1340/309registries, rdf_type: http://www.opensilex.org/vocabulary/oeso#ScientificDocument, title: title, date: 2020-06-01, description: description, targets: http://opensilex.dev/opensilex/id/variables/v001, authors: Author name, language: fr, format: jpg, deprecated: false, keywords: keywords}")
+    @Operation(summary = "Add a document", 
+    description = "{ uri: http://opensilex.dev/set/documents#ProtocolExperimental, identifier: doi:10.1340/309registries, rdf_type: http://www.opensilex.org/vocabulary/oeso#ScientificDocument, title: title, date: 2020-06-01, description: description, targets: http://opensilex.dev/opensilex/id/variables/v001, authors: Author name, language: fr, format: jpg, deprecated: false, keywords: keywords}")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DOCUMENT_MODIFICATION_ID,
@@ -97,13 +106,13 @@ public class DocumentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Document Inserted", response = URI.class),
-        @ApiResponse(code = 409, message = "A document with the same URI already exists", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "201", description = "Document Inserted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "409", description = "A document with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 
         public Response createDocument(
-            @ApiParam(value = "File description with metadata", required =  true, type="string") @NotNull @Valid @FormDataParam("description") DocumentCreationDTO docDto, 
-            @ApiParam(value = "file", type = "file") @FormDataParam("file") File file,
+            @Parameter(description = "File description with metadata", required =  true, schema = @Schema(type = "string")) @NotNull @Valid @FormDataParam("description") DocumentCreationDTO docDto, 
+            @Parameter(description = "file", schema = @Schema(type = "file")) @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileDetail
         ) throws Exception {
             DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
@@ -185,17 +194,17 @@ public class DocumentAPI {
      */
     @GET
     @Path("{uri}/description")
-    @ApiOperation("Get document's description")
+    @Operation(summary = "Get document's description")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Document retrieved", response = DocumentGetDTO.class),
-        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
-        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this document", response = ErrorResponse.class),
-        @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Document retrieved", content = @Content(schema = @Schema(implementation = DocumentGetDTO.class))),
+        @ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "User authenticated but not authorized to access this document", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Document URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getDocumentMetadata(
-            @ApiParam(value = "Document URI", example = "http://opensilex.dev/set/documents/ZA17", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Document URI", example = "http://opensilex.dev/set/documents/ZA17", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         Response accessError = checkAccessOrError(uri, documentDAO);
@@ -219,17 +228,17 @@ public class DocumentAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get document")
+    @Operation(summary = "Get document")
     @ApiProtected
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Document retrieved"),
-        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
-        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this document", response = ErrorResponse.class),
-        @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Document retrieved"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "User authenticated but not authorized to access this document", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Document URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getDocumentFile(
-            @ApiParam(value = "Document URI", example = "http://opensilex.dev/set/documents/ZA17", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Document URI", example = "http://opensilex.dev/set/documents/ZA17", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         uri = new URI(URIDeserializer.getExpandedURI(uri.toString()));
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
@@ -265,10 +274,10 @@ public class DocumentAPI {
      * @return Response the request result
      */
     @PUT
-    @ApiOperation(value = "Update document's description")
+    @Operation(summary = "Update document's description")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Document's metadata updated", response = URI.class),
-        @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Document's metadata updated", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Document URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @ApiProtected
     @ApiCredential(
@@ -278,7 +287,7 @@ public class DocumentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateDocument(
-        @ApiParam(value = "description", required =  true, type = "string") @NotNull @Valid @FormDataParam("description") DocumentCreationDTO docDto
+        @Parameter(description = "description", required =  true, schema = @Schema(type = "string")) @NotNull @Valid @FormDataParam("description") DocumentCreationDTO docDto
         ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         DocumentModel documentModel = docDto.newModel();
@@ -304,7 +313,7 @@ public class DocumentAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a document")
+    @Operation(summary = "Delete a document")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DOCUMENT_DELETE_ID,
@@ -314,11 +323,11 @@ public class DocumentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Document deleted", response = URI.class),
-        @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Document deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Document URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteDocument(
-            @ApiParam(value = "Document URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Document URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         uri = new URI(URIDeserializer.getExpandedURI(uri.toString()));
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
@@ -334,25 +343,25 @@ public class DocumentAPI {
      * @return filtered, ordered and paginated list
      */
     @GET
-    @ApiOperation("Search documents")
+    @Operation(summary = "Search documents")
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Document list", response = DocumentGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return Document list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DocumentGetDTO.class))))
     })
     public Response searchDocuments(
-            @ApiParam(value = "Search by type", example = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument") @QueryParam("rdf_type") URI type,
-            @ApiParam(value = "Regex pattern for filtering list by title", example = "experimental_protocol_3") @QueryParam("title") String title,
-            @ApiParam(value = "Regex pattern for filtering list by date", example = "2020") @QueryParam("date") String date,
-            @ApiParam(value = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") URI targets,
-            @ApiParam(value = "Regex pattern for filtering list by author", example = "Firstname Lastname") @QueryParam("authors") String authors,
-            @ApiParam(value = "Regex pattern for filtering list by keyword", example = "keyword") @QueryParam("keyword") String subject,
-            @ApiParam(value = "Regex pattern for filtering list by keyword or title", example = "keyword or title") @QueryParam("multiple") String multiple,
-            @ApiParam(value = "Search deprecated file", example = "true") @QueryParam("deprecated") String deprecated,
-            @ApiParam(value = "List of fields to sort as an array of fieldTitle=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by type", example = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument") @QueryParam("rdf_type") URI type,
+            @Parameter(description = "Regex pattern for filtering list by title", example = "experimental_protocol_3") @QueryParam("title") String title,
+            @Parameter(description = "Regex pattern for filtering list by date", example = "2020") @QueryParam("date") String date,
+            @Parameter(description = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") URI targets,
+            @Parameter(description = "Regex pattern for filtering list by author", example = "Firstname Lastname") @QueryParam("authors") String authors,
+            @Parameter(description = "Regex pattern for filtering list by keyword", example = "keyword") @QueryParam("keyword") String subject,
+            @Parameter(description = "Regex pattern for filtering list by keyword or title", example = "keyword or title") @QueryParam("multiple") String multiple,
+            @Parameter(description = "Search deprecated file", example = "true") @QueryParam("deprecated") String deprecated,
+            @Parameter(description = "List of fields to sort as an array of fieldTitle=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, nosql, fs);
         ListWithPagination<DocumentModel> resultList = documentDAO.search(
@@ -377,15 +386,15 @@ public class DocumentAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count documents")
+    @Operation(summary = "Count documents")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of documents associated to a given target", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of documents associated to a given target", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countDocuments(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
         DocumentDAO dao = new DocumentDAO(sparql, nosql, fs);
         int documentCount = dao.countDocuments(target);

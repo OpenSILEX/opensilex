@@ -8,8 +8,7 @@ package org.opensilex.security.user.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.api.PersonDTO;
 
@@ -33,7 +32,7 @@ import java.util.Objects;
  *
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "email", "language",
     "admin", "first_name", "last_name", "linked_person"})
 public class UserGetDTO extends UserDTO {
@@ -49,7 +48,7 @@ public class UserGetDTO extends UserDTO {
      */
     protected List<URI> favorites;
 
-    @ApiModelProperty(value = "User first name", example = "Jean")
+    @Schema(description = "User first name", example = "Jean")
     public String getFirstName() {
         return firstName;
     }
@@ -58,7 +57,7 @@ public class UserGetDTO extends UserDTO {
         this.firstName = firstName;
     }
 
-    @ApiModelProperty(value = "User last name", example = "Michel")
+    @Schema(description = "User last name", example = "Michel")
     public String getLastName() {
         return lastName;
     }
@@ -67,7 +66,7 @@ public class UserGetDTO extends UserDTO {
         this.lastName = lastName;
     }
 
-    @ApiModelProperty(value = "Favorites URI", example = "test")
+    @Schema(description = "Favorites URI", example = "test")
     public List<URI> getFavorites() {
         return favorites;
     }

@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.brapi.model.BrAPIv1GermplasmDTO;
 import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.brapi.responses.BrAPIv1GermplasmListResponse;
@@ -36,7 +45,7 @@ import java.net.URI;
  * The BrAPI germplasm corresponds to an accession in OpenSILEX
  * @author Alice BOIZET
  */
-@Api("BRAPI")
+@Tag(name = "BRAPI")
 @Path("/brapi/")
 public class GermplasmAPI extends BrapiCall {
     
@@ -52,21 +61,21 @@ public class GermplasmAPI extends BrapiCall {
     @GET
     @Path("v1/germplasm")
     @BrapiVersion("1.3")
-    @ApiOperation("Submit a search request for germplasm (type accession in OpenSILEX")
+    @Operation(summary = "Submit a search request for germplasm (type accession in OpenSILEX")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = BrAPIv1GermplasmListResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = BrAPIv1GermplasmListResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
 
     public Response getGermplasmBySearch(
-            @ApiParam(value = "Search by germplasmDbId (URI of an OpenSilex accession)") @QueryParam("germplasmDbId") URI uri,
-            @ApiParam(value = "Search by germplasmPUI (URI of an OpenSilex accession)") @QueryParam("germplasmPUI") URI germplasmPUI,
-            @ApiParam(value = "Search by germplasmName (name of an OpenSilex accession)") @QueryParam("germplasmName") String germplasmName,
-            @ApiParam(value = "Search by commonCropName (name of the species of an OpenSilex accession)") @QueryParam("commonCropName") String commonCropName,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by germplasmDbId (URI of an OpenSilex accession)") @QueryParam("germplasmDbId") URI uri,
+            @Parameter(description = "Search by germplasmPUI (URI of an OpenSilex accession)") @QueryParam("germplasmPUI") URI germplasmPUI,
+            @Parameter(description = "Search by germplasmName (name of an OpenSilex accession)") @QueryParam("germplasmName") String germplasmName,
+            @Parameter(description = "Search by commonCropName (name of the species of an OpenSilex accession)") @QueryParam("commonCropName") String commonCropName,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();

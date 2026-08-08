@@ -8,8 +8,7 @@ package org.opensilex.core.metrics.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -32,7 +31,7 @@ import org.opensilex.server.rest.validation.DateFormat;
  *
  * @author Arnaud Charleroy
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "object_uri", "created_date", "items", "data_by_variables", "facilities", "factors"})
 public class MetricDTO {
 
@@ -42,7 +41,7 @@ public class MetricDTO {
     @JsonProperty("object_uri")
     protected URI objectURI;
 
-    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
+    @Schema(description = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("created_date")
     protected String createdDate;
 

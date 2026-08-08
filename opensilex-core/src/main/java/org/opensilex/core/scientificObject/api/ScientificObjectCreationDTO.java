@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
@@ -31,12 +31,12 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
     @NotNull
     @NotEmpty
     @JsonProperty("name")
-    @ApiModelProperty(value = "Scientific object name", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_NAME, required = true)
+    @Schema(description = "Scientific object name", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_NAME, requiredMode = Schema.RequiredMode.REQUIRED)
     protected String name;
 
     @ValidURI
     @JsonProperty("experiment")
-    @ApiModelProperty(value = "Scientific object experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
+    @Schema(description = "Scientific object experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
     private URI experiment;
 
     @JsonProperty("move")
@@ -44,7 +44,7 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
 
     @Override
     @ValidURI
-    @ApiModelProperty(value = "Scientific object URI", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_URI)
+    @Schema(description = "Scientific object URI", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_URI)
     public URI getUri() {
         return uri;
     }
@@ -52,7 +52,7 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
     @Override
     @ValidURI
     @NotNull
-    @ApiModelProperty(value = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE, required = true)
+    @Schema(description = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE, requiredMode = Schema.RequiredMode.REQUIRED)
     public URI getType() {
         return type;
     }

@@ -14,7 +14,16 @@
 package org.opensilex.core.location.api;
 
 import com.mongodb.MongoQueryException;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
@@ -50,7 +59,7 @@ import java.util.stream.Collectors;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 
-@Api(LocationAPI.CREDENTIAL_LOCATION_GROUP_ID)
+@Tag(name = LocationAPI.CREDENTIAL_LOCATION_GROUP_ID)
 @Path(LocationAPI.PATH)
 @ApiCredentialGroup(
         groupId = LocationAPI.CREDENTIAL_LOCATION_GROUP_ID,
@@ -75,20 +84,20 @@ public class LocationAPI {
 
     @GET
     @Path("history")
-    @ApiOperation("Search location history of an object")
+    @Operation(summary = "Search location history of an object")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return location list", response = LocationObservationDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return location list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = LocationObservationDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchLocationHistory(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") @NotNull URI featureOfInterest,
-            @ApiParam(value = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDate") @ValidOffsetDateTime String startDate,
-            @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDate") @ValidOffsetDateTime String endDate,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") @NotNull URI featureOfInterest,
+            @Parameter(description = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDate") @ValidOffsetDateTime String startDate,
+            @Parameter(description = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDate") @ValidOffsetDateTime String endDate,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
@@ -115,17 +124,17 @@ public class LocationAPI {
 
     @POST
     @Path("targetLocations")
-    @ApiOperation("Search the last geospatialized location of a target")
+    @Operation(summary = "Search the last geospatialized location of a target")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return location list", response = LocationObservationDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return location list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = LocationObservationDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchTargetLocations(
-            @ApiParam(value = "geometry GeoJSON") GeoJsonObject geometry,
-            @ApiParam(value = "target RDF Type URI") @QueryParam("base_type") @ValidURI URI targetType,
-            @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate
+            @Parameter(description = "geometry GeoJSON") GeoJsonObject geometry,
+            @Parameter(description = "target RDF Type URI") @QueryParam("base_type") @ValidURI URI targetType,
+            @Parameter(description = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate
     ) throws Exception {
         try {
             LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
@@ -170,15 +179,15 @@ public class LocationAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count locations")
+    @Operation(summary = "Count locations")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of locations associated to a given target", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of locations associated to a given target", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countLocations(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI featureOfInterest) {
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI featureOfInterest) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
 

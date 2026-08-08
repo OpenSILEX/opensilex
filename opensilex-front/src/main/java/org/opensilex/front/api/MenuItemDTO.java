@@ -5,8 +5,7 @@
  */
 package org.opensilex.front.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.front.config.CustomMenuItem;
 import org.opensilex.front.config.MenuItem;
 
@@ -15,12 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
-import org.opensilex.front.config.CustomMenuItem;
-import org.opensilex.front.config.MenuItem;
 import org.opensilex.front.config.MenuItemUtils;
 
-@ApiModel
+@Schema
 public class MenuItemDTO {
 
     public static MenuItemDTO fromModel(MenuItem menuItem, Map<String, String> menuLabelMap, List<String> menuExclusions, Set<String> userCredentials) {
@@ -87,7 +83,7 @@ public class MenuItemDTO {
 
     private RouteDTO route;
 
-    @ApiModelProperty(value = "Menu identifier", example = "users")
+    @Schema(description = "Menu identifier", example = "users")
     public String getId() {
         return id;
     }
@@ -96,7 +92,7 @@ public class MenuItemDTO {
         this.id = id;
     }
 
-    @ApiModelProperty(value = "Menu label", example = "Users")
+    @Schema(description = "Menu label", example = "Users")
     public String getLabel() {
         return label;
     }
@@ -105,7 +101,7 @@ public class MenuItemDTO {
         this.label = label;
     }
 
-    @ApiModelProperty(value = "List of sub menu items")
+    @Schema(description = "List of sub menu items")
     public MenuItemDTO[] getChildren() {
         return children;
     }
@@ -114,7 +110,7 @@ public class MenuItemDTO {
         this.children = children;
     }
 
-    @ApiModelProperty(value = "Optional route definition")
+    @Schema(description = "Optional route definition")
     public RouteDTO getRoute() {
         return route;
     }

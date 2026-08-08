@@ -6,8 +6,7 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,43 +28,43 @@ import java.util.Map;
  * @see org.opensilex.server.response.ErrorResponse
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 public class ErrorDTO {
 
     /**
      * Title of the error.
      */
-    @ApiModelProperty(value = "Title of the error", example = "Error")
+    @Schema(description = "Title of the error", example = "Error")
     public final String title;
 
     /**
      * Message of the error.
      */
-    @ApiModelProperty(value = "Message of the error", example = "Unexpected error")
+    @Schema(description = "Message of the error", example = "Unexpected error")
     public final String message;
 
     /**
      * Translation key of the error, used to display a message for the user. Can be null.
      */
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     public final String translationKey;
 
     /**
      * Translation values of the error, used to fill parameterized values in the translated message for the user. Can be null.
      */
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     public final Map<String, String> translationValues;
 
     /**
      * Stack trace of the exception as an array.
      */
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     public List<String> stack;
 
     /**
      * Stack trace of the exception as an array.
      */
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     public List<String> fullstack;
 
     public ErrorDTO(){

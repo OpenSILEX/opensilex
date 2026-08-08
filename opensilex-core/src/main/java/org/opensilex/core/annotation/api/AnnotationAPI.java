@@ -7,7 +7,16 @@
 
 package org.opensilex.core.annotation.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
@@ -41,7 +50,7 @@ import java.util.List;
 /**
  * @author Renaud COLIN
  */
-@Api(AnnotationAPI.CREDENTIAL_ANNOTATION_GROUP_ID)
+@Tag(name = AnnotationAPI.CREDENTIAL_ANNOTATION_GROUP_ID)
 @Path("/core/annotations")
 @ApiCredentialGroup(
         groupId = AnnotationAPI.CREDENTIAL_ANNOTATION_GROUP_ID,
@@ -66,15 +75,15 @@ public class AnnotationAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Create an annotation")
+    @Operation(summary = "Create an annotation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ANNOTATION_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "An annotation is created", response = URI.class),
-            @ApiResponse(code = 409, message = "An annotation with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "An annotation is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "An annotation with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -94,19 +103,19 @@ public class AnnotationAPI {
     }
 
     @PUT
-    @ApiOperation("Update an annotation")
+    @Operation(summary = "Update an annotation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ANNOTATION_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotation created", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Annotation created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown annotation URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateAnnotation(@ApiParam("Annotation description") @Valid AnnotationUpdateDTO dto) throws Exception {
+    public Response updateAnnotation(@Parameter(description = "Annotation description") @Valid AnnotationUpdateDTO dto) throws Exception {
 
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
         dao.update(dto.newModel());
@@ -115,20 +124,20 @@ public class AnnotationAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an annotation")
+    @Operation(summary = "Delete an annotation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ANNOTATION_DELETE_ID,
             credentialLabelKey = CREDENTIAL_ANNOTATION_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotation deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Annotation URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Annotation deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Annotation URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteAnnotation(
-            @ApiParam(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
         dao.delete(uri);
@@ -137,18 +146,18 @@ public class AnnotationAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an annotation")
+    @Operation(summary = "Get an annotation")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
-        @ApiResponse(code = 401, message = "User not authenticated", response = ErrorResponse.class),
-        @ApiResponse(code = 403, message = "User authenticated but not authorized to access this annotation", response = ErrorResponse.class),
-        @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Annotation retrieved", content = @Content(schema = @Schema(implementation = AnnotationGetDTO.class))),
+        @ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "User authenticated but not authorized to access this annotation", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Unknown annotation URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
         public Response getAnnotation(
-                @ApiParam(value = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
+                @Parameter(description = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
         ) throws Exception {
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
         
@@ -174,18 +183,18 @@ public class AnnotationAPI {
 
     @GET
     @Path("/motivations")
-    @ApiOperation("Search motivations")
+    @Operation(summary = "Search motivations")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return motivations", response = MotivationGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return motivations", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MotivationGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchMotivations(
-            @ApiParam(value = "Motivation name regex pattern", example = "describing") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Motivation name regex pattern", example = "describing") @QueryParam("name") String namePattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
@@ -206,21 +215,21 @@ public class AnnotationAPI {
     }
 
     @GET
-    @ApiOperation("Search annotations")
+    @Operation(summary = "Search annotations")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return annotations", response = AnnotationGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return annotations", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AnnotationGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchAnnotations(
-            @ApiParam(value = "Description (regex)", example = "The pest attack") @QueryParam("description") String descriptionPattern,
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target,
-            @ApiParam(value = "Motivation URI", example = "http://www.w3.org/ns/oa#describing") @QueryParam("motivation") URI motivation,
-            @ApiParam(value = "Author URI", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("author") URI publisher,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "author=asc") @DefaultValue("created=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Description (regex)", example = "The pest attack") @QueryParam("description") String descriptionPattern,
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target,
+            @Parameter(description = "Motivation URI", example = "http://www.w3.org/ns/oa#describing") @QueryParam("motivation") URI motivation,
+            @Parameter(description = "Author URI", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("author") URI publisher,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "author=asc") @DefaultValue("created=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
@@ -247,15 +256,15 @@ public class AnnotationAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count annotations")
+    @Operation(summary = "Count annotations")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of annotations associated to a given target", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of annotations associated to a given target", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countAnnotations(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
         AnnotationDAO dao = new AnnotationDAO(sparql, nosql);
         int annotationCount = dao.countAnnotations(target, currentUser);

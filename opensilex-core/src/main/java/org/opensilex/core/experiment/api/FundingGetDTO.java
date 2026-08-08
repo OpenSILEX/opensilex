@@ -1,6 +1,6 @@
 package org.opensilex.core.experiment.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.experiment.dal.FundingModel;
 
 import java.net.URI;
@@ -18,7 +18,7 @@ public class FundingGetDTO {
         name = model.getName();
     }
 
-    @ApiModelProperty(value = "URI of the funding", example = "http://www.opensilex.org/vocabulary/oeso#anr")
+    @Schema(description = "URI of the funding", example = "http://www.opensilex.org/vocabulary/oeso#anr")
     public URI getUri() {
         return uri;
     }
@@ -27,7 +27,7 @@ public class FundingGetDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Name of the funding", example = "anr")
+    @Schema(description = "Name of the funding", example = "anr")
     public String getName() {
         return name;
     }

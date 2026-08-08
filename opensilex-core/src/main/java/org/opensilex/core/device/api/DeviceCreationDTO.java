@@ -7,7 +7,7 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
@@ -30,7 +30,7 @@ import org.opensilex.server.rest.validation.Date;
 public class DeviceCreationDTO extends DeviceDTO {
     
     @ValidURI
-    @ApiModelProperty(value = "Device URI", example = "http://opensilex.dev/opensilex/set/device/sensingdevice-sensor_01")
+    @Schema(description = "Device URI", example = "http://opensilex.dev/opensilex/set/device/sensingdevice-sensor_01")
     protected URI uri;
     
     @NotNull

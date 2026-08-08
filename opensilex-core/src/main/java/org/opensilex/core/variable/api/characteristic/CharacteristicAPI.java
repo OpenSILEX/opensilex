@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.characteristic;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
@@ -48,7 +57,7 @@ import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
-@Api(CREDENTIAL_VARIABLE_GROUP_ID)
+@Tag(name = CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(CharacteristicAPI.PATH)
 @ApiCredentialGroup(
         groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
@@ -74,7 +83,7 @@ public class CharacteristicAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Add a characteristic")
+    @Operation(summary = "Add a characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -83,11 +92,11 @@ public class CharacteristicAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A characteristic is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A characteristic with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "A characteristic is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A characteristic with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createCharacteristic(
-            @ApiParam("Characteristic description") @Valid CharacteristicCreationDTO dto
+            @Parameter(description = "Characteristic description") @Valid CharacteristicCreationDTO dto
     ) throws Exception {
         try {
             BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
@@ -105,16 +114,16 @@ public class CharacteristicAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a characteristic")
+    @Operation(summary = "Get a characteristic")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Characteristic retrieved", response = CharacteristicDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Unknown characteristic URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Characteristic retrieved", content = @Content(schema = @Schema(implementation = CharacteristicDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown characteristic URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getCharacteristic(
-            @ApiParam(value = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
         CharacteristicModel model = dao.get(uri);
@@ -133,18 +142,18 @@ public class CharacteristicAPI {
     
     @GET
     @Path(CharacteristicAPI.GET_BY_URIS_PATH)
-    @ApiOperation("Get detailed characteristics by uris")
+    @Operation(summary = "Get detailed characteristics by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return characteristics", response = CharacteristicDetailsDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Characteristic not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return characteristics", content = @Content(array = @ArraySchema(schema = @Schema(implementation = CharacteristicDetailsDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Characteristic not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getCharacteristicsByURIs(
-            @ApiParam(value = "Characteristics URIs", required = true) @QueryParam(CharacteristicAPI.GET_BY_URIS_URI_PARAM) @NotNull @NotEmpty List<URI> uris,
-            @ApiParam(value = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Characteristics URIs", required = true) @QueryParam(CharacteristicAPI.GET_BY_URIS_URI_PARAM) @NotNull @NotEmpty List<URI> uris,
+            @Parameter(description = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
@@ -174,7 +183,7 @@ public class CharacteristicAPI {
     
     
     @PUT
-    @ApiOperation("Update a characteristic")
+    @Operation(summary = "Update a characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -183,11 +192,11 @@ public class CharacteristicAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Characteristic updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown characteristic URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Characteristic updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown characteristic URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateCharacteristic(
-            @ApiParam("Characteristic description") @Valid CharacteristicUpdateDTO dto
+            @Parameter(description = "Characteristic description") @Valid CharacteristicUpdateDTO dto
     ) throws Exception {
         BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
 
@@ -199,20 +208,20 @@ public class CharacteristicAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a characteristic")
+    @Operation(summary = "Delete a characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Characteristic deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown characteristic URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Characteristic deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown characteristic URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteCharacteristic(
-            @ApiParam(value = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
         dao.delete(uri, Oeso.hasCharacteristic, currentUser);
@@ -221,20 +230,20 @@ public class CharacteristicAPI {
 
 
     @GET
-    @ApiOperation("Search characteristics by name")
+    @Operation(summary = "Search characteristics by name")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return characteristic list", response = CharacteristicGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return characteristic list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = CharacteristicGetDTO.class)))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchCharacteristics(
-            @ApiParam(value = "Name (regex)", example = "Height") @QueryParam("name") String namePattern ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
-            @ApiParam(value = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Name (regex)", example = "Height") @QueryParam("name") String namePattern ,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @Parameter(description = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
             ) throws Exception {
         if (sharedResourceInstance == null) {
             BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);

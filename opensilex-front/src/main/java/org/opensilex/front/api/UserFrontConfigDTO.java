@@ -8,7 +8,7 @@
  ******************************************************************************/
 package org.opensilex.front.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -26,7 +26,7 @@ public class UserFrontConfigDTO {
     @NotNull
     boolean userIsAnonymous;
 
-    @ApiModelProperty(value = "Application menu with routes")
+    @Schema(description = "Application menu with routes")
     public List<MenuItemDTO> getMenu() {
         return menu;
     }
@@ -35,7 +35,7 @@ public class UserFrontConfigDTO {
         this.menu = menu;
     }
 
-    @ApiModelProperty(value = "User is anonymous")
+    @Schema(description = "User is anonymous")
     public boolean getUserIsAnonymous() {
         return userIsAnonymous;
     }

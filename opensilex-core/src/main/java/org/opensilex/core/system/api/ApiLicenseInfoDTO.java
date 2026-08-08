@@ -7,7 +7,7 @@
 package org.opensilex.core.system.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Class that represents informations about software license
@@ -28,7 +28,7 @@ public class ApiLicenseInfoDTO {
         this.url = url;
     }
 
-    @ApiModelProperty(value = "GNU Affero General Public License v3", example = "GNU Affero General Public License v3")
+    @Schema(description = "GNU Affero General Public License v3", example = "GNU Affero General Public License v3")
     public String getName() {
         return name;
     }
@@ -37,7 +37,7 @@ public class ApiLicenseInfoDTO {
         this.name = name;
     }
 
-    @ApiModelProperty(value = "https://www.gnu.org/licenses/agpl-3.0.fr.html", example = "https://www.gnu.org/licenses/agpl-3.0.fr.html")
+    @Schema(description = "https://www.gnu.org/licenses/agpl-3.0.fr.html", example = "https://www.gnu.org/licenses/agpl-3.0.fr.html")
     public String getUrl() {
         return url;
     }

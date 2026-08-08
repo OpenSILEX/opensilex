@@ -1,6 +1,6 @@
 package org.opensilex.core.variable.api.entity;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 
@@ -16,13 +16,13 @@ public class EntityGetDTO extends BaseVariableGetDTO<EntityModel> {
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
+    @Schema(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Plant")
+    @Schema(example = "Plant")
     public String getName() {
         return name;
     }

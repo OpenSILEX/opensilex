@@ -5,8 +5,7 @@
  */
 package org.opensilex.front.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.front.config.Route;
 
 import javax.validation.constraints.NotNull;
@@ -16,7 +15,7 @@ import java.util.List;
  *
  * @author vidalmor
  */
-@ApiModel
+@Schema
 public class RouteDTO {
 
     public static RouteDTO fromModel(Route route) {
@@ -56,7 +55,7 @@ public class RouteDTO {
 
     private String name;
 
-    @ApiModelProperty(value = "Route path", example = "/users")
+    @Schema(description = "Route path", example = "/users")
     public String getPath() {
         return path;
     }
@@ -65,7 +64,7 @@ public class RouteDTO {
         this.path = path;
     }
 
-    @ApiModelProperty(value = "Route component", example = "opensilex.AccountList")
+    @Schema(description = "Route component", example = "opensilex.AccountList")
     public String getComponent() {
         return component;
     }
@@ -74,7 +73,7 @@ public class RouteDTO {
         this.component = component;
     }
 
-    @ApiModelProperty(value = "Required credentials list for this route")
+    @Schema(description = "Required credentials list for this route")
     public List<String> getCredentials() {
         return credentials;
     }
@@ -85,7 +84,7 @@ public class RouteDTO {
 
 ///////////////////////////////////////////////////////////////
 
-    @ApiModelProperty(value = "Route icon", example = "ik#ik-target")
+    @Schema(description = "Route icon", example = "ik#ik-target")
     public String getIcon() {
         return icon;
     }
@@ -94,7 +93,7 @@ public class RouteDTO {
         this.icon = icon;
     }
 
-    @ApiModelProperty(value = "Route title", example = "component.menu.scientificObjects")
+    @Schema(description = "Route title", example = "component.menu.scientificObjects")
     public String getTitle() {
         return title;
     }
@@ -103,7 +102,7 @@ public class RouteDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Route description", example = "ScientificObjectList.description")
+    @Schema(description = "Route description", example = "ScientificObjectList.description")
     public String getDescription() {
         return description;
     }
@@ -112,7 +111,7 @@ public class RouteDTO {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "Route rdf type", example = "vocabulary:ScientificObject")
+    @Schema(description = "Route rdf type", example = "vocabulary:ScientificObject")
     public String getRdfType() {
         return rdfType;
     }
@@ -121,7 +120,7 @@ public class RouteDTO {
         this.rdfType = rdfType;
     }
 
-    @ApiModelProperty(value = "Route name", example = "testPage")
+    @Schema(description = "Route name", example = "testPage")
     public String getName() {
         return name;
     }

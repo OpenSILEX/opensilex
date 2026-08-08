@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.provenance.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDaoV2;
@@ -57,7 +66,7 @@ import java.util.stream.Collectors;
  *
  * @author Alice Boizet
  */
-@Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
+@Tag(name = DataAPI.CREDENTIAL_DATA_GROUP_ID)
 @Path(ProvenanceAPI.PATH)
 @ApiCredentialGroup(
         groupId = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_ID,
@@ -89,7 +98,7 @@ public class ProvenanceAPI {
     private SPARQLService sparql;
 
     @POST
-    @ApiOperation("Add a provenance")
+    @Operation(summary = "Add a provenance")
     @ApiProtected
     @ApiCredential(
             credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_ID,
@@ -98,11 +107,11 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A provenance is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A provenance with the same URI already exists", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "201", description = "A provenance is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A provenance with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
 
     public Response createProvenance(
-            @ApiParam("Provenance description") @Valid ProvenanceCreationDTO provDTO
+            @Parameter(description = "Provenance description") @Valid ProvenanceCreationDTO provDTO
     ) throws Exception {
 
         if (provDTO.getActivity() != null) {
@@ -141,15 +150,15 @@ public class ProvenanceAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a provenance")
+    @Operation(summary = "Get a provenance")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Provenance retrieved", response = ProvenanceGetDTO.class)
+            @ApiResponse(responseCode = "200", description = "Provenance retrieved", content = @Content(schema = @Schema(implementation = ProvenanceGetDTO.class)))
     })
     public Response getProvenance(
-            @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
@@ -167,23 +176,23 @@ public class ProvenanceAPI {
     }
 
     @GET
-    @ApiOperation("Get provenances")
+    @Operation(summary = "Get provenances")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response searchProvenance(
-            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
-            @ApiParam(value = "Search by description") @QueryParam("description") String description,
-            @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,
-            @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
-            @ApiParam(value = "Search by agent URIs") @QueryParam("agent") List<URI> agentURIs,
-            @ApiParam(value = "Search by agent type") @QueryParam("agent_type") URI agentType,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering by name") @QueryParam("name") String name,
+            @Parameter(description = "Search by description") @QueryParam("description") String description,
+            @Parameter(description = "Search by activity URI") @QueryParam("activity") URI activityUri,
+            @Parameter(description = "Search by activity type") @QueryParam("activity_type") URI activityType,
+            @Parameter(description = "Search by agent URIs") @QueryParam("agent") List<URI> agentURIs,
+            @Parameter(description = "Search by agent type") @QueryParam("agent_type") URI agentType,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
@@ -207,7 +216,7 @@ public class ProvenanceAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a provenance that doesn't describe data")
+    @Operation(summary = "Delete a provenance that doesn't describe data")
     @ApiProtected
     @ApiCredential(
             credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_DELETE_ID,
@@ -216,10 +225,10 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Provenance deleted", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Provenance deleted", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response deleteProvenance(
-            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
+            @Parameter(description = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
         ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
 
         //check if the provenance can be deleted (not linked to data)
@@ -253,7 +262,7 @@ public class ProvenanceAPI {
 
     @PUT
     @ApiProtected
-    @ApiOperation("Update a provenance")
+    @Operation(summary = "Update a provenance")
     @ApiCredential(
             credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_ID,
             credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY
@@ -261,11 +270,11 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Provenance updated", response = URI.class)
+            @ApiResponse(responseCode = "201", description = "Provenance updated", content = @Content(schema = @Schema(implementation = URI.class)))
     })
 
     public Response updateProvenance(
-            @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
+            @Parameter(description = "Provenance description") @Valid ProvenanceUpdateDTO dto
     ) throws Exception {
         try {
             if (dto.getActivity() != null) {
@@ -300,17 +309,17 @@ public class ProvenanceAPI {
      */
     @GET
     @Path("by_uris")
-    @ApiOperation("Get a list of provenances by their URIs")
+    @Operation(summary = "Get a list of provenances by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return provenancess list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Provenance not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getProvenancesByURIs(
-            @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
         List<ProvenanceModel> models = dao.findByUris(uris.stream(), uris.size());

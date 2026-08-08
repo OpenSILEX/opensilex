@@ -1,6 +1,6 @@
 package org.opensilex.integration.test;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import java.net.URI;
@@ -14,7 +14,7 @@ public class UriResourceDTO {
      * uri
      */
     @ValidURI
-    @ApiModelProperty()
+    @Schema()
     protected URI uri;
 
     public UriResourceDTO() {

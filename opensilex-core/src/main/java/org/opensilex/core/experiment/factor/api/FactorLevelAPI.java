@@ -9,7 +9,16 @@
  */
 package org.opensilex.core.experiment.factor.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.security.account.dal.AccountModel;
@@ -38,7 +47,7 @@ import static org.opensilex.core.experiment.factor.api.FactorAPI.*;
  *
  * @author Arnaud Charleroy
  */
-@Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
+@Tag(name = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
 @Path("/core/experiments/factors/levels")
 @ApiCredentialGroup(
         groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
@@ -66,16 +75,16 @@ public class FactorLevelAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a factor level")
+    @Operation(summary = "Get a factor level")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDTO.class),
-        @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Factor level retrieved", content = @Content(schema = @Schema(implementation = FactorLevelGetDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Factor level not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getFactorLevel(
-            @ApiParam(value = "Factor Level URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
+            @Parameter(description = "Factor Level URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         FactorLevelModel model = dao.get(factorLevelUri);
@@ -102,16 +111,16 @@ public class FactorLevelAPI {
      */
     @GET
     @Path("{uri}/details")
-    @ApiOperation("Get a factor level")
+    @Operation(summary = "Get a factor level")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDetailDTO.class),
-        @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Factor level retrieved", content = @Content(schema = @Schema(implementation = FactorLevelGetDetailDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Factor level not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getFactorLevelDetail(
-            @ApiParam(value = "Factor Level URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
+            @Parameter(description = "Factor Level URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         FactorLevelModel model = dao.get(factorLevelUri);
@@ -138,7 +147,7 @@ public class FactorLevelAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a factor level")
+    @Operation(summary = "Delete a factor level")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACTOR_DELETE_ID,
@@ -147,13 +156,13 @@ public class FactorLevelAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level deleted", response = URI.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
+        @ApiResponse(responseCode = "200", description = "Factor level deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid or unknown Factor URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid or unknown Factor URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
 
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response deleteFactorLevel(
-            @ApiParam(value = "Factor level URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) {
+            @Parameter(description = "Factor level URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) {
 
         // TODO : check super admin
         try {

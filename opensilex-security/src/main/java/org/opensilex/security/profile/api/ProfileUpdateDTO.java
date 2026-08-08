@@ -6,8 +6,7 @@
 //******************************************************************************
 package org.opensilex.security.profile.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -30,26 +29,26 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 public class ProfileUpdateDTO extends ProfileGetDTO {
 
     @ValidURI
     @NotNull
-    @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#agent.Admin_OpenSilex", required = true)
+    @Schema(description = "User URI", example = "http://opensilex.dev/users#agent.Admin_OpenSilex", requiredMode = Schema.RequiredMode.REQUIRED)
     @Override
     public URI getUri() {
         return uri;
     }
 
     @Required
-    @ApiModelProperty(value = "Profile name", example = "profile1", required = true)
+    @Schema(description = "Profile name", example = "profile1", requiredMode = Schema.RequiredMode.REQUIRED)
     @Override
     public String getName() {
         return name;
     }
 
     @NotNull
-    @ApiModelProperty(value = "Profile credentials", required = true)
+    @Schema(description = "Profile credentials", requiredMode = Schema.RequiredMode.REQUIRED)
     @Override
     public List<String> getCredentials() {
         return credentials;

@@ -15,7 +15,16 @@
  */
 package org.opensilex.core.organisation.api.facility;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -57,7 +66,7 @@ import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GRO
 /**
  * @author vidalmor
  */
-@Api(CREDENTIAL_GROUP_ORGANIZATION_ID)
+@Tag(name = CREDENTIAL_GROUP_ORGANIZATION_ID)
 @Path(FacilityAPI.PATH)
 @ApiCredentialGroup(
         groupId = FacilityAPI.CREDENTIAL_GROUP_FACILITY_ID,
@@ -85,7 +94,7 @@ public class FacilityAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Create a facility")
+    @Operation(summary = "Create a facility")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACILITY_MODIFICATION_ID,
@@ -94,11 +103,11 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a facility", response = URI.class),
-            @ApiResponse(code = 409, message = "A facility with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Create a facility", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A facility with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createFacility(
-            @ApiParam("Facility description") @Valid FacilityCreationDTO dto
+            @Parameter(description = "Facility description") @Valid FacilityCreationDTO dto
     ) throws Exception {
         try {
             FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
@@ -133,13 +142,13 @@ public class FacilityAPI {
 
     @GET
     @Path("all_facilities")
-    @ApiOperation("Get all facilities")
+    @Operation(summary = "Get all facilities")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Facility retrieved", response = NamedResourceDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Facility retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class)))),
+            @ApiResponse(responseCode = "404", description = "Facility URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getAllFacilities() throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
@@ -156,16 +165,16 @@ public class FacilityAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a facility")
+    @Operation(summary = "Get a facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Facility retrieved", response = FacilityGetDTO.class),
-            @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Facility retrieved", content = @Content(schema = @Schema(implementation = FacilityGetDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Facility URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getFacility(
-            @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
         FacilityModel model = facilityLogic.get(uri, currentUser);
@@ -191,17 +200,17 @@ public class FacilityAPI {
 
     @GET
     @Path("by_uris")
-    @ApiOperation("Get facilities by their URIs")
+    @Operation(summary = "Get facilities by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return facilities", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FacilityNamedDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Facility not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getFacilitiesByURI(
-            @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
+            @Parameter(description = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
 
         List<FacilityModel> facilities = facilityLogic.getList(uris, currentUser);
@@ -218,19 +227,19 @@ public class FacilityAPI {
     }
 
     @GET
-    @ApiOperation("Search facilities")
+    @Operation(summary = "Search facilities")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = FacilityGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return facilities", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FacilityGetDTO.class))))
     })
     public Response searchFacilities(
-            @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+            @Parameter(description = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @Parameter(description = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number") @QueryParam("page") int page,
+            @Parameter(description = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
@@ -246,19 +255,19 @@ public class FacilityAPI {
 
     @GET
     @Path("minimal_search")
-    @ApiOperation("Search facilities returning minimal embedded information for better performance")
+    @Operation(summary = "Search facilities returning minimal embedded information for better performance")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return facilities", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class))))
     })
     public Response minimalSearchFacilities(
-            @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+            @Parameter(description = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @Parameter(description = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number") @QueryParam("page") int page,
+            @Parameter(description = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
@@ -274,7 +283,7 @@ public class FacilityAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a facility")
+    @Operation(summary = "Delete a facility")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACILITY_DELETE_ID,
@@ -283,11 +292,11 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Facility deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Facility deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Facility URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteFacility(
-            @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @Parameter(description = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
 
@@ -297,7 +306,7 @@ public class FacilityAPI {
     }
 
     @PUT
-    @ApiOperation("Update a facility")
+    @Operation(summary = "Update a facility")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACILITY_MODIFICATION_ID,
@@ -306,11 +315,11 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated facility", response = URI.class),
-            @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return updated facility", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Facility URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateFacility(
-            @ApiParam("Facility description")
+            @Parameter(description = "Facility description")
             @Valid FacilityUpdateDTO dto
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
@@ -345,15 +354,15 @@ public class FacilityAPI {
 
     @GET
     @Path("/with_location")
-    @ApiOperation("Get only a list of facilities with a position (address/spatial coordinates")
+    @Operation(summary = "Get only a list of facilities with a position (address/spatial coordinates")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Facilities retrieved", response = FacilityGetWithGeometryDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Facilities retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FacilityGetWithGeometryDTO.class))))
     })
     public Response getFacilitiesWithGeometry(
-            @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") String endDate
+            @Parameter(description = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") String endDate
     ) throws Exception {
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
         List<FacilityGetWithGeometryDTO> facilityDTOList = new ArrayList<>();

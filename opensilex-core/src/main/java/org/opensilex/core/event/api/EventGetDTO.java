@@ -9,7 +9,7 @@ package org.opensilex.core.event.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
@@ -51,25 +51,25 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
 
     @Override
     @ValidURI
-    @ApiModelProperty(value = "Event URI", example = "http://www.opensilex.org/event/12590c87-1c34-426b-a231-beb7acb33415")
+    @Schema(description = "Event URI", example = "http://www.opensilex.org/event/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getUri() {
         return uri;
     }
 
     @Override
     @ValidURI
-    @ApiModelProperty(value = "Event type URI", example = "http://www.opensilex.org/vocabulary/oeev#Irrigation")
+    @Schema(description = "Event type URI", example = "http://www.opensilex.org/vocabulary/oeev#Irrigation")
     public URI getType() {
         return type;
     }
 
     @Override
-    @ApiModelProperty(value= "Event type name", example = "Move")
+    @Schema(description = "Event type name", example = "Move")
     public String getTypeLabel() {
         return typeLabel;
     }
 
-    @ApiModelProperty(value = "Beginning of the event", example = "2019-09-08T12:00:00+01:00")
+    @Schema(description = "Beginning of the event", example = "2019-09-08T12:00:00+01:00")
     @ValidOffsetDateTime
     @Required
     public String getStart() {
@@ -80,7 +80,7 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         this.start = start;
     }
 
-    @ApiModelProperty(value = "End of the event", example = "2019-09-08T12:00:00+01:00")
+    @Schema(description = "End of the event", example = "2019-09-08T12:00:00+01:00")
     @ValidOffsetDateTime
     public String getEnd() {
         return end;
@@ -90,7 +90,7 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         this.end = end;
     }
 
-    @ApiModelProperty(value = "URI(s) of items concerned by this event")
+    @Schema(description = "URI(s) of items concerned by this event")
     @NotEmpty
     @ValidURI
     public List<URI> getTargets() {
@@ -101,7 +101,7 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         this.targets = targets;
     }
 
-    @ApiModelProperty(value = "Description of the event",example = "The pest attack lasted 20 minutes")
+    @Schema(description = "Description of the event",example = "The pest attack lasted 20 minutes")
     public String getDescription() {
         return description;
     }
@@ -118,7 +118,7 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         this.publisher = publisher;
     }
 
-    @ApiModelProperty(value = "Indicate if the event is instant" ,example = "false")
+    @Schema(description = "Indicate if the event is instant" ,example = "false")
     public Boolean getIsInstant() {
         return isInstant;
     }

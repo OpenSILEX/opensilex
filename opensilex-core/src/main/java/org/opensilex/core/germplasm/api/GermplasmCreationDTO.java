@@ -8,8 +8,7 @@ package org.opensilex.core.germplasm.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -35,17 +34,17 @@ import java.util.Map;
  * DTO representing JSON for posting germplasm
  * @author Alice Boizet
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
     "description", "species","variety", "accession","institute", "website", "relations", "metadata","is_public","groups"}) // "variety", "accession",
 public class GermplasmCreationDTO {
 
     @JsonProperty("uri")
-    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
+    @Schema(description = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     protected String uri;
 
     @JsonProperty("rdf_type")
-    @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot", required = true)
+    @Schema(description = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot", requiredMode = Schema.RequiredMode.REQUIRED)
     protected URI rdf_type;
 
     @JsonProperty("relations")
@@ -55,69 +54,69 @@ public class GermplasmCreationDTO {
      * Germplasm label
      */
     @NotNull
-    @ApiModelProperty(value = "Germplasm name", example = "SL_001", required = true)
+    @Schema(description = "Germplasm name", example = "SL_001", requiredMode = Schema.RequiredMode.REQUIRED)
     protected String name;
     
     /**
      * Germplasm id (accessionNumber, varietyCode...)
      */
-    @ApiModelProperty(value = "Germplasm code (accessionNumber, varietyCode...)", example = "")
+    @Schema(description = "Germplasm code (accessionNumber, varietyCode...)", example = "")
     protected String code;
     
     /**
      * Germplasm species URI
      */
     @ValidURI
-    @ApiModelProperty(value = "species URI", example = "http://opensilex.dev/opensilex/id/species#zeamays")
+    @Schema(description = "species URI", example = "http://opensilex.dev/opensilex/id/species#zeamays")
     protected URI species;
     
     /**
      * Germplasm Variety URI
      */
     @ValidURI
-    @ApiModelProperty(value = "variety URI", example = "http://opensilex.dev/opensilex/id/variety#B73")
+    @Schema(description = "variety URI", example = "http://opensilex.dev/opensilex/id/variety#B73")
     protected URI variety;
     
     /**
      * Germplasm Accession URI
      */    
     @ValidURI
-    @ApiModelProperty(value = "accession URI", example = "http://opensilex.dev/opensilex/id/accession#B73_INRA")
+    @Schema(description = "accession URI", example = "http://opensilex.dev/opensilex/id/accession#B73_INRA")
     protected URI accession;
 
     /**
      * institute where the accession has been created
      */
-    @ApiModelProperty(value = "institute", example = "INRA")
+    @Schema(description = "institute", example = "INRA")
     protected String institute;
 
     /**
      * productionYear
      */
-    @ApiModelProperty(value = "production year", example = "2015")
+    @Schema(description = "production year", example = "2015")
     @JsonProperty("production_year")
     protected Integer productionYear;
         
     /**
      * comment
      */
-    @ApiModelProperty(value = "comment")
+    @Schema(description = "comment")
     protected String description;  
     
     /**
      * website
      */
     @ValidURI
-    @ApiModelProperty(value = "website")
+    @Schema(description = "website")
     protected URI website;
 
     @JsonProperty("is_public")
     @NotNull
-    @ApiModelProperty(value = "boolean", example = "True", required = true)
+    @Schema(description = "boolean", example = "True", requiredMode = Schema.RequiredMode.REQUIRED)
     protected Boolean isPublic;
 
     @JsonProperty("groups")
-    @ApiModelProperty(value = "groups", example = "")
+    @Schema(description = "groups", example = "")
     protected List<URI> groups = new ArrayList<>();
 
     public String getUri() {

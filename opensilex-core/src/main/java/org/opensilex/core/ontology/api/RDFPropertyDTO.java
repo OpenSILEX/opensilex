@@ -7,7 +7,7 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
@@ -28,54 +28,50 @@ import java.util.Objects;
  */
 public class RDFPropertyDTO {
 
-    @ApiModelProperty(
-            value = "URI of property",
-            required = true,
+    @Schema(
+            description = "URI of property",
+            requiredMode = Schema.RequiredMode.REQUIRED,
             example = "http://opensilex.org/custom_object_property")
     protected URI uri;
 
     @JsonProperty("rdf_type")
-    @ApiModelProperty(
-            value = "The type of property",
-            notes = "Allowed values are owl:DatatypeProperty (for data-property) or owl:ObjectProperty (for object-property)",
-            required = true,
+    @Schema(
+            description = "The type of property. Allowed values are owl:DatatypeProperty (for data-property) or owl:ObjectProperty (for object-property)",
+            requiredMode = Schema.RequiredMode.REQUIRED,
             example = "owl:ObjectProperty"
     )
     protected URI type;
 
     @JsonProperty("name_translations")
-    @ApiModelProperty(
-            value = "Name by languages, at least one name/language is required. Use '' as language if no language is specified",
-            required = true
+    @Schema(
+            description = "Name by languages, at least one name/language is required. Use '' as language if no language is specified",
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     protected Map<String, String> labelTranslations;
 
     @JsonProperty("comment_translations")
-    @ApiModelProperty(
-            value = "Description by languages, at least one description/language is required. Use '' as language if no language is specified",
-            required = true
+    @Schema(
+            description = "Description by languages, at least one description/language is required. Use '' as language if no language is specified",
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
     protected Map<String, String> commentTranslations;
 
-    @ApiModelProperty(
-            value = "Domain of the property : the rdf:type of any concept concerned by this property.",
-            required = true,
-            notes = "This domain definition must exist into the repository",
+    @Schema(
+            description = "Domain of the property : the rdf:type of any concept concerned by this property. This domain definition must exist into the repository",
+            requiredMode = Schema.RequiredMode.REQUIRED,
             example = "vocabulary:SensingDevice"
     )
     protected URI domain;
 
-    @ApiModelProperty(
-            value = "Range of the property : the rdf:type of any value(can be a literal type or a concept type) concerned by this property.",
-            required = true,
-            notes = "The range definition(class or literal type) must exist into the repository",
+    @Schema(
+            description = "Range of the property : the rdf:type of any value(can be a literal type or a concept type) concerned by this property. The range definition(class or literal type) must exist into the repository",
+            requiredMode = Schema.RequiredMode.REQUIRED,
             example = "vocabulary:ScientificObject"
     )
     protected URI range;
 
-    @ApiModelProperty(
-            value = "Parent of the property.",
-            notes = "The parent definition as a property must exist into the repository",
+    @Schema(
+            description = "Parent of the property. The parent definition as a property must exist into the repository",
             example = "http://opensilex.org/parent_custom_object_property"
     )
     protected URI parent;

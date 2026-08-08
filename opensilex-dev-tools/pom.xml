@@ -59,7 +59,12 @@
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-shacl</artifactId>
             <version>${rdf4j.version}</version>
-        </dependency>    
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator</artifactId>
+            <version>${openapi.generator.version}</version>
+        </dependency>
     </dependencies>
     
     <!-- Disable site generation for this module -->

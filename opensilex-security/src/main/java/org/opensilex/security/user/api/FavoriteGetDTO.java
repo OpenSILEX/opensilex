@@ -1,7 +1,7 @@
 package org.opensilex.security.user.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.sparql.exceptions.SPARQLIllegalStateException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@ApiModel
+@Schema
 public class FavoriteGetDTO {
 
     @JsonProperty("uri")

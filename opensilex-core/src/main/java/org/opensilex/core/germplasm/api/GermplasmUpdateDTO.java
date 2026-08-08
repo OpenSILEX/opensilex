@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -21,7 +21,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  */
 public class GermplasmUpdateDTO extends GermplasmCreationDTO {
 
-    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
+    @Schema(description = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     @Override
     @Required
     public String getUri() {

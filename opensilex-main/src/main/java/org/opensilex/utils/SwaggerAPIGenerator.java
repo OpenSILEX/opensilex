@@ -1,19 +1,34 @@
 package org.opensilex.utils;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.Api;
-import io.swagger.converter.ModelConverters;
-import io.swagger.jaxrs.Reader;
-import io.swagger.jaxrs.config.SwaggerContextService;
-import io.swagger.models.Swagger;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverter;
+import io.swagger.v3.core.converter.ModelConverterContext;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.jackson.ModelResolver;
+import io.swagger.v3.core.util.Json;
+import io.swagger.v3.core.util.Yaml;
+import io.swagger.v3.jaxrs2.Reader;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import org.opensilex.OpenApiExtension;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.SwaggerExtension;
+import org.opensilex.server.rest.serialization.GeoJsonConverter;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.io.File;
@@ -25,64 +40,108 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Helper class to generate Swagger API JSON file.
+ * Helper class to generate OpenAPI 3.1.1 specification file.
  *
  * @author Vincent Migot
  */
 public final class SwaggerAPIGenerator {
 
-    /**
-     * Private constructor to avoid missuse of SwaggerAPIGenerator.
-     */
-    private SwaggerAPIGenerator() {
-
+    public static class JenaAnnotationIntrospector extends JacksonAnnotationIntrospector {
+        @Override
+        public boolean hasIgnoreMarker(AnnotatedMember m) {
+            if (m != null && "setNsPrefixes".equals(m.getName())) {
+                return true;
+            }
+            return super.hasIgnoreMarker(m);
+        }
     }
 
-    /**
-     * Return full Swagger API for annotated classes found by Reflections.
-     *
-     * @param reflection Reflections instances for classes
-     * @return Swagger API
-     */
-    public static synchronized Swagger getFullApi(Reflections reflection) {
-        Swagger swagger = null;
+    @JsonIgnoreType
+    public abstract static class JenaIgnoreTypeMixin {
+    }
 
-        SwaggerContextService ctx = new SwaggerContextService();
+    private static boolean configured = false;
 
-        swagger = ctx.getSwagger();
+    public static synchronized void configureModelConverters() {
+        if (configured) {
+            return;
+        }
+        configured = true;
 
-        Map<String, Class<?>> availableAPI = OpenSilex.getAnnotatedClassesMap(Api.class, reflection);
+        ObjectMapper jsonMapper = Json.mapper();
+        ObjectMapper yamlMapper = Yaml.mapper();
 
-        Set<Class<?>> classes = new HashSet<>(availableAPI.values());
-        if (classes.size() > 0) {
+        AnnotationIntrospector intro = new JenaAnnotationIntrospector();
+        jsonMapper.setAnnotationIntrospector(AnnotationIntrospector.pair(intro, jsonMapper.getSerializationConfig().getAnnotationIntrospector()));
+        yamlMapper.setAnnotationIntrospector(AnnotationIntrospector.pair(intro, yamlMapper.getSerializationConfig().getAnnotationIntrospector()));
 
-            Reader reader = new Reader(swagger);
-            swagger = reader.read(classes);
+        Class<?>[] jenaTypes = new Class<?>[] {
+            org.apache.jena.rdf.model.Model.class,
+            org.apache.jena.shared.PrefixMapping.class,
+            org.apache.jena.rdf.model.RDFNode.class,
+            org.apache.jena.rdf.model.Resource.class,
+            org.apache.jena.rdf.model.Property.class,
+            org.apache.jena.rdf.model.Statement.class,
+            org.apache.jena.rdf.model.RDFList.class
+        };
 
-            return swagger;
+        for (Class<?> jenaType : jenaTypes) {
+            jsonMapper.addMixIn(jenaType, JenaIgnoreTypeMixin.class);
+            yamlMapper.addMixIn(jenaType, JenaIgnoreTypeMixin.class);
         }
 
-        return null;
+        List<ModelConverter> existing = new ArrayList<>(ModelConverters.getInstance().getConverters());
+        for (ModelConverter mc : existing) {
+            ModelConverters.getInstance().removeConverter(mc);
+        }
+        ModelConverters.getInstance().addConverter(new JenaModelConverter());
+        ModelConverters.getInstance().addConverter(new ModelResolver(jsonMapper));
+        for (ModelConverter mc : existing) {
+            if (!(mc instanceof ModelResolver)) {
+                ModelConverters.getInstance().addConverter(mc);
+            }
+        }
     }
 
-    /**
-     * Return Swagger API for annotated classes found by Reflections in a specifi module.
-     *
-     * @param moduleClass Module class to limit API scope
-     * @param reflection Reflections instances for classes
-     * @return Swagger API
-     */
-    public static synchronized Swagger getModuleApi(Class<? extends OpenSilexModule> moduleClass, Reflections reflection) {
-        Swagger swagger = null;
+    static {
+        configureModelConverters();
+    }
 
-        SwaggerContextService ctx = new SwaggerContextService();
+    private SwaggerAPIGenerator() {
+    }
 
-        swagger = ctx.getSwagger();
+    public static synchronized OpenAPI getFullApi(Reflections reflection) {
+        configureModelConverters();
+        OpenAPI openAPI = new OpenAPI();
+        openAPI.setInfo(new Info().title("OpenSilex API").version("1.0.0"));
 
-        Map<String, Class<?>> availableAPI = OpenSilex.getAnnotatedClassesMap(Api.class, reflection);
+        Map<String, Class<?>> availableAPI = OpenSilex.getAnnotatedClassesMap(Tag.class, reflection);
+        Set<Class<?>> classes = new HashSet<>(availableAPI.values());
 
-        String moduleID = ClassUtils.getProjectIdFromClass(moduleClass);
+        Reader reader = new Reader(openAPI);
+        if (!classes.isEmpty()) {
+            openAPI = reader.read(classes);
+        }
+        if (openAPI.getComponents() == null) {
+            openAPI.setComponents(new Components());
+        }
+        if (openAPI.getPaths() == null) {
+            openAPI.setPaths(new io.swagger.v3.oas.models.Paths());
+        }
+        GeoJsonConverter.injectGeoJsonSchema(openAPI);
+        return openAPI;
+    }
 
+    public static synchronized OpenAPI getModuleApi(Class<? extends OpenSilexModule> moduleClass, Reflections reflection) {
+        return getModuleApi(ClassUtils.getProjectIdFromClass(moduleClass), reflection);
+    }
+
+    public static synchronized OpenAPI getModuleApi(String moduleID, Reflections reflection) {
+        configureModelConverters();
+        OpenAPI openAPI = new OpenAPI();
+        openAPI.setInfo(new Info().title("OpenSilex API - " + moduleID).version("1.0.0"));
+
+        Map<String, Class<?>> availableAPI = OpenSilex.getAnnotatedClassesMap(Tag.class, reflection);
         Set<Class<?>> classes = new HashSet<>(availableAPI.values());
 
         Set<Class<?>> moduleClassesAPI = classes.stream().filter((Class<?> c) -> {
@@ -90,47 +149,32 @@ public final class SwaggerAPIGenerator {
             return moduleID.equals(classModuleID);
         }).collect(Collectors.toSet());
 
-        if (moduleClassesAPI.size() > 0) {
-
-            Reader reader = new Reader(swagger);
-            swagger = reader.read(moduleClassesAPI);
-
-            return swagger;
+        if (!moduleClassesAPI.isEmpty()) {
+            Reader reader = new Reader(openAPI);
+            openAPI = reader.read(moduleClassesAPI);
+            GeoJsonConverter.injectGeoJsonSchema(openAPI);
+            return openAPI;
         }
 
         return null;
     }
 
-    /**
-     * Generate Swagger API for all java files in a specific folder.
-     *
-     * This API is filtered from global API using Java classes found in source or ti's sub-folder.
-     *
-     * @param source Base directory to look in
-     * @param reflection Reflections instances for classes
-     * @return Swagger API
-     * @throws Exception
-     */
-    private static synchronized Swagger generate(String source, Reflections reflection, List<Class<?>> additionalDefinitions) throws Exception {
-        Swagger swagger = null;
-
-        SwaggerContextService ctx = new SwaggerContextService();
-        swagger = ctx.getSwagger();
-        swagger.setHost("${host}");
+    private static synchronized OpenAPI generate(String source, Reflections reflection, List<Class<?>> additionalDefinitions) throws Exception {
+        configureModelConverters();
+        OpenAPI openAPI = new OpenAPI();
+        openAPI.setInfo(new Info().title("OpenSilex API").version("1.0.0"));
 
         Set<Class<?>> classes = new HashSet<>();
 
         if (source != null) {
             Path sourcePath = Paths.get(source);
             if (sourcePath.toFile().exists()) {
-                Map<String, Class<?>> availableAPI = OpenSilex.getAnnotatedClassesMap(Api.class, reflection);
+                Map<String, Class<?>> availableAPI = OpenSilex.getAnnotatedClassesMap(Tag.class, reflection);
 
                 try (Stream<Path> walk = Files.walk(sourcePath)) {
-
                     walk.filter(Files::isRegularFile)
                             .forEach((Path p) -> {
                                 String filename = p.getFileName().toString();
-
                                 File filePath = p.toFile();
                                 if (filePath.exists()) {
                                     String absoluteDirectory = filePath.getParent();
@@ -144,84 +188,79 @@ public final class SwaggerAPIGenerator {
                                     }
                                 }
                             });
-
                 }
             }
         }
 
-        if (classes.size() > 0) {
-
-            Reader reader = new Reader(swagger);
-            swagger = reader.read(classes);
-
-            // adding missing DTOs as swagger definitions to have them generated in the typeScript client
-            if (additionalDefinitions != null) {
-                for (var model : additionalDefinitions) {
-                    var map = ModelConverters.getInstance().read(model);
-                    for (var entry : map.entrySet()) {
-                        swagger.addDefinition(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-
-            return swagger;
+        Reader reader = new Reader(openAPI);
+        if (!classes.isEmpty()) {
+            openAPI = reader.read(classes);
         }
 
-        return null;
+        if (openAPI.getComponents() == null) {
+            openAPI.setComponents(new Components());
+        }
+
+        if (openAPI.getPaths() == null) {
+            openAPI.setPaths(new io.swagger.v3.oas.models.Paths());
+        }
+
+        if (additionalDefinitions != null) {
+            for (Class<?> model : additionalDefinitions) {
+                Map<String, Schema> map = ModelConverters.getInstance().read(model);
+                for (Map.Entry<String, Schema> entry : map.entrySet()) {
+                    openAPI.getComponents().addSchemas(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        GeoJsonConverter.injectGeoJsonSchema(openAPI);
+        return openAPI;
     }
 
-    /**
-     * Main entry point for swagger API generation.
-     *
-     * <pre>
-     * Used by maven build to generate specific Swagger.json file for each OpenSilex module.
-     * - First argument is the source folder
-     * - Second argument is the destination swagger.json file produced
-     * </pre>
-     *
-     * @param args command line arguments.
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String source = args[0];
         String destination = args[1];
 
         OpenSilex instance = getOpenSilex(OpenSilex.getDefaultBaseDirectory());
         var modelList = new ArrayList<Class<?>>();
-        instance.getModulesImplementingInterface(SwaggerExtension.class).forEach(module -> modelList.addAll(module.getAdditionalSwaggerDefinitions()));
+        instance.getModulesImplementingInterface(OpenApiExtension.class).forEach(module -> {
+            List<Class<?>> additional = module.getAdditionalOpenApiDefinitions();
+            if (additional != null) {
+                modelList.addAll(additional);
+            }
+        });
 
-        Reflections localRef = new Reflections(ConfigurationBuilder.build("")
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner())
-                .setExpandSuperTypes(false)).merge(instance.getReflections());
+        Reflections instanceRef = instance.getReflections();
+        Reflections fallbackRef = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forClassLoader(OpenSilex.getClassLoader()))
+                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner()));
 
-        Swagger swagger = generate(source, localRef, modelList);
+        Reflections localRef;
+        if (instanceRef != null) {
+            localRef = instanceRef.merge(fallbackRef);
+        } else {
+            localRef = fallbackRef;
+        }
 
-        if (swagger != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(Include.NON_NULL);
-            File swaggerFile = new File(destination);
-            swaggerFile.getParentFile().mkdirs();
-            swaggerFile.createNewFile();
-            mapper.writeValue(swaggerFile, swagger);
+        OpenAPI openAPI = generate(source, localRef, modelList);
+
+        if (openAPI != null) {
+            File openApiFile = new File(destination);
+            if (openApiFile.getParentFile() != null) {
+                openApiFile.getParentFile().mkdirs();
+            }
+            openApiFile.createNewFile();
+            Json.pretty().writeValue(openApiFile, openAPI);
         }
 
         instance.shutdown();
     }
 
-    /**
-     * Return opensilex instance.
-     *
-     * @param baseDirectory
-     * @return opensilex instance
-     * @throws Exception
-     */
     public static OpenSilex getOpenSilex(Path baseDirectory) throws Exception {
-        Map<String, String> args = new HashMap<String, String>() {
+        Map<String, String> args = new HashMap<>() {
             {
                 put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID);
-
-                // NOTE: uncomment this line to enable full debug during swagger API generation process
-                // put(OpenSilex.DEBUG_ARG_KEY, "true");
             }
         };
 
@@ -232,5 +271,36 @@ public final class SwaggerAPIGenerator {
         args.put(OpenSilex.BASE_DIR_ARG_KEY, baseDirectory.toFile().getCanonicalPath());
 
         return OpenSilex.createInstance(args);
+    }
+
+    /**
+     * Custom ModelConverter to prevent Jackson introspection errors on Apache Jena & RDF4J classes.
+     */
+    public static class JenaModelConverter implements ModelConverter {
+
+        @Override
+        public Schema resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
+            if (type != null && type.getType() != null) {
+                Class<?> rawClass = null;
+                if (type.getType() instanceof Class<?>) {
+                    rawClass = (Class<?>) type.getType();
+                } else if (type.getType() instanceof java.lang.reflect.ParameterizedType) {
+                    java.lang.reflect.Type raw = ((java.lang.reflect.ParameterizedType) type.getType()).getRawType();
+                    if (raw instanceof Class<?>) {
+                        rawClass = (Class<?>) raw;
+                    }
+                }
+                if (rawClass != null && (rawClass.getName().startsWith("org.apache.jena.") || rawClass.getName().startsWith("org.eclipse.rdf4j."))) {
+                    ObjectSchema schema = new ObjectSchema();
+                    schema.setName(rawClass.getSimpleName());
+                    schema.setDescription("RDF model element (" + rawClass.getSimpleName() + ")");
+                    return schema;
+                }
+            }
+            if (chain != null && chain.hasNext()) {
+                return chain.next().resolve(type, context, chain);
+            }
+            return null;
+        }
     }
 }

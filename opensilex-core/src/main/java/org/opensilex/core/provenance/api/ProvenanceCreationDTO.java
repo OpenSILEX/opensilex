@@ -7,7 +7,7 @@
 package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
@@ -35,20 +35,20 @@ public class ProvenanceCreationDTO {
      * uri
      */
     @ValidURI
-    @ApiModelProperty(value = "provenance name", example = "http://provenance/prov01")
+    @Schema(description = "provenance name", example = "http://provenance/prov01")
     protected URI uri;
 
     /**
      * name
      */
     @Required    
-    @ApiModelProperty(value = "provenance uri manually entered", example = "air_temperature_acquisition", required = true)
+    @Schema(description = "provenance uri manually entered", example = "air_temperature_acquisition", requiredMode = Schema.RequiredMode.REQUIRED)
     protected String name;
     
     /**
      * description
      */
-    @ApiModelProperty(value = "provenance description", example = "acquisition of air temperature with sensor 01")
+    @Schema(description = "provenance description", example = "acquisition of air temperature with sensor 01")
     protected String description;
     
     /**

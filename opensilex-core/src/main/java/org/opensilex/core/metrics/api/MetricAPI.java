@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.metrics.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreConfig;
 import org.opensilex.core.CoreModule;
@@ -52,7 +61,7 @@ import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
  * API for metrics
  * @author Arnaud Charleroy
  */
-@Api(MetricAPI.CREDENTIAL_METRICS_GROUP_ID)
+@Tag(name = MetricAPI.CREDENTIAL_METRICS_GROUP_ID)
 @Path("/core/metrics")
 @ApiCredentialGroup(
         groupId = MetricAPI.CREDENTIAL_METRICS_GROUP_ID,
@@ -83,20 +92,20 @@ public class MetricAPI {
 
     @GET
     @Path("running_experiments")
-    @ApiOperation("Get running experiments metrics")
+    @Operation(summary = "Get running experiments metrics")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Metrics retrieved", response = MetricDTO.class),
-        @ApiResponse(code = 404, message = "Metrics not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Metrics retrieved", content = @Content(schema = @Schema(implementation = MetricDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Metrics not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getRunningExperimentsSummary(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         //convert dates
@@ -132,20 +141,20 @@ public class MetricAPI {
 
     @GET
     @Path("system")
-    @ApiOperation("Get system metrics")
+    @Operation(summary = "Get system metrics")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "System metrics retrieved", response = MetricDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "System metrics not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "System metrics retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MetricDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "System metrics not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getSystemMetrics(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         //convert dates
@@ -180,20 +189,20 @@ public class MetricAPI {
 
     @GET
     @Path("system/summary")
-    @ApiOperation("Get system metrics summary")
+    @Operation(summary = "Get system metrics summary")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "System metrics retrieved", response = MetricPeriodDTO.class),
-            @ApiResponse(code = 404, message = "System metrics not found", response = ErrorResponse.class),
-            @ApiResponse(code = 503, message = "System metrics not available", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "System metrics retrieved", content = @Content(schema = @Schema(implementation = MetricPeriodDTO.class))),
+            @ApiResponse(responseCode = "404", description = "System metrics not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "System metrics not available", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getSystemMetricsSummary(
-            @ApiParam(value = "Search by minimal date", example = "DAY, WEEK, MONTH, YEAR") @QueryParam("period") String period,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = "DAY, WEEK, MONTH, YEAR") @QueryParam("period") String period,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         if (!openSilex.getModuleConfig(CoreModule.class, CoreConfig.class).metrics().enableMetrics()) {
             return new ErrorResponse(Response.Status.SERVICE_UNAVAILABLE, "Service Unavailable", "Metrics are not enabled on this instance").getResponse();
@@ -238,20 +247,20 @@ public class MetricAPI {
 
     @GET
     @Path("experiment/{uri}")
-    @ApiOperation("Get an experiment summary history")
+    @Operation(summary = "Get an experiment summary history")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment metrics history retrieved", response = MetricDTO.class),
-        @ApiResponse(code = 404, message = "Experiment metrics not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Experiment metrics history retrieved", content = @Content(schema = @Schema(implementation = MetricDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Experiment metrics not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getExperimentSummaryHistory(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI experimentURI,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI experimentURI,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         //convert dates

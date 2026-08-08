@@ -6,7 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -25,11 +25,11 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
     private LocationObservationDTO location;
 
     @JsonProperty("creation_date")
-    @ApiModelProperty(value = "Scientific object creation date")
+    @Schema(description = "Scientific object creation date")
     private LocalDate creationDate;
 
     @JsonProperty("destruction_date")
-    @ApiModelProperty(value = "Scientific object creation date")
+    @Schema(description = "Scientific object creation date")
     private LocalDate destructionDate;
 
     public LocationObservationDTO getLocation() {

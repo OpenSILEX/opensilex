@@ -7,7 +7,7 @@ package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -24,11 +24,11 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 @JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "experiment", "experiment_name", "factor_level", "relations", "location"})
 public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDetailDTO {
 
-    @ApiModelProperty(value = "Scientific object experiment URI")
+    @Schema(description = "Scientific object experiment URI")
     private URI experiment;
 
     @JsonProperty("experiment_name")
-    @ApiModelProperty(value = "Scientific object experiment name")
+    @Schema(description = "Scientific object experiment name")
     private String experimentLabel;
 
     public URI getExperiment() {

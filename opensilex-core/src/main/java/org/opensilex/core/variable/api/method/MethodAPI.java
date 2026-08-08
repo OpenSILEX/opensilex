@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.method;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
@@ -48,7 +57,7 @@ import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
-@Api(CREDENTIAL_VARIABLE_GROUP_ID)
+@Tag(name = CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(MethodAPI.PATH)
 @ApiCredentialGroup(
         groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
@@ -75,7 +84,7 @@ public class MethodAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Add a method")
+    @Operation(summary = "Add a method")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -84,11 +93,11 @@ public class MethodAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A method is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A method with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "A method is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A method with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createMethod(
-            @ApiParam("Method description") @Valid MethodCreationDTO dto
+            @Parameter(description = "Method description") @Valid MethodCreationDTO dto
     ) throws Exception {
         try {
             BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
@@ -110,15 +119,15 @@ public class MethodAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a method")
+    @Operation(summary = "Get a method")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Method retrieved", response = MethodDetailsDTO.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Method retrieved", content = @Content(schema = @Schema(implementation = MethodDetailsDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getMethod(
-            @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
         MethodModel model = dao.get(uri);
@@ -137,18 +146,18 @@ public class MethodAPI {
     
     @GET
     @Path(MethodAPI.GET_BY_URIS_PATH)
-    @ApiOperation("Get detailed methods by uris")
+    @Operation(summary = "Get detailed methods by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return methods", response = MethodDetailsDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Method not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return methods", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MethodDetailsDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Method not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getMethodsByURIs(
-            @ApiParam(value = "Methods URIs", required = true) @QueryParam(MethodAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
-            @ApiParam(value = "Shared resource instance") @QueryParam(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Methods URIs", required = true) @QueryParam(MethodAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @Parameter(description = "Shared resource instance") @QueryParam(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
@@ -178,7 +187,7 @@ public class MethodAPI {
     
     
     @PUT
-    @ApiOperation("Update a method")
+    @Operation(summary = "Update a method")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -187,11 +196,11 @@ public class MethodAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Method updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown method URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Method updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown method URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateMethod(
-            @ApiParam("Method description") @Valid MethodUpdateDTO dto
+            @Parameter(description = "Method description") @Valid MethodUpdateDTO dto
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
 
@@ -203,20 +212,20 @@ public class MethodAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a method")
+    @Operation(summary = "Delete a method")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Method deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown method URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Method deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown method URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteMethod(
-            @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
         dao.delete(uri, Oeso.hasMethod, currentUser);
@@ -226,20 +235,20 @@ public class MethodAPI {
 
 
     @GET
-    @ApiOperation("Search methods by name")
+    @Operation(summary = "Search methods by name")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return methods", response = MethodGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return methods", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MethodGetDTO.class)))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchMethods(
-            @ApiParam(value = "Name (regex)", example = "ImageAnalysis") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
-            @ApiParam(value = "Shared resource instance") @QueryParam(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Name (regex)", example = "ImageAnalysis") @QueryParam("name") String namePattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @Parameter(description = "Shared resource instance") @QueryParam(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
             ) throws Exception {
         if (sharedResourceInstance == null) {
             BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);

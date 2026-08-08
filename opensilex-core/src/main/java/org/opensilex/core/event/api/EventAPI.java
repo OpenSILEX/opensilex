@@ -8,7 +8,16 @@
 package org.opensilex.core.event.api;
 
 import com.apicatalog.jsonld.StringUtils;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -71,7 +80,7 @@ import java.util.stream.Collectors;
 /**
  * @author Renaud COLIN
  */
-@Api(EventAPI.CREDENTIAL_EVENT_GROUP_ID)
+@Tag(name = EventAPI.CREDENTIAL_EVENT_GROUP_ID)
 @Path(EventAPI.PATH)
 @ApiCredentialGroup(
         groupId = EventAPI.CREDENTIAL_EVENT_GROUP_ID,
@@ -104,15 +113,15 @@ public class EventAPI {
 
 
     @POST
-    @ApiOperation("Create a list of event")
+    @Operation(summary = "Create a list of event")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EVENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a list of event", response = URI.class),
-            @ApiResponse(code = 409, message = "An event with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Create a list of event", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "An event with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -136,10 +145,10 @@ public class EventAPI {
 
     @POST
     @Path("/import")
-    @ApiOperation(value = "Import a CSV file with one move and one target per line")
+    @Operation(summary = "Import a CSV file with one move and one target per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Move file saved", response = CSVValidationDTO.class),
-            @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Move file saved", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class))),
+            @ApiResponse(responseCode = "409", description = "A move with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @ApiProtected
     @ApiCredential(
@@ -149,8 +158,8 @@ public class EventAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importEventCSV(
-            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
-            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
+            @Parameter(description = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
+            @Parameter(description = "Event file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -178,15 +187,15 @@ public class EventAPI {
 
     @POST
     @Path("/import_validation")
-    @ApiOperation(value = "Check a CSV file with one move and one target per line")
+    @Operation(summary = "Check a CSV file with one move and one target per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Event file checked", response = CSVValidationDTO.class)})
+            @ApiResponse(responseCode = "200", description = "Event file checked", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class)))})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateEventCSV(
-            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
-            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
+            @Parameter(description = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
+            @Parameter(description = "Event file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
         CsvImporter<EventModel> csvImporter = new CachedCsvImporter<>(
@@ -221,20 +230,20 @@ public class EventAPI {
     }
 
     @PUT
-    @ApiOperation("Update an event")
+    @Operation(summary = "Update an event")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EVENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated event", response = URI.class),
-            @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return updated event", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Event URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateEvent(
-            @ApiParam("Event description") @Valid @NotNull EventUpdateDTO dto
+            @Parameter(description = "Event description") @Valid @NotNull EventUpdateDTO dto
     ) throws Exception {
 
         EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
@@ -246,20 +255,20 @@ public class EventAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an event")
+    @Operation(summary = "Delete an event")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EVENT_DELETE_ID,
             credentialLabelKey = CREDENTIAL_EVENT_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Event deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Event deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Event URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteEvent(
-            @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
         logic.delete(uri);
@@ -268,16 +277,16 @@ public class EventAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an event")
+    @Operation(summary = "Get an event")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Event retrieved", response = EventGetDTO.class),
-            @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Event retrieved", content = @Content(schema = @Schema(implementation = EventGetDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Event URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEvent(
-            @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         EventModel model = new EventLogic<>(sparql, nosql, currentUser, EventModel.class).get(uri);
         EventGetDTO dto = new EventGetDTO();
@@ -287,16 +296,16 @@ public class EventAPI {
 
     @GET
     @Path("{uri}/details")
-    @ApiOperation("Get an event with all it's properties")
+    @Operation(summary = "Get an event with all it's properties")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Event retrieved", response = EventDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Event retrieved", content = @Content(schema = @Schema(implementation = EventDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Event URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEventDetails(
-            @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         EventModel model = new EventLogic<>(sparql, nosql, currentUser, EventModel.class).get(uri);
@@ -310,23 +319,23 @@ public class EventAPI {
     }
 
     @GET
-    @ApiOperation(value = "Search events")
+    @Operation(summary = "Search events")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return event list", response = EventGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return event list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventGetDTO.class))))
     })
 
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchEvents(
-            @ApiParam(value = "Event type", example = "http://www.opensilex.org/vocabulary/oeev#MoveFrom") @QueryParam("rdf_type") URI type,
-            @ApiParam(value = "Start date : match event after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
-            @ApiParam(value = "End date : match event before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end,
-            @ApiParam(value = "Target partial/exact URI", example = "http://www.opensilex.org/demo/2018/o18000076(exact match) or o18000076(partial match)") @QueryParam("target") String target,
-            @ApiParam(value = "Description regex pattern", example = "The pest attack") @QueryParam("description") String descriptionPattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "end=asc") @DefaultValue("end=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+            @Parameter(description = "Event type", example = "http://www.opensilex.org/vocabulary/oeev#MoveFrom") @QueryParam("rdf_type") URI type,
+            @Parameter(description = "Start date : match event after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
+            @Parameter(description = "End date : match event before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end,
+            @Parameter(description = "Target partial/exact URI", example = "http://www.opensilex.org/demo/2018/o18000076(exact match) or o18000076(partial match)") @QueryParam("target") String target,
+            @Parameter(description = "Description regex pattern", example = "The pest attack") @QueryParam("description") String descriptionPattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "end=asc") @DefaultValue("end=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number") @QueryParam("page") int page,
+            @Parameter(description = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
         EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
@@ -361,15 +370,15 @@ public class EventAPI {
 
     @POST
     @Path(MOVE_PATH_PREFIX)
-    @ApiOperation("Create a list of move event")
+    @Operation(summary = "Create a list of move event")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EVENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a list of move", response = URI.class),
-            @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Create a list of move", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A move with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -441,10 +450,10 @@ public class EventAPI {
 
     @POST
     @Path(MOVE_PATH_PREFIX + "/import")
-    @ApiOperation(value = "Import a CSV file with one move and one target per line")
+    @Operation(summary = "Import a CSV file with one move and one target per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Move file saved", response = CSVValidationDTO.class),
-            @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Move file saved", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class))),
+            @ApiResponse(responseCode = "409", description = "A move with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @ApiProtected
     @ApiCredential(
@@ -454,7 +463,7 @@ public class EventAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importMoveCSV(
-            @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @Parameter(description = "Move file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -468,14 +477,14 @@ public class EventAPI {
 
     @POST
     @Path(MOVE_PATH_PREFIX + "/import_validation")
-    @ApiOperation(value = "Check a CSV file with one move and one target per line")
+    @Operation(summary = "Check a CSV file with one move and one target per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Event file checked", response = CSVValidationDTO.class)})
+            @ApiResponse(responseCode = "200", description = "Event file checked", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class)))})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateMoveCSV(
-            @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @Parameter(description = "Move file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
@@ -486,20 +495,20 @@ public class EventAPI {
 
     @PUT
     @Path(MOVE_PATH_PREFIX)
-    @ApiOperation("Update a move event")
+    @Operation(summary = "Update a move event")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EVENT_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated move", response = URI.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return updated move", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Move URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateMoveEvent(
-            @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
+            @Parameter(description = "Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
@@ -514,16 +523,16 @@ public class EventAPI {
 
     @GET
     @Path(MOVE_PATH_PREFIX + "/{uri}")
-    @ApiOperation("Get a move with all it's properties")
+    @Operation(summary = "Get a move with all it's properties")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move retrieved", response = MoveDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Move retrieved", content = @Content(schema = @Schema(implementation = MoveDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Move URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMoveEvent(
-            @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MoveModel model = new MoveLogic(sparql, nosql, currentUser).get(uri);
 
@@ -536,16 +545,16 @@ public class EventAPI {
 
     @GET
     @Path(MOVE_PATH_PREFIX + "/by_uris")
-    @ApiOperation("Get a list of moves with all positional information")
+    @Operation(summary = "Get a list of moves with all positional information")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Moves retrieved", response = MoveDetailsDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Moves retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MoveDetailsDTO.class)))),
+            @ApiResponse(responseCode = "404", description = "Move URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMoveEventByUris(
-            @ApiParam(value = "Move URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Move URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         var logic = new MoveLogic(sparql, nosql, currentUser);
         var accountDao = new AccountDAO(sparql);
@@ -580,20 +589,20 @@ public class EventAPI {
 
     @DELETE
     @Path(MOVE_PATH_PREFIX + "/{uri}")
-    @ApiOperation("Delete a move event")
+    @Operation(summary = "Delete a move event")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EVENT_DELETE_ID,
             credentialLabelKey = CREDENTIAL_EVENT_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Move deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Move URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteMoveEvent(
-            @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
         logic.delete(uri);
@@ -602,15 +611,15 @@ public class EventAPI {
 
     @GET
     @Path("/count")
-    @ApiOperation("Count events")
+    @Operation(summary = "Count events")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of events associated to targets", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of events associated to targets", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countEvents(
-            @ApiParam(value = "Targets URIs", required = true) @QueryParam("targets") @NotNull @NotEmpty List<URI> targets) throws Exception {
+            @Parameter(description = "Targets URIs", required = true) @QueryParam("targets") @NotNull @NotEmpty List<URI> targets) throws Exception {
 
         EventLogic<EventModel, EventSearchFilter> logic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
         int count = logic.countForTargets(targets);

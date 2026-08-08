@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.security.authentication.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
@@ -62,7 +71,7 @@ import static org.opensilex.security.SecurityModule.DEFAULT_SUPER_ADMIN_EMAIL;
  *
  * @author Vincent Migot
  */
-@Api(SecurityModule.REST_AUTHENTICATION_API_ID)
+@Tag(name = SecurityModule.REST_AUTHENTICATION_API_ID)
 @Path(AuthenticationAPI.PATH)
 public class AuthenticationAPI {
 
@@ -116,15 +125,15 @@ public class AuthenticationAPI {
      */
     @POST
     @Path(AuthenticationAPI.AUTHENTICATE_PATH)
-    @ApiOperation("Authenticate a user and return an access token")
+    @Operation(summary = "Authenticate a user and return an access token")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "User sucessfully authenticated", response = TokenGetDTO.class),
-        @ApiResponse(code = 403, message = "Invalid credentials (user does not exists or invalid password)", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "User sucessfully authenticated", content = @Content(schema = @Schema(implementation = TokenGetDTO.class))),
+        @ApiResponse(responseCode = "403", description = "Invalid credentials (user does not exists or invalid password)", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response authenticate(
-            @ApiParam("User authentication informations") @Valid AuthenticationDTO authenticationDTO
+            @Parameter(description = "User authentication informations") @Valid AuthenticationDTO authenticationDTO
     ) throws Exception {
         // Create user DAO
         AccountDAO accountDAO = new AccountDAO(sparql);
@@ -163,15 +172,15 @@ public class AuthenticationAPI {
      */
     @PUT
     @Path("renew-token")
-    @ApiOperation("Send back a new token if the provided one is still valid")
+    @Operation(summary = "Send back a new token if the provided one is still valid")
     @ApiProtected
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Token sucessfully renewed", response = TokenGetDTO.class)
+        @ApiResponse(responseCode = "200", description = "Token sucessfully renewed", content = @Content(schema = @Schema(implementation = TokenGetDTO.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response renewToken(
-            @ApiParam(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken
+            @Parameter(hidden = true) @HeaderParam(ApiProtected.HEADER_NAME) String userToken
     ) throws Exception {
         authentication.renewToken(currentUser);
         return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(currentUser.getToken())).getResponse();
@@ -187,15 +196,15 @@ public class AuthenticationAPI {
      */
     @POST
     @Path("forgot-password")
-    @ApiOperation("Send an e-mail confirmation")
+    @Operation(summary = "Send an e-mail confirmation")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Email successfully sent"),
-        @ApiResponse(code = 400, message = "Email not send")
+        @ApiResponse(responseCode = "200", description = "Email successfully sent"),
+        @ApiResponse(responseCode = "400", description = "Email not send")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response forgotPassword(
-            @ApiParam(value = "User e-mail or uri", required = true) @QueryParam("identifier")  @NotNull String identifier
+            @Parameter(description = "User e-mail or uri", required = true) @QueryParam("identifier")  @NotNull String identifier
     ) throws Exception {
         if(!emailService.isEnable()){
             return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionality not available", "Email service must be started").getResponse();
@@ -281,18 +290,18 @@ public class AuthenticationAPI {
      */
     @PUT
     @Path("renew-password")
-    @ApiOperation("Update user password")
+    @Operation(summary = "Update user password")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Password sucessfully renewed", response = TokenGetDTO.class),
-        @ApiResponse(code = 400, message = "Invalid token", response = ErrorResponse.class),
-        @ApiResponse(code = 400, message = "Invalid password", response = ErrorResponse.class),
+        @ApiResponse(responseCode = "200", description = "Password sucessfully renewed", content = @Content(schema = @Schema(implementation = TokenGetDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid password", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response renewPassword( 
-            @ApiParam(value = "User renew token", required = true) @QueryParam("renew_token") @NotNull @ValidURI URI renewToken,
-            @ApiParam(value = "Check only renew token", example = "false") @DefaultValue("false") @QueryParam("check_only") Boolean checkOnly,
-            @ApiParam(value = "User password") @QueryParam("password") String password
+            @Parameter(description = "User renew token", required = true) @QueryParam("renew_token") @NotNull @ValidURI URI renewToken,
+            @Parameter(description = "Check only renew token", example = "false") @DefaultValue("false") @QueryParam("check_only") Boolean checkOnly,
+            @Parameter(description = "User password") @QueryParam("password") String password
     ) throws Exception {
         if(!emailService.isEnable()){
             return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionnality not available", "Email service must be started").getResponse();
@@ -340,10 +349,10 @@ public class AuthenticationAPI {
      */
     @DELETE
     @Path("logout")
-    @ApiOperation("Logout by discarding a user token")
+    @Operation(summary = "Logout by discarding a user token")
     @ApiProtected
     @ApiResponses({
-        @ApiResponse(code = 200, message = "User sucessfully logout")})
+        @ApiResponse(responseCode = "200", description = "User sucessfully logout")})
     public Response logout() throws Exception {
         authentication.logout(currentUser);
         return Response.ok().build();
@@ -351,8 +360,8 @@ public class AuthenticationAPI {
 
     /**
      * <pre>
-     * Return map of existing application credential indexed by @Api and credential id
-     * Label for each credential is based on @ApiOperation message
+     * Return map of existing application credential indexed by @Tag and credential id
+     * Label for each credential is based on @Operation message
      *
      * Produced JSON example:
      * {
@@ -374,9 +383,9 @@ public class AuthenticationAPI {
      */
     @GET
     @Path("credentials")
-    @ApiOperation(value = "Get list of existing credentials indexed by Swagger @API concepts in the application")
+    @Operation(summary = "Get list of existing credentials indexed by Swagger @API concepts in the application")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "List of existing credentials by group in the application", response = CredentialsGroupDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "List of existing credentials by group in the application", content = @Content(array = @ArraySchema(schema = @Schema(implementation = CredentialsGroupDTO.class))))
     })
     public Response getCredentialsGroups() throws Exception {
         if (credentialsGroupList == null) {
@@ -407,15 +416,15 @@ public class AuthenticationAPI {
 
     @GET
     @Path("openid")
-    @ApiOperation("Authenticate a user and return an access token")
+    @Operation(summary = "Authenticate a user and return an access token")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "User successfully authenticated", response = TokenGetDTO.class),
-        @ApiResponse(code = 403, message = "Invalid credentials (Bad token provided)", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "User successfully authenticated", content = @Content(schema = @Schema(implementation = TokenGetDTO.class))),
+        @ApiResponse(responseCode = "403", description = "Invalid credentials (Bad token provided)", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response authenticateOpenID(
-            @ApiParam("Authorization code") @QueryParam("code") @Required String code
+            @Parameter(description = "Authorization code") @QueryParam("code") @Required String code
     ) throws Exception {
         // Create user DAO
         AccountDAO accountDAO = new AccountDAO(sparql);
@@ -437,10 +446,10 @@ public class AuthenticationAPI {
 
     @GET
     @Path("saml")
-    @ApiOperation("Authenticate a user and return an access token from SAML response")
+    @Operation(summary = "Authenticate a user and return an access token from SAML response")
     @ApiResponses(value = {
-            @ApiResponse(code = 302, message = "User successfully authenticated"),
-            @ApiResponse(code = 403, message = "Invalid SAML authentication")
+            @ApiResponse(responseCode = "302", description = "User successfully authenticated"),
+            @ApiResponse(responseCode = "403", description = "Invalid SAML authentication")
     })
     @Produces(MediaType.TEXT_PLAIN)
     public Response authenticateSAML(@Context HttpServletRequest request) throws Exception {

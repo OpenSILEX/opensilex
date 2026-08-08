@@ -1,6 +1,6 @@
 package org.opensilex.core.scientificObject.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
@@ -11,7 +11,7 @@ public class ScientificObjectUpdateDTO extends ScientificObjectCreationDTO {
     @Override
     @NotNull
     @ValidURI
-    @ApiModelProperty(value = "Scientific object URI", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
+    @Schema(description = "Scientific object URI", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_URI, requiredMode = Schema.RequiredMode.REQUIRED)
     public URI getUri() {
         return uri;
     }

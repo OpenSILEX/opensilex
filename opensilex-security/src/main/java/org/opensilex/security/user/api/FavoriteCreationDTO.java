@@ -2,11 +2,11 @@ package org.opensilex.security.user.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.net.URI;
 
-@ApiModel
+@Schema
 @JsonPropertyOrder({"type", "uri"})
 public class FavoriteCreationDTO {
 

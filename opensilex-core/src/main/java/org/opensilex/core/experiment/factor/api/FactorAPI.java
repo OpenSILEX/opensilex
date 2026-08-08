@@ -9,7 +9,16 @@
  */
 package org.opensilex.core.experiment.factor.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -60,7 +69,7 @@ import java.util.Set;
  * @author Arnaud Charleroy
  */
 @Path("/core/experiments/factors")
-@Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
+@Tag(name = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
 @ApiCredentialGroup(
         groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
         groupLabelKey = FactorAPI.CREDENTIAL_FACTOR_GROUP_LABEL_KEY
@@ -97,7 +106,7 @@ public class FactorAPI {
      * @throws Exception if creation failed
      */
     @POST
-    @ApiOperation("Create a factor")
+    @Operation(summary = "Create a factor")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
@@ -106,7 +115,7 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createFactor(
-            @ApiParam("Factor description") @Valid FactorCreationDTO dto) throws Exception {
+            @Parameter(description = "Factor description") @Valid FactorCreationDTO dto) throws Exception {
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         ExperimentModel xpModel = experimentDAO.get(dto.getExperiment(), currentUser);
         FactorDAO dao = new FactorDAO(sparql);
@@ -143,15 +152,15 @@ public class FactorAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a factor")
+    @Operation(summary = "Get a factor")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor retrieved", response = FactorDetailsGetDTO.class),
-        @ApiResponse(code = 404, message = "Factor not found", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Factor retrieved", content = @Content(schema = @Schema(implementation = FactorDetailsGetDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Factor not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getFactorByURI(
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
+            @Parameter(description = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
 
         FactorDAO dao = new FactorDAO(sparql);
@@ -179,15 +188,15 @@ public class FactorAPI {
      */
     @GET
     @Path("{uri}/levels")
-    @ApiOperation("Get factor levels")
+    @Operation(summary = "Get factor levels")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor retrieved", response = FactorLevelGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "Factor not found", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Factor retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FactorLevelGetDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "Factor not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getFactorLevels(
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
+            @Parameter(description = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
@@ -212,15 +221,15 @@ public class FactorAPI {
      */
     @GET
     @Path("{uri}/experiments")
-    @ApiOperation("Get factor associated experiments")
+    @Operation(summary = "Get factor associated experiments")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiments retrieved", response = ExperimentGetListDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "Factor not found", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Experiments retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ExperimentGetListDTO.class)))),
+        @ApiResponse(responseCode = "404", description = "Factor not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getFactorAssociatedExperiments(
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
+            @Parameter(description = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         FactorModel model = dao.get(uri);
@@ -254,22 +263,22 @@ public class FactorAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @ApiOperation("Search factors")
+    @Operation(summary = "Search factors")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factor list", response = FactorGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Return factor list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FactorGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Experiment URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response searchFactors(
-            @ApiParam(value = "Regex pattern for filtering on name", example = "irrigation") @QueryParam("name") String name,
-            @ApiParam(value = "Regex pattern for filtering on description", example = "20ml of water") @QueryParam("description") String comment,
-            @ApiParam(value = "Filter by category of a factor", example = "http://aims.fao.org/aos/agrovoc/c_32668") @QueryParam("category") URI category,
-            @ApiParam(value = "Filter by experiment", example = "demo-exp:experiment1") @QueryParam("experiment") URI experiment,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize)
+            @Parameter(description = "Regex pattern for filtering on name", example = "irrigation") @QueryParam("name") String name,
+            @Parameter(description = "Regex pattern for filtering on description", example = "20ml of water") @QueryParam("description") String comment,
+            @Parameter(description = "Filter by category of a factor", example = "http://aims.fao.org/aos/agrovoc/c_32668") @QueryParam("category") URI category,
+            @Parameter(description = "Filter by experiment", example = "demo-exp:experiment1") @QueryParam("experiment") URI experiment,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize)
             throws Exception {
 
         // Search factors with Factor DAO
@@ -310,18 +319,18 @@ public class FactorAPI {
 
     @GET
     @Path("factor_levels")
-    @ApiOperation("Search factors levels")
+    @Operation(summary = "Search factors levels")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factor list with their levels", response = FactorDetailsGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)})
+        @ApiResponse(responseCode = "200", description = "Return factor list with their levels", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FactorDetailsGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))})
     public Response searchFactorLevels(
-            @ApiParam(value = "Regex pattern for filtering on name", example = "WW") @QueryParam("name") String name,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize)
+            @Parameter(description = "Regex pattern for filtering on name", example = "WW") @QueryParam("name") String name,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize)
             throws Exception {
 
         FactorDAO dao = new FactorDAO(sparql);
@@ -340,7 +349,7 @@ public class FactorAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a factor")
+    @Operation(summary = "Delete a factor")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACTOR_DELETE_ID,
@@ -349,11 +358,11 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor deleted", response = URI.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Factor deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid or unknown Factor URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response deleteFactor(
-            @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
+            @Parameter(description = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
         try {
             FactorDAO dao = new FactorDAO(sparql);
             FactorModel model = dao.get(uri);
@@ -386,7 +395,7 @@ public class FactorAPI {
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Factor {@link URI}
      */
     @PUT
-    @ApiOperation("Update a factor")
+    @Operation(summary = "Update a factor")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
@@ -395,10 +404,10 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor updated", response = URI.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response updateFactor(@ApiParam("Factor description") @Valid FactorUpdateDTO dto) {
+        @ApiResponse(responseCode = "200", description = "Factor updated", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid or unknown Experiment URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
+    public Response updateFactor(@Parameter(description = "Factor description") @Valid FactorUpdateDTO dto) {
 
         try {
             // Update factor
@@ -438,17 +447,17 @@ public class FactorAPI {
      */
     @GET
     @Path("by_uris")
-    @ApiOperation("Get a list of factors by their URIs")
+    @Operation(summary = "Get a list of factors by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factors list", response = FactorGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Factor not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return factors list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FactorGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Factor not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getFactorsByURIs(
-            @ApiParam(value = "Factors URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Factors URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         FactorDAO dao = new FactorDAO(sparql);
         List<FactorModel> models = dao.getList(uris);
@@ -476,24 +485,22 @@ public class FactorAPI {
 
     @GET
     @Path("/categories")
-    @ApiOperation("Search categories")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = HttpHeaders.ACCEPT_LANGUAGE,
-                dataType = "string",
-                paramType = "header",
-                value = "Request accepted language",
-                example = OpenSilex.DEFAULT_LANGUAGE
-        )
+    @Operation(summary = "Search categories")
+    @Parameters({
+        @Parameter(name = HttpHeaders.ACCEPT_LANGUAGE,
+                schema = @Schema(type = "string"),
+                in = ParameterIn.HEADER,
+                description = "Request accepted language",
+                example = OpenSilex.DEFAULT_LANGUAGE)
     })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return categories", response = FactorCategoryGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return categories", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FactorCategoryGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchCategories(
-            @ApiParam(value = "Category name regex pattern", example = "describing") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList
+            @Parameter(description = "Category name regex pattern", example = "describing") @QueryParam("name") String namePattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -505,15 +512,15 @@ public class FactorAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count factors")
+    @Operation(summary = "Count factors")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of factors associated to a given experiment", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of factors associated to a given experiment", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countFactors(
-            @ApiParam(value = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
+            @Parameter(description = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
 
         FactorDAO dao = new FactorDAO(sparql);
         int factorCount = dao.countFactors(experiment);

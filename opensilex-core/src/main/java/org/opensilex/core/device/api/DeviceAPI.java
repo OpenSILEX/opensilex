@@ -8,7 +8,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.geojson.GeoJsonObject;
@@ -91,7 +100,7 @@ import static org.opensilex.core.data.api.DataAPI.*;
  * @author sammy
  */
 
-@Api(DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID)
+@Tag(name = DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID)
 @Path(DeviceAPI.PATH)
 @ApiCredentialGroup(
         groupId = DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID,
@@ -133,7 +142,7 @@ public class DeviceAPI {
 
 
     @POST
-    @ApiOperation("Create a device")
+    @Operation(summary = "Create a device")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
@@ -142,13 +151,13 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A device is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "A device is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A device with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 
     public Response createDevice(
-            @ApiParam("Device description") @Valid DeviceCreationDTO deviceDTO,
-            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+            @Parameter(description = "Device description") @Valid DeviceCreationDTO deviceDTO,
+            @Parameter(description = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
 
@@ -191,29 +200,29 @@ public class DeviceAPI {
     }
 
     @GET
-    @ApiOperation("Search devices")
+    @Operation(summary = "Search devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return devices corresponding to the given search parameters", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceGetDTO.class))))
     })
     public Response searchDevices(
-            @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
-            @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Variable", example = DEVICE_EXAMPLE_VARIABLE) @QueryParam("variable") @ValidURI URI variable,
-            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
-            @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
-            @ApiParam(value = "Search by facility", example = "http://example.com") @QueryParam("facility") @ValidURI URI facility,
-            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
-            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
-            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
-            @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by RDF relations", example = DEVICE_EXAMPLE_RELATIONS) @QueryParam("relations") String relations,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
+            @Parameter(description = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
+            @Parameter(description = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @Parameter(description = "Variable", example = DEVICE_EXAMPLE_VARIABLE) @QueryParam("variable") @ValidURI URI variable,
+            @Parameter(description = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @Parameter(description = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @Parameter(description = "Search by facility", example = "http://example.com") @QueryParam("facility") @ValidURI URI facility,
+            @Parameter(description = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
+            @Parameter(description = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
+            @Parameter(description = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
+            @Parameter(description = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by RDF relations", example = DEVICE_EXAMPLE_RELATIONS) @QueryParam("relations") String relations,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         List<URI> filteredDeviceUris = null;
@@ -300,15 +309,15 @@ public class DeviceAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get device detail")
+    @Operation(summary = "Get device detail")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = DeviceGetDetailsDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return device details corresponding to the device URI", content = @Content(schema = @Schema(implementation = DeviceGetDetailsDTO.class)))
     })
     public Response getDevice(
-            @ApiParam(value = "device URI", example = DEVICE_EXAMPLE_URI, required = true)
+            @Parameter(description = "device URI", example = DEVICE_EXAMPLE_URI, required = true)
             @PathParam("uri") URI uri
     ) throws Exception {
 
@@ -335,17 +344,17 @@ public class DeviceAPI {
 
     @GET
     @Path("by_uris")
-    @ApiOperation("Get devices by uris")
+    @Operation(summary = "Get devices by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return devices", response = DeviceGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Device not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return devices", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Device not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getDeviceByUris(
-            @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> models = dao.getList(uris,currentUser);
@@ -368,7 +377,7 @@ public class DeviceAPI {
     }
 
     @PUT
-    @ApiOperation("Update a device")
+    @Operation(summary = "Update a device")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
@@ -377,10 +386,10 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Device updated", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Device updated", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response updateDevice(
-            @ApiParam(value = "Device description", required = true)
+            @Parameter(description = "Device description", required = true)
             @NotNull
             @Valid DeviceCreationDTO dto
     ) throws Exception {
@@ -424,7 +433,7 @@ public class DeviceAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a device")
+    @Operation(summary = "Delete a device")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DEVICE_DELETE_ID,
@@ -433,12 +442,12 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Device deleted", response = URI.class),
-            @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted {result.title: 'LINKED_DEVICE_ERROR'}.", response = ErrorResponse.class),
-            @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Device deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Device is linked to some data, datafile or provenance and could not be deleted {result.title: 'LINKED_DEVICE_ERROR'}.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Device URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteDevice(
-            @ApiParam(value = "Device URI", example = DEVICE_EXAMPLE_URI, required = true)
+            @Parameter(description = "Device URI", example = DEVICE_EXAMPLE_URI, required = true)
             @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
@@ -455,9 +464,9 @@ public class DeviceAPI {
 
     @POST
     @Path("import")
-    @ApiOperation(value = "Import a CSV file with one device per line")
+    @Operation(summary = "Import a CSV file with one device per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Device(s) imported with success", response = CSVValidationDTO.class)
+            @ApiResponse(responseCode = "201", description = "Device(s) imported with success", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class)))
     })
     @ApiProtected
     @ApiCredential(
@@ -467,8 +476,8 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
-            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
-            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
+            @Parameter(description = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
+            @Parameter(description = "Device file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -483,9 +492,9 @@ public class DeviceAPI {
 
     @POST
     @Path("import_validation")
-    @ApiOperation(value = "Validate the import of a CSV file with one device per line")
+    @Operation(summary = "Validate the import of a CSV file with one device per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Device(s) checked", response = CSVValidationDTO.class)
+            @ApiResponse(responseCode = "201", description = "Device(s) checked", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class)))
     })
     @ApiProtected
     @ApiCredential(
@@ -495,8 +504,8 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
-            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
+            @Parameter(description = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
+            @Parameter(description = "Device file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -511,24 +520,24 @@ public class DeviceAPI {
 
     @GET
     @Path("export")
-    @ApiOperation("export devices")
+    @Operation(summary = "export devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a csv file with device list"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return a csv file with device list"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response exportDevices(
-            @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
-            @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
-            @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
-            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
-            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
-            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
-            @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+            @Parameter(description = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
+            @Parameter(description = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
+            @Parameter(description = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @Parameter(description = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @Parameter(description = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @Parameter(description = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
+            @Parameter(description = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
+            @Parameter(description = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
+            @Parameter(description = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
     ) throws Exception {
         // Search device with device DAO and metaDataDao for metaData
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
@@ -590,16 +599,16 @@ public class DeviceAPI {
 
     @POST
     @Path("export_by_uris")
-    @ApiOperation("export devices")
+    @Operation(summary = "export devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a csv file with device list"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return a csv file with device list"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response exportList(
-            @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") URIsListPostDTO dto
+            @Parameter(description = "List of device URI", example = "dev:set/sensor_01") URIsListPostDTO dto
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> resultList = dao.getDevicesByURI(dto.getUris(), currentUser);
@@ -745,29 +754,29 @@ public class DeviceAPI {
     @Deprecated
     @GET
     @Path("{uri}/data")
-    @ApiOperation("Search device data")
+    @Operation(summary = "Search device data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return data list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchDeviceData(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @Parameter(description = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, null);
         //convert dates
@@ -847,26 +856,26 @@ public class DeviceAPI {
     @Deprecated
     @GET
     @Path("{uri}/data/count")
-    @ApiOperation("Count device data")
+    @Operation(summary = "Count device data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of data", response = Integer.class),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of data", content = @Content(schema = @Schema(implementation = Integer.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response countDeviceData(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
+            @Parameter(description = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @Parameter(description = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators
 
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, null);
@@ -944,27 +953,27 @@ public class DeviceAPI {
     @Deprecated
     @GET
     @Path("{uri}/datafiles")
-    @ApiOperation("Search device datafiles descriptions")
+    @Operation(summary = "Search device datafiles descriptions")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return datafiles list", response = DataGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return datafiles list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchDeviceDatafiles(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
-            @ApiParam(value = "Search by object uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
-            @ApiParam(value = "Search by provenance uris list", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @Parameter(description = "Search by object uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @Parameter(description = "Search by provenance uris list", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, null);
         //convert dates
@@ -1024,15 +1033,15 @@ public class DeviceAPI {
 
     @GET
     @Path("{uri}/variables")
-    @ApiOperation("Get variables linked to the device")
+    @Operation(summary = "Get variables linked to the device")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return variables list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class))))
     })
     public Response getDeviceVariables(
-            @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
@@ -1050,15 +1059,15 @@ public class DeviceAPI {
     @Deprecated
     @GET
     @Path("{uri}/data/provenances")
-    @ApiOperation("Get provenances of data that have been measured on this device")
+    @Operation(summary = "Get provenances of data that have been measured on this device")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getDeviceDataProvenances(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
@@ -1077,15 +1086,15 @@ public class DeviceAPI {
     @Deprecated
     @GET
     @Path("{uri}/datafiles/provenances")
-    @ApiOperation("Get provenances of datafiles linked to this device")
+    @Operation(summary = "Get provenances of datafiles linked to this device")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getDeviceDataFilesProvenances(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
@@ -1096,15 +1105,15 @@ public class DeviceAPI {
 
     @GET
     @Path("{uri}/facility")
-    @ApiOperation("Get devices by facility")
+    @Operation(summary = "Get devices by facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return devices by facility", response = DeviceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return devices by facility", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceGetDTO.class))))
     })
     public Response getDevicesByFacility(
-            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI facilityUri
+            @Parameter(description = "target URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI facilityUri
     ) throws Exception {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
@@ -1148,18 +1157,18 @@ public class DeviceAPI {
 
     @POST
     @Path("export_geospatial")
-    @ApiOperation("Export a given list of devices URIs to shapefile")
+    @Operation(summary = "Export a given list of devices URIs to shapefile")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data shapefile exported")
+            @ApiResponse(responseCode = "200", description = "Data shapefile exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportGeospatial(
-            @ApiParam(value = "Devices") List<GeometryDTO> selectedObjects,
-            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
-            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
-            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+            @Parameter(description = "Devices") List<GeometryDTO> selectedObjects,
+            @Parameter(description = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @Parameter(description = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
+            @Parameter(description = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
 

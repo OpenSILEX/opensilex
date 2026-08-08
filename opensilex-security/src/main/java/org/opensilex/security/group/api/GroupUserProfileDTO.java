@@ -7,8 +7,7 @@ package org.opensilex.security.group.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileModel;
@@ -21,7 +20,7 @@ import java.net.URI;
  *
  * @author vidalmor
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "profile_uri", "profile_name", "user_uri", "user_name"})
 public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
 
@@ -45,13 +44,13 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
     protected String userName;
 
     @ValidURI
-    @ApiModelProperty(value = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")
+    @Schema(description = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")
     public URI getUri() {
         return uri;
     }
 
     @ValidURI
-    @ApiModelProperty(value = "User associated profile URI")
+    @Schema(description = "User associated profile URI")
     public URI getProfileURI() {
         return profileURI;
     }
@@ -60,7 +59,7 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
         this.profileURI = profileURI;
     }
 
-    @ApiModelProperty(value = "User associated profile name")
+    @Schema(description = "User associated profile name")
     public String getProfileName() {
         return profileName;
     }
@@ -70,7 +69,7 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
     }
 
     @ValidURI
-    @ApiModelProperty(value = "User URI",required = true)
+    @Schema(description = "User URI",requiredMode = Schema.RequiredMode.REQUIRED)
     public URI getUserURI() {
         return userURI;
     }
@@ -79,7 +78,7 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
         this.userURI = userURI;
     }
 
-    @ApiModelProperty(value = "User name")
+    @Schema(description = "User name")
     public String getUserName() {
         return userName;
     }

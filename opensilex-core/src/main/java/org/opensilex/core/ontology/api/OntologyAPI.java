@@ -5,7 +5,16 @@
  */
 package org.opensilex.core.ontology.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.BooleanUtils;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.utils.URIsListPostDTO;
@@ -47,7 +56,7 @@ import java.util.stream.Collectors;
 /**
  * @author vince
  */
-@Api("Ontology")
+@Tag(name = "Ontology")
 @Path(OntologyAPI.PATH)
 public class OntologyAPI {
 
@@ -77,16 +86,16 @@ public class OntologyAPI {
 
     @GET
     @Path(SUBCLASSES_OF_PATH)
-    @ApiOperation("Search sub-classes tree of an RDF class")
+    @Operation(summary = "Search sub-classes tree of an RDF class")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return sub-classes tree", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceTreeDTO.class))))
     })
     public Response getSubClassesOf(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentClass,
-            @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
+            @Parameter(description = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentClass,
+            @Parameter(description = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
         return this.searchSubClassesOf(parentClass, null, ignoreRootClasses);
     }
@@ -95,17 +104,17 @@ public class OntologyAPI {
 
     @GET
     @Path(SEARCH_SUB_CLASS_OF_PATH)
-    @ApiOperation("Search sub-classes tree of an RDF class")
+    @Operation(summary = "Search sub-classes tree of an RDF class")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return sub-classes tree", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceTreeDTO.class))))
     })
     public Response searchSubClassesOf(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI @NotNull URI parentClass,
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String stringPattern,
-            @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
+            @Parameter(description = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI @NotNull URI parentClass,
+            @Parameter(description = "Name regex pattern", example = "plant_height") @QueryParam("name") String stringPattern,
+            @Parameter(description = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -119,16 +128,16 @@ public class OntologyAPI {
 
     @GET
     @Path(RDF_TYPE)
-    @ApiOperation("Return class model definition with properties")
+    @Operation(summary = "Return class model definition with properties")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return class model definition ", response = RDFTypeDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return class model definition ", content = @Content(schema = @Schema(implementation = RDFTypeDTO.class)))
     })
     public Response getRDFType(
-            @ApiParam(value = "RDF type URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
+            @Parameter(description = "RDF type URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
+            @Parameter(description = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -138,16 +147,16 @@ public class OntologyAPI {
 
     @GET
     @Path("/rdf_types")
-    @ApiOperation("Return classes models definitions with properties for a list of rdf types")
+    @Operation(summary = "Return classes models definitions with properties for a list of rdf types")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return classes models definitions", response = RDFTypeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return classes models definitions", content = @Content(array = @ArraySchema(schema = @Schema(implementation = RDFTypeDTO.class))))
     })
     public Response getClasses(
-            @ApiParam(value = "RDF classes URI") @QueryParam("rdf_type") @NotNull @ValidURI List<URI> rdfTypes,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
+            @Parameter(description = "RDF classes URI") @QueryParam("rdf_type") @NotNull @ValidURI List<URI> rdfTypes,
+            @Parameter(description = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -222,16 +231,16 @@ public class OntologyAPI {
 
     @POST
     @Path(PROPERTY_PATH)
-    @ApiOperation(PROPERTY_CREATE_MSG)
+    @Operation(summary = PROPERTY_CREATE_MSG)
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = PROPERTY_CREATE_MSG, response = URI.class),
-            @ApiResponse(code = 409, message = PROPERTY_ALREADY_EXISTS_MSG, response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = PROPERTY_CREATE_MSG, content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = PROPERTY_ALREADY_EXISTS_MSG, content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createProperty(
-            @ApiParam("Property description") @Valid RDFPropertyDTO dto
+            @Parameter(description = "Property description") @Valid RDFPropertyDTO dto
     ) throws Exception {
         try {
             OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -260,17 +269,17 @@ public class OntologyAPI {
 
     @PUT
     @Path(PROPERTY_PATH)
-    @ApiOperation("Update a RDF property")
+    @Operation(summary = "Update a RDF property")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = PROPERTY_UPDATE_MSG, response = URI.class),
-            @ApiResponse(code = 404, message = PROPERTY_NOT_FOUND_MSG, response = URI.class),
+            @ApiResponse(responseCode = "200", description = PROPERTY_UPDATE_MSG, content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = PROPERTY_NOT_FOUND_MSG, content = @Content(schema = @Schema(implementation = URI.class))),
     })
 
     public Response updateProperty(
-            @ApiParam("Property description") @Valid RDFPropertyDTO dto
+            @Parameter(description = "Property description") @Valid RDFPropertyDTO dto
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
@@ -293,17 +302,17 @@ public class OntologyAPI {
 
     @GET
     @Path(PROPERTY_PATH)
-    @ApiOperation("Return property model definition detail")
+    @Operation(summary = "Return property model definition detail")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyGetDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return property model definition ", content = @Content(schema = @Schema(implementation = RDFPropertyGetDTO.class)))
     })
     public Response getProperty(
-            @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
-            @ApiParam(value = "Property type") @QueryParam("rdf_type") @ValidURI URI propertyType,
-            @ApiParam(value = "Property type") @QueryParam("domain_rdf_type") @ValidURI URI domainType
+            @Parameter(description = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
+            @Parameter(description = "Property type") @QueryParam("rdf_type") @ValidURI URI propertyType,
+            @Parameter(description = "Property type") @QueryParam("domain_rdf_type") @ValidURI URI domainType
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -317,17 +326,17 @@ public class OntologyAPI {
 
     @GET
     @Path(SUB_PROPERTY_OF_PATH)
-    @ApiOperation("Return property list from a parent property")
+    @Operation(summary = "Return property list from a parent property")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return property model definition ", response = ObjectNamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return property model definition ", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ObjectNamedResourceDTO.class))))
     })
     public Response getSubPropertiesOf(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
-            @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
-            @ApiParam(value = "Flag to determine if only sub-properties must be included in result") @DefaultValue("false") @QueryParam("ignoreRootProperty") boolean ignoreRootProperty
+            @Parameter(description = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
+            @Parameter(description = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
+            @Parameter(description = "Flag to determine if only sub-properties must be included in result") @DefaultValue("false") @QueryParam("ignoreRootProperty") boolean ignoreRootProperty
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
         List<ObjectNamedResourceDTO> result = dao.getSubPropertiesOf(domainURI, propertyURI, ignoreRootProperty, currentUser.getLanguage());
@@ -336,16 +345,16 @@ public class OntologyAPI {
 
     @DELETE
     @Path(PROPERTY_PATH)
-    @ApiOperation("Delete a property")
+    @Operation(summary = "Delete a property")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Property deleted ", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Property deleted ", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response deleteProperty(
-            @ApiParam(value = "Property URI") @QueryParam("uri") @NotNull @ValidURI URI propertyURI,
-            @ApiParam(value = "Property type") @QueryParam("rdf_type") @NotNull @ValidURI URI propertyType
+            @Parameter(description = "Property URI") @QueryParam("uri") @NotNull @ValidURI URI propertyURI,
+            @Parameter(description = "Property type") @QueryParam("rdf_type") @NotNull @ValidURI URI propertyType
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
@@ -365,17 +374,17 @@ public class OntologyAPI {
 
     @GET
     @Path("/properties/{domain}")
-    @ApiOperation("Search properties tree")
+    @Operation(summary = "Search properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return property tree", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceTreeDTO.class))))
     })
     public Response getProperties(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI,
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "Return all properties from sub-classes") @QueryParam("include_sub_classes") @DefaultValue("true") boolean includeSubClasses
+            @Parameter(description = "Domain URI") @PathParam("domain") @NotNull @ValidURI URI domainURI,
+            @Parameter(description = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
+            @Parameter(description = "Return all properties from sub-classes") @QueryParam("include_sub_classes") @DefaultValue("true") boolean includeSubClasses
     ) throws Exception {
 
         BiPredicate<DatatypePropertyModel, ClassModel> dataPropFilter = ((property, classModel) -> property.getRangeURI() != null);
@@ -393,16 +402,16 @@ public class OntologyAPI {
 
     @GET
     @Path("/linkable_properties")
-    @ApiOperation("Search properties linkable to a domain")
+    @Operation(summary = "Search properties linkable to a domain")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return property tree", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceTreeDTO.class))))
     })
     public Response getLinkableProperties(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI,
-            @ApiParam(value = "Domain parent URI") @QueryParam("parent") @ValidURI URI ancestorURI
+            @Parameter(description = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI,
+            @Parameter(description = "Domain parent URI") @QueryParam("parent") @ValidURI URI ancestorURI
 
     ) throws Exception {
 
@@ -427,16 +436,16 @@ public class OntologyAPI {
 
     @GET
     @Path("/domain_hierarchy_restrictions")
-    @ApiOperation("Get restrictions from some super-class domain to one lower down in the hierarchy, ordered by what domain they first appear in.")
+    @Operation(summary = "Get restrictions from some super-class domain to one lower down in the hierarchy, ordered by what domain they first appear in.")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of objects containing domain source and list of property trees", response = PropertiesByDomainDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return list of objects containing domain source and list of property trees", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PropertiesByDomainDTO.class))))
     })
     public Response getPropertiesByDomainHierarchyUsingRestrictions(
-            @ApiParam(value = "Domain ancestor URI") @QueryParam("ancestor") @NotNull @ValidURI URI ancestorURI,
-            @ApiParam(value = "Domain uris from types that have ancestor as an ancestor") @NotEmpty @NotNull @ValidURI @QueryParam("children") List<URI> childrenDomains
+            @Parameter(description = "Domain ancestor URI") @QueryParam("ancestor") @NotNull @ValidURI URI ancestorURI,
+            @Parameter(description = "Domain uris from types that have ancestor as an ancestor") @NotEmpty @NotNull @ValidURI @QueryParam("children") List<URI> childrenDomains
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -494,16 +503,16 @@ public class OntologyAPI {
 
     @GET
     @Path("/data_properties")
-    @ApiOperation("Search data properties tree")
+    @Operation(summary = "Search data properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return data property tree", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceTreeDTO.class))))
     })
     public Response getDataProperties(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern
+            @Parameter(description = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
+            @Parameter(description = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -515,16 +524,16 @@ public class OntologyAPI {
 
     @GET
     @Path("/object_properties")
-    @ApiOperation("Search object properties tree")
+    @Operation(summary = "Search object properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return object property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return object property tree", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceTreeDTO.class))))
     })
     public Response getObjectProperties(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern
+            @Parameter(description = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
+            @Parameter(description = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -537,15 +546,15 @@ public class OntologyAPI {
 
     @POST
     @Path(RDF_TYPE_PROPERTY_RESTRICTION)
-    @ApiOperation("Add a rdf type property restriction")
+    @Operation(summary = "Add a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction added", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Class property restriction added", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response addClassPropertyRestriction(
-            @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
+            @Parameter(description = "Property description") @Valid OWLClassPropertyRestrictionDTO dto
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
@@ -563,16 +572,16 @@ public class OntologyAPI {
 
     @DELETE
     @Path("/rdf_type_property_restriction")
-    @ApiOperation("Delete a rdf type property restriction")
+    @Operation(summary = "Delete a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction deleted ", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Class property restriction deleted ", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response deleteClassPropertyRestriction(
-            @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
-            @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI @NotNull URI propertyURI
+            @Parameter(description = "RDF type") @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
+            @Parameter(description = "Property URI") @QueryParam("propertyURI") @ValidURI @NotNull URI propertyURI
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
@@ -584,15 +593,15 @@ public class OntologyAPI {
 
     @PUT
     @Path("rdf_type_property_restriction")
-    @ApiOperation("Update a rdf type property restriction")
+    @Operation(summary = "Update a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction updated", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Class property restriction updated", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response updateClassPropertyRestriction(
-            @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
+            @Parameter(description = "Property description") @Valid OWLClassPropertyRestrictionDTO dto
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
@@ -606,15 +615,15 @@ public class OntologyAPI {
 
     @GET
     @Path("/uri_label")
-    @ApiOperation("Return associated rdfs:label of an uri if exists")
+    @Operation(summary = "Return associated rdfs:label of an uri if exists")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return URI label", response = String.class)
+            @ApiResponse(responseCode = "200", description = "Return URI label", content = @Content(schema = @Schema(implementation = String.class)))
     })
     public Response getURILabel(
-            @ApiParam(value = "URI to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI URI uri
+            @Parameter(description = "URI to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
@@ -625,17 +634,17 @@ public class OntologyAPI {
 
     @POST
     @Path("/uris_labels")
-    @ApiOperation("Return associated rdfs:label of uris if they exist")
+    @Operation(summary = "Return associated rdfs:label of uris if they exist")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return URI label", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return URI label", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class))))
     })
     public Response getURILabelsList(
-            @ApiParam(value = "URIs to get label from", required = true) @NotNull @ValidURI @NotEmpty List<URI> uris,
-            @ApiParam(value = "Context URI") @QueryParam("context") @ValidURI URI context,
-            @ApiParam(value = "Look for all contexts if not present in specified context") @QueryParam("searchDefault") Boolean searchDefault
+            @Parameter(description = "URIs to get label from", required = true) @NotNull @ValidURI @NotEmpty List<URI> uris,
+            @Parameter(description = "Context URI") @QueryParam("context") @ValidURI URI context,
+            @Parameter(description = "Look for all contexts if not present in specified context") @QueryParam("searchDefault") Boolean searchDefault
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
@@ -679,12 +688,12 @@ public class OntologyAPI {
 
     @GET
     @Path("/shared_resource_instances")
-    @ApiOperation("Return the list of shared resource instances")
+    @Operation(summary = "Return the list of shared resource instances")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return shared resource instances", response = SharedResourceInstanceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return shared resource instances", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SharedResourceInstanceDTO.class))))
     })
     public Response getSharedResourceInstances(
 
@@ -695,15 +704,15 @@ public class OntologyAPI {
 
     @POST
     @Path("/uri_types")
-    @ApiOperation("Return all rdf types of some URIS")
+    @Operation(summary = "Return all rdf types of some URIS")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return URI rdf types", content = @Content(array = @ArraySchema(schema = @Schema(implementation = URITypesDTO.class))))
     })
     public Response getURITypes(
-            @ApiParam(value = "URIs to get types from", required = true) @NotNull @ValidURI @NotEmpty List<URI> uris
+            @Parameter(description = "URIs to get types from", required = true) @NotNull @ValidURI @NotEmpty List<URI> uris
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
@@ -716,16 +725,16 @@ public class OntologyAPI {
 
     @POST
     @Path("/check_rdf_types")
-    @ApiOperation("Check the given rdf-types on the given uris")
+    @Operation(summary = "Check the given rdf-types on the given uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the URIs with the checked rdf:types", response = URITypesDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return the URIs with the checked rdf:types", content = @Content(array = @ArraySchema(schema = @Schema(implementation = URITypesDTO.class))))
     })
     public Response checkURIsTypes(
-            @ApiParam(value = "URIs list") URIsListPostDTO dto,
-            @ApiParam(value = "rdf_types list you want to check on the given uris list") @NotEmpty @NotNull @ValidURI @QueryParam("rdf_types") List<URI> rdfTypes
+            @Parameter(description = "URIs list") URIsListPostDTO dto,
+            @Parameter(description = "rdf_types list you want to check on the given uris list") @NotEmpty @NotNull @ValidURI @QueryParam("rdf_types") List<URI> rdfTypes
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
         List<URITypesModel> checkedURIsTypes = dao.checkURIsTypes(dto.getUris(), rdfTypes);
@@ -735,11 +744,11 @@ public class OntologyAPI {
 
     @GET
     @Path(GET_NAMESPACE_PATH)
-    @ApiOperation("Return namespaces")
+    @Operation(summary = "Return namespaces")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return namespaces", response = String.class)
+            @ApiResponse(responseCode = "200", description = "Return namespaces", content = @Content(schema = @Schema(implementation = String.class)))
     })
     public Response getNameSpace() {
         Map<String, String> nameSpaces = SPARQLService.getPrefixes();
@@ -748,11 +757,11 @@ public class OntologyAPI {
 
     @GET
     @Path(GET_BASEURI_PATH)
-    @ApiOperation("Return base uri")
+    @Operation(summary = "Return base uri")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return base uri", response = String.class)
+            @ApiResponse(responseCode = "200", description = "Return base uri", content = @Content(schema = @Schema(implementation = String.class)))
     })
     public Response getBaseURI() {
         String base_uri = sparql.getBaseURI().toString();
@@ -761,17 +770,17 @@ public class OntologyAPI {
 
     @PUT
     @Path("{uri}/rename")
-    @ApiOperation(value = "Rename all occurrences of the given URI", notes = "**This method should not be used unless you " +
+    @Operation(summary = "Rename all occurrences of the given URI", description = "**This method should not be used unless you " +
             "are fully understanding what you are doing, as it may have side-effects for external ontologies. Please " +
             "note that occurrences of the URI will NOT be changed in the NoSQL database (MongoDB).**")
     @ApiProtected(adminOnly = true)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The URI was successfully renamed")
+            @ApiResponse(responseCode = "200", description = "The URI was successfully renamed")
     })
     public Response renameURI(
-            @ApiParam(value = "The URI to rename") @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "The new URI") @QueryParam("newUri") @NotNull URI newUri
+            @Parameter(description = "The URI to rename") @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "The new URI") @QueryParam("newUri") @NotNull URI newUri
     ) throws Exception {
         if (!sparql.checkTripleURIExists(uri)) {
             throw new NotFoundException("URI not found : " + uri);

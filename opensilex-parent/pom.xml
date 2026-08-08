@@ -39,7 +39,7 @@
         <skipIntegrationTest>false</skipIntegrationTest>
         <skipTypeScriptLibBuild>false</skipTypeScriptLibBuild>
         <skipFrontLibInstall>false</skipFrontLibInstall>
-        <skipFrontTypesGeneration>false</skipFrontTypesGeneration>
+        <skipFrontTypesGeneration>${skipFrontBuild}</skipFrontTypesGeneration>
         <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
 
         <!-- Front-end Node & Npm version -->
@@ -59,7 +59,8 @@
         <geojson.jackson.version>1.14</geojson.jackson.version>
         <jts.version>1.18.2</jts.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
-        <swagger.jersey2.jaxrs.version>1.6.16</swagger.jersey2.jaxrs.version>
+        <swagger.v3.version>2.2.53</swagger.v3.version>
+        <openapi.generator.version>7.11.0</openapi.generator.version>
         <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
         <commons.codec.version>1.17.1</commons.codec.version>
         <maven.resolver.version>1.7.3</maven.resolver.version>
@@ -551,17 +552,16 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
             <scope>provided</scope>
         </dependency>
 
-        <!--Swagger-->
+        <!--OpenAPI 3.1-->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jersey2-jaxrs</artifactId>
-            <version>${swagger.jersey2.jaxrs.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.validation</groupId>
-                    <artifactId>validation-api</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2</artifactId>
+            <version>${swagger.v3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger.v3.version}</version>
         </dependency>
 
         <!-- Cache library -->
@@ -875,7 +875,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <pathToYarn>${maven.multiModuleProjectDirectory}/.node/node/yarn/dist/bin/yarn</pathToYarn>
                     </configuration>
                 </plugin>
-                <!-- Generate swagger.json file -->
+                <!-- Generate openapi.json file -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
@@ -891,17 +891,17 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <mainClass>org.opensilex.utils.SwaggerAPIGenerator</mainClass>
                                 <arguments>
                                     <argument>${project.basedir}/src/main/java/</argument>
-                                    <argument>${project.basedir}/front/src/lib/swagger.json</argument>
+                                    <argument>${project.basedir}/front/src/lib/openapi.json</argument>
                                 </arguments>
                             </configuration>
                         </execution>
                     </executions>
                 </plugin>
-                <!-- Generate TypeScript library from swagger.json file -->
+                <!-- Generate TypeScript library from openapi.json file -->
                 <plugin>
-                    <groupId>org.opensilex</groupId>
-                    <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                    <version>${revision}</version>
+                    <groupId>org.openapitools</groupId>
+                    <artifactId>openapi-generator-maven-plugin</artifactId>
+                    <version>${openapi.generator.version}</version>
 
                     <configuration>
                         <skip>${skipTypeScriptLibBuild}</skip>
@@ -914,17 +914,17 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 <goal>generate</goal>
                             </goals>
                             <configuration>
-                                <inputSpec>${project.basedir}/front/src/lib/swagger.json</inputSpec>
-                                <templateDirectory>
-                                    ${project.basedir}/../opensilex-main/src/main/resources/swagger/templates/typescript-inversify</templateDirectory>
-                                <language>typescript-inversify</language>
+                                <inputSpec>${project.basedir}/front/src/lib/openapi.json</inputSpec>
+                                <generatorName>typescript-inversify</generatorName>
                                 <output>${project.basedir}/front/src/lib/</output>
+                                <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
+                                <skipValidateSpec>true</skipValidateSpec>
                                 <configOptions>
                                     <packageName>${project.name}</packageName>
                                     <packageVersion>${revision}</packageVersion>
                                     <npmName>${project.name}</npmName>
                                     <usePromise>true</usePromise>
-                                    <useHttpClient>true</useHttpClient>
+                                    <supportsES6>true</supportsES6>
                                     <modelPropertyNaming>original</modelPropertyNaming>
                                 </configOptions>
                             </configuration>
@@ -1875,7 +1875,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
 
                                 <configuration>
                                     <skip>${skipFrontTypesGeneration}</skip>
-                                    <arguments>run build:types</arguments>
+                                    <arguments>run build</arguments>
                                     <workingDirectory>front/src/lib</workingDirectory>
                                 </configuration>
                             </execution>

@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.brapi.responses.BrAPIv1ObservationVariableListResponse;
 import org.opensilex.brapi.responses.BrAPIv1SingleObservationVariableResponse;
 import org.opensilex.brapi.model.BrAPIv1ObservationVariableDTO;
@@ -36,7 +45,7 @@ import java.util.Collections;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-@Api("BRAPI")
+@Tag(name = "BRAPI")
 @Path("/brapi/")
 public class VariablesAPI extends BrapiCall {
     
@@ -54,16 +63,16 @@ public class VariablesAPI extends BrapiCall {
     @GET
     @Path("v1/variables")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "BrAPIv1CallDTO to retrieve a list of observationVariables available in the system",
-            notes = "retrieve variables information")
+    @Operation(summary = "BrAPIv1CallDTO to retrieve a list of observationVariables available in the system",
+            description = "retrieve variables information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "retrieve variables information", response = BrAPIv1ObservationVariableListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "retrieve variables information", content = @Content(schema = @Schema(implementation = BrAPIv1ObservationVariableListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesList(
-            @ApiParam(value = "observationVariableDbId") @QueryParam("observationVariableDbId") URI observationVariableDbId,
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "observationVariableDbId") @QueryParam("observationVariableDbId") URI observationVariableDbId,
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs, currentUser);
 
@@ -96,14 +105,14 @@ public class VariablesAPI extends BrapiCall {
     @GET
     @Path("v1/variables/{observationVariableDbId}")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "Retrieve variable details by id",
-            notes = "Retrieve variable details by id")
+    @Operation(summary = "Retrieve variable details by id",
+            description = "Retrieve variable details by id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve variable details by id", response = BrAPIv1SingleObservationVariableResponse.class)}) // TODO : wrong return type
+        @ApiResponse(responseCode = "200", description = "Retrieve variable details by id", content = @Content(schema = @Schema(implementation = BrAPIv1SingleObservationVariableResponse.class)))}) // TODO : wrong return type
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariableDetails(
-            @ApiParam(value = "A variable URI (Unique Resource Identifier)", required = true) @PathParam("observationVariableDbId") @NotNull URI observationVariableDbId
+            @Parameter(description = "A variable URI (Unique Resource Identifier)", required = true) @PathParam("observationVariableDbId") @NotNull URI observationVariableDbId
     ) throws Exception {
 
         VariableDAO variableDAO = new VariableDAO(sparql,mongodb,fs, currentUser);

@@ -8,8 +8,8 @@
  ******************************************************************************/
 package org.opensilex.graphql.staple.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFWriter;
@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @author Valentin Rigolle
  */
-@Api("Staple API")
+@Tag(name = "Staple API")
 @Path(StapleAPI.PATH)
 public class StapleAPI {
     public static final String PATH = "/staple";
@@ -41,7 +41,7 @@ public class StapleAPI {
 
     @GET
     @Path("ontology_file")
-    @ApiOperation("Export ontology file for Staple API as turtle syntax")
+    @Operation(summary = "Export ontology file for Staple API as turtle syntax")
     @Produces("application/x-turtle")
     public Response exportOntologyFile() throws Exception {
         Model stapleModel = stapleApiUtils.getStapleModel();
@@ -59,7 +59,7 @@ public class StapleAPI {
 
     @GET
     @Path("resource_graph")
-    @ApiOperation("Get all graphs associated with resources")
+    @Operation(summary = "Get all graphs associated with resources")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getResourceGraphs() throws Exception {
         Map<URI, URI> result = stapleApiUtils.getResourceGraphMap();

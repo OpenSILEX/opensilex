@@ -1,6 +1,6 @@
 package org.opensilex.security.account.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.server.rest.validation.Required;
 
 public class AccountCreationDTO extends AccountDTO {
@@ -9,13 +9,13 @@ public class AccountCreationDTO extends AccountDTO {
 
     @Override
     @Required
-    @ApiModelProperty(value = "Account email", example = "jean.michel@example.com")
+    @Schema(description = "Account email", example = "jean.michel@example.com")
     public String getEmail() {
         return email;
     }
 
     @Required
-    @ApiModelProperty(value = "Account password", example = "mdpInviolable1")
+    @Schema(description = "Account password", example = "mdpInviolable1")
     public String getPassword() { return password; }
 
     public void setPassword(String password) { this.password = password; }

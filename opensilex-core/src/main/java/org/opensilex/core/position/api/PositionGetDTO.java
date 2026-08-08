@@ -1,7 +1,7 @@
 package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 
@@ -29,7 +29,7 @@ public class PositionGetDTO {
     public PositionGetDTO() {
     }
 
-    @ApiModelProperty(value = "Move event which update the position", example = "http://www.opensilex.org/move/12590c87-1c34-426b-a231-beb7acb33415")
+    @Schema(description = "Move event which update the position", example = "http://www.opensilex.org/move/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getEvent() {
         return event;
     }

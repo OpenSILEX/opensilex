@@ -5,7 +5,16 @@
  */
 package org.opensilex.core.organisation.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.OrganizationSearchFilter;
@@ -40,7 +49,7 @@ import java.util.Objects;
  *
  * @author vidalmor
  */
-@Api(OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID)
+@Tag(name = OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID)
 @Path("/core/organisations")
 @ApiCredentialGroup(
         groupId = OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID,
@@ -64,7 +73,7 @@ public class OrganizationAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Create an organisation")
+    @Operation(summary = "Create an organisation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
@@ -73,12 +82,12 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an organisation", response = URI.class),
-        @ApiResponse(code = 409, message = "An organisation with the same URI already exists", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "201", description = "Create an organisation", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "409", description = "An organisation with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 
     public Response createOrganization(
-            @ApiParam("Organisation description") @Valid OrganizationCreationDTO dto
+            @Parameter(description = "Organisation description") @Valid OrganizationCreationDTO dto
     ) throws Exception {
         try {
             OrganizationDAO dao = new OrganizationDAO(sparql);
@@ -95,17 +104,17 @@ public class OrganizationAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an organisation ")
+    @Operation(summary = "Get an organisation ")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Organisation retrieved", response = OrganizationGetDTO.class),
-        @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Organisation retrieved", content = @Content(schema = @Schema(implementation = OrganizationGetDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getOrganization(
-            @ApiParam(value = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql);
         OrganizationModel model = dao.get(uri, currentUser);
@@ -118,7 +127,7 @@ public class OrganizationAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an organisation")
+    @Operation(summary = "Delete an organisation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ORGANIZATION_DELETE_ID,
@@ -127,11 +136,11 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Organisation deleted", response = URI.class),
-        @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Organisation deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteOrganization(
-            @ApiParam(value = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @Parameter(description = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql);
         dao.delete(uri, currentUser);
@@ -139,19 +148,19 @@ public class OrganizationAPI {
     }
 
     @GET
-    @ApiOperation("Search organisations")
+    @Operation(summary = "Search organisations")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return organisations", response = OrganizationDagDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return organisations", content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrganizationDagDTO.class))))
     })
     public Response searchOrganizations(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris,
-            @ApiParam(value = "Regex pattern for filtering list by types", example = ".*") @QueryParam("type") URI type,
-            @ApiParam(value = "Organization every result will be direct child of") @QueryParam("parent_organization_uri") URI parentOrganizationUri,
-            @ApiParam(value = "Facility for filtering") @QueryParam("facility_uri") URI facilityUri
+            @Parameter(description = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @Parameter(description = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris,
+            @Parameter(description = "Regex pattern for filtering list by types", example = ".*") @QueryParam("type") URI type,
+            @Parameter(description = "Organization every result will be direct child of") @QueryParam("parent_organization_uri") URI parentOrganizationUri,
+            @Parameter(description = "Facility for filtering") @QueryParam("facility_uri") URI facilityUri
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql);
 
@@ -167,7 +176,7 @@ public class OrganizationAPI {
     }
 
     @PUT
-    @ApiOperation("Update an organisation")
+    @Operation(summary = "Update an organisation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
@@ -176,11 +185,11 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated organisation", response = URI.class),
-        @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Return updated organisation", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Organisation URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateOrganization(
-            @ApiParam("Organisation description")
+            @Parameter(description = "Organisation description")
             @Valid OrganizationUpdateDTO dto
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql);

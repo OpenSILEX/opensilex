@@ -7,7 +7,7 @@ package org.opensilex.core.variable.api;
 
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -108,18 +108,18 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     }
     
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
+    @Schema(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return this.uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Plant_Height")
+    @Schema(example = "Plant_Height")
     public String getName() {
         return this.name;
     }
 
-    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
+    @Schema(example = "Plant_Height_Estimation_Cm")
     public String getAlternativeName() {
         return this.alternativeName;
     }
@@ -129,7 +129,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     }
 
     @Override
-    @ApiModelProperty(example = "Describe the height of a plant.")
+    @Schema(example = "Describe the height of a plant.")
     public String getDescription() {
         return this.description;
     }
@@ -214,7 +214,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
         this.unit_label = unitLabel;
     }
     
-    @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
+    @Schema(description = "Define the time between two data recording", example = "minutes")
     public String getTimeInterval() {
         return this.timeInterval;
     }
@@ -223,7 +223,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
         this.timeInterval = timeInterval;
     }
 
-    @ApiModelProperty(notes = "Define the distance between two data recording", example = "minutes")
+    @Schema(description = "Define the distance between two data recording", example = "minutes")
     public String getSamplingInterval() {
         return this.samplingInterval;
     }
@@ -236,13 +236,13 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
         return this.dataType;
     }
 
-    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
+    @Schema(description = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public void setDataType(URI dataType) {
         this.dataType = dataType;
     }
     
     @ValidURI
-    @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    @Schema(description = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
     public List<URI> getSpecies() {
         return this.species;
     }

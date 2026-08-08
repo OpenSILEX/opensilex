@@ -6,7 +6,16 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.mongodb.MongoWriteException;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -70,7 +79,7 @@ import java.util.stream.Collectors;
 /**
  * @author Julien BONNEFONT
  */
-@Api(ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID)
+@Tag(name = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID)
 @Path(ScientificObjectAPI.PATH)
 @ApiCredentialGroup(
         groupId = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID,
@@ -109,16 +118,16 @@ public class ScientificObjectAPI {
 
     @POST
     @Path("by_uris")
-    @ApiOperation("Get scientific objet list of a given experiment URI")
+    @Operation(summary = "Get scientific objet list of a given experiment URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return list of scientific objects corresponding to the given experiment URI", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScientificObjectNodeDTO.class))))
     })
     public Response getScientificObjectsListByUris(
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
-            @ApiParam(value = "Scientific object uris") List<URI> objectsURI
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
+            @Parameter(description = "Scientific object uris") List<URI> objectsURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
@@ -135,15 +144,15 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("used_types")
-    @ApiOperation("get used scientific object types")
+    @Operation(summary = "get used scientific object types")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return scientific object types list", response = ListItemDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return scientific object types list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ListItemDTO.class))))
     })
     public Response getUsedTypes(
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experimentURI
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experimentURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
 
@@ -163,17 +172,17 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("geometry")
-    @ApiOperation("Get scientific objet list with geometry of a given experiment URI")
+    @Operation(summary = "Get scientific objet list with geometry of a given experiment URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return list of scientific objects whose geometry corresponds to the given experiment URI", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScientificObjectNodeDTO.class))))
     })
     public Response searchScientificObjectsWithGeometryListByUris(
-            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI,
-            @ApiParam(value = "Search by minimal date", example = "2020-08-21") @QueryParam("start_date") @Date(DateFormat.YMD) String startDate,
-            @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
+            @Parameter(description = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI,
+            @Parameter(description = "Search by minimal date", example = "2020-08-21") @QueryParam("start_date") @Date(DateFormat.YMD) String startDate,
+            @Parameter(description = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
        ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
        List<ScientificObjectNodeDTO> soDTOList = new ArrayList<>();
@@ -194,23 +203,23 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("children")
-    @ApiOperation("Get list of scientific object children")
+    @Operation(summary = "Get list of scientific object children")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the parent URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return list of scientific objects children corresponding to the parent URI", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScientificObjectNodeWithChildrenDTO.class))))
     })
     public Response getScientificObjectsChildren(
-            @ApiParam(value = "Parent object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") URI parentURI,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experimentURI,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
-            @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Parent object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") URI parentURI,
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experimentURI,
+            @Parameter(description = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
+            @Parameter(description = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @Parameter(description = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
+            @Parameter(description = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
 
@@ -233,29 +242,29 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @ApiOperation("Search list of scientific objects")
+    @Operation(summary = "Search list of scientific objects")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return scientific objects corresponding to the given search parameters", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return scientific objects corresponding to the given search parameters", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScientificObjectNodeDTO.class))))
     })
     public Response searchScientificObjects(
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") final URI contextURI,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "Parent URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") @ValidURI URI parentURI,
-            @ApiParam(value = "Germplasm URIs", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasms") @ValidURI List<URI> germplasms,
-            @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
-            @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
-            @ApiParam(value = "Variables URI") @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Devices URI") @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
-            @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
-            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_on_data") @Valid CriteriaDTO criteriaDTO,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") final URI contextURI,
+            @Parameter(description = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
+            @Parameter(description = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @Parameter(description = "Parent URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") @ValidURI URI parentURI,
+            @Parameter(description = "Germplasm URIs", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasms") @ValidURI List<URI> germplasms,
+            @Parameter(description = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
+            @Parameter(description = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @Parameter(description = "Variables URI") @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Devices URI") @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @Parameter(description = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
+            @Parameter(description = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_on_data") @Valid CriteriaDTO criteriaDTO,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter();
@@ -287,17 +296,17 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get scientific object detail")
+    @Operation(summary = "Get scientific object detail")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given object URI", response = ScientificObjectDetailDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return scientific object details corresponding to the given object URI", content = @Content(schema = @Schema(implementation = ScientificObjectDetailDTO.class)))
     })
     public Response getScientificObjectDetail(
-            @ApiParam(value = "scientific object URI", example = "http://opensilex.org/set/scientific-objects/so-1357dz_pg_34zm4384wwveg_323_37arch2017-03-30", required = true)
+            @Parameter(description = "scientific object URI", example = "http://opensilex.org/set/scientific-objects/so-1357dz_pg_34zm4384wwveg_323_37arch2017-03-30", required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = "http://opensilex.org/set/experiments/21ik1_cims-on")
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = "http://opensilex.org/set/experiments/21ik1_cims-on")
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
@@ -320,15 +329,15 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("{uri}/experiments")
-    @ApiOperation("Get scientific object detail for each experiments, a null value for experiment in response means a properties defined outside of any experiment (shared object).")
+    @Operation(summary = "Get scientific object detail for each experiments, a null value for experiment in response means a properties defined outside of any experiment (shared object).")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment and object URI", response = ScientificObjectDetailByExperimentsDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return scientific object details corresponding to the given experiment and object URI", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScientificObjectDetailByExperimentsDTO.class))))
     })
     public Response getScientificObjectDetailByExperiments(
-            @ApiParam(value = "scientific object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
+            @Parameter(description = "scientific object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
@@ -360,7 +369,7 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @ApiOperation("Create a scientific object for the given experiment")
+    @Operation(summary = "Create a scientific object for the given experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
@@ -369,11 +378,11 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a scientific object", response = URI.class),
-            @ApiResponse(code = 409, message = "A scientific object with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Create a scientific object", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A scientific object with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createScientificObject(
-            @ApiParam(value = "Scientific object description", required = true)
+            @Parameter(description = "Scientific object description", required = true)
             @NotNull
             @Valid ScientificObjectCreationDTO scientificObjectDto
     ) throws Exception {
@@ -402,7 +411,7 @@ public class ScientificObjectAPI {
     }
 
     @PUT
-    @ApiOperation("Update a scientific object for the given experiment")
+    @Operation(summary = "Update a scientific object for the given experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
@@ -411,10 +420,10 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Scientific object updated", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Scientific object updated", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response updateScientificObject(
-            @ApiParam(value = "Scientific object description", required = true)
+            @Parameter(description = "Scientific object description", required = true)
             @NotNull
             @Valid ScientificObjectUpdateDTO scientificObjectDto
     ) throws Exception {
@@ -441,7 +450,7 @@ public class ScientificObjectAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a scientific object")
+    @Operation(summary = "Delete a scientific object")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID,
@@ -450,14 +459,14 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Scientific object deleted", response = URI.class),
-            @ApiResponse(code = 400, message = ScientificObjectLogic.DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Scientific object deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = ScientificObjectLogic.DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Scientific object URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteScientificObject(
-            @ApiParam(value = "scientific object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
+            @Parameter(description = "scientific object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
@@ -474,9 +483,9 @@ public class ScientificObjectAPI {
 
     @POST
     @Path("import")
-    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
+    @Operation(summary = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
+            @ApiResponse(responseCode = "201", description = "Data file and metadata saved", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class)))
     })
     @ApiProtected
     @ApiCredential(
@@ -486,11 +495,11 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
-            @ApiParam(value = "File description with metadata", required = true, type = "string")
+            @Parameter(description = "File description with metadata", required = true, schema = @Schema(type = "string"))
             @NotNull
             @Valid
             @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
-            @ApiParam(value = "Data file", required = true, type = "file")
+            @Parameter(description = "Data file", required = true, schema = @Schema(type = "file"))
             @NotNull
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
@@ -509,19 +518,19 @@ public class ScientificObjectAPI {
 
     @POST
     @Path("export_geospatial")
-    @ApiOperation("Export a given list of scientific object URIs to shapefile or geojson")
+    @Operation(summary = "Export a given list of scientific object URIs to shapefile or geojson")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data exported")
+            @ApiResponse(responseCode = "200", description = "Data exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportGeospatial(
-            @ApiParam(value = "Scientific objects") List<GeometryDTO> selectedObjects,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
-            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
-            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
-            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+            @Parameter(description = "Scientific objects") List<GeometryDTO> selectedObjects,
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
+            @Parameter(description = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @Parameter(description = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
+            @Parameter(description = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
@@ -534,15 +543,15 @@ public class ScientificObjectAPI {
 
     @POST
     @Path("export")
-    @ApiOperation("Export a given list of scientific object URIs to csv data file")
+    @Operation(summary = "Export a given list of scientific object URIs to csv data file")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data file exported")
+            @ApiResponse(responseCode = "200", description = "Data file exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(
-            @ApiParam("CSV export configuration") @Valid ScientificObjectExportDTO searchFilter
+            @Parameter(description = "CSV export configuration") @Valid ScientificObjectExportDTO searchFilter
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
 
@@ -556,19 +565,19 @@ public class ScientificObjectAPI {
 
     @POST
     @Path("import_validation")
-    @ApiOperation(value = "Validate a CSV file for the given experiment URI and scientific object type.")
+    @Operation(summary = "Validate a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
+            @ApiResponse(responseCode = "201", description = "CSV validation errors or a validation token used for CSV import", content = @Content(schema = @Schema(implementation = CSVValidationDTO.class)))
     })
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "File description with metadata", required = true, type = "string")
+            @Parameter(description = "File description with metadata", required = true, schema = @Schema(type = "string"))
             @NotNull
             @Valid
             @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
-            @ApiParam(value = "Data file", required = true, type = "file")
+            @Parameter(description = "Data file", required = true, schema = @Schema(type = "file"))
             @NotNull
             @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
@@ -592,15 +601,15 @@ public class ScientificObjectAPI {
     @Deprecated
     @GET
     @Path("{uri}/variables")
-    @ApiOperation("Get variables measured on this scientific object")
+    @Operation(summary = "Get variables measured on this scientific object")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return variables list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class))))
     })
     public Response getScientificObjectVariables(
-            @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, currentUser);
@@ -620,15 +629,15 @@ public class ScientificObjectAPI {
     @Deprecated
     @GET
     @Path("{uri}/data/provenances")
-    @ApiOperation("Get provenances of data that have been measured on this scientific object")
+    @Operation(summary = "Get provenances of data that have been measured on this scientific object")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getScientificObjectDataProvenances(
-            @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
@@ -647,15 +656,15 @@ public class ScientificObjectAPI {
     @Deprecated
     @GET
     @Path("{uri}/datafiles/provenances")
-    @ApiOperation("Get provenances of datafiles linked to this scientific object")
+    @Operation(summary = "Get provenances of datafiles linked to this scientific object")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getScientificObjectDataFilesProvenances(
-            @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
@@ -666,15 +675,15 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count scientific objects")
+    @Operation(summary = "Count scientific objects")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of scientific objects associated to a given experiment", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of scientific objects associated to a given experiment", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countScientificObjects(
-            @ApiParam(value = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
+            @Parameter(description = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
 
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
         ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()

@@ -7,7 +7,7 @@
 package org.opensilex.core.system.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URL;
 
 /**
@@ -36,7 +36,7 @@ public class ApiContactInfoDTO {
         this.homepage = url;
     }
     
-    @ApiModelProperty(value = "Opensilex Team", example = "Opensilex Team")
+    @Schema(description = "Opensilex Team", example = "Opensilex Team")
     public String getName() {
         return name;
     }
@@ -45,7 +45,7 @@ public class ApiContactInfoDTO {
         this.name = name;
     }
     
-    @ApiModelProperty(value = "opensilex@gmail.com", example = "opensilex@gmail.com")
+    @Schema(description = "opensilex@gmail.com", example = "opensilex@gmail.com")
     public String getEmail() {
         return email;
     }

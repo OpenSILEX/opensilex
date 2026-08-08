@@ -6,8 +6,7 @@
 //******************************************************************************
 package org.opensilex.security.profile.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.List;
 import org.opensilex.security.profile.dal.ProfileModel;
@@ -28,7 +27,7 @@ import org.opensilex.security.profile.dal.ProfileModel;
  *
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 public class ProfileGetDTO {
 
     /**
@@ -46,7 +45,7 @@ public class ProfileGetDTO {
      */
     protected List<String> credentials;
 
-    @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#agent.Admin_OpenSilex")
+    @Schema(description = "User URI", example = "http://opensilex.dev/users#agent.Admin_OpenSilex")
     public URI getUri() {
         return uri;
     }
@@ -55,7 +54,7 @@ public class ProfileGetDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Profile name", example = "profile1")
+    @Schema(description = "Profile name", example = "profile1")
     public String getName() {
         return name;
     }
@@ -64,7 +63,7 @@ public class ProfileGetDTO {
         this.name = name;
     }
 
-    @ApiModelProperty(value = "Profile credentials")
+    @Schema(description = "Profile credentials")
     public List<String> getCredentials() {
         return credentials;
     }

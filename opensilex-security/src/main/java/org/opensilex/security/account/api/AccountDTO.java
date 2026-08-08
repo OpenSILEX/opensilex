@@ -2,7 +2,7 @@
 package org.opensilex.security.account.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -29,7 +29,7 @@ public abstract class AccountDTO {
     protected List<URI> favorites;
 
     @ValidURI
-    @ApiModelProperty(value = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
+    @Schema(description = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
     public URI getUri() {
         return uri;
     }
@@ -38,7 +38,7 @@ public abstract class AccountDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Account email", example = "jean.michel@example.com")
+    @Schema(description = "Account email", example = "jean.michel@example.com")
     public String getEmail() {
         return email;
     }
@@ -47,7 +47,7 @@ public abstract class AccountDTO {
         this.email = email;
     }
 
-    @ApiModelProperty(value = "Account admin flag", example = "false")
+    @Schema(description = "Account admin flag", example = "false")
     public boolean isAdmin() {
         return admin;
     }
@@ -56,7 +56,7 @@ public abstract class AccountDTO {
         this.admin = admin;
     }
 
-    @ApiModelProperty(value = "Account language", example = OpenSilex.DEFAULT_LANGUAGE)
+    @Schema(description = "Account language", example = OpenSilex.DEFAULT_LANGUAGE)
     public String getLanguage() {
         return language;
     }
@@ -65,7 +65,7 @@ public abstract class AccountDTO {
         this.language = language;
     }
 
-    @ApiModelProperty(value = "Account is enable", example = "true")
+    @Schema(description = "Account is enable", example = "true")
     public Boolean isEnable() {
         return enable;
     }
@@ -75,7 +75,7 @@ public abstract class AccountDTO {
     }
 
     @ValidURI
-    @ApiModelProperty(value = "URI of the Person linked to this account", example = "http://opensilex.dev/person#Jean.Michel.mistea")
+    @Schema(description = "URI of the Person linked to this account", example = "http://opensilex.dev/person#Jean.Michel.mistea")
     public URI getLinkedPerson() {
         return linkedPerson;
     }
@@ -84,7 +84,7 @@ public abstract class AccountDTO {
         this.linkedPerson = uri;
     }
 
-    @ApiModelProperty(value = "Favorites URI")
+    @Schema(description = "Favorites URI")
     public List<URI> getFavorites() { return favorites; }
 
     public void setFavorites(List<URI> favorites) { this.favorites = favorites; }

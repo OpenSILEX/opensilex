@@ -7,7 +7,7 @@
 package org.opensilex.core.system.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Informations about loaded modules
@@ -16,10 +16,10 @@ import io.swagger.annotations.ApiModelProperty;
 @JsonPropertyOrder({"name", "version"})
 public class ApiModulesInfo {
 
-    @ApiModelProperty(value = "opensilex-core", example = "opensilex-core")
+    @Schema(description = "opensilex-core", example = "opensilex-core")
     private String name;
 
-    @ApiModelProperty(value = "1.0.0-beta+2", example = "1.0.0-beta+2")
+    @Schema(description = "1.0.0-beta+2", example = "1.0.0-beta+2")
     private String version;
 
     public ApiModulesInfo(String name, String version) {

@@ -11,7 +11,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.CoreModule;
@@ -69,7 +78,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
+@Tag(name = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
 @ApiCredentialGroup(
         groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
@@ -115,21 +124,21 @@ public class VariableAPI {
     }
 
     @POST
-    @ApiOperation("Add a variable")
+    @Operation(summary = "Add a variable")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A variable is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A Variable with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "A variable is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A Variable with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     public Response createVariable(
-            @ApiParam("Variable description") @Valid VariableCreationDTO dto
+            @Parameter(description = "Variable description") @Valid VariableCreationDTO dto
     ) throws Exception {
         try {
             VariableDAO dao = getDao();
@@ -147,17 +156,17 @@ public class VariableAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a variable")
+    @Operation(summary = "Get a variable")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable retrieved", response = VariableDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Variable retrieved", content = @Content(schema = @Schema(implementation = VariableDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown variable URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariable(
-            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Shared resource instance") @QueryParam(VariableAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Shared resource instance") @QueryParam(VariableAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             VariableDAO dao = getDao();
@@ -197,20 +206,20 @@ public class VariableAPI {
 
 
     @PUT
-    @ApiOperation("Update a variable")
+    @Operation(summary = "Update a variable")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Variable updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown variable URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateVariable(
-            @ApiParam("Variable description") @Valid VariableUpdateDTO dto
+            @Parameter(description = "Variable description") @Valid VariableUpdateDTO dto
     ) throws Exception {
         VariableDAO dao = getDao();
 
@@ -222,20 +231,20 @@ public class VariableAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a variable")
+    @Operation(summary = "Delete a variable")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Variable deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown variable URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteVariable(
-            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         VariableDAO dao = getDao();
         dao.delete(uri, currentUser);
@@ -243,40 +252,38 @@ public class VariableAPI {
     }
 
     @GET
-    @ApiOperation(
-            value = "Search variables",
-            notes = "The following fields could be used for sorting : \n\n" +
+    @Operation(summary = "Search variables",
+            description = "The following fields could be used for sorting : \n\n" +
                     " _entity_name/entityName : the name of the variable entity\n\n" +
                     " _characteristic_name/characteristicName : the name of the variable characteristic\n\n" +
                     " _method_name/methodName : the name of the variable method\n\n" +
-                    " _unit_name/unitName : the name of the variable unit\n\n"
-    )
+                    " _unit_name/unitName : the name of the variable unit\n\n")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables", response = VariableGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return variables", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariableGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
-            @ApiParam(value = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
-            @ApiParam(value = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
-            @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
-            @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
-            @ApiParam(value = "Included in group filter") @QueryParam("group_of_variables") @ValidURI URI includedIngroup,
-            @ApiParam(value = "Not included in group filter") @QueryParam("not_included_in_group_of_variables") @ValidURI URI notIncluedInGroup,
-            @ApiParam(value = "Data type filter") @QueryParam("data_type") @ValidURI URI dataType,
-            @ApiParam(value = "Time interval filter") @QueryParam("time_interval") String timeInterval,
-            @ApiParam(value = "Species filter") @QueryParam("species") List<URI> species,
-            @ApiParam(value = "Set this param to true to get associated data") @DefaultValue("false") @QueryParam("withAssociatedData") boolean withAssociatedData,
-            @ApiParam(value = "Experiment filter") @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Scientific object filter") @QueryParam("scientific_objects") List<URI> objects,
-            @ApiParam(value = "Device filter") @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Shared resource instance") @QueryParam(VariableAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
+            @Parameter(description = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
+            @Parameter(description = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
+            @Parameter(description = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
+            @Parameter(description = "Method filter") @QueryParam("method") @ValidURI URI method,
+            @Parameter(description = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
+            @Parameter(description = "Included in group filter") @QueryParam("group_of_variables") @ValidURI URI includedIngroup,
+            @Parameter(description = "Not included in group filter") @QueryParam("not_included_in_group_of_variables") @ValidURI URI notIncluedInGroup,
+            @Parameter(description = "Data type filter") @QueryParam("data_type") @ValidURI URI dataType,
+            @Parameter(description = "Time interval filter") @QueryParam("time_interval") String timeInterval,
+            @Parameter(description = "Species filter") @QueryParam("species") List<URI> species,
+            @Parameter(description = "Set this param to true to get associated data") @DefaultValue("false") @QueryParam("withAssociatedData") boolean withAssociatedData,
+            @Parameter(description = "Experiment filter") @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Scientific object filter") @QueryParam("scientific_objects") List<URI> objects,
+            @Parameter(description = "Device filter") @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "Shared resource instance") @QueryParam(VariableAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             VariableSearchFilter filter = new VariableSearchFilter()
@@ -331,25 +338,23 @@ public class VariableAPI {
 
     @GET
     @Path("details")
-    @ApiOperation(
-            value = "Search detailed variables by name, long name, entity, characteristic, method or unit name",
-            notes = "The following fields could be used for sorting : \n\n" +
+    @Operation(summary = "Search detailed variables by name, long name, entity, characteristic, method or unit name",
+            description = "The following fields could be used for sorting : \n\n" +
                     " _entity_name : the name of the variable entity\n\n" +
                     " _characteristic_name : the name of the variable characteristic\n\n" +
                     " _method_name : the name of the variable method\n\n" +
-                    " _unit_name : the name of the variable unit\n\n"
-    )
+                    " _unit_name : the name of the variable unit\n\n")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return detailed variables", response = VariableDetailsDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return detailed variables", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariableDetailsDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesDetails(
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         VariableSearchFilter filter = new VariableSearchFilter()
@@ -374,9 +379,9 @@ public class VariableAPI {
 
     @GET
     @Path("datatypes")
-    @ApiOperation(value = "Get variables datatypes")
+    @Operation(summary = "Get variables datatypes")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data types", response = VariableDatatypeDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return data types", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariableDatatypeDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -403,17 +408,17 @@ public class VariableAPI {
      */
     @GET
     @Path(GET_BY_URIS_PATH)
-    @ApiOperation("Get detailed variables by uris")
+    @Operation(summary = "Get detailed variables by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables", response = VariableDetailsDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return variables", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariableDetailsDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Variable not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getVariablesByURIs(
-            @ApiParam(value = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris
+            @Parameter(description = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris
     ) throws Exception {
         VariableDAO dao = getDao();
         List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
@@ -515,16 +520,16 @@ public class VariableAPI {
 
     @POST
     @Path("export_classic_by_uris")
-    @ApiOperation("export variable by list of uris")
+    @Operation(summary = "export variable by list of uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with variable list"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return a csv file with variable list"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response classicExportVariableByURIs(
-            @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
+            @Parameter(description = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
     ) throws Exception {
         VariableDAO dao = getDao();
         List<VariableModel> variableList = dao.getList(dto.getUris());
@@ -535,16 +540,16 @@ public class VariableAPI {
 
     @POST
     @Path("export_details_by_uris")
-    @ApiOperation("export detailed variable by list of uris")
+    @Operation(summary = "export detailed variable by list of uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with detailed variable list"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return a csv file with detailed variable list"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response detailsExportVariableByURIs(
-            @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
+            @Parameter(description = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
     ) throws Exception {
         VariableDAO dao = getDao();
         List<VariableModel> variableList = dao.getListForExport(dto.getUris(), currentUser.getLanguage());
@@ -556,7 +561,7 @@ public class VariableAPI {
 
     @POST
     @Path("copy_from_shared_resource_instance")
-    @ApiOperation("Copy the selected variables from the shared resource instance")
+    @Operation(summary = "Copy the selected variables from the shared resource instance")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -565,10 +570,10 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Copy variables", response = VariableCopyResponseDTO.class)
+            @ApiResponse(responseCode = "200", description = "Copy variables", content = @Content(schema = @Schema(implementation = VariableCopyResponseDTO.class)))
     })
     public Response copyFromSharedResourceInstance(
-            @ApiParam(value = "List of variable URI to copy", required = true) CopyResourceDTO dto
+            @Parameter(description = "List of variable URI to copy", required = true) CopyResourceDTO dto
     ) throws Exception {
         SharedResourceInstanceService service = new SharedResourceInstanceService(
                 coreModule.getSharedResourceInstanceConfiguration(dto.getSharedResourceInstance()), currentUser.getLanguage());

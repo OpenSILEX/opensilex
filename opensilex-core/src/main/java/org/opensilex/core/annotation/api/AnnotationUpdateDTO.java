@@ -7,8 +7,7 @@
 
 package org.opensilex.core.annotation.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -16,12 +15,12 @@ import java.net.URI;
 /**
  * @author Renaud COLIN
  */
-@ApiModel
+@Schema
 public class AnnotationUpdateDTO extends AnnotationCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true, example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getUri() {
         return super.getUri();
     }

@@ -7,7 +7,7 @@
 package org.opensilex.core.document.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -66,7 +66,7 @@ public abstract class DocumentDTO {
     
     protected boolean deprecated;  
     
-    @ApiModelProperty(example = "http://opensilex.dev/set/documents#ProtocolExperimental")
+    @Schema(example = "http://opensilex.dev/set/documents#ProtocolExperimental")
     public URI getUri() {
         return uri;
     }
@@ -100,7 +100,7 @@ public abstract class DocumentDTO {
         this.lastUpdatedDate = lastUpdatedDate;
     }
 
-    @ApiModelProperty(example = "doi:10.1340/309registries")
+    @Schema(example = "doi:10.1340/309registries")
     public String getIdentifier() {
         return identifier;
     }
@@ -110,7 +110,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument")
+    @Schema(example = "http://www.opensilex.org/vocabulary/oeso#ScientificDocument")
     public URI getType() {
         return type;
     }
@@ -131,7 +131,7 @@ public abstract class DocumentDTO {
     }
 
     @Required
-    @ApiModelProperty(example = "title")
+    @Schema(example = "title")
     public String getTitle() {
         return title;
     }
@@ -141,7 +141,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "2020-06-01")
+    @Schema(example = "2020-06-01")
     public String getDate() {
         return date;
     }
@@ -151,7 +151,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/opensilex/id/variables/v001")
+    @Schema(example = "http://opensilex.dev/opensilex/id/variables/v001")
     public List<URI> getTargets() {
         return targets;
     }
@@ -161,7 +161,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "Author name")
+    @Schema(example = "Author name")
     public List<String> getAuthors() {
         return authors;
     }
@@ -171,7 +171,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "fr")
+    @Schema(example = "fr")
     public String getLanguage() {
         return language;
     }
@@ -181,7 +181,7 @@ public abstract class DocumentDTO {
         return this;
     }
     
-    @ApiModelProperty(example = "jpg")
+    @Schema(example = "jpg")
     public String getFormat() {
         return format;
     }
@@ -191,7 +191,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "description")
+    @Schema(example = "description")
     public String getDescription() {
         return description;
     }
@@ -201,7 +201,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "keyword")
+    @Schema(example = "keyword")
     public List<String> getSubject() {
         return subject;
     }
@@ -211,7 +211,7 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "false")
+    @Schema(example = "false")
     public boolean getDeprecated() {
         return deprecated;
     }

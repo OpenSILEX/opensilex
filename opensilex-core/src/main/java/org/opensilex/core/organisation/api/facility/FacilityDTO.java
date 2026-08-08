@@ -6,7 +6,7 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -20,7 +20,7 @@ import java.util.Objects;
  *
  * @author vince
  */
-@ApiModel
+@Schema
 public class FacilityDTO extends RDFObjectDTO {
 
     @JsonProperty("rdf_type_name")

@@ -7,7 +7,7 @@
 package org.opensilex.core.variable.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableCreationDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 
@@ -20,17 +20,17 @@ public class EntityCreationDTO extends BaseVariableCreationDTO<EntityModel> {
         return new EntityModel();
     }
 
-    @ApiModelProperty(example = "Plant", required = true)
+    @Schema(example = "Plant", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }
 
-    @ApiModelProperty(example = "The entity which describe a plant")
+    @Schema(example = "The entity which describe a plant")
     public String getDescription() {
         return description;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
+    @Schema(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return uri;
     }

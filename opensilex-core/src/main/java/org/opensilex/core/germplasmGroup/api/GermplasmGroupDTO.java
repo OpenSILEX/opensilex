@@ -6,7 +6,7 @@
 package org.opensilex.core.germplasmGroup.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 
@@ -45,7 +45,7 @@ public abstract class GermplasmGroupDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "group of genomes")
+    @Schema(example = "group of genomes")
     public String getName() {
         return name;
     }
@@ -54,7 +54,7 @@ public abstract class GermplasmGroupDTO {
         this.name = name;
     }
     
-    @ApiModelProperty(example = "Group where we can find all plant related genomes")
+    @Schema(example = "Group where we can find all plant related genomes")
     public String getDescription() {
         return description;
     }

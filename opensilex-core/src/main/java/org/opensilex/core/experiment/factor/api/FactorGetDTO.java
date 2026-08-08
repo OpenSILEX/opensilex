@@ -10,7 +10,7 @@
 package org.opensilex.core.experiment.factor.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
@@ -23,19 +23,19 @@ public class FactorGetDTO {
     
     @JsonPropertyOrder({ "uri", "name", "category", "description" })
         
-    @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
+    @Schema(example = "http://opensilex.dev/set/factors#irrigation")
     private URI uri;
     
-    @ApiModelProperty(example = "Irrigation")
+    @Schema(example = "Irrigation")
     private String name;
     
-    @ApiModelProperty(example = "waterManagement")
+    @Schema(example = "waterManagement")
     private URI category;
     
-    @ApiModelProperty(example = "Experimental factor about water management")
+    @Schema(example = "Experimental factor about water management")
     private String description;
 
-    @ApiModelProperty(example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
+    @Schema(example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
     private URI experiment;
     
     public URI getUri() {

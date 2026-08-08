@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.faidare.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
@@ -31,7 +40,7 @@ import javax.ws.rs.core.Response;
 /**
  * @author Gabriel Besombes
  */
-@Api(CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
+@Tag(name = CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
 @Path("/faidare/")
 @ApiCredentialGroup(
         groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
@@ -53,15 +62,15 @@ public class TrialsAPI extends FaidareCall {
     @GET
     @Path("v1/trials")
     @FaidareVersion("1.3")
-    @ApiOperation(value = "Faidarev1CallDTO to retrieve a list of trials available in the system",
-            notes = "retrieve trials information")
+    @Operation(summary = "Faidarev1CallDTO to retrieve a list of trials available in the system",
+            description = "retrieve trials information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "retrieve trials information", response = Faidarev1TrialListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "retrieve trials information", content = @Content(schema = @Schema(implementation = Faidarev1TrialListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTrialsList(
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ProjectDAO projectDAO = new ProjectDAO(sparql);
 

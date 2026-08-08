@@ -10,27 +10,26 @@
 
 package org.opensilex.server.response.multipleError;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 /**
  * DTO to capture multiple errors about multiple objects. Each object can have multiple errors, see {@link MultipleErrorDTO}.
  */
-@ApiModel
+@Schema
 public class MultipleErrorListDTO {
 
     /**
      * Title of the error.
      */
-    @ApiModelProperty(value = "Title of the error", example = "Error")
+    @Schema(description = "Title of the error", example = "Error")
     public final String title;
 
     /**
      * every errors
      */
-    @ApiModelProperty(value = "every errors", example = "{ [ {http://exemple1, [error1, error2]}, {http://exemple2, [error3, error4]} ] }")
+    @Schema(description = "every errors", example = "{ [ {http://exemple1, [error1, error2]}, {http://exemple2, [error3, error4]} ] }")
     public List<MultipleErrorDTO> errors;
 
 

@@ -146,11 +146,10 @@
                 </dependencies>
             </plugin>
             
-            <!-- Generate TypeScript library from swagger.json file -->
+            <!-- Generate TypeScript library from openapi.json file -->
             <plugin>
-                <groupId>org.opensilex</groupId>
-                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                <version>${revision}</version>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
             </plugin>
             
                   

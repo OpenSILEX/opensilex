@@ -6,7 +6,7 @@
 package org.opensilex.core.project.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
@@ -106,7 +106,7 @@ public abstract class ProjectDTO {
     }
 
     @Required
-    @ApiModelProperty(example = "DROught-tolerant yielding PlantS", required=true)
+    @Schema(example = "DROught-tolerant yielding PlantS", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }
@@ -115,7 +115,7 @@ public abstract class ProjectDTO {
         this.name = name;
         return this;
     }
-    @ApiModelProperty(example = "DROPS")
+    @Schema(example = "DROPS")
     public String getShortname() {
         return shortname;
     }
@@ -125,7 +125,7 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "European Union")
+    @Schema(example = "European Union")
     public String getFinancialFunding() {
         return financialFunding;
     }
@@ -134,7 +134,7 @@ public abstract class ProjectDTO {
         this.financialFunding = financialFunding;
         return this;
     }
-    @ApiModelProperty(example = "DROPS aims at developing novel methods....")
+    @Schema(example = "DROPS aims at developing novel methods....")
     public String getDescription() {
         return description;
     }
@@ -143,7 +143,7 @@ public abstract class ProjectDTO {
         this.description = description;
         return this;
     }
-    @ApiModelProperty(example = "Developing novel methods and strategies for genetic yield improvement under dry environments and for enhanced plant water-use efficiency.")
+    @Schema(example = "Developing novel methods and strategies for genetic yield improvement under dry environments and for enhanced plant water-use efficiency.")
     public String getObjective() {
         return objective;
     }
@@ -154,7 +154,7 @@ public abstract class ProjectDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "2010-02-20", required=true)
+    @Schema(example = "2010-02-20", requiredMode = Schema.RequiredMode.REQUIRED)
     public LocalDate getStartDate() {
         return startDate;
     }
@@ -164,7 +164,7 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "2015-02-20")
+    @Schema(example = "2015-02-20")
     public LocalDate getEndDate() {
         return endDate;
     }
@@ -174,7 +174,7 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "https://www.inrae.fr/dropsproject")
+    @Schema(example = "https://www.inrae.fr/dropsproject")
     public URI getHomePage() {
         return homePage;
     }

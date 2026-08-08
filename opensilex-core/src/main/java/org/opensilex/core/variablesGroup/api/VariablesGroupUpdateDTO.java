@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variablesGroup.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 
@@ -17,7 +17,7 @@ public class VariablesGroupUpdateDTO extends VariablesGroupCreationDTO{
     
     @Override
     @NotNull
-    @ApiModelProperty(required = true)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     public URI getUri() {
         return uri;
     }

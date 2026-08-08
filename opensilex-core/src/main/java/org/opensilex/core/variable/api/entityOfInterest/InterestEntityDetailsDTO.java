@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.entityOfInterest;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.InterestEntityModel;
@@ -23,19 +23,19 @@ public class InterestEntityDetailsDTO extends BaseVariableDetailsDTO<InterestEnt
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity_of_interest/Plot")
+    @Schema(example = "http://opensilex.dev/set/variables/entity_of_interest/Plot")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Plot")
+    @Schema(example = "Plot")
     public String getName() {
         return name;
     }
 
     @Override
-    @ApiModelProperty(example = "The entity of interest which characterizes a plot")
+    @Schema(example = "The entity of interest which characterizes a plot")
     public String getDescription() {
         return description;
     }

@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,18 +137,18 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
+    @Schema(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Plant_Height")
+    @Schema(example = "Plant_Height")
     public String getName() {
         return name;
     }
 
-    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
+    @Schema(example = "Plant_Height_Estimation_Cm")
     public String getAlternativeName() {
         return alternativeName;
     }
@@ -158,7 +158,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     }
 
     @Override
-    @ApiModelProperty(example = "Describe the height of a plant.")
+    @Schema(example = "Describe the height of a plant.")
     public String getDescription() {
         return description;
     }
@@ -199,7 +199,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.unit = unit;
     }
 
-    @ApiModelProperty(notes = "Additional trait URI. Could be used for interoperability", example = "http://purl.obolibrary.org/obo/TO_0002644")
+    @Schema(description = "Additional trait URI. Could be used for interoperability", example = "http://purl.obolibrary.org/obo/TO_0002644")
     public URI getTrait() {
         return trait;
     }
@@ -208,7 +208,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.trait = trait;
     }
 
-    @ApiModelProperty(notes = "Additional trait name. Could be used for interoperability if you describe the trait URI", example = "dry matter digestibility")
+    @Schema(description = "Additional trait name. Could be used for interoperability if you describe the trait URI", example = "dry matter digestibility")
     public String getTraitName() {
         return traitName;
     }
@@ -218,7 +218,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     }
 
 
-    @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
+    @Schema(description = "Define the time between two data recording", example = "minutes")
     public String getTimeInterval() {
         return timeInterval;
     }
@@ -227,7 +227,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.timeInterval = timeInterval;
     }
 
-    @ApiModelProperty(notes = "Define the distance between two data recording", example = "minutes")
+    @Schema(description = "Define the distance between two data recording", example = "minutes")
     public String getSamplingInterval() {
         return samplingInterval;
     }
@@ -240,13 +240,13 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         return dataType;
     }
 
-    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
+    @Schema(description = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public void setDataType(URI dataType) {
         this.dataType = dataType;
     }
 
     @ValidURI
-    @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    @Schema(description = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
     public List<SpeciesDTO> getSpecies() {
         return species;
     }

@@ -9,7 +9,7 @@ package org.opensilex.core.data.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import static java.lang.Double.NaN;
 
@@ -46,44 +46,44 @@ public class DataCreationDTO {
     public static final Collection<String> NAN_VALUES = Set.of("nan", "NaN", "NAN");
 
     @ValidURI
-    @ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI)
+    @Schema(example = DataAPI.DATA_EXAMPLE_URI)
     protected URI uri;
 
     @Required
-    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
+    @Schema(description = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, requiredMode = Schema.RequiredMode.REQUIRED)
     private String date;
 
-    @ApiModelProperty(value = "target URI on which the data have been collected (e.g. a scientific object)", example = "http://plot01")
+    @Schema(description = "target URI on which the data have been collected (e.g. a scientific object)", example = "http://plot01")
     @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI target;
 
-    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
+    @Schema(description = "to specify if the offset is not in the date and if the timezone is different from the default one")
     protected String timezone;
 
     @ValidURI
     @NotNull
-    @ApiModelProperty(value = "variable URI", example = DataAPI.DATA_EXAMPLE_VARIABLEURI, required = true)
+    @Schema(description = "variable URI", example = DataAPI.DATA_EXAMPLE_VARIABLEURI, requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonDeserialize(using = UriJsonDeserializer.class)
     private URI variable;
 
     @NotNull
-    @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
+    @Schema(description = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
 
     @JsonProperty("raw_data")
-    @ApiModelProperty(value = "list of repetition values")
+    @Schema(description = "list of repetition values")
     private List<Object> rawData;
 
     @Min(0)
     @Max(1)
-    @ApiModelProperty(value = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
+    @Schema(description = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
     private Float confidence = null;
 
     @Valid
     @NotNull
     private DataProvenanceModel provenance;
 
-    @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
+    @Schema(description = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
     private Document metadata;
 
     public URI getUri() {

@@ -8,7 +8,7 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.server.rest.validation.DateFormat;
@@ -39,7 +39,7 @@ public class DataGetDTO extends DataCreationDTO {
 
     @NotNull
     @ValidURI
-    @ApiModelProperty(value = "data URI", example = DataAPI.DATA_EXAMPLE_URI)    
+    @Schema(description = "data URI", example = DataAPI.DATA_EXAMPLE_URI)    
     @Override
     public URI getUri() {
         return uri;

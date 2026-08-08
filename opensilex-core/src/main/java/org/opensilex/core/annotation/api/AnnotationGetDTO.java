@@ -9,8 +9,7 @@ package org.opensilex.core.annotation.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 
@@ -21,7 +20,7 @@ import java.util.List;
 /**
  * @author Renaud COLIN
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({
         "uri", "description", "targets", "motivation", "published", "publisher",
 })
@@ -60,7 +59,7 @@ public class AnnotationGetDTO {
         motivation = new MotivationGetDTO(motivationModel);
     }
 
-    @ApiModelProperty(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
+    @Schema(description = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getUri() {
         return uri;
     }
@@ -69,7 +68,7 @@ public class AnnotationGetDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Content of the annotation", example = "The pest attack lasted 20 minutes")
+    @Schema(description = "Content of the annotation", example = "The pest attack lasted 20 minutes")
     public String getDescription() {
         return description;
     }
@@ -86,7 +85,7 @@ public class AnnotationGetDTO {
         this.targets = targets;
     }
 
-    @ApiModelProperty(value = "Annotation publisher URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
+    @Schema(description = "Annotation publisher URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
     public URI getPublisher() {
         return publisher;
     }

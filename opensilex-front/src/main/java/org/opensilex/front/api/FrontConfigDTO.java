@@ -5,8 +5,7 @@
  */
 package org.opensilex.front.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.front.config.VersionLabel;
 
 import javax.validation.constraints.NotNull;
@@ -15,7 +14,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
-@ApiModel
+@Schema
 public class FrontConfigDTO {
 
     @NotNull
@@ -80,7 +79,7 @@ public class FrontConfigDTO {
 
     AgroportalOntologiesConfigDTO agroportal;
 
-    @ApiModelProperty(value = "Application url path prefix", example = "app")
+    @Schema(description = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
     }
@@ -89,7 +88,7 @@ public class FrontConfigDTO {
         this.pathPrefix = pathPrefix;
     }
 
-    @ApiModelProperty(value = "Home component identifier", example = "opensilex-DefaultHomeComponent")
+    @Schema(description = "Home component identifier", example = "opensilex-DefaultHomeComponent")
     public String getHomeComponent() {
         return homeComponent;
     }
@@ -98,7 +97,7 @@ public class FrontConfigDTO {
         this.homeComponent = homeComponent;
     }
 
-    @ApiModelProperty(value = "Not found component identifier", example = "opensilex-DefaultNotFoundComponent")
+    @Schema(description = "Not found component identifier", example = "opensilex-DefaultNotFoundComponent")
     public String getNotFoundComponent() {
         return notFoundComponent;
     }
@@ -107,7 +106,7 @@ public class FrontConfigDTO {
         this.notFoundComponent = notFoundComponent;
     }
 
-    @ApiModelProperty(value = "Menu component identifier", example = "opensilex-DefaultMenuComponent")
+    @Schema(description = "Menu component identifier", example = "opensilex-DefaultMenuComponent")
     public String getMenuComponent() {
         return menuComponent;
     }
@@ -116,7 +115,7 @@ public class FrontConfigDTO {
         this.menuComponent = menuComponent;
     }
 
-    @ApiModelProperty(value = "Footer component identifier", example = "opensilex-DefaultFooterComponent")
+    @Schema(description = "Footer component identifier", example = "opensilex-DefaultFooterComponent")
     public String getFooterComponent() {
         return footerComponent;
     }
@@ -125,7 +124,7 @@ public class FrontConfigDTO {
         this.footerComponent = footerComponent;
     }
 
-    @ApiModelProperty(value = "Header component identifier", example = "opensilex-DefaultHeaderComponent")
+    @Schema(description = "Header component identifier", example = "opensilex-DefaultHeaderComponent")
     public String getHeaderComponent() {
         return headerComponent;
     }
@@ -134,7 +133,7 @@ public class FrontConfigDTO {
         this.headerComponent = headerComponent;
     }
 
-    @ApiModelProperty(value = "Login component identifier", example = "opensilex-DefaultLoginComponent")
+    @Schema(description = "Login component identifier", example = "opensilex-DefaultLoginComponent")
     public String getLoginComponent() {
         return loginComponent;
     }
@@ -143,7 +142,7 @@ public class FrontConfigDTO {
         this.loginComponent = loginComponent;
     }
 
-    @ApiModelProperty(value = "List of configured routes")
+    @Schema(description = "List of configured routes")
     public List<RouteDTO> getRoutes() {
         return routes;
     }
@@ -152,7 +151,7 @@ public class FrontConfigDTO {
         this.routes = routes;
     }
 
-    @ApiModelProperty(value = "Theme module identifier")
+    @Schema(description = "Theme module identifier")
     public String getThemeModule() {
         return themeModule;
     }
@@ -161,7 +160,7 @@ public class FrontConfigDTO {
         this.themeModule = themeModule;
     }
 
-    @ApiModelProperty(value = "Theme module name")
+    @Schema(description = "Theme module name")
     public String getThemeName() {
         return themeName;
     }
@@ -170,7 +169,7 @@ public class FrontConfigDTO {
         this.themeName = themeName;
     }
 
-    @ApiModelProperty(value = "OpenID Authorization URI")
+    @Schema(description = "OpenID Authorization URI")
     public String getOpenIDAuthenticationURI() {
         return openIDAuthenticationURI;
     }
@@ -211,7 +210,7 @@ public class FrontConfigDTO {
         this.activateResetPassword = activateResetPassword;
     }
 
-    @ApiModelProperty(value = "Geocoding service")
+    @Schema(description = "Geocoding service")
     public String getGeocodingService() {
         return geocodingService;
     }
@@ -220,7 +219,7 @@ public class FrontConfigDTO {
         this.geocodingService = geocodingService;
     }
 
-    @ApiModelProperty(value = "Menu exclusions")
+    @Schema(description = "Menu exclusions")
     public List<String> getMenuExclusions() {
         return menuExclusions;
     }
@@ -229,7 +228,7 @@ public class FrontConfigDTO {
         this.menuExclusions = menuExclusions;
     }
 
-    @ApiModelProperty(value = "Version label to use in the header")
+    @Schema(description = "Version label to use in the header")
     public VersionLabel getVersionLabel() {
         return versionLabel;
     }
@@ -254,7 +253,7 @@ public class FrontConfigDTO {
         this.agroportal = agroportal;
     }
 
-    @ApiModelProperty(value = "Name of the application to display")
+    @Schema(description = "Name of the application to display")
     public String getApplicationName() {
         return applicationName;
     }
@@ -263,7 +262,7 @@ public class FrontConfigDTO {
         this.applicationName = applicationName;
     }
 
-    @ApiModelProperty(value = "Ability to be logged as guest")
+    @Schema(description = "Ability to be logged as guest")
     public boolean getConnectAsGuest() {
         return connectAsGuest;
     }
@@ -272,7 +271,7 @@ public class FrontConfigDTO {
         this.connectAsGuest = connectAsGuest;
     }
 
-    @ApiModelProperty(value = "GDPR PDF is configured")
+    @Schema(description = "GDPR PDF is configured")
     public Boolean getGdprFileIsConfigured() { return gdprFileIsConfigured; }
 
     public void setGdprFileIsConfigured(Boolean gdprFileIsConfigured) { this.gdprFileIsConfigured = gdprFileIsConfigured; }
@@ -285,7 +284,7 @@ public class FrontConfigDTO {
         this.matomo = matomo;
     }
 
-    @ApiModelProperty(value = "Notification message for the instance", example = "deployment of version 1.2 on January 22, 2024")
+    @Schema(description = "Notification message for the instance", example = "deployment of version 1.2 on January 22, 2024")
     public Map <String, String> getNotificationMessage() {
         return notificationMessage;
     }
@@ -294,7 +293,7 @@ public class FrontConfigDTO {
         this.notificationMessage = notificationMessage;
     }
 
-     @ApiModelProperty(value = "Color theme for the notification message", example = "Warning")
+     @Schema(description = "Color theme for the notification message", example = "Warning")
     public String getNotificationColorTheme() {
         return notificationColorTheme;
     }
@@ -303,7 +302,7 @@ public class FrontConfigDTO {
         this.notificationColorTheme = notificationColorTheme;
     }
 
-    @ApiModelProperty(value = "Date until which to send the notification", example = "2024-04-31")
+    @Schema(description = "Date until which to send the notification", example = "2024-04-31")
     public LocalDate getNotificationEndDate() {
         return notificationEndDate;
     }

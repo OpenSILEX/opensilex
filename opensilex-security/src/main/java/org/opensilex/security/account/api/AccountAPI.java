@@ -1,6 +1,15 @@
 package org.opensilex.security.account.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
@@ -39,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Api(SecurityModule.REST_SECURITY_API_ID)
+@Tag(name = SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/accounts")
 @ApiCredentialGroup(
         groupId = AccountAPI.CREDENTIAL_GROUP_ACCOUNT_ID,
@@ -65,7 +74,7 @@ public class AccountAPI {
     OpenSilex openSilex;
 
     @POST
-    @ApiOperation("Add an account")
+    @Operation(summary = "Add an account")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
@@ -74,13 +83,13 @@ public class AccountAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses({
-            @ApiResponse(code = 201, message = "account created"),
-            @ApiResponse(code = 403, message = "you don't have permission to create an account"),
-            @ApiResponse(code = 409, message = "The account already exists (duplicate email)")
+            @ApiResponse(responseCode = "201", description = "account created"),
+            @ApiResponse(responseCode = "403", description = "you don't have permission to create an account"),
+            @ApiResponse(responseCode = "409", description = "The account already exists (duplicate email)")
     })
     public Response createAccount(
 
-            @ApiParam("Account description") @Valid AccountCreationDTO accountDTO
+            @Parameter(description = "Account description") @Valid AccountCreationDTO accountDTO
     ) throws Exception {
 
         AccountDAO accountDAO = new AccountDAO(sparql);
@@ -162,7 +171,7 @@ public class AccountAPI {
      * @see AccountDAO
      */
     @PUT
-    @ApiOperation("Update an account")
+    @Operation(summary = "Update an account")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
@@ -171,12 +180,12 @@ public class AccountAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Account updated", response = String.class),
-            @ApiResponse(code = 400, message = "Invalid parameters, remind that changing the linked person is forbidden"),
-            @ApiResponse(code = 404, message = "Account not found")
+            @ApiResponse(responseCode = "200", description = "Account updated", content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters, remind that changing the linked person is forbidden"),
+            @ApiResponse(responseCode = "404", description = "Account not found")
     })
     public Response updateAccount(
-            @ApiParam("Account description") @Valid AccountUpdateDTO accountDTO
+            @Parameter(description = "Account description") @Valid AccountUpdateDTO accountDTO
     ) throws Exception {
         AccountDAO accountDAO = new AccountDAO(sparql);
 
@@ -230,19 +239,19 @@ public class AccountAPI {
      * @see AccountDAO
      */
     @GET
-    @ApiOperation("Search accounts")
+    @Operation(summary = "Search accounts")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return accounts", response = AccountGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return accounts", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AccountGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchAccounts(
-            @ApiParam(value = "Regex pattern for filtering list by name or email", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering list by name or email", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         AccountDAO dao = new AccountDAO(sparql);
         ListWithPagination<AccountModel> resultList = dao.searchWithNoGroupUserProfiles(
@@ -273,17 +282,17 @@ public class AccountAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an account")
+    @Operation(summary = "Get an account")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Account retrieved", response = AccountGetDTO.class),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Account not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Account retrieved", content = @Content(schema = @Schema(implementation = AccountGetDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getAccount(
-            @ApiParam(value = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         AccountDAO dao = new AccountDAO(sparql);
@@ -305,17 +314,17 @@ public class AccountAPI {
      */
     @GET
     @Path("by_uris")
-    @ApiOperation("Get accounts by their URIs")
+    @Operation(summary = "Get accounts by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return accounts", response = AccountGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "accounts not found (if any provided URIs is not found)", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return accounts", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AccountGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "accounts not found (if any provided URIs is not found)", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getAccountsByURI(
-            @ApiParam(value = "Accounts URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Accounts URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
 
         AccountDAO dao = new AccountDAO(sparql);
@@ -329,7 +338,7 @@ public class AccountAPI {
 
     @DELETE
     @Path("{accountURI}")
-    @ApiOperation("Delete an account")
+    @Operation(summary = "Delete an account")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ACCOUNT_DELETE_ID,
@@ -338,11 +347,11 @@ public class AccountAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Account deleted successfully", response = URI.class),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Account not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Account deleted successfully", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
-    public Response deleteAccount(@ApiParam(value = "Account URI", required = true) @PathParam("accountURI") @NotNull @ValidURI URI accountURI) throws Exception {
+    public Response deleteAccount(@Parameter(description = "Account URI", required = true) @PathParam("accountURI") @NotNull @ValidURI URI accountURI) throws Exception {
         AccountDAO dao = new AccountDAO(sparql);
         dao.delete(accountURI, openSilex);
         return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
@@ -351,15 +360,15 @@ public class AccountAPI {
 
     @GET
     @Path("favorites")
-    @ApiOperation("Get list of favorites for a user")
+    @Operation(summary = "Get list of favorites for a user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = FavoriteGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FavoriteGetDTO.class))))
     })
     public Response getFavorites(
-            @ApiParam(value = "Types", required = true) @QueryParam("types") @NotNull List<URI> types
+            @Parameter(description = "Types", required = true) @QueryParam("types") @NotNull List<URI> types
     ) throws Exception {
         List<FavoriteGetDTO> resultList = new ArrayList<>(currentUser.getFavorites().size());
         for (URI favoriteUri : currentUser.getFavorites()) {
@@ -381,14 +390,14 @@ public class AccountAPI {
 
     @POST
     @Path("favorites")
-    @ApiOperation("Add a favorite")
+    @Operation(summary = "Add a favorite")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
     })
     public Response addFavorite(
-            @ApiParam(value = "Favorite object URI") @NotNull FavoriteCreationDTO favoriteDTO
+            @Parameter(description = "Favorite object URI") @NotNull FavoriteCreationDTO favoriteDTO
     ) throws Exception {
         AccountDAO dao = new AccountDAO(sparql);
 
@@ -411,7 +420,7 @@ public class AccountAPI {
 
     @DELETE
     @Path("favorites/{uriFavorite}")
-    @ApiOperation("Delete a favorite")
+    @Operation(summary = "Delete a favorite")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ACCOUNT_MODIFICATION_ID,
@@ -420,7 +429,7 @@ public class AccountAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteFavorite(
-            @ApiParam(value = "Favorite URI", example = "http://example.com/", required = true) @PathParam("uriFavorite") @NotNull @ValidURI URI uriFavorite
+            @Parameter(description = "Favorite URI", example = "http://example.com/", required = true) @PathParam("uriFavorite") @NotNull @ValidURI URI uriFavorite
     ) throws Exception {
         AccountDAO dao = new AccountDAO(sparql);
 
@@ -443,16 +452,16 @@ public class AccountAPI {
 
     @GET
     @Path("{uri}/groups")
-    @ApiOperation("Get groups of a user")
+    @Operation(summary = "Get groups of a user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return user's  groups", response = NamedResourceDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return user's  groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getUserGroups(
-            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @Parameter(description = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
         List<GroupModel> resultList = dao.getUserGroups(uri);

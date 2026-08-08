@@ -6,7 +6,7 @@
 package org.opensilex.core.variable.api.method;
 
 import java.net.URI;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableCreationDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 
@@ -21,18 +21,18 @@ public class MethodCreationDTO  extends BaseVariableCreationDTO<MethodModel> {
         return new MethodModel();
     }
 
-    @ApiModelProperty(example = "ImageAnalysis", required = true)
+    @Schema(example = "ImageAnalysis", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }
 
-    @ApiModelProperty(example = "Based on a software")
+    @Schema(example = "Based on a software")
     public String getDescription() {
         return description;
     }
 
 
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
+    @Schema(example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
     public URI getUri() {
         return uri;
     }

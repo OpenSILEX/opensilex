@@ -1,6 +1,6 @@
 package org.opensilex.security.user.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.account.api.AccountDTO;
 
@@ -9,31 +9,31 @@ import java.net.URI;
 public class UserDTO extends AccountDTO {
 
     @Override
-    @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae")
+    @Schema(description = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae")
     public URI getUri() {
         return super.getUri();
     }
 
     @Override
-    @ApiModelProperty(value = "User email", example = "jean.michel@example.com")
+    @Schema(description = "User email", example = "jean.michel@example.com")
     public String getEmail() {
         return super.getEmail();
     }
 
     @Override
-    @ApiModelProperty(value = "User admin flag", example = "false")
+    @Schema(description = "User admin flag", example = "false")
     public boolean isAdmin() {
         return super.isAdmin();
     }
 
     @Override
-    @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE)
+    @Schema(description = "User language", example = OpenSilex.DEFAULT_LANGUAGE)
     public String getLanguage() {
         return super.getLanguage();
     }
 
     @Override
-    @ApiModelProperty(value = "User is enable", example = "true")
+    @Schema(description = "User is enable", example = "true")
     public Boolean isEnable() {
         return enable;
     }

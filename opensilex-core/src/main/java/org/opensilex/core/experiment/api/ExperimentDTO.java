@@ -7,7 +7,7 @@
 package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.server.rest.validation.Required;
 
@@ -80,7 +80,7 @@ public abstract class ExperimentDTO {
     }
 
     @Required
-    @ApiModelProperty(required = true)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }
@@ -101,7 +101,7 @@ public abstract class ExperimentDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "2020-02-20")
+    @Schema(example = "2020-02-20")
     public LocalDate getStartDate() {
         return startDate;
     }
@@ -121,7 +121,7 @@ public abstract class ExperimentDTO {
     }
 
     @Required
-    @ApiModelProperty(required = true)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     public String getObjective() {
         return objective;
     }

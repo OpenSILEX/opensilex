@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.entity;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
@@ -48,7 +57,7 @@ import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
-@Api(CREDENTIAL_VARIABLE_GROUP_ID)
+@Tag(name = CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(EntityAPI.PATH)
 @ApiCredentialGroup(
         groupId = CREDENTIAL_VARIABLE_GROUP_ID,
@@ -75,7 +84,7 @@ public class EntityAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Add an entity")
+    @Operation(summary = "Add an entity")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -84,11 +93,11 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "An entity is created", response = URI.class),
-            @ApiResponse(code = 409, message = "An entity with the same URI already exists", response = ErrorResponse.class),
+            @ApiResponse(responseCode = "201", description = "An entity is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "An entity with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     public Response createEntity(
-            @ApiParam("Entity description") @Valid EntityCreationDTO dto
+            @Parameter(description = "Entity description") @Valid EntityCreationDTO dto
     ) throws Exception {
         try {
             BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
@@ -106,16 +115,16 @@ public class EntityAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an entity")
+    @Operation(summary = "Get an entity")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity retrieved", response = EntityDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Entity retrieved", content = @Content(schema = @Schema(implementation = EntityDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown entity URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getEntity(
-            @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
@@ -133,18 +142,18 @@ public class EntityAPI {
 
     @GET
     @Path(EntityAPI.GET_BY_URIS_PATH)
-    @ApiOperation("Get detailed entities by uris")
+    @Operation(summary = "Get detailed entities by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return entities", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EntityDetailsDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Entity not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getEntitiesByURIs(
-            @ApiParam(value = "Entities URIs", required = true) @QueryParam(EntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
-            @ApiParam(value = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Entities URIs", required = true) @QueryParam(EntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @Parameter(description = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
@@ -174,7 +183,7 @@ public class EntityAPI {
     
     
     @PUT
-    @ApiOperation("Update an entity")
+    @Operation(summary = "Update an entity")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -183,11 +192,11 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Entity updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown entity URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateEntity(
-            @ApiParam("Entity description") @Valid EntityUpdateDTO dto
+            @Parameter(description = "Entity description") @Valid EntityUpdateDTO dto
     ) throws Exception {
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
 
@@ -199,20 +208,20 @@ public class EntityAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an entity")
+    @Operation(summary = "Delete an entity")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Entity deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown entity URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteEntity(
-            @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
         dao.delete(uri, Oeso.hasEntity, currentUser);
@@ -220,20 +229,20 @@ public class EntityAPI {
     }
 
     @GET
-    @ApiOperation("Search entities by name")
+    @Operation(summary = "Search entities by name")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return entities", response = EntityGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return entities", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EntityGetDTO.class)))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchEntities(
-            @ApiParam(value = "Name (regex)", example = "plant") @QueryParam("name") String namePattern ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
-            @ApiParam(value = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            @Parameter(description = "Name (regex)", example = "plant") @QueryParam("name") String namePattern ,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @Parameter(description = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
             ) throws Exception {
         if (sharedResourceInstance == null) {
             BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);

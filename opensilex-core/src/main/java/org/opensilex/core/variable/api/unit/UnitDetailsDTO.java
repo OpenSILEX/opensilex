@@ -10,7 +10,7 @@ import java.net.URI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.UnitModel;
@@ -46,19 +46,19 @@ public class UnitDetailsDTO extends BaseVariableDetailsDTO<UnitModel> {
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/Centimeter")
+    @Schema(example = "http://opensilex.dev/set/variables/unit/Centimeter")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Centimeter")
+    @Schema(example = "Centimeter")
     public String getName() {
         return name;
     }
 
     @Override
-    @ApiModelProperty(example = "A common unit for describing a length")
+    @Schema(example = "A common unit for describing a length")
     public String getDescription() {
         return description;
     }
@@ -72,7 +72,7 @@ public class UnitDetailsDTO extends BaseVariableDetailsDTO<UnitModel> {
         return model;
     }
 
-    @ApiModelProperty(example = "cm")
+    @Schema(example = "cm")
     public String getSymbol() {
         return symbol;
     }
@@ -81,7 +81,7 @@ public class UnitDetailsDTO extends BaseVariableDetailsDTO<UnitModel> {
         this.symbol = symbol;
     }
 
-    @ApiModelProperty(example = "cm")
+    @Schema(example = "cm")
     public String getAlternativeSymbol() {
         return alternativeSymbol;
     }

@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.species.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.species.dal.SpeciesDAO;
@@ -30,7 +39,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 /**
  * @author Renaud COLIN
  */
-@Api(SpeciesAPI.CREDENTIAL_SPECIES_GROUP_ID)
+@Tag(name = SpeciesAPI.CREDENTIAL_SPECIES_GROUP_ID)
 @Path(SpeciesAPI.PATH)
 public class SpeciesAPI {
 
@@ -51,16 +60,16 @@ public class SpeciesAPI {
     AccountModel user;
 
     @GET
-    @ApiOperation("get species (no pagination)")
+    @Operation(summary = "get species (no pagination)")
     @ApiTranslatable
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Return Species list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SpeciesDTO.class)))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getAllSpecies(
-            @ApiParam(value = "Shared resource instance URI") @QueryParam("sharedResourceInstance") URI sharedResourceInstance
+            @Parameter(description = "Shared resource instance URI") @QueryParam("sharedResourceInstance") URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
             SpeciesDAO dao = new SpeciesDAO(sparql);

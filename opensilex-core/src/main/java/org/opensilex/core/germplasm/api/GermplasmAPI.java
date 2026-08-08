@@ -17,7 +17,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections.CollectionUtils;
 import org.opensilex.core.utils.StringURIsListDTO;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
@@ -74,7 +83,7 @@ import java.util.stream.Collectors;
  *
  * @author Alice Boizet
  */
-@Api(GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID)
+@Tag(name = GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID)
 @Path("/core/germplasm")
 @ApiCredentialGroup(
         groupId = GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID,
@@ -119,7 +128,7 @@ public class GermplasmAPI {
      * @throws Exception
      */
     @POST
-    @ApiOperation("Add a germplasm")
+    @Operation(summary = "Add a germplasm")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
@@ -128,12 +137,12 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
+        @ApiResponse(responseCode = "201", description = "Add a germplasm (variety, accession, plantMaterialLot)", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = MultipleErrorResponse.class)))})
 
     public Response createGermplasm(
-            @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
-            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+            @Parameter(description = "Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
+            @Parameter(description = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
         GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
@@ -168,7 +177,7 @@ public class GermplasmAPI {
      */
     @POST
     @Path("import")
-    @ApiOperation("Add or update many germplasms")
+    @Operation(summary = "Add or update many germplasms")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
@@ -177,12 +186,12 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "germplasms are created and/or updated", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "germplasms are created and/or updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = MultipleErrorResponse.class)))})
 
     public Response upsertGermplasms(
-            @ApiParam("List of germplasm description") List<GermplasmCreationDTO> germplasmDTOs,
-            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+            @Parameter(description = "List of germplasm description") List<GermplasmCreationDTO> germplasmDTOs,
+            @Parameter(description = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         GermplasmLogic germplasmBusiness= new GermplasmLogic(sparql, nosql, currentUser);
         List<GermplasmModel> models;
@@ -315,16 +324,16 @@ public class GermplasmAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a germplasm")
+    @Operation(summary = "Get a germplasm")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm", response = GermplasmGetSingleDTO.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return germplasm", content = @Content(schema = @Schema(implementation = GermplasmGetSingleDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Germplasm not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGermplasm(
-            @ApiParam(value = "germplasm URI", example = GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
+            @Parameter(description = "germplasm URI", example = GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
         GermplasmModel model = new GermplasmLogic(sparql, nosql, currentUser).get(uri, true);
 
@@ -349,18 +358,18 @@ public class GermplasmAPI {
      */
     @POST
     @Path("by_uris")
-    @ApiOperation("Get a list of germplasms by their URIs")
+    @Operation(summary = "Get a list of germplasms by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factors list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return factors list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GermplasmGetAllDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Germplasm not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
 
     public Response getGermplasmsByURI(
-            @ApiParam(value = "Germplasms URIs") List<URI> uris
+            @Parameter(description = "Germplasms URIs") List<URI> uris
     ) throws Exception {
 
         GermplasmSearchFilter filter = new GermplasmSearchFilter();
@@ -401,21 +410,21 @@ public class GermplasmAPI {
      */
     @GET
     @Path("{uri}/experiments")
-    @ApiOperation("Get experiments where a germplasm has been used")
+    @Operation(summary = "Get experiments where a germplasm has been used")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm", response = ExperimentGetListDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return germplasm", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ExperimentGetListDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Germplasm not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGermplasmExperiments(
-            @ApiParam(value = "germplasm URI", example = "dev-germplasm:g01", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Regex pattern for filtering experiments by name", example = ".*") @DefaultValue(".*") @QueryParam("attribute_value") String name,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "germplasm URI", example = "dev-germplasm:g01", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Regex pattern for filtering experiments by name", example = ".*") @DefaultValue(".*") @QueryParam("attribute_value") String name,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ListWithPagination<ExperimentModel> experiments = new GermplasmLogic(sparql, nosql, currentUser)
                 .getExpFromGermplasm(currentUser, uri, name, orderByList, page, pageSize);
@@ -437,13 +446,13 @@ public class GermplasmAPI {
      */
     @GET
     @Path("attributes")
-    @ApiOperation("Get attributes of all germplasm")
+    @Operation(summary = "Get attributes of all germplasm")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm attributes", response = String.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return germplasm attributes", content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+        @ApiResponse(responseCode = "404", description = "Germplasm attributes not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGermplasmAttributes() throws Exception {
         Set<String> attributes = new GermplasmLogic(sparql, nosql, currentUser)
@@ -453,19 +462,19 @@ public class GermplasmAPI {
 
     @GET
     @Path("attributes/{attribute}")
-    @ApiOperation("Get attribute values of all germplasm for a given attribute")
+    @Operation(summary = "Get attribute values of all germplasm for a given attribute")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return germplasm attributes", response = String.class, responseContainer = "List"),
-            @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return germplasm attributes", content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+            @ApiResponse(responseCode = "404", description = "Germplasm attributes not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGermplasmAttributeValues(
             @PathParam("attribute") @NotNull @NotEmpty String attributeKey,
-            @ApiParam(value = "Regex pattern for filtering attribute value", example = ".*") @QueryParam("attribute_value") String name,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering attribute value", example = ".*") @QueryParam("attribute_value") String name,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         Set<String> values = new GermplasmLogic(sparql, nosql, currentUser)
@@ -507,34 +516,34 @@ public class GermplasmAPI {
      */
 
     @GET
-    @ApiOperation("Search germplasm")
+    @Operation(summary = "Search germplasm")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return germplasm list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GermplasmGetAllDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchGermplasm(
-            @ApiParam(value = "Regex pattern for filtering list by uri", example = GERMPLASM_EXAMPLE_URI) @QueryParam("uri") String uri,
-            @ApiParam(value = "Search by type", example = GERMPLASM_EXAMPLE_TYPE) @QueryParam("rdf_type") URI type,
-            @ApiParam(value = "Regex pattern for filtering list by name and synonyms", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Regex pattern for filtering list by code", example = ".*") @DefaultValue(".*") @QueryParam("code") String code,
-            @ApiParam(value = "Search by production year", example = GERMPLASM_EXAMPLE_PRODUCTION_YEAR) @QueryParam("production_year") Integer productionYear,
-            @ApiParam(value = "Search by species", example = GERMPLASM_EXAMPLE_SPECIES) @QueryParam("species") URI species,
-            @ApiParam(value = "Search by variety", example = GERMPLASM_EXAMPLE_VARIETY) @QueryParam("variety") URI variety,
-            @ApiParam(value = "Search by accession", example = GERMPLASM_EXAMPLE_ACCESSION) @QueryParam("accession") URI accession,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI group,
-            @ApiParam(value = "Search by institute", example = GERMPLASM_EXAMPLE_INSTITUTE) @QueryParam("institute") String institute,
-            @ApiParam(value = "Search by experiment") @QueryParam("experiment") URI experiment,
-            @ApiParam(value = "Search by parent varieties A or B") @QueryParam("parent_germplasms") List<URI> parentGermplasms,
-            @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_m") List<URI> parentGermplasmsM,
-            @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_f") List<URI> parentGermplasmsF,
-            @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search private(false) or public germplasm (true)") @QueryParam("is_public") Boolean isPublic,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering list by uri", example = GERMPLASM_EXAMPLE_URI) @QueryParam("uri") String uri,
+            @Parameter(description = "Search by type", example = GERMPLASM_EXAMPLE_TYPE) @QueryParam("rdf_type") URI type,
+            @Parameter(description = "Regex pattern for filtering list by name and synonyms", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @Parameter(description = "Regex pattern for filtering list by code", example = ".*") @DefaultValue(".*") @QueryParam("code") String code,
+            @Parameter(description = "Search by production year", example = GERMPLASM_EXAMPLE_PRODUCTION_YEAR) @QueryParam("production_year") Integer productionYear,
+            @Parameter(description = "Search by species", example = GERMPLASM_EXAMPLE_SPECIES) @QueryParam("species") URI species,
+            @Parameter(description = "Search by variety", example = GERMPLASM_EXAMPLE_VARIETY) @QueryParam("variety") URI variety,
+            @Parameter(description = "Search by accession", example = GERMPLASM_EXAMPLE_ACCESSION) @QueryParam("accession") URI accession,
+            @Parameter(description = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI group,
+            @Parameter(description = "Search by institute", example = GERMPLASM_EXAMPLE_INSTITUTE) @QueryParam("institute") String institute,
+            @Parameter(description = "Search by experiment") @QueryParam("experiment") URI experiment,
+            @Parameter(description = "Search by parent varieties A or B") @QueryParam("parent_germplasms") List<URI> parentGermplasms,
+            @Parameter(description = "Search by parent varieties A") @QueryParam("parent_germplasms_m") List<URI> parentGermplasmsM,
+            @Parameter(description = "Search by parent varieties B") @QueryParam("parent_germplasms_f") List<URI> parentGermplasmsF,
+            @Parameter(description = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search private(false) or public germplasm (true)") @QueryParam("is_public") Boolean isPublic,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         GermplasmSearchFilter searchFilter = new GermplasmSearchFilter()
@@ -590,16 +599,16 @@ public class GermplasmAPI {
 
     @POST
     @Path("export")
-    @ApiOperation("export germplasm")
+    @Operation(summary = "export germplasm")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with germplasm list"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return a csv file with germplasm list"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response exportGermplasm(
-            @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
+            @Parameter(description = "CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
         List<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
                 .search(searchFilter,false,false).getList();
@@ -767,7 +776,7 @@ public class GermplasmAPI {
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated germplasm {@link URI}
      */
     @PUT
-    @ApiOperation("Update a germplasm")
+    @Operation(summary = "Update a germplasm")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GERMPLASM_MODIFICATION_ID,
@@ -777,10 +786,10 @@ public class GermplasmAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Germplasm updated", response = URI.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = MultipleErrorResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Germplasm updated", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = MultipleErrorResponse.class)))})
     public Response updateGermplasm(
-            @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
+            @Parameter(description = "Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
     ) throws Exception {
         try {
             GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage(), null);
@@ -797,7 +806,7 @@ public class GermplasmAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a germplasm")
+    @Operation(summary = "Delete a germplasm")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GERMPLASM_DELETE_ID,
@@ -806,7 +815,7 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteGermplasm(
-            @ApiParam(value = "Germplasm URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @Parameter(description = "Germplasm URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         new GermplasmLogic(sparql, nosql, currentUser).delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
@@ -817,16 +826,16 @@ public class GermplasmAPI {
      */
     @POST
     @Path("check")
-    @ApiOperation("check germplasms exist")
+    @Operation(summary = "check germplasms exist")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return existant germplasm uris", response = URI.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return existant germplasm uris", content = @Content(array = @ArraySchema(schema = @Schema(implementation = URI.class)))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response checkGermplasmsExist(
-            @ApiParam(value = "list of uris to check for existence") StringURIsListDTO uris
+            @Parameter(description = "list of uris to check for existence") StringURIsListDTO uris
             ) throws Exception {
         Collection<URI> existantUris = new GermplasmLogic(sparql, nosql, currentUser).getExistingUrisFromString(uris.getUris());
 

@@ -11,7 +11,16 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.client.model.CountOptions;
 import com.opencsv.CSVWriter;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
 import org.bson.json.JsonParseException;
@@ -98,7 +107,7 @@ import static org.opensilex.core.data.bll.dataImport.DataImportLogic.CSV_EXTENSI
 /**
  * @author sammy
  */
-@Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
+@Tag(name = DataAPI.CREDENTIAL_DATA_GROUP_ID)
 @Path("/core/data")
 @ApiCredentialGroup(
         groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -159,16 +168,16 @@ public class DataAPI {
 
     @POST
     @ApiProtected
-    @ApiOperation("Add data")
+    @Operation(summary = "Add data")
     @ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Add data", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "201", description = "Add data", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response addListData(
-            @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
+            @Parameter(description = "Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
         DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
 
@@ -213,15 +222,15 @@ public class DataAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get data")
+    @Operation(summary = "Get data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Data retrieved", content = @Content(schema = @Schema(implementation = DataGetDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Data not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getData(
-            @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri)
+            @Parameter(description = "Data URI", required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         DataLogic dataBLL = new DataLogic(sparql, nosql, fs, user);
 
@@ -243,12 +252,12 @@ public class DataAPI {
 
     @GET
     @Path("mathematicalOperators")
-    @ApiOperation("Get mathematical operators")
+    @Operation(summary = "Get mathematical operators")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of mathematical operators", response = String.class, responseContainer = "List")})
+            @ApiResponse(responseCode = "200", description = "Return list of mathematical operators", content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class))))})
     public Response getMathematicalOperators(){
         return new PaginatedListResponse<>(Arrays.stream(MathematicalOperator.values()).map(Enum::toString).collect(Collectors.toList())).getResponse();
     }
@@ -287,35 +296,34 @@ public class DataAPI {
 
     @POST
     @Path("search")
-    @ApiOperation(
-            value = "Search data for a large list of targets",
-            notes = "Optimized search. The total count of element is not returned. Use countData (/count) service in order to get exact count of element"
+    @Operation(summary = "Search data for a large list of targets",
+            description = "Optimized search. The total count of element is not returned. Use countData (/count) service in order to get exact count of element"
     )
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return data list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataGetSearchDTO.class))))
     })
     public Response searchDataListByTargets(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
-            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
-            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
+            @Parameter(description = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @Parameter(description = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
         return getDataList(
                 batchUri,
@@ -342,37 +350,36 @@ public class DataAPI {
 
     @POST
     @Path("by_targets")
-    @ApiOperation(
-            value = "Search data for a large list of targets",
-            notes = "Deprecated. Use searchDataListByTargets (/search) service which is more optimized"
+    @Operation(summary = "Search data for a large list of targets",
+            description = "Deprecated. Use searchDataListByTargets (/search) service which is more optimized"
     )
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return data list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataGetSearchDTO.class))))
     })
     @Deprecated(
             forRemoval = true
     )
     public Response getDataListByTargets(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
-            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
+            @Parameter(description = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "Targets uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     )throws Exception {
         return getDataList(
                 null,
@@ -398,35 +405,34 @@ public class DataAPI {
     }
 
     @GET
-    @ApiOperation(
-            value = "Search data",
-            notes = "Deprecated. Use searchDataListByTargets (/search) service which is more optimized"
+    @Operation(summary = "Search data",
+            description = "Deprecated. Use searchDataListByTargets (/search) service which is more optimized"
     )
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data list", response = DataGetSearchDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return data list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataGetSearchDTO.class))))
     })
     @Deprecated(
             forRemoval = true
     )
     public Response searchDataList(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
-            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
+            @Parameter(description = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         return getDataList(
                 null,
@@ -573,30 +579,30 @@ public class DataAPI {
 
     @POST
     @Path("/count")
-    @ApiOperation("Count data")
+    @Operation(summary = "Count data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of data ", response = Long.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of data ", content = @Content(schema = @Schema(implementation = Long.class)))
     })
     public Response countData(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
-            @ApiParam(value = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
-            @ApiParam(value = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
-            @ApiParam(value = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @Parameter(description = "Germplasm uris, can be an empty array but can't be null", name = "germplasmUris") @QueryParam("germplasmUris") List<URI> germplasmUris,
+            @Parameter(description = "Count limit. Specify the maximum number of data to count. Set to 0 for no limit", example = "10000") @QueryParam("count_limit") @DefaultValue("1000") @Min(0) int countLimit,
+            @Parameter(description = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets,
+            @Parameter(description = "Search by batch uri for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
     ) throws Exception {
 
         DataSearchFilter filter;
@@ -620,17 +626,17 @@ public class DataAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete data")
+    @Operation(summary = "Delete data")
     @ApiProtected
     @ApiCredential(credentialId = CREDENTIAL_DATA_DELETE_ID, credentialLabelKey = CREDENTIAL_DATA_DELETE_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
-            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Data deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid or unknown Data URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response deleteData(
-            @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
+            @Parameter(description = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
             DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
@@ -644,18 +650,18 @@ public class DataAPI {
     @PUT
     @Path("{uri}/confidence")
     @ApiProtected
-    @ApiOperation("Update confidence index")
+    @Operation(summary = "Update confidence index")
     @ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Confidence update", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "201", description = "Confidence update", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
 
     public Response updateConfidence(
-            @ApiParam("Data description") @Valid DataConfidenceDTO dto,
-            @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Data description") @Valid DataConfidenceDTO dto,
+            @Parameter(description = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         try {
             DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
@@ -669,17 +675,17 @@ public class DataAPI {
 
     @PUT
     @ApiProtected
-    @ApiOperation("Update data")
+    @Operation(summary = "Update data")
     @ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Confidence update", response = URI.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "201", description = "Confidence update", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
 
     public Response update(
-            @ApiParam("Data description") @Valid DataUpdateDTO dto
+            @Parameter(description = "Data description") @Valid DataUpdateDTO dto
     ) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         try {
@@ -701,21 +707,21 @@ public class DataAPI {
     }
 
     @DELETE
-    @ApiOperation("Delete data on criteria")
+    @Operation(summary = "Delete data on criteria")
     @ApiProtected
     @ApiCredential(credentialId = CREDENTIAL_DATA_DELETE_ID, credentialLabelKey = CREDENTIAL_DATA_DELETE_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
-            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Data deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid or unknown Data URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response deleteDataOnSearch(
-            @ApiParam(value = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
-            @ApiParam(value = "Search by target uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("target") URI objectUri,
-            @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
-            @ApiParam(value = "Search by batch id for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
+            @Parameter(description = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
+            @Parameter(description = "Search by target uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("target") URI objectUri,
+            @Parameter(description = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
+            @Parameter(description = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @Parameter(description = "Search by batch id for a specific import csv/json file", example = DATA_EXAMPLE_BATCH_URI) @QueryParam("batch_uri") URI batchUri
 
     ) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
@@ -761,32 +767,32 @@ public class DataAPI {
     @Deprecated
     @GET
     @Path("export")
-    @ApiOperation("Export data")
+    @Operation(summary = "Export data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return a csv file with data list results in wide or long format"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response exportData(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
-            @ApiParam(value = "Export also raw_data") @DefaultValue("false") @QueryParam("with_raw_data") boolean withRawData,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by targets", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
+            @Parameter(description = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
+            @Parameter(description = "Export also raw_data") @DefaultValue("false") @QueryParam("with_raw_data") boolean withRawData,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         try{
             return prepareCSVExportResponse(
@@ -815,16 +821,16 @@ public class DataAPI {
 
     @POST
     @Path("export")
-    @ApiOperation("Export data")
+    @Operation(summary = "Export data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return a csv file with data list results in wide or long format"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response exportData(
-            @ApiParam("CSV export configuration") @Valid DataSearchDTO dto
+            @Parameter(description = "CSV export configuration") @Valid DataSearchDTO dto
     ) throws Exception {
         try{
             return prepareCSVExportResponse(
@@ -1258,18 +1264,18 @@ public class DataAPI {
 
     @GET
     @Path("provenances")
-    @ApiOperation("Search provenances linked to data")
+    @Operation(summary = "Search provenances linked to data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getUsedProvenances(
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
-            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
+            @Parameter(description = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices
     ) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         List<ProvenanceModel> usedProvenances = dataLogic.searchUsedProvenances(experiments, objects, variables, devices);
@@ -1282,18 +1288,18 @@ public class DataAPI {
 
     @POST
     @Path("provenances/by_targets")
-    @ApiOperation("Search provenances linked to data for a large list of targets")
+    @Operation(summary = "Search provenances linked to data for a large list of targets")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getUsedProvenancesByTargets(
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Targets uris") List<URI> targets
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Targets uris") List<URI> targets
     ) throws Exception {
         if (targets == null) {
             targets = new ArrayList<>();
@@ -1310,18 +1316,18 @@ public class DataAPI {
 
     @GET
     @Path("variables")
-    @ApiOperation("Get variables linked to data")
+    @Operation(summary = "Get variables linked to data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return variables list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = VariableGetDTO.class))))
     })
     public Response getUsedVariables(
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
-            @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
+            @Parameter(description = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
         DataSearchFilter filter = new DataSearchFilter();
@@ -1339,10 +1345,10 @@ public class DataAPI {
 
     @POST
     @Path("import")
-    @ApiOperation(value = "Import a CSV file for the given provenanceURI")
+    @Operation(summary = "Import a CSV file for the given provenanceURI")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data are imported", response = DataCSVValidationDTO.class),
-            @ApiResponse(code = 409, message = "A Data already exists", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "201", description = "Data are imported", content = @Content(schema = @Schema(implementation = DataCSVValidationDTO.class))),
+            @ApiResponse(responseCode = "409", description = "A Data already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     @ApiProtected
     @ApiCredential(
             groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -1353,11 +1359,11 @@ public class DataAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
-            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
-            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @Parameter(description = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
+            @Parameter(description = "File", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileDisposition,
-            @ApiParam(value = "The key for file that have already been validated by the API (/core/data/import_validation)",
+            @Parameter(description = "The key for file that have already been validated by the API (/core/data/import_validation)",
                     example = "JohnDoe_20241120123045_ab12cd34") @QueryParam("validationKey") String validationKey) throws Exception {
         String fileName = getFileName(fileDisposition);
         this.dataImportLogic = new DataImportLogic(nosql, sparql, fs, user);
@@ -1373,9 +1379,9 @@ public class DataAPI {
 
     @POST
     @Path("import_validation")
-    @ApiOperation(value = "Import a CSV file for the given provenanceURI.")
+    @Operation(summary = "Import a CSV file for the given provenanceURI.")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data are validated", response = DataCSVValidationDTO.class)})
+            @ApiResponse(responseCode = "201", description = "Data are validated", content = @Content(schema = @Schema(implementation = DataCSVValidationDTO.class)))})
     @ApiProtected
     @ApiCredential(
             groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -1386,9 +1392,9 @@ public class DataAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
-            @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @Parameter(description = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @Parameter(description = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experiment,
+            @Parameter(description = "File", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileDisposition) throws Exception {
         this.dataImportLogic = new DataImportLogic(nosql, sparql, fs, user);
         String fileName = getFileName(fileDisposition);
@@ -1399,19 +1405,19 @@ public class DataAPI {
 
     @GET
     @Path("/data_serie/facility")
-    @ApiOperation("Get all data series associated with a facility")
+    @Operation(summary = "Get all data series associated with a facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a list of data serie", response = DataVariableSeriesGetDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return a list of data serie", content = @Content(schema = @Schema(implementation = DataVariableSeriesGetDTO.class)))
     })
     public Response getDataSeriesByFacility(
-            @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
-            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
+            @Parameter(description = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
+            @Parameter(description = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
     ) throws Exception {
 
         return new SingleObjectResponse<>(
@@ -1427,15 +1433,15 @@ public class DataAPI {
 
     @GET
     @Path("batch_history/{uri}")
-    @ApiOperation("Get batch")
+    @Operation(summary = "Get batch")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Batch retrieved", response = BatchHistoryGetDTO.class),
-            @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Batch retrieved", content = @Content(schema = @Schema(implementation = BatchHistoryGetDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Data not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getBatchHistory(
-            @ApiParam(value = "Batch URI", required = true) @PathParam("uri") @NotNull URI uri) {
+            @Parameter(description = "Batch URI", required = true) @PathParam("uri") @NotNull URI uri) {
         BatchHistoryLogic batchHistoryLogic = new BatchHistoryLogic(nosql);
 
         try {
@@ -1451,19 +1457,19 @@ public class DataAPI {
 
     @GET
     @Path("batch_history")
-    @ApiOperation("Search data batch history")
+    @Operation(summary = "Search data batch history")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return batch history list", response = BatchHistoryGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return batch history list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = BatchHistoryGetDTO.class))))
     })
     public Response searchBatchHistory(
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
         this.batchHistoryLogic = new BatchHistoryLogic(nosql);
         ListWithPagination<BatchHistoryGetDTO> results = batchHistoryLogic.getBatchHistoryWithPagination(startDate, endDate, orderByList, page, pageSize);
@@ -1472,17 +1478,17 @@ public class DataAPI {
 
     @DELETE
     @Path("batch_history/{uri}")
-    @ApiOperation("Delete batch history by URI")
+    @Operation(summary = "Delete batch history by URI")
     @ApiProtected
     @ApiCredential(credentialId = CREDENTIAL_BATCH_HISTORY_DELETE_ID, credentialLabelKey = CREDENTIAL_BATCH_HISTORY_DELETE_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
-            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Data deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid or unknown Data URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response deleteBatchHistoryByURI(
-            @ApiParam(value = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = BATCH_HISTORY_URI, example = BATCH_HISTORY_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws NoSQLInvalidURIException {
         this.batchHistoryLogic = new BatchHistoryLogic(nosql);
         return new SingleObjectResponse<>(batchHistoryLogic.deleteBatchHistoryByURI(uri)).getResponse();

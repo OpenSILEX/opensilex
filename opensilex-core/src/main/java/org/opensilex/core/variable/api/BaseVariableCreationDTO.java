@@ -8,7 +8,7 @@ package org.opensilex.core.variable.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
@@ -43,7 +43,7 @@ public abstract class BaseVariableCreationDTO<T extends BaseVariableModel<T>> ex
         return uri;
     }
 
-    @ApiModelProperty(required = true)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }

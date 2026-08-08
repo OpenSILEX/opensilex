@@ -6,8 +6,10 @@
 //******************************************************************************
 package org.opensilex.security.authentication;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,21 +28,17 @@ import org.opensilex.OpenSilex;
  * @see org.opensilex.security.authentication.filters.AuthenticationFilter
  * @author Vincent Migot
  */
-@ApiImplicitParams({
-    @ApiImplicitParam(
-            name = ApiProtected.HEADER_NAME,
+@Parameters({
+    @Parameter(name = ApiProtected.HEADER_NAME,
             required = true,
-            dataType = "string",
-            paramType = "header",
-            value = "Authentication token"
-    ),
-    @ApiImplicitParam(
-            name = HttpHeaders.ACCEPT_LANGUAGE,
-            dataType = "string",
-            paramType = "header",
-            value = "Request accepted language",
-            example = OpenSilex.DEFAULT_LANGUAGE
-    )
+            schema = @Schema(type = "string"),
+            in = ParameterIn.HEADER,
+            description = "Authentication token"),
+    @Parameter(name = HttpHeaders.ACCEPT_LANGUAGE,
+            schema = @Schema(type = "string"),
+            in = ParameterIn.HEADER,
+            description = "Request accepted language",
+            example = OpenSilex.DEFAULT_LANGUAGE)
 })
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

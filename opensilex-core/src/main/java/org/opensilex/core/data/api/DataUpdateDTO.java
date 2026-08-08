@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -20,7 +20,7 @@ public class DataUpdateDTO  extends DataCreationDTO {
     @NotNull
     @ValidURI
     @Override
-    @ApiModelProperty(value = "URI of the data being updated", example = DataAPI.DATA_EXAMPLE_URI) 
+    @Schema(description = "URI of the data being updated", example = DataAPI.DATA_EXAMPLE_URI) 
     public URI getUri() {
         return uri;
     }

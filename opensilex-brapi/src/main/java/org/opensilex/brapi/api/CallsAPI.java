@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.brapi.responses.BrAPIv1CallListResponse;
 import org.opensilex.brapi.model.BrAPIv1CallDTO;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -23,7 +32,7 @@ import java.util.List;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-@Api("BRAPI")
+@Tag(name = "BRAPI")
 @Path("/brapi/")
 @ApiCredentialGroup(
         groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
@@ -35,23 +44,19 @@ public class CallsAPI extends BrapiCall {
 
     @GET
     @Path("v1/calls")
-    @ApiOperation(
-            value = "Check the available BrAPI calls",
-            notes = "Check the available BrAPI calls"
-    )
+    @Operation(summary = "Check the available BrAPI calls",
+            description = "Check the available BrAPI calls")
     @BrapiVersion("1.3")
     @ApiResponses(value = {
-        @ApiResponse(
-                code = 200,
-                message = "Retrieve BrAPI calls",
-                response = BrAPIv1CallListResponse.class
-        )
+        @ApiResponse(responseCode = "200",
+                description = "Retrieve BrAPI calls",
+                content = @Content(schema = @Schema(implementation = BrAPIv1CallListResponse.class)))
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCalls(
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "datatype", example = "json") @QueryParam("dataType") String dataType) {
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "datatype", example = "json") @QueryParam("dataType") String dataType) {
         List<BrAPIv1CallDTO> brapiCallsInfo = BrapiCall.getBrapiCallsInfo();
         ListWithPagination<BrAPIv1CallDTO> callsList = new ListWithPagination<>(brapiCallsInfo, page, pageSize, brapiCallsInfo.size());
         return new BrAPIv1CallListResponse(callsList).getResponse();

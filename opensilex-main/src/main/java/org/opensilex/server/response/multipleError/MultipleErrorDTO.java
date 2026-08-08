@@ -10,8 +10,7 @@
 
 package org.opensilex.server.response.multipleError;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -19,13 +18,13 @@ import java.util.List;
  * DTO to capture multiple errors about a single object.
  * Identifier of the object is represented by the index of the error in the list original list given to the API WebService.
  */
-@ApiModel
+@Schema
 public class MultipleErrorDTO {
 
-    @ApiModelProperty(value = "index", example = "0")
+    @Schema(description = "index", example = "0")
     public final int index;
 
-    @ApiModelProperty(value = "errors")
+    @Schema(description = "errors")
     public final List<String> errors;
 
 

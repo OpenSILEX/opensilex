@@ -7,7 +7,7 @@ package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.location.dal.LocationObservationModel;
@@ -34,26 +34,26 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 @JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "location"})
 public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObjectModel> {
 
-    @ApiModelProperty(value = "Scientific object parent URI")
+    @Schema(description = "Scientific object parent URI")
     protected URI parent;
 
     @JsonProperty("publisher")
     protected UserGetDTO publisher;
 
     @JsonProperty("parent_name")
-    @ApiModelProperty(value = "Scientific object parent name")
+    @Schema(description = "Scientific object parent name")
     protected String parentLabel;
 
     @JsonProperty("rdf_type")
-    @ApiModelProperty(value = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE)
+    @Schema(description = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE)
     protected URI type;
 
     @JsonProperty("rdf_type_name")
-    @ApiModelProperty(value = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE_NAME)
+    @Schema(description = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE_NAME)
     protected String typeLabel;
 
     @JsonProperty("factor_level")
-    @ApiModelProperty(value = "Scientific object factor levels")
+    @Schema(description = "Scientific object factor levels")
     protected List<NamedResourceDTO<FactorLevelModel>> factorLevels;
 
     protected List<RDFObjectRelationDTO> relations;

@@ -1,6 +1,6 @@
 package org.opensilex.core.experiment.factor.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.net.URI;
 import org.opensilex.core.experiment.factor.dal.FactorCategoryModel;
@@ -18,7 +18,7 @@ public class FactorCategoryGetDTO {
         name = model.getName();
     }
 
-    @ApiModelProperty(value = "URI of the factor category", example = "http://www.w3.org/ns/oa#describing")
+    @Schema(description = "URI of the factor category", example = "http://www.w3.org/ns/oa#describing")
     public URI getUri() {
         return uri;
     }
@@ -27,7 +27,7 @@ public class FactorCategoryGetDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Name of the factor category", example = "describing")
+    @Schema(description = "Name of the factor category", example = "describing")
     public String getName() {
         return name;
     }

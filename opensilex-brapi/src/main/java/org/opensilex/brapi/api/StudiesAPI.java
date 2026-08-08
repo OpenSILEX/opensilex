@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.opensilex.brapi.model.*;
@@ -58,7 +67,7 @@ import java.util.Objects;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.2">BrAPI documentation 1.2</a>
  * @author Alice Boizet
  */
-@Api("BRAPI")
+@Tag(name = "BRAPI")
 @Path("/brapi/")
 public class StudiesAPI extends BrapiCall {
 
@@ -140,19 +149,19 @@ public class StudiesAPI extends BrapiCall {
     @GET
     @Path("v1/studies")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
+    @Operation(summary = "Retrieve studies information", description = "Retrieve studies information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve studies information", response = BrAPIv1StudyListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Retrieve studies information", content = @Content(schema = @Schema(implementation = BrAPIv1StudyListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
     public Response getStudies(
-            @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
-            @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
-            @ApiParam(value = "Name of the field to sort by: studyDbId, active") @QueryParam("sortBy") String sortBy,
-            @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
+            @Parameter(description = "Filter active status true/false") @QueryParam("active") String active,
+            @Parameter(description = "Name of the field to sort by: studyDbId, active") @QueryParam("sortBy") String sortBy,
+            @Parameter(description = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         return this.standardGetStudies(studyDbId, active, sortBy, sortOrder, page, pageSize);
     }
@@ -160,19 +169,19 @@ public class StudiesAPI extends BrapiCall {
     @GET
     @Path("v1/studies-search")
     @BrapiVersion("1.2")
-    @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
+    @Operation(summary = "Retrieve studies information", description = "Retrieve studies information")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve studies information", response = BrAPIv1StudyListResponse.class)})
+            @ApiResponse(responseCode = "200", description = "Retrieve studies information", content = @Content(schema = @Schema(implementation = BrAPIv1StudyListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
     public Response getStudiesSearch(
-            @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
-            @ApiParam(value = "Filter active status true/false") @QueryParam("active") String active,
-            @ApiParam(value = "Name of the field to sort by: studyDbId or seasonDbId") @QueryParam("sortBy") String sortBy,
-            @ApiParam(value = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
+            @Parameter(description = "Filter active status true/false") @QueryParam("active") String active,
+            @Parameter(description = "Name of the field to sort by: studyDbId or seasonDbId") @QueryParam("sortBy") String sortBy,
+            @Parameter(description = "Sort order direction - ASC or DESC") @QueryParam("sortOrder") String sortOrder,
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         return this.standardGetStudies(studyDbId, active, sortBy, sortOrder, page, pageSize);
     }
@@ -192,13 +201,13 @@ public class StudiesAPI extends BrapiCall {
     @GET
     @Path("v1/studies/{studyDbId}")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
+    @Operation(summary = "Retrieve study details", description = "Retrieve study details")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve study details", response = BrAPIv1SingleStudyResponse.class)})  // TODO : wrong return type
+        @ApiResponse(responseCode = "200", description = "Retrieve study details", content = @Content(schema = @Schema(implementation = BrAPIv1SingleStudyResponse.class)))})  // TODO : wrong return type
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStudyDetails(
-            @ApiParam(value = "Search by studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId
+            @Parameter(description = "Search by studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
@@ -223,16 +232,16 @@ public class StudiesAPI extends BrapiCall {
     @GET
     @Path("v1/studies/{studyDbId}/observations")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
+    @Operation(summary = "Get the observations associated to a specific study", description = "Get the observations associated to a specific study")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = BrAPIv1ObservationListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservations(
-            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
-            @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<URI> observationVariableDbIds,
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
+            @Parameter(description = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<URI> observationVariableDbIds,
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
@@ -262,15 +271,15 @@ public class StudiesAPI extends BrapiCall {
     @GET
     @Path("v1/studies/{studyDbId}/observationvariables")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
+    @Operation(summary = "List all the observation variables measured in the study.", description = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationVariableListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = BrAPIv1ObservationVariableListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
-            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);
@@ -296,16 +305,16 @@ public class StudiesAPI extends BrapiCall {
     @GET
     @Path("v1/studies/{studyDbId}/observationunits")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")
+    @Operation(summary = "List all the observation units measured in the study.", description = "List all the observation units measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationUnitListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = BrAPIv1ObservationUnitListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationUnits(
-            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
-            @ApiParam(value = "observationLevel", example = "Plot") @QueryParam("observationLevel") String observationLevel,
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
+            @Parameter(description = "observationLevel", example = "Plot") @QueryParam("observationLevel") String observationLevel,
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         validateExperimentRightsAndURI(studyDbId, xpDao);

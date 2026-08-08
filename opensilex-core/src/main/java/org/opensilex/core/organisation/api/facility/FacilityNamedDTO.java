@@ -1,6 +1,6 @@
 package org.opensilex.core.organisation.api.facility;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 
@@ -16,13 +16,13 @@ public class FacilityNamedDTO extends ObjectNamedResourceDTO  {
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/greenHouseA")
+    @Schema(example = "http://opensilex.dev/greenHouseA")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "greenHouseA")
+    @Schema(example = "greenHouseA")
     public String getName() {
         return name;
     }

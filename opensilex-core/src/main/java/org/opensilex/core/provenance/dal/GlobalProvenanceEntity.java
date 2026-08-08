@@ -10,7 +10,7 @@
 package org.opensilex.core.provenance.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.bson.Document;
 
 import java.net.URI;
@@ -22,7 +22,7 @@ public abstract class GlobalProvenanceEntity {
 
     URI uri;
 
-    @ApiModelProperty(value = "a key value system to store parameters")
+    @Schema(description = "a key value system to store parameters")
     Document settings;
 
     public URI getRdfType() {

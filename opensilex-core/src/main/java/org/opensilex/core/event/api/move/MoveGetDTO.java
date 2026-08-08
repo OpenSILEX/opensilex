@@ -2,7 +2,7 @@ package org.opensilex.core.event.api.move;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.event.api.EventGetDTO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.location.api.LocationObservationDTO;
@@ -40,7 +40,7 @@ public class MoveGetDTO extends EventGetDTO {
         this.location = location;
     }
 
-    @ApiModelProperty(value = "Description of the move", example = "Move to greenhouse A")
+    @Schema(description = "Description of the move", example = "Move to greenhouse A")
     public String getDescription() {
         return description;
     }

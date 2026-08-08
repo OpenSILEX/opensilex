@@ -12,7 +12,16 @@ package org.opensilex.core.area.api;
 import com.mongodb.MongoQueryException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaDAO;
@@ -60,7 +69,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
  *
  * @author Jean Philippe VERT
  */
-@Api(AreaAPI.CREDENTIAL_AREA_GROUP_ID)
+@Tag(name = AreaAPI.CREDENTIAL_AREA_GROUP_ID)
 @Path("/core/area")
 @ApiCredentialGroup(
         groupId = AreaAPI.CREDENTIAL_AREA_GROUP_ID,
@@ -96,7 +105,7 @@ public class AreaAPI {
      * @throws java.lang.Exception if creation failed
      */
     @POST
-    @ApiOperation("Add an area")
+    @Operation(summary = "Add an area")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
@@ -105,14 +114,14 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Add an area", response = URI.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 409, message = "An area with the same URI already exists", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "201", description = "Add an area", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "409", description = "An area with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 
     public Response createArea(
-            @ApiParam("Area description") @NotNull @Valid AreaCreationDTO areaDTO
+            @Parameter(description = "Area description") @NotNull @Valid AreaCreationDTO areaDTO
     ) throws Exception {
 
         return new SparqlMongoTransaction(sparql, nosql.getServiceV2()).execute(session ->{
@@ -162,16 +171,16 @@ public class AreaAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an area")
+    @Operation(summary = "Get an area")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return area", response = AreaGetDTO.class),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return area", content = @Content(schema = @Schema(implementation = AreaGetDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Area not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getByURI(
-            @ApiParam(value = "area URI", required = true) @PathParam("uri") @NotNull URI areaURI
+            @Parameter(description = "area URI", required = true) @PathParam("uri") @NotNull URI areaURI
     ) throws Exception {
         // Get area, its geospatial and if it's a temporal area, its event by URI
         AreaDAO areaDAO = new AreaDAO(sparql);
@@ -233,7 +242,7 @@ public class AreaAPI {
      * @throws java.lang.Exception if creation failed
      */
     @PUT
-    @ApiOperation("Update an area")
+    @Operation(summary = "Update an area")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
@@ -242,10 +251,10 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Update an area", response = URI.class)
+        @ApiResponse(responseCode = "200", description = "Update an area", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response updateArea(
-            @ApiParam(value = "Area description", required = true) @NotNull @Valid AreaUpdateDTO areaDTO
+            @Parameter(description = "Area description", required = true) @NotNull @Valid AreaUpdateDTO areaDTO
     ) throws Exception {
 
         AreaDAO dao = new AreaDAO(sparql);
@@ -317,7 +326,7 @@ public class AreaAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an area")
+    @Operation(summary = "Delete an area")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_AREA_DELETE_ID,
@@ -326,11 +335,11 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Delete an area", response = URI.class),
-        @ApiResponse(code = 404, message = "The URI for the area was not found.", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Delete an area", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "The URI for the area was not found.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteArea(
-            @ApiParam(value = "Area URI", required = true) @PathParam("uri") @NotNull @ValidURI URI areaURI
+            @Parameter(description = "Area URI", required = true) @PathParam("uri") @NotNull @ValidURI URI areaURI
     ) throws Exception {
         AreaDAO dao = new AreaDAO(sparql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
@@ -380,19 +389,19 @@ public class AreaAPI {
      */
     @POST
     @Path("intersects")
-    @ApiOperation("Get area whose geometry corresponds to the Intersections")
+    @Operation(summary = "Get area whose geometry corresponds to the Intersections")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Get area whose geometry corresponds to the Intersections", response = AreaGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Get area whose geometry corresponds to the Intersections", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AreaGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Area not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchIntersects(
-            @ApiParam(value = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry,
-            @ApiParam(value = "Start date : match temporal area after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
-            @ApiParam(value = "End date : match temporal area before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end
+            @Parameter(description = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry,
+            @Parameter(description = "Start date : match temporal area after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
+            @Parameter(description = "End date : match temporal area before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end
     ) throws Exception {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         EventLogic<EventModel, EventSearchFilter> eventLogic = new EventLogic<>(sparql, nosql, currentUser, EventModel.class);
@@ -515,18 +524,18 @@ public class AreaAPI {
 
     @POST
     @Path("export_geospatial")
-    @ApiOperation("Export a given list of areas URIs to shapefile")
+    @Operation(summary = "Export a given list of areas URIs to shapefile")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data shapefile exported")
+            @ApiResponse(responseCode = "200", description = "Data shapefile exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportGeospatial(
-            @ApiParam(value = "Areas") List<GeometryDTO> selectedObjects,
-            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
-            @ApiParam(value = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
-            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+            @Parameter(description = "Areas") List<GeometryDTO> selectedObjects,
+            @Parameter(description = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @Parameter(description = "export format (shp/geojson)", example = "shp") @QueryParam("format") String format,
+            @Parameter(description = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
 
     ) throws Exception {
 

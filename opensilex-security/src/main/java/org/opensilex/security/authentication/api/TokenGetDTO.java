@@ -6,8 +6,7 @@
 //******************************************************************************
 package org.opensilex.security.authentication.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * <pre>
@@ -21,7 +20,7 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 public class TokenGetDTO {
 
     protected String token;
@@ -34,7 +33,7 @@ public class TokenGetDTO {
         this.token = token;
     }
 
-    @ApiModelProperty(value = "User token", example = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpc19hZG1pbiI6dHJ...")
+    @Schema(description = "User token", example = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpc19hZG1pbiI6dHJ...")
     public String getToken() {
         return token;
     }

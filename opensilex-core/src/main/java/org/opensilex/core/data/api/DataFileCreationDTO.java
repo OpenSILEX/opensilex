@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -39,26 +39,26 @@ public class DataFileCreationDTO {
     @ValidURI
     @NotNull
     @JsonProperty("rdf_type")
-    @ApiModelProperty(value = "file type", example = DataFilesAPI.DATAFILE_EXAMPLE_TYPE)
+    @Schema(description = "file type", example = DataFilesAPI.DATAFILE_EXAMPLE_TYPE)
     private URI rdfType; 
     
     @Required
-    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
+    @Schema(description = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
     private String date;
     
-    @ApiModelProperty(value = "target URI on which the data have been collected")
+    @Schema(description = "target URI on which the data have been collected")
     private URI target;
     
     @NotNull
     private DataProvenanceModel provenance;
 
-    @ApiModelProperty(value = "archive file URI if file is inside")
+    @Schema(description = "archive file URI if file is inside")
     private URI archive;
 
-    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one", example = DataAPI.DATA_EXAMPLE_TIMEZONE)
+    @Schema(description = "to specify if the offset is not in the date and if the timezone is different from the default one", example = DataAPI.DATA_EXAMPLE_TIMEZONE)
     private String timezone;
 
-    @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
+    @Schema(description = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
     private Document metadata;
 
     public URI getUri() {

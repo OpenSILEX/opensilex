@@ -6,7 +6,7 @@
 package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * DTO representing JSON for getting organisation
  * @author vince
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "publisher", "publication_date", "last_updated_date", "name", "parents", "children", "groups", "facilities", "sites", "experiments"})
 public class OrganizationGetDTO extends ResourceDagReferenceDTO<OrganizationModel> {
     

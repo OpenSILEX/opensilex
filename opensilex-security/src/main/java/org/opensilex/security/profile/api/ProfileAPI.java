@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.security.profile.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -48,7 +57,7 @@ import static org.apache.jena.vocabulary.RDF.uri;
  *
  * @author Vincent Migot
  */
-@Api(SecurityModule.REST_SECURITY_API_ID)
+@Tag(name = SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/profiles")
 @ApiCredentialGroup(
         groupId = ProfileAPI.CREDENTIAL_PROFILE_GROUP_ID,
@@ -72,11 +81,11 @@ public class ProfileAPI {
     AccountModel currentUser;
 
     @POST
-    @ApiOperation("Add a profile")
+    @Operation(summary = "Add a profile")
     @ApiResponses({
-        @ApiResponse(code = 201, message = "A profile is created"),
-        @ApiResponse(code = 403, message = "This current user can't create profiles"),
-        @ApiResponse(code = 409, message = "The profile name already exists")
+        @ApiResponse(responseCode = "201", description = "A profile is created"),
+        @ApiResponse(responseCode = "403", description = "This current user can't create profiles"),
+        @ApiResponse(responseCode = "409", description = "The profile name already exists")
     })
     @ApiProtected()
     @ApiCredential(
@@ -86,7 +95,7 @@ public class ProfileAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createProfile(
-            @ApiParam("Profile description") @Valid ProfileCreationDTO profileDTO
+            @Parameter(description = "Profile description") @Valid ProfileCreationDTO profileDTO
     ) throws Exception {
         // Create profile DAO
         ProfileDAO profileDAO = new ProfileDAO(sparql);
@@ -123,7 +132,7 @@ public class ProfileAPI {
     }
 
     @PUT
-    @ApiOperation("Update a profile")
+    @Operation(summary = "Update a profile")
     @ApiProtected()
     @ApiCredential(
             credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
@@ -132,11 +141,11 @@ public class ProfileAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profile uri of the updated profile", response = String.class),
-        @ApiResponse(code = 400, message = "Invalid parameters")
+        @ApiResponse(responseCode = "200", description = "Return profile uri of the updated profile", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters")
     })
     public Response updateProfile(
-            @ApiParam("Profile description") @Valid ProfileUpdateDTO dto
+            @Parameter(description = "Profile description") @Valid ProfileUpdateDTO dto
     ) throws Exception {
         ProfileDAO dao = new ProfileDAO(sparql);
 
@@ -170,17 +179,17 @@ public class ProfileAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a profile")
+    @Operation(summary = "Get a profile")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Profile retrieved", response = ProfileGetDTO.class),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Profile not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Profile retrieved", content = @Content(schema = @Schema(implementation = ProfileGetDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Profile not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getProfile(
-            @ApiParam(value = "Profile URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Profile URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get user from DAO by URI
         ProfileDAO dao = new ProfileDAO(sparql);
@@ -204,7 +213,7 @@ public class ProfileAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a profile")
+    @Operation(summary = "Delete a profile")
     @ApiProtected()
     @ApiCredential(
             credentialId = CREDENTIAL_PROFILE_DELETE_ID,
@@ -213,7 +222,7 @@ public class ProfileAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteProfile(
-            @ApiParam(value = "Profile URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @Parameter(description = "Profile URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         ProfileDAO dao = new ProfileDAO(sparql);
         dao.delete(uri);
@@ -221,19 +230,19 @@ public class ProfileAPI {
     }
 
     @GET
-    @ApiOperation("Search profiles")
+    @Operation(summary = "Search profiles")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profiles", response = ProfileGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return profiles", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProfileGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchProfiles(
-            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Search profiles with Profile DAO
         ProfileDAO dao = new ProfileDAO(sparql);
@@ -258,16 +267,16 @@ public class ProfileAPI {
 
     @GET
     @Path("all")
-    @ApiOperation("Get all profiles")
+    @Operation(summary = "Get all profiles")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return all profiles", response = ProfileGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return all profiles", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProfileGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getAllProfiles(
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
         // Search profiles with Profile DAO
         ProfileDAO dao = new ProfileDAO(sparql);

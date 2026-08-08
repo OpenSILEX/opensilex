@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.system.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
@@ -33,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * Class that represents System API ressources
  * @author Arnaud Charleroy
  */
-@Api(SystemAPI.CREDENTIAL_SYSTEM_GROUP_ID)
+@Tag(name = SystemAPI.CREDENTIAL_SYSTEM_GROUP_ID)
 @Path("/core/system")
 public class SystemAPI {
     
@@ -48,12 +57,12 @@ public class SystemAPI {
 
     @GET
     @Path("/info")
-    @ApiOperation("get system information")
+    @Operation(summary = "get system information")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return API version info", response = VersionInfoDTO.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Return API version info", content = @Content(schema = @Schema(implementation = VersionInfoDTO.class))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getVersionInfo() throws Exception { 
         VersionInfoDTO versionInfoDTO = new VersionInfoDTO();   

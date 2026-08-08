@@ -10,18 +10,17 @@
 
 package org.opensilex.server.response.multipleError;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-@ApiModel
+@Schema
 public class MultipleCreateUpdateErrorDTO extends MultipleErrorDTO {
 
     /**
      * in the context of a creation/update service, this boolean is true if the object is in update mode (i.e. it's uri already exists)
      */
-    @ApiModelProperty(value = "uri", example = "http://exemple")
+    @Schema(description = "uri", example = "http://exemple")
     public final boolean isUpdate;
 
 

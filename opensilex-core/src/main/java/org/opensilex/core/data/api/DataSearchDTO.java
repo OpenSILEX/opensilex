@@ -2,7 +2,7 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.OrderBy;
@@ -15,15 +15,15 @@ import java.util.List;
 @JsonPropertyOrder({"start_date", "end_date","timezone", "experiments", "objects", "variables", "devices", "provenances", "min_confidence", "max_confidence","metadata","mode","with_raw_data","order_by"})
 public class DataSearchDTO {
 
-    @ApiModelProperty(value = "start date" ,example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
+    @Schema(description = "start date" ,example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
     @JsonProperty("start_date")
     protected String startDate;
 
-    @ApiModelProperty(value = "end date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE)
+    @Schema(description = "end date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE)
     @JsonProperty("end_date")
     protected String endDate;
 
-    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one",example = DataAPI.DATA_EXAMPLE_TIMEZONE)
+    @Schema(description = "to specify if the offset is not in the date and if the timezone is different from the default one",example = DataAPI.DATA_EXAMPLE_TIMEZONE)
     protected String timezone;
 
     @ValidURI
@@ -44,13 +44,13 @@ public class DataSearchDTO {
 
     @Min(0)
     @Max(1)
-    @ApiModelProperty(value = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
+    @Schema(description = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
     @JsonProperty("min_confidence")
     protected Float confidenceMin;
 
     @Min(0)
     @Max(1)
-    @ApiModelProperty(value = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
+    @Schema(description = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
     @JsonProperty("max_confidence")
     protected Float confidenceMax;
 
@@ -58,15 +58,15 @@ public class DataSearchDTO {
     @JsonProperty("provenances")
     protected List<URI> provenances;
 
-    @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
+    @Schema(description = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
     protected String metadata;
     @Required
-    @ApiModelProperty(value = "format wide or long", example = "wide")
+    @Schema(description = "format wide or long", example = "wide")
     @JsonProperty("mode")
     protected String csvFormat;
 
     @JsonProperty("with_raw_data")
-    @ApiModelProperty(value = "export also raw_data", example = "false")
+    @Schema(description = "export also raw_data", example = "false")
     protected boolean withRawData;
 
     public String getStartDate() {

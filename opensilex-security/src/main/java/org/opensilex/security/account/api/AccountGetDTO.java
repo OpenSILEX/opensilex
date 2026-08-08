@@ -1,7 +1,7 @@
 package org.opensilex.security.account.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.security.account.dal.AccountModel;
 
 import java.util.Objects;
@@ -13,7 +13,7 @@ public class AccountGetDTO extends AccountDTO{
     @JsonProperty("person_last_name")
      protected String personLastName;
 
-    @ApiModelProperty(value = "first name of the linked person")
+    @Schema(description = "first name of the linked person")
     public String getPersonFirstName() {
         return personFirstName;
     }
@@ -21,7 +21,7 @@ public class AccountGetDTO extends AccountDTO{
         this.personFirstName = personFirstName;
     }
 
-    @ApiModelProperty(value = "last name of the linked person")
+    @Schema(description = "last name of the linked person")
     public String getPersonLastName() {
         return personLastName;
     }

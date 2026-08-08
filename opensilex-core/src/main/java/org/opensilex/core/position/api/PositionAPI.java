@@ -1,7 +1,16 @@
 package org.opensilex.core.position.api;
 
 import com.mongodb.MongoQueryException;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections.CollectionUtils;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.event.api.move.MoveGetDTO;
@@ -47,7 +56,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 /**
  * @author Renaud COLIN
  */
-@Api(PositionAPI.CREDENTIAL_POSITION_GROUP_ID)
+@Tag(name = PositionAPI.CREDENTIAL_POSITION_GROUP_ID)
 @Path(PositionAPI.PATH)
 @ApiCredentialGroup(
         groupId = PositionAPI.CREDENTIAL_POSITION_GROUP_ID,
@@ -74,17 +83,17 @@ public class PositionAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get the position of an object")
+    @Operation(summary = "Get the position of an object")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Position retrieved", response = PositionGetDTO.class),
-        @ApiResponse(code = 404, message = "No position found for this object", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Position retrieved", content = @Content(schema = @Schema(implementation = PositionGetDTO.class))),
+        @ApiResponse(responseCode = "404", description = "No position found for this object", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPosition(
-            @ApiParam(value = "Object URI", example = "http://opensilex.dev/plant/plant5841", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
+            @Parameter(description = "Object URI", example = "http://opensilex.dev/plant/plant5841", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
@@ -106,20 +115,20 @@ public class PositionAPI {
 
     @GET
     @Path("history")
-    @ApiOperation("Search history of position of an object")
+    @Operation(summary = "Search history of position of an object")
     @ApiProtected
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return position list", response = MoveGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return position list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MoveGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchPositionHistory(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") @NotNull URI target,
-            @ApiParam(value = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDateTime") @ValidOffsetDateTime String startDate,
-            @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") @NotNull URI target,
+            @Parameter(description = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDateTime") @ValidOffsetDateTime String startDate,
+            @Parameter(description = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number") @QueryParam("page") int page,
+            @Parameter(description = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
 
@@ -142,20 +151,20 @@ public class PositionAPI {
 
     @POST
     @Path("geospatializedPosition")
-    @ApiOperation("Search the last geospatialized position of a target for an experiment")
+    @Operation(summary = "Search the last geospatialized position of a target for an experiment")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return position list", response = PositionGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return position list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PositionGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchGeospatializedPosition(
-            @ApiParam(value = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry,
-            @ApiParam(value = "target RDF Type URI") @QueryParam("base_type") @ValidURI URI targetType,
-            @ApiParam(value = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDateTime") @ValidOffsetDateTime String startDate,
-            @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
+            @Parameter(description = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry,
+            @Parameter(description = "target RDF Type URI") @QueryParam("base_type") @ValidURI URI targetType,
+            @Parameter(description = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDateTime") @ValidOffsetDateTime String startDate,
+            @Parameter(description = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
         MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
         LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
@@ -207,15 +216,15 @@ public class PositionAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count moves")
+    @Operation(summary = "Count moves")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of moves associated to a given target", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of moves associated to a given target", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countMoves(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
         int moveCount = dao.countForTarget(target);

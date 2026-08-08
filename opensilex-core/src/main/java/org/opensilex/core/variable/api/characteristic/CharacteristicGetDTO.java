@@ -1,6 +1,6 @@
 package org.opensilex.core.variable.api.characteristic;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
 
@@ -16,13 +16,13 @@ public class CharacteristicGetDTO extends BaseVariableGetDTO<CharacteristicModel
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/characteristic/Height")
+    @Schema(example = "http://opensilex.dev/set/variables/characteristic/Height")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Height")
+    @Schema(example = "Height")
     public String getName() {
         return name;
     }

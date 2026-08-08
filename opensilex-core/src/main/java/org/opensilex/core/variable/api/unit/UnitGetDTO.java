@@ -1,6 +1,6 @@
 package org.opensilex.core.variable.api.unit;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.UnitModel;
 
@@ -16,13 +16,13 @@ public class UnitGetDTO extends BaseVariableGetDTO<UnitModel> {
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/Centimeter")
+    @Schema(example = "http://opensilex.dev/set/variables/unit/Centimeter")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Centimeter")
+    @Schema(example = "Centimeter")
     public String getName() {
         return name;
     }

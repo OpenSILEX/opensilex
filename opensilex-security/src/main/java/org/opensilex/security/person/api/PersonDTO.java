@@ -8,8 +8,7 @@ package org.opensilex.security.person.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.rest.validation.Required;
@@ -34,7 +33,7 @@ import java.util.Objects;
  *
  * @author Yvan Roux
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "first_name", "last_name", "email", "affiliation", "phone_number", "orcid", "account"})
 public class PersonDTO {
 
@@ -65,7 +64,7 @@ public class PersonDTO {
     @JsonProperty("account")
     protected URI account;
 
-    @ApiModelProperty(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea")
+    @Schema(description = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea")
     public URI getUri() {
         return uri;
     }
@@ -74,7 +73,7 @@ public class PersonDTO {
         this.uri = uri;
     }
 
-    @ApiModelProperty(value = "Person first name", example = "Harold")
+    @Schema(description = "Person first name", example = "Harold")
     public String getFirstName() {
         return firstName;
     }
@@ -83,7 +82,7 @@ public class PersonDTO {
         this.firstName = firstName;
     }
 
-    @ApiModelProperty(value = "Person last name", example = "Haddock")
+    @Schema(description = "Person last name", example = "Haddock")
     public String getLastName() {
         return lastName;
     }
@@ -92,7 +91,7 @@ public class PersonDTO {
         this.lastName = lastName;
     }
 
-    @ApiModelProperty(value = "email", example = "harold-h@inrae.fr")
+    @Schema(description = "email", example = "harold-h@inrae.fr")
     public String getEmail() {
         return email;
     }
@@ -101,7 +100,7 @@ public class PersonDTO {
         this.email = email;
     }
 
-    @ApiModelProperty(value = "affiliation", example = "MISTEA")
+    @Schema(description = "affiliation", example = "MISTEA")
     public String getAffiliation() {
         return affiliation;
     }
@@ -110,7 +109,7 @@ public class PersonDTO {
         this.affiliation = affiliation;
     }
 
-    @ApiModelProperty(value = "phone number", example = "+33-1-42-75-90-00")
+    @Schema(description = "phone number", example = "+33-1-42-75-90-00")
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -119,12 +118,12 @@ public class PersonDTO {
         this.phoneNumber = phoneNumber;
     }
 
-    @ApiModelProperty(value = "orcid", example = "https://orcid.org/0000-0003-4189-7793")
+    @Schema(description = "orcid", example = "https://orcid.org/0000-0003-4189-7793")
     public URI getOrcid() { return orcid; }
 
     public void setOrcid(URI orcid) { this.orcid = orcid; }
 
-    @ApiModelProperty(value = "Uri of the account if this person has one", example = "http://opensilex.dev/users#jean.michel.inrae")
+    @Schema(description = "Uri of the account if this person has one", example = "http://opensilex.dev/users#jean.michel.inrae")
     public URI getAccount() {
         return account;
     }

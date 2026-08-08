@@ -6,7 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.io.IOException;
 import java.net.URI;
@@ -22,7 +22,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 public class ScientificObjectCsvDescriptionDTO extends CsvImportDTO {
 
     @ValidURI
-    @ApiModelProperty(value = "Scientific object experiment URI")
+    @Schema(description = "Scientific object experiment URI")
     protected URI experiment;
 
     public URI getExperiment() {

@@ -2,7 +2,7 @@ package org.opensilex.security.person.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -10,7 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel
+@Schema
 @JsonPropertyOrder({"orcid", "first_name", "last_name", "emails", "organizations"})
 public class OrcidRecordDTO {
     @JsonProperty("orcid")

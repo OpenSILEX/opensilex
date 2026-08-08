@@ -7,7 +7,7 @@
 package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
@@ -24,7 +24,7 @@ import java.net.URI;
  */
 @JsonPropertyOrder({"rdf_type", "uri", "start_date","end_date", "timezone", "settings"})
 public class ActivityCreationDTO extends ActivityGetDTO {   
-    @ApiModelProperty(value = "to specify if the offset is not in the dates and if the timezone is different from the default one")
+    @Schema(description = "to specify if the offset is not in the dates and if the timezone is different from the default one")
     String timezone;
     
     public String getTimezone() {

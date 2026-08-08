@@ -6,7 +6,12 @@
 //******************************************************************************
 package org.opensilex.server.rest;
 
-import io.swagger.jaxrs.config.BeanConfig;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -31,6 +36,7 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -109,7 +115,7 @@ public class RestApplication extends ResourceConfig {
         registerAPI(); 
         
         // Initialize swagger API
-        initSwagger();
+        initOpenApi();
         
         registerServices();
 
@@ -138,9 +144,9 @@ public class RestApplication extends ResourceConfig {
     }
 
     /**
-     * Initialize swagger UI registering every packages to scan for services defined in modules.
+     * Initialize OpenAPI registering every packages to scan for services defined in modules.
      */
-    private void initSwagger() {
+    private void initOpenApi() {
         // Load all packages to scan from modules implementing APIExtension
         List<String> packageList = new ArrayList<>();
 
@@ -149,19 +155,30 @@ public class RestApplication extends ResourceConfig {
         });
         
         packageList.add("org.opensilex.server.rest.serialization");
-        
-        // Init swagger UI
-        BeanConfig beanConfig = new BeanConfig();
 
+        String version = "1.0.0";
         try {
-            beanConfig.setVersion(opensilex.getModuleByClass(ServerModule.class).getOpenSilexVersion());
+            version = opensilex.getModuleByClass(ServerModule.class).getOpenSilexVersion();
         } catch (OpenSilexModuleNotFoundException ex) {
             LOGGER.warn("Error while getting API version", ex);
         }
-        beanConfig.setResourcePackage(String.join(",", packageList));
-        beanConfig.setTitle("OpenSilex API");
-        beanConfig.setExpandSuperTypes(false);
-        beanConfig.setScan(true);
+
+        OpenAPI openAPI = new OpenAPI()
+                .info(new Info().title("OpenSilex API").version(version))
+                .components(new Components().addSecuritySchemes("Bearer",
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")));
+
+        SwaggerConfiguration oasConfig = new SwaggerConfiguration()
+                .openAPI(openAPI)
+                .prettyPrint(true)
+                .resourcePackages(new HashSet<>(packageList));
+
+        OpenApiResource openApiResource = new OpenApiResource();
+        openApiResource.openApiConfiguration(oasConfig);
+        register(openApiResource);
     }
 
     /**

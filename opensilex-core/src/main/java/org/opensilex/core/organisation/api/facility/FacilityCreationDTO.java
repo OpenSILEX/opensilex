@@ -7,7 +7,7 @@ package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.location.api.LocationObservationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  *
  * @author vince
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "name", "organizations", "sites", "address", "variableGroups", "description"})
 public class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")

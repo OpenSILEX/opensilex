@@ -7,7 +7,7 @@
 package org.opensilex.core.provenance.dal;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -19,12 +19,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @JsonPropertyOrder({"uri", "rdf_type", "settings"})
 public class AgentModel extends GlobalProvenanceEntity {
 
-    @ApiModelProperty(value = "Agent type defined in the ontology", example = "oeso:Sensor")
+    @Schema(description = "Agent type defined in the ontology", example = "oeso:Sensor")
     public URI getRdfType() {
         return rdfType;
     }
 
-    @ApiModelProperty(value = "Agent uri", example = "http://sensor/s01")
+    @Schema(description = "Agent uri", example = "http://sensor/s01")
     public URI getUri() {
         return uri;
     }

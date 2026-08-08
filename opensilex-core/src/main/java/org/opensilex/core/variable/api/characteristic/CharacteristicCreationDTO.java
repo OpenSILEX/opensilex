@@ -7,7 +7,7 @@ package org.opensilex.core.variable.api.characteristic;
 
 import java.net.URI;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableCreationDTO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
 
@@ -22,17 +22,17 @@ public class CharacteristicCreationDTO extends BaseVariableCreationDTO<Character
         return new CharacteristicModel();
     }
 
-    @ApiModelProperty(example = "Height", required = true)
+    @Schema(example = "Height", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }
 
-    @ApiModelProperty(example = "Describe the height")
+    @Schema(example = "Describe the height")
     public String getDescription() {
         return description;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/characteristic/Height")
+    @Schema(example = "http://opensilex.dev/set/variables/characteristic/Height")
     public URI getUri() {
         return uri;
     }

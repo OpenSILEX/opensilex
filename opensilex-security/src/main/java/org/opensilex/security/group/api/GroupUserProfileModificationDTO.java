@@ -5,8 +5,7 @@
  */
 package org.opensilex.security.group.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -15,19 +14,19 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author vidalmor
  */
-@ApiModel
+@Schema
 public class GroupUserProfileModificationDTO extends GroupUserProfileDTO {
 
     @ValidURI
     @NotNull
-    @ApiModelProperty(value = "User associated profile URI", required = true)
+    @Schema(description = "User associated profile URI", requiredMode = Schema.RequiredMode.REQUIRED)
     public URI getProfileURI() {
         return this.profileURI;
     }
 
     @ValidURI
     @NotNull
-    @ApiModelProperty(value = "User URI", required = true)
+    @Schema(description = "User URI", requiredMode = Schema.RequiredMode.REQUIRED)
     public URI getUserURI() {
         return this.userURI;
     }

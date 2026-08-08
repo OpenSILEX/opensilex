@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.entityOfInterest;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +16,7 @@ public class InterestEntityUpdateDTO extends InterestEntityCreationDTO {
     
     @NotNull
     @Override
-    @ApiModelProperty(required = true, example = "http://opensilex.dev/set/variables/entity_of_interest/Plot")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "http://opensilex.dev/set/variables/entity_of_interest/Plot")
     public URI getUri() {
         return super.getUri();
     }

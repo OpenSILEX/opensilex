@@ -7,7 +7,7 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.data.dal.DataComputedModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.server.rest.validation.Required;
@@ -26,11 +26,11 @@ import java.time.*;
 public class DataComputedGetDTO {
 
     @Required
-    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
+    @Schema(description = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, requiredMode = Schema.RequiredMode.REQUIRED)
     private ZonedDateTime date;
 
     @NotNull
-    @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
+    @Schema(description = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
 
 

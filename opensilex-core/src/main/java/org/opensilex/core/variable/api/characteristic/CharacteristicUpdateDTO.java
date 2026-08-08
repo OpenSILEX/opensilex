@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.characteristic;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.net.URI;
 
@@ -15,7 +15,7 @@ public class CharacteristicUpdateDTO extends CharacteristicCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true, example = "http://opensilex.dev/set/variables/characteristic/Height")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "http://opensilex.dev/set/variables/characteristic/Height")
     public URI getUri() {
         return super.getUri();
     }

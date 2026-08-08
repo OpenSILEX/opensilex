@@ -9,7 +9,7 @@
  */
 package org.opensilex.core.experiment.factor.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.server.rest.validation.FilteredName;
@@ -21,7 +21,7 @@ import org.opensilex.server.rest.validation.FilteredName;
 public class FactorLevelCreationDTO extends FactorLevelGetDTO{
 
     
-    @ApiModelProperty(example = "WW")
+    @Schema(example = "WW")
     @Override
     @FilteredName
     @NotNull

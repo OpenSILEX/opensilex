@@ -6,7 +6,16 @@
 
 package org.opensilex.core.germplasmGroup.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
@@ -50,7 +59,7 @@ import static org.opensilex.core.germplasmGroup.api.GermplasmGroupApi.PATH;
  * @author Maximilian HART
  */
 
-@Api(GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID)
+@Tag(name = GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID)
 @Path(PATH)
 @ApiCredentialGroup(
         groupId = GermplasmAPI.CREDENTIAL_GERMPLASM_GROUP_ID,
@@ -71,19 +80,19 @@ public class GermplasmGroupApi {
     private MongoDBService nosql;
 
     @POST
-    @ApiOperation("Add a germplasm group")
+    @Operation(summary = "Add a germplasm group")
     @ApiProtected
     @ApiCredential(
             credentialId = GermplasmAPI.CREDENTIAL_GERMPLASM_MODIFICATION_ID,
             credentialLabelKey = GermplasmAPI.CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A germplasm group is created", response = URI.class),
-            @ApiResponse(code = 409, message = "A germplasm group with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "A germplasm group is created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A germplasm group with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createGermplasmGroup(@ApiParam("Germplasm group description") @Valid GermplasmGroupCreationDTO dto) throws Exception {
+    public Response createGermplasmGroup(@Parameter(description = "Germplasm group description") @Valid GermplasmGroupCreationDTO dto) throws Exception {
         try {
             GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
             GermplasmGroupModel model = dto.newModel();
@@ -100,19 +109,19 @@ public class GermplasmGroupApi {
 
     @POST
     @Path("search")
-    @ApiOperation(value = "Search germplasm groups")
+    @Operation(summary = "Search germplasm groups")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return germplasm groups", response = GermplasmGroupGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return germplasm groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GermplasmGroupGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchGermplasmGroups(
-            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name ,
-            @ApiParam(value = "Germplasm URIs", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI List<URI> germplasm,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering by name") @QueryParam("name") String name ,
+            @Parameter(description = "Germplasm URIs", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI List<URI> germplasm,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
@@ -146,16 +155,16 @@ public class GermplasmGroupApi {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a germplasm group")
+    @Operation(summary = "Get a germplasm group")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Germplasm group retrieved", response = GermplasmGroupGetDTO.class),
-            @ApiResponse(code = 404, message = "Unknown germplasm group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Germplasm group retrieved", content = @Content(schema = @Schema(implementation = GermplasmGroupGetDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown germplasm group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGermplasmGroup(
-            @ApiParam(value = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri
             ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
@@ -179,16 +188,16 @@ public class GermplasmGroupApi {
 
     @GET
     @Path("with-germplasm/{uri}")
-    @ApiOperation("Get a germplasm group with nested germplasm details")
+    @Operation(summary = "Get a germplasm group with nested germplasm details")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Germplasm group retrieved", response = GermplasmGroupGetWithDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Unknown germplasm group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Germplasm group retrieved", content = @Content(schema = @Schema(implementation = GermplasmGroupGetWithDetailsDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown germplasm group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGermplasmGroupWithGermplasms(
-            @ApiParam(value = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmGroupModel model = dao.get(uri, currentUser.getLanguage(), true);
@@ -201,19 +210,19 @@ public class GermplasmGroupApi {
 
     @GET
     @Path("{uri}/germplasm")
-    @ApiOperation("Get a germplasm group's germplasm, paginated")
+    @Operation(summary = "Get a germplasm group's germplasm, paginated")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Germplasm group content retrieved", response = GermplasmGetAllDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 404, message = "Unknown germplasm group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Germplasm group content retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GermplasmGetAllDTO.class)))),
+            @ApiResponse(responseCode = "404", description = "Unknown germplasm group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGermplasmGroupContent(
-            @ApiParam(value = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         GermplasmSearchFilter filter = new GermplasmSearchFilter();
@@ -240,17 +249,17 @@ public class GermplasmGroupApi {
 
     @GET
     @Path("by-uris")
-    @ApiOperation("Get germplasm groups by their URIs")
+    @Operation(summary = "Get germplasm groups by their URIs")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return germplasm groups", response = GermplasmGroupGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Germplasm group not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return germplasm groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GermplasmGroupGetDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Germplasm group not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGermplasmGroupByURIs(
-            @ApiParam(value = "Germplasm group URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Germplasm group URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
@@ -274,19 +283,19 @@ public class GermplasmGroupApi {
     
     
     @PUT
-    @ApiOperation("Update a germplasm group")
+    @Operation(summary = "Update a germplasm group")
     @ApiProtected
     @ApiCredential(
             credentialId = GermplasmAPI.CREDENTIAL_GERMPLASM_MODIFICATION_ID,
             credentialLabelKey = GermplasmAPI.CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Germplasm group updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown germplasm group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Germplasm group updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown germplasm group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateGermplasmGroup(@ApiParam("Germplasm group description") @Valid GermplasmGroupUpdateDTO dto) throws Exception {
+    public Response updateGermplasmGroup(@Parameter(description = "Germplasm group description") @Valid GermplasmGroupUpdateDTO dto) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmGroupModel model = dao.update(dto.newModel());
         return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
@@ -295,20 +304,20 @@ public class GermplasmGroupApi {
     
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a germplasm group")
+    @Operation(summary = "Delete a germplasm group")
     @ApiProtected
     @ApiCredential(
             credentialId = GermplasmAPI.CREDENTIAL_GERMPLASM_DELETE_ID,
             credentialLabelKey = GermplasmAPI.CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Germplasm group deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Unknown germplasm group URI", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Germplasm group deleted", content = @Content(schema = @Schema(implementation = ObjectUriResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Unknown germplasm group URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteGermplasmGroup(
-            @ApiParam(value = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Germplasm group URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         dao.delete(uri);

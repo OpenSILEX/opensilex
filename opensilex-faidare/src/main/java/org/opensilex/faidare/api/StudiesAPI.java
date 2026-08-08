@@ -9,7 +9,16 @@
  */
 package org.opensilex.faidare.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataDAO;
@@ -49,7 +58,7 @@ import java.util.Objects;
 /**
  * @author Gabriel Besombes
  */
-@Api(CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
+@Tag(name = CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
 @Path("/faidare/")
 @ApiCredentialGroup(
         groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
@@ -79,16 +88,16 @@ public class StudiesAPI extends FaidareCall {
     @GET
     @Path("v1/studies")
     @FaidareVersion("1.3")
-    @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
+    @Operation(summary = "Retrieve studies information", description = "Retrieve studies information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve studies information", response = Faidarev1StudyListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "Retrieve studies information", content = @Content(schema = @Schema(implementation = Faidarev1StudyListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
     public Response getStudiesList(
-            @ApiParam(value = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by studyDbId") @QueryParam("studyDbId") URI studyDbId,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);

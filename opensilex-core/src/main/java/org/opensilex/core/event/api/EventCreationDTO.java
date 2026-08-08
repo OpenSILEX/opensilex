@@ -9,7 +9,7 @@ package org.opensilex.core.event.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.event.api.validation.EventDateTimeConstraint;
 import org.opensilex.core.event.dal.EventModel;
@@ -51,7 +51,7 @@ public class EventCreationDTO extends RDFObjectDTO {
     protected Boolean isInstant;
 
     @ValidOffsetDateTime
-    @ApiModelProperty(example = "2019-09-08T12:00:00+01:00")
+    @Schema(example = "2019-09-08T12:00:00+01:00")
     public String getStart() {
         return start;
     }
@@ -61,7 +61,7 @@ public class EventCreationDTO extends RDFObjectDTO {
     }
 
     @ValidOffsetDateTime
-    @ApiModelProperty(example = "2019-09-08T13:00:00+01:00")
+    @Schema(example = "2019-09-08T13:00:00+01:00")
     public String getEnd() {
         return end;
     }
@@ -72,7 +72,7 @@ public class EventCreationDTO extends RDFObjectDTO {
 
     @NotEmpty
     @ValidURI
-    @ApiModelProperty(required = true, value = "URI(s) of items concerned by this event")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "URI(s) of items concerned by this event")
     public List<URI> getTargets() {
         return targets;
     }
@@ -81,17 +81,17 @@ public class EventCreationDTO extends RDFObjectDTO {
         this.targets = targets;
     }
 
-    @ApiModelProperty(example = "2019-09-08T13:00:00+01:00")
+    @Schema(example = "2019-09-08T13:00:00+01:00")
     public String getDescription() {
         return description;
     }
 
-    @ApiModelProperty(value = "Description of the event",example = "The pest attack lasted 20 minutes")
+    @Schema(description = "Description of the event",example = "The pest attack lasted 20 minutes")
     public void setDescription(String description) {
         this.description = description;
     }
 
-    @ApiModelProperty(required = true, value = "Indicate if the event is instant" ,example = "true")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Indicate if the event is instant" ,example = "true")
     public Boolean getIsInstant() {
         return isInstant;
     }
@@ -101,7 +101,7 @@ public class EventCreationDTO extends RDFObjectDTO {
     }
 
     @Override
-    @ApiModelProperty(name = "rdf_type", value = "Event type URI", example = "http://www.opensilex.org/vocabulary/oeev#Irrigation")
+    @Schema(name = "rdf_type", description = "Event type URI", example = "http://www.opensilex.org/vocabulary/oeev#Irrigation")
     public URI getType() {
         return type;
     }

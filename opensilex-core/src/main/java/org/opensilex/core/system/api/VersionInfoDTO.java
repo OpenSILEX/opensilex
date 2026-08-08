@@ -9,7 +9,7 @@ package org.opensilex.core.system.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
@@ -39,7 +39,7 @@ public class VersionInfoDTO {
     
     private String githubPage;
 
-    @ApiModelProperty(value = "Opensilex instance name", example = "PHIS") 
+    @Schema(description = "Opensilex instance name", example = "PHIS") 
     public String getTitle() {
         return title;
     }
@@ -48,7 +48,7 @@ public class VersionInfoDTO {
         this.title = title;
     }
 
-    @ApiModelProperty(value = "Opensilex API version", example = "1.0.0beta+2") 
+    @Schema(description = "Opensilex API version", example = "1.0.0beta+2") 
     public String getVersion() {
         return version;
     }
@@ -66,7 +66,7 @@ public class VersionInfoDTO {
         this.modulesVersion = modulesVersion;
     }
 
-    @ApiModelProperty(value = "Opensilex description", example = "OpenSILEX is an ontology-driven Information System designed for life science data.") 
+    @Schema(description = "Opensilex description", example = "OpenSILEX is an ontology-driven Information System designed for life science data.") 
     public String getDescription() {
         return description;
     }

@@ -1,6 +1,15 @@
 package org.opensilex.core.organisation.api.site;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.api.OrganizationAPI;
 import org.opensilex.core.organisation.bll.SiteLogic;
@@ -46,7 +55,7 @@ import static org.opensilex.core.organisation.api.OrganizationAPI.*;
 /**
  * @author Valentin RIGOLLE
  */
-@Api(CREDENTIAL_GROUP_ORGANIZATION_ID)
+@Tag(name = CREDENTIAL_GROUP_ORGANIZATION_ID)
 @Path("core/sites")
 @ApiCredentialGroup(
         groupId = OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID,
@@ -67,19 +76,19 @@ public class SiteAPI {
     AccountModel currentUser;
 
     @GET
-    @ApiOperation("Search all sites")
+    @Operation(summary = "Search all sites")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetListDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Sites retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SiteGetListDTO.class))))
     })
     public Response searchSites(
-            @ApiParam(value = "Regex pattern for filtering sites by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of organizations of the sites to filter") @QueryParam("organizations") List<URI> organizations,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+            @Parameter(description = "Regex pattern for filtering sites by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @Parameter(description = "List of organizations of the sites to filter") @QueryParam("organizations") List<URI> organizations,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number") @QueryParam("page") int page,
+            @Parameter(description = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);
 
@@ -101,15 +110,15 @@ public class SiteAPI {
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a site")
+    @Operation(summary = "Get a site")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Site retrieved", response = SiteGetDTO.class)
+            @ApiResponse(responseCode = "200", description = "Site retrieved", content = @Content(schema = @Schema(implementation = SiteGetDTO.class)))
     })
     public Response getSite(
-            @ApiParam(value = "Site URI") @PathParam("uri") @NotNull URI siteUri
+            @Parameter(description = "Site URI") @PathParam("uri") @NotNull URI siteUri
     ) throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);
 
@@ -129,15 +138,15 @@ public class SiteAPI {
 
     @GET
     @Path("by_uris")
-    @ApiOperation("Get a list of sites")
+    @Operation(summary = "Get a list of sites")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Sites retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class))))
     })
     public Response getSitesByURI(
-            @ApiParam(value = "Site URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris
+            @Parameter(description = "Site URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris
     ) throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);
         List<SiteModel> siteModels = siteLogic.getList(uris, currentUser);
@@ -150,7 +159,7 @@ public class SiteAPI {
     }
 
     @POST
-    @ApiOperation("Create a site")
+    @Operation(summary = "Create a site")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
@@ -159,11 +168,11 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Site created", response = URI.class),
-            @ApiResponse(code = 409, message = "A site with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "201", description = "Site created", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "409", description = "A site with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createSite(
-            @ApiParam("Site creation object") @Valid SiteCreationDTO siteCreationDto
+            @Parameter(description = "Site creation object") @Valid SiteCreationDTO siteCreationDto
     ) throws Exception {
 
         try {
@@ -183,7 +192,7 @@ public class SiteAPI {
     }
 
     @PUT
-    @ApiOperation("Update a site")
+    @Operation(summary = "Update a site")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
@@ -192,11 +201,11 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Site updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Site URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Site updated", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Site URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateSite(
-            @ApiParam("Site update object") @Valid SiteUpdateDTO siteUpdateDTO
+            @Parameter(description = "Site update object") @Valid SiteUpdateDTO siteUpdateDTO
     ) throws Exception {
         try {
             SiteLogic siteLogic = new SiteLogic(sparql, nosql);
@@ -212,7 +221,7 @@ public class SiteAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a site")
+    @Operation(summary = "Delete a site")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
@@ -221,11 +230,11 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Site deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Site URI not found", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Site deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+            @ApiResponse(responseCode = "404", description = "Site URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteSite(
-            @ApiParam(value = "Site URI", required = true) @PathParam("uri") @NotNull @Valid URI siteUri
+            @Parameter(description = "Site URI", required = true) @PathParam("uri") @NotNull @Valid URI siteUri
     ) throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);
 
@@ -236,12 +245,12 @@ public class SiteAPI {
 
     @GET
     @Path("/with_location")
-    @ApiOperation("Get only the list of sites with a location")
+    @Operation(summary = "Get only the list of sites with a location")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetWithGeometryDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Sites retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SiteGetWithGeometryDTO.class))))
     })
     public Response getSitesWithLocation() throws Exception {
         SiteLogic siteLogic = new SiteLogic(sparql, nosql);

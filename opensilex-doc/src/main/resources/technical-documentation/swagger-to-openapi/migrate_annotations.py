@@ -59,14 +59,21 @@ def migrate_java_file(filepath):
     content = re.sub(r'@Api\(([^)]+)\)', r'@Tag(name = \1)', content)
     content = re.sub(r'@Api\b', r'@Tag', content)
 
-    # 3. Convert @ApiModel -> @Schema
+    # 3. Convert @ApiOperation -> @Operation
+    content = re.sub(r'@ApiOperation\b', r'@Operation', content)
+
+    # 4. Convert @ApiParam -> @Parameter
+    content = re.sub(r'@ApiParam\b', r'@Parameter', content)
+
+    # 5. Convert @ApiModel & @ApiModelProperty -> @Schema
+    content = re.sub(r'@ApiModelProperty\b', r'@Schema', content)
     content = re.sub(r'@ApiModel\b', r'@Schema', content)
 
-    # 4. Convert @ApiImplicitParams -> @Parameters and @ApiImplicitParam -> @Parameter
+    # 6. Convert @ApiImplicitParams -> @Parameters and @ApiImplicitParam -> @Parameter
     content = re.sub(r'@ApiImplicitParams\b', r'@Parameters', content)
     content = re.sub(r'@ApiImplicitParam\b', r'@Parameter', content)
 
-    # 5. Convert @Schema attributes (value -> description, notes -> description, dataType -> type)
+    # 7. Convert @Schema attributes (value -> description, notes -> description, dataType -> type)
     def fix_schema_annotation(match):
         args = match.group(1)
         args = re.sub(r'\bvalue\s*=', 'description =', args)
@@ -80,7 +87,7 @@ def migrate_java_file(filepath):
     content = re.sub(r'@Schema\((.*?)\)', fix_schema_annotation, content, flags=re.DOTALL)
     content = re.sub(r',?\s*reference\s*=\s*"[^"]*"', '', content)
 
-    # 6. Convert @Operation attributes (value -> summary, notes -> description)
+    # 8. Convert @Operation attributes (value -> summary, notes -> description)
     def fix_operation_annotation(match):
         args = match.group(1).strip()
         if args.startswith('"') and args.endswith('"'):
@@ -91,7 +98,7 @@ def migrate_java_file(filepath):
 
     content = re.sub(r'@Operation\((.*?)\)', fix_operation_annotation, content, flags=re.DOTALL)
 
-    # 7. Convert @Parameter attributes (value -> description, paramType -> in, dataType/type -> schema)
+    # 9. Convert @Parameter attributes (value -> description, paramType -> in, dataType/type -> schema)
     def fix_parameter_annotation(match):
         args = match.group(1).strip()
         if args.startswith('"') and args.endswith('"'):
@@ -101,35 +108,37 @@ def migrate_java_file(filepath):
         args = re.sub(r'\bparamType\s*=\s*"header"', 'in = ParameterIn.HEADER', args)
         args = re.sub(r'\bparamType\s*=\s*"query"', 'in = ParameterIn.QUERY', args)
         args = re.sub(r'\bparamType\s*=\s*"path"', 'in = ParameterIn.PATH', args)
-        args = re.sub(r'\bdataType\s*=\s*("[^"]*")', r'schema = @Schema(type = \1)', args)
-        args = re.sub(r'\btype\s*=\s*("[^"]*")', r'schema = @Schema(type = \1)', args)
+        if 'schema = @Schema' not in args:
+            args = re.sub(r'\bdataType\s*=\s*("[^"]*")', r'schema = @Schema(type = \1)', args)
+            args = re.sub(r'\btype\s*=\s*("[^"]*")', r'schema = @Schema(type = \1)', args)
         args = re.sub(r'\ballowableValues\s*=\s*("[^"]*")', r'schema = @Schema(allowableValues = {\1})', args)
         args = re.sub(r'\bdefaultValue\s*=\s*("[^"]*")', r'schema = @Schema(defaultValue = \1)', args)
         return f'@Parameter({args})'
 
     content = re.sub(r'@Parameter\((.*?)\)', fix_parameter_annotation, content, flags=re.DOTALL)
 
-    # 8. Convert response = X.class in @ApiResponse
-    def convert_response_attribute(line):
-        if '@ApiResponse' in line and 'response =' in line:
-            has_list = 'responseContainer = "List"' in line or "responseContainer = 'List'" in line
-            line = re.sub(r',?\s*responseContainer\s*=\s*"[A-Za-z0-9_]*"', '', line)
-            line = re.sub(r'\bcode\s*=\s*(\d+)', r'responseCode = "\1"', line)
-            line = re.sub(r'\bmessage\s*=', 'description =', line)
-            
-            resp_match = re.search(r'\bresponse\s*=\s*([A-Za-z0-9_]+\.class)', line)
-            if resp_match:
-                cls = resp_match.group(1)
-                if has_list:
-                    content_clause = f'content = @Content(array = @ArraySchema(schema = @Schema(implementation = {cls})))'
-                else:
-                    content_clause = f'content = @Content(schema = @Schema(implementation = {cls}))'
-                line = re.sub(r'\bresponse\s*=\s*[A-Za-z0-9_]+\.class', content_clause, line)
-        return line
+    # 10. Convert @ApiResponse attributes (code -> responseCode, message -> description, response -> content)
+    def fix_api_response(match):
+        args = match.group(1).strip()
+        args = re.sub(r'\bcode\s*=\s*(\d+)', r'responseCode = "\1"', args)
+        args = re.sub(r'\bcode\s*=\s*("[^"]*")', r'responseCode = \1', args)
+        args = re.sub(r'\bmessage\s*=', 'description =', args)
+        
+        has_list = 'responseContainer = "List"' in args or "responseContainer = 'List'" in args
+        args = re.sub(r',?\s*responseContainer\s*=\s*"[A-Za-z0-9_]*"', '', args)
+        
+        resp_match = re.search(r'\bresponse\s*=\s*([A-Za-z0-9_.]+\.class)', args)
+        if resp_match:
+            cls = resp_match.group(1)
+            if has_list:
+                content_clause = f'content = @Content(array = @ArraySchema(schema = @Schema(implementation = {cls})))'
+            else:
+                content_clause = f'content = @Content(schema = @Schema(implementation = {cls}))'
+            args = re.sub(r'\bresponse\s*=\s*[A-Za-z0-9_.]+\.class', content_clause, args)
+        
+        return f'@ApiResponse({args})'
 
-    lines = content.splitlines()
-    new_lines = [convert_response_attribute(l) for l in lines]
-    content = "\n".join(new_lines) + ("\n" if content.endswith("\n") else "")
+    content = re.sub(r'@ApiResponse\((.*?)\)', fix_api_response, content, flags=re.DOTALL)
 
     if content != original:
         with open(filepath, 'w', encoding='utf-8') as f:

@@ -8,7 +8,7 @@ package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import org.bson.Document;
 import org.opensilex.core.data.api.DataAPI;
@@ -21,21 +21,21 @@ import org.opensilex.core.provenance.dal.ActivityModel;
 @JsonPropertyOrder({"rdf_type", "uri", "start_date","end_date", "settings"})
 public class ActivityGetDTO {  
     @JsonProperty("rdf_type")
-    @ApiModelProperty(value = "activity type defined in the ontology", example = "oeso:ImageAcquisition")
+    @Schema(description = "activity type defined in the ontology", example = "oeso:ImageAcquisition")
     URI rdfType;   
 
-    @ApiModelProperty(value = "external uri of the activity or process")
+    @Schema(description = "external uri of the activity or process")
     URI uri;
     
     @JsonProperty("start_date")
-    @ApiModelProperty(value = "start date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
+    @Schema(description = "start date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
     String startDate;
     
     @JsonProperty("end_date")
-    @ApiModelProperty(value = "end date or datetime", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE)
+    @Schema(description = "end date or datetime", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE)
     String endDate;
     
-    @ApiModelProperty(value = "a key-value system to store process parameters")
+    @Schema(description = "a key-value system to store process parameters")
     Document settings;  
 
     public URI getRdfType() {

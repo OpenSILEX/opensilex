@@ -7,8 +7,7 @@ package org.opensilex.security.group.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author vince
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "description", "user_profiles"})
 public class GroupGetDTO extends NamedResourceDTO<GroupModel> {
 
@@ -35,17 +34,17 @@ public class GroupGetDTO extends NamedResourceDTO<GroupModel> {
     @JsonProperty("user_profiles")
     protected List<GroupUserProfileDTO> userProfiles;
 
-    @ApiModelProperty(value = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")
+    @Schema(description = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")
     public URI getUri() {
         return uri;
     }
 
-    @ApiModelProperty(value = "Group name", example = "Experiment manager")
+    @Schema(description = "Group name", example = "Experiment manager")
     public String getName() {
         return name;
     }
 
-    @ApiModelProperty(value = "Group description", example = "Group for all experiments managers")
+    @Schema(description = "Group description", example = "Group for all experiments managers")
     public String getDescription() {
         return description;
     }
@@ -54,7 +53,7 @@ public class GroupGetDTO extends NamedResourceDTO<GroupModel> {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "Group user with profile")
+    @Schema(description = "Group user with profile")
     public List<GroupUserProfileDTO> getUserProfiles() {
         return userProfiles;
     }

@@ -11,7 +11,7 @@ package org.opensilex.core.experiment.factor.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import java.util.List;
 import javax.validation.Valid;
@@ -50,7 +50,7 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
     private List<FactorLevelCreationDTO> factorLevels;
 
     @ValidURI
-    @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
+    @Schema(example = "http://opensilex.dev/set/factors#irrigation")
     public URI getUri() {
         return uri;
     }
@@ -60,7 +60,7 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
     }
 
     @Required
-    @ApiModelProperty(required = true, example = "Irrigation")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Irrigation")
     public String getName() {
         return name;
     }
@@ -69,7 +69,7 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
         this.name = name;
     }
 
-    @ApiModelProperty(example = "waterManagement")
+    @Schema(example = "waterManagement")
     public URI getCategory() {
         return category;
     }
@@ -78,7 +78,7 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
         this.category = category;
     }
 
-    @ApiModelProperty(example = "Experimental factor about water management")
+    @Schema(example = "Experimental factor about water management")
     public String getDescription() {
         return description;
     }

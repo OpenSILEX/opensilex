@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.security.person.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.security.SecurityConfig;
@@ -46,7 +55,7 @@ import java.util.*;
  *
  * @author Yvan Roux
  */
-@Api(SecurityModule.REST_SECURITY_API_ID)
+@Tag(name = SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/persons")
 @ApiCredentialGroup(
         groupId = PersonAPI.CREDENTIAL_GROUP_PERSON_ID,
@@ -76,7 +85,7 @@ public class PersonAPI {
      * @see org.opensilex.security.person.dal.PersonDAO
      */
     @POST
-    @ApiOperation("Add a person")
+    @Operation(summary = "Add a person")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_PERSON_MODIFICATION_ID,
@@ -85,11 +94,11 @@ public class PersonAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses({
-            @ApiResponse(code = 201, message = "A person is created"),
-            @ApiResponse(code = 409, message = "The person already exists (duplicate URI)")
+            @ApiResponse(responseCode = "201", description = "A person is created"),
+            @ApiResponse(responseCode = "409", description = "The person already exists (duplicate URI)")
     })
     public Response createPerson(
-            @ApiParam("Person description") @Valid PersonDTO personDTO
+            @Parameter(description = "Person description") @Valid PersonDTO personDTO
     ) throws Exception {
         PersonDAO personDAO = new PersonDAO(sparql);
         PersonModel person = PersonModel.fromDTO(personDTO, sparql);
@@ -110,20 +119,20 @@ public class PersonAPI {
      * @see PersonDAO
      */
     @GET
-    @ApiOperation("Search persons")
+    @Operation(summary = "Search persons")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return persons", response = PersonDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return persons", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PersonDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchPersons(
-            @ApiParam(value = "Regex pattern for filtering list by name or email", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "set 'true' if you want to select only persons without account", example = "false") @QueryParam("only_without_account") @DefaultValue("false") boolean onlyWithoutAccount,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering list by name or email", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @Parameter(description = "set 'true' if you want to select only persons without account", example = "false") @QueryParam("only_without_account") @DefaultValue("false") boolean onlyWithoutAccount,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         PersonDAO personDAO = new PersonDAO(sparql);
@@ -162,7 +171,7 @@ public class PersonAPI {
      * @see PersonDAO
      */
     @PUT
-    @ApiOperation("Update a person")
+    @Operation(summary = "Update a person")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_PERSON_MODIFICATION_ID,
@@ -171,12 +180,12 @@ public class PersonAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Person updated", response = String.class),
-            @ApiResponse(code = 400, message = "Invalid parameters"),
-            @ApiResponse(code = 404, message = "Person not found")
+            @ApiResponse(responseCode = "200", description = "Person updated", content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters"),
+            @ApiResponse(responseCode = "404", description = "Person not found")
     })
     public Response updatePerson(
-            @ApiParam("Person description") @Valid PersonDTO personDTO
+            @Parameter(description = "Person description") @Valid PersonDTO personDTO
     ) throws Exception {
         PersonDAO personDAO = new PersonDAO(sparql);
 
@@ -217,7 +226,7 @@ public class PersonAPI {
 
 //    @DELETE
 //    @Path("{uri}")
-//    @ApiOperation("Delete a person")
+//    @Operation(summary = "Delete a person")
 //    @ApiProtected
 //    @ApiCredential(
 //            credentialId = CREDENTIAL_PERSON_DELETE_ID,
@@ -226,11 +235,11 @@ public class PersonAPI {
 //    @Consumes(MediaType.APPLICATION_JSON)
 //    @Produces(MediaType.APPLICATION_JSON)
 //    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "User deleted"),
-//            @ApiResponse(code = 404, message = "URI not found")
+//            @ApiResponse(responseCode = "200", description = "User deleted"),
+//            @ApiResponse(responseCode = "404", description = "URI not found")
 //    })
 //    public Response deletePerson(
-//            @ApiParam(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+//            @Parameter(description = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
 //    ) throws Exception {
 //
 //        if (!sparql.uriExists(PersonModel.class, uri)) {
@@ -256,17 +265,17 @@ public class PersonAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a Person")
+    @Operation(summary = "Get a Person")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Person retrieved", response = PersonDTO.class),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Person not found", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Person retrieved", content = @Content(schema = @Schema(implementation = PersonDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Person not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getPerson(
-            @ApiParam(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         PersonDAO personDAO = new PersonDAO(sparql);
@@ -295,17 +304,17 @@ public class PersonAPI {
      */
     @GET
     @Path("by_uris")
-    @ApiOperation("Get persons by their URIs")
+    @Operation(summary = "Get persons by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return persons", response = PersonDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Persons not found (if any provided URIs is not found)", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return persons", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PersonDTO.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Persons not found (if any provided URIs is not found)", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getPersonsByURI(
-            @ApiParam(value = "Persons URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Persons URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
 
         PersonDAO dao = new PersonDAO(sparql);
@@ -334,15 +343,15 @@ public class PersonAPI {
      */
     @GET
     @Path("orcid_record")
-    @ApiOperation("Get infos from an ORCID")
+    @Operation(summary = "Get infos from an ORCID")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return orcid record", response = OrcidRecordDTO.class),
-            @ApiResponse(code = 404, message = "orcid is not found by ORCID API ", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return orcid record", content = @Content(schema = @Schema(implementation = OrcidRecordDTO.class))),
+            @ApiResponse(responseCode = "404", description = "orcid is not found by ORCID API ", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getOrcidRecord(
-            @ApiParam(value = "orcid", required = true) @QueryParam("orcid") @NotNull URI orcid
+            @Parameter(description = "orcid", required = true) @QueryParam("orcid") @NotNull URI orcid
     ) {
         PersonDAO personDAO = new PersonDAO(sparql);
 
@@ -367,15 +376,15 @@ public class PersonAPI {
      */
     @GET
     @Path("GDPR")
-    @ApiOperation("Get RGPD PDF")
+    @Operation(summary = "Get RGPD PDF")
     @Produces("application/pdf")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve file"),
-            @ApiResponse(code = 404, message = "File does not exists at the location precised in the configuration file", response = ErrorDTO.class),
-            @ApiResponse(code = 503, message = "Location of file was not provided in the OpenSilex configuration", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Retrieve file"),
+            @ApiResponse(responseCode = "404", description = "File does not exists at the location precised in the configuration file", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @ApiResponse(responseCode = "503", description = "Location of file was not provided in the OpenSilex configuration", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGdprFile(
-            @ApiParam(value = "preferred language of the file", example = "fr") @QueryParam("language") String askedLanguage
+            @Parameter(description = "preferred language of the file", example = "fr") @QueryParam("language") String askedLanguage
     ) throws OpenSilexModuleNotFoundException {
 
         SecurityConfig config = sparql.getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class);

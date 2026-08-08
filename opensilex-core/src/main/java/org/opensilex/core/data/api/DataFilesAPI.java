@@ -12,7 +12,16 @@ import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.CountOptions;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -106,7 +115,7 @@ import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
  *
  * @author Alice Boizet
  */
-@Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
+@Tag(name = DataAPI.CREDENTIAL_DATA_GROUP_ID)
 @Path("/core/datafiles")
 @ApiCredentialGroup(
         groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -149,21 +158,20 @@ public class DataFilesAPI {
      * @throws java.lang.Exception
      */
     @POST
-    @ApiOperation(value = "Add a data file",
-    notes = "{\"rdf_type\":\"" +  DATAFILE_EXAMPLE_TYPE + "\", "
+    @Operation(summary = "Add a data file",
+    description = "{\"rdf_type\":\"" +  DATAFILE_EXAMPLE_TYPE + "\", "
             + "\"date\":\"" +  DataAPI.DATA_EXAMPLE_MINIMAL_DATE + "\", "
             + "\"target\":\"http://plot01\", "
             + "\"provenance\": { \"uri\":\"" +  DataAPI.DATA_EXAMPLE_PROVENANCEURI + "\" }, "
-            + "\"metadata\":" +  DataAPI.DATA_EXAMPLE_METADATA + "}"
-    )
+            + "\"metadata\":" +  DataAPI.DATA_EXAMPLE_METADATA + "}")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = URI.class)})
+        @ApiResponse(responseCode = "201", description = "Data file and metadata saved", content = @Content(schema = @Schema(implementation = URI.class)))})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDataFile(
-            @ApiParam(value = "File description with metadata", required = true, type = "string") @NotNull @Valid @FormDataParam("description") DataFileCreationDTO dto,
-            @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+            @Parameter(description = "File description with metadata", required = true, schema = @Schema(type = "string")) @NotNull @Valid @FormDataParam("description") DataFileCreationDTO dto,
+            @Parameter(description = "Data file", required = true, schema = @Schema(type = "file")) @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         
@@ -236,14 +244,14 @@ public class DataFilesAPI {
      */
     @POST
     @Path("description")
-    @ApiOperation(value = "Describe datafiles and give their relative paths in the configured storage system. In the case of already stored datafiles.")
+    @Operation(summary = "Describe datafiles and give their relative paths in the configured storage system. In the case of already stored datafiles.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = URI.class)})
+        @ApiResponse(responseCode = "201", description = "Data file(s) metadata(s) saved", content = @Content(schema = @Schema(implementation = URI.class)))})
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDataFilePaths(
-            @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<DataFilePathCreationDTO> dtoList,
+            @Parameter(description = "Metadata of the file", required = true) @NotNull @Valid List<DataFilePathCreationDTO> dtoList,
             @Context HttpServletRequest context
     ) throws Exception {  
         
@@ -303,24 +311,24 @@ public class DataFilesAPI {
 
     @GET
     @Path("count")
-    @ApiOperation("Count datafiles")
+    @Operation(summary = "Count datafiles")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of datafiles associated to a given target", response = Integer.class)
+            @ApiResponse(responseCode = "200", description = "Return the number of datafiles associated to a given target", content = @Content(schema = @Schema(implementation = Integer.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response countDatafiles(
-            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") List<URI> target,
-            @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
-            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+            @Parameter(description = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") List<URI> target,
+            @Parameter(description = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device,
+            @Parameter(description = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @Parameter(description = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @Parameter(description = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
     ) throws  Exception {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
@@ -367,14 +375,14 @@ public class DataFilesAPI {
     @ApiProtected
     @GET
     @Path("{uri}")
-    @ApiOperation(value = "Get a data file")
+    @Operation(summary = "Get a data file")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file")
+        @ApiResponse(responseCode = "200", description = "Retrieve file")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getDataFile(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
             @Context HttpServletResponse response
     ) throws NotFoundURIException, IOException, URISyntaxException {
         try {
@@ -424,13 +432,13 @@ public class DataFilesAPI {
      */
     @GET
     @Path("{uri}/description")
-    @ApiOperation(value = "Get a data file description")
+    @Operation(summary = "Get a data file description")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file description", response = DataFileGetDTO.class),})
+        @ApiResponse(responseCode = "200", description = "Retrieve file description", content = @Content(schema = @Schema(implementation = DataFileGetDTO.class))),})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescription(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
         
@@ -455,18 +463,18 @@ public class DataFilesAPI {
     @ApiProtected
     @GET
     @Path("{uri}/thumbnail")
-    @ApiOperation(value = "Get a picture thumbnail")
+    @Operation(summary = "Get a picture thumbnail")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve thumbnail of a picture"),
-        @ApiResponse(code = 400, message = "Error while building the thumbnail, this error can occur when the file requested is not an image"),
-        @ApiResponse(code = 404, message = "the image has not been found")
+        @ApiResponse(responseCode = "200", description = "Retrieve thumbnail of a picture"),
+        @ApiResponse(responseCode = "400", description = "Error while building the thumbnail, this error can occur when the file requested is not an image"),
+        @ApiResponse(responseCode = "404", description = "the image has not been found")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getPicturesThumbnails(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Thumbnail width") @QueryParam("scaled_width") @Min(256) @Max(1920) @DefaultValue("640") Integer scaledWidth,
-            @ApiParam(value = "Thumbnail height") @QueryParam("scaled_height") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
+            @Parameter(description = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
+            @Parameter(description = "Thumbnail width") @QueryParam("scaled_width") @Min(256) @Max(1920) @DefaultValue("640") Integer scaledWidth,
+            @Parameter(description = "Thumbnail height") @QueryParam("scaled_height") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
             @Context HttpServletResponse response) throws Exception {
 
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
@@ -547,26 +555,26 @@ public class DataFilesAPI {
      * @throws java.lang.Exception
      */
     @GET
-    @ApiOperation(value = "Search data files")
+    @Operation(summary = "Search data files")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file descriptions", response = DataFileGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Retrieve file descriptions", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataFileGetDTO.class))))
     })
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescriptionsBySearch(
-            @ApiParam(value = "Regex pattern for filtering by filename", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
-            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering by filename", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @Parameter(description = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @Parameter(description = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by targets uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
 
     ) throws Exception {
         return  searchDataFiles(name, rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
@@ -574,27 +582,27 @@ public class DataFilesAPI {
 
     @POST
     @Path("by_targets")
-    @ApiOperation("Search data files for a large list of targets ")
+    @Operation(summary = "Search data files for a large list of targets ")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return data file list", response = DataFileGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return data file list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataFileGetDTO.class))))
     })
     public Response getDataFileDescriptionsByTargets(
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
-            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets")  List<URI> targets
+            @Parameter(description = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @Parameter(description = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @Parameter(description = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "Targets uris, can be an empty array but can't be null", name = "targets")  List<URI> targets
             ) throws Exception {
 
         if (targets == null) {
@@ -761,34 +769,34 @@ public class DataFilesAPI {
  
     @GET
     @Path("provenances")
-    @ApiOperation("Search provenances linked to datafiles")
+    @Operation(summary = "Search provenances linked to datafiles")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getDatafilesProvenances(
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices            
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices            
     ) throws Exception {
         return searchDatafilesProvenances(experiments, targets, devices);
     }
 
     @POST
     @Path("provenances/by_targets")
-    @ApiOperation("Search provenances linked to datafiles for a large list of targets")
+    @Operation(summary = "Search provenances linked to datafiles for a large list of targets")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return provenances list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class))))
     })
     public Response getDatafilesProvenancesByTargets(
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
-            @ApiParam(value = "Search by targets uris") List<URI> targets
+            @Parameter(description = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @Parameter(description = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @Parameter(description = "Search by targets uris") List<URI> targets
             ) throws Exception {
         if (targets == null) {
             targets = new ArrayList<>();
@@ -906,15 +914,15 @@ public class DataFilesAPI {
      */
     @POST
     @Path("upload-dx")
-    @ApiOperation(value = "Upload and parse DX file")
+    @Operation(summary = "Upload and parse DX file")
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = DataFileGetDTO.class)
+        @ApiResponse(responseCode = "201", description = "Data file(s) metadata(s) saved", content = @Content(schema = @Schema(implementation = DataFileGetDTO.class)))
     })
     public Response uploadAndParseDX(
-        @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+        @Parameter(description = "Data file", required = true, schema = @Schema(type = "file")) @FormDataParam("file") File file,
         @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
         @FormDataParam("rdf_type") URI rdfType,
         @FormDataParam("provenance") URI provenanceUri,
@@ -950,14 +958,14 @@ public class DataFilesAPI {
      */
     @POST
     @Path("upload-spectra-csv")
-    @ApiOperation(value = "Upload and parse spectra CSV file")
+    @Operation(summary = "Upload and parse spectra CSV file")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = DataFileGetDTO.class)})
+        @ApiResponse(responseCode = "201", description = "Data file(s) metadata(s) saved", content = @Content(schema = @Schema(implementation = DataFileGetDTO.class)))})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadAndParseSpectraCSV(
-        @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
+        @Parameter(description = "Data file", required = true, schema = @Schema(type = "file")) @FormDataParam("file") File file,
         @FormDataParam("file") FormDataContentDisposition fileContentDisposition,
         @FormDataParam("rdf_type") URI rdfType,
         @FormDataParam("provenance") URI provenanceUri,
@@ -1002,10 +1010,10 @@ public class DataFilesAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportSpectraFiles(
-        @ApiParam(value = "Export format DX file, TSV file, CSV file if available", allowableValues = "dx, tsv, csv", defaultValue = "tsv") @QueryParam("format") String format,
-        @ApiParam(value = "URI datafiles") List<URI> uris,
-        @ApiParam(value = "Include average line", defaultValue = "false") @QueryParam("includeAverage") boolean includeAverage,
-        @ApiParam(value = "Include datetime column", defaultValue = "false") @QueryParam("includeSampleDatetime") boolean includeSampleDatetime,
+        @Parameter(description = "Export format DX file, TSV file, CSV file if available", schema = @Schema(allowableValues = {"dx", "tsv", "csv"}, defaultValue = "tsv")) @QueryParam("format") String format,
+        @Parameter(description = "URI datafiles") List<URI> uris,
+        @Parameter(description = "Include average line", schema = @Schema(defaultValue = "false")) @QueryParam("includeAverage") boolean includeAverage,
+        @Parameter(description = "Include datetime column", schema = @Schema(defaultValue = "false")) @QueryParam("includeSampleDatetime") boolean includeSampleDatetime,
         @Context HttpServletResponse response
         ) throws Exception {
             StringBuilder combinedContent = new StringBuilder();
@@ -1127,16 +1135,16 @@ public class DataFilesAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a datafile")
+    @Operation(summary = "Delete a datafile")
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Datafile deleted", response = URI.class),
-        @ApiResponse(code = 404, message = "Datafile URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Datafile deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Datafile URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteDatafile(
-            @ApiParam(value = "Datafile URI", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Datafile URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
 

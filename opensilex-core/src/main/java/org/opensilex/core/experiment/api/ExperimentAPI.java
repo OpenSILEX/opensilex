@@ -13,7 +13,16 @@ import com.mongodb.client.model.CountOptions;
 import com.opencsv.CSVWriter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -106,7 +115,7 @@ import static org.opensilex.core.data.api.DataAPI.*;
  * @author Renaud COLIN
  * @author Julien BONNEFONT
  */
-@Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
+@Tag(name = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
 @Path(ExperimentAPI.PATH)
 @ApiCredentialGroup(
         groupId = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID,
@@ -153,7 +162,7 @@ public class ExperimentAPI {
      * @throws java.lang.Exception
      */
     @POST
-    @ApiOperation("Add an experiment")
+    @Operation(summary = "Add an experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
@@ -162,11 +171,11 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "An experiment is created", response = URI.class),
-        @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "201", description = "An experiment is created", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "409", description = "An experiment with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response createExperiment(
-            @ApiParam("Experiment description") @Valid ExperimentCreationDTO dto
+            @Parameter(description = "Experiment description") @Valid ExperimentCreationDTO dto
     ) throws Exception {
         try {
             ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
@@ -191,7 +200,7 @@ public class ExperimentAPI {
      * the updated Experiment {@link URI}
      */
     @PUT
-    @ApiOperation("Update an experiment")
+    @Operation(summary = "Update an experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
@@ -201,11 +210,11 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = URI.class),
-        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Experiment updated", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Experiment URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateExperiment(
-            @ApiParam("Experiment description") @Valid ExperimentCreationDTO xpDto
+            @Parameter(description = "Experiment description") @Valid ExperimentCreationDTO xpDto
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
 
@@ -221,17 +230,17 @@ public class ExperimentAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an experiment")
+    @Operation(summary = "Get an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment retrieved", response = ExperimentGetDTO.class),
-        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Experiment retrieved", content = @Content(schema = @Schema(implementation = ExperimentGetDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Experiment URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getExperiment(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
         ExperimentModel model = dao.get(xpUri, currentUser);
@@ -262,26 +271,26 @@ public class ExperimentAPI {
      * @see ExperimentDAO
      */
     @GET
-    @ApiOperation("Search experiments")
+    @Operation(summary = "Search experiments")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return experiments", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ExperimentGetListDTO.class))))
     })
     public Response searchExperiments(
-            @ApiParam(value = "Regex pattern for filtering by name", example = "ZA17") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year") Integer year,
-            @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("is_ended") Boolean isEnded,
-            @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
-            @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factorCategories,
-            @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
-            @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
-            @ApiParam(value = "Search by involved facilities") @QueryParam("facilities") List<URI> facilities,
-            @ApiParam(value = "Search by funding", example = "anr") @QueryParam("funding") List<URI> funding,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering by name", example = "ZA17") @QueryParam("name") String name,
+            @Parameter(description = "Search by year", example = "2017") @QueryParam("year") Integer year,
+            @Parameter(description = "Search ended(false) or active experiments(true)") @QueryParam("is_ended") Boolean isEnded,
+            @Parameter(description = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
+            @Parameter(description = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factorCategories,
+            @Parameter(description = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
+            @Parameter(description = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
+            @Parameter(description = "Search by involved facilities") @QueryParam("facilities") List<URI> facilities,
+            @Parameter(description = "Search by funding", example = "anr") @QueryParam("funding") List<URI> funding,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
 
@@ -317,7 +326,7 @@ public class ExperimentAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an experiment")
+    @Operation(summary = "Delete an experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EXPERIMENT_DELETE_ID,
@@ -327,11 +336,11 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment deleted", response = URI.class),
-        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Experiment deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Experiment URI not found", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteExperiment(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
 
@@ -364,16 +373,16 @@ public class ExperimentAPI {
 
     @GET
     @Path("{uri}/available_facilities")
-    @ApiOperation("Get facilities available for an experiment")
+    @Operation(summary = "Get facilities available for an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return facilities list", response = FacilityGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Return facilities list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FacilityGetDTO.class)))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getAvailableFacilities(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         List<FacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
@@ -384,15 +393,15 @@ public class ExperimentAPI {
 
     @GET
     @Path("{uri}/species")
-    @ApiOperation("Get species present in an experiment")
+    @Operation(summary = "Get species present in an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return Species list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SpeciesDTO.class))))
     })
     public Response getAvailableSpecies(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @Parameter(description = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
@@ -406,15 +415,15 @@ public class ExperimentAPI {
 
     @GET
     @Path("{uri}/factors")
-    @ApiOperation("Get factors with their levels associated to an experiment")
+    @Operation(summary = "Get factors with their levels associated to an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return factors list", response = FactorDetailsGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return factors list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FactorDetailsGetDTO.class))))
     })
     public Response getAvailableFactors(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @Parameter(description = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
@@ -437,16 +446,16 @@ public class ExperimentAPI {
     @Deprecated
     @GET
     @Path("{uri}/variables")
-    @ApiOperation("Get variables involved in an experiment")
+    @Operation(summary = "Get variables involved in an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return variables list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = NamedResourceDTO.class))))
     })
     public Response getUsedVariables(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
+            @Parameter(description = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @Parameter(description = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
@@ -483,29 +492,29 @@ public class ExperimentAPI {
     @Deprecated
     @GET
     @Path("{uri}/data")
-    @ApiOperation("Search data")
+    @Operation(summary = "Search data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return data list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchExperimentDataList(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @Parameter(description = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         //convert dates
@@ -597,30 +606,30 @@ public class ExperimentAPI {
     @Deprecated
     @GET
     @Path("{uri}/data/export")
-    @ApiOperation("export experiment data")
+    @Operation(summary = "export experiment data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return a csv file with data list results in wide or long format"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response exportExperimentDataList(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @ValidURI @NotNull URI xpUri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") @ValidURI List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") @ValidURI List<URI> variables,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") @ValidURI URI provenanceUri,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
-            @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @ValidURI @NotNull URI xpUri,
+            @Parameter(description = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @Parameter(description = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @Parameter(description = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @Parameter(description = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") @ValidURI List<URI> objects,
+            @Parameter(description = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") @ValidURI List<URI> variables,
+            @Parameter(description = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @Parameter(description = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @Parameter(description = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") @ValidURI URI provenanceUri,
+            @Parameter(description = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @Parameter(description = "Search by operators", example = DATA_EXAMPLE_OPERATOR) @QueryParam("operators") List<URI> operators,
+            @Parameter(description = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         //convert dates
@@ -720,9 +729,9 @@ public class ExperimentAPI {
     @Deprecated
     @POST
     @Path("{uri}/data/import")
-    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
+    @Operation(summary = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
+        @ApiResponse(responseCode = "201", description = "Data file and metadata saved", content = @Content(schema = @Schema(implementation = DataCSVValidationDTO.class)))})
     @ApiProtected
     @ApiCredential(
             groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -733,9 +742,9 @@ public class ExperimentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
-            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
+            @Parameter(description = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @Parameter(description = "Data file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
@@ -804,9 +813,9 @@ public class ExperimentAPI {
     @Deprecated
     @POST
     @Path("{uri}/data/import_validation")
-    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
+    @Operation(summary = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
+        @ApiResponse(responseCode = "201", description = "Data file and metadata saved", content = @Content(schema = @Schema(implementation = DataCSVValidationDTO.class)))})
     @ApiProtected
     @ApiCredential(
             groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
@@ -817,9 +826,9 @@ public class ExperimentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
-            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
+            @Parameter(description = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @Parameter(description = "Data file", required = true, schema = @Schema(type = "file")) @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         // test exp
         DataDAO dataDAO = new DataDAO(nosql,sparql,fs);
@@ -1082,25 +1091,25 @@ public class ExperimentAPI {
     @Deprecated
     @GET
     @Path("{uri}/provenances")
-    @ApiOperation("Get provenances involved in an experiment")
+    @Operation(summary = "Get provenances involved in an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return data list", response = ProvenanceGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return data list", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProvenanceGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchExperimentProvenances(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
-            @ApiParam(value = "Search by description") @QueryParam("description") String description,
-            @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,
-            @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
-            @ApiParam(value = "Search by agent URI") @QueryParam("agent") URI agentURI,
-            @ApiParam(value = "Search by agent type") @QueryParam("agent_type") URI agentType,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @Parameter(description = "Regex pattern for filtering by name") @QueryParam("name") String name,
+            @Parameter(description = "Search by description") @QueryParam("description") String description,
+            @Parameter(description = "Search by activity URI") @QueryParam("activity") URI activityUri,
+            @Parameter(description = "Search by activity type") @QueryParam("activity_type") URI activityType,
+            @Parameter(description = "Search by agent URI") @QueryParam("agent") URI agentURI,
+            @Parameter(description = "Search by agent type") @QueryParam("agent_type") URI agentType,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         // test exp
@@ -1127,17 +1136,17 @@ public class ExperimentAPI {
     
     @GET
     @Path("by_uris")
-    @ApiOperation("Get experiments URIs")
+    @Operation(summary = "Get experiments URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return experiments", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ExperimentGetListDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Experiment not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getExperimentsByURIs(
-            @ApiParam(value = "Experiments URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Experiments URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
         List<ExperimentModel> models = dao.getByURIs(uris, currentUser);
@@ -1161,18 +1170,18 @@ public class ExperimentAPI {
 
     @GET
     @Path("/funding")
-    @ApiOperation("Search funding")
+    @Operation(summary = "Search funding")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return funding", response = FundingGetDTO.class, responseContainer = "List")
+            @ApiResponse(responseCode = "200", description = "Return funding", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FundingGetDTO.class))))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchFunding(
-            @ApiParam(value = "Funding name regex pattern", example = "anr") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Funding name regex pattern", example = "anr") @QueryParam("name") String namePattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);

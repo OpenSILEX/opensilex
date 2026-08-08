@@ -7,7 +7,7 @@
 package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 
@@ -146,7 +145,7 @@ public class ExperimentGetDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "2020-02-20")
+    @Schema(example = "2020-02-20")
     public LocalDate getStartDate() {
         return startDate;
     }
@@ -211,7 +210,7 @@ public class ExperimentGetDTO {
         this.species = species;
     }
 
-    @ApiModelProperty(example = "true")
+    @Schema(example = "true")
     public Boolean getIsPublic() {
         return isPublic;
     }

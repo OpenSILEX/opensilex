@@ -7,8 +7,7 @@
 package org.opensilex.security.user.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.rest.validation.NullOrNotEmpty;
 import org.opensilex.server.rest.validation.Required;
@@ -35,7 +34,7 @@ import java.util.List;
  *
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "first_name", "language", "password",
     "admin", "last_name", "email", "holderOfTheAccountURI"})
 public class UserUpdateDTO extends UserGetDTO {
@@ -50,28 +49,28 @@ public class UserUpdateDTO extends UserGetDTO {
 
     @Email
     @Required
-    @ApiModelProperty(value = "User email", example = "jean.michel@example.com", required = true)
+    @Schema(description = "User email", example = "jean.michel@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getEmail() {
         return super.getEmail();
     }
 
-    @ApiModelProperty(value = "User first name", example = "Janne", required = true)
+    @Schema(description = "User first name", example = "Janne", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getFirstName() {
         return super.getFirstName();
     }
 
-    @ApiModelProperty(value = "User last name", example = "Michelle", required = true)
+    @Schema(description = "User last name", example = "Michelle", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getLastName() {
         return super.getLastName();
     }
 
-    @ApiModelProperty()
+    @Schema()
     public List<URI> getFavorites() {
         return super.getFavorites();
     }
 
     @NullOrNotEmpty
-    @ApiModelProperty(value = "Optional user password", example = "azerty")
+    @Schema(description = "Optional user password", example = "azerty")
     public String getPassword() {
         return password;
     }
@@ -81,13 +80,13 @@ public class UserUpdateDTO extends UserGetDTO {
     }
 
     @NotNull
-    @ApiModelProperty(value = "User admin flag", example = "false", required = true)
+    @Schema(description = "User admin flag", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
     public boolean isAdmin() {
         return super.isAdmin();
     }
 
     @NotNull
-    @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
+    @Schema(description = "User language", example = OpenSilex.DEFAULT_LANGUAGE, requiredMode = Schema.RequiredMode.REQUIRED)
     public String getLanguage() {
         return super.getLanguage();
     }

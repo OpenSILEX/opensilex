@@ -9,7 +9,7 @@ package org.opensilex.core.data.dal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.bson.Document;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -30,11 +30,11 @@ import java.util.Objects;
 public class DataProvenanceModel {
 
     @NotNull
-    @ApiModelProperty(value = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
+    @Schema(description = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
     @JsonDeserialize(using = UriJsonDeserializer.class)
     URI uri;
     
-    @ApiModelProperty(value = "experiments uris on which the data has been produced")
+    @Schema(description = "experiments uris on which the data has been produced")
     @JsonDeserialize(using = UriListJsonDeserializer.class)
     List<URI> experiments;
 
@@ -42,14 +42,14 @@ public class DataProvenanceModel {
 
     @Valid
     @JsonProperty("prov_used")
-    @ApiModelProperty(value = "list of inputs of the process described in the provenance")
+    @Schema(description = "list of inputs of the process described in the provenance")
     List<ProvEntityModel> provUsed;
 
     public static final String PROV_USED_FIELD = "provUsed";
 
     @Valid
     @JsonProperty("prov_was_associated_with")
-    @ApiModelProperty(value = "allow an activity to be linked to an agent")
+    @Schema(description = "allow an activity to be linked to an agent")
     List<ProvEntityModel> provWasAssociatedWith;
 
     public static final String PROV_WAS_ASSOCIATED_WITH_FIELD = "provWasAssociatedWith";
@@ -58,7 +58,7 @@ public class DataProvenanceModel {
     protected static final String PROVENANCE_EXPERIMENT_FIELD = DataModel.PROVENANCE_FIELD + "." + EXPERIMENT_FIELD;
     protected static final String PROVENANCE_AGENTS_URI_FIELD = DataModel.PROVENANCE_FIELD + "." + PROV_WAS_ASSOCIATED_WITH_FIELD + "." + ProvEntityModel.URI_FIELD;
 
-    @ApiModelProperty(value = "a key-value system to store specific information")
+    @Schema(description = "a key-value system to store specific information")
     Document settings; 
 
     public URI getUri() {

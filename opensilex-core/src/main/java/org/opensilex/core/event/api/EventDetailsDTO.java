@@ -9,7 +9,7 @@
 package org.opensilex.core.event.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.sparql.model.SPARQLModelRelation;

@@ -6,7 +6,7 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -15,7 +15,7 @@ import java.net.URI;
  *
  * @author vince
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "address"})
 public class FacilityUpdateDTO extends FacilityCreationDTO {
     @Override

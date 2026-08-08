@@ -2,13 +2,12 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import java.util.List;
 
-@ApiModel
+@Schema
 public class CriteriaDTO {
 
     public static CriteriaDTO fromString(String serialized) {
@@ -20,7 +19,7 @@ public class CriteriaDTO {
     }
 
     @JsonProperty("criteria_list")
-    @ApiModelProperty(value = "list of criteria to combine with the given logic", required = true)
+    @Schema(description = "list of criteria to combine with the given logic", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<SingleCriteriaDTO> criteriaList;
 
     public List<SingleCriteriaDTO> getCriteriaList() {

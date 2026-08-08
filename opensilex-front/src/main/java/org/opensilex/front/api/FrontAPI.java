@@ -7,7 +7,16 @@ package org.opensilex.front.api;
 
 import com.google.common.hash.Hashing;
 import com.nimbusds.oauth2.sdk.util.CollectionUtils;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.http.HttpStatus;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
@@ -38,7 +47,7 @@ import java.util.List;
 /**
  * Service to produce angular application configuration
  */
-@Api("Vue.js")
+@Tag(name = "Vue.js")
 @Path("/vuejs")
 public class FrontAPI {
 
@@ -58,10 +67,10 @@ public class FrontAPI {
         
     @GET
     @Path("/config")
-    @ApiOperation(value = "Return the current configuration")
+    @Operation(summary = "Return the current configuration")
     @ApiTranslatable
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Front application configuration", response = FrontConfigDTO.class)
+        @ApiResponse(responseCode = "200", description = "Front application configuration", content = @Content(schema = @Schema(implementation = FrontConfigDTO.class)))
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConfig() throws Exception {
@@ -73,10 +82,10 @@ public class FrontAPI {
 
     @GET
     @Path("/user_config")
-    @ApiOperation(value = "Return the user-specific configuration")
+    @Operation(summary = "Return the user-specific configuration")
     @ApiTranslatable
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Front application configuration", response = UserFrontConfigDTO.class)
+        @ApiResponse(responseCode = "200", description = "Front application configuration", content = @Content(schema = @Schema(implementation = UserFrontConfigDTO.class)))
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserConfig() throws Exception {
@@ -87,13 +96,13 @@ public class FrontAPI {
 
     @GET
     @Path("/extension/js/{module}.js")
-    @ApiOperation(value = "Return the front Vue JS extension file to include")
+    @Operation(summary = "Return the front Vue JS extension file to include")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the extension file", response = File.class)
+        @ApiResponse(responseCode = "200", description = "Return the extension file", content = @Content(schema = @Schema(implementation = File.class)))
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getExtension(
-            @PathParam("module") @ApiParam(value = "Module identifier", example = "opensilex") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @PathParam("module") @Parameter(description = "Module identifier", example = "opensilex") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
             @Context Request request
     ) throws Exception {
 
@@ -134,13 +143,13 @@ public class FrontAPI {
 
     @GET
     @Path("/extension/css/{module}.css")
-    @ApiOperation(value = "Return the front Vue JS extension css file to include")
+    @Operation(summary = "Return the front Vue JS extension css file to include")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the extension css file", response = File.class)
+        @ApiResponse(responseCode = "200", description = "Return the extension css file", content = @Content(schema = @Schema(implementation = File.class)))
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getExtensionStyle(
-            @PathParam("module") @ApiParam(value = "Module identifier", example = "opensilex") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @PathParam("module") @Parameter(description = "Module identifier", example = "opensilex") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
             @Context Request request
     ) throws Exception {
 
@@ -185,14 +194,14 @@ public class FrontAPI {
 
     @GET
     @Path("/theme/{moduleId}/{themeId}/config")
-    @ApiOperation(value = "Return the front Vue JS theme configuration")
+    @Operation(summary = "Return the front Vue JS theme configuration")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the theme configuration", response = ThemeConfigDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return the theme configuration", content = @Content(schema = @Schema(implementation = ThemeConfigDTO.class)))
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getThemeConfig(
-            @PathParam("moduleId") @ApiParam(value = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
-            @PathParam("themeId") @ApiParam(value = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId
+            @PathParam("moduleId") @Parameter(description = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @PathParam("themeId") @Parameter(description = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId
     ) throws Exception {
 
         OpenSilexModule module = getModule(moduleId);
@@ -210,14 +219,14 @@ public class FrontAPI {
 
     @GET
     @Path("/theme/{moduleId}/{themeId}/style.css")
-    @ApiOperation(value = "Return the theme css file")
+    @Operation(summary = "Return the theme css file")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the theme css file", response = File.class)
+        @ApiResponse(responseCode = "200", description = "Return the theme css file", content = @Content(schema = @Schema(implementation = File.class)))
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getThemeCss(
-            @PathParam("moduleId") @ApiParam(value = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
-            @PathParam("themeId") @ApiParam(value = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId
+            @PathParam("moduleId") @Parameter(description = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @PathParam("themeId") @Parameter(description = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId
     ) throws Exception {
 
         OpenSilexModule module = getModule(moduleId);
@@ -264,16 +273,16 @@ public class FrontAPI {
 
     @GET
     @Path("/theme/{moduleId}/{themeId}/resource")
-    @ApiOperation(value = "Return the theme requested resource")
+    @Operation(summary = "Return the theme requested resource")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the resource", response = File.class)
+        @ApiResponse(responseCode = "200", description = "Return the resource", content = @Content(schema = @Schema(implementation = File.class)))
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
 public Response getThemeResource(
-            @PathParam("moduleId") @ApiParam(value = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
-            @PathParam("themeId") @ApiParam(value = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId,
-            @ApiParam(value = "Resource path", example = "images/opensilex.png") @QueryParam("filePath") String filePath,
-            @ApiParam(value = "List of supported file extensions", example = "png") @QueryParam("acceptedExtensions") List<String> acceptedExtensions
+            @PathParam("moduleId") @Parameter(description = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
+            @PathParam("themeId") @Parameter(description = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId,
+            @Parameter(description = "Resource path", example = "images/opensilex.png") @QueryParam("filePath") String filePath,
+            @Parameter(description = "List of supported file extensions", example = "png") @QueryParam("acceptedExtensions") List<String> acceptedExtensions
     ) throws Exception {
 
         OpenSilexModule module = getModule(moduleId);

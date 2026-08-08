@@ -7,7 +7,7 @@ package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.group.dal.GroupModel;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  *
  * @author vince
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "groups", "facilities"})
 public class OrganizationCreationDTO extends OrganizationDTO {
     protected List<URI> groups;

@@ -7,7 +7,16 @@
 package org.opensilex.dataverse.api;
 
 import com.researchspace.dataverse.entities.Identifier;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.config.InvalidConfigException;
 import org.opensilex.core.document.dal.DocumentDAO;
@@ -56,7 +65,7 @@ import java.util.stream.Collectors;
 /**
  * @author Gabriel Besombes
  */
-@Api(DataverseAPI.CREDENTIAL_DATAVERSE_GROUP_ID)
+@Tag(name = DataverseAPI.CREDENTIAL_DATAVERSE_GROUP_ID)
 @Path("/dataverse")
 @ApiCredentialGroup(
         groupId = DataverseAPI.CREDENTIAL_DATAVERSE_GROUP_ID,
@@ -101,10 +110,8 @@ public class DataverseAPI {
      * @throws java.lang.Exception
      */
     @POST
-    @ApiOperation(
-            value = "Create experiment as a Dataset",
-            notes = "To consult the document created use the Document API"
-    )
+    @Operation(summary = "Create experiment as a Dataset",
+            description = "To consult the document created use the Document API")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DATAVERSE_MODIFICATION_ID,
@@ -113,22 +120,22 @@ public class DataverseAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A dataset was created", response = URI.class)
+            @ApiResponse(responseCode = "201", description = "A dataset was created", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response createDataset(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true)  @QueryParam("experimentUri") @NotNull @ValidURI URI experimentUri,
-            @ApiParam(value = "Dataset Title", example = DATASET_TITLE_EXAMPLE, required = true)  @QueryParam("datasetTitle") @NotNull String datasetTitle,
-            @ApiParam(value = "Dataset Authors", example = DATASET_AUTHORS_EXAMPLE, required = true)  @QueryParam("datasetAuthors") @NotNull @ValidURI List<URI> datasetAuthors,
-            @ApiParam(value = "Dataset Contacts", example = DATASET_CONTACTS_EXAMPLE, required = true)  @QueryParam("datasetContacts") @NotNull @ValidURI List<URI> datasetContacts,
-            @ApiParam(value = "Dataset Language from list of values : [en, fr]", example = DATASET_LANGUAGE_EXAMPLE, required = true)  @QueryParam("datasetLanguage") @NotNull @ValidLanguage(moduleClass = DataverseModule.class, configClass = OpensilexDataverseConfig.class, configKey = "dataverseLanguages") OpenSilexLocale datasetLanguage,
-            @ApiParam(value = "Dataset Metadata Language from list of values : [en, fr]", example = DATASET_METADATA_LANGUAGE_EXAMPLE, required = true)  @QueryParam("datasetMetadataLanguage") @NotNull @ValidLanguage(moduleClass = DataverseModule.class, configClass = OpensilexDataverseConfig.class, configKey = "dataverseLanguages") OpenSilexLocale datasetMetadataLanguage,
-            @ApiParam(value = "URI of the rdf_type of the dataset", example = DATASET_RDF_TYPE, required = true)  @QueryParam("datasetRDFType") @NotNull @ValidURI URI datasetRDFType,
-            @ApiParam(value = "Dataset Production Date", example = DATASET_PRODUCTION_DATE)  @QueryParam("productionDate") @Date(DateFormat.YMD) String productionDate,
-            @ApiParam(value = "Dataset URI")  @QueryParam("datasetUri") @ValidURI URI datasetUri,
-            @ApiParam(value = "Dataset deprecated", example = DATASET_DEPRECATED_DATE)  @QueryParam("datasetDeprecated") boolean datasetDeprecated,
-            @ApiParam(value = "Dataverse API base path")  @QueryParam("dataverseBasePath") URL dataverseBasePath,
-            @ApiParam(value = "Parent dataverse alias")  @QueryParam("dataverseAlias") String dataverseAlias,
-            @ApiParam(value = "Dataverse API key")  @QueryParam("externalAPIKey") String externalAPIKey
+            @Parameter(description = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true)  @QueryParam("experimentUri") @NotNull @ValidURI URI experimentUri,
+            @Parameter(description = "Dataset Title", example = DATASET_TITLE_EXAMPLE, required = true)  @QueryParam("datasetTitle") @NotNull String datasetTitle,
+            @Parameter(description = "Dataset Authors", example = DATASET_AUTHORS_EXAMPLE, required = true)  @QueryParam("datasetAuthors") @NotNull @ValidURI List<URI> datasetAuthors,
+            @Parameter(description = "Dataset Contacts", example = DATASET_CONTACTS_EXAMPLE, required = true)  @QueryParam("datasetContacts") @NotNull @ValidURI List<URI> datasetContacts,
+            @Parameter(description = "Dataset Language from list of values : [en, fr]", example = DATASET_LANGUAGE_EXAMPLE, required = true)  @QueryParam("datasetLanguage") @NotNull @ValidLanguage(moduleClass = DataverseModule.class, configClass = OpensilexDataverseConfig.class, configKey = "dataverseLanguages") OpenSilexLocale datasetLanguage,
+            @Parameter(description = "Dataset Metadata Language from list of values : [en, fr]", example = DATASET_METADATA_LANGUAGE_EXAMPLE, required = true)  @QueryParam("datasetMetadataLanguage") @NotNull @ValidLanguage(moduleClass = DataverseModule.class, configClass = OpensilexDataverseConfig.class, configKey = "dataverseLanguages") OpenSilexLocale datasetMetadataLanguage,
+            @Parameter(description = "URI of the rdf_type of the dataset", example = DATASET_RDF_TYPE, required = true)  @QueryParam("datasetRDFType") @NotNull @ValidURI URI datasetRDFType,
+            @Parameter(description = "Dataset Production Date", example = DATASET_PRODUCTION_DATE)  @QueryParam("productionDate") @Date(DateFormat.YMD) String productionDate,
+            @Parameter(description = "Dataset URI")  @QueryParam("datasetUri") @ValidURI URI datasetUri,
+            @Parameter(description = "Dataset deprecated", example = DATASET_DEPRECATED_DATE)  @QueryParam("datasetDeprecated") boolean datasetDeprecated,
+            @Parameter(description = "Dataverse API base path")  @QueryParam("dataverseBasePath") URL dataverseBasePath,
+            @Parameter(description = "Parent dataverse alias")  @QueryParam("dataverseAlias") String dataverseAlias,
+            @Parameter(description = "Dataverse API key")  @QueryParam("externalAPIKey") String externalAPIKey
     ) throws Exception {
 
         boolean isType = SPARQLModule.getOntologyStoreInstance()
@@ -197,9 +204,7 @@ public class DataverseAPI {
      * the available dataset languages
      */
     @GET
-    @ApiOperation(
-            value = "Get the available dataset languages"
-    )
+    @Operation(summary = "Get the available dataset languages")
     @ApiProtected
     @Path("datasetLanguages")
     @ApiCredential(
@@ -209,7 +214,7 @@ public class DataverseAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Available dataset languages retrieved successfully", response = HashMap.class)
+            @ApiResponse(responseCode = "200", description = "Available dataset languages retrieved successfully", content = @Content(schema = @Schema(implementation = HashMap.class)))
     })
     public Response availableDatasetLanguages() throws InvalidConfigException {
         HashMap<String, String> availableLanguages = new HashMap<>();
@@ -228,9 +233,7 @@ public class DataverseAPI {
      * the available metadata languages for datasets
      */
     @GET
-    @ApiOperation(
-            value = "Get the available dataset metadata languages"
-    )
+    @Operation(summary = "Get the available dataset metadata languages")
     @ApiProtected
     @Path("datasetMetadataLanguages")
     @ApiCredential(
@@ -240,7 +243,7 @@ public class DataverseAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Available dataverse languages retrieved successfully", response = HashMap.class)
+            @ApiResponse(responseCode = "200", description = "Available dataverse languages retrieved successfully", content = @Content(schema = @Schema(implementation = HashMap.class)))
     })
     public Response availableDatasetMetadataLanguages() throws InvalidConfigException {
         HashMap<String, String> availableDatasteMetadataLanguages = new HashMap<>();
@@ -259,9 +262,7 @@ public class DataverseAPI {
      * the Recherche Data Gouv Base Path
      */
     @GET
-    @ApiOperation(
-            value = "Get the Recherche Data Gouv url from the instance configuration"
-    )
+    @Operation(summary = "Get the Recherche Data Gouv url from the instance configuration")
     @ApiProtected
     @Path("RechercheDataGouvBasePath")
     @ApiCredential(
@@ -271,7 +272,7 @@ public class DataverseAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Recherche Data Gouv Base Path retrieved successfully", response = URI.class)
+            @ApiResponse(responseCode = "200", description = "Recherche Data Gouv Base Path retrieved successfully", content = @Content(schema = @Schema(implementation = URI.class)))
     })
     public Response rechercheDataGouvBasePath() {
         OpensilexDataverseConfig opensilexDataverseConfig = dataverseModule.getConfig(OpensilexDataverseConfig.class);

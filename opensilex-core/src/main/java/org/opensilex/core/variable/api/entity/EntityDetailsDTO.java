@@ -8,7 +8,7 @@ package org.opensilex.core.variable.api.entity;
 
 import java.net.URI;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 
@@ -28,19 +28,19 @@ public class EntityDetailsDTO extends BaseVariableDetailsDTO<EntityModel> {
     }
 
     @Override
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
+    @Schema(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return uri;
     }
 
     @Override
-    @ApiModelProperty(example = "Plant")
+    @Schema(example = "Plant")
     public String getName() {
         return name;
     }
 
     @Override
-    @ApiModelProperty(example = "The entity which describe a plant")
+    @Schema(example = "The entity which describe a plant")
     public String getDescription() {
         return description;
     }

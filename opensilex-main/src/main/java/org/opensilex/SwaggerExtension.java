@@ -16,6 +16,11 @@ import java.util.List;
  * This interface allows to add DTO (known as Swagger definitions) to the generated Swagger file even if this DTO is not referenced in an API service.
  * This is useful because the typescripts models are generated from the Swagger file, which does not contain super classes of DTO.
  */
-public interface SwaggerExtension {
+public interface SwaggerExtension extends OpenApiExtension {
     List<Class<?>> getAdditionalSwaggerDefinitions();
+
+    @Override
+    default List<Class<?>> getAdditionalOpenApiDefinitions() {
+        return getAdditionalSwaggerDefinitions();
+    }
 }

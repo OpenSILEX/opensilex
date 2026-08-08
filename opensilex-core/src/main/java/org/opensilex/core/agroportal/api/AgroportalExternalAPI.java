@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.agroportal.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.external.agroportal.AgroportalService;
 import org.opensilex.core.external.agroportal.AgroportalTermModel;
@@ -34,7 +43,7 @@ import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GR
  *
  * @author Brice Maussang
  */
-@Api(AgroportalExternalAPI.CREDENTIAL_AGROPORTAL_GROUP_ID)
+@Tag(name = AgroportalExternalAPI.CREDENTIAL_AGROPORTAL_GROUP_ID)
 @Path(PATH)
 @ApiCredentialGroup(
         groupId = CREDENTIAL_VARIABLE_GROUP_ID,
@@ -57,16 +66,16 @@ public class AgroportalExternalAPI {
      */
     @GET
     @Path("/ping")
-    @ApiOperation("Ping agroportal server")
+    @Operation(summary = "Ping agroportal server")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Agroportal status", response = Boolean.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Agroportal status", content = @Content(schema = @Schema(implementation = Boolean.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response pingAgroportal(
-            @ApiParam(value = "Timeout", example = "1000") @QueryParam("timeout") Long timeout
+            @Parameter(description = "Timeout", example = "1000") @QueryParam("timeout") Long timeout
     ) throws Exception {
         return new SingleObjectResponse<>(agroportalService.ping(timeout)).getResponse();
     }
@@ -80,17 +89,17 @@ public class AgroportalExternalAPI {
      */
     @GET
     @Path("/search")
-    @ApiOperation("Search through agroportal")
+    @Operation(summary = "Search through agroportal")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return entities", response = AgroportalTermDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return entities", content = @Content(array = @ArraySchema(schema = @Schema(implementation = AgroportalTermDTO.class)))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchThroughAgroportal(
-            @ApiParam(value = "Name (regex)", example = "plant") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of ontologies (acronym)", example = "AGROVOC") @QueryParam("ontologies") List<String> ontologies
+            @Parameter(description = "Name (regex)", example = "plant") @QueryParam("name") String namePattern,
+            @Parameter(description = "List of ontologies (acronym)", example = "AGROVOC") @QueryParam("ontologies") List<String> ontologies
     ) throws Exception {
         List<AgroportalTermModel> terms = agroportalService.search(namePattern, ontologies)
                 .getCollection();
@@ -109,17 +118,17 @@ public class AgroportalExternalAPI {
      */
     @GET
     @Path("/ontologies")
-    @ApiOperation("Get ontologies from agroportal")
+    @Operation(summary = "Get ontologies from agroportal")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return ontologies", response = OntologyAgroportalDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(responseCode = "200", description = "Return ontologies", content = @Content(array = @ArraySchema(schema = @Schema(implementation = OntologyAgroportalDTO.class)))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAgroportalOntologies(
-            @ApiParam(value = "Name (regex)", example = ".*") @QueryParam("name") @DefaultValue(".*") String namePattern,
-            @ApiParam(value = "List of ontologies to get (acronyms)", example = "AGROVOC") @DefaultValue("") @QueryParam("ontologies") List<String> ontologies
+            @Parameter(description = "Name (regex)", example = ".*") @QueryParam("name") @DefaultValue(".*") String namePattern,
+            @Parameter(description = "List of ontologies to get (acronyms)", example = "AGROVOC") @DefaultValue("") @QueryParam("ontologies") List<String> ontologies
     ) throws Exception {
         List<OntologyAgroportalModel> ontologiesModel = agroportalService.getOntologies();
 

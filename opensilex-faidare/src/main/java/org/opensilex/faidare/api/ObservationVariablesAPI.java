@@ -6,7 +6,16 @@
 //******************************************************************************
 package org.opensilex.faidare.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.faidare.builder.Faidarev1ObservationVariableDTOBuilder;
@@ -33,7 +42,7 @@ import java.util.Collections;
 /**
  * @author Gabriel Besombes
  */
-@Api(CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
+@Tag(name = CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
 @Path("/faidare/")
 @ApiCredentialGroup(
         groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
@@ -55,16 +64,16 @@ public class ObservationVariablesAPI extends FaidareCall {
     @GET
     @Path("v1/variables")
     @FaidareVersion("1.3")
-    @ApiOperation(value = "Faidarev1CallDTO to retrieve a list of observationVariables available in the system",
-            notes = "retrieve variables information")
+    @Operation(summary = "Faidarev1CallDTO to retrieve a list of observationVariables available in the system",
+            description = "retrieve variables information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "retrieve variables information", response = Faidarev1ObservationVariableListResponse.class)})
+        @ApiResponse(responseCode = "200", description = "retrieve variables information", content = @Content(schema = @Schema(implementation = Faidarev1ObservationVariableListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesList(
-            @ApiParam(value = "observationVariableDbId") @QueryParam("observationVariableDbId") URI observationVariableDbId,
-            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+            @Parameter(description = "observationVariableDbId") @QueryParam("observationVariableDbId") URI observationVariableDbId,
+            @Parameter(description = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @Parameter(description = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs, currentUser);
 

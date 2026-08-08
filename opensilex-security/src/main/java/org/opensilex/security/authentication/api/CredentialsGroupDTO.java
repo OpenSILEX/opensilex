@@ -7,8 +7,7 @@ package org.opensilex.security.authentication.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import javax.validation.Valid;
 
@@ -16,7 +15,7 @@ import javax.validation.Valid;
  *
  * @author vince
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"group_id", "group_key_name", "credentials"})
 public class CredentialsGroupDTO {
 
@@ -30,7 +29,7 @@ public class CredentialsGroupDTO {
 
     private List<CredentialDTO> credentials;
 
-    @ApiModelProperty(value = "Credential group identifier", example = "Security")
+    @Schema(description = "Credential group identifier", example = "Security")
     public String getGroupId() {
         return groupId;
     }
@@ -39,7 +38,7 @@ public class CredentialsGroupDTO {
         this.groupId = groupId;
     }
 
-    @ApiModelProperty(value = "Credential group key label", example = "security")
+    @Schema(description = "Credential group key label", example = "security")
     public String getGroupKeyLabel() {
         return groupKeyLabel;
     }
@@ -49,7 +48,7 @@ public class CredentialsGroupDTO {
     }
 
     @Valid()
-    @ApiModelProperty(value = "Credentials Map", dataType = "List[org.opensilex.security.authentication.api.CredentialDTO]", reference = "List")
+    @Schema(description = "Credentials Map", type = "List[org.opensilex.security.authentication.api.CredentialDTO]")
     public List<CredentialDTO> getCredentials() {
         return credentials;
     }

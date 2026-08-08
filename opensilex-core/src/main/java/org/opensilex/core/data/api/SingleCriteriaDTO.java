@@ -1,7 +1,7 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.data.utils.MathematicalOperator;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -15,17 +15,17 @@ public class SingleCriteriaDTO {
 
     @JsonProperty(variableField)
     @ValidURI
-    @ApiModelProperty(value = "uri of the variable that criteria applies too", required = true)
+    @Schema(description = "uri of the variable that criteria applies too", requiredMode = Schema.RequiredMode.REQUIRED)
     private URI variableUri;
 
     @JsonProperty(criteriaOperatorField)
-    @ApiModelProperty(value = "The criteria (LessThan,LessOrEqualThan,MoreThan, MoreOrEqualThan,EqualToo,NotMeasured).",
+    @Schema(description = "The criteria (LessThan,LessOrEqualThan,MoreThan, MoreOrEqualThan,EqualToo,NotMeasured).",
             required = true,
             example = "<=")
     private MathematicalOperator criteria;
 
     @JsonProperty(valueField)
-    @ApiModelProperty(value = "value to compare with", required = true)
+    @Schema(description = "value to compare with", requiredMode = Schema.RequiredMode.REQUIRED)
     private String value;
 
     public URI getVariableUri() {

@@ -12,7 +12,7 @@ import java.time.LocalDate;
 
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  *
@@ -20,37 +20,37 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class DeviceDTO extends RDFObjectDTO {
 
-    @ApiModelProperty(value = "Device name", example = "Sensor_01", required = true)
+    @Schema(description = "Device name", example = "Sensor_01", requiredMode = Schema.RequiredMode.REQUIRED)
     protected String name;
     
-    @ApiModelProperty(value = "Device brand", example = "Campbell")
+    @Schema(description = "Device brand", example = "Campbell")
     protected String brand;
     
-    @ApiModelProperty(value = "Device model", example = "CS655")
+    @Schema(description = "Device model", example = "CS655")
     @JsonProperty("constructor_model")
     protected String constructorModel;
     
-    @ApiModelProperty(value = "Device serial number", example = "123456")
+    @Schema(description = "Device serial number", example = "123456")
     @JsonProperty("serial_number")
     protected String serialNumber;
     
-    @ApiModelProperty(value = "Person in charge", example = "http://opensilex.dev/person#Firstname.Lastname")
+    @Schema(description = "Person in charge", example = "http://opensilex.dev/person#Firstname.Lastname")
     @JsonProperty("person_in_charge")
     protected URI personInChargeURI;
     
-    @ApiModelProperty(value = "Device date of start-up", example = "2018-12-12")
+    @Schema(description = "Device date of start-up", example = "2018-12-12")
     @JsonProperty("start_up")
     protected LocalDate startUp;
 
-    @ApiModelProperty(value = "Device date of removal", example = "2020-12-12")
+    @Schema(description = "Device date of removal", example = "2020-12-12")
     @JsonProperty("removal")
     protected LocalDate removal;
 
-    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
+    @Schema(description = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
     @JsonProperty("rdf_type")
     protected URI type;
     
-    @ApiModelProperty(value = "comment", example = "description")
+    @Schema(description = "comment", example = "description")
     @JsonProperty("description")
     protected String description;
     

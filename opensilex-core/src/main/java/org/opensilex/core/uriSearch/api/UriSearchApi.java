@@ -8,7 +8,16 @@
  * ******************************************************************************
  */
 package org.opensilex.core.uriSearch.api;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.uriSearch.bll.UriSearchLogic;
 import org.opensilex.fs.service.FileStorageService;
@@ -32,7 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
-@Api("UriSearch")
+@Tag(name = "UriSearch")
 @Path("/core/uri_search")
 public class UriSearchApi {
 
@@ -56,15 +65,15 @@ public class UriSearchApi {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a list of objects that match the passed URI")
+    @Operation(summary = "Get a list of objects that match the passed URI")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return dto list", response = URIGlobalSearchDTO.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class)
+            @ApiResponse(responseCode = "200", description = "Return dto list", content = @Content(schema = @Schema(implementation = URIGlobalSearchDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Bad user request", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchByUri(
-            @ApiParam(value = "URI", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
+            @Parameter(description = "URI", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
         UriSearchLogic logic = new UriSearchLogic(sparql, nosql, currentUser, fs);
 

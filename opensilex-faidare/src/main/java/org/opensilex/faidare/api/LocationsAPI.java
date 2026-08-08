@@ -10,7 +10,16 @@
 
 package org.opensilex.faidare.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
@@ -39,7 +48,7 @@ import java.util.Collections;
 /**
  * @author Gabriel Besombes
  */
-@Api(CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
+@Tag(name = CallsAPI.CREDENTIAL_CALLS_GROUP_ID)
 @Path("/faidare/")
 @ApiCredentialGroup(
         groupId = CallsAPI.CREDENTIAL_CALLS_GROUP_ID,
@@ -59,16 +68,16 @@ public class LocationsAPI extends FaidareCall {
     @GET
     @Path("v1/locations")
     @FaidareVersion("1.3")
-    @ApiOperation(value = "Faidarev1CallDTO to retrieve a list of locations available in the system",
-            notes = "retrieve locations information")
+    @Operation(summary = "Faidarev1CallDTO to retrieve a list of locations available in the system",
+            description = "retrieve locations information")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "retrieve locations information", response = Faidarev1LocationListResponse.class)})
+            @ApiResponse(responseCode = "200", description = "retrieve locations information", content = @Content(schema = @Schema(implementation = Faidarev1LocationListResponse.class)))})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getLocationsList(
-            @ApiParam(value = "Search by Location") @QueryParam("locationDbId") URI locationDbId,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Search by Location") @QueryParam("locationDbId") URI locationDbId,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
         FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());

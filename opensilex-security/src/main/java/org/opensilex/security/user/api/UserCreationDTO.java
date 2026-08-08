@@ -7,8 +7,7 @@
 package org.opensilex.security.user.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -33,7 +32,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Vincent Migot
  */
-@ApiModel
+@Schema
 @JsonPropertyOrder({"uri", "first_name", "last_name", "email", "language", "password",
     "admin"})
 public class UserCreationDTO extends UserGetDTO {
@@ -42,7 +41,7 @@ public class UserCreationDTO extends UserGetDTO {
 
     @Override
     @ValidURI
-    @ApiModelProperty(value = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
+    @Schema(description = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
     public URI getUri() {
         return super.getUri();
     }
@@ -50,27 +49,27 @@ public class UserCreationDTO extends UserGetDTO {
     @Override
     @Email
     @Required
-    @ApiModelProperty(value = "User email", example = "jean.michel@example.com", required = true)
+    @Schema(description = "User email", example = "jean.michel@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getEmail() {
         return super.getEmail();
     }
 
     @Override
     @Required
-    @ApiModelProperty(value = "Person first name", example = "Jean", required = true)
+    @Schema(description = "Person first name", example = "Jean", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getFirstName() {
         return super.getFirstName();
     }
 
     @Override
     @Required
-    @ApiModelProperty(value = "Person last name", example = "Michel", required = true)
+    @Schema(description = "Person last name", example = "Michel", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getLastName() {
         return super.getLastName();
     }
 
     @Required
-    @ApiModelProperty(value = "Account password", example = "azerty", required = true)
+    @Schema(description = "Account password", example = "azerty", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getPassword() {
         return password;
     }
@@ -81,14 +80,14 @@ public class UserCreationDTO extends UserGetDTO {
 
     @Override
     @NotNull
-    @ApiModelProperty(value = "Account admin flag", example = "false", required = true)
+    @Schema(description = "Account admin flag", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
     public boolean isAdmin() {
         return super.isAdmin();
     }
 
     @Override
     @NotNull
-    @ApiModelProperty(value = "Account language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
+    @Schema(description = "Account language", example = OpenSilex.DEFAULT_LANGUAGE, requiredMode = Schema.RequiredMode.REQUIRED)
     public String getLanguage() {
         return super.getLanguage();
     }

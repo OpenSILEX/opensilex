@@ -6,10 +6,7 @@
 package org.opensilex.dev;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.codegen.ClientOptInput;
-import io.swagger.codegen.DefaultGenerator;
-import io.swagger.codegen.config.CodegenConfigurator;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -20,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.openapitools.codegen.ClientOptInput;
+import org.openapitools.codegen.DefaultGenerator;
+import org.openapitools.codegen.config.CodegenConfigurator;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Helper class to regenerate OpenAPI specification and TypeScript client library.
  *
  * @author vincent
  */
@@ -58,47 +59,45 @@ public class ResetTypeScriptLib {
 
         for (OpenSilexModule module : opensilex.getModules()) {
             if (ClassUtils.isJarClassDirectory(module.getClass())) {
-                Swagger moduleAPI = SwaggerAPIGenerator.getModuleApi(module.getClass(), opensilex.getReflections());
+                OpenAPI moduleAPI = SwaggerAPIGenerator.getModuleApi(module.getClass(), opensilex.getReflections());
                 if (moduleAPI != null) {
                     LOGGER.info("Process Module API: " + module.getClass().getCanonicalName());
-                    moduleAPI.setHost("localhost");
                     File targetDirectory = ClassUtils.getJarFile(module.getClass());
                     Path modulePath = Paths.get(targetDirectory.getAbsolutePath()).resolve("../..");
                     if (module.getClass().getCanonicalName().equals("opensilex.service.PhisWsModule")) {
                         modulePath = modulePath.resolve("../");
                     }
                     Path swaggerJsonLibPath = modulePath.resolve("front/src/lib/");
-                    Path swaggerPath = Paths.get(swaggerJsonLibPath.resolve("swagger.json").toFile().getCanonicalPath());
+                    Path openApiJsonPath = Paths.get(swaggerJsonLibPath.resolve("openapi.json").toFile().getCanonicalPath());
 
                     FileUtils.deleteDirectory(swaggerJsonLibPath.toFile());
                     FileUtils.writeStringToFile(swaggerJsonLibPath.resolve(".gitkeep").toFile(), "", StandardCharsets.UTF_8);
 
                     ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
                     String jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(moduleAPI);
-                    LOGGER.info("Write swagger definition to: " + swaggerPath);
+                    LOGGER.info("Write openapi definition to: " + openApiJsonPath);
                     LOGGER.debug(jsonInString);
-                    FileUtils.writeStringToFile(swaggerPath.toFile(), jsonInString, StandardCharsets.UTF_8);
+                    FileUtils.writeStringToFile(openApiJsonPath.toFile(), jsonInString, StandardCharsets.UTF_8);
 
                     String moduleID = ClassUtils.getProjectIdFromClass(module.getClass());
                     LOGGER.info("Build TS library: " + moduleID);
                     CodegenConfigurator configurator = new CodegenConfigurator();
-                    configurator.setInputSpec(swaggerPath.toString());
-                    configurator.setTemplateDir(modulePath.resolve("../opensilex-main/src/main/resources/swagger/templates/typescript-inversify").toFile().getCanonicalPath());
-                    configurator.setLang("typescript-inversify");
+                    configurator.setInputSpec(openApiJsonPath.toString());
+                    configurator.setGeneratorName("typescript-inversify");
                     configurator.setOutputDir(swaggerJsonLibPath.toString());
                     configurator.addAdditionalProperty("packageName", moduleID);
                     configurator.addAdditionalProperty("packageVersion", "SNAPSHOT");
                     configurator.addAdditionalProperty("npmName", moduleID);
                     configurator.addAdditionalProperty("usePromise", true);
-                    configurator.addAdditionalProperty("useHttpClient", true);
+                    configurator.addAdditionalProperty("supportsES6", true);
                     configurator.addAdditionalProperty("modelPropertyNaming", "original");
                     ClientOptInput opts = configurator.toClientOptInput();
-                    opts.setSwagger(moduleAPI);
+                    opts.openAPI(moduleAPI);
 
                     DefaultGenerator codeGen = new DefaultGenerator();
                     codeGen.opts(opts).generate();
 
-                    LOGGER.info("Build TS types: " + swaggerPath);
+                    LOGGER.info("Build TS types: " + openApiJsonPath);
                     Process process = createFrontTypes(modulePath, swaggerJsonLibPath);
                     process.waitFor();
                 }

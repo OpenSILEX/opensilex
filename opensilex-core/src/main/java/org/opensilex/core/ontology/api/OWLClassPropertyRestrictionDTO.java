@@ -6,7 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -20,19 +20,19 @@ public class OWLClassPropertyRestrictionDTO {
     @ValidURI
     @NotNull
     @JsonProperty("rdf_type")
-    @ApiModelProperty(value = "RDF type", required = true, name = "rdf_type", example = "vocabulary:Plot")
+    @Schema(description = "RDF type", requiredMode = Schema.RequiredMode.REQUIRED, name = "rdf_type", example = "vocabulary:Plot")
     private URI classURI;
 
     @ValidURI
     @NotNull
     @JsonProperty("domain")
-    @ApiModelProperty(value = "Domain URI", required = true, name = "domain", example = "vocabulary:ScientificObject")
+    @Schema(description = "Domain URI", requiredMode = Schema.RequiredMode.REQUIRED, name = "domain", example = "vocabulary:ScientificObject")
     private URI domain;
 
     @ValidURI
     @NotNull
     @JsonProperty("property")
-    @ApiModelProperty(value = "Property URI", required = true, name = "property", example = "vocabulary:hasGermplasm")
+    @Schema(description = "Property URI", requiredMode = Schema.RequiredMode.REQUIRED, name = "property", example = "vocabulary:hasGermplasm")
     private URI property;
 
     private boolean required;

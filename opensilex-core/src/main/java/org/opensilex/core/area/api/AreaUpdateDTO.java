@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.area.api;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
@@ -18,7 +18,7 @@ import java.net.URI;
 public class AreaUpdateDTO extends AreaCreationDTO {
     @NotNull
     @ValidURI
-    @ApiModelProperty(value = "Area URI", example = "http://opensilex/set/area/Z_001")
+    @Schema(description = "Area URI", example = "http://opensilex/set/area/Z_001")
     @Override
     public URI getUri() {
         return uri;

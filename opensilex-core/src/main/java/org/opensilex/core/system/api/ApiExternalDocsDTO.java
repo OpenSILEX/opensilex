@@ -8,7 +8,7 @@
 package org.opensilex.core.system.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Class that represents informations about external docs
@@ -17,10 +17,10 @@ import io.swagger.annotations.ApiModelProperty;
 @JsonPropertyOrder({"description", "url"})
 public class ApiExternalDocsDTO {
     
-    @ApiModelProperty(value = "Opensilex api docs", example = "Opensilex api docs")
+    @Schema(description = "Opensilex api docs", example = "Opensilex api docs")
     private String description;
     
-    @ApiModelProperty(value = "https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/index.md",
+    @Schema(description = "https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/index.md",
                       example = "https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/index.md")
     private String url;
 

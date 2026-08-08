@@ -6,7 +6,16 @@
  */
 package org.opensilex.security.group.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -37,7 +46,7 @@ import java.util.List;
  *
  * @author vidalmor
  */
-@Api(SecurityModule.REST_SECURITY_API_ID)
+@Tag(name = SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/groups")
 @ApiCredentialGroup(
         groupId = GroupAPI.CREDENTIAL_GROUP_GROUP_ID,
@@ -69,9 +78,9 @@ public class GroupAPI {
      * @throws Exception if creation failed
      */
     @POST
-    @ApiOperation("Add a group")
+    @Operation(summary = "Add a group")
     @ApiResponses({
-        @ApiResponse(code = 201, message = "A group is created")
+        @ApiResponse(responseCode = "201", description = "A group is created")
     })
     @ApiProtected
     @ApiCredential(
@@ -81,7 +90,7 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createGroup(
-            @ApiParam("Group description") @Valid GroupCreationDTO dto
+            @Parameter(description = "Group description") @Valid GroupCreationDTO dto
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
 
@@ -115,7 +124,7 @@ public class GroupAPI {
     }
 
     @PUT
-    @ApiOperation("Update a group")
+    @Operation(summary = "Update a group")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
@@ -124,11 +133,11 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Group updated", response = String.class),
-        @ApiResponse(code = 400, message = "Invalid parameters")
+        @ApiResponse(responseCode = "200", description = "Group updated", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters")
     })
     public Response updateGroup(
-            @ApiParam("Group description")
+            @Parameter(description = "Group description")
             @Valid GroupUpdateDTO dto
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
@@ -154,7 +163,7 @@ public class GroupAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a group")
+    @Operation(summary = "Delete a group")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_GROUP_DELETE_ID,
@@ -163,7 +172,7 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteGroup(
-            @ApiParam(value = "Group URI", example = "http://example.com/", required = true)
+            @Parameter(description = "Group URI", example = "http://example.com/", required = true)
             @PathParam("uri")
             @NotNull
             @ValidURI URI uri
@@ -185,17 +194,17 @@ public class GroupAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a group")
+    @Operation(summary = "Get a group")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Group retrieved", response = GroupDTO.class),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Group not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Group retrieved", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Group not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGroup(
-            @ApiParam(value = "Group URI", example = "dev-groups:admin_group", required = true)
+            @Parameter(description = "Group URI", example = "dev-groups:admin_group", required = true)
             @PathParam("uri")
             @NotNull URI uri
     ) throws Exception {
@@ -230,19 +239,19 @@ public class GroupAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @ApiOperation("Search groups")
+    @Operation(summary = "Search groups")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response searchGroups(
-            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
         ListWithPagination<GroupModel> resultList = dao.search(
@@ -274,17 +283,17 @@ public class GroupAPI {
      */
     @GET
     @Path("by_uris")
-    @ApiOperation("Get groups by their URIs")
+    @Operation(summary = "Get groups by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return groups", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Group not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getGroupsByURI(
-            @ApiParam(value = "Groups URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Groups URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
         List<GroupModel> models = dao.getList(uris);

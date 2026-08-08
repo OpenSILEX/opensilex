@@ -10,13 +10,13 @@
 
 package org.opensilex.core.utils;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 public class StringURIsListDTO {
 
-    @ApiModelProperty(value = "URIs", example = "[http://opensilex.dev/opensilex/id/my/uri, http://opensilex.dev/opensilex/id/another_uri]")
+    @Schema(description = "URIs", example = "[http://opensilex.dev/opensilex/id/my/uri, http://opensilex.dev/opensilex/id/another_uri]")
     protected List<String> uris;
 
     public List<String> getUris() {

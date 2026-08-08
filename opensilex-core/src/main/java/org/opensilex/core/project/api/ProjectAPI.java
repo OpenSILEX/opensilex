@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.project.api;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
@@ -38,7 +47,7 @@ import java.util.Objects;
 /**
  * @author Julien BONNEFONT
  */
-@Api(ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID)
+@Tag(name = ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID)
 @Path("/core/projects")
 @ApiCredentialGroup(
         groupId = ProjectAPI.CREDENTIAL_PROJECT_GROUP_ID,
@@ -72,7 +81,7 @@ public class ProjectAPI {
      * @throws java.lang.Exception
      */
     @POST
-    @ApiOperation("Add a project")
+    @Operation(summary = "Add a project")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_PROJECT_MODIFICATION_ID,
@@ -81,12 +90,12 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "A project is created", response = URI.class),
-        @ApiResponse(code = 409, message = "A project with the same URI already exists", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "201", description = "A project is created", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "409", description = "A project with the same URI already exists", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
 
     public Response createProject(
-            @ApiParam("Project description") @Valid ProjectCreationDTO dto
+            @Parameter(description = "Project description") @Valid ProjectCreationDTO dto
     ) throws Exception {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
@@ -111,7 +120,7 @@ public class ProjectAPI {
      * the updated Project {@link URI}
      */
     @PUT
-    @ApiOperation("Update a project")
+    @Operation(summary = "Update a project")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_PROJECT_MODIFICATION_ID,
@@ -121,11 +130,11 @@ public class ProjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Project updated", response = URI.class),
-        @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Project updated", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Unknown Project URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response updateProject(
-            @ApiParam("Project description") @Valid ProjectCreationDTO dto
+            @Parameter(description = "Project description") @Valid ProjectCreationDTO dto
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
         ProjectModel model = dao.update(dto.newModel(), currentUser);
@@ -139,16 +148,16 @@ public class ProjectAPI {
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a project")
+    @Operation(summary = "Get a project")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Project retrieved", response = ProjectGetDetailDTO.class),
-        @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Project retrieved", content = @Content(schema = @Schema(implementation = ProjectGetDetailDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Unknown Project URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response getProject(
-            @ApiParam(value = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Project URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
         ProjectModel model = dao.get(uri, currentUser);
@@ -174,21 +183,21 @@ public class ProjectAPI {
      * @see ProjectDAO
      */
     @GET
-    @ApiOperation("Search projects")
+    @Operation(summary = "Search projects")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return projects", response = ProjectGetDTO.class, responseContainer = "List")
+        @ApiResponse(responseCode = "200", description = "Return projects", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProjectGetDTO.class))))
     })
     public Response searchProjects(
-            @ApiParam(value = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year") Integer year,
-            @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("keyword") String term,
-            @ApiParam(value = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial_funding") String financial,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @Parameter(description = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("name") String name,
+            @Parameter(description = "Search by year", example = "2017") @QueryParam("year") Integer year,
+            @Parameter(description = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("keyword") String term,
+            @Parameter(description = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial_funding") String financial,
+            @Parameter(description = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @Parameter(description = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @Parameter(description = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ProjectDAO prjctDao = new ProjectDAO(sparql);
         ListWithPagination<ProjectModel> resultList = prjctDao.search(
@@ -209,17 +218,17 @@ public class ProjectAPI {
 
     @GET
     @Path("by_uris")
-    @ApiOperation("Get projects by their URIs")
+    @Operation(summary = "Get projects by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return projects", response = ProjectGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(responseCode = "200", description = "Return projects", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProjectGetDTO.class)))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Project not found (if any provided URIs is not found", content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response getProjectsByURI(
-            @ApiParam(value = "Projects URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @Parameter(description = "Projects URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
         List<ProjectModel> models = dao.getList(uris, currentUser);
@@ -250,7 +259,7 @@ public class ProjectAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a project")
+    @Operation(summary = "Delete a project")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_PROJECT_DELETE_ID,
@@ -259,11 +268,11 @@ public class ProjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Project deleted", response = URI.class),
-        @ApiResponse(code = 404, message = "Unknown Project URI", response = ErrorResponse.class)
+        @ApiResponse(responseCode = "200", description = "Project deleted", content = @Content(schema = @Schema(implementation = URI.class))),
+        @ApiResponse(responseCode = "404", description = "Unknown Project URI", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public Response deleteProject(
-            @ApiParam(value = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
+            @Parameter(description = "Project URI", example = PROJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
         dao.delete(uri, currentUser);

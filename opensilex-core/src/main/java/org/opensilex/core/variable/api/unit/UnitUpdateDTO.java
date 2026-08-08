@@ -5,7 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.unit;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -14,7 +14,7 @@ public class UnitUpdateDTO extends UnitCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true, example = "http://opensilex.dev/set/variables/unit/Centimeter")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "http://opensilex.dev/set/variables/unit/Centimeter")
     public URI getUri() {
         return super.getUri();
     }

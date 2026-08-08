@@ -1,7 +1,7 @@
 package org.opensilex.core.germplasm.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.germplasmGroup.api.GermplasmGroupApi;
 import org.opensilex.security.account.dal.AccountModel;
@@ -50,7 +50,7 @@ public class GermplasmSearchFilter extends SearchFilter {
 
     private List<URI> groups;
 
-    @ApiModelProperty(value = "Regex pattern for filtering list by uri", example = GermplasmAPI.GERMPLASM_EXAMPLE_URI)
+    @Schema(description = "Regex pattern for filtering list by uri", example = GermplasmAPI.GERMPLASM_EXAMPLE_URI)
     public String getUri() {
         return uri;
     }
@@ -60,7 +60,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by type", example = GermplasmAPI.GERMPLASM_EXAMPLE_TYPE)
+    @Schema(description = "Search by type", example = GermplasmAPI.GERMPLASM_EXAMPLE_TYPE)
     public URI getType() {
         return type;
     }
@@ -70,7 +70,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Regex pattern for filtering list by name and synonyms", example = ".*")
+    @Schema(description = "Regex pattern for filtering list by name and synonyms", example = ".*")
     public String getName() {
         return name;
     }
@@ -80,7 +80,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Regex pattern for filtering list by code", example = ".*")
+    @Schema(description = "Regex pattern for filtering list by code", example = ".*")
     public String getCode() {
         return code;
     }
@@ -90,7 +90,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by production year", example = GermplasmAPI.GERMPLASM_EXAMPLE_PRODUCTION_YEAR)
+    @Schema(description = "Search by production year", example = GermplasmAPI.GERMPLASM_EXAMPLE_PRODUCTION_YEAR)
     public Integer getProductionYear() {
         return productionYear;
     }
@@ -100,7 +100,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by species", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    @Schema(description = "Search by species", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
     public URI getSpecies() {
         return species;
     }
@@ -110,7 +110,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by variety", example = GermplasmAPI.GERMPLASM_EXAMPLE_VARIETY)
+    @Schema(description = "Search by variety", example = GermplasmAPI.GERMPLASM_EXAMPLE_VARIETY)
     public URI getVariety() {
         return variety;
     }
@@ -120,7 +120,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by accession",  example = GermplasmAPI.GERMPLASM_EXAMPLE_ACCESSION)
+    @Schema(description = "Search by accession",  example = GermplasmAPI.GERMPLASM_EXAMPLE_ACCESSION)
     public URI getAccession() {
         return accession;
     }
@@ -130,7 +130,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by institute", example = GermplasmAPI.GERMPLASM_EXAMPLE_INSTITUTE)
+    @Schema(description = "Search by institute", example = GermplasmAPI.GERMPLASM_EXAMPLE_INSTITUTE)
     public String getInstitute() {
         return institute;
     }
@@ -140,7 +140,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by experiment", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
+    @Schema(description = "Search by experiment", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
     public URI getExperiment() {
         return experiment;
     }
@@ -150,7 +150,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by metadata", example = GermplasmAPI.GERMPLASM_EXAMPLE_METADATA)
+    @Schema(description = "Search by metadata", example = GermplasmAPI.GERMPLASM_EXAMPLE_METADATA)
     public String getMetadata() {
         return metadata;
     }
@@ -160,7 +160,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "List of germplasm URI")
+    @Schema(description = "List of germplasm URI")
     public List<URI> getUris() {
         return uris;
     }
@@ -170,7 +170,7 @@ public class GermplasmSearchFilter extends SearchFilter {
         return this;
     }
 
-    @ApiModelProperty(value = "Search by germplasm group", example = GermplasmGroupApi.GROUP_EXAMPLE_URI)
+    @Schema(description = "Search by germplasm group", example = GermplasmGroupApi.GROUP_EXAMPLE_URI)
     public URI getGroup() {
         return group;
     }

@@ -1,7 +1,7 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
@@ -12,14 +12,14 @@ import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
  */
 public class RDFPropertyGetDTO extends RDFPropertyDTO {
 
-    @ApiModelProperty(
-            value = "Default property name according language",
+    @Schema(
+            description = "Default property name according language",
             example = "custom_object_property"
     )
     protected String name;
 
-    @ApiModelProperty(
-            value = "Default property description according language",
+    @Schema(
+            description = "Default property description according language",
             example = "Description of the property"
     )
     protected String comment;

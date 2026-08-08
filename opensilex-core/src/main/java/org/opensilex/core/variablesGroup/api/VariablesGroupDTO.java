@@ -7,7 +7,7 @@ package org.opensilex.core.variablesGroup.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -49,7 +49,7 @@ public abstract class VariablesGroupDTO {
     }
     
     @Required
-    @ApiModelProperty(example = "group of plants", required=true)
+    @Schema(example = "group of plants", requiredMode = Schema.RequiredMode.REQUIRED)
     public String getName() {
         return name;
     }
@@ -82,7 +82,7 @@ public abstract class VariablesGroupDTO {
         this.lastUpdatedDate = lastUpdatedDate;
     }
 
-    @ApiModelProperty(example = "Group where we can find all plant related variables")
+    @Schema(example = "Group where we can find all plant related variables")
     public String getDescription() {
         return description;
     }

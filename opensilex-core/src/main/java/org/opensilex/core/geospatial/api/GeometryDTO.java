@@ -1,7 +1,7 @@
 package org.opensilex.core.geospatial.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.geojson.GeoJsonObject;
 
 import java.net.URI;
@@ -10,7 +10,7 @@ import java.net.URI;
 public class GeometryDTO {
 
 
-    @ApiModelProperty(value = "Object URI")
+    @Schema(description = "Object URI")
     protected URI uri;
 
     protected GeoJsonObject geometry;

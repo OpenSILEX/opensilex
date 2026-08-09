@@ -875,13 +875,14 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                         <pathToYarn>${maven.multiModuleProjectDirectory}/.node/node/yarn/dist/bin/yarn</pathToYarn>
                     </configuration>
                 </plugin>
-                <!-- Generate openapi.json file -->
+                <!-- Generate openapi.json and TypeScript schema.d.ts file -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>${maven.exec.plugin.version}</version>
                     <executions>
                         <execution>
+                            <id>generate-openapi-spec</id>
                             <phase>compile</phase>
                             <goals>
                                 <goal>java</goal>
@@ -895,40 +896,39 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 </arguments>
                             </configuration>
                         </execution>
-                    </executions>
-                </plugin>
-                <!-- Generate TypeScript library from openapi.json file -->
-                <plugin>
-                    <groupId>org.openapitools</groupId>
-                    <artifactId>openapi-generator-maven-plugin</artifactId>
-                    <version>${openapi.generator.version}</version>
-
-                    <configuration>
-                        <skip>${skipTypeScriptLibBuild}</skip>
-                    </configuration>
-
-                    <executions>
                         <execution>
+                            <id>generate-typescript-schema</id>
                             <phase>compile</phase>
                             <goals>
-                                <goal>generate</goal>
+                                <goal>exec</goal>
                             </goals>
                             <configuration>
-                                <inputSpec>${project.basedir}/front/src/lib/openapi.json</inputSpec>
-                                <generatorName>typescript-inversify</generatorName>
-                                <output>${project.basedir}/front/src/lib/</output>
-                                <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
-                                <skipValidateSpec>true</skipValidateSpec>
-                                <configOptions>
-                                    <packageName>${project.name}</packageName>
-                                    <packageVersion>${revision}</packageVersion>
-                                    <npmName>${project.name}</npmName>
-                                    <usePromise>true</usePromise>
-                                    <supportsES6>true</supportsES6>
-                                    <modelPropertyNaming>original</modelPropertyNaming>
-                                </configOptions>
+                                <skip>${skipTypeScriptLibBuild}</skip>
+                                <executable>${maven.multiModuleProjectDirectory}/node_modules/.bin/openapi-typescript</executable>
+                                <arguments>
+                                    <argument>${project.basedir}/front/src/lib/openapi.json</argument>
+                                    <argument>-o</argument>
+                                    <argument>${project.basedir}/front/src/lib/schema.d.ts</argument>
+                                </arguments>
                             </configuration>
                         </execution>
+                        <execution>
+                            <id>generate-typescript-index</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <skip>${skipTypeScriptLibBuild}</skip>
+                                <executable>node</executable>
+                                <arguments>
+                                    <argument>-e</argument>
+                                    <argument>const fs = require('fs'), path = require('path'), dir = path.dirname(process.argv[1]); if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); } const indexFile = path.join(dir, 'index.ts'); if (!fs.existsSync(indexFile)) { fs.writeFileSync(indexFile, "export type * from './schema';\n\nexport class ApiServiceBinder {\n    public static with(container: any) {}\n}\n"); } const httpFile = path.join(dir, 'HttpResponse.ts'); if (!fs.existsSync(httpFile)) { fs.writeFileSync(httpFile, "export class HttpResponse&lt;T = any&gt; { constructor(public response: T, public status: number, public headers?: any) {} }\nexport default HttpResponse;\nexport class PaginationDTO { constructor(public pageSize: number, public currentPage: number, public totalCount: number, public totalPages: number, public limitCount: number, public hasNextPage: boolean) {} }\nexport class StatusDTO { constructor(public message: string, public level: StatusDTO.LevelEnum, public translationKey?: string, public translationValues?: {[x: string]: string}) {} }\nexport namespace StatusDTO { export type LevelEnum = 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG'; export const LevelEnum = { ERROR: 'ERROR' as LevelEnum, WARNING: 'WARNING' as LevelEnum, INFO: 'INFO' as LevelEnum, DEBUG: 'DEBUG' as LevelEnum }; }\nexport class MetadataDTO { constructor(public pagination: PaginationDTO, public status: Array&lt;StatusDTO&gt;, public datafiles: Array&lt;string&gt;) {} }\nexport class OpenSilexResponse&lt;T = any&gt; { constructor(public result: T, public metadata: MetadataDTO) {} }\n"); } const ihttpFile = path.join(dir, 'IHttpClient.ts'); if (!fs.existsSync(ihttpFile)) { fs.writeFileSync(ihttpFile, "import HttpResponse from './HttpResponse';\nimport { Headers } from './Headers';\nexport interface IHttpClient {\n    get(url: string, headers?: Headers): Promise&lt;HttpResponse&gt;;\n    post(url: string, body: any, headers?: Headers): Promise&lt;HttpResponse&gt;;\n    put(url: string, body: any, headers?: Headers): Promise&lt;HttpResponse&gt;;\n    delete(url: string, headers?: Headers): Promise&lt;HttpResponse&gt;;\n}\nexport default IHttpClient;\n"); } const headersFile = path.join(dir, 'Headers.ts'); if (!fs.existsSync(headersFile)) { fs.writeFileSync(headersFile, "export interface Headers {\n    [index: string]: string | string[];\n}\n"); }</argument>
+                                    <argument>${project.basedir}/front/src/lib/index.ts</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+
                     </executions>
                 </plugin>
                 <!-- Front Node & Npm management -->
@@ -1874,7 +1874,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                                 </goals>
 
                                 <configuration>
-                                    <skip>${skipFrontTypesGeneration}</skip>
+                                    <skip>true</skip>
                                     <arguments>run build</arguments>
                                     <workingDirectory>front/src/lib</workingDirectory>
                                 </configuration>

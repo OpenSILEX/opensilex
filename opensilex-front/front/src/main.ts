@@ -139,7 +139,7 @@ import store from './models/Store'
 // Local imports
 // console.debug("Import local files...");
 import { FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO, UserFrontConfigDTO } from './lib'
-import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
+import HttpResponse, { OpenSilexResponse } from './models/HttpResponse'
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
 import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'

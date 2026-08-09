@@ -12,8 +12,8 @@
         }
     },
     "scripts": {
-        "serve": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts --watch",
-        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
+        "serve": "mkdir -p src/lib/model && echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts --watch",
+        "build": "mkdir -p src/lib/model && echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
         "check:outdated": "npm outdated || cd .",

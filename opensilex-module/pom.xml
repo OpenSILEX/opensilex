@@ -145,13 +145,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            
-            <!-- Generate TypeScript library from openapi.json file -->
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-            </plugin>
-            
+
                   
             <!-- Allow to extends SPARQL deserializers and ontology types for vue.js --> 
             <plugin>

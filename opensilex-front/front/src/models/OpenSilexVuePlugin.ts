@@ -15,7 +15,7 @@ import {
 import { ApiServiceBinder as SecurityApiServiceBinder } from './../../../../opensilex-security/front/src/lib';
 import { ApiServiceBinder as CoreApiServiceBinder } from './../../../../opensilex-core/front/src/lib';
 
-import IHttpClient from '../lib/IHttpClient';
+import IHttpClient from './IHttpClient';
 import Oeso from '../ontologies/Oeso';
 import Foaf from '../ontologies/Foaf';
 import Org from '../ontologies/Org';
@@ -32,7 +32,7 @@ import { ServiceBinder } from "../services/ServiceBinder";
 import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
-import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "./HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import { useI18n } from 'vue-i18n'

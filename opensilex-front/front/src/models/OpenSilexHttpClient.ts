@@ -1,8 +1,8 @@
-import IHttpClient from "../lib/IHttpClient";
+import IHttpClient from "./IHttpClient";
 import "whatwg-fetch";
-import HttpResponse, {MetadataDTO, StatusDTO} from "../lib/HttpResponse";
+import HttpResponse, {MetadataDTO, StatusDTO} from "./HttpResponse";
 import {injectable} from "inversify";
-import {Headers} from "../lib/Headers";
+import {Headers} from "./Headers";
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {User} from './User';
 

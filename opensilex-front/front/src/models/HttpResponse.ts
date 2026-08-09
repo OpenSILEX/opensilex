@@ -1,0 +1,38 @@
+import { Headers } from "./Headers";
+
+export class HttpResponse<T = any> {
+    constructor(public response: T, public status: number, public headers?: Headers) {
+    }
+}
+
+export default HttpResponse;
+
+export class PaginationDTO {
+    constructor(public pageSize: number, public currentPage: number, public totalCount: number, public totalPages: number, public limitCount: number, public hasNextPage: boolean) {
+    }
+}
+
+export class StatusDTO {
+    constructor(public message: string, public level: StatusDTO.LevelEnum, public translationKey?: string, public translationValues?: {[x: string]: string}) {
+    }
+}
+
+export namespace StatusDTO {
+    export type LevelEnum = 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG';
+    export const LevelEnum = {
+        ERROR: 'ERROR' as LevelEnum,
+        WARNING: 'WARNING' as LevelEnum,
+        INFO: 'INFO' as LevelEnum,
+        DEBUG: 'DEBUG' as LevelEnum
+    };
+}
+
+export class MetadataDTO {
+    constructor(public pagination: PaginationDTO, public status: Array<StatusDTO>, public datafiles: Array<string>) {
+    }
+}
+
+export class OpenSilexResponse<T = any> {
+    constructor(public result: T, public metadata: MetadataDTO) {
+    }
+}

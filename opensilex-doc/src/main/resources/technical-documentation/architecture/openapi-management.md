@@ -125,18 +125,38 @@ OpenSILEX uses custom `ModelConverter` / `OpenApiReader` implementations (e.g., 
 
 ---
 
-## 5. TypeScript Client Generation
+- **Interactive API Documentation (`/api-docs`)**: Serves Swagger UI 5.32.8 via WebJars (`org.webjars:swagger-ui:5.32.8`), pointing to `/rest/openapi.json` with JWT token interceptors.
 
-OpenSILEX uses `org.openapitools:openapi-generator-maven-plugin` (v7.x):
+---
 
-- **Target Language**: `typescript-inversify`
-- **Input Spec**: `${project.basedir}/front/src/lib/openapi.json`
-- **Output Directory**: `${project.basedir}/front/src/lib/`
-- **Configuration Options**:
-  - `packageName`: Module ID (e.g., `opensilex-core`)
-  - `usePromise`: `true`
-  - `modelPropertyNaming`: `original`
-  - `<skip>`: Enabled dynamically per module if no API endpoints exist.
+## 5. TypeScript Client Architecture & `openapi-fetch`
+
+OpenSILEX utilizes `openapi-typescript` for type generation and `openapi-fetch` with request/response middleware:
+
+- **Type Generation Script**: `npm run gen:types` (`openapi-typescript openapi.yaml -o src/api/schema.d.ts`)
+- **Client Library**: `openapi-fetch` with zero template generation required.
+- **Request Middleware**: Dynamically injects `Authorization: Bearer <token>` and `Accept-Language` headers on outgoing requests.
+- **Response Middleware (Approach A)**: Intercepts custom HTTP responses, status codes, and error payloads globally:
+
+```typescript
+// Response Middleware (Approach A)
+const responseMiddleware: Middleware = {
+  async onResponse({ response, request }) {
+    if (!response.ok) {
+      const errorPayload = await response.clone().json().catch(() => ({}));
+      const message = errorPayload?.message || `HTTP ${response.status}: ${response.statusText}`;
+
+      if (response.status === 401) {
+        localStorage.removeItem("opensilex_token");
+        window.dispatchEvent(new CustomEvent("opensilex:unauthorized"));
+      }
+
+      throw new OpenSilexResponseError(message, response.status, errorPayload);
+    }
+    return response;
+  }
+};
+```
 
 ---
 

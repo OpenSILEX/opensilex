@@ -76,17 +76,11 @@
         
     <build>
         <plugins>
-            <!-- Generate swagger.json file -->
+            <!-- Generate openapi.json & TypeScript schema -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>${maven.exec.plugin.version}</version>
-            </plugin>
-            
-            <!-- Generate TypeScript library from openapi.json file -->
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

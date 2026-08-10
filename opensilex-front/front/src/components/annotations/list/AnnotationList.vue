@@ -111,7 +111,7 @@ import { computed, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import {AnnotationGetDTO} from 'opensilex-core/index';
 import type { AnnotationsService } from 'opensilex-core/api/annotations.service';

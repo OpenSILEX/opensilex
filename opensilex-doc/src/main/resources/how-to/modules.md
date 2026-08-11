@@ -20,7 +20,6 @@ opensilex
 ├── opensilex-release
 ├── opensilex-security
 ├── opensilex-sparql
-├── opensilex-swagger-codegen-maven-plugin
 ```
 
 2. Module skeleton
@@ -161,19 +160,15 @@ You need to the new module to the full build stage you need to add it to the glo
         <!-- Release module -->
         <module>opensilex-release</module>
          
-        <!-- Maven Plugin module -->
-        <module>opensilex-swagger-codegen-maven-plugin</module>
-        
         <!-- Documentation module -->
         <module>opensilex-doc</module>
     </modules>
     
     <dependencies>
-        <!-- Plugin dependencies -->
+        <!-- Hey API OpenAPI TS generator dependency -->
         <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-            <version>${revision}</version>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
         </dependency>
             
         <!-- OpenSilex build-in modules dependencies-->

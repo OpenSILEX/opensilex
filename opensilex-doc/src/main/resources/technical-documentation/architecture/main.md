@@ -79,7 +79,7 @@ opensilex --> POM - Main module aggregating all others
 |
 +-- opensilex-release --> POM - Helper module to produce release zip file with all built-in modules included, ready to deploy & run
 |
-+-- opensilex-swagger-codegen --> MAVEN-PLUGIN - Helper module to generate TypeScript API for Vue.js usage with custom templates (fork of https://github.com/swagger-api/swagger-codegen)
++-- openapi-ts --> MAVEN-PLUGIN & NPM TOOL - Hey API (@hey-api/openapi-ts & @hey-api/vite-plugin) to generate TypeScript SDK client libraries with @hey-api/client-fetch for Vue.js usage
 ```
 
 ### Module dependency hierarchy
@@ -127,7 +127,7 @@ And for development modules dependency tree is represented by the following hier
   opensilex-doc     opensilex-release     opensilex-dev-tools
 ```
 
-Module `opensilex-swagger-codegen` is not represented in this hiearchy because all modules are dependent to it to build TypeScript API client.
+The TypeScript client SDK generator (via Hey API `@hey-api/openapi-ts`, `@hey-api/client-fetch`, and `@hey-api/vite-plugin`) is utilized across modules to build front-end API client libraries.
 
 ## OpenSilex modules
 
@@ -801,37 +801,39 @@ Each parameters of these methods is annotated with either `@QueryParam`, `@PathP
 
 There is a lot more of options in Jersey, please check their [documentation](https://eclipse-ee4j.github.io/jersey.github.io/documentation/latest/jaxrs-resources.html#d0e2043)
 
-## Introduction to Swagger API
+## Introduction to OpenAPI
 
-Swagger API automatically produce an API description based on annotations.
+OpenAPI automatically produces an API specification based on Swagger v3 annotations (`io.swagger.v3.oas.annotations`).
 
-This API description is represented by a JSON file automatically generated and accessible when server is running at URL: ̀`/rest/swagger.json`
+This API specification is represented by a JSON file automatically generated and accessible when the server is running at URL: `/rest/openapi.json`
 
-This file is automatically processed by Swagger UI to generate a dynamic web interface accessible when server is running at URL: ̀`/api-docs`
+This file is automatically processed by Swagger UI to generate a dynamic web interface accessible when the server is running at URL: `/api-docs`
 
-Swagger API mechanism is also used to generate TypeScript service and types library to be included in Vue.js application.
+The OpenAPI specification is also used to generate the TypeScript API service and model library for inclusion in the Vue.js frontend application (`typescript-inversify` generator).
 
-Each Jersey API class is also annotated with `@Api` to define in which API group this class belong.
+Each REST API resource class is annotated with `@Tag` to define the API group to which the class belongs.
 
-Each API methods of these classes are also annotated with:
-- `@ApiOperation`: Description (short and/or long) of what this API method do
-- `@ApiResponses`: List of `@ApiResponse` which each describe a return code, a description and eventually a return class object (which can be in a List)
+API methods of these classes are annotated with:
+- `@Operation`: Summary and description of what the API method does.
+- `@ApiResponse`: Describes return HTTP status codes, descriptions, and schema content models.
 
-Return codes MUST match [HTTP standart status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)
+Return codes MUST match standard [HTTP status codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
 
-Each API method parameters are annotated with `@ApiParam` to provide description and examples.
+API method parameters are annotated with `@Parameter` (or `@PathParam`, `@QueryParam`, `@HeaderParam`) to provide descriptions, schemas, and examples.
 
-There is a lot more of options and details in Swagger API, please check their [documentation](https://github.com/swagger-api/swagger-core/wiki/Annotations-1.5.X)
+DTO models are annotated with `@Schema` to describe fields, validation criteria, and constraints.
+
+For more details on OpenAPI 3 annotations, refer to the [Swagger Core v3 Documentation](https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations).
 
 ## Initialization
 
-Once Tomcat server is started, Jersey scan automatically loaded classes and initialize `org.opensilex.rest.RestApplication`:
-- Setup properties and enable Jersey features for Jackson, GZIP and File data transfert
-- for each `OpenSilexModule` implementing `APIExtension` register all extra packages for Jersey & Swagger API to scan
-- initialize Swagger API by scanning classpath
-- register all services of OpenSilex instance to be injectable in found API classes
-- for each `OpenSilexModule` implementing `APIExtension` call `initAPI` method to allow post API initialization extension for `RestApplication`
+Once the Tomcat server is started, Jersey automatically scans loaded classes and initializes `org.opensilex.server.rest.RestApplication`:
+- Set up properties and enable Jersey features for Jackson, GZIP, and file transfers.
+- For each `OpenSilexModule` implementing `APIExtension`, register extra packages for Jersey and OpenAPI scanning.
+- Initialize OpenAPI spec endpoint (`OpenApiResource`) and Swagger UI configuration.
+- Register all OpenSILEX services to be injectable into API resource classes.
+- For each `OpenSilexModule` implementing `APIExtension`, initialize REST application settings.
 
-See: `org.opensilex.rest.RestApplication` for more informations
+See `org.opensilex.server.rest.RestApplication` for more information.
 
 

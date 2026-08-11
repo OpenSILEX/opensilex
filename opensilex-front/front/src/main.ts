@@ -138,8 +138,14 @@ import store from './models/Store'
 
 // Local imports
 // console.debug("Import local files...");
-import { FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO, UserFrontConfigDTO } from './lib'
-import HttpResponse, { OpenSilexResponse } from './models/HttpResponse'
+import { api, client, getThemeConfig, getConfig, getUserConfig } from './api/client'
+import { authenticateOpenId } from 'opensilex-security'
+import type { components } from './lib'
+
+type FrontConfigDTO = components["schemas"]["FrontConfigDTO"];
+type ThemeConfigDTO = components["schemas"]["ThemeConfigDTO"];
+type FontConfigDTO = components["schemas"]["FontConfigDTO"];
+type UserFrontConfigDTO = components["schemas"]["UserFrontConfigDTO"];
 import { User } from './models/User'
 import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
 import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
@@ -191,7 +197,7 @@ for (let componentName in components) {
 
 
 
-function loadFonts(vueJsService: VueJsService, fonts: Array<FontConfigDTO>) {
+function loadFonts(fonts: Array<FontConfigDTO>) {
 
   for (let i in fonts) {
     let font: FontConfigDTO = fonts[i];
@@ -233,17 +239,26 @@ function loadFonts(vueJsService: VueJsService, fonts: Array<FontConfigDTO>) {
   }
 }
 
-function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
+function loadTheme(config: FrontConfigDTO) {
   return new Promise((resolve, reject) => {
     if (config.themeModule && config.themeName) {
       // console.debug("Load defined theme configuration...", config.themeModule, config.themeName);
-      vueJsService.getThemeConfig(config.themeModule, config.themeName)
-        .then((http: HttpResponse<OpenSilexResponse<ThemeConfigDTO>>) => {
-          // console.debug("Theme configuration loaded !", config.themeModule, config.themeName);
-          const themeConfig: ThemeConfigDTO = http.response.result;
+      getThemeConfig({
+        path: {
+          moduleId: config.themeModule,
+          themeId: config.themeName
+        }
+      })
+        .then(({ data, error }) => {
+          if (error || !data) {
+            reject(error);
+            return;
+          }
+
+          const themeConfig: ThemeConfigDTO = (data as any)?.result ?? data;
 
           $opensilex.setThemeConfig(themeConfig);
-          loadFonts(vueJsService, themeConfig.fonts);
+          loadFonts(themeConfig.fonts);
 
           if (themeConfig.hasStyle) {
             // console.debug("Load CSS theme style...");
@@ -280,9 +295,12 @@ $opensilex.loadModules([
   // console.debug("Start loading configuration...");
   let loadConfigFromOSVuePlugin = $opensilex.getConfig()
   // loadConfigFromOSVuePlugin;
-  const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
-  vueJsService.getConfig().then((configResponse) => {
-    const config: FrontConfigDTO = configResponse.response.result;
+  getConfig().then(({ data, error }) => {
+    if (error || !data) {
+      manageError(error);
+      return;
+    }
+    const config: FrontConfigDTO = (data as any)?.result ?? data;
     $opensilex.setConfig(config);
 
     store.commit("setConfig", { config, app });
@@ -318,9 +336,14 @@ $opensilex.loadModules([
 
 
     // Load user-specific configuration
-    vueJsService.getUserConfig()
-      .then(function (userConfigResponse) {
-        const userConfig: UserFrontConfigDTO = userConfigResponse.response.result;
+    getUserConfig()
+      .then(function ({ data, error }) {
+        if (error || !data) {
+          manageError(error);
+          return;
+        }
+
+        const userConfig: UserFrontConfigDTO = (data as any)?.result ?? data;
 
         store.commit("setUserConfig", userConfig);
 
@@ -333,12 +356,20 @@ $opensilex.loadModules([
           window.location = baseURL;
         }
 
-        const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
         if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
           console.debug("Identify user with OpenID Connect");
-          authService.authenticateOpenID(urlParams.get("code"))
-            .then((http) => {
-              let user = User.fromToken(http.response.result.token);
+          authenticateOpenId({
+            query: {
+              code: urlParams.get("code") || ""
+            }
+          })
+            .then(({ data, error }) => {
+              if (error || !data) {
+                manageError(error);
+                return;
+              }
+              const result = (data as any)?.result ?? data;
+              let user = User.fromToken(result.token);
               $opensilex.setCookieValue(user);
               window.location = baseURL.slice(0, -7);
             }).catch(manageError);
@@ -348,7 +379,7 @@ $opensilex.loadModules([
           $opensilex.setCookieValue(user);
           window.location = baseURL.slice(0, -5);
         } else {
-          let themePromise: Promise<any> = loadTheme(vueJsService, config);
+          let themePromise: Promise<any> = loadTheme(config);
 
           themePromise
             .then(() => {

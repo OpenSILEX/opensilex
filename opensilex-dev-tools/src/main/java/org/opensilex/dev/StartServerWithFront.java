@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
@@ -149,36 +150,40 @@ public class StartServerWithFront {
         createThemeMonitor(moduleDirectory, targetDirectory);
 
         String filename = moduleId + ".umd.min.js";
+        File libFile = moduleDirectory.resolve("dist/" + filename).toFile();
+        File targetLibFile = targetDirectory.resolve(filename).toFile();
 
         FileAlterationObserver observer = new FileAlterationObserver(moduleDirectory.resolve("dist").toFile().getCanonicalPath());
         FileAlterationMonitor monitor = new FileAlterationMonitor(200);
         FileAlterationListener listener = new FileAlterationListenerAdaptor() {
-            @Override
-            public void onStart(FileAlterationObserver observer){
-                File file = observer.getDirectory();
-                if (file.getName().equals(filename)) {
-                    LOGGER.debug("File exist: " + file.getName());
+            private final AtomicBoolean countedDown = new AtomicBoolean(false);
+
+            private void checkAndCopy() {
+                if (libFile.exists()) {
                     try {
-                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
+                        FileUtils.copyFile(libFile, targetLibFile);
                     } catch (IOException ex) {
                         LOGGER.error("Error while copying lib file: " + filename, ex);
                     }
-                    countDownLatch.countDown();
+                    if (countedDown.compareAndSet(false, true)) {
+                        LOGGER.debug("Module front build ready: " + filename);
+                        countDownLatch.countDown();
+                    }
                 }
             }
+
+            @Override
+            public void onStart(FileAlterationObserver observer) {
+                checkAndCopy();
+            }
+
             @Override
             public void onFileCreate(File file) {
                 if (file.getName().equals(filename)) {
                     LOGGER.debug("File created: " + file.getName());
-                    try {
-                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
-                    } catch (IOException ex) {
-                        LOGGER.error("Error while copying lib file: " + filename, ex);
-                    }
-                    countDownLatch.countDown();
+                    checkAndCopy();
                 }
             }
-
 
             @Override
             public void onFileDelete(File file) {
@@ -188,12 +193,8 @@ public class StartServerWithFront {
             public void onFileChange(File file) {
                 if (file.getName().equals(filename)) {
                     LOGGER.debug("File changed: " + file.getName());
-                    try {
-                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
-                        triggerHotReload();
-                    } catch (IOException ex) {
-                        LOGGER.error("Error while copying lib file: " + filename, ex);
-                    }
+                    checkAndCopy();
+                    triggerHotReload();
                 }
             }
         };

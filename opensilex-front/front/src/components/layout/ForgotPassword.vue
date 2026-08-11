@@ -83,8 +83,7 @@
 <script lang="ts">
 import {computed, defineComponent, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {AuthenticationService} from "opensilex-security/index";
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import {forgotPassword} from "opensilex-security";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
@@ -98,7 +97,7 @@ export default defineComponent({
     const store = useStore();
     const {t, locale, availableLocales} = useI18n();
     const user = computed(() => store.state.user);
-    const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
+
     const email = ref<string>("");
     const languages = computed(() =>
         availableLocales.map(l => ({
@@ -114,7 +113,7 @@ export default defineComponent({
       locale,
       availableLocales,
       user,
-      authenticationService,
+
       email,
       languages
     };
@@ -128,11 +127,17 @@ export default defineComponent({
         this.opensilex.showErrorToast(this.t("ForgotPasswordComponent.empty-email"));
         return;
       }
-      this.authenticationService
-          .forgotPassword(this.email)
-          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-            this.$opensilex.showSuccessToastWithDelay(
-                this.$t("ForgotPasswordComponent.link-email"),
+      forgotPassword({
+        query: {
+          identifier: this.email
+        }
+      })
+          .then(({ data, error }) => {
+            if (error) {
+              throw error;
+            }
+            this.opensilex.showSuccessToastWithDelay(
+                this.t("ForgotPasswordComponent.link-email"),
                 5000
             );
           })

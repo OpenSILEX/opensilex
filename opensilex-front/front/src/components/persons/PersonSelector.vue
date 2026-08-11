@@ -34,11 +34,8 @@
 import { computed, inject, ref } from 'vue'
 import { useStore } from 'vuex'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import { searchPersons as fetchPersons, getPersonsByUri } from 'opensilex-security'
 
-// opensilex-security
-import type { SecurityService, PersonDTO } from 'opensilex-security/index'
-import type HttpResponse from 'opensilex-security/HttpResponse'
-import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import { useI18n } from 'vue-i18n'
 
 // types
@@ -96,20 +93,23 @@ const actionHandler = computed(() => (canAddPerson.value ? showCreateForm : null
 
 /** Load selected persons by URI(s) */
 function loadPersons(personsURI: any) {
-  return service.value
-    .getPersonsByURI(personsURI)
-    .then((http: HttpResponse<OpenSilexResponse<Array<PersonDTO>>>) => http.response.result)
+  const uris = Array.isArray(personsURI) ? personsURI : [personsURI]
+  return getPersonsByUri({ query: { uris } })
+    .then(({ data }) => (data as any)?.result ?? data ?? [])
 }
 
 /** Search persons */
 async function searchPersons(searchQuery: string, page: number) {
-  return await service.value.searchPersons(
-    searchQuery,
-    props.getOnlyPersonsWithoutAccount,
-    undefined,
-    page,
-    0
-  )
+  const { data, error } = await fetchPersons({
+    query: {
+      pattern: searchQuery,
+      get_only_persons_without_account: props.getOnlyPersonsWithoutAccount,
+      page,
+      page_size: 10
+    }
+  })
+  if (error || !data) return { data: [] }
+  return data
 }
 
 /** DTO -> node */

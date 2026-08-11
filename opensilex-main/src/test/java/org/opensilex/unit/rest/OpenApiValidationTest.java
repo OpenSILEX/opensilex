@@ -43,4 +43,10 @@ public class OpenApiValidationTest extends AbstractUnitTest {
                     clazz.isAnnotationPresent(Tag.class));
         }
     }
+
+    @Test
+    public void testRestApplicationInitOpenApi() throws Exception {
+        org.opensilex.server.rest.RestApplication app = new org.opensilex.server.rest.RestApplication(opensilex);
+        assertNotNull("RestApplication instance should not be null", app);
+    }
 }

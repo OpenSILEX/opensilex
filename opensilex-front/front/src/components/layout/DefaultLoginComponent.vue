@@ -166,15 +166,14 @@
 </template>
 
 <script lang="ts">
+import { api } from "@/api/client";
 import {computed, defineComponent, inject, nextTick, onMounted, ref} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {User} from "../../models/User";
-import type {AuthenticationService, TokenGetDTO} from "opensilex-security/index";
-import type {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import HttpResponse from "opensilex-security/HttpResponse";
 
-import {FrontConfigDTO} from "../../lib";
-import {VersionInfoDTO} from "opensilex-core/index";
+import {FrontConfigDTO} from "opensilex-front";
+import {authenticate} from "opensilex-security";
+import {VersionInfoDTO} from "opensilex-core";
 import {useI18n} from "vue-i18n";
 import {Carousel, Dropdown} from "bootstrap";
 import {useStore} from "vuex";
@@ -265,17 +264,25 @@ export default defineComponent({
     // Définition login (call by onLoginAsGuest)
     const login = async () => {
       $opensilex.showLoader();
+      console.debug("call login");
+
       try {
-        const authService = $opensilex.getService<AuthenticationService>(
-          "opensilex-security.AuthenticationService"
-        );
-        const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
-          await authService.authenticate({
+        const { data, error } = await authenticate({
+          body: {
             identifier: form.value.email,
             password: form.value.password,
-          });
+          }
+        });
+        console.debug("call login", form.value.email, form.value.password);
 
-        const user = $opensilex.fromToken(response.response.result.token);
+
+        if (error || !data) {
+          throw error || new Error("Authentication failed");
+        }
+
+        const result = (data as any)?.result ?? data;
+        console.debug("token -> " + result.token);
+        const user = $opensilex.fromToken(result.token);
         $opensilex.setCookieValue(user);
 
         store.commit("login", user);
@@ -297,17 +304,19 @@ export default defineComponent({
       $opensilex.showLoader();
 
       try {
-        const authService = $opensilex.getService<AuthenticationService>(
-          "opensilex-security.AuthenticationService"
-        );
-
-        const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
-          await authService.authenticate({
+        const { data, error } = await authenticate({
+          body: {
             identifier: form.value.email,
             password: form.value.password
-          });
+          }
+        });
 
-        const user = User.fromToken(response.response.result.token);
+        if (error || !data) {
+          throw error || new Error("Authentication failed");
+        }
+
+        const result = (data as any)?.result ?? data;
+        const user = User.fromToken(result.token);
         $opensilex.setCookieValue(user);
         store.commit("login", user);
         store.commit("refresh");

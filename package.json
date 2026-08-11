@@ -8,10 +8,11 @@
         "serve": "vite serve",
         "build": "vite build",
         "lint": "vite lint",
-        "gen:types": "openapi-typescript openapi.yaml -o src/api/schema.d.ts",
+        "gen:types": "openapi-ts --plugins @hey-api/client-fetch @hey-api/typescript @hey-api/sdk -i opensilex-front/front/src/lib/openapi.json -o opensilex-front/front/src/lib/generated",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
         "check:outdated": "npm outdated || cd .",
         "check:security": "npm audit || cd .",
+        "test": "vitest run",
         "vite": "vite"
     },
     "dependencies": {
@@ -20,6 +21,7 @@
         "@fortawesome/free-regular-svg-icons": "^6.7.2",
         "@fortawesome/free-solid-svg-icons": "^6.7.2",
         "@fortawesome/vue-fontawesome": "^3.0.8",
+        "@hey-api/client-fetch": "^0.6.0",
         "@vee-validate/rules": "^4.15.1",
         "core-js": "3.42.0",
         "csv-string": "^4.1.1",
@@ -28,7 +30,6 @@
         "naive-ui": "^2.41.0",
         "node-fetch": "3.3.2",
         "npm-dts": "^1.3.13",
-        "openapi-fetch": "^0.13.4",
         "papaparse": "^5.5.3",
         "reflect-metadata": "0.2.2",
         "tabulator-tables": "^6.4.0",
@@ -42,17 +43,20 @@
         "yup": "^1.7.0"
     },
     "devDependencies": {
+        "@hey-api/openapi-ts": "^0.63.0",
+        "@hey-api/vite-plugin": "^0.2.0",
         "@types/node": "22.15.1",
         "@vitejs/plugin-vue": "^5.2.4",
         "@vue/compiler-sfc": "^3.5.21",
         "eslint": "^9.27.0",
         "eslint-plugin-vue": "^9.32.0",
-        "openapi-typescript": "^7.6.1",
+        "happy-dom": "^17.6.1",
         "sass": "1.89.0",
         "sass-loader": "16.0.5",
         "typescript": "^5.8.3",
         "vite": "^6.3.5",
-        "vite-plugin-vue-devtools": "^8.0.2"
+        "vite-plugin-vue-devtools": "^8.0.2",
+        "vitest": "^3.2.7"
     },
     "eslintConfig": {
         "root": true,

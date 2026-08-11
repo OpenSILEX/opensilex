@@ -1,187 +1,42 @@
 <template>
   <div class="container-fluid">
-    <!-- <b-row>
-      <b-col></b-col>
-      <b-col cols="8">
-        <h2>{{ $t("ResetPasswordComponent.title") }}</h2>
-        <br />
-        <div v-if="!badToken">
-          <ValidationObserver ref="validatorRef">
-            <b-form @submit.prevent="onResetPassword">
-              <opensilex-InputForm
-                :value.sync="password"
-                label="ResetPasswordComponent.new-password"
-                type="password"
-                vid="password-first"
-                :required="true"
-                placeholder="component.account.form-password-placeholder"
-                autocomplete="new-password"
-              ></opensilex-InputForm>
-              <opensilex-InputForm
-                :value.sync="confirmation"
-                label="ResetPasswordComponent.confirm-password"
-                vid="confirmation"
-                type="password"
-                :required="true"
-                rules="required|confirmed:password-first"
-                placeholder="component.account.form-password-placeholder"
-                autocomplete="new-password"
-              ></opensilex-InputForm>
-
-              <div class="sign-btn text-center">
-                <b-button
-                  type="submit"
-                  variant="primary"
-                  v-text="$t('ResetPasswordComponent.reset-password')"
-                ></b-button>
-              </div>
-            </b-form>
-          </ValidationObserver>
-        </div>
-        <div v-else>
-          <h4>
-            <b-alert variant="warning" show>{{
-              $t("ResetPasswordComponent.bad-token")
-            }}</b-alert>
-          </h4>
-
-          <p v-html="$t('ResetPasswordComponent.bad-token-info')"></p>
-          <router-link :to="{ path: '/' }"
-            ><b-button
-              variant="secondary"
-              v-text="$t('ForgotPasswordComponent.returnHome')"
-            ></b-button
-          ></router-link>
-        </div>
-      </b-col>
-      <b-col cols="3"></b-col>
-    </b-row> -->
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, inject } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { renewPassword } from "opensilex-security";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-// @ts-ignore
-// import { AuthenticationService } from "opensilex-security/index";
-// @ts-ignore
-// import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
-export default defineComponent({
-    name: 'resetPassword',
-    // data() {
-    //     const $opensilex: OpenSilexVuePlugin = undefined;
-    //     const confirmation: string = null;
-    //     const password: string = null;
-    //     const passwordToken: any = null;
-    //     const service: AuthenticationService = undefined;
-    //     const $router: any = undefined;
-    //     const $store: any = undefined;
-    //     const $t: any = undefined;
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const route = useRoute();
+const router = useRouter();
 
-    //     return {
-    //         $t,
-    //         $store,
-    //         $router,
-    //         service,
-    //         passwordToken,
-    //         password,
-    //         confirmation,
-    //         badToken: false,
-    //         $opensilex
-    //     };
-    // },
-    // computed: {
-    //     user() {
-    //         return this.$store.state.user;
-    //     },
-    //     validatorRef: {
-    //         cache: false,
-    //         get() {
-    //             return this.$refs["validatorRef"] as any;
-    //         }
-    //     }
-    // },
-    // created() {
-    //     this.service = this.$opensilex.getService(
-    //       "opensilex-security.AuthenticationService"
-    //     );
-    // },
-    // mounted() {
-    //     this.passwordToken = decodeURIComponent(this.$route.params.uri);
-    //     if (this.passwordToken == null || this.passwordToken == undefined) {
-    //       this.$router.push({ path: "/" });
-    //     }
-    //     console.debug("Renew token :" + this.passwordToken);
-    //     // test if renew token exist
-    //     this.service
-    //       .renewPassword(this.passwordToken, true, this.password)
-    //       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-    //         console.debug("Renew token exist");
-    //       })
-    //       .catch((error) => {
-    //         console.debug(error);
-    //         if (error.status == 403 || error.status == 500) {
-    //           console.error("Invalid credentials", error);
-    //           this.$opensilex.errorHandler(
-    //             error,
-    //             this.$t("component.login.errors.invalid-credentials")
-    //           );
-    //         } else {
-    //           if (error.status == 400) {
-    //             console.debug(error);
-    //             console.error("Bad token", error);
-    //             this.badToken = true;
-    //           } else {
-    //             this.$opensilex.errorHandler(error);
-    //           }
-    //         }
-    //       });
-    // },
-    // methods: {
-    //     async asyncInit($opensilex: OpenSilexVuePlugin) {
-    //         await $opensilex.loadService("opensilex-security.AuthenticationService");
-    //     },
-    //     onResetPassword() {
-    //         let validatorRef: any = this.validatorRef;
-    //         validatorRef.validate().then((isValid) => {
-    //           if (isValid) {
-    //             if (this.passwordToken) {
-    //               this.renewPassword();
-    //             }
-    //           }
-    //         });
-    //     },
-    //     renewPassword() {
-    //         console.log(this.passwordToken, false, this.password);
-    //             this.service
-    //               .renewPassword(this.passwordToken, false, this.password)
-    //               .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-    //                 this.$opensilex.showSuccessToastWithDelay(
-    //                   this.$t("ResetPasswordComponent.renew-password"),
-    //                   5000
-    //                 );
-    //                 this.passwordToken = null;
-    //                 this.$router.push({ path: "/" });
-    //               })
-    //               .catch((error) => {
-    //                 console.debug(error);
+const passwordToken = ref<string>("");
+const password = ref<string>("");
+const confirmation = ref<string>("");
+const badToken = ref<boolean>(false);
 
-    //                 if (error.status == 400) {
-    //                   console.error("Invalid credentials", error);
-    //                   this.$opensilex.errorHandler(
-    //                     error,
-    //                     this.$t("component.login.errors.invalid-token")
-    //                   );
-    //                 } else {
-    //                   this.$opensilex.errorHandler(error);
-    //                 }
-    //                 this.$opensilex.hideLoader();
-    //               });
-    //     }
-    // }
-})
+onMounted(async () => {
+  const token = route.params.uri ? decodeURIComponent(route.params.uri as string) : "";
+  if (!token) {
+    router.push({ path: "/" });
+    return;
+  }
+  passwordToken.value = token;
 
+  const { error } = await renewPassword({
+    query: {
+      passwordToken: token,
+      checkOnly: true
+    }
+  });
+
+  if (error) {
+    badToken.value = true;
+  }
+});
 </script>
 
 <style scoped lang="scss">

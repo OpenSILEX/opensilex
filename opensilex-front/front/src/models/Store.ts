@@ -3,7 +3,8 @@ import { User } from './User'
 import { Menu } from './Menu';
 import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
-import { AuthenticationService } from 'opensilex-security/index';
+import { api } from '../api/client';
+import { renewToken } from 'opensilex-security';
 import { FrontConfigDTO, UserFrontConfigDTO } from "../lib";
 import { createStore } from 'vuex';
 import { App, markRaw } from 'vue';
@@ -55,13 +56,17 @@ let renewTokenOnEvent = function (event) {
 
   if ($opensilex) {
     console.log("opensilex plugin trouvé")
-    $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService")
-      .renewToken()
-      .then((http) => {
-        console.debug("Token renewed", http.response.result.token);
+    renewToken()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          console.error("Token renew error:", error);
+          return;
+        }
+        const result = (data as any)?.result ?? data;
+        console.debug("Token renewed", result.token);
         console.log("🍅 current User : ", currentUser)
-        console.log("🍅 token set : ", http.response.result.token)
-        currentUser.setToken(http.response.result.token);
+        console.log("🍅 token set : ", result.token)
+        currentUser.setToken(result.token);
         $opensilex.$store.commit("login", currentUser);
       })
       .catch(console.error);

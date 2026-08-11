@@ -71,10 +71,12 @@ const authService = $opensilex.getService<AuthenticationService>("Authentication
 ```
 
 ## 🔌 Accès aux services REST
-OpenSilex fournit un ensemble de services typés (via `opensilex-security`, `opensilex-core`, etc.). Ces services sont disponibles par : `$opensilex.getService<ServiceType>("NomDuService")`
+Les fonctions SDK de l'API REST (générées via Hey API `@hey-api/openapi-ts`) sont directement exportées et disponibles sous forme d'imports ESM typés depuis les modules front (`opensilex-security`, `opensilex-core`, etc.) :
 
-Exemple : 
-`const variablesService = $opensilex.getService<VariablesService>("opensilex.VariablesService");`
+```ts
+import { authenticate, forgotPassword, searchPersons } from 'opensilex-security';
+import { getVersionInfo, searchCategories } from 'opensilex-core';
+```
 
 ## 🎨 Thèmes et ressources
 Les fichiers CSS de thème sont récupérés via l’API :

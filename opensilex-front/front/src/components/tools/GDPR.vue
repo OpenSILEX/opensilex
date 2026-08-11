@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { ref, computed, inject, watch, onMounted, onBeforeUnmount } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type { SecurityService } from 'opensilex-security/api/security.service'
+import { getGdprFile } from 'opensilex-security'
 import { useI18n } from 'vue-i18n'
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -35,7 +35,7 @@ const documentIsSetInTheConfig = ref(true)
 const documentIsAvailable = ref(true)
 const encodedPdfUrl = ref('')
 
-const currentLanguage = computed(() => opensilex.getLang())
+const currentLanguage = computed(() => opensilex.user.locale)
 
 async function loadPdf() {
   documentIsSetInTheConfig.value = opensilex.getConfig().gdprFileIsConfigured
@@ -50,22 +50,20 @@ async function loadPdf() {
   }
 
   try {
-    const language = { language: currentLanguage.value }
-    const securityService =
-      opensilex.getService<SecurityService>('opensilex.SecurityService')
+    const { data, error } = await getGdprFile({
+      query: { language: currentLanguage.value },
+      parseAs: 'blob'
+    })
 
-    const blobFile = await opensilex.getBlobFileFromPostOrGetService(
-      securityService.getGdprFilePath(),
-      'GET',
-      language,
-      null
-    )
+    if (error || !data) {
+      throw error || new Error('Failed to load GDPR file')
+    }
 
     if (encodedPdfUrl.value) {
       URL.revokeObjectURL(encodedPdfUrl.value)
     }
 
-    encodedPdfUrl.value = URL.createObjectURL(blobFile)
+    encodedPdfUrl.value = URL.createObjectURL(data as Blob)
   } catch (e) {
     documentIsAvailable.value = false
     opensilex.errorHandler(e)

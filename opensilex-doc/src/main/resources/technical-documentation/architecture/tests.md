@@ -35,9 +35,23 @@
 
 ## Framework and libraries
 
-## Maven
+- **Backend**: JUnit 5 / Maven
+- **Frontend**: Vitest / Happy-DOM (`npm test`)
 
-## Test classes
+## Maven & Frontend Test Commands
+
+- **Backend Integration Tests**: `mvn test`
+- **Frontend Unit Tests**: `npm test` (Runs `vitest run` across Vue frontend components and `@hey-api/client-fetch` modules)
+
+## Frontend Vitest Unit Testing
+
+Frontend unit tests are located alongside components and API utilities with `.spec.ts` extensions (e.g., `client.spec.ts`).
+Tests run in a DOM-simulated environment via `happy-dom`:
+
+```bash
+# Run all Vitest frontend unit tests
+npm test
+```
 
 ### Base abstract classes
 The main classes for tests are these three abstract classes (in inheritance order) :

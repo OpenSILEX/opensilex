@@ -1,3 +1,8 @@
+import { api, registerOpenSilexClient } from '../api/client';
+import type { Client } from '@hey-api/client-fetch';
+import { getDataTypes, getObjectTypes } from '../lib/generated/sdk.gen';
+import { getCredentialsGroups } from 'opensilex-security';
+import { getVersionInfo, searchCategories, getDatatypes as getCoreDataTypes, getNameSpace } from 'opensilex-core';
 import { Container } from 'inversify';
 import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
 import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
@@ -300,11 +305,12 @@ export default class OpenSilexVuePlugin {
 
     public install(app: App) {
         this.app = app;
-        // const pluginInstance = new OpenSilexVuePlugin(app, options, undefined);
         app.config.globalProperties.$opensilex = this;
         app.provide('opensilex', this);
-        // app.prototype.$opensilex = this;
-        // app.$opensilex = this;
+    }
+
+    public registerClient<T extends Client = Client>(client: T): T {
+        return registerOpenSilexClient(client);
     }
 
     public loadService<T>(id: string): Promise<T> {
@@ -359,18 +365,16 @@ export default class OpenSilexVuePlugin {
     }
 
     public getServiceSync<T>(id: string): T | null {
-        // console.debug("Get API service", this.baseApi, id);
         let idParts = this.parseServiceId(id);
-        if (idParts.module == null) {
-            return this.getServiceContainer().get<T>(idParts.service);
-
-        } else {
-            if (this.loadedModules.indexOf(idParts.module) >= 0) {
-                return this.getServiceContainer().get<T>(idParts.service);
-            } else {
-                return null;
+        try {
+            const container = this.getServiceContainer();
+            if (container && container.isBound(idParts.service)) {
+                return container.get<T>(idParts.service);
             }
+        } catch (e) {
+            console.warn("Legacy Inversify service not bound:", id);
         }
+        return null;
     }
 
     private loadedModules: Array<string> = [
@@ -935,21 +939,25 @@ export default class OpenSilexVuePlugin {
         if (this.credentials == null) {
             this.credentials = new Promise((resolve, reject) => {
                 console.debug("Loading credentials list...");
-                this.getService<any>(
-                    "opensilex-security.AuthenticationService"
-                ).getCredentialsGroups().then((http) => {
-                    this.credentials = http.response.result;
+                getCredentialsGroups().then(({ data, error }) => {
+                    if (error || !data) {
+                        this.errorHandler(error);
+                        reject(error);
+                        return;
+                    }
+                    const result = (data as any)?.result ?? data;
+                    this.credentials = result;
                     console.debug("Credentials list loaded !", this.credentials);
-                    resolve(http.response.result);
-                }).catch(this.errorHandler)
-
-            })
+                    resolve(result);
+                }).catch((err) => {
+                    this.errorHandler(err);
+                    reject(err);
+                });
+            });
             return this.credentials;
         } else if (this.credentials instanceof Promise) {
-            console.log("credentials2 list ", this.credentials)
             return this.credentials;
         } else {
-            console.log("credentials3 ", this.credentials)
             return Promise.resolve(this.credentials);
         }
     }
@@ -1293,10 +1301,14 @@ export default class OpenSilexVuePlugin {
 
     public loadDataTypes() {
         return new Promise((resolve, reject) => {
-            this.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
-                .getDataTypes()
-                .then((http) => {
-                    this.datatypes = http.response.result;
+            getDataTypes()
+                .then(({ data, error }) => {
+                    if (error || !data) {
+                        reject(error);
+                        return;
+                    }
+                    const result = (data as any)?.result ?? data;
+                    this.datatypes = result;
                     this.datatypesByURI = new Map<string, VueDataTypeDTO>();
 
                     this.datatypes.forEach(dataType => {
@@ -1332,24 +1344,20 @@ export default class OpenSilexVuePlugin {
         return label ? label.charAt(0).toUpperCase() + label.slice(1) : uri;
     }
 
-    // public getVariableDatatypeLabel(uri: string): string {
-    //     if (!uri) {
-    //         return undefined;
-    //     }
-    //     let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
-    //     return label.charAt(0).toUpperCase() + label.slice(1);
-    // }
-
     /**
      * It loads the variable data types from the server and stores them in the variableDatatypes variable
      * @returns A promise that will resolve when the variable datatypes have been loaded.
      */
     public loadVariableDataTypes() {
         return new Promise((resolve, reject) => {
-            this.getService<VariablesService>("opensilex.VariablesService")
-                .getDatatypes()
-                .then((http) => {
-                    this.variableDatatypes = http.response.result;
+            getCoreDataTypes()
+                .then(({ data, error }) => {
+                    if (error || !data) {
+                        reject(error);
+                        return;
+                    }
+                    const result = (data as any)?.result ?? data;
+                    this.variableDatatypes = result;
                     resolve(this.variableDatatypes);
                 })
                 .catch(reject);
@@ -1364,10 +1372,14 @@ export default class OpenSilexVuePlugin {
      */
     public loadNameSpaces() {
         return new Promise((resolve, reject) => {
-            this.getService<OntologyService>("opensilex.OntologyService")
-                .getNameSpace()
-                .then((http) => {
-                    this.namespaces = http.response.result;
+            getNameSpace()
+                .then(({ data, error }) => {
+                    if (error || !data) {
+                        reject(error);
+                        return;
+                    }
+                    const result = (data as any)?.result ?? data;
+                    this.namespaces = result;
                     resolve(this.namespaces);
                 })
                 .catch(reject);
@@ -1438,10 +1450,14 @@ export default class OpenSilexVuePlugin {
 
     public loadVersionInfo() {
         return new Promise((resolve, reject) => {
-            this.getService<SystemService>("opensilex.SystemService")
-                .getVersionInfo()
-                .then((http) => {
-                    this.versionInfo = http.response.result;
+            getVersionInfo()
+                .then(({ data, error }) => {
+                    if (error || !data) {
+                        reject(error);
+                        return;
+                    }
+                    const result = (data as any)?.result ?? data;
+                    this.versionInfo = result;
                     resolve(this.versionInfo);
                 })
                 .catch(reject);
@@ -1467,29 +1483,33 @@ export default class OpenSilexVuePlugin {
 
     public loadFactorCategories() {
         return new Promise((resolve, reject) => {
-            this.getService<any>("opensilex.FactorsService")
-                .searchCategories(undefined, ["name=asc"])
-                .then(
-                    (http
-                    ) => {
-                        this.categoriesNameByUri = {};
-
-                        http.response.result.forEach((categoryDto) => {
-                            // fill this.categoriesNameByUri by traversing category dto-tree
-                            this.deepWalkObject("children", categoryDto, this.categoriesNameByUri,
-                                function (object) {
-                                    if (object == undefined) {
-                                        return false;
-                                    } else {
-                                        return (object.children.length > 0 ? true : false);
-                                    }
-                                }, function (object, arrayToFill) {
-                                    arrayToFill[object.uri] = object.name;
-                                })
-                        });
-                        resolve(this.categoriesNameByUri)
+            searchCategories({
+                query: {
+                    order_by: ["name=asc"]
+                }
+            })
+                .then(({ data, error }) => {
+                    if (error || !data) {
+                        reject(error);
+                        return;
                     }
-                )
+                    const categories = (data as any)?.result ?? data;
+                    this.categoriesNameByUri = {};
+
+                    categories.forEach((categoryDto) => {
+                        this.deepWalkObject("children", categoryDto, this.categoriesNameByUri,
+                            function (object) {
+                                if (object == undefined) {
+                                    return false;
+                                } else {
+                                    return (object.children && object.children.length > 0 ? true : false);
+                                }
+                            }, function (object, arrayToFill) {
+                                arrayToFill[object.uri] = object.name;
+                            });
+                    });
+                    resolve(this.categoriesNameByUri);
+                })
                 .catch(reject);
         });
     }
@@ -1503,10 +1523,14 @@ export default class OpenSilexVuePlugin {
 
     public loadObjectTypes() {
         return new Promise((resolve, reject) => {
-            this.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
-                .getObjectTypes()
-                .then((http) => {
-                    this.objectTypes = http.response.result;
+            getObjectTypes()
+                .then(({ data, error }) => {
+                    if (error || !data) {
+                        reject(error);
+                        return;
+                    }
+                    const result = (data as any)?.result ?? data;
+                    this.objectTypes = result;
                     this.objectTypesByURI = new Map<string, VueObjectTypeDTO>();
 
                     this.objectTypes.forEach(objectType => {
@@ -1525,14 +1549,14 @@ export default class OpenSilexVuePlugin {
     }
 
     iconIDs = [];
-    selectIconIDs: Array<{id: string, iconName: string}> = [];
+    selectIconIDs: Array<{ id: string, iconName: string }> = [];
 
     public getIconIDs() {
         return this.iconIDs;
     }
 
-    public setIconIDs(iconIDs: Array<{id: string, iconName: string}>) {
-        this.iconIDs = iconIDs.map(({ id  }) => id);
+    public setIconIDs(iconIDs: Array<{ id: string, iconName: string }>) {
+        this.iconIDs = iconIDs.map(({ id }) => id);
         this.selectIconIDs = iconIDs;
     }
 

@@ -129,41 +129,90 @@ OpenSILEX uses custom `ModelConverter` / `OpenApiReader` implementations (e.g., 
 
 ---
 
-## 5. TypeScript Client Architecture & `openapi-fetch`
+## 5. TypeScript Client Architecture & Hey API (`@hey-api/openapi-ts`)
 
-OpenSILEX utilizes `openapi-typescript` for type generation and `openapi-fetch` with request/response middleware:
+OpenSILEX utilizes **Hey API** (`@hey-api/openapi-ts`) with `@hey-api/client-fetch` to generate strongly typed, modern TypeScript SDK client libraries directly from OpenAPI 3.1.1 JSON specifications.
 
-- **Type Generation Script**: `npm run gen:types` (`openapi-typescript openapi.yaml -o src/api/schema.d.ts`)
-- **Client Library**: `openapi-fetch` with zero template generation required.
-- **Request Middleware**: Dynamically injects `Authorization: Bearer <token>` and `Accept-Language` headers on outgoing requests.
-- **Response Middleware (Approach A)**: Intercepts custom HTTP responses, status codes, and error payloads globally:
+### A. Generation Toolchain & Workflow
+
+1. **OpenAPI Specification (`SwaggerAPIGenerator`)**:
+   During the Maven `compile` phase, `SwaggerAPIGenerator` scans Java REST endpoint resources and serializes `front/src/lib/openapi.json` for each module.
+
+2. **TypeScript SDK & Type Generation (`@hey-api/openapi-ts`)**:
+   `exec-maven-plugin` executes `openapi-ts` (`@hey-api/openapi-ts`) with plugins:
+   - Plugins: `--plugins @hey-api/client-fetch --plugins @hey-api/typescript --plugins @hey-api/sdk`
+   - Input: `-i ${project.basedir}/front/src/lib/openapi.json`
+   - Output: `-o ${project.basedir}/front/src/lib/generated`
+
+3. **Vite Integration (`@hey-api/vite-plugin`)**:
+   In `opensilex-front/front/vite.config.ts`, `heyApiPlugin()` accepts a configuration object specifying resolved `input` and `output` paths to automatically regenerate SDK services and TypeScript types whenever Vite starts (`vite serve`) or builds (`vite build`).
+
+4. **Development Tooling (`ResetTypeScriptLib.java`)**:
+   `org.opensilex.dev.ResetTypeScriptLib` provides programmatic regeneration by invoking the `openapi-ts` CLI command with `@hey-api/client-fetch`, `@hey-api/typescript`, and `@hey-api/sdk` plugins.
+
+### B. Generated Assets in `front/src/lib/generated/`
+
+Each module produces a client SDK directory in `front/src/lib/generated/` containing:
+
+| File / Artifact | Purpose |
+| --- | --- |
+| `types.gen.ts` | Strict TypeScript interface definitions for DTO models and endpoint parameters/responses. |
+| `sdk.gen.ts` | Type-safe API SDK service functions (e.g. `authenticate()`, `renewToken()`, `getConfig()`, `getUserConfig()`). |
+| `client.gen.ts` | Base `@hey-api/client-fetch` HTTP client configuration. |
+| `index.ts` | Entry-point barrel file re-exporting types, SDK functions, and client. |
+
+### C. Module Aliases & Clean Imports
+
+Module barrel files (`lib/index.ts` and `src/index.ts`) re-export `./generated`, allowing components to use clean, top-level module imports:
 
 ```typescript
-// Response Middleware (Approach A)
-const responseMiddleware: Middleware = {
-  async onResponse({ response, request }) {
-    if (!response.ok) {
-      const errorPayload = await response.clone().json().catch(() => ({}));
-      const message = errorPayload?.message || `HTTP ${response.status}: ${response.statusText}`;
-
-      if (response.status === 401) {
-        localStorage.removeItem("opensilex_token");
-        window.dispatchEvent(new CustomEvent("opensilex:unauthorized"));
-      }
-
-      throw new OpenSilexResponseError(message, response.status, errorPayload);
-    }
-    return response;
-  }
-};
+// ✅ Clean Module Import via Path Alias
+import { authenticate, renewToken } from 'opensilex-security';
+import { getVersionInfo, searchCategories } from 'opensilex-core';
 ```
+
+Aliases are configured in `vite.config.ts` and `tsconfig.json`:
+
+```typescript
+// vite.config.ts alias configuration
+resolve: {
+  alias: {
+    'opensilex-security': resolve(__dirname, '../../opensilex-security/front/src/index.ts'),
+    'opensilex-security/*': resolve(__dirname, '../../opensilex-security/front/src/*'),
+    'opensilex-core': resolve(__dirname, '../../opensilex-core/front/src/index.ts'),
+    'opensilex-core/*': resolve(__dirname, '../../opensilex-core/front/src/*')
+  }
+}
+```
+
+```json
+// tsconfig.json path mappings
+"paths": {
+  "opensilex-security": ["../../opensilex-security/front/src/index.ts"],
+  "opensilex-security/*": ["../../opensilex-security/front/src/*"],
+  "opensilex-core": ["../../opensilex-core/front/src/index.ts"],
+  "opensilex-core/*": ["../../opensilex-core/front/src/*"]
+}
+```
+
+### D. Frontend Integration & Interceptors (`client.ts`)
+
+Hey API uses pluggable request/response interceptors with `@hey-api/client-fetch` in `opensilex-front/front/src/api/client.ts`:
+
+3. **Dynamic Client Registration (`registerOpenSilexClient`)**:
+   - **`registerOpenSilexClient(client)`**: Dynamically configures any `@hey-api/client-fetch` instance with `baseUrl: getBaseApi()`, request interceptors (`Authorization: Bearer <token>`, `Accept-Language: fr`, `/rest` URL prefixing), and response interceptors (401 Unauthorized handling, `OpenSilexResponseError` status formatting).
+   - **Plugin Integration**: `$opensilex.registerClient(client)` enables dynamically loaded Maven modules (`opensilex-security`, `opensilex-core`, custom modules) via `$opensilex.loadModules(...)` in `main.ts` to register their client instances automatically upon initialization.
+
+4. **Typed Service SDK**:
+   All API endpoints are accessible either via typed module SDK imports (`import { authenticate } from 'opensilex-security'`) or through typed helper namespaces on `api` (`api.Security.authenticate(authDTO)`), returning structured results and metadata.
 
 ---
 
 ## 6. Automated Validation & Testing
 
-To ensure schema correctness during builds and refactoring, automated tests check:
+To ensure schema correctness and client functionality during builds and refactoring, automated tests check:
 
-1. **Schema Validation**: Parses `openapi.json` with Swagger Parser (`OpenAPIResolver`) to assert 0 syntax/validation errors.
-2. **Endpoint Completeness**: Asserts all `@Path` annotated classes are present under `paths`.
-3. **DTO Schema Inspection**: Asserts all `@Schema` annotated DTOs compile to valid schema components under `components/schemas`.
+1. **Vitest Unit Tests**: Executes frontend client suite (`npm test` / `vitest run`) validating base URL resolution, interceptor execution, and service methods.
+2. **Schema Validation**: Parses `openapi.json` with Swagger Parser (`OpenAPIResolver`) to assert 0 syntax/validation errors.
+3. **Endpoint Completeness**: Asserts all `@Path` annotated classes are present under `paths`.
+4. **DTO Schema Inspection**: Asserts all `@Schema` annotated DTOs compile to valid schema components under `components/schemas`.

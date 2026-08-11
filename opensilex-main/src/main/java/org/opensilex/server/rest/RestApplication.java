@@ -25,6 +25,7 @@ import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.utils.SwaggerAPIGenerator;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceFactory;
 import org.opensilex.service.reflection.SelfBound;
@@ -147,6 +148,8 @@ public class RestApplication extends ResourceConfig {
      * Initialize OpenAPI registering every packages to scan for services defined in modules.
      */
     private void initOpenApi() {
+        SwaggerAPIGenerator.configureModelConverters();
+
         // Load all packages to scan from modules implementing APIExtension
         List<String> packageList = new ArrayList<>();
 

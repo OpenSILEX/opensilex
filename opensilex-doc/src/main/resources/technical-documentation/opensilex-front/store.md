@@ -17,7 +17,7 @@ Ce fichier centralise la **gestion de l’état global** de l'application OpenSi
 - `User.ts` : gestion du modèle utilisateur
 - `OpenSilexVuePlugin.ts` : interface principale avec les services OpenSilex
 - `OpenSilexRouter.ts` : instanciation et manipulation du routeur Vue
-- `AuthenticationService` : pour les appels d'authentification à l’API
+- `renewToken` : fonction SDK (depuis `opensilex-security`) pour le rafraîchissement du jeton de session
 - `FrontConfigDTO`, `UserFrontConfigDTO` : configuration globale et utilisateur.
 
 ---

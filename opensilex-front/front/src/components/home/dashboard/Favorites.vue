@@ -54,10 +54,9 @@ export const FAVORITE_TYPES = [
 </script>
 <script setup lang="ts">
 import { ref, onMounted, inject } from "vue";
-import { SecurityService } from "opensilex-security/api/security.service";
+import { getFavorites as fetchFavorites, deleteFavorite as removeFavoriteApi, type FavoriteGetDTO } from "opensilex-security";
 import FavoritesHelp from "./FavoritesHelp.vue";
 import Oeso from "../../../ontologies/Oeso";
-import { FavoriteGetDTO } from "opensilex-security/index";
 import { useI18n } from 'vue-i18n';
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
@@ -66,13 +65,19 @@ const favorites = ref<FavoriteGetDTO[]>([]);
 const favoritesHelpModal = ref<InstanceType<typeof FavoritesHelp> | null>(null);
 
 const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
-const service = $opensilex.getService<SecurityService>("opensilex-security.SecurityService");
 
 const { t } = useI18n();
 
 const getFavorites = async () => {
-  const response = await service.getFavorites(FAVORITE_TYPES);
-  favorites.value = response.response.result;
+  const { data, error } = await fetchFavorites({
+    query: {
+      types: FAVORITE_TYPES
+    }
+  });
+  if (!error && data) {
+    const result = (data as any)?.result ?? data;
+    favorites.value = result;
+  }
 };
 
 const getIcon = (type: string) => {
@@ -106,7 +111,11 @@ const getLink = (type: string, uri: string) => {
 };
 
 const removeFavorite = async (item: string) => {
-  await service.deleteFavorite(item);
+  await removeFavoriteApi({
+    path: {
+      uriFavorite: item
+    }
+  });
   getFavorites();
 };
 

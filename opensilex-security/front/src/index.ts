@@ -1,16 +1,19 @@
 import { ApiServiceBinder } from './lib';
+import { client } from './lib/generated/client.gen';
 
 const plugin = {
     install(app, options) {
         console.log("Install opensilex-security plugin");
+        if (app?.config?.globalProperties?.$opensilex?.registerClient) {
+            app.config.globalProperties.$opensilex.registerClient(client);
+        }
         ApiServiceBinder.with(app.$opensilex.getServiceContainer());
     }
 };
 
-// Ne pas assigner manuellement à `window`
-//  Garder uniquement l'export
 export default plugin;
 export { ApiServiceBinder };
+export * from './lib';
 
 
 // export default {

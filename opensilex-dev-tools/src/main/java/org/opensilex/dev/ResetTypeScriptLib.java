@@ -80,26 +80,34 @@ public class ResetTypeScriptLib {
                     FileUtils.writeStringToFile(openApiJsonPath.toFile(), jsonInString, StandardCharsets.UTF_8);
 
                     String moduleID = ClassUtils.getProjectIdFromClass(module.getClass());
-                    LOGGER.info("Build TS library: " + moduleID);
-                    CodegenConfigurator configurator = new CodegenConfigurator();
-                    configurator.setInputSpec(openApiJsonPath.toString());
-                    configurator.setGeneratorName("typescript-inversify");
-                    configurator.setOutputDir(swaggerJsonLibPath.toString());
-                    configurator.addAdditionalProperty("packageName", moduleID);
-                    configurator.addAdditionalProperty("packageVersion", "SNAPSHOT");
-                    configurator.addAdditionalProperty("npmName", moduleID);
-                    configurator.addAdditionalProperty("usePromise", true);
-                    configurator.addAdditionalProperty("supportsES6", true);
-                    configurator.addAdditionalProperty("modelPropertyNaming", "original");
-                    ClientOptInput opts = configurator.toClientOptInput();
-                    opts.openAPI(moduleAPI);
+                    LOGGER.info("Build TS library with Hey API: " + moduleID);
 
-                    DefaultGenerator codeGen = new DefaultGenerator();
-                    codeGen.opts(opts).generate();
+                    Path nodeBinPath = modulePath.resolve("../node_modules/.bin/openapi-ts");
+                    if (!nodeBinPath.toFile().exists()) {
+                        nodeBinPath = modulePath.resolve("../../node_modules/.bin/openapi-ts");
+                    }
 
-                    LOGGER.info("Build TS types: " + openApiJsonPath);
-                    Process process = createFrontTypes(modulePath, swaggerJsonLibPath);
-                    process.waitFor();
+                    List<String> openApiTsArgs = new ArrayList<>();
+                    openApiTsArgs.add(nodeBinPath.toFile().getCanonicalPath());
+                    openApiTsArgs.add("--plugins");
+                    openApiTsArgs.add("@hey-api/client-fetch");
+                    openApiTsArgs.add("--plugins");
+                    openApiTsArgs.add("@hey-api/typescript");
+                    openApiTsArgs.add("--plugins");
+                    openApiTsArgs.add("@hey-api/sdk");
+                    openApiTsArgs.add("-i");
+                    openApiTsArgs.add(openApiJsonPath.toString());
+                    openApiTsArgs.add("-o");
+                    openApiTsArgs.add(swaggerJsonLibPath.resolve("generated").toString());
+
+                    ProcessBuilder openApiTsBuilder = new ProcessBuilder(openApiTsArgs);
+                    openApiTsBuilder.directory(modulePath.toFile());
+                    openApiTsBuilder.inheritIO();
+                    Process openApiTsProcess = openApiTsBuilder.start();
+                    int exitCode = openApiTsProcess.waitFor();
+                    if (exitCode != 0) {
+                        LOGGER.warn("openapi-ts execution returned non-zero exit code: " + exitCode);
+                    }
                 }
             }
         }

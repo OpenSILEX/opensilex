@@ -24,6 +24,23 @@
             #jsonLink a:hover {
                 text-decoration: underline;
             }
+            .btn-reset-fields {
+                background-color: #e53935 !important;
+                color: #ffffff !important;
+                border-color: #e53935 !important;
+                border-radius: 4px !important;
+                padding: 6px 14px !important;
+                font-size: 13px !important;
+                font-weight: bold !important;
+                cursor: pointer !important;
+                margin-left: 10px !important;
+                transition: background-color 0.2s ease-in-out;
+                font-family: sans-serif !important;
+            }
+            .btn-reset-fields:hover {
+                background-color: #c62828 !important;
+                border-color: #c62828 !important;
+            }
         </style>
     </head>
 
@@ -37,6 +54,79 @@
         <script src="../webjars/swagger-ui/5.32.8/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
 
         <script type="text/javascript">
+            const ResetFieldsPlugin = function(system) {
+                return {
+                    wrapComponents: {
+                        execute: function(Original, system) {
+                            return function(props) {
+                                return system.React.createElement(
+                                    "div",
+                                    {
+                                        style: {
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: "10px"
+                                        }
+                                    },
+                                    system.React.createElement(Original, props),
+                                    system.React.createElement(
+                                        "button",
+                                        {
+                                            className: "btn btn-reset-fields",
+                                            type: "button",
+                                            onClick: function(e) {
+                                                var btn = e.currentTarget;
+                                                var container = btn.closest(".opblock-body") || btn.closest(".opblock");
+                                                if (container) {
+                                                    var inputs = container.querySelectorAll("input, textarea, select");
+                                                    inputs.forEach(function(el) {
+                                                        if (el.tagName === "SELECT") {
+                                                            el.selectedIndex = 0;
+                                                            el.dispatchEvent(new Event("change", { bubbles: true }));
+                                                        } else {
+                                                            var proto = el.tagName === "TEXTAREA"
+                                                                ? window.HTMLTextAreaElement.prototype
+                                                                : window.HTMLInputElement.prototype;
+                                                            var setter = Object.getOwnPropertyDescriptor(proto, "value");
+                                                            if (setter && setter.set) {
+                                                                setter.set.call(el, "");
+                                                            } else {
+                                                                el.value = "";
+                                                            }
+                                                            el.dispatchEvent(new Event("input", { bubbles: true }));
+                                                            el.dispatchEvent(new Event("change", { bubbles: true }));
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        },
+                                        "Reset All Fields"
+                                    )
+                                );
+                            };
+                        }
+                    }
+                };
+            };
+
+            const HideAuthorizationParamPlugin = function(system) {
+                return {
+                    wrapComponents: {
+                        parameterRow: function(Original, system) {
+                            return function(props) {
+                                if (props && props.param && (
+                                    props.param.get("name") === "Authorization" ||
+                                    props.param.get("name") === "authorization"
+                                )) {
+                                    return null;
+                                }
+                                return system.React.createElement(Original, props);
+                            };
+                        }
+                    }
+                };
+            };
+
             window.onload = function () {
                 var url = window.location.search.match(/url=([^&]+)/);
                 var pathParts = window.location.pathname.split("/");
@@ -61,26 +151,48 @@
                         SwaggerUIStandalonePreset
                     ],
                     plugins: [
-                        SwaggerUIBundle.plugins.DownloadUrl
+                        SwaggerUIBundle.plugins.DownloadUrl,
+                        ResetFieldsPlugin,
+                        HideAuthorizationParamPlugin
                     ],
                     layout: "StandaloneLayout",
                     persistAuthorization: true,
+                    tagsSorter: function (a, b) {
+                        if (a === "Authentication") return -1;
+                        if (b === "Authentication") return 1;
+                        if (a === "Security") return -1;
+                        if (b === "Security") return 1;
+                        return a.localeCompare(b);
+                    },
+                    operationsSorter: function (a, b) {
+                        var pathA = a.get("path") || "";
+                        var pathB = b.get("path") || "";
+                        if (pathA.indexOf("/security/authenticate") !== -1) return -1;
+                        if (pathB.indexOf("/security/authenticate") !== -1) return 1;
+                        return pathA.localeCompare(pathB);
+                    },
                     responseInterceptor: function (response) {
                         if (response && response.url && response.body && (
-                            response.url.endsWith("/brapi/v1/token") ||
-                            response.url.endsWith("/security/authenticate") ||
-                            response.url.endsWith("/security/renew-token")
+                            response.url.indexOf("/brapi/v1/token") !== -1 ||
+                            response.url.indexOf("/security/authenticate") !== -1 ||
+                            response.url.indexOf("/security/renew-token") !== -1
                         )) {
                             try {
                                 var responseValues = typeof response.body === "string" ? JSON.parse(response.body) : response.body;
-                                var token;
-                                if (response.url.endsWith("/brapi/v1/token")) {
-                                    token = responseValues.access_token;
-                                } else if (responseValues && responseValues.result) {
-                                    token = responseValues.result.token;
+                                var token = null;
+                                if (responseValues) {
+                                    if (responseValues.result && responseValues.result.token) {
+                                        token = responseValues.result.token;
+                                    } else if (responseValues.token) {
+                                        token = responseValues.token;
+                                    } else if (responseValues.access_token) {
+                                        token = responseValues.access_token;
+                                    }
                                 }
                                 if (token && window.ui) {
-                                    window.ui.preauthorizeApiKey("jwt", "Bearer " + token);
+                                    window.ui.preauthorizeApiKey("Bearer", token);
+                                    window.ui.preauthorizeApiKey("bearer", token);
+                                    window.ui.preauthorizeApiKey("jwt", token);
                                 }
                             } catch (error) {
                                 console.error("Token response not handled correctly!", error);

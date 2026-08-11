@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,18 +29,13 @@ import org.opensilex.OpenSilex;
  * @see org.opensilex.security.authentication.filters.AuthenticationFilter
  * @author Vincent Migot
  */
-@Parameters({
-    @Parameter(name = ApiProtected.HEADER_NAME,
-            required = true,
-            schema = @Schema(type = "string"),
-            in = ParameterIn.HEADER,
-            description = "Authentication token"),
-    @Parameter(name = HttpHeaders.ACCEPT_LANGUAGE,
-            schema = @Schema(type = "string"),
-            in = ParameterIn.HEADER,
-            description = "Request accepted language",
-            example = OpenSilex.DEFAULT_LANGUAGE)
-})
+@SecurityRequirement(name = "Bearer")
+@Parameter(name = HttpHeaders.ACCEPT_LANGUAGE,
+        schema = @Schema(type = "string"),
+        in = ParameterIn.HEADER,
+        description = "Request accepted language",
+        example = OpenSilex.DEFAULT_LANGUAGE)
+
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

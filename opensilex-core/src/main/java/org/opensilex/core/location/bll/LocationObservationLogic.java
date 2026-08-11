@@ -157,11 +157,11 @@ public class LocationObservationLogic {
         return locationObservationDAO.get(uri);
     }
 
-    public LocationObservationModel getASpecificLocationObservation(URI collectionURI, Instant end, Instant start) throws NotAllowedException {
+    public LocationObservationModel getASpecificLocationObservation(URI collectionURI, Instant end, Instant start) {
         List<LocationObservationModel> locations = locationObservationDAO.getSpecificLocation(collectionURI, end, start);
 
         if (locations.size() > 1) {
-            throw new NotAllowedException("A feature of interest can't have 2 locations at the same time.");
+            throw new IllegalStateException("A feature of interest can't have 2 locations at the same time.");
         }
 
         return locations.get(0);

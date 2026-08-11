@@ -143,11 +143,18 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
             //placed in a Map of Format URI -> List(LocationObservationModels)
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURIFromGeospatial = makeNewLocationObservationsFromGeospatialModels();
 
-            //2 - Create a move in RDF4J for each location from geospatial Collection
-            List<MoveModel> newMoves = sparqlCreateSoMoves(locationObservationsPerURIFromGeospatial);
+            //2 - Now Fetch all old Moves for every ScientificObject but also other stuff, normally it should just be Devices
+            Map<URI,SPARQLResult> moveDetailsList = sparqlGetMoveDetails().collect(
+                    Collectors.toMap(
+                            sparqlResult -> URI.create(sparqlResult.getStringValue(EventModel.URI_FIELD)),
+                            sparqlResult -> sparqlResult,
+                            (oldValue, newValue) -> oldValue
+                    )
+            );
 
-            //3 - Now Fetch all old Moves for every ScientificObject but also other stuff, normally it should just be Devices
-            Stream<SPARQLResult> moveDetailsList = sparqlGetMoveDetails();
+            //3 - Create a move in RDF4J for each location from geospatial Collection
+            //WARNING Do not move this line of code, step 3 must be after step 2, otherwise moves with empty Locations get created!
+            List<MoveModel> newMoves = sparqlCreateSoMoves(locationObservationsPerURIFromGeospatial);
 
             //4 - Make new Location Observations for old existing Moves, combine them with locationObservationsPerURIFromGeospatial and return all in a new Map
             StringUriMap<List<LocationObservationModel>> locationObservationsPerURI = makeLocationObservationsFromExistingMoves(locationObservationsPerURIFromGeospatial, moveDetailsList);
@@ -442,19 +449,11 @@ public class UpdateScientificObjectsAndMovesWithLocationObservationCollectionMod
      */
     private StringUriMap<List<LocationObservationModel>> makeLocationObservationsFromExistingMoves(
             StringUriMap<List<LocationObservationModel>> locationObservationsPerScientificObjectUri,
-            Stream<SPARQLResult> existingMoveDetailsList
+            Map<URI,SPARQLResult> sparqlMoveDetailsPerMoveURI
     ){
         //Get ScientificObjects from old Move mongo collection (containing MoveNosqlModels)
         MongoDatabase db = mongodb.getDatabase();
         MongoCollection<MoveNosqlModel> moveCollection = db.getCollection(OLD_MOVE_COLLECTION, MoveNosqlModel.class);
-
-        Map<URI,SPARQLResult> sparqlMoveDetailsPerMoveURI = existingMoveDetailsList.collect(
-                Collectors.toMap(
-                        sparqlResult -> URI.create(sparqlResult.getStringValue(EventModel.URI_FIELD)),
-                        sparqlResult -> sparqlResult,
-                        (oldValue, newValue) -> oldValue
-                )
-        );
 
         List<MoveNosqlModel> soFromMove = moveCollection.find(Filters.in("_id", new ArrayList<>(sparqlMoveDetailsPerMoveURI.keySet()))).into(new ArrayList<>());
 

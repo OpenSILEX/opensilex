@@ -561,11 +561,17 @@ export default class OpenSilexVuePlugin {
     public clearCookie() {
         console.log("opensilexvuePlugin clear cookie-------")
         console.debug("Clear cookie " + this.getCookieName() + " with path " + this.getPathPrefix());
+        if (typeof window !== "undefined" && window.localStorage) {
+            localStorage.removeItem("opensilex_token");
+        }
         $cookies.remove(this.getCookieName(), this.getPathPrefix(), (window as Window).location.hostname);
     }
 
     public loadUserFromCookie(): User {
         let token = $cookies.get(this.getCookieName());
+        if (!token && typeof window !== "undefined" && window.localStorage) {
+            token = localStorage.getItem("opensilex_token");
+        }
         // console.debug("Loaded token from cookie", token, this.getCookieName());
         let user: User = User.ANONYMOUS();
         if (token != null) {
@@ -583,6 +589,9 @@ export default class OpenSilexVuePlugin {
         this.clearCookie();
         let secure: boolean = ('https:' == document.location.protocol);
         console.debug("Set cookie value:", this.getCookieName(), this.getPathPrefix(), user.getToken());
+        if (typeof window !== "undefined" && window.localStorage && user && user.getToken()) {
+            localStorage.setItem("opensilex_token", user.getToken());
+        }
         let domain = location.hostname;
         $cookies.set(this.getCookieName(), user.getToken(), user.getDurationUntilExpirationSeconds() + "s",
             this.getPathPrefix(), domain, secure);

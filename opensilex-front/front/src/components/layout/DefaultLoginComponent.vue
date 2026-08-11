@@ -261,10 +261,9 @@ export default defineComponent({
       });
     });
 
-    // Définition login (call by onLoginAsGuest)
+    // Connexion utilisateur
     const login = async () => {
       $opensilex.showLoader();
-      console.debug("call login");
 
       try {
         const { data, error } = await authenticate({
@@ -273,23 +272,25 @@ export default defineComponent({
             password: form.value.password,
           }
         });
-        console.debug("call login", form.value.email, form.value.password);
-
 
         if (error || !data) {
           throw error || new Error("Authentication failed");
         }
 
         const result = (data as any)?.result ?? data;
-        console.debug("token -> " + result.token);
         const user = $opensilex.fromToken(result.token);
         $opensilex.setCookieValue(user);
 
         store.commit("login", user);
         store.commit("refresh");
+
+        const redirectPath = (route.query.redirect as string) || "/";
+        if (route.path !== redirectPath) {
+          router.push(redirectPath);
+        }
       } catch (error: any) {
-        if (error.status === 403) {
-          $opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
+        if (error.status === 401 || error.status === 403) {
+          $opensilex.errorHandler(error, t("LoginComponent.invalidCredentials"));
         } else {
           $opensilex.errorHandler(error);
         }
@@ -298,41 +299,7 @@ export default defineComponent({
       }
     };
 
-
-    // connexion principale 
-    const onLogin = async () => {
-      $opensilex.showLoader();
-
-      try {
-        const { data, error } = await authenticate({
-          body: {
-            identifier: form.value.email,
-            password: form.value.password
-          }
-        });
-
-        if (error || !data) {
-          throw error || new Error("Authentication failed");
-        }
-
-        const result = (data as any)?.result ?? data;
-        const user = User.fromToken(result.token);
-        $opensilex.setCookieValue(user);
-        store.commit("login", user);
-        store.commit("refresh");
-
-
-      } catch (error: any) {
-        if (error.status === 403) {
-          console.error("onLogin - Invalid credentials", error);
-          $opensilex.showErrorToast(t("LoginComponent.invalidCredentials", error));
-        } else {
-          $opensilex.showErrorToast(error);
-        }
-      } finally {
-        $opensilex.hideLoader();
-      }
-    };
+    const onLogin = () => login();
 
 
     return {

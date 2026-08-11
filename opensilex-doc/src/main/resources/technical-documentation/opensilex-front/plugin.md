@@ -70,12 +70,44 @@ const defaultFooterComponent = config.footerComponent
 const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
 ```
 
-## 🔌 Accès aux services REST
-Les fonctions SDK de l'API REST (générées via Hey API `@hey-api/openapi-ts`) sont directement exportées et disponibles sous forme d'imports ESM typés depuis les modules front (`opensilex-security`, `opensilex-core`, etc.) :
+## 🔌 Accès aux services REST & Migration Client
+
+OpenSILEX évolue du modèle historique de localisation de service (`$opensilex.getService(...)`) vers des fonctions SDK typées issues d'OpenAPI 3.1.1 (`@hey-api/openapi-ts` et `@hey-api/client-fetch`).
+
+### 🔴 Code Historique / Legacy (Inversify Service Locator)
+Dans l'ancien code, les services étaient instanciés dynamiquement via une clé sous forme de chaîne de caractères :
 
 ```ts
-import { authenticate, forgotPassword, searchPersons } from 'opensilex-security';
-import { getVersionInfo, searchCategories } from 'opensilex-core';
+// 🔴 Ancien modèle : Récupération dynamique de service via string key
+import { UriSearchService } from "opensilex-core";
+
+const uriSearchService = ref<UriSearchService>();
+uriSearchService.value = $opensilex.getService("opensilex.UriSearchService");
+
+uriSearchService.value.getUriTypes()
+  .then((response: any) => {
+    console.log("Types:", response.result);
+  })
+  .catch((error: any) => {
+    $opensilex.errorHandler(error);
+  });
+```
+
+### 🟢 Code Moderne (OpenAPI SDK Client)
+Dans le nouveau code, les fonctions d'API sont directement importées depuis les modules front (`opensilex-security`, `opensilex-core`, etc.) et s'utilisent en `async`/`await` :
+
+```ts
+// 🟢 Nouveau modèle : Fonctions SDK directement importées
+import { getUriTypes } from 'opensilex-core';
+import { authenticate } from 'opensilex-security';
+
+try {
+  const { data, error } = await getUriTypes();
+  if (error || !data) throw error;
+  console.log("Types:", (data as any)?.result ?? data);
+} catch (error: any) {
+  $opensilex.errorHandler(error);
+}
 ```
 
 ## 🎨 Thèmes et ressources

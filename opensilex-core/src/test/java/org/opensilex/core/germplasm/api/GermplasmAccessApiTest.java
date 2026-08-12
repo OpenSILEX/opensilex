@@ -1,6 +1,7 @@
 package org.opensilex.core.germplasm.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.univocity.parsers.csv.CsvParser;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
 import org.junit.Before;
@@ -22,19 +23,23 @@ import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.api.ProfileAPITest;
 import org.opensilex.security.profile.api.ProfileCreationDTO;
 import org.opensilex.security.profile.dal.ProfileModel;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.URIEquator;
+import org.opensilex.utils.ClassUtils;
 
+import javax.ws.rs.core.MediaType;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
-    private record User(String mail, String password) {}
     private static final User USER_1 = new User("user1@example.org", "user1");
     private static final User USER_2 = new User("user2@example.org", "user2");
 
@@ -42,8 +47,6 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     private URI user2Uri = null;
     private URI groupUri = null;
     private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
-
-
 
     private static final String GERMPLASM_ADMIN_PUBLIC_ATTRIBUTE = "Germplasm Admin Public Attribute";
     private URI germplasmAdminPublicUri = null;
@@ -65,22 +68,22 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     private URI germplasmUser2PrivateInGroupUri = null;
 
     //#region Helper function for resource creation
-    private AccountCreationDTO makeAccountCreationDTO(User user) {
+    private static AccountCreationDTO makeAccountCreationDTO(User user) {
         var dto = new AccountCreationDTO();
-        dto.setPassword(user.password);
-        dto.setEmail(user.mail);
+        dto.setPassword(user.password());
+        dto.setEmail(user.mail());
         dto.setLanguage(OpenSilex.DEFAULT_LANGUAGE);
         return dto;
     }
 
-    private ProfileCreationDTO makeProfileCreationDTO(List<String> credentials) {
+    private static ProfileCreationDTO makeProfileCreationDTO(List<String> credentials) {
         var dto = new ProfileCreationDTO();
         dto.setName("Germplasm creator");
         dto.setCredentials(credentials);
         return dto;
     }
 
-    private GroupCreationDTO makeGroupCreationDTO(Map<URI, URI> userProfiles) {
+    private static GroupCreationDTO makeGroupCreationDTO(Map<URI, URI> userProfiles) {
         var dto = new GroupCreationDTO();
         dto.setName("Test group");
         dto.setDescription("Test group description");
@@ -93,13 +96,25 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
-    private GermplasmCreationDTO makeGermplasmCreationDTO(String name, Map<String, String> attributes, List<URI> groups, boolean isPublic) {
+    private static GermplasmCreationDTO makeGermplasmCreationDTO(String name, Map<String, String> attributes, List<URI> groups, boolean isPublic) {
         var dto = new GermplasmCreationDTO();
         dto.setName(name);
         dto.setRdfType(URI.create(Oeso.Species.getURI()));
         dto.setIsPublic(isPublic);
         dto.setGroups(groups);
         dto.setMetadata(attributes);
+        return dto;
+    }
+
+    private static GermplasmUpdateDTO makeGermplasmUpdateDTO(GermplasmGetSingleDTO base, String newName) {
+        var dto = new GermplasmUpdateDTO();
+        dto.setUri(base.getUri().toString());
+        dto.setRdfType(base.getRdfType());
+        dto.setName(newName);
+        dto.setDescription(base.getDescription());
+        dto.setIsPublic(base.getIsPublic());
+        dto.setGroups(base.getGroups());
+        dto.setMetadata(base.getMetadata());
         return dto;
     }
 
@@ -115,8 +130,7 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
         if (user == null) {
             call = builder.buildAdmin();
         } else {
-            call = builder.setUserEmail(user.mail)
-                    .setUserPassword(user.password)
+            call = builder.setUser(user)
                     .build();
         }
 
@@ -175,9 +189,13 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
                 GermplasmModel.class
         );
     }
+
     //#endregion
 
     //#region Tests
+
+    //#region Simple access tests
+
     @Test
     public void testAdminListAllGermplasms() throws Exception {
         var result = new UserCallBuilder(BaseGermplasmAPITest.search)
@@ -218,8 +236,7 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     public void testUserGetOwnGermplasm() throws Exception {
         var result = new UserCallBuilder(BaseGermplasmAPITest.get)
                 .setUriInPath(germplasmUser2PrivateUri)
-                .setUserEmail(USER_2.mail)
-                .setUserPassword(USER_2.password)
+                .setUser(USER_2)
                 .build()
                 .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {});
         assertEquals(200, result.getResponse().getStatus());
@@ -229,8 +246,7 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     public void testUserGetPublicGermplasm() throws Exception {
         var result = new UserCallBuilder(BaseGermplasmAPITest.get)
                 .setUriInPath(germplasmUser1PublicUri)
-                .setUserEmail(USER_2.mail)
-                .setUserPassword(USER_2.password)
+                .setUser(USER_2)
                 .build()
                 .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {});
         assertEquals(200, result.getResponse().getStatus());
@@ -240,8 +256,7 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     public void testUserGetGermplasmInGroup() throws Exception {
         var result = new UserCallBuilder(BaseGermplasmAPITest.get)
                 .setUriInPath(germplasmUser1PrivateInGroupUri)
-                .setUserEmail(USER_2.mail)
-                .setUserPassword(USER_2.password)
+                .setUser(USER_2)
                 .build()
                 .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {});
         assertEquals(200, result.getResponse().getStatus());
@@ -250,20 +265,18 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testUserGetPrivateGermplasmShouldFail() throws Exception {
         try (var result = new UserCallBuilder(BaseGermplasmAPITest.get)
-                .setUriInPath(germplasmUser2PrivateUri)
-                .setUserEmail(USER_2.mail)
-                .setUserPassword(USER_2.password)
+                .setUriInPath(germplasmUser1PrivateUri)
+                .setUser(USER_2)
                 .build()
                 .executeCall()) {
-            assertEquals(200, result.getStatus());
+            assertEquals(403, result.getStatus());
         }
     }
 
     @Test
     public void testUserListAuthorizedGermplasms() throws Exception {
         var result = new UserCallBuilder(BaseGermplasmAPITest.search)
-                .setUserEmail(USER_2.mail)
-                .setUserPassword(USER_2.password)
+                .setUser(USER_2)
                 .build()
                 .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {});
         assertEquals(200, result.getResponse().getStatus());
@@ -284,8 +297,7 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testUserListAuthorizedGermplasmAttributes() throws Exception {
         var result = new UserCallBuilder(BaseGermplasmAPITest.getAttributes)
-                .setUserEmail(USER_2.mail)
-                .setUserPassword(USER_2.password)
+                .setUser(USER_2)
                 .build()
                 .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<List<String>>>() {});
         assertEquals(200, result.getResponse().getStatus());
@@ -298,5 +310,103 @@ public class GermplasmAccessApiTest extends AbstractMongoIntegrationTest {
                 germplasmAttributes
         ));
     }
+    //#endregion
+
+    //#region Export tests
+    @Test
+    public void testUserExportAuthorizedGermplasms() throws Exception {
+        final var URI_COLUMN = "uri";
+        final var AUTHORIZED_GERMPLASMS = List.of(germplasmAdminPublicUri, germplasmAdminPrivateInGroupUri,
+                germplasmUser1PublicUri, germplasmUser1PrivateInGroupUri,
+                germplasmUser2PublicUri, germplasmUser2PrivateUri, germplasmUser2PrivateInGroupUri);
+
+        var searchFilter = new GermplasmSearchFilter();
+        try (var response = new UserCallBuilder(BaseGermplasmAPITest.export)
+                .setUser(USER_2)
+                .setBody(searchFilter)
+                .setResponseMediaTypes(List.of(MediaType.TEXT_PLAIN_TYPE))
+                .build()
+                .executeCall()) {
+            assertEquals(200, response.getStatus());
+            var content = response.readEntity(String.class);
+
+            var csvParser = new CsvParser(ClassUtils.getCSVParserDefaultSettings());
+            var records = csvParser.parseAllRecords(new StringReader(content));
+            var resultList = records.stream()
+                    .skip(1)
+                    .map(record -> URI.create(record.getString(URI_COLUMN)))
+                    .toList();
+            assertTrue(CollectionUtils.isEqualCollection(AUTHORIZED_GERMPLASMS, resultList));
+        }
+    }
+    //#endregion
+
+    //#region Update tests
+
+    @Test
+    public void testUserUpdateOwnGermplasm() throws Exception {
+        var getDto = new UserCallBuilder(BaseGermplasmAPITest.get)
+                .setUriInPath(germplasmUser2PrivateUri)
+                .setUser(USER_2)
+                .build()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        var updateDto = makeGermplasmUpdateDTO(getDto, "updated name");
+
+        var result = new UserCallBuilder(BaseGermplasmAPITest.update)
+                .setUser(USER_2)
+                .setBody(updateDto)
+                .build()
+                .executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {});
+
+        assertEquals(200, result.getResponse().getStatus());
+    }
+
+    @Test
+    public void testUserUpdatePublicGermplasm() throws Exception {
+        var getDto = new UserCallBuilder(BaseGermplasmAPITest.get)
+                .setUriInPath(germplasmUser1PublicUri)
+                .setUser(USER_2)
+                .build()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        var updateDto = makeGermplasmUpdateDTO(getDto, "updated name");
+
+        var result = new UserCallBuilder(BaseGermplasmAPITest.update)
+                .setUser(USER_2)
+                .setBody(updateDto)
+                .build()
+                .executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {});
+
+        assertEquals(200, result.getResponse().getStatus());
+    }
+
+    @Test
+    public void testUserUpdateGermplasmInGroup() throws Exception {
+        var getDto = new UserCallBuilder(BaseGermplasmAPITest.get)
+                .setUriInPath(germplasmUser1PrivateInGroupUri)
+                .setUser(USER_2)
+                .build()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<GermplasmGetSingleDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        var updateDto = makeGermplasmUpdateDTO(getDto, "updated name");
+
+        var result = new UserCallBuilder(BaseGermplasmAPITest.update)
+                .setUser(USER_2)
+                .setBody(updateDto)
+                .build()
+                .executeCallAndDeserialize(new TypeReference<ObjectUriResponse>() {});
+
+        assertEquals(200, result.getResponse().getStatus());
+    }
+
+    //#endregion
+
     //#endregion
 }

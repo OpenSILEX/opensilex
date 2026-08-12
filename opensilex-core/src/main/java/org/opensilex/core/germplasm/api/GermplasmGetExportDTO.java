@@ -177,11 +177,6 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.hasParentGermplasm = hasParentGermplasm;
     }
 
-    public Boolean getIsPublic(){ return isPublic; }
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
     public List<GermplasmGetAllDTO> getHasParentGermplasmM() {
         return hasParentGermplasmM;
     }

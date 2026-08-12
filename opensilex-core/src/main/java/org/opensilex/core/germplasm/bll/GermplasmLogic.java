@@ -188,10 +188,6 @@ public class GermplasmLogic {
             boolean fetchMetadata,
             boolean fetchNestedObjects
     ) throws Exception {
-        var user = searchFilter.getUser();
-        if (user != null && !user.isAdmin()) {
-            searchFilter.setGroups(groupDao.getGroupUriList(searchFilter.getUser()));
-        }
         return dao.search(searchFilter, fetchMetadata, fetchNestedObjects);
     }
 

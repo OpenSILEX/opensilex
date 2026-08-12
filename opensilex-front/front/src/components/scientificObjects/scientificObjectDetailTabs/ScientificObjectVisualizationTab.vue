@@ -3,7 +3,7 @@
 </script>
 
 <template>
-chccachacha
+à Venir
 </template>
 
 <style scoped lang="scss">

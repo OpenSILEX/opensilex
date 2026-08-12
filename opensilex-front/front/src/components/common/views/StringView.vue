@@ -45,7 +45,7 @@ const { t } = useI18n();
 // Props
 const props = defineProps<{
   label: string;
-  value: string;
+  value?: string;
   copyTextMessage?: string;
   allowCopy?: boolean;
   underlineTextForCopy?: boolean;

@@ -1135,7 +1135,8 @@
                         "instance-exists" : "Une ou plusieurs ressources utilisent la propriété {property}. Vous devez les supprimer d'abord",
                         "has-children" : "La propriété {property} possède une ou plusieurs sous-propriétés. Vous devez les supprimer d'abord"
                     }
-                }
+                },
+                "properties-targeting-someName": "Propriétés ciblant {name}"
             },
             "externalOntologies" : {
                 "agroportal": "Le projet AgroPortal repose sur cinq cas d’usage agronomiques majeurs qui participent à la conception et à l’orientation de la plateforme. AgroPortal propose déjà un référentiel robuste et stable, particulièrement précieux pour le domaine agronomique.",

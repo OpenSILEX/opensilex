@@ -1078,7 +1078,8 @@
                         "instance-exists" : "Some objects use the property {property} You must delete these relations first",
                         "has-children" : "The property {property} has sub-properties. You must delete them first"
                     }
-                }
+                },
+                "properties-targeting-someName": "Properties targeting {name}"
             },
             "externalOntologies" : {
                 "agroportal": "AgroPortal project is based on five driving agronomic use cases which participate in the design and orientation of the platform. AgroPortal already offers a robust and stable reference repository highly valuable for the agronomic domain.",

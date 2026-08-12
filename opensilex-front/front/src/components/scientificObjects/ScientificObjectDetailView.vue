@@ -2,7 +2,7 @@
   <div class="container-fluid">
 
     <PageHeader
-      icon="ik#ik-target"
+      icon="bi#bi-bullseye"
       description="component.menu.scientificObjects"
       :title="selected ? selected.name : ''"
       class="detail-element-header"
@@ -16,7 +16,7 @@
       :withReturnButton="true"
       :scientificObjectURI="uri"
       :experiment="experiment"
-      icon="ik#ik-target"
+      icon="bi#bi-bullseye"
       @onUpdate="refresh"
       @tabChanged="onForcedTabChange"
     ></ScientificObjectDetail>
@@ -52,7 +52,6 @@ const experiment = ref<string>(null);
 
 //#region Hooks
 onMounted(() => {
-  console.log($router.getRoutes());
   refresh();
 })
 //#endregion

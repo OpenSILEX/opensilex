@@ -1,6 +1,6 @@
 <template>
   <div v-if="selected && selected.uri" :class="{'ok embed-tabs': !globalView}">
-    <opensilex-PageActions :returnButton="withReturnButton">
+    <PageActions :returnButton="withReturnButton">
       <nav class="tabs mb-3">
         <router-link
           v-for="tab in tabs"
@@ -94,7 +94,7 @@
           {{$opensilex.$numberFormatter.formateResponse(documentQuantity)}}
         </span>
       </b-nav-item>-->
-    </opensilex-PageActions>
+    </PageActions>
 
 
     <!--This is the content produced by each tab, display handled by router-view,

@@ -86,8 +86,9 @@
 import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import copy from "copy-to-clipboard";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+
 import Icon from "@/components/common/views/Icon.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 export type UriLinkDestination = string | { path: string };
 

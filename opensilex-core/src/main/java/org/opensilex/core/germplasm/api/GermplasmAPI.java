@@ -554,20 +554,6 @@ public class GermplasmAPI {
                 .setParentFGermplasms(parentGermplasmsF)
                 .setUser(currentUser);
 
-        // get user groups
-        URI userURI = currentUser.getUri();
-        GroupDAO dao = new GroupDAO(sparql);
-        List<GroupModel> userGroups = dao.getUserGroups(userURI);
-
-        // extraction of URIs
-                List<URI> groupURIs = userGroups.stream()
-                        .map(GroupModel::getUri)
-                        .collect(Collectors.toList());
-
-        // inject into the filter
-        searchFilter.setGroups(groupURIs);
-
-
         searchFilter.setOrderByList(orderByList)
                 .setPage(page)
                 .setPageSize(pageSize)
@@ -575,7 +561,6 @@ public class GermplasmAPI {
 
         ListWithPagination<GermplasmModel> resultList = new GermplasmLogic(sparql, nosql, currentUser)
                 .search(searchFilter, false, false);
-
 
         // Conversion DTO
         ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(

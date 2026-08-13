@@ -152,6 +152,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed or optimized
 
 - (!1528) [Germplasm] Updating a species no longer removes the "fromSpecies" association with varities or accessions
+- (!1530) [Germplasm] Fixed update and export of private germplasms with groups
+- (!1522) [Geospatial] Stopped pointless empty locations from being created during the 1.5 migration AND repaired geospatial export
+- (!1519) [Scientific objects] Fixed Scientific Objects import/export
 
 ## [1.5.2]
 

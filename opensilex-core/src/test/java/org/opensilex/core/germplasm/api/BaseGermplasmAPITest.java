@@ -19,6 +19,7 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     public static final String createPath = path;
     public static final String updatePath = path;
     public static final String deletePath = path + "/{uri}";
+    public static final String exportPath = path + "/export";
 
     public static final ServiceDescription get;
     public static final ServiceDescription search;
@@ -27,6 +28,7 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
     public static final ServiceDescription delete;
     public static final ServiceDescription getAttributes;
     public static final ServiceDescription getAttributeValues;
+    public static final ServiceDescription export;
 
     static {
         try {
@@ -68,6 +70,10 @@ public class BaseGermplasmAPITest extends AbstractMongoIntegrationTest {
             getAttributeValues = new ServiceDescription(
                     GermplasmAPI.class.getMethod("getGermplasmAttributeValues", String.class, String.class, int.class, int.class),
                     path + "/attributes/{attribute}"
+            );
+            export = new ServiceDescription(
+                    GermplasmAPI.class.getMethod("exportGermplasm", GermplasmSearchFilter.class),
+                    exportPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);

@@ -1055,7 +1055,11 @@
             "create": "Add data file",
             "update": "Update data file",
             "description": "View datafiles",
-            "download-image" : "Download image"
+            "download-image" : "Download image",
+            "filters": {
+                "rdfType-placeholder": "Select the datafile type",
+                "provenance": "Provenance"
+            }
         },
         "custom-properties" : {
             "linked-resources" : "Linked resources"

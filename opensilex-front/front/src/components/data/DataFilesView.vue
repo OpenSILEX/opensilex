@@ -66,7 +66,7 @@
                     v-model:type="filter.rdf_type"
                     :baseType="Oeso.IMAGE_TYPE_URI"
                     :ignoreRoot="false"
-                    :placeholder="t('DataFilesView.filter.rdfType-placeholder')"
+                    :placeholder="t('component.datafile.filters.rdfType-placeholder')"
                     class="searchFilter"
                     key="imageTypeForm"
                     @handlingEnterKey="refresh"
@@ -77,7 +77,7 @@
                     v-model:type="filter.rdf_type"
                     :baseType="Oeso.DATAFILE_TYPE_URI"
                     :ignoreRoot="false"
-                    :placeholder="t('DataFilesView.filter.rdfType-placeholder')"
+                    :placeholder="t('component.datafile.filters.rdfType-placeholder')"
                     class="searchFilter"
                     key="datafileTypeForm"
                     @handlingEnterKey="refresh"
@@ -145,7 +145,7 @@
                   <DatafileProvenanceSelector
                     ref="provSelector"
                     v-model:provenances="filter.provenance"
-                    :label="t('DataFilesView.filter.provenance')"
+                    :label="t('component.datafile.filters.provenance')"
                     @select="loadProvenance"
                     @clear="clearProvenance"
                     :targets="filter.scientificObjects"
@@ -482,8 +482,6 @@ en:
     fileName-placeholder: Enter file name
     imagesView: View
     filter:
-      provenance: Provenance
-      rdfType-placeholder: Select the datafile type
       scientificObjects: Scientific object(s)
       scientificObjects-placeholder: Select scientific objects
 
@@ -496,8 +494,6 @@ fr:
     fileName-placeholder: Saisir un nom de fichier
     imagesView: Visualisation
     filter:
-      provenance: Provenance
-      rdfType-placeholder: Sélectionner le type de fichier
       scientificObjects: Objet(s) scientifique(s)
       scientificObjects-placeholder: Sélectionner des objets scientifiques
 </i18n>

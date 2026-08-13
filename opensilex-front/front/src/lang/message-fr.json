@@ -1109,10 +1109,14 @@
             "no-data": "Aucune donnée trouvée pour cette période"
         },
         "datafile": {
-          "create": "Ajouter un fichier de données",
-          "update": "Modifier un fichier de donnée",
-          "description": "Voir les fichiers de données",
-          "download-image" : "Télecharger l'image"
+            "create": "Ajouter un fichier de données",
+            "update": "Modifier un fichier de donnée",
+            "description": "Voir les fichiers de données",
+            "download-image" : "Télecharger l'image",
+            "filters": {
+                "rdfType-placeholder": "Sélectionner le type de fichier",
+                "provenance": "Provenance"
+            }
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

@@ -1,7 +1,7 @@
 <template>
   <n-layout has-sider class="datafiles-layout">
     <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="top">
+    <n-space class="mb-2 me-1" align="start">
       <n-button
         quaternary
         circle
@@ -36,7 +36,7 @@
               v-model:type="filter.rdf_type"
               :baseType="$opensilex.Oeso.DATAFILE_TYPE_URI"
               :ignoreRoot="false"
-              :placeholder="t('DeviceDataFiles.filter.rdfType-placeholder')"
+              :placeholder="t('component.datafile.filters.rdfType-placeholder')"
               class="searchFilter"
             />
           </n-form-item>
@@ -45,7 +45,7 @@
           <n-form-item class="compact-form-item">
             <opensilex-ExperimentSelector
               v-model:experiments="filter.experiments"
-              :label="t('DeviceDataFiles.filter.experiments')"
+              :label="t('component.experiment.view.experiment-experiments')"
               :multiple="true"
               @select="updateSOFilter"
               @clear="updateSOFilter"
@@ -104,7 +104,7 @@
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
               :key="refreshKey"
-              :label="t('DeviceDataFiles.filter.provenance')"
+              :label="t('component.datafile.filters.provenance')"
               class="searchFilter"
               @select="loadProvenance"
             />
@@ -218,7 +218,7 @@ const activeFiltersCount = computed(() => {
     if (Array.isArray(v)) return v.length > 0
     return v !== undefined && v !== null && String(v).trim() !== ''
   }).length
-})
+});
 
 function resetFilters() {
   filter.value = {
@@ -317,7 +317,7 @@ function loadTypes() {
     .catch($opensilex.errorHandler)
 }
 
-let langUnwatcher: (() => void) | undefined
+let langUnwatcher: (() => void) | undefined;
 
 onMounted(() => {
   loadTypes()
@@ -346,11 +346,11 @@ onMounted(() => {
       refresh()
     }
   )
-})
+});
 
 onBeforeUnmount(() => {
   langUnwatcher?.()
-})
+});
 
 defineExpose({
   refresh,
@@ -362,6 +362,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+//TODO MAX this css class is defined 3 times, has also made me notice that DeviceDatFiles is quasi le même
 .datafiles-layout {
   background: transparent;
 }
@@ -402,20 +403,13 @@ defineExpose({
 en:
      DeviceDataFiles:
         filter:
-            experiments: Experiment(s)
             scientificObjects: Scientific object(s)
             scientificObjects-placeholder: Select scientific objects
-            provenance: Provenance
-            rdfType-placeholder: Select the datafile type
 
 fr:
     DeviceDataFiles:
         filter:
-            experiments: Expérimentation(s)
             variables: Variable(s)
             scientificObjects: Objet(s) scientifique(s)
-            scientificObjects-placeholder: Sélectionner des objets scientifiques
-            provenance: Provenance
-            rdfType-placeholder: Sélectionner le type de fichier
             
 </i18n>

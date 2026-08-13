@@ -65,10 +65,10 @@
 
         <span> | </span>
 
-        <n-p>
+        <span>
           {{ t('DataFilesList.selected') }} :
           <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-        </n-p>
+        </span>
       </div>
     </n-space>
 
@@ -177,7 +177,7 @@ import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import type { OntologyService } from 'opensilex-core/api/ontology.service'
 import type { DataService } from 'opensilex-core/api/data.service'
 
-type DatafileFilter = {
+export type DatafileFilter = {
   name?: string | null
   start_date?: string | null
   end_date?: string | null

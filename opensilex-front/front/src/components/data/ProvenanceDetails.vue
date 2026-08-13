@@ -54,6 +54,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import {ProvenanceGetDTO} from "opensilex-core/model/provenanceGetDTO";
 
 type ProvenanceAgent = {
   uri: string
@@ -63,11 +64,12 @@ type ProvenanceActivity = {
   rdf_type: string
 }
 
+//TODO MAX i changed the type of prop to ProvGetDTO because i was getting type errors in SciObjDataFiles. I assume also that this is why seb put type any for selectedProvenance in DeviceDataFiles. Remove this type if all good
 type Provenance = {
   uri: string | null
   name: string | null
   description: string | null
-  experiments: any[]
+  experiments?: any[]
   prov_activity: ProvenanceActivity[]
   prov_agent: ProvenanceAgent[]
 }
@@ -80,7 +82,7 @@ const emit = defineEmits<{
 
 const props = withDefaults(defineProps<{
   label?: string
-  provenance?: Provenance
+  provenance?: ProvenanceGetDTO
   dataImportResult?: boolean
 }>(), {
   label: 'ProvenanceDetails.title',
@@ -88,7 +90,6 @@ const props = withDefaults(defineProps<{
     uri: null,
     name: null,
     description: null,
-    experiments: [],
     prov_activity: [],
     prov_agent: []
   }),

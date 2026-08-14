@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Overlay :show="!isDataLoaded && !isNoDataFound">
+  <LoadingOverlay :show="!isDataLoaded && !isNoDataFound">
     <opensilex-Card
       ref="tilePanel"
       class="item variableTile"
@@ -126,7 +126,7 @@
 
       </template>
     </opensilex-Card>
-  </opensilex-Overlay>
+  </LoadingOverlay>
 </template>
 
 <script setup lang="ts">
@@ -148,6 +148,7 @@ import VisualisationGraphic from "@/components/home/dashboard/VisualisationGraph
 import {Period} from "@/components/common/forms/DatePeriodPicker.vue";
 import FacilityHistogramSettings from "@/components/facilities/FacilityHistogramSettings.vue";
 import { NButton, NTag } from 'naive-ui'
+import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 //#region Constants & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

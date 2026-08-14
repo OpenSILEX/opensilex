@@ -1,5 +1,5 @@
 <template>
- <teleport to="#app">
+ <teleport to="body">
   <div
     class="modal fade"
     :class="{ show: visible }"

@@ -1,5 +1,5 @@
 <template>
-  <Overlay :show="isLoaderVisible">
+  <LoadingOverlay :show="isLoaderVisible">
     <div id="page-wrapper" class="customized" v-bind:class="{ wrapper: !$route.meta.public, embed: embed }">
       <opensilex-ToastContainer ref="toastContainer" class="toast-container"></opensilex-ToastContainer>
 
@@ -82,7 +82,7 @@
         </section>
       </div>
     </div>
-  </Overlay>
+  </LoadingOverlay>
 </template>
 
 <script setup>
@@ -94,7 +94,7 @@ import {Carousel, Dropdown} from "bootstrap";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import ToastContainer from './components/common/ToastContainer.vue';
 import {NConfigProvider, NSpin, useMessage, NMessageProvider} from 'naive-ui';
-import Overlay from "@/components/layout/Overlay.vue";
+import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 const toastContainer = ref();
 // import 'bootstrap/dist/css/bootstrap.min.css';

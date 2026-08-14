@@ -481,9 +481,11 @@ export default class OpenSilexVuePlugin {
                 if (plugin) {
 
                     this.app.use(plugin);
+                    self.hideLoader();
                     resolve(plugin);
                 } else {
                     console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
+                    self.hideLoader();
                     reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
                 }
 

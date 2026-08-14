@@ -1,13 +1,13 @@
 <template>
   <n-spin
-    :show="show"
+      :show="show"
   >
     <slot></slot>
   </n-spin>
 </template>
 
 <script setup lang="ts">
-import { NSpin } from "naive-ui";
+import {NSpin} from "naive-ui";
 
 const props = withDefaults(defineProps<{
   show: boolean
@@ -18,4 +18,7 @@ const props = withDefaults(defineProps<{
 </script>
 
 <style scoped lang="scss">
+:deep(.n-spin-body) {
+  z-index: 32000;
+}
 </style>

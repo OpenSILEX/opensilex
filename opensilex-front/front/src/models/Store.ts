@@ -271,14 +271,12 @@ let store = createStore({
       state.openSilexRouter.setUserConfig(userConfig);
     },
     showLoader(state) {
-      console.trace("store : show loader");
       if (loaderCount == 0) {
         state.loaderVisible = true;
       }
       loaderCount++;
     },
     hideLoader(state) {
-      console.trace("store : hide loader");
       loaderCount--;
       if (loaderCount == 0) {
         state.loaderVisible = false

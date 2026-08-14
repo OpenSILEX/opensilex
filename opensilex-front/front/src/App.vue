@@ -131,16 +131,9 @@ const uriSearchBoxVisible = ref(false);
 const lang = computed(() => store.state.lang);
 const disconnected = computed(() => store.state.disconnected);
 const user = computed(() => store.state.user);
-const isLoaderVisible = computed(() => {
-  console.log("loader visible computed : ", store.state.loaderVisible)
-  return store.state.loaderVisible
-});
+const isLoaderVisible = computed(() => store.state.loaderVisible);
 const menuVisible = computed(() => store.state.menuVisible);
 const isPublicRoute = computed(() => route.meta.public);
-
-watch(isLoaderVisible, () => {
-  console.log("loader visible", isLoaderVisible.value)
-});
 
 // const resolvedHeaderComponent = ref();
 const headerComponent = computed(() => {

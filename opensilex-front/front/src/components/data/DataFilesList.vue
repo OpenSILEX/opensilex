@@ -197,7 +197,6 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 const props = withDefaults(defineProps<{
   filter?: DatafileFilter
-  device?: string
   contextUri?: string
   hideTarget?: boolean
 }>(), {

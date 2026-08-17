@@ -210,6 +210,7 @@ import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scien
 import ScientificObjectDetail from "@/components/scientificObjects/ScientificObjectDetail.vue";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
+import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
 
 export interface Tab {
   key: string;
@@ -284,7 +285,6 @@ const tabs = computed<Tab[]>(() => {
     {
       key: 'visualization',
       label: t('ScientificObjectVisualizationTab.visualization'),
-      //to: `/scientific-objects/visualization/${encodeURIComponent(uri.value)}`
       to: {
         name: 'ScientificObjectVisualization',
         params: {
@@ -296,7 +296,6 @@ const tabs = computed<Tab[]>(() => {
     {
       key: 'documents',
       label: t('DocumentTabList.documents'),
-      //to: `/scientific-objects/documents/${encodeURIComponent(uri.value)}`
       to: {
         name: 'ScientificObjectDocuments',
         params: {
@@ -308,7 +307,6 @@ const tabs = computed<Tab[]>(() => {
     {
       key: 'annotations',
       label: t('Annotation.list-title'),
-      //to: `/scientific-objects/annotations/${encodeURIComponent(uri.value)}`
       to: {
         name: 'ScientificObjectAnnotations',
         params: {
@@ -320,7 +318,6 @@ const tabs = computed<Tab[]>(() => {
     {
       key: 'events',
       label: t('Event.list-title'),
-      //to: `/scientific-objects/events/${encodeURIComponent(uri.value)}`
       to: {
         name: 'ScientificObjectEvents',
         params: {
@@ -332,7 +329,6 @@ const tabs = computed<Tab[]>(() => {
     {
       key: 'positions',
       label: t('component.common.geometry.positions'),
-      //to: `/scientific-objects/positions/${encodeURIComponent(uri.value)}`
       to: {
         name: 'ScientificObjectPositions',
         params: {
@@ -344,9 +340,8 @@ const tabs = computed<Tab[]>(() => {
     {
       key: 'datafiles',
       label: t('ScientificObjectDataFiles.datafiles'),
-      //to: `/scientific-objects/datafiles/${encodeURIComponent(uri.value)}`
       to: {
-        name: 'ScientificObjectDatafiles',
+        name: SCIENTIFIC_OBJECT_DATAFILES_PATHNAME,
         params: {
           uri: uri.value,
           experiment: props.experiment

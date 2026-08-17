@@ -570,14 +570,6 @@ watch(
 )
 </script>
 
-<style scoped lang="scss">
-.detailsCard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-</style>
-
 <i18n>
 en:
   DeviceDescription:

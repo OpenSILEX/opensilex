@@ -5,7 +5,6 @@
       icon="bi-clipboard"
     >
       <template #rightHeader v-if="globalView">
-<!--        <div class="card-header-right">-->
 
             <FavoriteButton
               :uri="selected.uri"
@@ -100,9 +99,7 @@
           ></MetadataView>
         </div>
       </template>
-
     </card>
-
 
     <card v-for="(value, index) in objectByContext" :key="index">
       <template #header>
@@ -162,7 +159,7 @@ import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 import {PositionsService} from "opensilex-core/api/positions.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {computed, inject, onMounted, ref, useTemplateRef, watch} from "vue";
+import {computed, inject, ref, useTemplateRef, watch} from "vue";
 import {useStore} from "vuex";
 import ScientificObjectForm from "@/components/scientificObjects/ScientificObjectForm.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
@@ -170,7 +167,6 @@ import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scien
 import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
 import {useRouter} from "vue-router";
 import {LocationObservationDTO} from "opensilex-core/model/locationObservationDTO";
-import {useI18n} from "vue-i18n";
 import FavoriteButton from "@/components/common/buttons/FavoriteButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
@@ -187,7 +183,6 @@ import OntologyObjectProperties from "@/components/ontology/OntologyObjectProper
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex');
 const $store = useStore();
 const $router = useRouter();
-const { t } = useI18n();
 const scientificObjectsService = $opensilex.getService<ScientificObjectsService>("opensilex.ScientificObjectsService");
 const positionsService = $opensilex.getService<PositionsService>("opensilex.PositionsService");
 
@@ -201,8 +196,6 @@ interface Props{
   withBasicProperties?: boolean,
   experiment: string
 }
-
-//TODO MAX In vue2 experiment had a default value of null, which seems wierd so we'll try without that at first
 
 const props = withDefaults(
   defineProps<Props>(),
@@ -277,8 +270,6 @@ function deleteScientificObject(uri): void {
   scientificObjectsService
     .deleteScientificObject(uri)
     .then(() => {
-      //I feel like using replace here is better so that we can't navigate back to a deleted OS
-      //TODO MAX test that theory
       $router.replace({
         path: "/scientific-objects",
       });
@@ -317,12 +308,3 @@ function getCustomCoordinatesText(location: LocationObservationDTO): string {
 //#endregion
 
 </script>
-
-<style scoped lang="scss">
-//TODO MAX This exact class is duplicated 4 or 5 times, test putting it in main.css or whatever
-.detailsCard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-</style>

@@ -219,7 +219,6 @@ export interface Tab {
 }
 
 //#region Props
-//TODO MAX at the time of writing this i guessed type for Experilment, not sure if its a string or some dto
 interface Props{
   selected: ScientificObjectDetailByExperimentsDTO,
   objectByContext: ScientificObjectDetailByExperimentsDTO[],
@@ -356,7 +355,6 @@ const tabs = computed<Tab[]>(() => {
 const uri = ref<string>(null);
 const positionQuantity = ref<number>(null);
 const datafileQuantity = ref<number>(null);
-//TODO MAX in the original version these next 3 were props, think that was just an error in vue2 version
 const annotationQuantity = ref<number>(null);
 const documentQuantity = ref<number>(null);
 const eventQuantity = ref<number>(null);
@@ -368,15 +366,6 @@ const documentsCountIsLoading = ref<boolean>(true);
 const positionsCountIsLoading = ref<boolean>(true);
 const datafilesCountIsLoading = ref<boolean>(true);
 
-//TODO MAX its unclear if and what this does, it was just used once in the old create method
-//routeArr : string = this.$route.path.split('/');
-
-//#endregion
-
-//#region Template refs
-const annotationList = useTemplateRef<InstanceType<typeof AnnotationList>>("annotationList");
-const eventList = useTemplateRef<InstanceType<typeof EventList>>("eventList");
-const positionList = useTemplateRef<InstanceType<typeof PositionList>>("positionList");
 //#endregion
 
 //#region Event Handlers
@@ -386,10 +375,6 @@ function onUpdate(uri: string){
 //#endregion
 
 //#region Computed
-const user = computed(() => {
-  return $store.state.user;
-});
-
 const credentials = computed(() => {
   return $store.state.credentials;
 });
@@ -439,9 +424,6 @@ const columnsToDisplay = computed(() => {
 onMounted(() => {
   // at start default tab is detail tab
   uri.value = decodeURIComponent($route.params.uri as string);
-  //TODO MAX i dont understand what these next to lines were for, delete at end if no problems (ainsi que the routeArr definition up above)
-  //localStorage.setItem("tabPath", this.routeArr[2]);
-  //localStorage.setItem("tabPage", "1");
   searchEvents();
   searchAnnotations();
   searchDocuments();

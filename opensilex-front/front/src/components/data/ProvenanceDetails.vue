@@ -64,7 +64,6 @@ type ProvenanceActivity = {
   rdf_type: string
 }
 
-//TODO MAX i changed the type of prop to ProvGetDTO because i was getting type errors in SciObjDataFiles. I assume also that this is why seb put type any for selectedProvenance in DeviceDataFiles. Remove this type if all good
 type Provenance = {
   uri: string | null
   name: string | null
@@ -82,7 +81,7 @@ const emit = defineEmits<{
 
 const props = withDefaults(defineProps<{
   label?: string
-  provenance?: ProvenanceGetDTO
+  provenance?: ProvenanceGetDTO | Provenance
   dataImportResult?: boolean
 }>(), {
   label: 'ProvenanceDetails.title',

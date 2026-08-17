@@ -348,7 +348,6 @@ watch(
     {immediate: true}
 )
 
-//TODO MAX verify nothing broken here, i added the prop typeToLoad to be able to remove nextTick from parent
 watch(
   () => props.typeToLoad,
   async (newType) => {

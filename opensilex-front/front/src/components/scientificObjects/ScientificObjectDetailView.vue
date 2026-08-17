@@ -74,17 +74,6 @@ function onForcedTabChange(correspondingRouteName: string) {
     }
   });
 
-  //TODO MAX delete if all good
-  /*let path = this.pathTabMap.find(pathTab => pathTab.tab === tab).path;
-  let pathWithUri = path + encodeURIComponent(this.uri);
-
-  // append experiment if defined
-  // only handle it the case of the details tab, indeed for other tab, the :experiment path is not defined in global routes
-  if(this.experiment && tab === ScientificObjectDetail.DETAILS_TAB){
-    pathWithUri += "/" + encodeURIComponent(this.experiment);
-  }
-
-  history.pushState({}, null, this.$router.resolve({path: pathWithUri}).href);*/
 }
 //#endregion
 
@@ -114,7 +103,7 @@ function refresh() {
  */
 function getObjectFromExperiment(objectUri: string, experimentUri: string){
 
-  // #TODO MAX this was an old to do, see if it can easily be done: fetch OS and experiment in one API call (less HTTP I/O)
+  // #TODO see if it can easily be done: fetch OS and experiment in one API call (less HTTP I/O)
 
   // Perform two network call for OS and experiment
   Promise.all([

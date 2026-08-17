@@ -100,8 +100,8 @@ const props = withDefaults(defineProps<{
   globalFilterField?: boolean,
   showCount?: boolean,
   withPagination?: boolean,
-  sortBy: string,
-  scrollX: string,
+  sortBy?: string,
+  scrollX?: string | number,
   sortDesc?: boolean,
   selectable?: boolean,
   customRenderers?: any

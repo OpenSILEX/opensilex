@@ -16,7 +16,7 @@
         <UriForm
           v-model:uri="modalFormLogic.form.value.uri"
           :label="t('DeviceForm.uri')"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
           v-model:generated="uriGenerated"
           :helpMessage="t('DeviceForm.uri-help')"
         />
@@ -30,7 +30,7 @@
           :helpMessage="t('DeviceForm.type-help')"
           :required="true"
           :multiple="false"
-          :disabled="modalFormLogic.editMode.value"
+          :disabled="modalFormLogic.isEditMode.value"
           :ignoreRoot="false"
           @select="typeSwitch($event.id, false)"
         />
@@ -110,7 +110,7 @@
           :relations="modalFormLogic.form.value.relations"
           :excludedProperties="excludedProperties"
           :baseType="baseType"
-          :editMode="modalFormLogic.editMode.value"
+          :editMode="modalFormLogic.isEditMode.value"
         />
 
       <!-- metadata -->
@@ -143,7 +143,7 @@ import type { DeviceCreationDTO } from 'opensilex-core/index'
 
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
-import useModalFormLogic from '@/composables/useModalFormLogic'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
 import Modal from '@/components/common/views/Modal.vue'
 import UriForm from "@/components/common/forms/UriForm.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
@@ -154,17 +154,8 @@ import DateRangePickerForm from "@/components/common/forms/DateRangePickerForm.v
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 //#region Public
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-  (e: 'onHide'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>();
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -219,12 +210,8 @@ const modalFormLogic = useModalFormLogic<DeviceCreationDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
-  onHide: () => emit('onHide')
+  props,
+  emit
 })
 //#endregion
 

@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     :path="path"
     :label="label"
     v-model:selected="dataTypeURI"
@@ -22,12 +22,10 @@ import type { VariableDatatypeDTO } from 'opensilex-core'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
-/** Props **/
 const props = defineProps<{
-  /** chemin du champ dans `form` (pour NForm rules) */
-  path: string
-  /** v-model:selected */
+  path?: string
   selected: string | undefined
   label?: string
   placeholder?: string

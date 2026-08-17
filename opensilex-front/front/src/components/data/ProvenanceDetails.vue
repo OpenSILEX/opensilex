@@ -13,7 +13,7 @@
         <template #body>
           <!-- uri -->
           <opensilex-UriView
-            label="ProvenanceDetails.uri"
+            label="component.common.uri"
             :uri="provenance.uri"
             :value="provenance.uri"
             :to="{ path: '/provenances/details/' + encodeURIComponent(provenance.uri) }"
@@ -170,18 +170,12 @@ defineExpose({
 en:
   ProvenanceDetails:
     activity: Activity type
-    uri: Uri
-    label: Name
-    description: Description
     no-provenance-found: No provenance found
     agent: Agent(s)
     title: Provenance description
 fr:
   ProvenanceDetails:
     activity: Type d'activité
-    uri: Uri
-    label: Nom
-    description: Description
     no-provenance-found: Aucune provenance trouvée
     agent: Agent(s)
     title: Description de la provenance

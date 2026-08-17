@@ -458,6 +458,8 @@
             }
         },
         "annotation" : {
+            "add": "Ajouter une annotation",
+            "edit": "Éditer l'annotation",
             "details": "Détails de l'annotation",
             "motivation": "Motivation",
             "publisher": "Publieur",
@@ -1123,6 +1125,36 @@
         },
         "ontology": {
             "class" : {
+                "add": "Créer un type",
+                "update": "Mettre à jour le type",
+                "search": "Rechercher et sélectionner un type",
+                "abstract-type": "Type abstrait",
+                "label": {
+                    "en": "Nom anglais",
+                    "fr": "Nom français"
+                },
+                "comment": {
+                    "en": "Description anglaise",
+                    "fr": "Description française"
+                },
+                "object-type-already-exists": "Un type d'objet existe déjà avec la même URI",
+                "icon": "Icône",
+                "detail": {
+                    "title": "Détail du type d'objet",
+                    "required": "Obligatoire",
+                    "icon": "Icône",
+                    "list": "Liste de valeurs",
+                    "inherited": "Héritée",
+                    "properties": "Propriétés",
+                    "setPropertiesOrder": "Définir l'ordre des propriétés",
+                    "objectProperties": "Relations vers des objets",
+                    "addProperty": "Ajouter une propriété au type",
+                    "add-property-help": "Ajouter une propriété existante pour ce type",
+                    "deleteProperty": "Supprimer la propriété",
+                    "property-link-delete": "La propriété a été supprimée du type",
+                    "setPropertiesOrderInfo": "Vous pouvez définir l'ordre d'affichage des propriétés par glisser-déposer dans la liste ci-dessous",
+                    "properties-help": "Liste de toutes les propriétés qui peuvent s'appliquer au type selectionné. Y compris les propriétés héritées et les propriétés qui ne sont pas spécifiques au type (ex: nom ou description)"
+                },
                 "exception" : {
                     "delete" : {
                         "not-custom-class" : "Le type {class} n'est pas une classe personnalisée. Vous n'avez pas la permission de supprimer un type declaré au sein d'une ontologie utilisée par OpenSILEX",
@@ -1134,6 +1166,38 @@
                 }
             },
             "property" : {
+                "property": "Propriété",
+                "link-success-msg": "La propriété {0} a été ajoutée au type {1}",
+                "property-help": "Selectionner la propriété à associer au type. Seul les propriétés qui ne sont pas déjà associées, sont sélectionnables.",
+                "required-help": "Cocher cette case pour rendre cette propriété obligatoire pour le type selectionné",
+                "is-list-help": "Cocher cette case pour pouvoir utiliser une liste de valeurs. Seul les propriétés \"objets\" sont supportés.",
+                "required": "Obligatoire",
+                "list": "Liste de valeurs",
+                "dataProperty": "Propriété litérale",
+                "objectProperty": "Relation vers un objet",
+                "form": {
+                    "propertyType": "Type de propriété",
+                    "dataProperty": "Propriété litérale",
+                    "objectProperty": "Relation vers un objet",
+                    "inheritedType": "Type hérité du parent",
+                    "data-type": "Type de donnée",
+                    "dataProperty-help": "Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) ",
+                    "object-type": "Classe d'objet",
+                    "objectProperty-help": "Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource",
+                    "range": "Portée",
+                    "parent-help": "Parent",
+                    "label": {
+                        "en": "Nom anglais",
+                        "fr": "Nom français"
+                    },
+                    "comment": {
+                        "en": "Description anglaise",
+                        "fr": "Description française"
+                    },
+                    "property-already-exists": "Une propriété existe déjà avec la même URI",
+                    "domain": "Domaine",
+                    "domain-help": "Type concerné par la propriété. La propriété peut être liée au domaine choisi et à tous les descendants du domaine"
+                },
                 "exception" : {
                     "delete" : {
                         "instance-exists" : "Une ou plusieurs ressources utilisent la propriété {property}. Vous devez les supprimer d'abord",
@@ -1191,11 +1255,29 @@
         },
         "system": {
             "title": "Système",
-            "description": "Informations à propos du système d'information"
+            "details": "Détails du système",
+            "info": "Informations",
+            "version": "Version",
+            "project": "Page du projet",
+            "contact": "E-mail du contact",
+            "api-docs": "API Web",
+            "git-commit": "Dernier id commit",
+            "git-commit-copy": "Copier le dernier id commit",
+            "description": "Description",
+            "title-description": "Informations à propos du système d'information",
+            "license": "Licence logicielle",
+            "loaded-modules": "Modules chargés",
+            "copyright": "Copyright",
+            "name": "Nom"
         },
         "packages": {
             "title": "Librairies",
-            "description": "Ensemble de bibliothèque logicielles qui permet l'accès au webservice"
+            "description": "Ensemble de bibliothèques logicielles qui permettent l'accès au web service",
+            "details": "Librairies compatibles avec la version {version}",
+            "python-generated": "Librairie Python",
+            "r-generated": "Librairie R",
+            "dart-generated": "Librairie Dart",
+            "version": "Version"
         },
         "GDPR": {
             "title": "RGPD",

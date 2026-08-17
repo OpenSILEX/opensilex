@@ -5,7 +5,7 @@
       v-model:uri="facility.uri"
       :label="t('FacilityForm.uri-label')"
       helpMessage="component.common.uri-help-message"
-      :editMode="editMode"
+      :editMode="isEditMode"
       v-model:generated="uriGenerated"
     />
 
@@ -16,7 +16,7 @@
       :baseType="baseType"
       :ignoreRoot="false"
       :required="true"
-      :disabled="editMode"
+      :disabled="isEditMode"
       :placeholder="t('FacilityForm.form-type-placeholder')"
       @select="(e) => typeSwitch(e.id, false)"
     />
@@ -57,7 +57,7 @@
       :rdfType="facility.rdf_type"
       :relations="facility.relations"
       :baseType="baseType"
-      :editMode="editMode"
+      :editMode="isEditMode"
     />
 
     <slot v-if="facility.rdf_type" :form="facility" />
@@ -141,12 +141,12 @@ const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
-    editMode?: boolean
+    isEditMode?: boolean
     uriGenerated?: boolean
     form?: FacilityCreationDTO
   }>(),
   {
-    editMode: false,
+    isEditMode: false,
     uriGenerated: true
   }
 )

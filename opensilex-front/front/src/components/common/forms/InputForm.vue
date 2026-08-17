@@ -1,7 +1,6 @@
 <template>
   <FormField
-    :rules="rules"
-    :required="isRequired"
+    :required="required"
     :label="label"
     :helpMessage="helpMessage"
   >
@@ -12,7 +11,6 @@
         v-model:value="stringValue"
         :type="type"
         :disabled="disabled"
-        :required="isRequired"
         :placeholder="placeholder"
         :autocomplete="autocomplete"
         @input="onInput"
@@ -30,10 +28,8 @@ import { NInput } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import FormField from "@/components/common/forms/FormField.vue";
 
-const { t } = useI18n()
-
 // Props
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   value: string | null
   type?: 'text' | 'password' | 'textarea' | 'email' | 'number' | 'date'
   label?: string
@@ -41,9 +37,11 @@ const props = defineProps<{
   placeholder?: string
   required?: boolean
   disabled?: boolean
-  rules?: string | Function
   autocomplete?: string
-}>()
+}>(), {
+  required: false,
+  type: 'text',
+})
 
 // Emits
 const emit = defineEmits<{
@@ -83,10 +81,6 @@ function onBlur() {
 function onEnter() {
   emit('handlingEnterKey')
 }
-
-// Defaults
-const isRequired = props.required ?? false
-const type = props.type ?? 'text'
 </script>
 
 

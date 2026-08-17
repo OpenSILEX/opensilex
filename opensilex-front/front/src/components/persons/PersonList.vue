@@ -56,6 +56,7 @@ import PersonContact from "@/components/persons/PersonContact.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import {PersonDTO} from "opensilex-security/model/personDTO";
+import {TableField} from "@/components/common/views/TableField";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const service = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
@@ -68,14 +69,14 @@ const credentials = computed(() => store.state.credentials);
 
 
 let filter = ref("");
-const fields = [
+const fields: Array<TableField> = [
   {key: "last_name", label: "component.person.last-name", sortable: true},
   {key: "first_name", label: "component.person.first-name", sortable: true},
   {key: "email", label: "component.person.email", sortable: true},
   {key: "orcid", label: "component.person.orcid"},
   {key: "affiliation", label: "component.person.affiliation"},
   {key: "phone_number", label: "component.person.phone_number"},
-  {key: "actions", label: "component.common.actions", class: "table-actions"}
+  {key: "actions", label: "component.common.actions", resizable: false, naiveProps: {width: 100}}
 ];
 //#endregion
 

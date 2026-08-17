@@ -51,9 +51,11 @@
     />
 
     <!-- Composant de crea/edit variable (invisible) -->
-    <opensilex-VariableCreate
-      ref="variableCreate"
+    <VariableForm
+      ref="variableForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+      :createTitle="'component.variable.add'"
+      :editTitle="'component.variable.edit'"
       @onCreate="afterVariableSaved"
       @onUpdate="afterVariableSaved"
     />
@@ -106,9 +108,11 @@
     />
 
     <!-- Modale de création/édition d’un groupe de variables -->
-    <opensilex-VariableGroupCreate
+    <GroupVariablesForm
       ref="variableGroupForm"
       v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+      :createTitle="t('component.variable.groupVariable.add-groupVariable')"
+      :editTitle="t('component.variable.groupVariable.edit')"
       @onCreate="form => onExternalResourceCreatedOrUpdated('groups', form)"
       @onUpdate="form => onExternalResourceCreatedOrUpdated('groups', form)"
     />
@@ -128,22 +132,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, computed, inject, defineAsyncComponent, nextTick, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
-import { useRoute, useRouter } from 'vue-router'
-import { VariablesService, DataService } from 'opensilex-core/index'
-import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
-import { useStore } from 'vuex'
+import {computed, defineAsyncComponent, inject, nextTick, ref, type Ref, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import {useRoute, useRouter} from 'vue-router'
+import {DataService, VariablesService} from 'opensilex-core/index'
+import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse'
+import {useStore} from 'vuex'
 
 // imports de composants de formulaires
-import VariableCreate from './form/VariableCreate.vue'
-import VariableGroupCreate from './form/VariableGroupCreate.vue'
-import AgroportalEntityForm from './agroportal/AgroportalEntityForm.vue'
-import AgroportalEntityOfInterestForm from './agroportal/AgroportalEntityOfInterestForm.vue'
-import AgroportalCharacteristicForm from './agroportal/AgroportalCharacteristicForm.vue'
-import AgroportalMethodForm from './agroportal/AgroportalMethodForm.vue'
-import AgroportalUnitForm from './agroportal/AgroportalUnitForm.vue'
+import VariableForm from './form/VariableForm.vue'
+import DTOConverter from '../../models/DTOConverter'
+import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const variablesService = opensilex.getService<VariablesService>('opensilex.VariablesService')
@@ -185,7 +185,7 @@ const tabComponents = Object.fromEntries(
 // ----------------------
 const formRefs: Record<string, Ref<any>> = {
   // modales
-  variableCreate: ref(null),
+  variableForm: ref(null),
   entityForm: ref(null),
   characteristicForm: ref(null),
   methodForm: ref(null),
@@ -199,7 +199,7 @@ tabDefinitions.forEach(tab => {
   formRefs[tab.refKey] = ref(null)
 })
 
-const variableCreate = formRefs['variableCreate']
+const variableForm = formRefs['variableForm']
 const variableGroupForm = formRefs['variableGroupForm']
 const entityForm = formRefs['entityForm']
 const interestEntityForm = formRefs['interestEntityForm']
@@ -257,7 +257,7 @@ function closeHelpModal() {
 const loadGroupForm = ref(false)
 
 const tabRefMap: Record<string, Ref<any>> = {
-  variables: formRefs['variableCreate'],
+  variables: formRefs['variableForm'],
   entities: formRefs['entityForm'],
   interestEntity: formRefs['interestEntityForm'],
   characteristics: formRefs['characteristicForm'],
@@ -366,7 +366,8 @@ async function onEditVariable(uri: string) {
     currentEditRequest = null
 
     if (getResult?.response) {
-      formRefs['variableCreate'].value?.showEditForm(getResult.response.result)
+      const editForm = DTOConverter.extractURIFromResourceProperties(getResult.response.result)
+      formRefs['variableForm'].value?.showEditForm(editForm)
     }
   } catch (e) {
     console.error(e)

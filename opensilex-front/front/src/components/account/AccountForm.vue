@@ -18,7 +18,7 @@
             :uri.sync="modalFormLogic.form.value.uri"
             label="component.account.account-uri"
             helpMessage="component.common.uri-help-message"
-            :editMode="modalFormLogic.editMode.value"
+            :editMode="modalFormLogic.isEditMode.value"
             :generated.sync="uriGenerated"
         ></UriForm>
       </n-form-item>
@@ -41,7 +41,7 @@
             v-model:value="modalFormLogic.form.value.password"
             label="component.account.password"
             type="password"
-            :required="!modalFormLogic.editMode.value"
+            :required="!modalFormLogic.isEditMode.value"
             :placeholder="t('component.account.form-password-placeholder')"
             autocomplete="new-password"
         ></InputForm>
@@ -50,11 +50,11 @@
       <!-- Default language -->
         <FormSelector
             v-model:selected="modalFormLogic.form.value.language"
+            path="language"
             :options="languages"
             :required="true"
             label="component.account.default-lang"
             :placeholder="t('component.common.select-lang')"
-            path="language"
         ></FormSelector>
 
       <!-- Admin flag -->
@@ -103,13 +103,14 @@ import CheckboxForm from "@/components/common/forms/CheckboxForm.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
-import {NForm, NFormItem} from "naive-ui";
-import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {FormRules, NForm, NFormItem} from "naive-ui";
+import {required, requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {useStore} from "vuex";
 import {OpenSilexStore} from "@/models/Store";
-import useModalFormLogic from "@/composables/useModalFormLogic";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
 import Modal from "@/components/common/views/Modal.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import {AccountCreationDTO} from "opensilex-security/model/accountCreationDTO";
 
 //#region Public
 interface AccountFormDTO {
@@ -121,16 +122,8 @@ interface AccountFormDTO {
   linked_person: string | null;
 }
 
-const emit = defineEmits<{
-  (e: 'onUpdate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onCreate', payload: HttpResponse<OpenSilexResponse>): void
-  (e: 'onSuccess'): void
-}>()
-
-const props = defineProps<{
-  createTitle: string,
-  editTitle: string
-}>();
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
@@ -151,18 +144,18 @@ const canSelectAPerson = ref(false);
 //#endregion
 
 //#region Computed
-const rules = computed(() => ({
+const rules = computed<FormRules>(() => ({
   "email": [validEmail(), requiredTrimmed('component.account.email-address')],
   'password': {
     validator(_rule, value) {
-      if (!modalFormLogic.editMode.value && (!value || value.toString().trim().length === 0)) {
+      if (!modalFormLogic.isEditMode.value && (!value || value.toString().trim().length === 0)) {
         return new Error(t('validations.required_if', {_field_: t('component.account.password')}));
       }
       return true;
     },
     trigger: ['blur', 'input']
   },
-  'language': requiredTrimmed('component.account.default-lang'),
+  'language': required('component.account.default-lang'),
 }));
 
 const languages: ComputedRef<Array<{id: string; label: string}>> = computed(() => {
@@ -201,11 +194,8 @@ const modalFormLogic = useModalFormLogic<AccountFormDTO>({
   create,
   update,
   reset,
-  addTitle: props.createTitle,
-  editTitle: props.editTitle,
-  onCreate: (res) => emit('onCreate', res),
-  onUpdate: (res) => emit('onUpdate', res),
-  onSuccess: () => emit('onSuccess'),
+  props,
+  emit
 })
 //#endregion
 
@@ -233,7 +223,7 @@ async function reset(): Promise<void> {
     linkedPerson.value = null;
   }
 
-  const isCreationForm: boolean = !modalFormLogic.editMode.value;
+  const isCreationForm: boolean = !modalFormLogic.isEditMode.value;
   const canAddAPerson: boolean = !modalFormLogic.form.value.linked_person;
   canSelectAPerson.value = isCreationForm || canAddAPerson;
 }

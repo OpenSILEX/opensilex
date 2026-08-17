@@ -1,5 +1,5 @@
 <template>
-  <Overlay :show="isSearching">
+  <LoadingOverlay :show="isSearching">
     <div class="card">
 
 
@@ -83,7 +83,7 @@
         />
       </n-config-provider>
     </div>
-  </Overlay>
+  </LoadingOverlay>
 </template>
 
 
@@ -96,7 +96,7 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type HttpResponse from "../../../lib/HttpResponse";
 import {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider} from 'naive-ui';
-import Overlay from "@/components/layout/Overlay.vue";
+import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import {TableField} from "@/components/common/views/TableField";
 

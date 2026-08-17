@@ -259,32 +259,39 @@
     @onValidateEmpty="$opensilex?.showWarningToast($t('component.group.no-group-selected'))"
   />
 
-  <opensilex-ModalForm
+  <GroupVariablesForm
     ref="groupVariablesForm"
-    :component="formComponent"
-    :createTitle="'component.variable.groupVariable.add-groupVariable'"
-    :editTitle="'component.variable.groupVariable.edit'"
-    :create-action="create"
-    :update-action="update"
-    :success-message="successMessage"
+    createTitle="component.variable.groupVariable.add-groupVariable"
+    editTitle="component.variable.groupVariable.edit"
     v-if="loadGroupVariablesForm"
   />
 </template>
 
 <script lang="ts" setup>
-import { ref, h, inject, reactive, onMounted, resolveComponent, computed, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { NButton, NTag, NDataTable, DataTableRowKey, NInput, NForm, NFormItem, NSelect, NCheckbox, NCollapse, NCollapseItem, NLayout, NLayoutSider, NLayoutContent, NSpace } from 'naive-ui'
-import { VariablesService } from 'opensilex-core'
-import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO'
+import {computed, h, inject, nextTick, onMounted, reactive, ref, resolveComponent, useTemplateRef, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {
+  DataTableRowKey,
+  NButton,
+  NCollapse,
+  NCollapseItem,
+  NDataTable,
+  NForm,
+  NFormItem,
+  NInput,
+  NLayout,
+  NLayoutContent,
+  NLayoutSider,
+  NSpace
+} from 'naive-ui'
+import {VariablesService} from 'opensilex-core'
+import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import ModalForm from '@/components/common/forms/ModalForm.vue'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 
 /** Refs UI */
 const groupVariableSelection = ref()
-const groupVariablesForm = ref<InstanceType<typeof ModalForm>>()
-const formComponent = groupVariablesForm
+const groupVariablesForm = useTemplateRef<InstanceType<typeof GroupVariablesForm>>("groupVariablesForm")
 
 /** Services & i18n */
 const { t, n } = useI18n()
@@ -803,11 +810,10 @@ function showGroupVariablesCreateForm() {
     const labelMap = new Map(variables.value.map(variable => [variable.item.uri, variable.item.name]))
     const selected = selectedUris.map(uri => ({ uri, name: labelMap.get(uri) || uri }))
 
-    const form = GroupVariablesForm.getEmptyForm()
-    form.variables = selectedUris
-
-    groupVariablesForm.value?.setSelectorsToFirstTimeOpenAndSetLabels(selected)
-    groupVariablesForm.value?.showCreateForm(form)
+    groupVariablesForm.value?.showCreateForm({
+      variables: selectedUris,
+      __variablesWithLabels: selected
+    })
   })
 }
 
@@ -938,9 +944,6 @@ async function updateVariableGroup(form: any) {
 }
 
 
-function create() {/* no-op */}
-function update() {/* no-op */}
-function successMessage() { return '' }
 const loadGroupVariablesForm = ref(false)
 
 // ---------------------------------------------------------------------------

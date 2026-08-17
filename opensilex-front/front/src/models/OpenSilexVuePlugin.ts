@@ -36,6 +36,7 @@ import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import { useI18n } from 'vue-i18n'
+import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
 
 const { cookies: $cookies } = useCookies();
 
@@ -480,9 +481,11 @@ export default class OpenSilexVuePlugin {
                 if (plugin) {
 
                     this.app.use(plugin);
+                    self.hideLoader();
                     resolve(plugin);
                 } else {
                     console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
+                    self.hideLoader();
                     reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
                 }
 
@@ -1434,7 +1437,7 @@ export default class OpenSilexVuePlugin {
 
 
 
-    public versionInfo: any = [];
+    public versionInfo?: VersionInfoDTO = undefined;
 
     public loadVersionInfo() {
         return new Promise((resolve, reject) => {

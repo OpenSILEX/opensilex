@@ -261,11 +261,13 @@
         :positionsUriPaths="positionsUriPaths"
       />
 
-      <opensilex-EventModalForm
+      <EventForm
         v-if="renderModalForm"
         ref="modalFormRef"
         :target="target"
         :context="context"
+        createTitle="Event.add"
+        editTitle="Event.edit"
         @onCreate="displayAfterCreation"
         @onUpdate="updateSelectedEvent"
       />
@@ -322,6 +324,7 @@ import { EventsService } from 'opensilex-core/api/events.service'
 import { OntologyService } from 'opensilex-core/api/ontology.service'
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
 import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import EventForm from '../form/EventForm.vue';
 
 type EventFilter = {
   target: string | undefined

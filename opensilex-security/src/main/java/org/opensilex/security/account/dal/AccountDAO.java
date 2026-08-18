@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.security.account.dal;
 
+import jakarta.mail.internet.InternetAddress;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -29,7 +30,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.*;
 

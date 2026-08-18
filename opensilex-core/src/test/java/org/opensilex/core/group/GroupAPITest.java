@@ -19,7 +19,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;

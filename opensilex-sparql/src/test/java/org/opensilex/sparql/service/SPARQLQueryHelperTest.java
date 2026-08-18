@@ -16,7 +16,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.junit.Test;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 import java.math.BigInteger;
 import java.net.URI;
 import java.time.LocalDate;

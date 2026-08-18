@@ -10,7 +10,7 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.List;
 

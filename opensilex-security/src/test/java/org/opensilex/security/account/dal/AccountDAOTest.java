@@ -16,8 +16,8 @@ import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import java.util.ArrayList;
 import java.util.List;
 

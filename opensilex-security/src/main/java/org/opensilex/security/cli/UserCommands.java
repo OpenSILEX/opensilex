@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.security.cli;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 import org.opensilex.OpenSilex;
 import org.opensilex.cli.MainCommand;
 import org.opensilex.cli.OpenSilexCommand;

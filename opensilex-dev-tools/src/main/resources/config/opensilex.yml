@@ -5,7 +5,7 @@ ontologies:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            repository: semantics
 
 file-system:
     fs:
@@ -17,7 +17,7 @@ file-system:
                     config:
                         host: localhost
                         port: 8668
-                        database: opensilex
+                        database: semantics
             # customPath:
             #     datafile/: irods
 
@@ -26,7 +26,7 @@ big-data:
         config:
             host: localhost
             port: 8668
-            database: opensilex
+            database: semantics
     #            timezone: Europe/Paris
 
 phisws:

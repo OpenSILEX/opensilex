@@ -14,88 +14,7 @@
         </router-link>
       </nav>
 
-
-
-
-<!--      <b-nav-item
-        :active="isDetailsTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.DETAILS_TAB)"
-      >{{ $t("component.common.details-label") }}
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.VISUALIZATION_TAB)"
-        @click.prevent="onTabChanged(ScientificObjectDetail.VISUALIZATION_TAB)"
-        :active="isVisualizationTab"
-      >{{ $t("ScientificObjectVisualizationTab.visualization") }}
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.DATAFILES_TAB)"
-        :active="isDatafilesTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.DATAFILES_TAB)"
-      >{{ $t("ScientificObjectDataFiles.datafiles") }}
-        <span
-          v-if="!datafilesCountIsLoading && datafileQuantity > 0"
-          class="tabWithElements"
-        >
-          {{$opensilex.$numberFormatter.formateResponse(datafileQuantity)}}
-        </span>
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.EVENTS_TAB)"
-        :active="isEventTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.EVENTS_TAB)"
-      >{{ $t("Event.list-title") }}
-        <span
-          v-if="!eventsCountIsLoading && eventQuantity > 0"
-          class="tabWithElements"
-        >
-          {{$opensilex.$numberFormatter.formateResponse(eventQuantity)}}
-        </span>
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.POSITIONS_TAB)"
-        :active="isPositionTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.POSITIONS_TAB)"
-      >{{ $t("Position.list-title") }}
-        <span
-          v-if="!positionsCountIsLoading && positionQuantity > 0"
-          class="tabWithElements"
-        >
-          {{$opensilex.$numberFormatter.formateResponse(positionQuantity)}}
-        </span>
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.ANNOTATIONS_TAB)"
-        :active="isAnnotationTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.ANNOTATIONS_TAB)"
-      >{{ $t("Annotation.list-title") }}
-        <span
-          v-if="!annotationsCountIsLoading && annotationQuantity > 0"
-          class="tabWithElements"
-        >
-          {{$opensilex.$numberFormatter.formateResponse(annotationQuantity)}}
-        </span>
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.DOCUMENTS_TAB)"
-        :active="isDocumentTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.DOCUMENTS_TAB)"
-      >{{ $t("DocumentTabList.documents") }}
-        <span
-          v-if="!documentsCountIsLoading && documentQuantity > 0"
-          class="tabWithElements"
-        >
-          {{$opensilex.$numberFormatter.formateResponse(documentQuantity)}}
-        </span>
-      </b-nav-item>-->
     </PageActions>
-
 
     <!--This is the content produced by each tab, display handled by router-view,
     To see which components get built per path, look in opensilex.front.yml. To pass different non-path related props
@@ -126,79 +45,13 @@
       />
     </router-view>
 
-
-<!--
-    <div v-if="isDetailsTab">
-      <opensilex-ScientificObjectDetailProperties
-        :globalView="globalView"
-        :selected="selected"
-        :objectByContext="objectByContext"
-        :experiment="experiment"
-        @onUpdate="$emit('onUpdate', $event)"
-      ></opensilex-ScientificObjectDetailProperties>
-    </div>
-
-    <opensilex-ScientificObjectDataFiles
-      v-if="isDatafilesTab"
-      :uri="selected.uri"
-      @redirectToDetail="onTabChanged(ScientificObjectDetail.DETAILS_TAB)"
-    ></opensilex-ScientificObjectDataFiles>
-
-    <div v-if="isAnnotationTab">
-      <opensilex-AnnotationList
-        ref="annotationList"
-        :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
-        :enableActions="true"
-        :modificationCredentialId="
-          credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID
-        "
-        :target="selected.uri"
-      ></opensilex-AnnotationList>
-    </div>
-
-    <opensilex-ScientificObjectVisualizationTab
-      v-if="isVisualizationTab"
-      :scientificObject="selected"
-      :elementName="selected.name"
-    ></opensilex-ScientificObjectVisualizationTab>
-
-    <opensilex-DocumentTabList
-      v-if="isDocumentTab"
-      :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
-      :uri="selected.uri"
-    ></opensilex-DocumentTabList>
-
-    <opensilex-EventList
-      v-if="isEventTab"
-      ref="eventList"
-      :target="selected.uri"
-      :displayTargetFilter="false"
-      :columnsToDisplay="eventColumnsToDisplay"
-      :maximizeFilterSize="true"
-      :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
-      :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
-      :context="{experimentURI: uri}"
-    ></opensilex-EventList>
-
-    <opensilex-PositionList
-      v-if="isPositionTab"
-      ref="positionList"
-      :target="selected.uri"
-      :columnsToDisplay="positionColumnsToDisplay"
-      :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
-      :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
-    ></opensilex-PositionList>-->
   </div>
 </template>
 
 <script setup lang="ts">
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import AnnotationList from "../annotations/list/AnnotationList.vue";
 import {ScientificObjectsService} from "opensilex-core/index";
-import PositionList from "../positions/list/PositionList.vue";
-import EventList from "../events/list/EventList.vue";
-
 import {EventsService} from "opensilex-core/api/events.service";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {DocumentsService} from "opensilex-core/api/documents.service";
@@ -207,7 +60,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
 import {RouteLocationRaw, useRoute} from "vue-router";
 import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scientificObjectDetailByExperimentsDTO";
-import ScientificObjectDetail from "@/components/scientificObjects/ScientificObjectDetail.vue";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
@@ -365,7 +217,6 @@ const annotationsCountIsLoading = ref<boolean>(true);
 const documentsCountIsLoading = ref<boolean>(true);
 const positionsCountIsLoading = ref<boolean>(true);
 const datafilesCountIsLoading = ref<boolean>(true);
-
 //#endregion
 
 //#region Event Handlers
@@ -464,7 +315,6 @@ function searchAnnotations() {
       }
     ).catch($opensilex.errorHandler);
 }
-
 
 function searchDocuments(){
   return $DocumentsService

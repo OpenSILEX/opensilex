@@ -59,9 +59,8 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import OntologyRelationsForm from "./OntologyRelationsForm.vue";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import Rdfs from "../../ontologies/Rdfs";
 import DC from "../../ontologies/DC";

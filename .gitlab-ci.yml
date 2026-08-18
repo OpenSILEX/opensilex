@@ -655,6 +655,7 @@ pages:site:
     when: always
     tags:
       - opensilex-deploy
+    <<: *cache_dependencies
     before_script:
         - mkdir -p $CI_PROJECT_DIR/.m2
         - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml

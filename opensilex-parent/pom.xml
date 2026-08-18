@@ -136,7 +136,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <csv.parser.version>2.9.1</csv.parser.version>
         <email.simple.java.mail>6.7.6</email.simple.java.mail>
         <mustache.compiler.version>0.9.14</mustache.compiler.version>
-        <com.nimbusds.version>10.13</com.nimbusds.version>
+        <com.nimbusds.version>10.16</com.nimbusds.version>
         <s3.version>2.17.290</s3.version>
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.8</caffeine.version>

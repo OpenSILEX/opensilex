@@ -57,7 +57,7 @@ import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {DocumentsService} from "opensilex-core/api/documents.service";
 import {PositionsService} from "opensilex-core/api/positions.service";
 import {DataService} from "opensilex-core/api/data.service";
-import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
+import {computed, inject, onMounted, ref} from "vue";
 import {RouteLocationRaw, useRoute} from "vue-router";
 import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scientificObjectDetailByExperimentsDTO";
 import {useStore} from "vuex";

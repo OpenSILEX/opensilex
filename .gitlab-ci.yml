@@ -728,8 +728,8 @@ pages:
     script:
         - mkdir -p public/technical-documentation
         - cp -r tech_doc_public/* public/technical-documentation
-        - mkdir -p public/specifications
-        - cp -r specs_public/* public/specifications
+        - mkdir -p public/functional-specifications
+        - cp -r specs_public/* public/functional-specifications
         - cp -r site_public/* public/
     artifacts:
         paths:

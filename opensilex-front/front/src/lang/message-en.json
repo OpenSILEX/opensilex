@@ -1141,6 +1141,20 @@
             "title": "GDPR",
             "title-description": "Privacy policy"
         },
+        "forgot-password": {
+            "title": "Forgot password ?",
+            "enter-email": "Enter the e-mail linked to your account",
+            "reset-password": "Send an e-mail to this adress",
+            "steps": "Change your password in three easy steps. This will help you to secure your password!",
+            "step-one": "Enter your email address below.",
+            "step-two": "Our system will send you a temporary link.",
+            "step-three": "Use the link to reset your password.",
+            "service-not-available": "Service not available",
+            "invalid-identifier": "The e-mail address does not belong to an existing user.",
+            "empty-email": "E-mail address cannot be empty",
+            "link-email": "An e-mail has been sent to you.",
+            "returnHome": "Return to homepage"
+        },
         "reset-password": {
             "title": "Password renewal",
             "input": "Define a new password",

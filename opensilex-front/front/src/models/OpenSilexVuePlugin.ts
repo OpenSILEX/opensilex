@@ -605,10 +605,10 @@ export default class OpenSilexVuePlugin {
         return hash;
     }
 
-    private handleError(error, message?) {
+    private handleError(error, message?: string) {
         if (!message && error?.response?.result?.translationKey) {
             message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
-        } else if (error?.response?.result?.message) {
+        } else if (!message && error?.response?.result?.message) {
             message = error.response.result.message;
         }
 

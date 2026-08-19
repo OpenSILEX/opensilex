@@ -232,7 +232,7 @@ public class AuthenticationAPI {
             }
         } else {
             // Otherwise return a 403 - FORBIDDEN error response
-            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exist").getResponse();
         }
     }
     /**

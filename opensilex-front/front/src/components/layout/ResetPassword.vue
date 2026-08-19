@@ -94,7 +94,7 @@ const formModel = ref({
 const passwordToken = ref<string | null>();
 const badToken = ref<boolean>(false);
 
-const rules: FormRules = {
+const rules = computed<FormRules>(() => ({
   password: {
     required: true,
     message: t('component.reset-password.error.password-required'),
@@ -105,7 +105,7 @@ const rules: FormRules = {
     message: t('component.reset-password.error.confirmation-required'),
     trigger: ['input', 'blur']
   }
-};
+}));
 
 const languages = computed(() =>
     availableLocales.map(l => ({
@@ -143,7 +143,7 @@ function submit() {
     }
 
     service.renewPassword(passwordToken.value, false, formModel.value.password).then((_http) => {
-      opensilex.showSuccessToast(t("ResetPasswordComponent.renew-password"));
+      opensilex.showSuccessToast(t("component.reset-password.success"));
       passwordToken.value = null;
       router.push({path: "/"});
     }).catch((error) => {

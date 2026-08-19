@@ -33,7 +33,7 @@ import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.mail.internet.InternetAddress;
+import javax.mail.internet.InternetAddress;
 
 /**
  *

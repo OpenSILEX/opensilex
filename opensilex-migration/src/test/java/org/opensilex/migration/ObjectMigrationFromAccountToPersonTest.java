@@ -28,7 +28,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
-import jakarta.mail.internet.InternetAddress;
+import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;

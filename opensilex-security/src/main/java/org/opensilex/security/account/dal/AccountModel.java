@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.security.account.dal;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -17,6 +15,8 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;

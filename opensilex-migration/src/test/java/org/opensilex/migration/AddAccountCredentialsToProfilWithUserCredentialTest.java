@@ -13,7 +13,7 @@ import org.opensilex.security.user.api.UserAPI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
-import jakarta.mail.internet.InternetAddress;
+import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;

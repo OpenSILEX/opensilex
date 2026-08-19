@@ -10,7 +10,7 @@ import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 
-import jakarta.mail.internet.InternetAddress;
+import javax.mail.internet.InternetAddress;
 
 import java.util.List;
 

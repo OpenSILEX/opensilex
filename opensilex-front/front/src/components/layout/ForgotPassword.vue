@@ -42,14 +42,17 @@
           <!-- Email -->
           <div class="row mb-4">
             <div class="form-group">
-              <opensilex-InputForm
-                  v-model:value="email"
-                  :label="t('ForgotPasswordComponent.enter-email')"
-                  type="email"
-                  :required="true"
-                  rules="email"
-                  :placeholder="t('component.account.form-email-placeholder')"
-              ></opensilex-InputForm>
+              <n-form :model="formModel" :rules="rules">
+                <n-form-item path="email">
+                  <InputForm
+                      v-model:value="formModel.email"
+                      :label="t('ForgotPasswordComponent.enter-email')"
+                      type="email"
+                      :required="true"
+                      :placeholder="t('component.account.form-email-placeholder')"
+                  ></InputForm>
+                </n-form-item>
+              </n-form>
             </div>
           </div>
         </div>
@@ -80,89 +83,70 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {computed, defineComponent, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {AuthenticationService} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {useRouter} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {NForm, NFormItem, NDropdown, NButton} from "naive-ui";
 
-export default defineComponent({
-  name: 'forgotPassword',
-  props: {},
-  setup() {
-    const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-    const router = useRouter();
-    const store = useStore();
-    const {t, locale, availableLocales} = useI18n();
-    const user = computed(() => store.state.user);
-    const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
-    const email = ref<string>("");
-    const languages = computed(() =>
-        availableLocales.map(l => ({
-          key: l,
-          label: t(`component.header.language.${l}`)
-        })));
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const store = useStore();
+const {t, locale, availableLocales} = useI18n();
+const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
+const formModel = ref({
+  email: ""
+});
+const languages = computed(() =>
+    availableLocales.map(l => ({
+      key: l,
+      label: t(`component.header.language.${l}`)
+    })));
+const rules = {
+  email: [validEmail(), requiredTrimmed('component.account.email-address')]
+};
 
-    return {
-      opensilex,
-      router,
-      store,
-      t,
-      locale,
-      availableLocales,
-      user,
-      authenticationService,
-      email,
-      languages
-    };
-  },
-  methods: {
-    async asyncInit($opensilex: OpenSilexVuePlugin) {
-      await $opensilex.loadService("opensilex-security.AuthenticationService");
-    },
-    resetPasswordByEmail() {
-      if (!this.email) {
-        this.opensilex.showErrorToast(this.t("ForgotPasswordComponent.empty-email"));
-        return;
-      }
-      this.authenticationService
-          .forgotPassword(this.email)
-          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-            this.$opensilex.showSuccessToastWithDelay(
-                this.$t("ForgotPasswordComponent.link-email"),
-                5000
-            );
-          })
-          .catch((error) => {
-            if (error.status == 503) {
-              console.error("Service not available", error);
-              this.$opensilex.errorHandler(
-                  error,
-                  this.$t("ForgotPasswordComponent.service-not-available")
-              );
-            } else if (error.status == 403 || error.status == 500) {
-              console.error("Invalid credentials", error);
-              this.$opensilex.errorHandler(
-                  error,
-                  this.$t("ForgotPasswordComponent.invalid-identifier")
-              );
-            } else {
-              console.log(error);
-              this.$opensilex.errorHandler(error);
-            }
-            this.$opensilex.hideLoader();
-          });
-    },
-    onLanguageSelected(newLocale: string) {
-      this.$i18n.locale = newLocale;
-      this.$store.commit("lang", newLocale);
-    },
+function resetPasswordByEmail() {
+  if (!formModel.value.email) {
+    opensilex.showErrorToast(t("ForgotPasswordComponent.empty-email"));
+    return;
   }
-})
+  authenticationService
+      .forgotPassword(formModel.value.email)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        opensilex.showSuccessToast(
+            t("ForgotPasswordComponent.link-email")
+        );
+      })
+      .catch((error) => {
+        if (error.status == 503) {
+          console.error("Service not available", error);
+          opensilex.errorHandler(
+              error,
+              t("ForgotPasswordComponent.service-not-available")
+          );
+        } else if (error.status == 403 || error.status == 500) {
+          console.error("Invalid credentials", error);
+          opensilex.errorHandler(
+              error,
+              t("ForgotPasswordComponent.invalid-identifier")
+          );
+        } else {
+          console.log(error);
+          opensilex.errorHandler(error);
+        }
+        opensilex.hideLoader();
+      });
+}
 
+function onLanguageSelected(newLocale: string) {
+  locale.value = newLocale;
+  store.commit("lang", newLocale);
+}
 </script>
 
 <style scoped lang="scss">

@@ -92,7 +92,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
-import {NForm, NFormItem, NDropdown, NButton} from "naive-ui";
+import {NForm, NFormItem, NDropdown, NButton, FormRules} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
@@ -106,9 +106,9 @@ const languages = computed(() =>
       key: l,
       label: t(`component.header.language.${l}`)
     })));
-const rules = {
+const rules = computed<FormRules>(() => ({
   email: [validEmail(), requiredTrimmed('component.account.email-address')]
-};
+}));
 
 function resetPasswordByEmail() {
   if (!formModel.value.email) {

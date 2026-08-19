@@ -140,7 +140,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         <s3.version>2.17.290</s3.version>
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.8</caffeine.version>
-        <geotools.version>29.6</geotools.version>
+        <geotools.version>34.0</geotools.version>
         <maven.fluido.skin.version>2.1.0</maven.fluido.skin.version>
         <maven.checkstyle.plugin.version>3.6.0</maven.checkstyle.plugin.version>
         <maven.git.commit.id.plugin>4.9.10</maven.git.commit.id.plugin>
@@ -540,7 +540,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-opengis</artifactId>
+            <artifactId>gt-api</artifactId>
             <version>${geotools.version}</version>
         </dependency>
 

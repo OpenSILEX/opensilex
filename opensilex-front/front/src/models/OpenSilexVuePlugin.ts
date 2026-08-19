@@ -313,6 +313,11 @@ export default class OpenSilexVuePlugin {
         return registerOpenSilexClient(client);
     }
 
+    /**
+     * @deprecated Use typed SDK imports from the relevant module instead.
+     * Example: `import { authenticate } from 'opensilex-security'`
+     * The inversify service container and this method will be removed in a future OpenSILEX version.
+     */
     public loadService<T>(id: string): Promise<T> {
         return new Promise((resolve, reject) => {
             try {
@@ -334,6 +339,11 @@ export default class OpenSilexVuePlugin {
 
     }
 
+    /**
+     * @deprecated Use typed SDK imports from the relevant module instead.
+     * Example: `import { authenticate } from 'opensilex-security'`
+     * The inversify service container and this method will be removed in a future OpenSILEX version.
+     */
     public getService<T>(id: string): T {
         let result: T | null = this.getServiceSync(id);
         if (result == null) {
@@ -364,6 +374,10 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    /**
+     * @deprecated The inversify service container lookup will be removed in a future OpenSILEX version.
+     * Use typed SDK imports from the relevant module instead.
+     */
     public getServiceSync<T>(id: string): T | null {
         let idParts = this.parseServiceId(id);
         try {

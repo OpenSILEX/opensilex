@@ -69,3 +69,40 @@ The migration from legacy Swagger (OpenAPI 2.0 / Swagger 1.5) to **OpenAPI 3.1.1
    [INFO] ------------------------------------------------------------------------
    [INFO] BUILD SUCCESS
    ```
+
+---
+
+## 3. Phase 3 – Inversify TypeScript Client Deprecation (In Progress)
+
+With the OpenAPI 3.1.1 migration complete and the `@hey-api/client-fetch` SDK integrated (see [implementation_plan_update_openapi_client.md](file:///home/charleroy/GIT/GITLAB/opensilex-dev/opensilex-doc/src/main/resources/technical-documentation/swagger-to-openapi/implementation_plan_update_openapi_client.md)), the `typescript-inversify` generated client layer is now being progressively deprecated.
+
+### 3.1. What Was Done
+
+| File | Change |
+| --- | --- |
+| [api.service.mustache](file:///home/charleroy/GIT/GITLAB/opensilex-dev/opensilex-main/src/main/resources/swagger/templates/typescript-inversify/api.service.mustache) | Added `@deprecated` JSDoc at class level and on every generated method, pointing developers to the SDK equivalent. |
+| [OpenSilexVuePlugin.ts](file:///home/charleroy/GIT/GITLAB/opensilex-dev/opensilex-front/front/src/models/OpenSilexVuePlugin.ts) | Marked `loadService<T>()`, `getService<T>()`, and `getServiceSync<T>()` as `@deprecated`. |
+| [opensilex-security/front/src/lib/index.ts](file:///home/charleroy/GIT/GITLAB/opensilex-dev/opensilex-security/front/src/lib/index.ts) | Added deprecation block comment above all legacy inversify barrel exports. |
+
+### 3.2. Developer Migration Path
+
+```typescript
+// ❌ Old — deprecated, will be removed
+const authService = $opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
+const { response } = await authService.authenticate(dto);
+
+// ✅ New — @hey-api/client-fetch SDK
+import { authenticate } from 'opensilex-security';
+const { data, error } = await authenticate({ body: dto });
+```
+
+### 3.3. Phase 3 Removal Checklist (Future)
+
+When all inversify call sites have been migrated:
+- [ ] Delete `front/src/lib/api/*.service.ts` in all modules.
+- [ ] Remove `openapi-generator-maven-plugin` (`typescript-inversify`) executions from module `pom.xml`.
+- [ ] Remove `ResetTypeScriptLib.java` Swagger 2 generation steps.
+- [ ] Remove `ApiServiceBinder` from all modules.
+- [ ] Remove `getService()`, `loadService()`, `getServiceSync()`, `getServiceContainer()` from `OpenSilexVuePlugin.ts`.
+- [ ] Remove `inversify` and `reflect-metadata` from `package.json`.
+- [ ] Remove Mustache templates from `opensilex-main/src/main/resources/swagger/templates/typescript-inversify/`.

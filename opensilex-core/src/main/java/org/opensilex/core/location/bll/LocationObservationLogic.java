@@ -31,6 +31,8 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotAllowedException;
 import java.net.URI;
@@ -50,6 +52,8 @@ public class LocationObservationLogic {
     private final MongoDBService nosqlV1;
     private final SPARQLService sparql;
     private final FileStorageService fs;
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     //#region constructor
     public LocationObservationLogic(MongoDBService nosqlV1, SPARQLService sparql, FileStorageService fs) {
@@ -161,7 +165,13 @@ public class LocationObservationLogic {
         List<LocationObservationModel> locations = locationObservationDAO.getSpecificLocation(collectionURI, end, start);
 
         if (locations.size() > 1) {
-            throw new IllegalStateException("A feature of interest can't have 2 locations at the same time.");
+            logger.error("In the function getASpecificLocationObservation of LocationObservationLogic, 2 locations with same date and time were found inside location collection : {}", collectionURI);
+            //We used to throw an error here, but we were getting major issues with 2 locations at same date & time after performing 1.5.0 , 1.5.1 or 1.5.2 migrations
+            //If we have a choice to make, prioritize geospatial over facility
+            return locations.stream()
+                    .filter(LocationObservationModel::isHasGeometry)
+                    .findFirst()
+                    .orElse(locations.get(0));
         }
 
         return locations.get(0);

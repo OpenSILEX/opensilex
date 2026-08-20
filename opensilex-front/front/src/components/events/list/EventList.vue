@@ -372,7 +372,7 @@ const eventModalViewRef = ref<any>(null)
 const modalFormRef = ref<any>(null)
 const csvFormRef = ref<any>(null)
 const moveCsvFormRef = ref<any>(null)
-const documentFormRef = useTemplateRef<any>('documentFormRef')
+const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
 
 const uriLabels = ref<Record<string, string>>({})
 const uriPaths = ref<Record<string, string>>({})

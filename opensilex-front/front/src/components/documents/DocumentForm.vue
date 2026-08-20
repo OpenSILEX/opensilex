@@ -133,7 +133,7 @@
      <n-form-item
        v-if="!modalFormLogic.isEditMode.value && documentContentType === DOCUMENT_CONTENT_TYPE_FILE"
        path="file"
-       :show-label="false"
+       ref="fileItem"
      >
        <FileInputForm
          v-model:file="modalFormLogic.form.value.file"
@@ -167,9 +167,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, useTemplateRef } from 'vue'
+import {computed, inject, ref, useTemplateRef, watch} from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FormRules, NForm, NFormItem, NRadio, NRadioGroup } from 'naive-ui'
+import {FormItemInst, FormRules, NForm, NFormItem, NRadio, NRadioGroup} from 'naive-ui'
 import Modal from '@/components/common/views/Modal.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
@@ -212,6 +212,7 @@ const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+const fileItem = ref<FormItemInst | null>(null)
 const uriGenerated = ref(true)
 
 type ContentKind = 'file' | 'external-source'
@@ -235,7 +236,6 @@ const rules = computed<FormRules>(() => ({
  'description.rdf_type': requiredTrimmed("DocumentForm.type"),
  ...(modalFormLogic.isEditMode.value ? {} : {
    file: {
-     trigger: ['change', 'blur'],
      validator: (_rule, value) => {
        // si on est en mode "fichier", il faut un File
        if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
@@ -304,6 +304,14 @@ return  opensilex.uploadFileToService('/core/documents', formData, null, false) 
 async function update(formData: DocumentFormModel): Promise<HttpResponse<OpenSilexResponse>> {
  return  await opensilex.uploadFileToService('/core/documents', formData, null, true) as Promise<HttpResponse<OpenSilexResponse>>
 }
+
+watch(() => modalFormLogic.form.value.file,
+    () => {
+      // Efface l’état d’erreur de l’item "Fichier" quand un fichier est sélectionné
+      fileItem.value?.restoreValidation()
+    },
+    { flush: 'post' }
+)
 
 defineExpose({
  showCreateForm: modalFormLogic.showCreateForm,

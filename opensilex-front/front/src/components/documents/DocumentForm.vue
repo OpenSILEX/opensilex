@@ -73,7 +73,6 @@
        <TagInputForm
          v-model:value="modalFormLogic.form.value.description.targets"
          :baseType="opensilex.Oeso.targets"
-         :selected="selected"
          :label="t('DocumentForm.targets')"
          :helpMessage="t('DocumentForm.targets-help')"
          type="text"

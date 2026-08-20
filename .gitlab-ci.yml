@@ -726,11 +726,13 @@ pages:
         -   job: pages:technical-documentation
             artifacts: true
     script:
+        - mkdir -p public/maven-report
+        - cp -r site_public/* public/maven-report/
         - mkdir -p public/technical-documentation
         - cp -r tech_doc_public/* public/technical-documentation
         - mkdir -p public/functional-specifications
         - cp -r specs_public/* public/functional-specifications
-        - cp -r site_public/* public/
+        - cp $CI_PROJECT_DIR/opensilex-doc/src/main/resources/index_for_online_published_doc.html public/index.html
     artifacts:
         paths:
             - public

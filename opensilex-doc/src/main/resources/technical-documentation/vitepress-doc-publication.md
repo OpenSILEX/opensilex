@@ -13,7 +13,7 @@ npm run docs:build
 ```
 - **technical documentation** :
 ```shell
-npm install
+npm install 
 npm run docs:build
 ```
 

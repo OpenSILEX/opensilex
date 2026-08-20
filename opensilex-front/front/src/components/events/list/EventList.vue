@@ -287,21 +287,19 @@
         @csvImported="onImport"
       />
 
-      <opensilex-ModalForm
+      <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="bi#bi-file-text"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.editDocument')"
+        @onSuccess="refresh"
       />
     </n-layout-content>
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
@@ -325,6 +323,7 @@ import { OntologyService } from 'opensilex-core/api/ontology.service'
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
 import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import EventForm from '../form/EventForm.vue';
+import DocumentForm from '@/components/documents/DocumentForm.vue';
 
 type EventFilter = {
   target: string | undefined
@@ -373,7 +372,7 @@ const eventModalViewRef = ref<any>(null)
 const modalFormRef = ref<any>(null)
 const csvFormRef = ref<any>(null)
 const moveCsvFormRef = ref<any>(null)
-const documentFormRef = ref<any>(null)
+const documentFormRef = useTemplateRef<any>('documentFormRef')
 
 const uriLabels = ref<Record<string, string>>({})
 const uriPaths = ref<Record<string, string>>({})
@@ -698,7 +697,7 @@ function getSelected() {
 }
 
 function createDocument() {
-  documentFormRef.value?.showCreateForm?.(initForm())
+  documentFormRef.value?.showCreateForm(initForm())
 }
 
 function initForm() {

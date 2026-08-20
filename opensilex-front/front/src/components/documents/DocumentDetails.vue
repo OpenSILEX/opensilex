@@ -145,14 +145,12 @@
       </div>
     </opensilex-PageContent>
 
-    <!-- Formulaire d’édition -->
-    <opensilex-ModalForm
+    <!-- Formulaire d'édition -->
+    <DocumentForm
       ref="documentFormRef"
-      component="opensilex-DocumentForm"
       :editTitle="t('DocumentDetails.title')"
       :createTitle="t('DocumentDetails.title')"
-      icon="bi#bi-file-text"
-      @onUpdate="refresh"
+      @onSuccess="refresh"
     />
   </div>
 </template>
@@ -160,13 +158,14 @@
 
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted } from 'vue'
+import { ref, computed, inject, onMounted, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router'
 import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
 import type { DocumentsService } from 'opensilex-core/api/documents.service'
 import HttpResponse, { OpenSilexResponse } from 'opensilex-security/HttpResponse'
+import DocumentForm from '@/components/documents/DocumentForm.vue'
 
 type DocumentGetDTO = {
   uri?: string
@@ -197,7 +196,7 @@ const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const user = computed(() => store.state.user)
 const credentials = computed(() => store.state.credentials)
 
-const documentFormRef = ref<any | null>(null)
+const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
 const previewEl = ref<HTMLElement | null>(null)
 
 let docService: DocumentsService
@@ -285,7 +284,6 @@ async function loadTargetsTypes() {
   }
 }
 
-/* lifecycle */
 onMounted(() => {
   docService = opensilex.getService('opensilex.DocumentsService')
   uri.value = decodeURIComponent(String(route.params.uri || ''))

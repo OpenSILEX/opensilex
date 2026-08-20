@@ -168,7 +168,10 @@ public class LocationObservationLogic {
             logger.error("In the function getASpecificLocationObservation of LocationObservationLogic, 2 locations with same date and time were found inside location collection : {}", collectionURI);
             //We used to throw an error here, but we were getting major issues with 2 locations at same date & time after performing 1.5.0 , 1.5.1 or 1.5.2 migrations
             //If we have a choice to make, prioritize geospatial over facility
-            return locations.stream().filter(LocationObservationModel::isHasGeometry).findFirst().orElse(locations.get(0));
+            return locations.stream()
+                    .filter(LocationObservationModel::isHasGeometry)
+                    .findFirst()
+                    .orElse(locations.get(0));
         }
 
         return locations.get(0);

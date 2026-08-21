@@ -232,7 +232,7 @@ public class AuthenticationAPI {
             }
         } else {
             // Otherwise return a 403 - FORBIDDEN error response
-            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exist").getResponse();
         }
     }
     /**
@@ -249,12 +249,6 @@ public class AuthenticationAPI {
         List<InternetAddress> receivers = new LinkedList<>();
         receivers.add(new InternetAddress(user.getEmail().getAddress()));
 
-        // get address
-        String username = null;
-        if ( Objects.nonNull(user.getLinkedPerson())) {
-            username = StringUtils.capitalize(user.getLinkedPerson().getFirstName()) + " " + StringUtils.capitalize(user.getLinkedPerson().getLastName());
-        }
-        infos.put(EMAIL_USERNAME_KEY, username); 
         // get getForgotPasswordRedirectUrl address
         String redirectUrl = getForgotPasswordRedirectUrl(userForgottenToken); 
         infos.put(EMAIL_TEMPLATE_REDIRECTURL_KEY, redirectUrl); 

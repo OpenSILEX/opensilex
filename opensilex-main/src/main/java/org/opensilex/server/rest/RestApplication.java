@@ -25,6 +25,7 @@ import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.server.rest.swagger.RemoveRestPrefixFilter;
 import org.opensilex.utils.SwaggerAPIGenerator;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceFactory;
@@ -172,15 +173,17 @@ public class RestApplication extends ResourceConfig {
                         new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JWT")));
-
+                                .bearerFormat("JWT")))
+                .addServersItem(new io.swagger.v3.oas.models.servers.Server().url("/rest"));
         SwaggerConfiguration oasConfig = new SwaggerConfiguration()
                 .openAPI(openAPI)
                 .prettyPrint(true)
-                .resourcePackages(new HashSet<>(packageList));
+                .resourcePackages(new HashSet<>(packageList))
+                .filterClass(RemoveRestPrefixFilter.class.getName());
 
         OpenApiResource openApiResource = new OpenApiResource();
         openApiResource.openApiConfiguration(oasConfig);
+
         register(openApiResource);
     }
 

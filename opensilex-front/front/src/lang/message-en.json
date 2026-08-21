@@ -348,7 +348,7 @@
                 "1": "PHIS - Phenotyping Hybrid Information System",
                 "2": "Version {version}",
                 "3": "Based on OpenSILEX version {version}",
-                "4": "Copyright ©2021 INRAE"
+                "4": "Copyright © 2021 INRAE"
             },
             "errors": {
                 "invalid-credentials": "Invalid credentials"

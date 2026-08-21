@@ -356,7 +356,7 @@
             }
         },
         "footer": {
-            "copyright": "Copyright © 2021 INRAE Tous Droits Déservés. PHIS {version} "
+            "copyright": "Copyright © 2021 INRAE Tous Droits Réservés. PHIS {version} "
         },
         "account": {
             "description": "Gérer et configurer les comptes",

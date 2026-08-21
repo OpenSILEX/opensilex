@@ -1122,7 +1122,7 @@
             "git-commit": "Last commit Id",
             "git-commit-copy": "Copy last commit Id",
             "description": "Description",
-            "title-description": "Informations about information system",
+            "title-description": "Information about the information system",
             "license": "Software license",
             "loaded-modules": "Loaded modules",
             "copyright": "Copyright",

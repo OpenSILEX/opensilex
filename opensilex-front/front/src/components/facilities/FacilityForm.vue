@@ -111,7 +111,7 @@ import {VueJsOntologyExtensionService} from "../../lib";
 import {FacilityCreationDTO} from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import Rdfs from "@/ontologies/Rdfs";
+import Rdfs from "../../ontologies/Rdfs";
 
 @Component
 export default class FacilityForm extends Vue {

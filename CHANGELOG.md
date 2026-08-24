@@ -151,6 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 >
 > If you are upgrading from 1.5.1 or higher, there's nothing to do.
 
+- (!1540) [Facility] Removed duplicate label field in facility form
 - (!1541) [Site] Updating a site that has an address now works again
 
 ## [1.5.4]

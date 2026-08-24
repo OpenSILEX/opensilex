@@ -146,6 +146,7 @@ export default class FacilityForm extends Vue {
     private excludedProperties = [
         Rdfs.LABEL
     ];
+    //#endregion
 
     //#region Computed
     @Watch("facility")

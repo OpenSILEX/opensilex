@@ -143,11 +143,9 @@ menu:
         route:
           path: /events
           component: opensilex-EventsView
-          credentials:
-            - event-access
-          icon: bi#bi -activity
-          title: Event.list-title
-          description: EventsView.description
+          icon: bi#bi-activity
+          title: component.menu.events
+          description: "component.events.list-description"
       - id: documents
         label: Documents
         route:

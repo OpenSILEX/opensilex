@@ -867,30 +867,30 @@ test:optimization:deploy:
 ##  SEBASTIEN-TEST-BUILD-DEPLOYMENT
 ###################################
 
-test:sebastien:build:
+test:valentin:build:
   <<: *build_template_with_opensilex
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/sebastien"
+    - if: $CI_COMMIT_BRANCH == "test/valentin"
 
-test:sebastien:deploy:
+test:valentin:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/sebastien"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/valentin"
+    INSTANCE_CONFIGURATION_FILE_NAME: "valentin.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4089
     OPENSILEX_JAR_PORT: 8089
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/sebastien"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/valentin"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "test/sebastien"
+    - if: $CI_COMMIT_BRANCH == "test/valentin"
       when: on_success
   needs:
-    - test:sebastien:build
+    - test:valentin:build
 
 ###################################
 ##  LYDIA-TEST-BUILD-DEPLOYMENT

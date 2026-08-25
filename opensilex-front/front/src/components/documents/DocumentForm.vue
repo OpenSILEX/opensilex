@@ -1,123 +1,60 @@
 <template>
-  <n-form
-    v-if="form?.description"
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-    class="documentForm"
-  >
+  <n-form v-if="form?.description" ref="formRef" :model="form" :rules="rules" label-placement="top"
+    :show-require-mark="true" class="documentForm">
     <!-- URI / URL -->
-    <opensilex-UriForm
-      v-model:uri="form.description.uri"
-      :generated="uriGenerated"
-      @update:generated="val => (uriGenerated = val)"
-      :editMode="editMode"
-      label="component.common.uri"
-      :helpMessage="t('DocumentForm.uri-help')"
-    />
-      <!-- :helpMessage="t('component.common.uri-help-message')" -->
+    <opensilex-UriForm v-model:uri="form.description.uri" :generated="uriGenerated"
+      @update:generated="val => (uriGenerated = val)" :editMode="editMode" label="component.common.uri"
+      :helpMessage="t('DocumentForm.uri-help')" />
+    <!-- :helpMessage="t('component.common.uri-help-message')" -->
 
     <!-- Identifier -->
-    <opensilex-InputForm
-      v-model:value="form.description.identifier"
-      :label="t('DocumentForm.identifier')"
-      type="text"
-      :helpMessage="t('DocumentForm.identifier-help')"
-      :placeholder="t('DocumentForm.placeholder-identifier')"
-      class="documentFormField"
-    />
+    <opensilex-InputForm v-model:value="form.description.identifier" :label="t('DocumentForm.identifier')" type="text"
+      :helpMessage="t('DocumentForm.identifier-help')" :placeholder="t('DocumentForm.placeholder-identifier')"
+      class="documentFormField" />
     <!-- Type -->
     <n-form-item path="description.rdf_type" ref="rdfTypeItem">
-      <opensilex-TypeForm
-        :key="form?.description?.rdf_type ?? 'no-type'"
-        v-model:type="form.description.rdf_type"
-        :baseType="opensilex.Oeso.DOCUMENT_TYPE_URI"
-        :required="true"
-      />
+      <opensilex-TypeForm :key="form?.description?.rdf_type ?? 'no-type'" v-model:type="form.description.rdf_type"
+        :baseType="opensilex.Oeso.DOCUMENT_TYPE_URI" :required="true" />
     </n-form-item>
 
     <!-- Title -->
     <n-form-item path="description.title">
-        <opensilex-InputForm
-        v-model:value="form.description.title"
-        :label="t('DocumentForm.title')"
-        type="text"
-        :required="true"
-        :helpMessage="t('DocumentForm.title-help')"
-        class="documentFormField"
-        />
+      <opensilex-InputForm v-model:value="form.description.title" :label="t('DocumentForm.title')" type="text"
+        :required="true" :helpMessage="t('DocumentForm.title-help')" class="documentFormField" />
     </n-form-item>
 
     <!-- Date -->
-    <opensilex-DateForm
-      v-model:value="form.description.date"
-      :label="t('DocumentForm.date')"
-      :helpMessage="t('DocumentForm.date-help')"
-      class="documentFormField"
-    />
+    <opensilex-DateForm v-model:value="form.description.date" :label="t('DocumentForm.date')"
+      :helpMessage="t('DocumentForm.date-help')" class="documentFormField" />
 
     <!-- Description -->
-    <opensilex-TextAreaForm
-      v-model:value="form.description.description"
-      :label="t('DocumentForm.description')"
-      type="text"
-      :helpMessage="t('DocumentForm.description-help')"
-      @keydown.enter.stop
-      class="documentFormField"
-    />
+    <opensilex-TextAreaForm v-model:value="form.description.description" :label="t('DocumentForm.description')"
+      type="text" :helpMessage="t('DocumentForm.description-help')" @keydown.enter.stop class="documentFormField" />
 
     <!-- Targets (URLs/URIs) -->
-    <opensilex-TagInputForm
-      class="overflow-auto documentFormField"
-      v-model:value="form.description.targets"
-      :baseType="opensilex.Oeso.targets"
-      :selected="selected"
-      :label="t('DocumentForm.targets')"
-      :helpMessage="t('DocumentForm.targets-help')"
-      type="text"
-    />
-      <!-- style="height: 90px" -->
+    <opensilex-TagInputForm class="overflow-auto documentFormField" v-model:value="form.description.targets"
+      :baseType="opensilex.Oeso.targets" :selected="selected" :label="t('DocumentForm.targets')"
+      :helpMessage="t('DocumentForm.targets-help')" type="text" />
+    <!-- style="height: 90px" -->
 
     <!-- Authors -->
-    <opensilex-TagInputForm
-      v-model:value="form.description.authors"
-      :baseType="opensilex.Oeso.hasAuthors"
-      :placeholder="t('DocumentForm.placeholder-authors')"
-      :label="t('DocumentForm.authors')"
-      :helpMessage="t('DocumentForm.authors-help')"
-      type="text"
-      class="documentFormField"
-    />
+    <opensilex-TagInputForm v-model:value="form.description.authors" :baseType="opensilex.Oeso.hasAuthors"
+      :placeholder="t('DocumentForm.placeholder-authors')" :label="t('DocumentForm.authors')"
+      :helpMessage="t('DocumentForm.authors-help')" type="text" class="documentFormField" />
 
     <!-- Language -->
-    <opensilex-InputForm
-      v-model:value="form.description.language"
-      :label="t('DocumentForm.language')"
-      type="text"
-      :helpMessage="t('DocumentForm.language-help')"
-      :placeholder="t('DocumentForm.placeholder-language')"
-      class="documentFormField"
-    />
+    <opensilex-InputForm v-model:value="form.description.language" :label="t('DocumentForm.language')" type="text"
+      :helpMessage="t('DocumentForm.language-help')" :placeholder="t('DocumentForm.placeholder-language')"
+      class="documentFormField" />
 
     <!-- Keywords -->
-    <opensilex-TagInputForm
-      v-model:value="form.description.keywords"
-      :label="t('DocumentForm.keywords')"
-      type="text"
-      :helpMessage="t('DocumentForm.keywords-help')"
-      class="documentFormField"
-    />
+    <opensilex-TagInputForm v-model:value="form.description.keywords" :label="t('DocumentForm.keywords')" type="text"
+      :helpMessage="t('DocumentForm.keywords-help')" class="documentFormField" />
 
     <!-- Deprecated -->
-    <opensilex-CheckboxForm
-      v-if="editMode"
-      v-model:value="form.description.deprecated"
-      :label="t('DocumentForm.deprecated')"
-      :title="t('DocumentForm.deprecated-title')"
-      :helpMessage="t('DocumentForm.deprecated-help')"
-    />
+    <opensilex-CheckboxForm v-if="editMode" v-model:value="form.description.deprecated"
+      :label="t('DocumentForm.deprecated')" :title="t('DocumentForm.deprecated-title')"
+      :helpMessage="t('DocumentForm.deprecated-help')" />
 
     <!-- Choix contenu (création uniquement) -->
     <n-form-item v-if="!editMode" :show-label="false" path="__contentKind">
@@ -132,35 +69,18 @@
     </n-form-item>
 
     <!-- Fichier -->
-    <n-form-item
-        v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_FILE"
-        path="file"
-        :show-label="false"
-        ref="fileItem"
-    >
-        <opensilex-FileInputForm
-        v-model:file="form.file"
-        :label="t('DocumentForm.file')"
-        type="file"
-        :helpMessage="t('DocumentForm.file-help')"
-        :browse-text="t('DocumentForm.browse')"
-        :required="true"
-        rules="size:100000"
-        />
+    <n-form-item v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_FILE" path="file" :show-label="false"
+      ref="fileItem">
+      <opensilex-FileInputForm v-model:file="form.file" :label="t('DocumentForm.file')" type="file"
+        :helpMessage="t('DocumentForm.file-help')" :browse-text="t('DocumentForm.browse')" :required="true"
+        rules="size:100000" />
     </n-form-item>
 
     <!-- Source externe -->
-    <n-form-item
-      v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE"
-      path="description.source"
-    >
-        <opensilex-InputForm
-        v-model:value="form.description.source"
-        :label="t('DocumentForm.external-source')"
-        type="text"
-        :required="true"
-        rules="url"
-        />
+    <n-form-item v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE"
+      path="description.source">
+      <opensilex-InputForm v-model:value="form.description.source" :label="t('DocumentForm.external-source')"
+        type="text" :required="true" rules="url" />
     </n-form-item>
   </n-form>
 </template>
@@ -194,12 +114,12 @@ type DocForm = {
 const props = withDefaults(defineProps<{
   editMode?: boolean
   form: DocForm
-data?: { initialTargets?: string[] }
- }>(), {
-   editMode: false,
+  data?: { initialTargets?: string[] }
+}>(), {
+  editMode: false,
   form: () => ({ description: { /* … */ }, file: undefined }),
-   data: () => ({ initialTargets: [] })
- })
+  data: () => ({ initialTargets: [] })
+})
 
 // const { t } = useI18n()
 const { t } = useI18n({ useScope: 'local' })
@@ -241,35 +161,35 @@ watch(
 
 // ---- règles
 const rules = computed(() => ({
-  'description.title': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.title') }), trigger: ['blur','change'] },
-  'description.rdf_type': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.type') }), trigger: ['change','blur'] },
+  'description.title': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.title') }), trigger: ['blur', 'change'] },
+  'description.rdf_type': { required: true, message: t('validations.required_if', { _field_: t('DocumentForm.type') }), trigger: ['change', 'blur'] },
   ...(props.editMode ? {} : {
-   file: {
-     trigger: ['change', 'blur'],
-     validator: (_rule: any, value: unknown) => {
-       // si on est en mode "fichier", il faut un File
-       if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
-         return value instanceof File
-           ? true
-           : new Error(t('validations.required_if', { _field_: t('DocumentForm.file') }) as string)
-       }
-       // sinon (mode source externe), pas d'obligation sur file
-       return true
-     }
-   },
-   'description.source': {
-     trigger: ['blur','change'],
-     validator: (_rule: any, value: unknown) => {
-       // en mode "source", valeur non vide requise
-       if (documentContentType.value === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE) {
-         return (value != null && String(value).trim() !== '')
-           ? true
-           : new Error(t('validations.required_if', { _field_: t('DocumentForm.external-source') }) as string)
-       }
-       return true
-     }
-   }
- })
+    file: {
+      trigger: ['change', 'blur'],
+      validator: (_rule: any, value: unknown) => {
+        // si on est en mode "fichier", il faut un File
+        if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
+          return value instanceof File
+            ? true
+            : new Error(t('validations.required_if', { _field_: t('DocumentForm.file') }) as string)
+        }
+        // sinon (mode source externe), pas d'obligation sur file
+        return true
+      }
+    },
+    'description.source': {
+      trigger: ['blur', 'change'],
+      validator: (_rule: any, value: unknown) => {
+        // en mode "source", valeur non vide requise
+        if (documentContentType.value === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE) {
+          return (value != null && String(value).trim() !== '')
+            ? true
+            : new Error(t('validations.required_if', { _field_: t('DocumentForm.external-source') }) as string)
+        }
+        return true
+      }
+    }
+  })
 }))
 
 
@@ -307,31 +227,31 @@ function getEmptyForm(): DocForm {
 //   }
 // }
 
-function reset () {
-   uriGenerated.value = true
-   const f = props.form
-   if (!f || !f.description) return
-   // nettoyage selon le mode choisi
-   if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
-     delete f.description.source
-   } else {
-     f.file = undefined
-   }
+function reset() {
+  uriGenerated.value = true
+  const f = props.form
+  if (!f || !f.description) return
+  // nettoyage selon le mode choisi
+  if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
+    delete f.description.source
+  } else {
+    f.file = undefined
+  }
   // si pas encore de cibles, injecter celles du parent
   if (!Array.isArray(f.description.targets) || f.description.targets.length === 0) {
     f.description.targets = [...(props.data?.initialTargets ?? [])]
   }
- }
+}
 
 
-async function validate () {
+async function validate() {
   try {
     await formRef.value?.validate()
-        // double check, au cas où
-        if (!props.editMode && documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE && !props.form.file) {
-        return false
-        }
-        //
+    // double check, au cas où
+    if (!props.editMode && documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE && !props.form.file) {
+      return false
+    }
+    //
     return true
   } catch {
     return false
@@ -340,7 +260,7 @@ async function validate () {
 
 
 // ---- create / update
-async function create (form: DocForm) {
+async function create(form: DocForm) {
   try {
     // Nettoyage champ non utilisé selon le choix
     if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
@@ -352,15 +272,15 @@ async function create (form: DocForm) {
     const http: any = await opensilex.uploadFileToService('/core/documents', form, null, false)
 
     if (http.result?.message) {
-    if (http.metadata?.status === 409) {
+      if (http.metadata?.status === 409) {
         opensilex.showErrorToast(t('DocumentForm.error.document-already-exists') + ' - ' + http.result.message)
         throw new Error('409')
-    } else if (http.metadata?.status === 400) {
+      } else if (http.metadata?.status === 400) {
         opensilex.showErrorToast(http.result.message)
         throw new Error('400')
-    }
-    opensilex.showErrorToast(http.result.message)
-    throw new Error('create-failed')
+      }
+      opensilex.showErrorToast(http.result.message)
+      throw new Error('create-failed')
     }
 
     const uri = http.result
@@ -372,7 +292,7 @@ async function create (form: DocForm) {
   }
 }
 
-async function update (form: DocForm) {
+async function update(form: DocForm) {
   try {
     const http: any = await opensilex.uploadFileToService('/core/documents', form, null, true)
     // uri = http.result (si besoin)
@@ -395,8 +315,8 @@ defineExpose({
 
 <style scoped>
 .documentFormField {
-    /* margin-bottom: 10px; */
-    margin-top: 15px
+  /* margin-bottom: 10px; */
+  margin-top: 15px
 }
 </style>
 
@@ -485,4 +405,3 @@ fr:
       file-name-too-long: Le nom du fichier est trop long
 
 </i18n>
-

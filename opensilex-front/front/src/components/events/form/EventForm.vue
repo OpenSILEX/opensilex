@@ -4,26 +4,15 @@
       <FormHeader :title="modalFormLogic.formTitle.value" icon="bi#bi-activity" />
     </template>
 
-    <n-form
-      ref="formRef"
-      :model="modalFormLogic.form.value"
-      :rules="rules"
-      label-placement="top"
-      :show-require-mark="true"
-      size="large"
-    >
+    <n-form ref="formRef" :model="modalFormLogic.form.value" :rules="rules" label-placement="top"
+      :show-require-mark="true" size="large">
       <div class="row">
         <div class="col" v-if="!linkedToAreaForm">
           <n-form-item>
-            <UriForm
-              v-model:uri="modalFormLogic.form.value.uri"
-              :generated="uriGenerated"
-              @update:generated="val => uriGenerated = val"
-              label="component.common.uri"
-              :editMode="modalFormLogic.isEditMode.value"
-              :helpMessage="t('component.common.uri-help-message')"
-              :required="true"
-            />
+            <UriForm v-model:uri="modalFormLogic.form.value.uri" :generated="uriGenerated"
+              @update:generated="val => uriGenerated = val" label="component.common.uri"
+              :editMode="modalFormLogic.isEditMode.value" :helpMessage="t('component.common.uri-help-message')"
+              :required="true" />
           </n-form-item>
         </div>
       </div>
@@ -31,17 +20,10 @@
       <div class="row">
         <div class="col">
           <n-form-item path="rdf_type" :show-label="false">
-            <TypeForm
-              ref="typeForm"
-              v-model:type="modalFormLogic.form.value.rdf_type"
-              :baseType="baseType"
-              :ignoreRoot="false"
-              :required="false"
-              :disabled="modalFormLogic.isEditMode.value"
-              :placeholder="t('EventForm.type-placeholder')"
-              @select="typeSwitch($event.id, false)"
-              @open="customOptionsTypes"
-            />
+            <TypeForm ref="typeForm" v-model:type="modalFormLogic.form.value.rdf_type" :baseType="baseType"
+              :ignoreRoot="false" :required="false" :disabled="modalFormLogic.isEditMode.value"
+              :placeholder="t('EventForm.type-placeholder')" @select="typeSwitch($event.id, false)"
+              @open="customOptionsTypes" />
           </n-form-item>
         </div>
       </div>
@@ -49,14 +31,8 @@
       <div class="row">
         <div class="col" v-if="!linkedToAreaForm">
           <n-form-item path="targets" :show-label="false">
-            <TagInputForm
-              v-model:value="modalFormLogic.form.value.targets"
-              :baseType="opensilex.Oeev.CONCERNS"
-              :label="t('EventForm.targets')"
-              type="text"
-              :required="true"
-              :helpMessage="t('EventForm.target-help')"
-            />
+            <TagInputForm v-model:value="modalFormLogic.form.value.targets" :baseType="opensilex.Oeev.CONCERNS"
+              :label="t('EventForm.targets')" type="text" :required="true" :helpMessage="t('EventForm.target-help')" />
           </n-form-item>
         </div>
       </div>
@@ -64,47 +40,30 @@
       <div class="row">
         <div class="col" v-if="!linkedToAreaForm">
           <n-form-item path="description">
-            <TextAreaForm
-              v-model:value="modalFormLogic.form.value.description"
-              :label="t('component.common.description')"
-              :helpMessage="t('EventForm.description')"
-              :placeholder="t('EventForm.description')"
-              @keydown.enter.stop
-            />
+            <TextAreaForm v-model:value="modalFormLogic.form.value.description"
+              :label="t('component.common.description')" :helpMessage="t('EventForm.description')"
+              :placeholder="t('EventForm.description')" @keydown.enter.stop />
           </n-form-item>
         </div>
       </div>
 
       <n-form-item path="end" :show-label="false">
-        <DateTimeRangeForm
-          v-model:startDate="modalFormLogic.form.value.start"
-          v-model:endDate="modalFormLogic.form.value.end"
-          v-model:isInstant="modalFormLogic.form.value.is_instant"
-          v-model:start_required="currentStartDateRequired"
-          v-model:end_required="currentEndDateRequired"
-          :canBeInstant="true"
-        />
+        <DateTimeRangeForm v-model:startDate="modalFormLogic.form.value.start"
+          v-model:endDate="modalFormLogic.form.value.end" v-model:isInstant="modalFormLogic.form.value.is_instant"
+          v-model:start_required="currentStartDateRequired" v-model:end_required="currentEndDateRequired"
+          :canBeInstant="true" />
       </n-form-item>
 
       <br>
 
       <slot :form="modalFormLogic.form.value"></slot>
 
-      <OntologyRelationsForm
-        ref="ontologyRelationsForm"
-        :rdfType="modalFormLogic.form.value.rdf_type"
-        :relations="modalFormLogic.form.value.relations"
-        :excludedProperties="excludedProperties"
-        :baseType="baseType"
-        :editMode="modalFormLogic.isEditMode.value"
-        :context="context"
-      />
+      <OntologyRelationsForm ref="ontologyRelationsForm" :rdfType="modalFormLogic.form.value.rdf_type"
+        :relations="modalFormLogic.form.value.relations" :excludedProperties="excludedProperties" :baseType="baseType"
+        :editMode="modalFormLogic.isEditMode.value" :context="context" />
 
-      <MoveForm
-        v-if="isMove(modalFormLogic.form.value?.rdf_type)"
-        ref="moveForm"
-        v-model:form="modalFormLogic.form.value"
-      />
+      <MoveForm v-if="isMove(modalFormLogic.form.value?.rdf_type)" ref="moveForm"
+        v-model:form="modalFormLogic.form.value" />
     </n-form>
 
     <template #footer>
@@ -114,19 +73,19 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref, useTemplateRef} from 'vue'
-import {useI18n} from 'vue-i18n'
-import type {FormRules} from 'naive-ui'
-import {NForm, NFormItem} from 'naive-ui'
+import { computed, inject, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { FormRules } from 'naive-ui'
+import { NForm, NFormItem } from 'naive-ui'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type {EventsService} from 'opensilex-core/api/events.service'
-import type {EventCreationDTO, MoveCreationDTO} from 'opensilex-core/index'
-import type {EventUpdateDTO} from 'opensilex-core/model/eventUpdateDTO'
-import type {EventDetailsDTO} from 'opensilex-core/model/eventDetailsDTO'
-import type {MoveDetailsDTO} from 'opensilex-core/model/moveDetailsDTO'
-import type {MoveUpdateDTO} from 'opensilex-core/model/moveUpdateDTO'
-import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse'
+import type { EventsService } from 'opensilex-core/api/events.service'
+import type { EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index'
+import type { EventUpdateDTO } from 'opensilex-core/model/eventUpdateDTO'
+import type { EventDetailsDTO } from 'opensilex-core/model/eventDetailsDTO'
+import type { MoveDetailsDTO } from 'opensilex-core/model/moveDetailsDTO'
+import type { MoveUpdateDTO } from 'opensilex-core/model/moveUpdateDTO'
+import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import DTOConverter from '@/models/DTOConverter'
 
 import Modal from '@/components/common/views/Modal.vue'
@@ -139,7 +98,7 @@ import TagInputForm from '@/components/common/forms/TagInputForm.vue'
 import DateTimeRangeForm from '@/components/common/forms/DateTimeRangeForm.vue'
 import OntologyRelationsForm from '@/components/ontology/OntologyRelationsForm.vue'
 import MoveForm from '@/components/events/form/MoveForm.vue'
-import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
+import useModalFormLogic, { ModalFormEmits, ModalFormProps } from '@/composables/useModalFormLogic'
 
 //#region Public
 const emit = defineEmits<ModalFormEmits>();
@@ -187,12 +146,12 @@ const excludedProperties = new Set<string>([
 const rules = computed<FormRules>(() => ({
   targets: !props.linkedToAreaForm
     ? {
-        required: true,
-        type: 'array',
-        min: 1,
-        message: t('EventForm.targets-error'),
-        trigger: ['blur', 'change']
-      }
+      required: true,
+      type: 'array',
+      min: 1,
+      message: t('EventForm.targets-error'),
+      trigger: ['change']
+    }
     : undefined,
 
   end: {
@@ -346,14 +305,13 @@ defineExpose({
 })
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>
 
 <i18n>
 en:
   EventForm:
     description: Description of the event
-    targets-error: URI of one or more targets is not valid
+    targets-error: The Targets field is required
     targets: Targets
     target-help: Object targeted by the event (Must exist)
     end-error: End date is required
@@ -362,7 +320,7 @@ en:
 fr:
   EventForm:
     description: "Description de l'événement"
-    targets-error: L'URI d'un ou plusieurs objets concernés n'est pas valide
+    targets-error: le champs est obligatoire 
     targets: Concerne
     target-help: URI de l'objet concerné par l'évènement (Doit exister).
     end-error: La date de fin est obligatoire

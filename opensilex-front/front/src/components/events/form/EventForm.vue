@@ -156,17 +156,22 @@ const rules = computed<FormRules>(() => ({
     : undefined,
 
   end: {
-    required: currentEndDateRequired.value,
     validator: (_rule: any, value: any) => {
-      if (!currentEndDateRequired.value) {
-        return true
-      }
+      const endDate = modalFormLogic.form.value.end
+      const startDate = modalFormLogic.form.value.start
 
-      if (value === undefined || value === null || value === '') {
-        return new Error(t('component.events.end-date-error'))
-      }
+      const startDateIsEmpty = startDate === undefined || startDate === null || startDate === ''
+      const endDateIsEmpty = endDate === undefined || endDate === null || endDate === ''
 
-      return true
+      if (modalFormLogic.form.value.is_instant) {
+        if (endDateIsEmpty) {
+          return new Error(t('component.events.end-date-error'))
+        }
+      } else {
+        if (startDateIsEmpty || endDateIsEmpty) {
+          return new Error(t('component.events.dates-error'))
+        }
+      }
     },
     trigger: ['blur', 'change']
   }

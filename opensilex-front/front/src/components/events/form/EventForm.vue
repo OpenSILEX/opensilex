@@ -163,7 +163,7 @@ const rules = computed<FormRules>(() => ({
       }
 
       if (value === undefined || value === null || value === '') {
-        return new Error(t('component.events.end-error'))
+        return new Error(t('component.events.targets-error'))
       }
 
       return true

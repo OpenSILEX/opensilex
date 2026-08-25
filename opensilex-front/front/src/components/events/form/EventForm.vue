@@ -151,7 +151,7 @@ const rules = computed<FormRules>(() => ({
       type: 'array',
       min: 1,
       message: t('component.events.targets-error'),
-      trigger: ['change']
+      trigger: ['blur']
     }
     : undefined,
 
@@ -163,7 +163,7 @@ const rules = computed<FormRules>(() => ({
       }
 
       if (value === undefined || value === null || value === '') {
-        return new Error(t('component.events.targets-error'))
+        return new Error(t('component.events.end-date-error'))
       }
 
       return true

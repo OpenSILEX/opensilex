@@ -220,11 +220,11 @@ public class SiteLogic {
 
             siteDAO.update(siteModel);
 
-            if (existingModel.getAddress() != null && siteModel.getAddress() != null) {
-                updateSiteLocation(session, siteModel);
-            } else if (existingModel.getAddress() == null && siteModel.getAddress() != null) {
+            if (existingModel.getLocationObservationCollection() != null && siteModel.getAddress() != null) {
+                updateSiteLocation(session, existingModel, siteModel);
+            } else if (existingModel.getLocationObservationCollection() == null && siteModel.getAddress() != null) {
                 createSiteLocation(session, siteModel);
-            } else if (existingModel.getAddress() != null && siteModel.getAddress() == null) {
+            } else if (existingModel.getLocationObservationCollection() != null && siteModel.getAddress() == null) {
                 deleteSiteLocation(session, siteModel);
             }
 
@@ -423,24 +423,25 @@ public class SiteLogic {
      * @param session session Mongo
      * @throws Exception If the location is not found, or if any other problem occurs
      */
-    private void updateSiteLocation(ClientSession session, SiteModel siteModel) throws Exception {
-        Geometry geom = convertAddressToGeometry(siteModel);
+    private void updateSiteLocation(ClientSession session, SiteModel existingModel, SiteModel siteModel) throws Exception {
+        var geom = convertAddressToGeometry(siteModel);
+        var locationObservationCollectionUri = existingModel.getLocationObservationCollection().getUri();
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosqlV1, sparql, fs);
+        var locationObservationLogic = new LocationObservationLogic(nosqlV1, sparql, fs);
 
         if (geom != null) {
             //Update the LocationObservation
-            LocationModel locationModel = LocationLogic.buildLocationModel(geom, null,null,null, null, null, null);
+            var locationModel = LocationLogic.buildLocationModel(geom, null,null,null, null, null, null);
 
             try {
-                locationObservationLogic.updateLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), true, locationModel);
+                locationObservationLogic.updateLocationObservation(session, locationObservationCollectionUri, true, locationModel);
             } catch (Exception e) {
                 //Even if the location is not found, it must not block the request
-                locationObservationLogic.createLocationObservation(session, siteModel.getLocationObservationCollection().getUri(), siteModel.getUri(), true, null,null, locationModel,null);
+                locationObservationLogic.createLocationObservation(session, locationObservationCollectionUri, siteModel.getUri(), true, null,null, locationModel,null);
             }
         } else {
             try {
-                locationObservationLogic.deleteEveryLocationObservationInCollection(session, siteModel.getLocationObservationCollection().getUri(), true);
+                locationObservationLogic.deleteEveryLocationObservationInCollection(session, locationObservationCollectionUri, true);
             } catch (Exception ignore) {
                 //Even if the location is not found, it must not block the request
             }

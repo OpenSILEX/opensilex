@@ -691,6 +691,7 @@
             "target": "Cible",
             "targets-help": "Objet(s) concerné(s) sont \"Appareils\" et \"Objets scientifiques\"",
             "target-help": "URI de l'objet concerné par l'évènement (Doit exister).",
+            "targets-error": "le champs concerne est obligatoire",
             "targets-example": "os-so:plant1",
             "uri-error": "Création annulée, URI non trouvée - {error}",
             "end-help": "Fin de l'événement, requis si celui-ci est instantané",

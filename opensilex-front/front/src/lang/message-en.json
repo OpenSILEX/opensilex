@@ -686,6 +686,7 @@
             "targets": "Targets",
             "targets-help": "Object(s) concerned by this function are \"Device\" and \"Scientific Objects\"",
             "target-help": "Object targeted by the event (Must exist)",
+            "targets-error": "The targets field is required",
             "targets-example": "os-so:plant1",
             "uri-error": "Creation canceled, URI not found - {error}",
             "end-help": "End of event, required if the event is instantaneous",

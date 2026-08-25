@@ -22,7 +22,7 @@
           <n-form-item path="rdf_type" :show-label="false">
             <TypeForm ref="typeForm" v-model:type="modalFormLogic.form.value.rdf_type" :baseType="baseType"
               :ignoreRoot="false" :required="false" :disabled="modalFormLogic.isEditMode.value"
-              :placeholder="t('EventForm.type-placeholder')" @select="typeSwitch($event.id, false)"
+              :placeholder="t('component.events.type-placeholder')" @select="typeSwitch($event.id, false)"
               @open="customOptionsTypes" />
           </n-form-item>
         </div>
@@ -32,7 +32,8 @@
         <div class="col" v-if="!linkedToAreaForm">
           <n-form-item path="targets" :show-label="false">
             <TagInputForm v-model:value="modalFormLogic.form.value.targets" :baseType="opensilex.Oeev.CONCERNS"
-              :label="t('EventForm.targets')" type="text" :required="true" :helpMessage="t('EventForm.target-help')" />
+              :label="t('component.events.targets')" type="text" :required="true"
+              :helpMessage="t('component.events.target-help')" />
           </n-form-item>
         </div>
       </div>
@@ -41,8 +42,8 @@
         <div class="col" v-if="!linkedToAreaForm">
           <n-form-item path="description">
             <TextAreaForm v-model:value="modalFormLogic.form.value.description"
-              :label="t('component.common.description')" :helpMessage="t('EventForm.description')"
-              :placeholder="t('EventForm.description')" @keydown.enter.stop />
+              :label="t('component.common.description')" :helpMessage="t('component.events.description')"
+              :placeholder="t('component.events.description')" @keydown.enter.stop />
           </n-form-item>
         </div>
       </div>
@@ -149,7 +150,7 @@ const rules = computed<FormRules>(() => ({
       required: true,
       type: 'array',
       min: 1,
-      message: t('EventForm.targets-error'),
+      message: t('component.events.targets-error'),
       trigger: ['change']
     }
     : undefined,
@@ -162,7 +163,7 @@ const rules = computed<FormRules>(() => ({
       }
 
       if (value === undefined || value === null || value === '') {
-        return new Error(t('EventForm.end-error'))
+        return new Error(t('component.events.end-error'))
       }
 
       return true
@@ -306,23 +307,3 @@ defineExpose({
 </script>
 
 <style scoped lang="scss"></style>
-
-<i18n>
-en:
-  EventForm:
-    description: Description of the event
-    targets-error: The Targets field is required
-    targets: Targets
-    target-help: Object targeted by the event (Must exist)
-    end-error: End date is required
-    type-placeholder: Select a type
-
-fr:
-  EventForm:
-    description: "Description de l'événement"
-    targets-error: le champs est obligatoire 
-    targets: Concerne
-    target-help: URI de l'objet concerné par l'évènement (Doit exister).
-    end-error: La date de fin est obligatoire
-    type-placeholder: Selectionner un type
-</i18n>

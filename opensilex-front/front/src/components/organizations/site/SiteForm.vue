@@ -71,7 +71,6 @@
       />
 
       <!-- Address toggle -->
-      <n-form-item>
         <div class="form-check form-switch my-2">
           <input
               class="form-check-input"
@@ -85,7 +84,6 @@
             {{ t('SiteForm.toggleAddress') }}
           </label>
         </div>
-      </n-form-item>
 
       <!-- Address -->
       <n-form-item v-if="hasAddress">

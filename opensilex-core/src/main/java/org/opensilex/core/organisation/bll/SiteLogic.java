@@ -419,7 +419,8 @@ public class SiteLogic {
      *  - If the conversion of the address to geometry doesn't work (address not found) but the old is found : delete the old location
      *  - If the conversion of the address to geometry doesn't work (address not found) and the old isn't found : exception ignored
      *
-     * @param siteModel The new site
+     * @param existingModel The old site fetched from the API
+     * @param siteModel The new site with new updated informations
      * @param session session Mongo
      * @throws Exception If the location is not found, or if any other problem occurs
      */

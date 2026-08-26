@@ -37,6 +37,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     public final static String URI_PATH = PATH + "/{uri}";
     public final static String URIS_PATH = PATH + "/by_uris";
     protected final static String SEARCH_PATH = PATH;
+    public static final ServiceDescription GET_BY_URI;
     public static final ServiceDescription create;
     public static final ServiceDescription searchByURIs;
 
@@ -49,6 +50,10 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
             searchByURIs = new ServiceDescription(
                     FacilityAPI.class.getMethod("searchFacilitiesByURIs", List.class),
                     URIS_PATH
+            );
+            GET_BY_URI = new ServiceDescription(
+                    FacilityAPI.class.getMethod("getFacility", URI.class),
+                    URI_PATH
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);

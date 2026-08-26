@@ -38,6 +38,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
         ));
         LocationObservationDTO location = new LocationObservationDTO();
         location.setGeojson(LocationLogic.geometryToGeoJson(polygon));
-        location.setEndDate(Instant.parse("2021-09-08T12:00:00+01:00"));
+        location.setEndDate(OffsetDateTime.parse("2021-09-08T12:00:00+01:00"));
 
         facilityBuilder.setLocations(List.of(location));
 

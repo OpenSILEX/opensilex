@@ -248,18 +248,18 @@
         <template v-slot:cell(state)="{ data }">
           <i
             v-if="!isEnded(data.item)"
-            class="ik ik-activity badge-icon badge-info-opensilex"
-            :title="$t('component.experiment.common.status.in-progress')"
+            class="bi bi-activity badge-icon badge-info-opensilex"
+            :title="t('component.experiment.common.status.in-progress')"
           ></i>
           <i
             v-else
-            class="ik ik-archive badge-icon badge-light"
-            :title="$t('component.experiment.common.status.finished')"
+            class="bi bi-archive badge-icon badge-light"
+            :title="t('component.experiment.common.status.finished')"
           ></i>
           <i
             v-if="data.item.is_public"
-            class="ik ik-users badge-icon badge-info"
-            :title="$t('component.experiment.common.status.public')"
+            class="bi bi-people badge-icon badge-info"
+            :title="t('component.experiment.common.status.public')"
           ></i>
         </template>
 
@@ -309,6 +309,8 @@ import TableAsyncView from '../common/views/TableAsyncView.vue';
 import ModalFormSelector from '../variables/form/ModalFormSelector.vue';
 import { validEmail } from '@/models/FormFieldsFormatter';
 import { NamedResourceDTO } from 'opensilex-core';
+import DateView from '../common/views/DateView.vue';
+import UriLink from '../common/views/UriLink.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');
@@ -710,3 +712,4 @@ fr:
     selected-all: Toutes les expérimentations
 
 </i18n>
+name

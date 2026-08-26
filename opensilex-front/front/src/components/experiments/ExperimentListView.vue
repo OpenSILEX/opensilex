@@ -10,10 +10,10 @@
 
     <PageContent>
       <template v-slot>
-        <!-- <ExperimentList
+        <ExperimentList
           ref="experimentList"
           @onEdit="showEditForm($event)"
-        ></ExperimentList> -->
+        ></ExperimentList>
       </template>
     </PageContent>
 
@@ -34,14 +34,14 @@ import DTOConverter from '../../models/DTOConverter';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import PageActions from '../layout/PageActions.vue';
 import CreateButton from '../common/buttons/CreateButton.vue';
-// import ExperimentForm from '@/form/ExperimentForm.vue';
-// import ExperimentList from '@/components/experiments/ExperimentList.vue';
+import ExperimentForm from '@/form/ExperimentForm.vue';
+import ExperimentList from '@/components/experiments/ExperimentList.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const store = useStore();
 const router = useRouter();
 // const experimentForm = useTemplateRef<InstanceType<typeof ExperimentForm>>('experimentForm');
-// const experimentList = useTemplateRef<InstanceType<typeof ExperimentList>>('experimentList');
+const experimentList = useTemplateRef<InstanceType<typeof ExperimentList>>('experimentList');
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);

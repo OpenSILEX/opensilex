@@ -19,6 +19,7 @@ import org.opensilex.core.ontology.api.OWLClassPropertyRestrictionDTO;
 import org.opensilex.core.ontology.api.OntologyAPI;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -39,14 +40,37 @@ import static junit.framework.TestCase.assertEquals;
  */
 public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
-    String rdfTypePath = VueOwlExtensionAPI.PATH + "/" + VueOwlExtensionAPI.RDF_TYPE_PATH;
-    String createPropertyPath = OntologyAPI.PATH + "/" + OntologyAPI.PROPERTY_PATH;
-    String deleteRdfTypePath = rdfTypePath + "/{uri}";
-    String searchSubClassOfPath = OntologyAPI.PATH + "/" + OntologyAPI.SEARCH_SUB_CLASS_OF_PATH;
+    private static final String rdfTypePath = VueOwlExtensionAPI.PATH + "/" + VueOwlExtensionAPI.RDF_TYPE_PATH;
+    private static final String createPropertyPath = OntologyAPI.PATH + "/" + OntologyAPI.PROPERTY_PATH;
+    private static final String deleteRdfTypePath = rdfTypePath + "/{uri}";
+    private static final String searchSubClassOfPath = OntologyAPI.PATH + "/" + OntologyAPI.SEARCH_SUB_CLASS_OF_PATH;
 
-    String propertyPath = OntologyAPI.PATH + "/" + OntologyAPI.PROPERTY_PATH;
+    private static final String propertyPath = OntologyAPI.PATH + "/" + OntologyAPI.PROPERTY_PATH;
 
-    String addRestrictionPath = OntologyAPI.PATH + "/" + OntologyAPI.RDF_TYPE_PROPERTY_RESTRICTION;
+    private static final String addRestrictionPath = OntologyAPI.PATH + "/" + OntologyAPI.RDF_TYPE_PROPERTY_RESTRICTION;
+
+    public static final ServiceDescription CREATE_TYPE;
+    public static final ServiceDescription CREATE_PROPERTY;
+    public static final ServiceDescription ADD_RESTRICTION;
+
+    static {
+        try {
+            CREATE_TYPE = new ServiceDescription(
+                    VueOwlExtensionAPI.class.getMethod("createRDFType", VueRDFTypeDTO.class),
+                    rdfTypePath
+            );
+            CREATE_PROPERTY = new ServiceDescription(
+                    OntologyAPI.class.getMethod("createProperty", RDFPropertyDTO.class),
+                    createPropertyPath
+            );
+            ADD_RESTRICTION = new ServiceDescription(
+                    OntologyAPI.class.getMethod("addClassPropertyRestriction", OWLClassPropertyRestrictionDTO.class),
+                    addRestrictionPath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @BeforeClass
     public static void setup() throws Exception {

@@ -21,7 +21,7 @@
         "check:security": "npm audit || cd ."
     },
     "devDependencies": {
-        "@types/node": "22.15.1"
+        "@types/node": "20"
     },
     "eslintConfig": {
         "root": true,

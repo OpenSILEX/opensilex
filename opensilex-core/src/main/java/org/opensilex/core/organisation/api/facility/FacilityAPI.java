@@ -138,6 +138,7 @@ public class FacilityAPI {
             facility = facilityLogic.create(
                     facility,
                     locations.isEmpty() ? null : locations,
+                    dto.getRelations(),
                     currentUser
             );
 
@@ -401,6 +402,7 @@ public class FacilityAPI {
             facility = facilityLogic.update(
                     facility,
                     locations.isEmpty() ? null : locations,
+                    dto.getRelations(),
                     currentUser
             );
 

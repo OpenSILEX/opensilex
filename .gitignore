@@ -52,9 +52,3 @@ opensilex-front/front/src/opensilex.dev.ts
 
 **/.vitepress/dist/
 **/.vitepress/cache/
-graft/*
-opencode.json
-dist/
-
-# graft's local graph cache — regenerable, not committed (run `graft build`).
-/graft/

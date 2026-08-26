@@ -3,15 +3,16 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "noImplicitAny": false,
-        "target": "es2020",
-        "module": "es2020",
-        "moduleResolution": "bundler",
+        "ignoreDeprecations": "5.0",
+        "target": "{{#supportsES6}}es6{{/supportsES6}}{{^supportsES6}}es5{{/supportsES6}}",
+        "module": "{{#supportsES6}}es6{{/supportsES6}}{{^supportsES6}}commonjs{{/supportsES6}}",
+        "moduleResolution": "node",
         "removeComments": true,
         "sourceMap": true,
         "outDir": "./dist",
         "noLib": false,
         "declaration": true,
-        "lib": [ "es2020", "dom" ]
+        "lib": [ "es6", "dom" ]
     },
     "exclude": [
         "node_modules",

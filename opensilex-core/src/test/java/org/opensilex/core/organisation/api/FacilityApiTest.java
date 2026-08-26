@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static junit.framework.TestCase.*;
@@ -112,7 +113,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         if(Objects.nonNull(geoJson)) {
             LocationObservationDTO location = new LocationObservationDTO();
             location.setGeojson(geoJson);
-            location.setEndDate(Instant.parse("2021-09-08T00:00:00.00Z"));
+            location.setEndDate(OffsetDateTime.parse("2021-09-08T00:00:00.00Z"));
             locations.add(location);
         }
 
@@ -131,7 +132,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         if(Objects.nonNull(geoJson)) {
             LocationObservationDTO location = new LocationObservationDTO();
             location.setGeojson(geoJson);
-            location.setEndDate(Instant.parse("2021-09-08T12:00:00+01:00"));
+            location.setEndDate(OffsetDateTime.parse("2021-09-08T12:00:00+01:00"));
             locations.add(location);
         }
 

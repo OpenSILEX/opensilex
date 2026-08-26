@@ -1,27 +1,44 @@
 <template>
   <LoadingOverlay :show="isSearching">
     <div class="card">
-
-
       <!-- Header si table sélectionnable -->
-      <div v-if="isSelectable && showHeaderCount && tableRef" class="card-header d-flex justify-content-between align-items-center">
+      <div
+        v-if="isSelectable && showHeaderCount && tableRef"
+        class="card-header d-flex justify-content-between align-items-center"
+      >
         <div>
           <h3 class="d-inline me-2">
-            <Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
+            <Icon
+              :icon="iconNumberOfSelectedRow"
+              class="title-icon"
+            />
             {{ t(labelNumberOfSelectedRow) }}
           </h3>
-          <span v-if="!maximumSelectedRows && selectMode !== 'single'" class="badge rounded-pill greenThemeColor">
+          <span
+            v-if="!maximumSelectedRows && selectMode !== 'single'"
+            class="badge rounded-pill greenThemeColor"
+          >
             {{ numberOfSelectedRows }}
           </span>
-          <span v-else-if="selectMode !== 'single'" class="badge rounded-pill greenThemeColor" :title="t(badgeHelpMessage)">
+          <span
+            v-else-if="selectMode !== 'single'"
+            class="badge rounded-pill greenThemeColor"
+            :title="t(badgeHelpMessage)"
+          >
             {{ numberOfSelectedRows }}/{{ maximumSelectedRows }}
           </span>
-          <slot name="selectableTableButtons" :numberOfSelectedRows="numberOfSelectedRows"></slot>
+          <slot
+            name="selectableTableButtons"
+            :numberOfSelectedRows="numberOfSelectedRows"
+          ></slot>
         </div>
       </div>
 
       <!-- Header si non sélectionnable -->
-      <div v-if="!isSelectable && tableRef" class="d-flex justify-content-end">
+      <div
+        v-if="!isSelectable && tableRef"
+        class="d-flex justify-content-end"
+      >
         <!-- <opensilex-NbElementPerPageSelector @change="onNbElementPerPageChange" /> -->
       </div>
 
@@ -30,16 +47,17 @@
         <slot name="export"></slot>
       </div>
 
-
       <div v-if="showCount">
         <div v-if="totalRow > 0">
           <strong>
             <span class="ml-1">
-              {{ t('component.common.list.pagination.nbEntries', {
-                limit: start,
-                offset: end,
-                totalRow: n(total)
-              }) }}
+              {{
+                t('component.common.list.pagination.nbEntries', {
+                  limit: start,
+                  offset: end,
+                  totalRow: n(total),
+                })
+              }}
             </span>
           </strong>
         </div>
@@ -50,55 +68,51 @@
         </div>
       </div>
 
-
       <!-- <n-p>
         {{ t('TableAsyncView.selected')}} : <span class="badge badge-pill greenThemeColor">{{ checkedRowKeys.length }} </span>
       </n-p> -->
 
-
-
       <!-- Table with Naive UI -->
-      <n-config-provider
-        :theme-overrides="nThemeOverrides"
-      >
+      <n-config-provider :theme-overrides="nThemeOverrides">
         <n-data-table
-            ref="tableRef"
-            :columns="naiveColumns"
-            :data="tableData"
-            :loading="isSearching"
-            :pagination="pagination"
-            :remote="true"
-            :striped="true"
-            :row-key="row => row.uri"
-            @row-click="onRowClickedSafe"
-            :row-props="(row) => ({
-          style: row.__isDetailsRow ? '' : 'cursor: pointer'
-        })"
-            :checked-row-keys="checkedRowKeys"
-            @update:checked-row-keys="onCheckedRowKeysChange"
-            @update:page="onPageChange"
-            @update:page-size="onPageSizeChange"
-            :sorter="defaultSorter"
-            @update:sorter="onSortChange"
+          ref="tableRef"
+          :columns="naiveColumns"
+          :data="tableData"
+          :loading="isSearching"
+          :pagination="pagination"
+          :remote="true"
+          :striped="true"
+          :row-key="(row) => row.uri"
+          @row-click="onRowClickedSafe"
+          :row-props="
+            (row) => ({
+              style: row.__isDetailsRow ? '' : 'cursor: pointer',
+            })
+          "
+          :checked-row-keys="checkedRowKeys"
+          @update:checked-row-keys="onCheckedRowKeysChange"
+          @update:page="onPageChange"
+          @update:page-size="onPageSizeChange"
+          :sorter="defaultSorter"
+          @update:sorter="onSortChange"
         />
       </n-config-provider>
     </div>
   </LoadingOverlay>
 </template>
 
-
 <script setup lang="ts">
-import {computed, inject, nextTick, onMounted, ref, useSlots} from "vue";
-import {useRoute} from "vue-router";
-import {useI18n} from "vue-i18n";
-import type {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import type HttpResponse from "../../../lib/HttpResponse";
-import {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider} from 'naive-ui';
-import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
-import Icon from "@/components/common/views/Icon.vue";
-import {TableField} from "@/components/common/views/TableField";
+import { computed, inject, nextTick, onMounted, ref, useSlots } from 'vue';
+import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import type { NamedResourceDTO } from 'opensilex-core/model/namedResourceDTO';
+import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin';
+import type HttpResponse from '../../../lib/HttpResponse';
+import { OpenSilexResponse } from 'opensilex-core/HttpResponse';
+import { DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider } from 'naive-ui';
+import LoadingOverlay from '@/components/layout/LoadingOverlay.vue';
+import Icon from '@/components/common/views/Icon.vue';
+import { TableField } from '@/components/common/views/TableField';
 
 export type RowWithData<T> = {
   item: T & {
@@ -108,29 +122,29 @@ export type RowWithData<T> = {
 
 // Props
 const props = defineProps<{
-  fields: Array<TableField>,
-  fieldKeyToSortableModelLabelMap?: Record<string, string>,
-  searchMethod: Function,
-  useQueryParams?: boolean,
-  defaultSortBy?: string,
-  defaultSortDesc?: boolean,
-  selectMode?: "multi" | "single",
-  labelNumberOfSelectedRow?: string,
-  iconNumberOfSelectedRow?: string,
-  maximumSelectedRows?: number,
-  selectAllLimit?: number,
-  defaultPageSize?: { type: number, default: 20 },
-  showCount?: { type: Boolean, default: true },
-  isSelectable?: { type: Boolean, default: false },
-  showHeaderCount?: { type: Boolean, default: true },
-  allowOnlySelected?: { type: Boolean, default: false }, // optionnel, par défaut false
-  showActions?: { type: Boolean, default: false }, // pour bouton dropdown actions groupées
+  fields: Array<TableField>;
+  fieldKeyToSortableModelLabelMap?: Record<string, string>;
+  searchMethod: Function;
+  useQueryParams?: boolean;
+  defaultSortBy?: string;
+  defaultSortDesc?: boolean;
+  selectMode?: 'multi' | 'single';
+  labelNumberOfSelectedRow?: string;
+  iconNumberOfSelectedRow?: string;
+  maximumSelectedRows?: number;
+  selectAllLimit?: number;
+  defaultPageSize?: { type: number; default: 20 };
+  showCount?: { type: Boolean; default: true };
+  isSelectable?: { type: Boolean; default: false };
+  showHeaderCount?: { type: Boolean; default: true };
+  allowOnlySelected?: { type: Boolean; default: false }; // optionnel, par défaut false
+  showActions?: { type: Boolean; default: false }; // pour bouton dropdown actions groupées
 }>();
 
 //  Injections
 const route = useRoute();
 const { t, n } = useI18n();
-const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
+const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const tableRef = ref(); // lié avec ref="tableRef" dans le template
 
 // States
@@ -138,7 +152,7 @@ const currentPage = ref(1);
 const tabPage = ref(1);
 const pageSize = ref(20);
 const totalRow = ref(0);
-const sortBy = ref(props.defaultSortBy ?? "name");
+const sortBy = ref(props.defaultSortBy ?? 'name');
 const sortDesc = ref(props.defaultSortDesc ?? false);
 const isSearching = ref(false);
 const selectAll = ref(false);
@@ -146,14 +160,13 @@ const onlySelected = ref(false);
 const numberOfSelectedRows = ref(0);
 const selectedItems = ref<Array<NamedResourceDTO>>([]);
 const selectedItem = ref();
-const badgeHelpMessage = "component.common.search.badgeHelpMessage";
-const currentStartPath = ref("");
-const currentTabPath = ref("");
+const badgeHelpMessage = 'component.common.search.badgeHelpMessage';
+const currentStartPath = ref('');
+const currentTabPath = ref('');
 const selectedRowIndex = ref<number | null>(null);
 const checkedRowKeys = ref<DataTableRowKey[]>([]);
-const selectedUriSet = ref<Set<string>>(new Set())
-const selectedCache = ref<Map<string, any>>(new Map()) // uri -> objet complet
-
+const selectedUriSet = ref<Set<string>>(new Set());
+const selectedCache = ref<Map<string, any>>(new Map()); // uri -> objet complet
 
 const emit = defineEmits<{
   (e: 'select', item: NamedResourceDTO): void;
@@ -165,7 +178,7 @@ const emit = defineEmits<{
 
 const defaultSorter = ref({
   columnKey: props.defaultSortBy || 'name',
-  order: props.defaultSortDesc ? 'descend' : 'ascend'
+  order: props.defaultSortDesc ? 'descend' : 'ascend',
 });
 
 /**
@@ -173,16 +186,16 @@ const defaultSorter = ref({
  */
 const nThemeOverrides: GlobalThemeOverrides = {
   DataTable: {
-    tdPaddingMedium: "8px 12px"
-  }
+    tdPaddingMedium: '8px 12px',
+  },
 };
 
 // Extracted from $route
-const routeArr = computed(() => route.path.split("/"));
+const routeArr = computed(() => route.path.split('/'));
 
 onMounted(() => {
-  if (props.isSelectable && props.selectMode !== "single") {
-    props.fields.unshift({ key: "select", isSelect: true });
+  if (props.isSelectable && props.selectMode !== 'single') {
+    props.fields.unshift({ key: 'select', isSelect: true });
   }
 
   // attendre que la table soit générée pour appeler et remplir de données
@@ -193,40 +206,42 @@ onMounted(() => {
   });
 });
 
-
 function onCheckedRowKeysChange(newKeys: DataTableRowKey[]) {
-  checkedRowKeys.value = newKeys
+  checkedRowKeys.value = newKeys;
 
   // URIs présentes sur la page courante
-  const pageUris = dataList.value.map((it: any) => it.uri)
-  const newSet = new Set(newKeys as string[])
+  const pageUris = dataList.value.map((it: any) => it.uri);
+  const newSet = new Set(newKeys as string[]);
 
   // 1) Retirer les désélections sur la page courante
   for (const uri of pageUris) {
     if (selectedUriSet.value.has(uri) && !newSet.has(uri)) {
-      selectedUriSet.value.delete(uri)
-      selectedCache.value.delete(uri)
-      emit('unselect', dataList.value.find((x: any) => x.uri === uri))
+      selectedUriSet.value.delete(uri);
+      selectedCache.value.delete(uri);
+      emit(
+        'unselect',
+        dataList.value.find((x: any) => x.uri === uri)
+      );
     }
   }
 
   // 2) Ajouter les nouvelles sélections sur la page courante
   for (const uri of newSet) {
     if (!selectedUriSet.value.has(uri)) {
-      selectedUriSet.value.add(uri)
-      const item = dataList.value.find((x: any) => x.uri === uri)
+      selectedUriSet.value.add(uri);
+      const item = dataList.value.find((x: any) => x.uri === uri);
       if (item) {
-        selectedCache.value.set(uri, item)
-        emit('select', item)
+        selectedCache.value.set(uri, item);
+        emit('select', item);
       }
     }
   }
 
-  numberOfSelectedRows.value = selectedUriSet.value.size
-  emit('row-selected', numberOfSelectedRows.value)
+  numberOfSelectedRows.value = selectedUriSet.value.size;
+  emit('row-selected', numberOfSelectedRows.value);
 }
 
- /* Sécurise le clic sur une ligne de tableau.
+/* Sécurise le clic sur une ligne de tableau.
  *
  * Ignore les lignes techniques utilisées pour afficher les détails,
  * afin d'éviter qu'un clic sur la zone de détails déclenche la sélection
@@ -246,20 +261,17 @@ function onRowClicked(item: NamedResourceDTO) {
 
   if (idx >= 0) {
     selectedItems.value.splice(idx, 1);
-    emit("unselect", item);
+    emit('unselect', item);
   } else {
     selectedItems.value.push(item);
     if (!props.maximumSelectedRows || numberOfSelectedRows.value < props.maximumSelectedRows) {
-      emit("select", item);
+      emit('select', item);
     }
   }
 
   numberOfSelectedRows.value = selectedItems.value.length;
 
-  if (
-    props.maximumSelectedRows &&
-    numberOfSelectedRows.value > props.maximumSelectedRows
-  ) {
+  if (props.maximumSelectedRows && numberOfSelectedRows.value > props.maximumSelectedRows) {
     selectedRowIndex.value = tableRef.value?.sortedItems.findIndex((it) => item === it) ?? null;
     selectedItem.value = item;
   }
@@ -270,7 +282,7 @@ const pagination = ref({
   pageSize: 20,
   pageSizes: [10, 20, 50, 100],
   showSizePicker: true,
-  itemCount: 0
+  itemCount: 0,
 });
 
 const paginationInfo = computed(() => {
@@ -285,7 +297,7 @@ const paginationInfo = computed(() => {
     start,
     end,
     total,
-    hasResults: total > 0
+    hasResults: total > 0,
   };
 });
 
@@ -295,13 +307,12 @@ const total = computed(() => paginationInfo.value.total);
 // const hasResults = computed(() => paginationInfo.value.hasResults);
 const hasResults = computed(() => totalRow.value > 0);
 
-
 async function refresh() {
   isSearching.value = true;
   try {
     const results = await loadData(); //  wrapper de recherche
     dataList.value = results;
-    syncCheckedForCurrentPage()
+    syncCheckedForCurrentPage();
   } catch (e) {
     if ($opensilex) {
       $opensilex.errorHandler(e);
@@ -312,12 +323,12 @@ async function refresh() {
 }
 
 function onItemUnselected(item: any) {
-  const idx = tableRef.value?.sortedItems.findIndex(it => item.id === it.uri);
+  const idx = tableRef.value?.sortedItems.findIndex((it) => item.id === it.uri);
   if (idx !== undefined && idx >= 0) {
     tableRef.value?.unselectRow(idx);
   }
 
-  const selectedIdx = selectedItems.value.findIndex(it => item.id === it.uri);
+  const selectedIdx = selectedItems.value.findIndex((it) => item.id === it.uri);
   if (selectedIdx !== -1) {
     selectedItems.value.splice(selectedIdx, 1);
   }
@@ -325,7 +336,7 @@ function onItemUnselected(item: any) {
 }
 
 function onItemSelected(item: any) {
-  const idx = tableRef.value?.sortedItems.findIndex(it => item.id === it.uri);
+  const idx = tableRef.value?.sortedItems.findIndex((it) => item.id === it.uri);
   if (idx !== undefined && idx >= 0) {
     tableRef.value?.selectRow(idx);
     selectedItems.value.push(tableRef.value.sortedItems[idx]);
@@ -334,56 +345,49 @@ function onItemSelected(item: any) {
 }
 
 function syncCheckedForCurrentPage() {
-  const keysOnPage = dataList.value.map((it: any) => it.uri)
-  checkedRowKeys.value = keysOnPage.filter((uri: string) => selectedUriSet.value.has(uri))
+  const keysOnPage = dataList.value.map((it: any) => it.uri);
+  checkedRowKeys.value = keysOnPage.filter((uri: string) => selectedUriSet.value.has(uri));
 }
 
-
 function getSelected(): any[] {
-  return Array.from(selectedCache.value.values())
+  return Array.from(selectedCache.value.values());
 }
 
 function getOrderBy(): string[] {
   const orderBy: string[] = [];
   if (sortBy.value) {
-    let orderByText = sortBy.value + "=";
+    let orderByText = sortBy.value + '=';
     if (
       props.fieldKeyToSortableModelLabelMap &&
       props.fieldKeyToSortableModelLabelMap[sortBy.value]
     ) {
-      orderByText = props.fieldKeyToSortableModelLabelMap[sortBy.value] + "=";
+      orderByText = props.fieldKeyToSortableModelLabelMap[sortBy.value] + '=';
     }
-    orderBy.push(orderByText + (sortDesc.value ? "desc" : "asc"));
+    orderBy.push(orderByText + (sortDesc.value ? 'desc' : 'asc'));
   }
   return orderBy;
 }
 
-function clickOnlySelected() {
-  onlySelected.value = !onlySelected.value;
-  currentPage.value = 1;
-  tableRef.value?.refresh();
-}
-
 function toggleOnlySelected() {
-  onlySelected.value = !onlySelected.value
-  pagination.value.page = 1
-  currentPage.value = 1
-  refresh()
+  onlySelected.value = !onlySelected.value;
+  pagination.value.page = 1;
+  currentPage.value = 1;
+  refresh();
 }
 
 function resetSelection() {
-  selectedUriSet.value.clear()
-  selectedCache.value.clear()
-  checkedRowKeys.value = []
-  numberOfSelectedRows.value = 0
+  selectedUriSet.value.clear();
+  selectedCache.value.clear();
+  checkedRowKeys.value = [];
+  numberOfSelectedRows.value = 0;
 
   if (onlySelected.value) {
-    onlySelected.value = false
+    onlySelected.value = false;
   }
 
-  pagination.value.page = 1
-  currentPage.value = 1
-  refresh()
+  pagination.value.page = 1;
+  currentPage.value = 1;
+  refresh();
 }
 
 function loadData() {
@@ -393,23 +397,24 @@ function loadData() {
   isSearching.value = true;
 
   if (onlySelected.value) {
-  const all = Array.from(selectedCache.value.values())
-  totalRow.value = all.length
+    const all = Array.from(selectedCache.value.values());
+    totalRow.value = all.length;
 
-  pagination.value.itemCount = totalRow.value
+    pagination.value.itemCount = totalRow.value;
 
-  const startIdx = (currentPage.value - 1) * pagination.value.pageSize
-  const endIdx = currentPage.value * pagination.value.pageSize
+    const startIdx = (currentPage.value - 1) * pagination.value.pageSize;
+    const endIdx = currentPage.value * pagination.value.pageSize;
 
-  $opensilex.enableLoader()
-  isSearching.value = false
-  return Promise.resolve(all.slice(startIdx, endIdx))
-} else {
-    return props.searchMethod({
-      orderBy,
-      currentPage: currentPage.value - 1,
-      pageSize: pagination.value.pageSize,
-    })
+    $opensilex.enableLoader();
+    isSearching.value = false;
+    return Promise.resolve(all.slice(startIdx, endIdx));
+  } else {
+    return props
+      .searchMethod({
+        orderBy,
+        currentPage: currentPage.value - 1,
+        pageSize: pagination.value.pageSize,
+      })
       .then((http: HttpResponse<OpenSilexResponse<any[]>>) => {
         totalRow.value = http.response.metadata.pagination.totalCount;
         pageSize.value = pagination.value.pageSize;
@@ -435,40 +440,39 @@ function getCurrentItemOffset(): number {
 }
 
 function getPaginationInfo() {
-  const total = totalRow.value
-  const page = pagination.value.page
-  const size = pagination.value.pageSize
+  const total = totalRow.value;
+  const page = pagination.value.page;
+  const size = pagination.value.pageSize;
 
-  const start = total === 0 ? 0 : (page - 1) * size + 1
-  const end = Math.min(page * size, total)
+  const start = total === 0 ? 0 : (page - 1) * size + 1;
+  const end = Math.min(page * size, total);
 
-  return { start, end, total, hasResults: total > 0 }
+  return { start, end, total, hasResults: total > 0 };
 }
 
 function getCurrentPage() {
-  return pagination.value.page
+  return pagination.value.page;
 }
 function getPageSize() {
-  return pagination.value.pageSize
+  return pagination.value.pageSize;
 }
 function getTotalRow() {
-  return totalRow.value
+  return totalRow.value;
 }
 
 function onPageChange(page: number) {
-  pagination.value.page = page
-  currentPage.value = page
-  refresh()
+  pagination.value.page = page;
+  currentPage.value = page;
+  refresh();
 }
 
 function onPageSizeChange(size: number) {
-  pagination.value.pageSize = size
-  pageSize.value = size
-  pagination.value.page = 1
-  currentPage.value = 1
-  refresh()
+  pagination.value.pageSize = size;
+  pageSize.value = size;
+  pagination.value.page = 1;
+  currentPage.value = 1;
+  refresh();
 }
-
 
 const slots = useSlots();
 
@@ -494,7 +498,7 @@ const tableData = computed(() => {
       rows.push({
         __isDetailsRow: true,
         __parent: item,
-        uri: `${item.uri}__details`
+        uri: `${item.uri}__details`,
       });
     }
   }
@@ -521,18 +525,20 @@ const naiveColumns = computed(() => {
     title: t(field.label),
     key: field.key,
     resizable: field.resizable ?? true,
-    sorter: field.sortable ? (a, b) => {
-      if (a.__isDetailsRow || b.__isDetailsRow) return 0;
+    sorter: field.sortable
+      ? (a, b) => {
+          if (a.__isDetailsRow || b.__isDetailsRow) return 0;
 
-      const valA = a[field.key];
-      const valB = b[field.key];
+          const valA = a[field.key];
+          const valB = b[field.key];
 
-      if (typeof valA === 'string' && typeof valB === 'string') {
-        return valA.localeCompare(valB);
-      }
+          if (typeof valA === 'string' && typeof valB === 'string') {
+            return valA.localeCompare(valB);
+          }
 
-      return (valA ?? 0) - (valB ?? 0);
-    } : undefined,
+          return (valA ?? 0) - (valB ?? 0);
+        }
+      : undefined,
     render: (row: any, index: number) => {
       if (row.__isDetailsRow) {
         if (colIndex !== 0) {
@@ -543,8 +549,8 @@ const naiveColumns = computed(() => {
           ? slots['row-details']!({
               data: {
                 item: row.__parent,
-                index
-              }
+                index,
+              },
             })
           : null;
       }
@@ -553,8 +559,8 @@ const naiveColumns = computed(() => {
         ? slots[`cell(${field.key})`]!({
             data: {
               item: row,
-              index
-            }
+              index,
+            },
           })
         : row[field.key];
     },
@@ -563,14 +569,11 @@ const naiveColumns = computed(() => {
         return colIndex === 0 ? props.fields.length + (props.isSelectable ? 1 : 0) : 0;
       }
       return 1;
-    }
+    },
   }));
 
   if (props.isSelectable) {
-    return [
-      { type: 'selection' },
-      ...dynamicCols
-    ];
+    return [{ type: 'selection' }, ...dynamicCols];
   }
 
   return dynamicCols;
@@ -587,8 +590,21 @@ function onSortChange(sorter) {
 }
 
 function setPage(page: number) {
-  pagination.value.page = page
-  currentPage.value = page
+  pagination.value.page = page;
+  currentPage.value = page;
+}
+
+function checkSelectedItems(uri) {
+  if (selectedItems.value.length > 0) {
+    const deletedItem = selectedItems.value.findIndex((it) => it.uri == uri);
+    if (deletedItem !== -1) {
+      selectedItems.value.splice(deletedItem, 1);
+    }
+  }
+}
+
+function setOnlySelected(value: boolean) {
+  onlySelected.value = value
 }
 
 defineExpose({
@@ -602,10 +618,10 @@ defineExpose({
   getTotalRow,
   toggleOnlySelected,
   resetSelection,
-  setPage
+  setPage,
+  checkSelectedItems,
+  setOnlySelected
 });
-
-
 </script>
 
 <style scoped>
@@ -620,7 +636,6 @@ defineExpose({
 .title-icon {
   position: relative;
 }
-
 </style>
 
 <i18n>

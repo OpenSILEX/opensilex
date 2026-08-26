@@ -87,6 +87,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -237,11 +238,11 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             list.add(new Position(3.97167246, 43.61328981));
 
             Geometry geometry = new Polygon(list);
-            Instant endInstant = Instant.now();
-            locationObservationDTO.setEndDate(endInstant);
+            var end = OffsetDateTime.now();
+            locationObservationDTO.setEndDate(end);
             locationObservationDTO.setGeojson(LocationLogic.geometryToGeoJson(geometry));
             moveCreationDTO.setLocation(locationObservationDTO);
-            moveCreationDTO.setEnd(endInstant.toString());
+            moveCreationDTO.setEnd(end.toString());
             dto.setMove(moveCreationDTO);
         }
 
@@ -1391,7 +1392,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         var moveDto = new MoveCreationDTO();
         var locationObservationDto = new LocationObservationDTO();
         locationObservationDto.setGeojson(new Point(49, 3));
-        locationObservationDto.setEndDate(Instant.now());
+        locationObservationDto.setEndDate(OffsetDateTime.now());
         moveDto.setLocation(locationObservationDto);
         moveDto.setEnd(locationObservationDto.getEndDate().toString());
         dto.setMove(moveDto);

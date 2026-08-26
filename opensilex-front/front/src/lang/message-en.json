@@ -855,6 +855,8 @@
             "export": "Export Map",
             "time": "Timeline",
             "chart": "Chart",
+            "expand": "Expand",
+            "collapse": "Collapse",
             "Legend": "Legend",
             "LegendSO": "Scientific Objects",
             "LegendStructuralArea": "Structural Areas",

@@ -11,9 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { NDataTable } from 'naive-ui'
-import { useI18n } from 'vue-i18n'
+import { computed, h } from 'vue'
+import { NDataTable, NButton, NTooltip } from 'naive-ui'
 
 //#region Public
 const props = withDefaults(
@@ -30,6 +29,9 @@ interface Feature {
     name?: string
     type?: string
     nature?: string
+    creation_date?: string
+    destruction_date?: string
+    rdf_type_name?: string
     [key: string]: unknown
   }
   geometry?: {
@@ -47,9 +49,11 @@ const emit = defineEmits<{
 //#endregion
 
 //#region Private
-const { t } = useI18n()
+const iconEye = 'M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4A16,16 0 0,0 6,12A16,16 0 0,0 12,20A16,16 0 0,0 18,12A16,16 0 0,0 12,4Z'
+const iconEdit = 'M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z'
+const iconDelete = 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'
 
-const columns = computed(() => [
+const columns = [
   {
     title: 'Name',
     key: 'name',
@@ -67,9 +71,54 @@ const columns = computed(() => [
   {
     title: 'Actions',
     key: 'actions',
-    width: 200,
+    width: 120,
+    render(row: any) {
+      const feature = row.actions
+      return h('div', { class: 'action-buttons' }, [
+        h(NTooltip, { trigger: 'hover' }, {
+          default: () => 'Details',
+          trigger: () => h(NButton, {
+            quaternary: true,
+            size: 'small',
+            circle: true,
+            onClick: () => emit('details', feature),
+          }, {
+            icon: () => h('svg', { width: '14', height: '14', viewBox: '0 0 24 24' }, [
+              h('path', { fill: 'currentColor', d: iconEye })
+            ])
+          })
+        }),
+        h(NTooltip, { trigger: 'hover' }, {
+          default: () => 'Edit',
+          trigger: () => h(NButton, {
+            quaternary: true,
+            size: 'small',
+            circle: true,
+            onClick: () => emit('edit', feature),
+          }, {
+            icon: () => h('svg', { width: '14', height: '14', viewBox: '0 0 24 24' }, [
+              h('path', { fill: 'currentColor', d: iconEdit })
+            ])
+          })
+        }),
+        h(NTooltip, { trigger: 'hover' }, {
+          default: () => 'Delete',
+          trigger: () => h(NButton, {
+            quaternary: true,
+            size: 'small',
+            circle: true,
+            type: 'error',
+            onClick: () => emit('delete', feature),
+          }, {
+            icon: () => h('svg', { width: '14', height: '14', viewBox: '0 0 24 24' }, [
+              h('path', { fill: 'currentColor', d: iconDelete })
+            ])
+          })
+        })
+      ])
+    },
   },
-])
+]
 
 const tableData = computed(() =>
   props.features.map((feature) => ({
@@ -81,8 +130,6 @@ const tableData = computed(() =>
     actions: feature,
   }))
 )
-
-const $t = (key: string) => key
 //#endregion
 
 //#region methods
@@ -113,6 +160,12 @@ function customURIPath(feature: Feature) {
   animation: slide-up 0.6s ease-out;
   max-height: 300px;
   overflow: auto;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
 }
 
 @keyframes slide-up {

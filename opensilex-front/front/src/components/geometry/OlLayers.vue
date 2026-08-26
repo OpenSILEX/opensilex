@@ -149,6 +149,39 @@ watch(
     }
   }
 )
+
+watch(
+  [() => scientificObjectLayerReady.value, () => props.mapInstance],
+  ([layerReady, newMap]) => {
+    if (layerReady && newMap && props.scientificObjects.length > 0) {
+      nextTick(() => {
+        scientificObjectLayerRef.value?.addFeatures(props.scientificObjects)
+      })
+    }
+  }
+)
+
+watch(
+  [() => areaLayerReady.value, () => props.mapInstance],
+  ([layerReady, newMap]) => {
+    if (layerReady && newMap && props.areas.length > 0) {
+      nextTick(() => {
+        areaLayerRef.value?.addFeatures(props.areas)
+      })
+    }
+  }
+)
+
+watch(
+  [() => deviceLayerReady.value, () => props.mapInstance],
+  ([layerReady, newMap]) => {
+    if (layerReady && newMap && props.devices.length > 0) {
+      nextTick(() => {
+        deviceLayerRef.value?.addFeatures(props.devices)
+      })
+    }
+  }
+)
 //#endregion
 
 //#region Event handlers

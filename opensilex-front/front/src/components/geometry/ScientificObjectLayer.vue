@@ -10,6 +10,7 @@ import { Vector as VectorLayer } from 'ol/layer'
 import { Style, Circle as CircleStyle, Fill, Stroke, Text } from 'ol/style'
 import GeoJSON from 'ol/format/GeoJSON'
 import { fromLonLat } from 'ol/proj'
+import { Point } from 'ol/geom'
 
 //#region Public
 const props = withDefaults(
@@ -49,8 +50,10 @@ const emit = defineEmits<{
 
 //#region Data and computed
 const scientificObjectLayer = ref<VectorLayer | null>(null)
+const nonPointLayer = ref<VectorLayer | null>(null)
 const clusterSource = ref<Cluster | null>(null)
 const vectorSource = ref<VectorSource | null>(null)
+const nonPointSource = ref<VectorSource | null>(null)
 const featuresByType = ref<Map<string, Feature[]>>(new Map())
 //#endregion
 
@@ -108,9 +111,29 @@ function initializeLayer() {
 
   scientificObjectLayer.value = layer
 
+  const nonPointSourceInstance = new VectorSource()
+  nonPointSource.value = nonPointSourceInstance
+
+  const nonPointLayerInstance = new VectorLayer({
+    source: nonPointSourceInstance,
+    style: new Style({
+      fill: new Fill({
+        color: 'rgba(0, 163, 141, 0.3)',
+      }),
+      stroke: new Stroke({
+        color: '#00a38d',
+        width: 2,
+      }),
+    }),
+    zIndex: 2,
+  })
+
+  nonPointLayer.value = nonPointLayerInstance
+
   const mapInstanceTyped = props.mapInstance as { getLayers: () => import('ol/Collection').default<import('ol/layer/Layer').default> }
   const mapLayers = mapInstanceTyped.getLayers()
   mapLayers.push(layer)
+  mapLayers.push(nonPointLayerInstance)
 
   emit('layerReady')
 }
@@ -158,7 +181,7 @@ function makeClusterStyleFunc() {
  * Add features to the layer, grouped by type.
  */
 function addFeatures(features: Feature[]) {
-  if (!vectorSource.value) {
+  if (!vectorSource.value || !nonPointSource.value) {
     return
   }
 
@@ -177,7 +200,11 @@ function addFeatures(features: Feature[]) {
       properties: feature.properties,
     })
 
-    vectorSource.value.addFeature(olFeature)
+    if (olGeometry instanceof Point) {
+      vectorSource.value.addFeature(olFeature)
+    } else {
+      nonPointSource.value.addFeature(olFeature)
+    }
   })
 }
 
@@ -188,6 +215,9 @@ function clearFeatures() {
   if (vectorSource.value) {
     vectorSource.value.clear()
   }
+  if (nonPointSource.value) {
+    nonPointSource.value.clear()
+  }
 }
 
 /**
@@ -196,6 +226,9 @@ function clearFeatures() {
 function setVisibility(visible: boolean) {
   if (scientificObjectLayer.value) {
     scientificObjectLayer.value.setVisible(visible)
+  }
+  if (nonPointLayer.value) {
+    nonPointLayer.value.setVisible(visible)
   }
 }
 
@@ -208,6 +241,8 @@ defineExpose({
   getLayer: () => scientificObjectLayer.value,
   getSource: () => vectorSource.value,
   getClusterSource: () => clusterSource.value,
+  getNonPointLayer: () => nonPointLayer.value,
+  getNonPointSource: () => nonPointSource.value,
 })
 </script>
 

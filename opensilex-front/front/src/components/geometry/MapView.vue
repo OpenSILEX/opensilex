@@ -2,7 +2,7 @@
   <div class="map-view-container">
     <MapRenderer
       :experiment-uri="experimentUri"
-      :scientific-objects="mockScientificObjects"
+      :scientific-objects="scientificObjects"
       :areas="mockAreas"
       :devices="mockDevices"
       @select="onFeatureSelected"
@@ -76,6 +76,20 @@
       @area-created="onAreaCreated"
       @area-updated="onAreaUpdated"
     />
+
+    <NDrawer
+      v-model:show="detailsDrawerVisible"
+      placement="right"
+      :width="360"
+      class="details-drawer"
+    >
+      <NDrawerContent :title="t('MapView.featureDetailsTitle')" closable>
+        <FeatureDetailsDrawer
+          :feature="selectedFeatureForDetails"
+          @close="onCloseDetails"
+        />
+      </NDrawerContent>
+    </NDrawer>
   </div>
 </template>
 
@@ -83,6 +97,9 @@
 import { ref, onMounted, onBeforeUnmount, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { ScientificObjectsService } from 'opensilex-core'
+import type { ScientificObjectNodeDTO } from 'opensilex-core'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 
 import MapRenderer from './MapRenderer.vue'
 import MapToolbar from './MapToolbar.vue'
@@ -93,9 +110,10 @@ import EventPanelDrawer from './EventPanelDrawer.vue'
 import MapExportModal from './MapExportModal.vue'
 import ChartModal from './ChartModal.vue'
 import MapEditor from './MapEditor.vue'
+import FeatureDetailsDrawer from './FeatureDetailsDrawer.vue'
 
 // Inject OpenSilex service for experiment loading
-const opensilex = inject<Record<string, unknown>>('$opensilex')
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 //#region Public
 const route = useRoute()
@@ -138,60 +156,49 @@ const eventPanelVisible = ref<boolean>(false)
 const exportModalVisible = ref<boolean>(false)
 const chartModalVisible = ref<boolean>(false)
 const editingMode = ref<boolean>(false)
+const detailsDrawerVisible = ref<boolean>(false)
 const selectedFeatures = ref<Feature[]>([])
+const selectedFeatureForDetails = ref<Feature | null>(null)
+const scientificObjects = ref<Feature[]>([])
 
-// Mock data for testing - clearly labeled as MOCK DATA
-// Scientific Objects (10+ items with various types and coordinates around Paris)
-const mockScientificObjects: Feature[] = [
-  {
-    properties: { uri: 'urn:experiment:so1', name: 'Wheat Plot A1', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3522, 48.8566] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so2', name: 'Wheat Plot A2', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3532, 48.8576] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so3', name: 'Corn Plot B1', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3542, 48.8586] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so4', name: 'Barley Plot B2', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3552, 48.8596] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so5', name: 'Soybean Plot C1', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3562, 48.8606] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so6', name: 'Rice Plot C2', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3572, 48.8616] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so7', name: 'Sunflower Plot D1', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3582, 48.8626] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so8', name: 'Rapeseed Plot D2', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3592, 48.8636] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so9', name: 'Potato Plot E1', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3602, 48.8646] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so10', name: 'Beet Plot E2', type: 'Plot', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3612, 48.8656] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so11', name: 'Tomato Greenhouse', type: 'Greenhouse', nature: 'Structural' },
-    geometry: { type: 'Point', coordinates: [2.3512, 48.8556] },
-  },
-  {
-    properties: { uri: 'urn:experiment:so12', name: 'Lettuce Tray F1', type: 'Sample', nature: 'Temporal' },
-    geometry: { type: 'Point', coordinates: [2.3527, 48.8571] },
-  },
-]
+function transformScientificObjectToFeature(so: ScientificObjectNodeDTO): Feature | null {
+  const feature = so.location?.geojson ?? so.geometry
+  const geometry = feature?.geometry
+  if (!geometry) {
+    return null
+  }
+
+  return {
+    properties: {
+      uri: so.uri,
+      name: so.name,
+      type: so.rdf_type,
+      nature: so.location?.geojson ? 'Structural' : 'Temporal',
+      creation_date: so.creation_date,
+      destruction_date: so.destruction_date,
+      rdf_type_name: so.rdf_type_name,
+    },
+    geometry: {
+      type: geometry.type,
+      coordinates: geometry.coordinates,
+    },
+  }
+}
+
+async function loadScientificObjects() {
+  try {
+    const service = opensilex!.getService<ScientificObjectsService>('opensilex.ScientificObjectsService')
+    const response = await service.searchScientificObjectsWithGeometryListByUris(experimentUri.value)
+    const data = response?.response?.result ?? []
+
+    scientificObjects.value = data
+      .map(transformScientificObjectToFeature)
+      .filter((feature): feature is Feature => feature !== null)
+  }
+  catch (error) {
+    opensilex!.errorHandler(error)
+  }
+}
 
 // Mock Areas (3+ items: structural and temporal)
 const mockAreas: Feature[] = [
@@ -269,6 +276,7 @@ const mockDevices: Feature[] = [
 //#region Hooks
 onMounted(() => {
   experimentUri.value = decodeURIComponent(route.params.uri as string)
+  loadScientificObjects()
 })
 //#endregion
 
@@ -322,7 +330,13 @@ function onEditFeature(feature: Feature) {
 }
 
 function onShowDetails(feature: Feature) {
-  // Show details
+  selectedFeatureForDetails.value = feature
+  detailsDrawerVisible.value = true
+}
+
+function onCloseDetails() {
+  detailsDrawerVisible.value = false
+  selectedFeatureForDetails.value = null
 }
 
 function onSelectFeatureFromTimeline(uri: string) {
@@ -365,6 +379,13 @@ function onExport(format: string) {
     color: white;
   }
 }
+
+.details-drawer {
+  :deep(.n-drawer-header) {
+    background-color: #00a38d;
+    color: white;
+  }
+}
 </style>
 
 <i18n>
@@ -372,8 +393,10 @@ en:
   MapView:
     mapPanelTitle: "Map Panel"
     eventPanelTitle: "Events"
+    featureDetailsTitle: "Feature Details"
 fr:
   MapView:
     mapPanelTitle: "Panneau Carte"
     eventPanelTitle: "Événements"
+    featureDetailsTitle: "Détails de la Fonctionnalité"
 </i18n>

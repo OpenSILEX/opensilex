@@ -127,7 +127,7 @@ function onMapClick(event: { pixel: [number, number] }) {
   const clusterFeatures = feature.get('features') as OlFeature[]
 
   if (clusterFeatures && clusterFeatures.length > 0) {
-    // Zoom to cluster
+    // Zoom to cluster and select first feature
     const points: number[][] = []
     clusterFeatures.forEach((clusterFeature: OlFeature) => {
       const geom = clusterFeature.getGeometry()
@@ -152,9 +152,49 @@ function onMapClick(event: { pixel: [number, number] }) {
       ]
       mapInstanceTyped.getView().fit(extent, { maxZoom: 17 })
     }
+
+    // Emit the first feature from the cluster
+    const clusterFeature = clusterFeatures[0]
+    const featureData: Feature = {
+      properties: {
+        uri: clusterFeature.values_?.uri || clusterFeature.get('uri') || clusterFeature.get('properties')?.uri,
+        name: clusterFeature.values_?.name || clusterFeature.get('name') || clusterFeature.get('properties')?.name,
+        type: clusterFeature.values_?.type || clusterFeature.get('type') || clusterFeature.get('properties')?.type,
+        nature: clusterFeature.values_?.nature || clusterFeature.get('nature') || clusterFeature.get('properties')?.nature,
+        creation_date: clusterFeature.values_?.creation_date || clusterFeature.get('creation_date') || clusterFeature.get('properties')?.creation_date,
+        destruction_date: clusterFeature.values_?.destruction_date || clusterFeature.get('destruction_date') || clusterFeature.get('properties')?.destruction_date,
+        rdf_type_name: clusterFeature.values_?.rdf_type_name || clusterFeature.get('rdf_type_name') || clusterFeature.get('properties')?.rdf_type_name,
+      },
+      geometry: clusterFeature.getGeometry() ? {
+        type: clusterFeature.getGeometry()?.getType(),
+        coordinates: clusterFeature.getGeometry()?.getCoordinates(),
+      } : undefined,
+    }
+    emit('select', featureData)
   } else {
-    if (!props.editingMode) {
-      selectedFeatures.value = []
+    // Extract properties from the clicked feature
+    const featureData: Feature = {
+      properties: {
+        uri: feature.values_?.uri || feature.get('uri') || feature.get('properties')?.uri,
+        name: feature.values_?.name || feature.get('name') || feature.get('properties')?.name,
+        type: feature.values_?.type || feature.get('type') || feature.get('properties')?.type,
+        nature: feature.values_?.nature || feature.get('nature') || feature.get('properties')?.nature,
+        creation_date: feature.values_?.creation_date || feature.get('creation_date') || feature.get('properties')?.creation_date,
+        destruction_date: feature.values_?.destruction_date || feature.get('destruction_date') || feature.get('properties')?.destruction_date,
+        rdf_type_name: feature.values_?.rdf_type_name || feature.get('rdf_type_name') || feature.get('properties')?.rdf_type_name,
+      },
+      geometry: feature.getGeometry() ? {
+        type: feature.getGeometry()?.getType(),
+        coordinates: feature.getGeometry()?.getCoordinates(),
+      } : undefined,
+    }
+
+    if (props.editingMode) {
+      emit('select', featureData)
+    } else {
+      // Replace selection with clicked feature
+      selectedFeatures.value = [featureData]
+      emit('select', featureData)
     }
   }
 }

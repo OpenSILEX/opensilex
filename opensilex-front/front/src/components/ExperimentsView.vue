@@ -6,128 +6,40 @@
     </div>
 
     <div class="experiments-content">
-      <opensilex-ExperimentSimpleList :experimentList="mockExperiments" />
+      <opensilex-ExperimentSimpleList :experimentList="experiments" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted , inject} from 'vue'
 import { useI18n } from 'vue-i18n'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { ExperimentGetListDTO } from 'opensilex-core/model/experimentGetListDTO'
+import type { ExperimentsService } from 'opensilex-core/api/experiments.service'
+import HttpResponse from 'opensilex-security/HttpResponse'
+import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 
 const { t } = useI18n()
+const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
-// Mock data for testing - clearly labeled as MOCK DATA
-const mockExperiments: ExperimentGetListDTO[] = [
-  {
-    uri: 'urn:experiment:exp1',
-    name: 'Wheat Yield Trial 2025',
-    start_date: '2025-03-15',
-    end_date: '2025-10-30',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Dupont',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp2',
-    name: 'Corn Drought Resistance Study',
-    start_date: '2025-04-01',
-    end_date: '2025-11-15',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Martin',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp3',
-    name: 'Barley Genetic Diversity Analysis',
-    start_date: '2025-02-20',
-    end_date: '2025-09-30',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Bernard',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp4',
-    name: 'Soybean Nitrogen Fixation Trial',
-    start_date: '2025-05-10',
-    end_date: '2025-12-01',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Petit',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp5',
-    name: 'Rice Flood Tolerance Assessment',
-    start_date: '2025-06-01',
-    end_date: '2026-01-15',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Leroy',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp6',
-    name: 'Sunflower Oil Quality Study',
-    start_date: '2025-03-01',
-    end_date: '2025-10-15',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Moreau',
-    status: 'COMPLETED',
-  },
-  {
-    uri: 'urn:experiment:exp7',
-    name: 'Rapeseed Disease Resistance',
-    start_date: '2025-04-15',
-    end_date: '2025-11-30',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Simon',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp8',
-    name: 'Potato Blight Prevention Trial',
-    start_date: '2025-05-20',
-    end_date: '2026-02-28',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Laurent',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp9',
-    name: 'Beet Sugar Content Analysis',
-    start_date: '2025-03-10',
-    end_date: '2025-10-20',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Michel',
-    status: 'COMPLETED',
-  },
-  {
-    uri: 'urn:experiment:exp10',
-    name: 'Tomato Greenhouse Optimization',
-    start_date: '2025-01-15',
-    end_date: '2025-08-31',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Grande',
-    status: 'COMPLETED',
-  },
-  {
-    uri: 'urn:experiment:exp11',
-    name: 'Lettuce Hydroponic System Test',
-    start_date: '2025-07-01',
-    end_date: '2026-03-31',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Roux',
-    status: 'ACTIVE',
-  },
-  {
-    uri: 'urn:experiment:exp12',
-    name: 'Strawberry Pest Management',
-    start_date: '2025-04-20',
-    end_date: '2025-12-15',
-    facility: { uri: 'urn:facility:inrae', name: 'INRAE' },
-    principalInvestigator: 'Dr. Blanc',
-    status: 'ACTIVE',
-  },
-]
+const experiments = ref<ExperimentGetListDTO[]>([])
+
+async function loadExperiments() {
+  try {
+    const experimentsService = $opensilex.getService<ExperimentsService>('opensilex.ExperimentsService')
+    const response = await experimentsService.searchExperiments()
+    const httpResponse = response as HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
+    experiments.value = httpResponse.response?.result ?? []
+  }
+  catch (error) {
+    $opensilex.errorHandler(error)
+  }
+}
+
+onMounted(() => {
+  loadExperiments()
+})
 </script>
 
 <style scoped lang="scss">

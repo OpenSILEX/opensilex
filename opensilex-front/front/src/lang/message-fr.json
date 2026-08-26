@@ -839,6 +839,8 @@
             "export": "Exporter la Carte",
             "time": "Chronologie",
             "chart": "Graphique",
+            "expand": "Développer",
+            "collapse": "Réduire",
             "Legend": "Légende",
             "LegendSO": "Objets Scientifiques",
             "LegendStructuralArea": "Zones Structurelles",

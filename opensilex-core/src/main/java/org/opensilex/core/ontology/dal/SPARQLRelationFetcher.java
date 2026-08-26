@@ -73,6 +73,22 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
     private final Pattern specialCharsPattern;
 
+    // Package-private no-arg constructor for testing purposes
+    SPARQLRelationFetcher() {
+        this.sparql = null;
+        this.graph = null;
+        this.graphUri = null;
+        this.initialSelect = null;
+        this.results = new ArrayList<>();
+        this.monoValuedPropertiesByType = new HashMap<>();
+        this.monoValuedPropertiesByTypeVarNames = new HashMap<>();
+        this.multiValuedPropertiesByType = new HashMap<>();
+        this.multiValuedPropertiesByTypeVarNames = new HashMap<>();
+        this.typesMonoValuedProperties = new HashSet<>();
+        this.typesMultiValuedProperties = new HashSet<>();
+        this.specialCharsPattern = Pattern.compile("[^A-Za-z0-9]");
+    }
+
     public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException {
 
         this.sparql = sparql;

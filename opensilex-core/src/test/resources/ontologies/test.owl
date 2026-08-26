@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://test.opensilex.org/"
+     xml:base="http://test.opensilex.org/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://test.opensilex.org/"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.w3.org/2001/XMLSchema#date -->
+
+    <rdfs:Datatype rdf:about="http://www.w3.org/2001/XMLSchema#date"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://test.opensilex.org/hasRelationToB -->
+
+    <owl:ObjectProperty rdf:about="http://test.opensilex.org/hasRelationToB">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://test.opensilex.org/A"/>
+        <rdfs:range rdf:resource="http://test.opensilex.org/B"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://test.opensilex.org/hasBoolean -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasBoolean">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasByte -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasByte">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#byte"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasChar -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasChar">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasDate -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasDate">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasDateTime -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasDateTime">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasDouble -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasDouble">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasFloat -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasFloat">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasInt -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasInt">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasLong -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasLong">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#long"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasShort -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasShort">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#short"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://test.opensilex.org/hasString -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasString">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+    <!-- http://test.opensilex.org/hasLabel -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/hasLabel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://test.opensilex.org/requiredLabel -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/requiredLabel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://test.opensilex.org/optionalLabel -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/optionalLabel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://test.opensilex.org/A -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/A"/>
+    
+
+
+    <!-- http://test.opensilex.org/B -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/B"/>
+    
+    <!-- http://test.opensilex.org/C -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/C"/>
+
+    <!-- http://test.opensilex.org/D -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/D"/>
+
+    <!-- http://test.opensilex.org/inverse -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/inverse"/>
+
+    <!-- http://test.opensilex.org/anotherGraph -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/anotherGraph"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.7.2018-12-02T02:23:35Z) https://github.com/owlcs/owlapi -->
+

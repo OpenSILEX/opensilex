@@ -845,6 +845,22 @@
             "funding": "Funding",
             "expsInProgress": "Experiments in progress"
         },
+        "MapView": {
+            "add-area-button": "Add Area",
+            "mapPanel": "Map Panel",
+            "mapPanelTitle": "Map Panel",
+            "eventPanelTitle": "Events",
+            "center": "Center Map",
+            "print": "Print Map",
+            "export": "Export Map",
+            "time": "Timeline",
+            "chart": "Chart",
+            "Legend": "Legend",
+            "LegendSO": "Scientific Objects",
+            "LegendStructuralArea": "Structural Areas",
+            "LegendTemporalArea": "Temporal Areas",
+            "save-confirmation": "Save"
+        },
         "germplasms": {
             "errors": {
                 "duplicateUri": "Duplicate URI: {uri}",

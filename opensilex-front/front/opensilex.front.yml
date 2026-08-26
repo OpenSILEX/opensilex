@@ -489,6 +489,20 @@ routes:
     credentials:
       - public
 
+  - path: /experiments
+    component: opensilex-ExperimentsView
+    icon: bi#bi-layers
+    title: component.menu.experiments
+    description: component.experiment.search.description
+
+  - path: /experiment/map/:uri
+    component: opensilex-MapView
+    icon: bi#bi-map
+    title: component.menu.spatial.map
+    description: MapView.description
+    credentials:
+      - experiment-access
+
   # - path: /app
   #   component: opensilex-DefaultLoginComponent
   #   name: defaultLoginComponent

@@ -42,7 +42,7 @@
               <opensilex-UriLink
                 :uri="exp.uri"
                 :value="exp.name"
-                :to="{ path: '/experiment/details/' + encodeURIComponent(exp.uri) }"
+                :to="{ path: '/experiment/map/' + encodeURIComponent(exp.uri) }"
               />
             </td>
 

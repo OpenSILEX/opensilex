@@ -829,6 +829,22 @@
             "funding": "Financeurs",
             "expsInProgress": "Experiences en cours"
         },
+        "MapView": {
+            "add-area-button": "Ajouter Zone",
+            "mapPanel": "Panneau Carte",
+            "mapPanelTitle": "Panneau Carte",
+            "eventPanelTitle": "Événements",
+            "center": "Centrer la Carte",
+            "print": "Imprimer la Carte",
+            "export": "Exporter la Carte",
+            "time": "Chronologie",
+            "chart": "Graphique",
+            "Legend": "Légende",
+            "LegendSO": "Objets Scientifiques",
+            "LegendStructuralArea": "Zones Structurelles",
+            "LegendTemporalArea": "Zones Temporelles",
+            "save-confirmation": "Sauvegarder"
+        },
         "germplasms": {
             "errors": {
                 "duplicateUri": "URI en double : {uri}",

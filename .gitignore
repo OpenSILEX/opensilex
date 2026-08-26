@@ -57,3 +57,4 @@ opensilex-front/front/src/opensilex.dev.ts
 /graft/
 opencode.json
 package-lock.json
+dist

@@ -1,81 +1,172 @@
-# Specifications : metadata
+# Spécifications : Métadonnées
 
-- Developers :
-  - Hamza Ikiou (hamza.ikiou@inrae.fr)
-- Date : 2023-07-13
-- OpenSILEX version : 1.0.1 (develop)
+**Document history**
 
-## Needs
+| Date | Editor(s) | OpenSILEX version | Comment |
+|------|-----------|-------------------|---------|
+| 2023-07-13 | Hamza Ikiou | 1.0.1 (develop) | Document original |
+| 26/08/2026 | ARGO | - | Mise à jour avec détails techniques |
 
-All the elements in OpenSILEX are different and have different usage. But we can associate to them some generic
-attributes, such as :
+---
 
-- The publisher
-- The publication date
-- The date of the last modification
+## 1. Besoin
 
-Those information will be available on the detail page of all the element of OpenSILEX. It will be displayed as a
-sentence following the pattern : "Published at {_publication_date_}, by {_publisher_}, modified at {_last_updated_date_}"
+Tous les éléments d'OpenSILEX sont différents et ont des usages variés. Cependant, ils partagent des attributs génériques communs :
 
-Furthermore, some element on OpenSILEX have a creator. The creator here was meant as a publisher, so it will be a
-replacement.
+- **Le publisher** : personne ayant mis la ressource sur OpenSILEX
+- **La date de publication** : date à laquelle la ressource a été mise sur OpenSILEX
+- **La date de dernière modification** : date de la dernière modification
 
-## Solution
+Ces informations sont affichées sur la page de détail de tous les éléments d'OpenSILEX sous la forme :
+> "Published at {_publication_date_}, by {_publisher_}, modified at {_last_updated_date_}"
 
-The generic models will be updated by replacing the creator with a publisher and by adding the publication date and the
-date of the last modification.
+---
 
-The generic methods of creation and update will be updated, so they automatically set the two date in real time.
+## 2. Solution
 
-All the models will be set with the current user as the publisher.
+Les modèles génériques sont mis à jour en remplaçant le `creator` par un `publisher` et en ajoutant la date de publication et la date de dernière modification.
 
-## Technical specifications
+Les méthodes génériques de création et de mise à jour sont mises à jour pour définir automatiquement ces deux dates en temps réel.
 
-### Definitions
+Tous les modèles sont définis avec l'utilisateur courant comme publisher.
 
-- **Publisher** : the person who put the resource on OpenSILEX,
-see the ontology definition [DC:Publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/)
-- **Publication date** : the date when the resource is put on OpenSILEX, it is different from the creation date,
-see the ontology definition [DC:Issued](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/issued/)
-- **Date of the last update** : the date when the resource has been modified for the last time,
-see the ontology definition [DC:Modified](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/modified/)
+---
 
-### Detailed explanations
+## 3. Définitions
 
-#### API
+| Terme | Description | Référence |
+|-------|-------------|-----------|
+| **Publisher** | La personne qui a mis la ressource sur OpenSILEX | [DC:Publisher](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/publisher/) |
+| **Publication date** | La date à laquelle la ressource a été mise sur OpenSILEX (différent de la date de création) | [DC:Issued](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/issued/) |
+| **Date of the last update** | La date à laquelle la ressource a été modifiée pour la dernière fois | [DC:Modified](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/modified/) |
 
-Add of the three attributes on the class `SPARQLResourceModel` and `MongoModel`.
-To ensure that the two dates are automatically set up for the `MongoModel`, the methods `create()` and `update()`
-in the `MongoDBService` have been updated. Same process for the `SPARQLResourceModel`, the methods `create()` in the
-`SPARQLService` and `updateInstanceFromOldValues()` in the `SPARQLClassObjectMapper` have been updated.
+---
 
-In both case, at the creation, the publication date is set up but not the date of last update. At the update, the
-publication date is not modified and the date of the last update is set up (it changes at every update).
+## 4. Spécifications techniques
 
-The publisher is set up on the different API classes using the current user and in the classes `AbstractCsvImporter` and
-`ScientificObjectCsvImporter`.
+### 4.1. API
 
-The type of the two dates are _Instant_ for the `MongoModel` and _OffsetDateTime_ for the `SPARQLResourceModel`. The 
-publisher is stored as URI in both cases. In the DTO he is stored as `UserGetDTO`. Whenever we need to set the publisher
-on a DTO, we do it on the API class calling the current user to set up the `UserGetDTO`.
+#### SPARQLResourceModel
 
-There is some exceptions (ScientificObject, Device,...) that are not using generic methods in `SPARQLService`, in those
-cases, we set up the different attributes on their DAO and API classes.
+Ajout des trois attributs sur `SPARQLResourceModel` et `MongoModel` :
 
-#### Front
+```java
+@SPARQLProperty(ontology = DCTerms.class, property = "publisher")
+protected URI publisher;
 
-A new component `MetadataView` has been added, it has the three attributes as `Prop()` and it builds the sentence
-"Published at {_publication_date_}, by {_publisher_}, modified at {_last_updated_date_}"
+@SPARQLProperty(ontology = DCTerms.class, property = "issued")
+protected OffsetDateTime publicationDate;
 
-This component is added in all the detail page of OpenSILEX, it is displayed if the publisher is not undefined and not null.
+@SPARQLProperty(ontology = DCTerms.class, property = "modified")
+protected OffsetDateTime lastUpdateDate;
+```
 
-### Tests
+#### Comportement des dates
 
-The metadata are tested in the classes `SPARQLMetadataTest` and `MongoMetadataTest`. Those classes have the same content,
-one check MongoDB data and the other check RDF data.
+| Opération | publicationDate | lastUpdateDate |
+|-----------|-----------------|----------------|
+| `create()` | Défini (now) | Non défini |
+| `update()` | Conservé (inchangé) | Défini (now) |
 
-The following tests check the correct behaviour on creation and update of a `MongoModel` and a `SPARQLResourceModel` :
+#### Types de données
 
-- `create` : The model must have a publisher and a publication date, and must not have a date of last modification
-- `updateAfterCreate` : The model must have the same publication date as before and a date of last modification
-- `updateAfterUpdate` : The model must have the same publication date as before and a different date of last modification
+| Modèle | Type des dates |
+|--------|----------------|
+| `MongoModel` | `Instant` |
+| `SPARQLResourceModel` | `OffsetDateTime` |
+
+#### Publisher
+
+- Stocké comme URI dans les deux cas
+- Défini à partir de l'utilisateur courant
+- Dans les DTO, stocké comme `UserGetDTO`
+
+#### Classes concernées
+
+Toutes les classes héritant de `SPARQLResourceModel` ou `MongoModel` bénéficient de ce mécanisme.
+
+**Exceptions :** Certaines classes (ScientificObject, Device, ...) n'utilisent pas les méthodes génériques de `SPARQLService`. Dans ces cas, les attributs sont définis directement dans leurs classes DAO et API.
+
+### 4.2. MongoDBService
+
+Les méthodes `create()` et `update()` de `MongoDBService` ont été mises à jour pour définir automatiquement les dates.
+
+### 4.3. SPARQLService
+
+La méthode `create()` de `SPARQLService` a été mise à jour pour définir la date de publication.
+
+### 4.4. SPARQLClassObjectMapper
+
+La méthode `updateInstanceFromOldValues()` a été mise à jour pour définir la date de dernière modification.
+
+### 4.5. Front-end
+
+Un nouveau composant `MetadataView` a été ajouté :
+- Affiche les trois attributs comme `Prop()`
+- Construit la phrase "Published at {_publication_date_}, by {_publisher_}, modified at {_last_updated_date_}"
+- Affiché sur toutes les pages de détail d'OpenSILEX
+- Affiché uniquement si le publisher n'est pas undefined et non null
+
+---
+
+## 5. Tests
+
+Les métadonnées sont testées dans les classes `SPARQLMetadataTest` et `MongoMetadataTest`. Ces classes ont le même contenu, l'une vérifie les données MongoDB et l'autre les données RDF.
+
+### 5.1. Scénarios de test
+
+| Test | publisher | publicationDate | lastUpdateDate |
+|------|-----------|-----------------|----------------|
+| `create` | Défini | Défini | Non défini |
+| `updateAfterCreate` | Identique | Identique | Défini |
+| `updateAfterUpdate` | Identique | Identique | Différent |
+
+### 5.2. Assertions
+
+```java
+// create : Le modèle doit avoir un publisher et une date de publication,
+//          et ne doit pas avoir de date de dernière modification
+assertNotNull(model.getPublisher());
+assertNotNull(model.getPublicationDate());
+assertNull(model.getLastUpdateDate());
+
+// updateAfterCreate : Le modèle doit avoir la même date de publication
+//                     et une date de dernière modification
+assertEquals(oldModel.getPublicationDate(), model.getPublicationDate());
+assertNotNull(model.getLastUpdateDate());
+
+// updateAfterUpdate : Le modèle doit avoir la même date de publication
+//                     et une date de dernière modification différente
+assertEquals(oldModel.getPublicationDate(), model.getPublicationDate());
+assertNotEquals(oldModel.getLastUpdateDate(), model.getLastUpdateDate());
+```
+
+---
+
+## 6. Schéma RDF
+
+```turtle
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://opensilex.dev/id/germplasm-001>
+    dc:publisher <http://opensilex.dev/set/user/agent-1> ;
+    dc:issued "2024-01-15T10:30:00+01:00"^^xsd:dateTime ;
+    dc:modified "2024-01-15T10:30:00+01:00"^^xsd:dateTime .
+```
+
+---
+
+## 7. Protection contre la mise à jour
+
+Les champs `publisher` et `publicationDate` sont protégés contre la mise à jour en étant ajoutés à la liste d'ignorance lors des opérations de suppression (voir [sparql-update.md](sparql-update.md)).
+
+```java
+// Dans SPARQLService#deleteForUpdate:
+ignoreList.add("publisher");
+ignoreList.add("publicationDate");
+
+// Dans SPARQLService#create:
+ignoreList.add("publisher");
+ignoreList.add("publicationDate");
+```

@@ -138,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, useTemplateRef, watch } from 'vue';
+import { computed, inject, ref, useTemplateRef, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { FormRules } from 'naive-ui';
 import { NForm, NFormItem } from 'naive-ui';
@@ -279,6 +279,19 @@ watch(
   () => {
     formRef.value.restoreValidation();
   }
+);
+
+watch(
+  [
+    () => modalFormLogic.form.value.start,
+    () => modalFormLogic.form.value.end,
+    () => modalFormLogic.form.value.is_instant,
+  ],
+  async () => {
+    await nextTick();
+    formRef.value?.restoreValidation();
+  },
+  { flush: 'post' }
 );
 
 function initForm(event: EventCreationDTO) {

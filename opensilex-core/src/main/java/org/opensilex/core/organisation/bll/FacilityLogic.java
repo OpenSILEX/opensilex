@@ -48,7 +48,6 @@ import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -103,7 +102,7 @@ public class FacilityLogic {
      */
     public FacilityModel create(FacilityModel instance, List<LocationObservationModel> locations, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws Exception {
         validateFacilityAddress(instance, user);
-        validateFacilityRelations(instance, relations, user);
+        validateAndAddFacilityRelations(instance, relations, user);
 
         String lang = null;
         if (Objects.nonNull(user)) {
@@ -266,7 +265,7 @@ public class FacilityLogic {
     public FacilityModel update(FacilityModel instance, List<LocationObservationModel> locations, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
-        validateFacilityRelations(instance, relations, user);
+        validateAndAddFacilityRelations(instance, relations, user);
 
         List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(), user.getLanguage());
         instance.setOrganizations(organizationModels);
@@ -539,7 +538,7 @@ public class FacilityLogic {
         }
     }
 
-    private void validateFacilityRelations(FacilityModel facilityModel, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws SPARQLException, URISyntaxException {
+    private void validateAndAddFacilityRelations(FacilityModel facilityModel, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws SPARQLException, URISyntaxException {
         if (CollectionUtils.isNotEmpty(relations)) {
             OntologyDAO ontoDAO = new OntologyDAO(sparql);
             ClassModel model = ontoDAO.getClassModel(facilityModel.getType(), new URI(Oeso.Facility.getURI()), user.getLanguage());

@@ -54,6 +54,7 @@
                 :relations="this.facility.relations"
                 :baseType="this.baseType"
                 :editMode="editMode"
+                :excludedProperties="excludedProperties"
         ></opensilex-OntologyRelationsForm>
         <slot v-if="facility.rdf_type" v-bind:form="facility"></slot>
 
@@ -110,6 +111,7 @@ import {VueJsOntologyExtensionService} from "../../lib";
 import {FacilityCreationDTO} from 'opensilex-core/index';
 import OntologyRelationsForm from "../ontology/OntologyRelationsForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import Rdfs from "../../ontologies/Rdfs";
 
 @Component
 export default class FacilityForm extends Vue {
@@ -140,6 +142,11 @@ export default class FacilityForm extends Vue {
     private baseType: string;
     private typeModel = null;
     private propertyComponents = [];
+
+    private excludedProperties = [
+        Rdfs.LABEL
+    ];
+    //#endregion
 
     //#region Computed
     @Watch("facility")

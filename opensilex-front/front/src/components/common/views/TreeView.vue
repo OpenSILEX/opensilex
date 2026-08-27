@@ -14,30 +14,20 @@
   :render-label="renderLabel"
   :default-expand-all="defaultExpandAll"
 >
-  <!-- label-field="title" -->
-  <!-- Slot label : rendu du node -->
-  <template #label="{ option }">
-    <div class="d-flex align-items-center justify-content-between">
-      <span>
-        <span v-if="option.selected"><strong>{{ option.title }}{{ option.variables?.length ? ' ' + $tc('VariableStructureList.variable', option.variables.length, { count: option.variables.length }) : '' }}</strong></span>
-        <span v-else>{{ option.title }}{{ option.variables?.length ? ' ' + $tc('VariableStructureList.variable', option.variables.length, { count: option.variables.length }) : '' }}</span>
-      </span>
-      <!-- slot buttons s’il existe -->
-      <span v-if="!noButtons">
-        <slot name="buttons" :node="option" />
-      </span>
-    </div>
-  </template>
 </n-tree>
 
 </template>
 
-<script setup lang="ts">
-import { ref, defineProps, defineEmits, useSlots, defineExpose, watch, onMounted, h } from 'vue'
+<script setup generic="T extends TreeViewOption" lang="ts">
+import {ref, useSlots, watch, onMounted, h, VNodeChild} from 'vue'
 import {NTree, TreeOption} from 'naive-ui'
 
+export interface TreeViewOption extends TreeOption {
+  title?: string
+}
+
 const props = withDefaults(defineProps<{
-  nodes: TreeOption[]
+  nodes: T[]
   noButtons?: boolean
   defaultExpandAll: boolean
 }>(), {
@@ -45,10 +35,13 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  select: [Array<TreeOption>],
-  toggle: [Array<TreeOption>]
+  select: [Array<T>],
+  toggle: [Array<T>]
 }>()
-const slots = useSlots()
+const slots = defineSlots<{
+  buttons: (props: { node: T, selected: boolean }) => VNodeChild
+  node: (props: { node: T, selected: boolean }) => VNodeChild
+}>()
 
 const treeRef = ref<InstanceType<typeof NTree> | null>(null)
 const nodeList = ref(props.nodes || [])
@@ -69,12 +62,12 @@ watch(
 )
 
 
-function onSelectItem(keys: string[], options: Array<TreeOption>) {
+function onSelectItem(keys: string[], options: Array<T>) {
   selectedKeys.value = keys
   emit('select', options)
 }
 
-function onToggle(keys: string[], options: Array<TreeOption>) {
+function onToggle(keys: string[], options: Array<T>) {
   emit('toggle', options)
 }
 
@@ -97,28 +90,29 @@ function getSelectedNode() {
 }
 
 
-function renderLabel(option: any) {
-  const rawNode = option.option; // c'est ici qu'on retrouve le vrai node avec uri, title, etc.
+function renderLabel(info: { option: T, selected: boolean }): VNodeChild {
+  const node = info.option; // c'est ici qu'on retrouve le vrai node avec uri, title, etc.
+  const selected = info.selected;
 
   return h(
-    'div',
-    {
-      class: 'd-flex align-items-center justify-content-between w-100',
-      style: 'width: 100%'
-    },
-    [
-      h('span', {}, rawNode.title),
-      slots.buttons
-        ? h(
+      'div',
+      {
+        class: 'd-flex align-items-center',
+      },
+      [
+        h(
             'span',
-            {
-              onMousedown: (e: Event) => e.stopPropagation(),
-              onMouseup: (e: Event) => e.stopPropagation()
-            },
-            slots.buttons({ node: rawNode }) 
-          )
-        : null
-    ]
+            {style: {"flex-grow": "1"}},
+            [slots.node ? slots.node({node, selected}) : h('span', {}, node.title)],
+        ),
+        slots.buttons
+            ? h(
+                'span',
+                {},
+                [slots.buttons({node, selected})]
+            )
+            : null
+      ]
   )
 }
 

@@ -1,29 +1,17 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageContent>
-        <opensilex-DocumentList
+    <PageContent>
+        <DocumentList
           ref="documentListRef"
           :redirectAfterCreation="true"
-        ></opensilex-DocumentList>
-    </opensilex-PageContent>
+        ></DocumentList>
+    </PageContent>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from 'vue'
-import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
-import DocumentList from "@/components/document/DocumentList.vue";
-
-const store = useStore()
-const router = useRouter()
-
-// refs 
-const documentListRef = useTemplateRef<InstanceType<typeof DocumentList>>("documentListRef")
-
-// user + credentials  
-const user = computed(() => store.state.user)
-const credentials = computed(() => store.state.credentials)
+import PageContent from "@/components/layout/PageContent.vue";
+import DocumentList from "@/components/documents/DocumentList.vue";
 
 </script>
 

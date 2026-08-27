@@ -117,7 +117,7 @@
             </n-form-item>
 
             <!-- Deprecated -->
-            <n-form-item class="compact-form-item" :label="t('component.document.filter-deprecated')">
+            <n-form-item class="compact-form-item" :label="t('component.document.deprecated')">
               <n-switch
                 v-model:value="filter.deprecated" 
               ></n-switch>
@@ -149,7 +149,7 @@
       <div class="pageActionsBtns">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-          @click="documentForm.showCreateForm(initForm())"
+          @click="showCreateForm"
           :label="t('component.common.addDocument')"
           class="createButton"
         />
@@ -231,14 +231,12 @@
         </template>
       </opensilex-TableAsyncView>
 
-      <opensilex-ModalForm
-          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-          ref="documentForm"
-          component="opensilex-DocumentForm"
-          createTitle="component.common.addDocument"
-          modalSize="lg"
-          :initForm="initForm"
-          icon="bi#bi-file-text"
+      <DocumentForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+        ref="documentForm"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.addDocument')"
+        @onSuccess="refresh"
       />
 
     </n-layout-content>
@@ -246,13 +244,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { DocumentsService } from 'opensilex-core/index'
-import DocumentForm from "@/components/document/DocumentForm.vue";
+import DocumentForm from "@/components/documents/DocumentForm.vue";
 
 import {
   NLayout,
@@ -372,16 +370,16 @@ async function loadData(options: any) {
   )
 }
 
-function getSelected() {
-  return tableRef.value?.getSelected?.() ?? []
-}
-
-function initForm() {
-  const targetURI: string[] = getSelected().map(s => s.uri)
-  return {
-    description: { targets: targetURI },
+function showCreateForm() {
+  const form = {
+    description: { targets: getSelected().map(s => s.uri) },
     file: undefined
   }
+  documentForm.value?.showCreateForm(form)
+}
+
+function getSelected() {
+  return tableRef.value?.getSelected?.() ?? []
 }
 
 

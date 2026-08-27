@@ -1,3 +1,6 @@
+export function refresh() {
+
+}
 <template>
   <div>
     <PageContent class="pagecontent">
@@ -624,6 +627,11 @@ function soGetDTOToSelectNode(dto) {
 function searchFiltersPannel() {
   return t('searchfilter.label');
 }
+
+defineExpose({
+  refresh,
+  updateSelectedExperiment
+})
 </script>
 
 <style scoped lang="scss">

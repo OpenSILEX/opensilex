@@ -13,7 +13,7 @@
         {{ editMode ? t(editTitle) : t(createTitle) }}
       </div>
 
-      <opensilex-Button
+      <Button
         class="greenThemeColorText wizard-help-btn"
         @click="startCurrentStepTutorial"
         :small="true"
@@ -21,21 +21,21 @@
         :label="t('component.tutorial.name')"
       >
         <template v-slot:icon>
-          <opensilex-Icon icon="fa#question" class="tutoriel-button-icon" />
+          <Icon icon="fa#question" class="tutoriel-button-icon" />
         </template>
-      </opensilex-Button>
+      </Button>
     </div> -->
     <!-- ----------------------------------------- -->
     <template #header>
       <div class="flex justify-between items-center">
         <h4>
           <slot name="icon">
-            <opensilex-Icon :icon="icon" class="icon-title" />
+            <Icon :icon="icon" class="icon-title" />
           </slot>
           {{ translatedTitle }}
         </h4>
         <!-- TODO implémenter une condition sur l'apparition du bouton d'aide dans les forms en modal ("?")  -->
-        <opensilex-HelpButton
+        <HelpButton
           label="component.tutorial.name"
           class="wizard-help-btn"
           @click="startCurrentStepTutorial"
@@ -51,7 +51,11 @@
         size="small" 
         class="mb-4"
       >
-        <n-step v-for="(step, i) in steps" :key="i" :title="t(step.title)" />
+        <n-step
+            v-for="(step, i) in steps"
+            :key="i"
+            :title="currentTitle(i)"
+        />
       </n-steps>
     </div>
 
@@ -115,14 +119,19 @@ import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 
-interface WizardStep {
+export type WizardStep = {
   component: any
-  title: string          // clé i18n
+  title?: string          // clé i18n
   finish?: string | (() => string)
   next?: string | (() => string)
   done?: string | (() => string)
   previous?: string | (() => string)
   props?: Record<string, any>
+}
+
+function currentTitle(i) {
+  const title = props.steps[i]?.title
+  return title ? t(title) : ''
 }
 
 const props = defineProps<{
@@ -148,7 +157,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const opensilex = inject<OpenSilexVuePlugin>('opensilex')!
 
 const visible = ref(false)
 const editMode = ref(false)

@@ -17,12 +17,13 @@
       </template>
     </PageContent>
 
-    <!-- <ExperimentForm
+    <ExperimentForm
       v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      v-model:form="experiment"
       ref="experimentForm"
       @onCreate="redirectToCreatedExperiment"
       @onUpdate="experimentList.updateSelectedExperiment()"
-    ></ExperimentForm> -->
+    ></ExperimentForm>
   </div>
 </template>
 
@@ -34,14 +35,18 @@ import DTOConverter from '../../models/DTOConverter';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import PageActions from '../layout/PageActions.vue';
 import CreateButton from '../common/buttons/CreateButton.vue';
-import ExperimentForm from '@/form/ExperimentForm.vue';
 import ExperimentList from '@/components/experiments/ExperimentList.vue';
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import ExperimentForm from "@/components/experiments/form/ExperimentForm.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import {ExperimentCreationDTO} from "opensilex-core/model/experimentCreationDTO";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const store = useStore();
 const router = useRouter();
-// const experimentForm = useTemplateRef<InstanceType<typeof ExperimentForm>>('experimentForm');
+const experimentForm = useTemplateRef<InstanceType<typeof ExperimentForm>>('experimentForm');
 const experimentList = useTemplateRef<InstanceType<typeof ExperimentList>>('experimentList');
+const experiment = ref<ExperimentCreationDTO>({} as ExperimentCreationDTO);
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
@@ -52,7 +57,7 @@ function refresh() {
 
 function showEditForm(uri: string) {
   opensilex
-    .getService('opensilex.ExperimentsService')
+    .getService<ExperimentsService>('opensilex.ExperimentsService')
     .getExperiment(uri)
     .then((http) => {
       experimentForm.value?.showEditForm(
@@ -66,6 +71,7 @@ function redirectToCreatedExperiment(experiment) {
     path: '/experiment/details/' + encodeURIComponent(experiment.uri),
   });
 }
+
 </script>
 
 <style scoped lang="scss">

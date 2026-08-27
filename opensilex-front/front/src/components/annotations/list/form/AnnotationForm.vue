@@ -191,10 +191,12 @@ onBeforeUnmount(() => {
 //#endregion
 
 //#endregion
-
+<
 defineExpose({
   showCreateForm,
-  showEditForm
+  showEditForm,
+  reset,
+
 })
 </script>
 

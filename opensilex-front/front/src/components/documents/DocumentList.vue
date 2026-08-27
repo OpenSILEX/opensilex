@@ -97,7 +97,7 @@
             </n-form-item>
 
             <!-- author -->
-            <n-form-item class="compact-form-item" :label="t('component.document.author')">
+            <n-form-item class="compact-form-item" :label="t('component.document.authors')">
               <n-input
                 v-model:value="filter.authors"
                 :placeholder="t('component.document.filter-author-placeholder')"

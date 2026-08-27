@@ -18,17 +18,17 @@
          :generated.sync="uriGenerated"
          :editMode="modalFormLogic.isEditMode.value"
          label="component.common.uri"
-         :helpMessage="t('DocumentForm.uri-help')"
+         :helpMessage="t('component.document.uri-help')"
        />
      </n-form-item>
 
      <n-form-item path="description.identifier">
        <InputForm
          v-model:value="modalFormLogic.form.value.description.identifier"
-         :label="t('DocumentForm.identifier')"
+         :label="t('component.document.identifier')"
          type="text"
-         :helpMessage="t('DocumentForm.identifier-help')"
-         :placeholder="t('DocumentForm.placeholder-identifier')"
+         :helpMessage="t('component.document.identifier-help')"
+         :placeholder="t('component.document.placeholder-identifier')"
        />
      </n-form-item>
 
@@ -44,27 +44,27 @@
      <n-form-item path="description.title">
        <InputForm
          v-model:value="modalFormLogic.form.value.description.title"
-         :label="t('DocumentForm.title')"
+         :label="t('component.document.title')"
          type="text"
          :required="true"
-         :helpMessage="t('DocumentForm.title-help')"
+         :helpMessage="t('component.document.title-help')"
        />
      </n-form-item>
 
      <n-form-item path="description.date">
        <DateForm
          v-model:value="modalFormLogic.form.value.description.date"
-         :label="t('DocumentForm.date')"
-         :helpMessage="t('DocumentForm.date-help')"
+         :label="t('component.document.date')"
+         :helpMessage="t('component.document.date-help')"
        />
      </n-form-item>
 
      <n-form-item path="description.description">
        <TextAreaForm
          v-model:value="modalFormLogic.form.value.description.description"
-         :label="t('DocumentForm.description')"
+         :label="t('component.document.description')"
          type="text"
-         :helpMessage="t('DocumentForm.description-help')"
+         :helpMessage="t('component.document.description-help')"
          @keydown.enter.stop
        />
      </n-form-item>
@@ -73,8 +73,8 @@
        <TagInputForm
          v-model:value="modalFormLogic.form.value.description.targets"
          :baseType="opensilex.Oeso.targets"
-         :label="t('DocumentForm.targets')"
-         :helpMessage="t('DocumentForm.targets-help')"
+         :label="t('component.document.targets')"
+         :helpMessage="t('component.document.targets-help')"
          type="text"
        />
      </n-form-item>
@@ -83,9 +83,9 @@
        <TagInputForm
          v-model:value="modalFormLogic.form.value.description.authors"
          :baseType="opensilex.Oeso.hasAuthors"
-         :placeholder="t('DocumentForm.placeholder-authors')"
-         :label="t('DocumentForm.authors')"
-         :helpMessage="t('DocumentForm.authors-help')"
+         :placeholder="t('component.document.placeholder-authors')"
+         :label="t('component.document.authors')"
+         :helpMessage="t('component.document.authors-help')"
          type="text"
        />
      </n-form-item>
@@ -93,38 +93,38 @@
      <n-form-item path="description.language">
        <InputForm
          v-model:value="modalFormLogic.form.value.description.language"
-         :label="t('DocumentForm.language')"
+         :label="t('component.document.language')"
          type="text"
-         :helpMessage="t('DocumentForm.language-help')"
-         :placeholder="t('DocumentForm.placeholder-language')"
+         :helpMessage="t('component.document.language-help')"
+         :placeholder="t('component.document.placeholder-language')"
        />
      </n-form-item>
 
      <n-form-item path="description.keywords">
        <TagInputForm
          v-model:value="modalFormLogic.form.value.description.keywords"
-         :label="t('DocumentForm.keywords')"
+         :label="t('component.document.keywords')"
          type="text"
-         :helpMessage="t('DocumentForm.keywords-help')"
+         :helpMessage="t('component.document.keywords-help')"
        />
      </n-form-item>
 
      <n-form-item v-if="modalFormLogic.isEditMode.value" path="description.deprecated">
        <CheckboxForm
          v-model:value="modalFormLogic.form.value.description.deprecated"
-         :label="t('DocumentForm.deprecated')"
-         :title="t('DocumentForm.deprecated-title')"
-         :helpMessage="t('DocumentForm.deprecated-help')"
+         :label="t('component.document.deprecated')"
+         :title="t('component.document.deprecated-title')"
+         :helpMessage="t('component.document.deprecated-help')"
        />
      </n-form-item>
 
      <n-form-item v-if="!modalFormLogic.isEditMode.value" path="__contentKind">
        <n-radio-group v-model:value="documentContentType">
          <n-radio :value="DOCUMENT_CONTENT_TYPE_FILE">
-           {{ t('DocumentForm.upload-file') }}
+           {{ t('component.document.upload-file') }}
          </n-radio>
          <n-radio :value="DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE">
-           {{ t('DocumentForm.link-external-source') }}
+           {{ t('component.document.link-external-source') }}
          </n-radio>
        </n-radio-group>
      </n-form-item>
@@ -136,10 +136,10 @@
      >
        <FileInputForm
          v-model:file="modalFormLogic.form.value.file"
-         :label="t('DocumentForm.file')"
+         :label="t('component.document.file')"
          type="file"
-         :helpMessage="t('DocumentForm.file-help')"
-         :browse-text="t('DocumentForm.browse')"
+         :helpMessage="t('component.document.file-help')"
+         :browse-text="t('component.document.browse')"
          :required="true"
          rules="size:100000"
        />
@@ -151,7 +151,7 @@
      >
        <InputForm
          v-model:value="modalFormLogic.form.value.description.source"
-         :label="t('DocumentForm.external-source')"
+         :label="t('component.document.external-source')"
          type="text"
          :required="true"
          rules="url"
@@ -231,8 +231,8 @@ const modalFormLogic = useModalFormLogic<DocumentFormModel>({
 })
 
 const rules = computed<FormRules>(() => ({
- 'description.title': requiredTrimmed("DocumentForm.title"),
- 'description.rdf_type': requiredTrimmed("DocumentForm.type"),
+ 'description.title': requiredTrimmed("component.document.title"),
+ 'description.rdf_type': requiredTrimmed("component.document.type"),
  ...(modalFormLogic.isEditMode.value ? {} : {
    file: {
      validator: (_rule, value) => {
@@ -240,7 +240,7 @@ const rules = computed<FormRules>(() => ({
        if (documentContentType.value === DOCUMENT_CONTENT_TYPE_FILE) {
          return value instanceof File
            ? true
-           : new Error(t('validations.required_if', { _field_: t('DocumentForm.file') }) as string)
+           : new Error(t('validations.required_if', { _field_: t('component.document.file') }) as string)
        }
        // sinon (mode source externe), pas d'obligation sur file
        return true
@@ -253,7 +253,7 @@ const rules = computed<FormRules>(() => ({
        if (documentContentType.value === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE) {
          return value != null && String(value).trim() !== ''
            ? true
-           : new Error(t('validations.required_if', { _field_: t('DocumentForm.external-source') }) as string)
+           : new Error(t('validations.required_if', { _field_: t('component.document.external-source') }) as string)
        }
        return true
      }

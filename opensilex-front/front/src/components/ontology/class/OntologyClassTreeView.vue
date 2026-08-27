@@ -13,6 +13,12 @@
 
     <template #buttons="{ node }">
       <n-button-group size="small" class="btn-group btn-group-sm">
+        <EditButton
+            v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+            @click="$emit('editClass' ,node.data)"
+            :label="t('OntologyClassTreeView.edit')"
+            :small="true"
+        ></EditButton>
         <AddChildButton
             v-if="user.isAdmin()"
             @click="emit('createChildClass' ,node.data.uri)"
@@ -45,6 +51,7 @@ import TreeView, {TreeViewOption} from "@/components/common/views/TreeView.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
 
 //#region Public
 const props = defineProps<{
@@ -52,9 +59,10 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  editClass: [nodeData: TreeViewOption],
   selectionChange: [selected: VueRDFTypeDTO],
   createChildClass: [uri: string],
-  deleteRDFType: [nodeData: any]
+  deleteRDFType: [nodeData: TreeViewOption]
 }>()
 
 defineExpose({

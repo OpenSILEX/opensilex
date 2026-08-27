@@ -312,10 +312,8 @@ watch(() => modalFormLogic.form.value.file,
     { flush: 'post' }
 )
 
-defineExpose({
- showCreateForm: modalFormLogic.showCreateForm,
- showEditForm: modalFormLogic.showEditForm
-})
+defineExpose(modalFormLogic.exposed)
+
 </script>
 
 <i18n>

@@ -154,7 +154,7 @@
         ref="tableRef"
         :searchMethod="searchExperiments"
         :fields="fields"
-        :isSelectable="true"
+        @isSelectable="true"
         @refreshed="onRefreshed"
         labelNumberOfSelectedRow="ExperimentList.selected"
         iconNumberOfSelectedRow="ik#ik-layers"
@@ -311,6 +311,7 @@ import { validEmail } from '@/models/FormFieldsFormatter';
 import { NamedResourceDTO } from 'opensilex-core';
 import DateView from '../common/views/DateView.vue';
 import UriLink from '../common/views/UriLink.vue';
+import FundingSelector from './FundingSelector.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');

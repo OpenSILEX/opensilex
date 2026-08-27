@@ -27,6 +27,7 @@ import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -100,9 +101,9 @@ public class FacilityLogic {
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      * @throws Exception                           If any other problem occurs
      */
-    public FacilityModel create(FacilityModel instance, List<LocationObservationModel> locations, AccountModel user) throws Exception {
+    public FacilityModel create(FacilityModel instance, List<LocationObservationModel> locations, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws Exception {
         validateFacilityAddress(instance, user);
-        validateFacilityRelations(instance, user);
+        validateFacilityRelations(instance, relations, user);
 
         String lang = null;
         if (Objects.nonNull(user)) {
@@ -262,10 +263,10 @@ public class FacilityLogic {
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel update(FacilityModel instance, List<LocationObservationModel> locations, AccountModel user) throws Exception {
+    public FacilityModel update(FacilityModel instance, List<LocationObservationModel> locations, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
-        validateFacilityRelations(instance, user);
+        validateFacilityRelations(instance, relations, user);
 
         List<OrganizationModel> organizationModels = organizationDAO.getByURIs(instance.getOrganizationUris(), user.getLanguage());
         instance.setOrganizations(organizationModels);
@@ -538,14 +539,14 @@ public class FacilityLogic {
         }
     }
 
-    private void validateFacilityRelations(FacilityModel facilityModel, AccountModel user) throws SPARQLException, URISyntaxException {
-        if (!facilityModel.getRelations().isEmpty()) {
+    private void validateFacilityRelations(FacilityModel facilityModel, Collection<RDFObjectRelationDTO> relations, AccountModel user) throws SPARQLException, URISyntaxException {
+        if (CollectionUtils.isNotEmpty(relations)) {
             OntologyDAO ontoDAO = new OntologyDAO(sparql);
             ClassModel model = ontoDAO.getClassModel(facilityModel.getType(), new URI(Oeso.Facility.getURI()), user.getLanguage());
             URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
 
-            for (SPARQLModelRelation relation : facilityModel.getRelations()) {
-                if (!ontoDAO.validateThenAddObjectRelationValue(graph, model, URI.create(relation.getProperty().getURI()), relation.getValue(), facilityModel)) {
+            for (var relation : relations) {
+                if (!ontoDAO.validateThenAddObjectRelationValue(graph, model, relation.getProperty(), relation.getValue(), facilityModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }

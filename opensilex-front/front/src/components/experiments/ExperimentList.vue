@@ -526,38 +526,38 @@ const fields = computed(() => {
   const tableFields = [
     {
       key: 'name',
-      label: 'component.common.name',
+      label: t('component.common.name'),
       sortable: true,
       thStyle: { width: '1%' },
       tdClass: 'text-nowrap',
     },
     {
       key: 'start_date',
-      label: 'component.experiment.startDate',
+      label: t('component.experiment.startDate'),
       sortable: true,
     },
     {
       key: 'end_date',
-      label: 'component.experiment.endDate',
+      label: t('component.experiment.endDate'),
       sortable: true,
     },
     {
       key: 'state',
-      label: 'component.experiment.search.column.state',
+      label: t('component.experiment.search.column.state'),
     },
   ];
 
   if (!isGermplasmMenuExcluded.value) {
     tableFields.push({
       key: 'species',
-      label: 'component.experiment.species',
+      label: t('component.experiment.species'),
     });
   }
 
   if (!props.noActions) {
     tableFields.push({
       key: 'actions',
-      label: 'component.common.actions',
+      label: t('component.common.actions'),
     });
   }
 
@@ -665,51 +665,3 @@ function searchFiltersPannel() {
   margin-left: 15px;
 }
 </style>
-
-<i18n>
-en:
-  ExperimentList:
-    name: The experiment
-    filter-label: Name
-    filter-label-placeholder: Enter a name
-    filter-year: Year
-    filter-year-placeholder: Enter a year
-    filter-species: Species
-    filter-species-placeholder: Select one or more species
-    filter-facilities: Facilities
-    filter-facilities-placeholder: Select one or more facilities
-    filter-project: Project
-    filter-project-placeholder: Select a project
-    filter-state: State
-    filter-state-placeholder: Select an experiment state
-    filter-factors-categories: Factors categories
-    filter-factors-categories-placeholder: Select one or more categories
-    filter-funding: Funding
-    filter-funding-placeholder: Select an experiment funding
-    selected: Selected experiments
-    selected-all: All experiments
-
-fr:
-  ExperimentList:
-    name: L'expérimentation
-    filter-label: Nom
-    filter-label-placeholder: Saisir un nom
-    filter-year: Année
-    filter-year-placeholder: Saisir une année
-    filter-species: Espèces
-    filter-species-placeholder: Sélectionner une ou plusieurs espèces
-    filter-facilities: Installations environnementales
-    filter-facilities-placeholder: Sélectionner une ou plusieurs installations
-    filter-project: Projet
-    filter-project-placeholder: Sélectionner un projet
-    filter-state: Etat
-    filter-state-placeholder: Sélectionner un état
-    filter-factors-categories: Categories de facteurs
-    filter-factors-categories-placeholder: Sélectionner une ou plusieurs categories
-    filter-funding: Financeur
-    filter-funding-placeholder: Sélectionner un financeur
-    selected: Expérimentations selectionnées
-    selected-all: Toutes les expérimentations
-
-</i18n>
-name

@@ -97,7 +97,7 @@
             </n-form-item>
 
             <!-- author -->
-            <n-form-item class="compact-form-item" :label="t('component.document.authors')">
+            <n-form-item class="compact-form-item" :label="t('component.document.author')">
               <n-input
                 v-model:value="filter.authors"
                 :placeholder="t('component.document.filter-author-placeholder')"
@@ -117,7 +117,7 @@
             </n-form-item>
 
             <!-- Deprecated -->
-            <n-form-item class="compact-form-item" :label="t('component.document.filter-deprecated')">
+            <n-form-item class="compact-form-item" :label="t('component.document.deprecated')">
               <n-switch
                 v-model:value="filter.deprecated" 
               ></n-switch>

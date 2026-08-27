@@ -23,6 +23,8 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 public class LocationObservationDTO {
@@ -32,7 +34,6 @@ public class LocationObservationDTO {
 
     protected String label;
 
-    private Instant startDate;
     protected URI from;
 
     protected URI to;
@@ -49,7 +50,9 @@ public class LocationObservationDTO {
     @JsonProperty("text")
     private String textualPosition;
 
-    private Instant endDate;
+    private OffsetDateTime startDate;
+
+    private OffsetDateTime endDate;
 
     public URI getFeatureOfInterest() {
         return featureOfInterest;
@@ -123,19 +126,19 @@ public class LocationObservationDTO {
         this.textualPosition = textualPosition;
     }
 
-    public Instant getStartDate() {
+    public OffsetDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Instant startDate) {
+    public void setStartDate(OffsetDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public Instant getEndDate() {
+    public OffsetDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Instant endDate) {
+    public void setEndDate(OffsetDateTime endDate) {
         this.endDate = endDate;
     }
 
@@ -159,10 +162,10 @@ public class LocationObservationDTO {
         }
 
         if (Objects.nonNull(getStartDate())) {
-            model.setStartDate(getStartDate());
+            model.setStartDate(getStartDate().toInstant());
         }
         if (Objects.nonNull(getEndDate())) {
-            model.setEndDate(getEndDate());
+            model.setEndDate(getEndDate().toInstant());
         }
     }
 
@@ -206,10 +209,10 @@ public class LocationObservationDTO {
             }
         }
         if (Objects.nonNull(model.getStartDate())) {
-            setStartDate(model.getStartDate());
+            setStartDate(model.getStartDate().atOffset(ZoneOffset.UTC));
         }
         if (Objects.nonNull(model.getEndDate())) {
-            setEndDate(model.getEndDate());
+            setEndDate(model.getEndDate().atOffset(ZoneOffset.UTC));
         }
     }
 

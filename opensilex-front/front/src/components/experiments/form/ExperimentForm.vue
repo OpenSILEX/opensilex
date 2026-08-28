@@ -23,6 +23,7 @@ import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import WizardForm, {WizardStep} from "@/components/common/forms/WizardForm.vue";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import ExperimentForm1 from "@/components/experiments/form/ExperimentForm1.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
@@ -31,7 +32,7 @@ const wizardRef = useTemplateRef<InstanceType<typeof WizardForm>>('wizardRef')
 
 const  steps: WizardStep[] = [
     {
-      component: "ExperimentForm1",
+      component: ExperimentForm1,
     },
     {
       component: "ExperimentForm2",

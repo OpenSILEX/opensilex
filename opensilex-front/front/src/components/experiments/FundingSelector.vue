@@ -1,6 +1,6 @@
 <template>
   <FormSelector
-    v-model="fundinguri"
+    v-model:selected="fundinguri"
     :options="options"
     :multiple="multiple"
     :label="label"
@@ -15,17 +15,18 @@
 </template>
 
 <script setup lang="ts">
-import { Component, Prop, useTemplateRef } from 'vue';
-import Vue from 'vue';
+
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
-import { ExperimentsService, NamedResourceDTO } from '../../../../../core/front/src/lib';
 import HttpResponse, { OpenSilexResponse } from '../../lib/HttpResponse';
 import { inject } from 'vue';
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const service = inject<ExperimentsService>('service');
 
-const fundinguri = defineModel('fundinguri');
+const fundinguri = defineModel<string>('fundinguri');
 
 const props = defineProps({
   label: {

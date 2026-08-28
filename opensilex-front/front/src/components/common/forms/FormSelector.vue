@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :required="required"
     :requiredBlue="requiredBlue"
     :label="label"
@@ -9,26 +9,26 @@
       <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
         <div class="select-button-container">
-          <opensilex-CustomTreeselect
+          <CustomTreeselect
             ref="customTreeselect"
             v-bind="$attrs"
             v-model:selected="selectedProxy"
-            :searchMethod="searchMethod"
+            @searchMethod="searchMethod"
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
             :checkStrategy="checkStrategy"
             :placeholder="placeholder"
             :disabled="disabled"
-            :optionsLoadingMethod="optionsLoadingMethod"
+            @optionsLoadingMethod="optionsLoadingMethod"
             :options="options"
             :viewHandler="viewHandler"
-            :conversionMethod="conversionMethod"
+            @conversionMethod="conversionMethod"
             :defaultSelectedValue="defaultSelectedValue"
             :showCount="showCount"
             :actionHandler="actionHandler"
             :disableBranchNodes="disableBranchNodes"
-            :itemLoadingMethod="itemLoadingMethod || undefined"
+            @itemLoadingMethod="itemLoadingMethod || undefined"
             class="select-main"
             @totalCount="updateTotalCount"
             @resultCount="updateResultCount"
@@ -48,10 +48,10 @@
                 {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
               </n-button>
             </template>
-          </opensilex-CustomTreeselect>
+          </CustomTreeselect>
 
           <div v-if="!actionHandler && viewHandler" class="select-side-button">
-            <opensilex-DetailButton
+            <DetailButton
               @click="viewHandler"
               :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
               :small="true"
@@ -61,7 +61,7 @@
 
           <div v-else-if="actionHandler" class="select-side-button">
             <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
-            <opensilex-DetailButton
+            <DetailButton
               v-if="viewHandler"
               @click="viewHandler"
               :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
@@ -71,7 +71,7 @@
         </div>
       </n-form-item>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
@@ -82,6 +82,7 @@ import CustomTreeselect from './CustomTreeselect.vue'
 
 // API interne Naive UI pour accéder au NForm parent
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
 
 const { t } = useI18n()
 

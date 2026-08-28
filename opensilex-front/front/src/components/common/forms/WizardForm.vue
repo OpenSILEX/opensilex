@@ -155,6 +155,7 @@ const emit = defineEmits<{
   (e: 'onCreate', payload: any): void
   (e: 'onUpdate', payload: any): void
 }>()
+//#region Private
 
 const { t } = useI18n()
 const opensilex = inject<OpenSilexVuePlugin>('opensilex')!
@@ -172,7 +173,7 @@ const translatedTitle = computed(() => {
   const key = editMode.value ? props.editTitle : props.createTitle
   return t(key)
 })
-
+//#endregion
 const geometryNotSaved = ref(false)
 
 function geometryIsNotSaved() {

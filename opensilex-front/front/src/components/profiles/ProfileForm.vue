@@ -74,7 +74,7 @@ import {SecurityService} from "opensilex-security/index";
 import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
-import {NForm, NFormItem, NGrid, NGridItem, NCheckbox, NCheckboxGroup, NSpace, NTable, NSwitch} from "naive-ui";
+import {NCheckbox, NCheckboxGroup, NForm, NFormItem, NTable} from "naive-ui";
 import {requiredTrimmed} from "@/models/FormFieldsFormatter";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
@@ -89,29 +89,21 @@ const props = defineProps<ModalFormProps>();
 //#endregion
 
 //#region Private
-
-//#region Plugin and services
 const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
 const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const {t} = useI18n();
-//#endregion
 
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
 const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
-//#region datas
 let uriGenerated = ref<boolean>(true);
 const credentialsGroups = ref<Array<CredentialsGroupDTO>>([]);
 const selectedCredentials = ref<{ [groupId: string]: Array<string> }>({});
-//#endregion
 
-//#region Computed / rules
 const rules = computed(() => ({
   'name': requiredTrimmed('component.common.name'),
 }))
-//#endregion
 
-//#region modalFormLogic composable
 const { form, formTitle, isEditMode, exposed, hide, submit } = useModalFormLogic<ProfileUpdateDTO>({
   modalRef,
   nFormRef,
@@ -122,9 +114,7 @@ const { form, formTitle, isEditMode, exposed, hide, submit } = useModalFormLogic
   props,
   emit
 })
-//#endregion
 
-//#region Methods
 function getEmptyForm(): ProfileUpdateDTO {
   return {
     uri: null,
@@ -171,9 +161,6 @@ function initSelectedCredentials() {
   selectedCredentials.value = def;
 }
 
-//#endregion
-
-//#region Lifecycle
 onMounted(() => {
   opensilex.getCredentials().then((credentials: Array<CredentialsGroupDTO>) => {
     credentialsGroups.value = credentials;

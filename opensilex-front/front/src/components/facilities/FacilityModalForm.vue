@@ -92,6 +92,7 @@ export default class FacilityModalForm extends Vue {
                         ).then((http: HttpResponse<OpenSilexResponse<Array<LocationObservationDTO>>>) => {
                             editDto.locations = http.response.result
                             this.facilityForm.showEditForm(editDto);
+                            this.facilityForm.getStepRef(0).then(form => form.typeSwitch(editDto.rdf_type, true));
                         });
                     } else {
                         editDto.locations = [];

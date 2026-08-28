@@ -1,187 +1,203 @@
 <template>
   <div>
-    <opensilex-StringFilter
-      :filter.sync="filter"
-      @update="updateFilter()"
-      placeholder="component.profile.filter-placeholder"
-      :debounce="300"
-      :lazy="false"
-    ></opensilex-StringFilter>
+    <StringFilter
+        v-model:filter="filter"
+        @update="updateFilter()"
+        placeholder="component.profile.filter-placeholder"
+        :debounce="300"
+        :lazy="false"
+    ></StringFilter>
 
-    <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchProfiles" :fields="fields">
-      <template v-slot:cell(credentials)="{data}">
-        <div>{{$tc("component.profile.credential", data.item.credentials.length, {count: data.item.credentials.length})}}</div>
+    <TableAsyncView ref="tableRef" :searchMethod="searchProfiles" :fields="fields">
+      <template #cell(credentials)="{data}">
+        <div>{{ t("component.profile.credential", data.item.credentials.length) }}</div>
       </template>
 
-      <template v-slot:row-details="{data}">
-        <strong class="capitalize-first-letter">{{$t("component.profile.credentials")}}:</strong>
-        <b-card-group columns>
-          <b-card
-            v-for="credentialGroup in filterCredentialGroups(data.item.credentials)"
-            v-bind:key="credentialGroup.group_id"
+      <template #row-details="{data}">
+        <strong class="capitalize-first-letter">{{ t("component.profile.credentials") }}:</strong>
+        <div class="row">
+          <div
+              class="col-md-4"
+              v-for="credentialGroup in filterCredentialGroups(data.item.credentials)"
+              v-bind:key="credentialGroup.group_id"
           >
-            <strong>{{$t(credentialGroup.group_key_name)}}</strong>
-            <ul>
-              <li
-                v-for="credential in credentialGroup.credentials"
-                v-bind:key="credential.value"
-              >{{credential.text}}</li>
-            </ul>
-          </b-card>
-        </b-card-group>
+            <div class="card">
+              <div class="card-body">
+                <strong>{{ t(credentialGroup.group_key_name) }}</strong>
+                <ul>
+                  <li
+                      v-for="credential in credentialGroup.credentials"
+                      v-bind:key="credential.value"
+                  >{{ credential.text }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </template>
 
-      <template v-slot:cell(name)="{data}">
-        <opensilex-UriLink
-          :uri="data.item.uri"
-          :value="data.item.name"
-          :noExternalLink="true"
-          :isClickable="isClickable"
-          @click="data.toggleDetails()"
-        ></opensilex-UriLink>
-      </template>
-
-      <template v-slot:cell(actions)="{data}">
-        <b-button-group size="sm">
-          <opensilex-DetailButton
+      <template #cell(name)="{data}">
+        <UriLink
+            :uri="data.item.uri"
+            :value="data.item.name"
+            :noExternalLink="true"
+            :isClickable="isClickable"
             @click="data.toggleDetails()"
-            label="component.profile.details"
-            :detailVisible="data.detailsShowing"
-            :small="true"
-          ></opensilex-DetailButton>
-          <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-            @click="$emit('onEdit', data.item)"
-            label="component.profile.update"
-            :small="true"
-          ></opensilex-EditButton>
-          <opensilex-DeleteButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
-            @click="deleteProfile(data.item.uri)"
-            label="component.profile.delete"
-            :small="true"
-          ></opensilex-DeleteButton>
-        </b-button-group>
+        ></UriLink>
       </template>
-    </opensilex-TableAsyncView>
+
+      <template #cell(actions)="{data}">
+        <n-button-group size="small" class="btn-group btn-group-sm">
+          <DetailButton
+              @click="showDetails(data)"
+              label="component.profile.details"
+              :detailVisible="data.item._showDetails"
+              :small="true"
+          ></DetailButton>
+          <EditButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+              @click="emit('onEdit', data.item)"
+              label="component.profile.update"
+              :small="true"
+          ></EditButton>
+          <DeleteButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
+              @click="deleteProfile(data.item.uri)"
+              label="component.profile.delete"
+              :small="true"
+          ></DeleteButton>
+        </n-button-group>
+      </template>
+    </TableAsyncView>
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
-import Vue from "vue";
+<script setup lang="ts">
+import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
+import {useStore} from "vuex";
+import {useRoute} from 'vue-router';
+import {SecurityService} from "opensilex-security/index";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import {ProfileGetDTO} from "opensilex-security/model/profileGetDTO";
+import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
+import {TableField} from "@/components/common/views/TableField";
+import {NButtonGroup} from "naive-ui";
+import {useI18n} from "vue-i18n";
 
-@Component
-export default class ProfileList extends Vue {
-  $opensilex: any;
-  $store: any;
-  $route: any;
+//#region Public
+const props = defineProps<{
+  isClickable?: boolean,
+  credentialsGroups?: Array<CredentialsGroupDTO>
+}>()
 
-  @Prop()
-  isClickable;
+const emit = defineEmits<{
+  (e: "onEdit", payload: ProfileGetDTO): void
+  (e: "onDelete", uri: string): void
+}>()
+//#endregion
 
-  get user() {
-    return this.$store.state.user;
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
+const service = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const store = useStore();
+const route = useRoute();
+const {t} = useI18n();
+
+//#region Data and computed
+const user = computed(() => store.state.user);
+const credentials = computed(() => store.state.credentials);
+
+const filter = ref("");
+const credentialsGroups = ref<Array<CredentialsGroupDTO>>([]);
+
+const fields: Array<TableField> = [
+  {key: "name", label: "component.common.name", sortable: true},
+  {key: "credentials", label: "component.profile.credentials", resizable: true},
+  {key: "actions", label: "component.common.actions", resizable: false, naiveProps: {width: 100}}
+];
+//#endregion
+
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
+
+onMounted(() => {
+  let query: any = route.query;
+  if (query.filter) {
+    filter.value = decodeURIComponent(query.filter);
   }
+  opensilex.getCredentials().then((credentials: Array<CredentialsGroupDTO>) => {
+    credentialsGroups.value = props.credentialsGroups || credentials;
+  });
+});
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
+function filterCredentialGroups(credentialsFiltered) {
+  let credentialsDetails = [];
+  let groups = credentialsGroups.value || [];
+  for (let i = 0; i < groups.length; i++) {
+    let credentialsGroup = groups[i];
 
-  credentialsGroups: any;
+    let credentialsDetailGroup = {
+      group_id: credentialsGroup.group_id,
+      group_key_name: credentialsGroup.group_key_name,
+      credentials: []
+    };
 
-  filterCredentialGroups(credentialsFiltered) {
-    let credentialsDetails = [];
-    for (let i in this.credentialsGroups) {
-      let credentialsGroup = this.credentialsGroups[i];
-
-      let credentialsDetailGroup = {
-        group_id: credentialsGroup.group_id,
-        group_key_name: credentialsGroup.group_key_name,
-        credentials: []
-      };
-
-      for (let j in credentialsGroup.credentials) {
-        let credential = credentialsGroup.credentials[j];
-        if (credentialsFiltered.indexOf(credential.id) >= 0) {
-          credentialsDetailGroup.credentials.push({
-            text: this.$t(credential.name),
-            value: credential.id
-          });
-        }
+    for (let j = 0; j < credentialsGroup.credentials.length; j++) {
+      let credential = credentialsGroup.credentials[j];
+      if (credentialsFiltered.indexOf(credential.id) >= 0) {
+        credentialsDetailGroup.credentials.push({
+          text: t(credential.name),
+          value: credential.id
+        });
       }
-
-      if (credentialsDetailGroup.credentials.length > 0) {
-        credentialsDetails.push(credentialsDetailGroup);
-      }
     }
-    return credentialsDetails;
-  }
 
-  private filter: any = "";
-
-  created() {
-    this.$opensilex.getCredentials().then(credentials => {
-      this.credentialsGroups = credentials;
-    });
-
-    let query: any = this.$route.query;
-    if (query.filter) {
-      this.filter = decodeURIComponent(query.filter);
+    if (credentialsDetailGroup.credentials.length > 0) {
+      credentialsDetails.push(credentialsDetailGroup);
     }
   }
-
-  updateFilter() {
-    this.$opensilex.updateURLParameter("filter", this.filter, "");
-    this.refresh();
-  }
-
-  fields = [
-    {
-      key: "name",
-      label: "component.common.name",
-      sortable: true
-    },
-    {
-      label: "component.profile.credentials",
-      key: "credentials"
-    },
-
-    {
-      label: "component.common.actions",
-      key: "actions",
-      class: "table-actions"
-    }
-  ];
-
-  @Ref("tableRef") readonly tableRef!: any;
-
-  refresh() {
-    this.tableRef.refresh();
-  }
-
-  searchProfiles(options) {
-    return this.$opensilex
-      .getService("opensilex.SecurityService")
-      .searchProfiles(
-        this.filter,
-        options.orderBy,
-        options.currentPage,
-        options.pageSize
-      );
-  }
-
-  deleteProfile(uri: string) {
-    this.$opensilex
-      .getService("opensilex.SecurityService")
-      .deleteProfile(uri)
-      .then(() => {
-        this.refresh();
-        this.$emit("onDelete", uri);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+  return credentialsDetails;
 }
+
+function updateFilter() {
+  opensilex.updateURLParameter("filter", filter.value, "");
+  refresh();
+}
+
+function refresh() {
+  tableRef.value.refresh();
+}
+
+function searchProfiles(options) {
+  return service.searchProfiles(
+      filter.value,
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
+  );
+}
+
+function deleteProfile(uri: string) {
+  service.deleteProfile(uri)
+      .then(() => {
+        refresh();
+        emit("onDelete", uri);
+      })
+      .catch(opensilex.errorHandler);
+}
+
+function showDetails(data) {
+  data.item._showDetails = !data.item._showDetails;
+}
+
+defineExpose({
+  refresh,
+})
 </script>
 
 <style scoped lang="scss">

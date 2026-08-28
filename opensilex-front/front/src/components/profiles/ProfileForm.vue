@@ -1,181 +1,190 @@
 <template>
-  <b-form>
-    <!-- URI -->
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="component.profile.profile-uri"
-      helpMessage="component.common.uri-help-message"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="ik#ik-settings"/>
+    </template>
 
-    <!-- Name -->
-    <opensilex-InputForm
-      :value.sync="form.name"
-      label="component.common.name"
-      type="text"
-      :required="true"
-      placeholder="component.profile.form-name-placeholder"
-    ></opensilex-InputForm>
+    <n-form
+        ref="formRef"
+        :rules="rules"
+        :model="modalFormLogic.form.value"
+        label-placement="top"
+        :show-require-mark="true"
+        size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+            v-model:uri="modalFormLogic.form.value.uri"
+            label="component.profile.profile-uri"
+            helpMessage="component.common.uri-help-message"
+            :editMode="modalFormLogic.isEditMode.value"
+            v-model:generated="uriGenerated"
+        ></UriForm>
+      </n-form-item>
 
-    <b-table-simple hover small responsive>
-      <b-thead>
-        <b-tr>
-          <b-th>{{$t("ProfileForm.credentialGroups")}}</b-th>
-          <b-th>{{$t("ProfileForm.credentials")}}</b-th>
-        </b-tr>
-      </b-thead>
-      <b-tbody>
-        <b-tr v-for="credentialsGroup in credentialsGroups" v-bind:key="credentialsGroup.group_id">
-          <b-td>{{$t(credentialsGroup.group_key_name)}}</b-td>
-          <b-td>
-            <b-form-checkbox-group
-              v-bind:key="credentialsGroup.group_id"
-              v-model="selectedCredentials[credentialsGroup.group_id]"
-              v-bind:options="credentialOptions[credentialsGroup.group_id]"
-              switches
-            ></b-form-checkbox-group>
-          </b-td>
-        </b-tr>
-      </b-tbody>
-    </b-table-simple>
-  </b-form>
+      <!-- Name -->
+      <n-form-item path="name">
+        <InputForm
+            v-model:value="modalFormLogic.form.value.name"
+            label="component.common.name"
+            type="text"
+            :required="true"
+            :placeholder="t('component.profile.form-name-placeholder')"
+        ></InputForm>
+      </n-form-item>
+
+      <n-grid cols="2" responsive="screen" item-responsive :x-gap="16" :y-gap="8">
+        <n-grid-item v-for="credentialsGroup in credentialsGroups" span="1 m:1" :key="credentialsGroup.group_id">
+          <div class="credential-group-title">{{ t(credentialsGroup.group_key_name) }}</div>
+          <n-checkbox-group
+              v-model:value="selectedCredentials[credentialsGroup.group_id]"
+          >
+            <n-space vertical>
+              <n-checkbox
+                  v-for="credential in credentialsGroup.credentials"
+                  :key="credential.id"
+                  :value="credential.id"
+                  :label="t(credential.name)"
+              ></n-checkbox>
+            </n-space>
+          </n-checkbox-group>
+        </n-grid-item>
+      </n-grid>
+    </n-form>
+
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit"/>
+    </template>
+  </Modal>
 </template>
 
-<script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
-import Vue from "vue";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+<script setup lang="ts">
+import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {SecurityService} from "opensilex-security/index";
+import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
+import UriForm from "@/components/common/forms/UriForm.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import {NForm, NFormItem, NGrid, NGridItem, NCheckbox, NCheckboxGroup, NSpace} from "naive-ui";
+import {requiredTrimmed} from "@/models/FormFieldsFormatter";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
+import Modal from "@/components/common/views/Modal.vue";
+import {ProfileUpdateDTO} from "opensilex-security/model/profileUpdateDTO";
+import {useI18n} from "vue-i18n";
 
-@Component
-export default class ProfileForm extends Vue {
-  $opensilex: any;
+//#region Public
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
+//#endregion
 
-  uriGenerated = true;
+//#region Private
 
-  @Prop()
-  editMode;
+//#region Plugin and services
+const opensilex: OpenSilexVuePlugin = inject<OpenSilexVuePlugin>("$opensilex")!;
+const securityService: SecurityService = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
+const {t} = useI18n();
+//#endregion
 
-  @Prop({
-    default: () => {
-      return {
-        uri: null,
-        name: "",
-        credentials: []
-      };
-    }
-  })
-  form;
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 
-  reset() {
-    this.uriGenerated = true;
-  }
+//#region datas
+let uriGenerated = ref<boolean>(true);
+const credentialsGroups = ref<Array<CredentialsGroupDTO>>([]);
+const selectedCredentials = ref<{ [groupId: string]: Array<string> }>({});
+//#endregion
 
-  getEmptyForm() {
-    return {
-      uri: null,
-      name: "",
-      credentials: []
-    };
-  }
+//#region Computed / rules
+const rules = computed(() => ({
+  'name': requiredTrimmed('component.common.name'),
+}))
+//#endregion
 
-  create(form) {
-    let credentials = [];
-    for (let i in this._selectedCredentials) {
-      credentials = credentials.concat(this._selectedCredentials[i]);
-    }
-    this.form.credentials = credentials;
-    this.$opensilex
-      .getService("opensilex.SecurityService")
-      .createProfile(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Profile created", uri);
-      })
-      .catch(error => {
-        if (error.status == 409) {
-          console.error("Profile already exists", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$t("component.profile.errors.profile-already-exists")
-          );
-        } else {
-          this.$opensilex.errorHandler(error);
-        }
-      });
-  }
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<ProfileUpdateDTO>({
+  modalRef,
+  nFormRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  props,
+  emit
+})
+//#endregion
 
-  update(form) {
-    let credentials = [];
-    for (let i in this._selectedCredentials) {
-      credentials = credentials.concat(this._selectedCredentials[i]);
-    }
-    this.form.credentials = credentials;
-    return this.$opensilex
-      .getService("opensilex.SecurityService")
-      .updateProfile(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Profile updated", uri);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  created() {
-    this.$opensilex.getCredentials().then(credentials => {
-      this.credentialsGroups = credentials;
-    });
-  }
-
-  credentialsGroups: any = [];
-
-  private _selectedCredentials = null;
-
-  get selectedCredentials() {
-    let def: any = {};
-    let credentialsGroups = this.credentialsGroups;
-    for (let i = 0; i < credentialsGroups.length; i++) {
-      def[credentialsGroups[i].group_id] = [];
-
-      for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
-        let credentialId = credentialsGroups[i].credentials[j].id;
-        if (this.form.credentials && this.form.credentials.indexOf(credentialId) >= 0) {
-          def[credentialsGroups[i].group_id].push(credentialId);
-        }
-      }
-    }
-
-    this._selectedCredentials = def;
-
-    return this._selectedCredentials;
-  }
-
-  set selectedCredentials(value) {
-    this._selectedCredentials = value;
-  }
-
-  get credentialOptions() {
-    let credentialsGroups = this.credentialsGroups;
-    let def: any = {};
-    for (let i = 0; i < credentialsGroups.length; i++) {
-      def[credentialsGroups[i].group_id] = [];
-
-      for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
-        let credential = credentialsGroups[i].credentials[j];
-        def[credentialsGroups[i].group_id].push({
-          text: this.$t(credential.name),
-          value: credential.id
-        });
-      }
-    }
-
-    return def;
-  }
+//#region Methods
+function getEmptyForm(): ProfileUpdateDTO {
+  return {
+    uri: null,
+    name: "",
+    credentials: []
+  };
 }
+
+function reset(): void {
+  uriGenerated.value = true;
+  initSelectedCredentials();
+}
+
+function flattenSelectedCredentials(): Array<string> {
+  let credentials = [];
+  for (let groupId in selectedCredentials.value) {
+    credentials = credentials.concat(selectedCredentials.value[groupId]);
+  }
+  return credentials;
+}
+
+async function create(form: ProfileUpdateDTO) {
+  form.credentials = flattenSelectedCredentials();
+  return await securityService.createProfile(form)
+}
+
+async function update(form: ProfileUpdateDTO) {
+  form.credentials = flattenSelectedCredentials();
+  return await securityService.updateProfile(form)
+}
+
+function initSelectedCredentials() {
+  let def: any = {};
+  for (let i = 0; i < credentialsGroups.value.length; i++) {
+    def[credentialsGroups.value[i].group_id] = [];
+
+    for (let j = 0; j < credentialsGroups.value[i].credentials.length; j++) {
+      let credentialId = credentialsGroups.value[i].credentials[j].id;
+      if (modalFormLogic.form.value.credentials && modalFormLogic.form.value.credentials.indexOf(credentialId) >= 0) {
+        def[credentialsGroups.value[i].group_id].push(credentialId);
+      }
+    }
+  }
+  selectedCredentials.value = def;
+}
+
+//#endregion
+
+//#region Lifecycle
+onMounted(() => {
+  opensilex.getCredentials().then((credentials: Array<CredentialsGroupDTO>) => {
+    credentialsGroups.value = credentials;
+    initSelectedCredentials();
+  });
+});
+//#endregion
+
+defineExpose({
+  showCreateForm: modalFormLogic.showCreateForm,
+  showEditForm: modalFormLogic.showEditForm,
+})
 </script>
 
 <style scoped lang="scss">
+.credential-group-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
 </style>
 
 <i18n>
@@ -187,5 +196,5 @@ en:
 fr:
   ProfileForm:
     credentialGroups: Groupes d'autorisation
-    credentials: Autorisations    
+    credentials: Autorisations
 </i18n>

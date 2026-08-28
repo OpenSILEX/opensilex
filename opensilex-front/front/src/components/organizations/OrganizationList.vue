@@ -50,7 +50,7 @@
           <TypeForm
             v-model:type="filter.type_uri"
             :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
-            :ignoreRoot="false"
+            :ignoreRoot="true"
             :placeholder="t('OrganizationList.filter.type-placeholder')"
             class="searchFilter typeFilter"
             @handlingEnterKey="applyFilters"

@@ -2,7 +2,7 @@ import { Container } from 'inversify';
 import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
 import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
 import { useCookies } from 'vue3-cookies';
-import VueI18n from 'vue-i18n';
+import { Composer } from 'vue-i18n';
 import { Store } from 'vuex';
 import {
     ApiServiceBinder,
@@ -71,7 +71,7 @@ export default class OpenSilexVuePlugin {
     private toastManager: any = null;
 
     public $store: Store<any>;
-    public $i18n;
+    public $i18n: Composer;
     public $bvToast: any;
     public $dateTimeFormatter: DateTimeFormatter;
     public $numberFormatter: NumberFormatter;
@@ -83,7 +83,7 @@ export default class OpenSilexVuePlugin {
     public Time = Time;
     public Rdfs = Rdfs;
 
-    constructor(baseApi: string, store: Store<any>, i18n) {
+    constructor(baseApi: string, store: Store<any>, i18n: Composer) {
         this.container = new Container();
         this.container.bind<OpenSilexVuePlugin>(OpenSilexVuePlugin).toConstantValue(this);
         this.container.bind<IHttpClient>("IApiHttpClient").toConstantValue(new OpenSilexHttpClient(this));

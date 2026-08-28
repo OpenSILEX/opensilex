@@ -24,7 +24,6 @@
           v-model:selected="form.parent"
           path="parent"
           :options="parentOptions"
-          checkStrategy="parent"
           :required="true"
           label="component.common.parent"
           :filterable="true"

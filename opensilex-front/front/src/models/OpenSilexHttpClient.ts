@@ -114,7 +114,8 @@ class OpenSilexHttpClient implements IHttpClient {
                                 this.opensilex.showToast(
                                     this.opensilex.$i18n.t(status.translationKey, status.translationValues).toString(),
                                     {
-                                        variant: statusLevelToastVariantMap.get(status.level)
+                                        variant: statusLevelToastVariantMap.get(status.level),
+                                        autoHideDelay: 5000
                                     }
                                 );
                             }

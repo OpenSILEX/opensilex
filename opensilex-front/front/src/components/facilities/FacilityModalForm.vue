@@ -1,5 +1,5 @@
 <template>
-  <opensilex-WizardForm
+  <WizardForm
     ref="wizardRef"
     :steps="steps"
     :createTitle="t('FacilityModalForm.add')"
@@ -12,7 +12,21 @@
     :initForm="getEmptyForm"
     :validateAction="validateFacility"
     modalSize="lg"
-  />
+  >
+
+  <template v-slot:facilityForm>
+    <FacilityForm
+      ref="stepComponent"
+    />
+  </template>
+
+  <template v-slot:locationsForm>
+    <LocationForm
+      ref="stepComponent"
+    />
+  </template>
+  </WizardForm>
+
 </template>
 
 <script setup lang="ts">
@@ -20,7 +34,7 @@ import { inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import DTOConverter from './../../models/DTOConverter'
-
+import FacilityForm from "@/components/facilities/FacilityForm.vue";
 import type { OrganizationsService } from 'opensilex-core/api/organizations.service'
 import type { LocationsService } from 'opensilex-core/api/locations.service'
 import type {
@@ -30,6 +44,8 @@ import type {
   FacilityUpdateDTO,
   UserGetDTO
 } from 'opensilex-core/index'
+import WizardForm from "@/components/common/forms/WizardForm.vue";
+import LocationForm from "@/components/location/form/LocationForm.vue";
 
 const { t } = useI18n()
 
@@ -53,11 +69,11 @@ const wizardRef = ref<any>(null)
 
 const steps = [
   {
-    component: 'opensilex-FacilityForm',
+    component: 'facilityForm',
     title: t('FacilityModalForm.stepOne')
   },
   {
-    component: 'opensilex-LocationsForm',
+    component: 'locationsForm',
     title: t('FacilityModalForm.stepTwo')
   }
 ]

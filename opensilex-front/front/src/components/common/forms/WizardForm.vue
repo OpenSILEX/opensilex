@@ -56,25 +56,7 @@
     </div>
 
     <!-- Contenu de l’étape -->
-    <component
-      :is="steps[currentStepIndex].component"
-      :key="currentStepIndex"
-      v-bind="steps[currentStepIndex].props"
-      :form="form"
-      :editMode="editMode"
-      ref="stepComponent"
-      @fill="fillForm"
-      @clear="clearForm"
-      @agroportalTermSelected="payload => emit('agroportalTermSelected', payload)"
-      @agroportalTermUnselected="() => emit('agroportalTermUnselected')"
-      @geometryIsNotSaved="geometryIsNotSaved"
-      @positionIsValid="positionIsValid"
-    >
-      <!-- Quand l’étape active expose un slot createAdditionalFields, passe son scope et renvoie au slot du même nom -->
-      <template #createAdditionalFields="slotProps">
-        <slot name="createAdditionalFields" v-bind="slotProps" />
-      </template>
-    </component>
+    <slot :name="currentStep.component"/>
 
     <template #footer>
       <n-space justify="space-between">
@@ -111,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, inject } from 'vue'
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 
@@ -158,6 +140,7 @@ const stepComponent = ref<any>()
 
 const modalWidth = computed(() => props.modalWidth ?? '900px')
 const isLastStep = computed(() => currentStepIndex.value === props.steps.length - 1)
+const currentStep = computed(() => props.steps[currentStepIndex.value])
 
 const translatedTitle = computed(() => {
   const key = editMode.value ? props.editTitle : props.createTitle
@@ -212,7 +195,7 @@ async function nextStep () {
   }
 
   currentStepIndex.value++
-  nextTick(() => stepComponent.value?.reset?.())
+  // nextTick(() => stepComponent.value?.reset?.())
 }
 
 function prevStep () {

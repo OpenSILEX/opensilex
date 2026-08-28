@@ -588,7 +588,8 @@
             "delete": "Delete profile",
             "details": "Show or hide profile details",
             "filter-placeholder": "Search profiles...",
-            "credentials": "credentials",
+            "credentials": "Credentials",
+            "credential-groups": "Credential groups",
             "credential": "no credentials | 1 credential | {count} credentials",
             "errors": {
                 "profile-already-exists": "Profile already exists with this URI or this name."

@@ -37,8 +37,8 @@
       <n-table class="os-table" striped>
         <thead>
           <tr>
-            <th>{{ t('ProfileForm.credentialGroups') }}</th>
-            <th>{{ t('ProfileForm.credentials') }}</th>
+            <th>{{ t('component.profile.credential-groups') }}</th>
+            <th>{{ t('component.profile.credentials') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -178,15 +178,3 @@ defineExpose(exposed)
   margin-bottom: 8px;
 }
 </style>
-
-<i18n>
-en:
-  ProfileForm:
-    credentialGroups: Credential groups
-    credentials: Credentials
-
-fr:
-  ProfileForm:
-    credentialGroups: Groupes d'autorisation
-    credentials: Autorisations
-</i18n>

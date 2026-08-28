@@ -104,7 +104,7 @@ public class FaidareAPITest extends AbstractMongoIntegrationTest {
 
         for (int i=0; i<5; i++) {
             FacilityCreationDTO dto = facilityBuilder.createDTO();
-            facilityLogic.create(dto.newModel(), dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList()), user);
+            facilityLogic.create(dto.newModel(), dto.getLocations().stream().map(LocationObservationDTO::newModel).collect(Collectors.toList()), List.of(), user);
         }
 
         personBuilder = new TestPersonBuilder();

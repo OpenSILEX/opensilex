@@ -413,6 +413,12 @@ export default class WizardForm extends Vue {
   onChange(previousStep: number, nextStepIndex: number) {
     this.currentStepIndex = nextStepIndex;
   }
+
+  async getStepRef(index: number): Promise<any> {
+    await this.$nextTick();
+    const key = "step" + index;
+    return this.$refs[key][0];
+  }
 }
 </script>
 

@@ -2,9 +2,8 @@
   <WizardForm
     ref="wizardRef"
     :steps="steps"
-    createTitle="ExperimentForm.create"
-    editTitle="ExperimentForm.update"
-    icon="ik#ik-layers"
+    createTitle="component.experiment.add"
+    editTitle="component.experiment.update"
     modalSize="lg"
     :initForm="getEmptyForm"
     :createAction="create"
@@ -24,6 +23,7 @@ import {useI18n} from "vue-i18n";
 import WizardForm, {WizardStep} from "@/components/common/forms/WizardForm.vue";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import ExperimentForm1 from "@/components/experiments/form/ExperimentForm1.vue";
+import ExperimentForm2 from "@/components/experiments/form/ExperimentForm2.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
@@ -35,7 +35,7 @@ const  steps: WizardStep[] = [
       component: ExperimentForm1,
     },
     {
-      component: "ExperimentForm2",
+      component: ExperimentForm2,
     },
   ];
 
@@ -71,34 +71,51 @@ const  steps: WizardStep[] = [
     wizardRef.value.showEditForm(form);
   }
 
-    async function create(form) {
-      opensilex
-      .getService<ExperimentsService>("opensilex.ExperimentsService")
-      .createExperiment(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        form.uri = uri;
-        console.debug("experiment created", uri);
-        this.$emit("onCreate", form);
-        let message = t("ExperimentList.name") + " " + form.name + " " + t("component.common.success.creation-success-message");
-        this.$opensilex.showSuccessToast(message);
-      })
-      .catch((error) => {
-        if (error.status == 409) {
-          console.error("Experiment already exists", error);
-          opensilex.errorHandler(
-            error,
-            t("ExperimentForm.experiment-already-exists")
-          );
-        } else {
-          opensilex.errorHandler(error);
-        }
-      });
+async function create(form) {
+  try {
+    const http: HttpResponse<OpenSilexResponse<any>> =
+        await opensilex
+            .getService<ExperimentsService>("opensilex.ExperimentsService")
+            .createExperiment(form);
+
+    const uri = http.response.result;
+
+    if (!uri) {
+      throw new Error("No URI returned after experiment creation");
+    }
+
+    form.uri = uri;
+
+    console.debug("experiment created", form);
+
+    const message =
+        t("ExperimentList.name") +
+        " " +
+        form.name +
+        " " +
+        t("component.common.success.creation-success-message");
+
+    opensilex.showSuccessToast(message);
+
+    return form;
+  } catch (error) {
+    if (error.status == 409) {
+      console.error("Experiment already exists", error);
+      opensilex.errorHandler(
+          error,
+          t("ExperimentForm.experiment-already-exists")
+      );
+    } else {
+      opensilex.errorHandler(error);
+    }
+
+    return false;
   }
+}
 
 
 const emit = defineEmits<{
-  (e: "onUpdate", form: any): void
+  (e: string, form: any): void
 }>()
 
 async function update(form: any) {

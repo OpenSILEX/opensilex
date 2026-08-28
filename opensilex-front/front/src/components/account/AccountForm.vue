@@ -15,7 +15,7 @@
       <!-- URI -->
       <n-form-item>
         <UriForm
-            :uri.sync="modalFormLogic.form.value.uri"
+            v-model:uri="modalFormLogic.form.value.uri"
             label="component.account.account-uri"
             helpMessage="component.common.uri-help-message"
             :editMode="modalFormLogic.isEditMode.value"

@@ -1,74 +1,119 @@
 <template>
-  <ValidationObserver ref="validatorRef">
+  <n-form
+      ref="validatorRef"
+      :rules="rules"
+      :model="experiment"
+  >
     <!-- URI -->
-    <opensilex-UriForm
-      :uri.sync="experiment.uri"
+    <n-form-item
+    path="uri">
+    <UriForm
+      v-model:uri="experiment.uri"
       label="component.experiment.uri"
       helpMessage="component.experiment.uri-help"
       :editMode="editMode"
       :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+    ></UriForm>
+    </n-form-item>
 
     <div class="row">
       <!-- Name -->
       <div class="col-lg-6" id="v-step-name">
         <!-- Label -->
-        <opensilex-InputForm
-          :value.sync="experiment.name"
+        <n-form-item
+        path="name">
+        <InputForm
+          v-model:value="experiment.name"
           label="component.experiment.label"
           type="text"
           :required="true"
-          placeholder="component.experiment.label-placeholder"
-        ></opensilex-InputForm>
+          :placeholder="t('component.project.filter-label-placeholder')"
+        ></InputForm>
+        </n-form-item>
       </div>
 
       <!-- AltName -->
       <div class="col-lg-6" id="v-step-alt">
-        <opensilex-InputForm
-          :value.sync="experiment.alternative_name"
+        <n-form-item
+        path="alternative_name">
+        <InputForm
+          v-model:value="experiment.alternative_name"
           label="component.common.altName"
           type="text"
-        ></opensilex-InputForm>
+        ></InputForm>
+        </n-form-item>
       </div>
-
     </div>
 
     <!-- Period -->
-    <opensilex-DateRangePickerForm
-        :start.sync="experiment.start_date"
-        :end.sync="experiment.end_date"
-        labelStart="component.common.startDate"
-        labelEnd="component.common.endDate"
+    <DateRangePickerForm
+        v-model:start="experiment.start_date"
+        v-model:end="experiment.end_date"
+        labelStart="component.experiment.startDate"
+        labelEnd="component.experiment.endDate"
         :requiredStart="true"
-    ></opensilex-DateRangePickerForm>
+        startDatePath="start_date"
+        endDatePath="end_date"
+    ></DateRangePickerForm>
 
     <!-- Objective -->
-    <opensilex-TextAreaForm
-      :value.sync="experiment.objective"
+    <n-form-item
+      path="objective">
+    <TextAreaForm
+      v-model:value="experiment.objective"
       label="component.experiment.objective"
       :required="true"
-      placeholder="component.experiment.objective-help"
-    ></opensilex-TextAreaForm>
+      :placeholder="t('component.experiment.objective-help')"
+    ></TextAreaForm>
+    </n-form-item>
 
     <!-- Comment -->
-    <opensilex-TextAreaForm
-      :value.sync="experiment.description"
+    <TextAreaForm
+      v-model:value="experiment.description"
       label="component.experiment.comment"
-      placeholder="component.experiment.comment-help"
-    ></opensilex-TextAreaForm>
-  </ValidationObserver>
+      :placeholder="t('component.experiment.objective-help')"
+    ></TextAreaForm>
+  </n-form>
 </template>
 
 <script setup lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue, {computed, inject, ref} from "vue";
+import Vue, {computed, inject, ref, useTemplateRef} from "vue";
 // @ts-ignore
-import { ExperimentCreationDTO } from "opensilex-core/index";
+import { ExperimentCreationDTO } from "core/index";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {boolean} from "yup";
+import UriForm from "@/components/common/forms/UriForm.vue";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import DateRangePickerForm from "@/components/common/forms/DateRangePickerForm.vue";
+import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
+import {FormRules, NForm, NFormItem} from "naive-ui";
+import {useI18n} from "vue-i18n";
+import {required} from "@/models/FormFieldsFormatter";
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
+const { t } = useI18n()
+
+
+const rules = computed<FormRules>(() => ({
+  name: {
+    required: true,
+    message: t("component.experiment.name-required"),
+    trigger: ["blur", "change"],
+  },
+
+  start_date: {
+    required: true,
+    message: t("component.experiment.start-date-required"),
+    trigger: ["blur", "change"],
+  },
+
+  objective: {
+    required: true,
+    message: t("component.experiment.objective-required"),
+    trigger: ["blur", "change"],
+  },
+}));
 
 const props = withDefaults(
     defineProps<{
@@ -81,7 +126,7 @@ const props = withDefaults(
 )
 
 const uriGenerated = ref(props.uriGenerated)
-const validatorRef = ref<any>(null)
+const validatorRef = useTemplateRef<InstanceType<typeof NForm>>("validatorRef")
 
 const user = computed(() => store.state.user)
 
@@ -91,7 +136,6 @@ const experiment = defineModel<ExperimentCreationDTO>('form', {
 
 function reset() {
   uriGenerated.value = true
-  validatorRef.value?.reset()
 }
 
   function validate() {

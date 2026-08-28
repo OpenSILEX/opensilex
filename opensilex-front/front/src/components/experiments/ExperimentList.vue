@@ -30,7 +30,7 @@ export function refresh() {
               <div>
                 <FilterField>
                   <b-form-group>
-                    <label for="name">{{ $t('ExperimentList.filter-label') }}</label>
+                    <label for="name">{{ t('ExperimentList.filter-label') }}</label>
                     <StringFilter
                       id="name"
                       :filter.sync="filter.name"
@@ -291,7 +291,8 @@ export function refresh() {
         modalSize="lg"
         :initForm="initForm"
         icon="ik#ik-file-text"
-      ></ModalForm>
+       edit-title="">
+      </ModalForm>
     </PageContent>
   </div>
 </template>
@@ -315,6 +316,13 @@ import { NamedResourceDTO } from 'opensilex-core';
 import DateView from '../common/views/DateView.vue';
 import UriLink from '../common/views/UriLink.vue';
 import FundingSelector from './FundingSelector.vue';
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import WizardForm from "@/components/common/forms/WizardForm.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import PageContent from "@/components/layout/PageContent.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');
@@ -346,6 +354,7 @@ const species = [];
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
 const projectSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>('projectSelector');
 const fundingSelector = useTemplateRef<InstanceType<typeof FundingSelector>>('fundingSelector');
+const wizardForm = useTemplateRef<InstanceType<typeof WizardForm>>('wizardForm')
 
 const speciesByUri = ref(new Map<string, SpeciesDTO>());
 

@@ -716,10 +716,11 @@
             }
         },
         "experiment": {
+            "name-required": "Name is required",
             "uri-help": "Unique experiment identifier",
-            "label-placeholder": "ZA17",
             "label-help": "Experiment name",
             "objective": "Objective",
+            "objective-required": "The field objective is required",
             "objective-help": "Genomic prediction of maize yield ",
             "uri": "Experiment URI",
             "label": "Name",
@@ -727,6 +728,7 @@
             "comment-help": "Genomic prediction of maize yield across European environmental scenarios",
             "startDate-help": "The beginning of an experiment (required)",
             "startDate": "Start Date",
+            "start-date-required": "Start date is required",
             "endDate": "End date",
             "endDate-help": "The end of an experiment, could be empty",
             "campaign": "Campaign",

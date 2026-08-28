@@ -1,35 +1,42 @@
 <template>
+
+
   <div class="row">
     <!-- Start Date -->
     <div class="col-lg-6">
-      <opensilex-DateForm
-        :helpMessage="helpMessageStart"
-        :label="labelStart"
-        :max-date="endValue ?? undefined"
-        :placeholder="placeholderStart"
-        :required="requiredStart"
-        :disabled="disabled"
-        v-model:value="startValue"
-      />
+      <n-form-item :path="startDatePath">
+        <opensilex-DateForm
+            :helpMessage="helpMessageStart"
+            :label="labelStart"
+            :max-date="endValue ?? undefined"
+            :placeholder="placeholderStart"
+            :required="requiredStart"
+            :disabled="disabled"
+            v-model:value="startValue"
+        />
+      </n-form-item>
     </div>
 
     <!-- End Date -->
     <div class="col-lg-6">
-      <opensilex-DateForm
-        :helpMessage="helpMessageEnd"
-        :label="labelEnd"
-        :min-date="startValue ?? undefined"
-        :placeholder="placeholderEnd"
-        :required="requiredEnd"
-        :disabled="disabled"
-        v-model:value="endValue"
-      />
+      <n-form-item :path="endDatePath">
+        <opensilex-DateForm
+            :helpMessage="helpMessageEnd"
+            :label="labelEnd"
+            :min-date="startValue ?? undefined"
+            :placeholder="placeholderEnd"
+            :required="requiredEnd"
+            :disabled="disabled"
+            v-model:value="endValue"
+        />
+      </n-form-item>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import {computed} from 'vue'
+import {NFormItem} from "naive-ui";
 
 const props = withDefaults(defineProps<{
   labelStart?: string
@@ -43,6 +50,8 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   start?: string | undefined
   end?: string | undefined
+  startDatePath?: string
+  endDatePath?: string
 }>(), {
   requiredStart: false,
   requiredEnd: false,

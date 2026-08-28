@@ -41,6 +41,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   required: false,
   type: 'text',
+  placeholder: "",
 })
 
 // Emits

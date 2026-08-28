@@ -115,7 +115,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, inject } from 'vue'
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin'
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 

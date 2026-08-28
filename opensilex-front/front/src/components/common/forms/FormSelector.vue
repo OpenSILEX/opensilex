@@ -83,6 +83,7 @@ import CustomTreeselect from './CustomTreeselect.vue'
 // API interne Naive UI pour accéder au NForm parent
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import FormField from "@/components/common/forms/FormField.vue";
 
 const { t } = useI18n()
 

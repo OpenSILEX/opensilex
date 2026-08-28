@@ -937,22 +937,18 @@ export default class OpenSilexVuePlugin {
     public getCredentials() {
         if (this.credentials == null) {
             this.credentials = new Promise((resolve, reject) => {
-                console.debug("Loading credentials list...");
                 this.getService<any>(
                     "opensilex-security.AuthenticationService"
                 ).getCredentialsGroups().then((http) => {
                     this.credentials = http.response.result;
-                    console.debug("Credentials list loaded !", this.credentials);
                     resolve(http.response.result);
                 }).catch(this.errorHandler)
 
             })
             return this.credentials;
         } else if (this.credentials instanceof Promise) {
-            console.log("credentials2 list ", this.credentials)
             return this.credentials;
         } else {
-            console.log("credentials3 ", this.credentials)
             return Promise.resolve(this.credentials);
         }
     }

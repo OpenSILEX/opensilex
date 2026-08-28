@@ -8,18 +8,22 @@
         :lazy="false"
     ></StringFilter>
 
-    <TableAsyncView ref="tableRef" :searchMethod="searchProfiles" :fields="fields">
-      <template #cell(credentials)="{data}">
+    <TableAsyncView
+        ref="tableRef"
+        :searchMethod="searchProfiles"
+        :fields="fields"
+    >
+      <template #cell(credentials)="{ data }">
         <div>{{ t("component.profile.credential", data.item.credentials.length) }}</div>
       </template>
 
-      <template #row-details="{data}">
+      <template #row-details="{ data }">
         <strong class="capitalize-first-letter">{{ t("component.profile.credentials") }}:</strong>
         <div class="row">
           <div
               class="col-md-4"
               v-for="credentialGroup in filterCredentialGroups(data.item.credentials)"
-              v-bind:key="credentialGroup.group_id"
+              :key="credentialGroup.group_id"
           >
             <div class="card">
               <div class="card-body">
@@ -135,20 +139,16 @@ onMounted(() => {
   });
 });
 
-function filterCredentialGroups(credentialsFiltered) {
+function filterCredentialGroups(credentialsFiltered: Array<string>) {
   let credentialsDetails = [];
-  let groups = credentialsGroups.value || [];
-  for (let i = 0; i < groups.length; i++) {
-    let credentialsGroup = groups[i];
-
+  for (const credentialsGroup of credentialsGroups.value) {
     let credentialsDetailGroup = {
       group_id: credentialsGroup.group_id,
       group_key_name: credentialsGroup.group_key_name,
       credentials: []
     };
 
-    for (let j = 0; j < credentialsGroup.credentials.length; j++) {
-      let credential = credentialsGroup.credentials[j];
+    for (const credential of credentialsGroup.credentials) {
       if (credentialsFiltered.indexOf(credential.id) >= 0) {
         credentialsDetailGroup.credentials.push({
           text: t(credential.name),
@@ -161,6 +161,7 @@ function filterCredentialGroups(credentialsFiltered) {
       credentialsDetails.push(credentialsDetailGroup);
     }
   }
+  console.log("credentialsDetails", credentialsDetails);
   return credentialsDetails;
 }
 

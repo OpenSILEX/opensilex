@@ -146,6 +146,8 @@ menu:
           icon: bi#bi-activity
           title: component.menu.events
           description: "component.events.list-description"
+          credentials:
+            - event-access
       - id: documents
         label: Documents
         route:

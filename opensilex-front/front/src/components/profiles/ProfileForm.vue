@@ -1,13 +1,13 @@
 <template>
   <Modal ref="modalRef">
     <template #header>
-      <FormHeader :title="modalFormLogic.formTitle.value" icon="ik#ik-settings"/>
+      <FormHeader :title="formTitle" icon="ik#ik-settings"/>
     </template>
 
     <n-form
         ref="formRef"
         :rules="rules"
-        :model="modalFormLogic.form.value"
+        :model="form"
         label-placement="top"
         :show-require-mark="true"
         size="large"
@@ -15,10 +15,10 @@
       <!-- URI -->
       <n-form-item>
         <UriForm
-            v-model:uri="modalFormLogic.form.value.uri"
+            v-model:uri="form.uri"
             label="component.profile.profile-uri"
             helpMessage="component.common.uri-help-message"
-            :editMode="modalFormLogic.isEditMode.value"
+            :editMode="isEditMode"
             v-model:generated="uriGenerated"
         ></UriForm>
       </n-form-item>
@@ -26,7 +26,7 @@
       <!-- Name -->
       <n-form-item path="name">
         <InputForm
-            v-model:value="modalFormLogic.form.value.name"
+            v-model:value="form.name"
             label="component.common.name"
             type="text"
             :required="true"
@@ -34,27 +34,35 @@
         ></InputForm>
       </n-form-item>
 
-      <n-grid cols="2" responsive="screen" item-responsive :x-gap="16" :y-gap="8">
-        <n-grid-item v-for="credentialsGroup in credentialsGroups" span="1 m:1" :key="credentialsGroup.group_id">
-          <div class="credential-group-title">{{ t(credentialsGroup.group_key_name) }}</div>
-          <n-checkbox-group
-              v-model:value="selectedCredentials[credentialsGroup.group_id]"
-          >
-            <n-space vertical>
+      <n-table class="os-table" striped>
+        <thead>
+          <tr>
+            <th>{{ t('ProfileForm.credentialGroups') }}</th>
+            <th>{{ t('ProfileForm.credentials') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr v-for="credentialsGroup in credentialsGroups" :key="credentialsGroup.group_id">
+          <td>{{$t(credentialsGroup.group_key_name)}}</td>
+          <td>
+            <n-checkbox-group
+                v-model:value="selectedCredentials[credentialsGroup.group_id]"
+            >
               <n-checkbox
                   v-for="credential in credentialsGroup.credentials"
                   :key="credential.id"
                   :value="credential.id"
                   :label="t(credential.name)"
               ></n-checkbox>
-            </n-space>
-          </n-checkbox-group>
-        </n-grid-item>
-      </n-grid>
+            </n-checkbox-group>
+          </td>
+        </tr>
+        </tbody>
+      </n-table>
     </n-form>
 
     <template #footer>
-      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit"/>
+      <FormFooter @cancel="hide" @submit="submit"/>
     </template>
   </Modal>
 </template>
@@ -66,7 +74,7 @@ import {SecurityService} from "opensilex-security/index";
 import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
-import {NForm, NFormItem, NGrid, NGridItem, NCheckbox, NCheckboxGroup, NSpace} from "naive-ui";
+import {NForm, NFormItem, NGrid, NGridItem, NCheckbox, NCheckboxGroup, NSpace, NTable, NSwitch} from "naive-ui";
 import {requiredTrimmed} from "@/models/FormFieldsFormatter";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
@@ -104,7 +112,7 @@ const rules = computed(() => ({
 //#endregion
 
 //#region modalFormLogic composable
-const modalFormLogic = useModalFormLogic<ProfileUpdateDTO>({
+const { form, formTitle, isEditMode, exposed, hide, submit } = useModalFormLogic<ProfileUpdateDTO>({
   modalRef,
   nFormRef,
   getEmptyForm,
@@ -155,7 +163,7 @@ function initSelectedCredentials() {
 
     for (let j = 0; j < credentialsGroups.value[i].credentials.length; j++) {
       let credentialId = credentialsGroups.value[i].credentials[j].id;
-      if (modalFormLogic.form.value.credentials && modalFormLogic.form.value.credentials.indexOf(credentialId) >= 0) {
+      if (form.value.credentials && form.value.credentials.indexOf(credentialId) >= 0) {
         def[credentialsGroups.value[i].group_id].push(credentialId);
       }
     }
@@ -174,10 +182,7 @@ onMounted(() => {
 });
 //#endregion
 
-defineExpose({
-  showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm,
-})
+defineExpose(exposed)
 </script>
 
 <style scoped lang="scss">

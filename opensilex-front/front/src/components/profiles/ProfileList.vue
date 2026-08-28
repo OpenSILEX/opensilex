@@ -106,13 +106,13 @@ const emit = defineEmits<{
 }>()
 //#endregion
 
+//#region Private
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const service = opensilex.getService<SecurityService>("opensilex-core.SecurityService");
 const store = useStore();
 const route = useRoute();
 const {t} = useI18n();
 
-//#region Data and computed
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 
@@ -124,7 +124,6 @@ const fields: Array<TableField> = [
   {key: "credentials", label: "component.profile.credentials", resizable: true},
   {key: "actions", label: "component.common.actions", resizable: false, naiveProps: {width: 100}}
 ];
-//#endregion
 
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
 
@@ -186,6 +185,7 @@ function deleteProfile(uri: string) {
 function showDetails(data) {
   data.item._showDetails = !data.item._showDetails;
 }
+//#endregion
 
 defineExpose({
   refresh,

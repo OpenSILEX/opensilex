@@ -31,8 +31,8 @@
                 <ul>
                   <li
                       v-for="credential in credentialGroup.credentials"
-                      v-bind:key="credential.value"
-                  >{{ credential.text }}
+                      v-bind:key="credential.id"
+                  >{{ credential.name }}
                   </li>
                 </ul>
               </div>
@@ -97,8 +97,7 @@ import {useI18n} from "vue-i18n";
 
 //#region Public
 const props = defineProps<{
-  isClickable?: boolean,
-  credentialsGroups?: Array<CredentialsGroupDTO>
+  isClickable?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -129,40 +128,32 @@ const fields: Array<TableField> = [
 
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
 
-onMounted(() => {
-  let query: any = route.query;
-  if (query.filter) {
+onMounted(async () => {
+  const query = route.query;
+  if (typeof query.filter === "string") {
     filter.value = decodeURIComponent(query.filter);
   }
-  opensilex.getCredentials().then((credentials: Array<CredentialsGroupDTO>) => {
-    credentialsGroups.value = props.credentialsGroups || credentials;
-  });
+  credentialsGroups.value = await opensilex.getCredentials();
 });
 
-function filterCredentialGroups(credentialsFiltered: Array<string>) {
-  let credentialsDetails = [];
-  for (const credentialsGroup of credentialsGroups.value) {
-    let credentialsDetailGroup = {
-      group_id: credentialsGroup.group_id,
-      group_key_name: credentialsGroup.group_key_name,
-      credentials: []
+function filterCredentialGroups(credentials: Array<string>): Array<CredentialsGroupDTO> {
+  let filteredGroups: Array<CredentialsGroupDTO> = [];
+  console.log("Initial groups", credentialsGroups.value);
+  for (const group of credentialsGroups.value) {
+    let transformedGroup = {
+      group_id: group.group_id,
+      group_key_name: group.group_key_name,
+      credentials: group.credentials
+          .filter(credential => credentials.indexOf(credential.id) >= 0)
+          .map(credential => ({ id: credential.id, name: t(credential.name) }))
     };
 
-    for (const credential of credentialsGroup.credentials) {
-      if (credentialsFiltered.indexOf(credential.id) >= 0) {
-        credentialsDetailGroup.credentials.push({
-          text: t(credential.name),
-          value: credential.id
-        });
-      }
-    }
-
-    if (credentialsDetailGroup.credentials.length > 0) {
-      credentialsDetails.push(credentialsDetailGroup);
+    if (transformedGroup.credentials.length > 0) {
+      filteredGroups.push(transformedGroup);
     }
   }
-  console.log("credentialsDetails", credentialsDetails);
-  return credentialsDetails;
+  console.log("Filtered groups", filteredGroups);
+  return filteredGroups;
 }
 
 function updateFilter() {

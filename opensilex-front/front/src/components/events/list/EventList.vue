@@ -1,40 +1,55 @@
 <template>
   <!-- Barre Actions -->
-  <n-space class="listActionButtons" :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']">
-    <n-button v-if="user.hasCredential(modificationCredentialId)" size="small" class="greenThemeColor"
-      @click="showForm">
+  <n-space
+    class="listActionButtons"
+    :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
+  >
+    <n-button
+      v-if="user.hasCredential(modificationCredentialId)"
+      size="small"
+      class="greenThemeColor"
+      @click="showForm"
+    >
       {{ t('EventList.add') }}
     </n-button>
 
-    <n-button v-if="user.hasCredential(modificationCredentialId)" size="small" class="greenThemeColor"
-      @click="showCsvForm">
+    <n-button
+      v-if="user.hasCredential(modificationCredentialId)"
+      size="small"
+      class="greenThemeColor"
+      @click="showCsvForm"
+    >
       {{ t('EventList.import') }}
     </n-button>
 
-    <n-button v-if="user.hasCredential(modificationCredentialId)" size="small" class="greenThemeColor"
-      @click="showMoveCsvForm">
+    <n-button
+      v-if="user.hasCredential(modificationCredentialId)"
+      size="small"
+      class="greenThemeColor"
+      @click="showMoveCsvForm"
+    >
       {{ t('EventList.move-csv-import-title') }}
     </n-button>
 
 
     <div class="displayAndListSelectionCount">
       <div v-if="paginationInfo.hasResults">
-        <strong>
+          <strong>
           <span class="ml-1">
-            {{ t('component.common.list.pagination.nbEntries', {
+              {{ t('component.common.list.pagination.nbEntries', {
               limit: paginationInfo.start,
               offset: paginationInfo.end,
               totalRow: n(paginationInfo.total)
-            }) }}
+              }) }}
           </span>
-        </strong>
+          </strong>
       </div>
       <div v-else>
-        <strong>
+          <strong>
           <span class="ml-1">
-            {{ t('component.common.list.pagination.noEntries') }}
+              {{ t('component.common.list.pagination.noEntries') }}
           </span>
-        </strong>
+          </strong>
       </div>
     </div>
   </n-space>
@@ -43,52 +58,106 @@
   <n-layout has-sider class="event-layout">
     <!-- Bouton loupe -->
     <n-space class="mb-2 me-1" align="top">
-      <n-button quaternary circle @click="filtersCollapsed = !filtersCollapsed" :title="searchFiltersPanel"
-        :class="{ greenThemeColor: filtersCollapsed }" class="globalFiltersSearchButton">
+      <n-button
+        quaternary
+        circle
+        @click="filtersCollapsed = !filtersCollapsed"
+        :title="searchFiltersPanel"
+        :class="{ greenThemeColor: filtersCollapsed }"
+        class="globalFiltersSearchButton"
+      >
         <i class="bi bi-search filtersGlobalSearchIcon"></i>
 
-        <div v-show="filtersCollapsed && activeFiltersCount > 0" class="filters-count-badge">
+        <div
+          v-show="filtersCollapsed && activeFiltersCount > 0"
+          class="filters-count-badge"
+        >
           ( {{ activeFiltersCount }} )
         </div>
       </n-button>
     </n-space>
 
     <!-- Sidebar filtres -->
-    <n-layout-sider v-model:collapsed="filtersCollapsed" :collapsed-width="0" :width="360" collapse-mode="width"
-      show-trigger bordered class="event-sider">
+    <n-layout-sider
+      v-model:collapsed="filtersCollapsed"
+      :collapsed-width="0"
+      :width="360"
+      collapse-mode="width"
+      show-trigger
+      bordered
+      class="event-sider"
+    >
       <n-space class="p-3" vertical>
         <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
           <n-form-item class="compact-form-item">
-            <opensilex-TypeForm v-model:type="filter.type" :baseType="baseType" :ignoreRoot="false"
-              :placeholder="t('EventList.type-placeholder')" class="searchFilter" @handlingEnterKey="refresh" />
+            <opensilex-TypeForm
+              v-model:type="filter.type"
+              :baseType="baseType"
+              :ignoreRoot="false"
+              :placeholder="t('EventList.type-placeholder')"
+              class="searchFilter"
+              @handlingEnterKey="refresh"
+            />
           </n-form-item>
 
-          <n-form-item v-if="displayTargetFilter" :label="t('EventList.targets')" class="compact-form-item">
-            <opensilex-StringFilter v-model:filter="filter.target"
-              :placeholder="t('EventList.target-filter-placeholder')" class="searchFilter"
-              @handlingEnterKey="refresh" />
+          <n-form-item
+            v-if="displayTargetFilter"
+            :label="t('EventList.targets')"
+            class="compact-form-item"
+          >
+            <opensilex-StringFilter
+              v-model:filter="filter.target"
+              :placeholder="t('EventList.target-filter-placeholder')"
+              class="searchFilter"
+              @handlingEnterKey="refresh"
+            />
           </n-form-item>
 
-          <n-form-item :label="t('component.common.description')" class="compact-form-item">
-            <opensilex-StringFilter v-model:filter="filter.description"
-              :placeholder="t('EventList.filter-label-placeholder')" class="searchFilter" @handlingEnterKey="refresh" />
+          <n-form-item
+            :label="t('component.common.description')"
+            class="compact-form-item"
+          >
+            <opensilex-StringFilter
+              v-model:filter="filter.description"
+              :placeholder="t('EventList.filter-label-placeholder')"
+              class="searchFilter"
+              @handlingEnterKey="refresh"
+            />
           </n-form-item>
 
           <n-form-item :label="t('EventList.start')" class="compact-form-item">
-            <opensilex-DateTimeForm v-model:value="filter.start" :max-date="filter.end ? filter.end : undefined"
-              :required="false" class="searchFilter" />
+            <opensilex-DateTimeForm
+              v-model:value="filter.start"
+              :max-date="filter.end ? filter.end : undefined"
+              :required="false"
+              class="searchFilter"
+            />
           </n-form-item>
 
           <n-form-item :label="t('EventList.end')" class="compact-form-item">
-            <opensilex-DateTimeForm v-model:value="filter.end" :min-date="filter.start ? filter.start : undefined"
-              :minDate="filter.start" :maxDate="filter.end" :required="false" class="searchFilter" />
+            <opensilex-DateTimeForm
+              v-model:value="filter.end"
+              :min-date="filter.start ? filter.start : undefined"
+              :minDate="filter.start"
+              :maxDate="filter.end"
+              :required="false"
+              class="searchFilter"
+            />
           </n-form-item>
 
           <n-space justify="end" class="mt-2">
-            <opensilex-Button class="resetButton" :label="t('component.common.search.clear-button')" icon="bi-x-lg"
-              @click="reset" />
-            <opensilex-Button class="greenThemeColor" :label="t('component.common.search.search-button')"
-              icon="bi-search" @click="refresh" />
+            <opensilex-Button
+              class="resetButton"
+              :label="t('component.common.search.clear-button')"
+              icon="bi-x-lg"
+              @click="reset"
+            />
+            <opensilex-Button
+              class="greenThemeColor"
+              :label="t('component.common.search.search-button')"
+              icon="bi-search"
+              @click="refresh"
+            />
           </n-space>
         </n-form>
       </n-space>
@@ -96,29 +165,53 @@
 
     <!-- Contenu -->
     <n-layout-content class="event-content">
-      <opensilex-TableAsyncView v-if="renderComponent" ref="tableRef" :searchMethod="search" :fields="fields"
-        defaultSortBy="" :isSelectable="isSelectable" :showHeaderCount="false" @refreshed="onRefreshed"
-        labelNumberOfSelectedRow="EventList.selected" iconNumberOfSelectedRow="bi#bi-layers">
+      <opensilex-TableAsyncView
+        v-if="renderComponent"
+        ref="tableRef"
+        :searchMethod="search"
+        :fields="fields"
+        defaultSortBy=""
+        :isSelectable="isSelectable"
+        :showHeaderCount="false"
+        @refreshed="onRefreshed"
+        labelNumberOfSelectedRow="EventList.selected"
+        iconNumberOfSelectedRow="bi#bi-layers"
+      >
         <template #cell(rdf_type_name)="{ data }">
-          <opensilex-UriLink v-if="data.item.rdf_type_name" :uri="$opensilex.getShortUri(data.item.rdf_type)"
-            :value="data.item.rdf_type_name" />
+          <opensilex-UriLink
+            v-if="data.item.rdf_type_name"
+            :uri="$opensilex.getShortUri(data.item.rdf_type)"
+            :value="data.item.rdf_type_name"
+          />
         </template>
 
         <template #cell(start)="{ data }">
-          <opensilex-TextView v-if="data.item.start && data.item.start.length > 0"
-            :value="new Date(data.item.start).toLocaleString()" />
+          <opensilex-TextView
+            v-if="data.item.start && data.item.start.length > 0"
+            :value="new Date(data.item.start).toLocaleString()"
+          />
         </template>
 
         <template #cell(end)="{ data }">
-          <opensilex-TextView v-if="data.item.end" :value="new Date(data.item.end).toLocaleString()" />
+          <opensilex-TextView
+            v-if="data.item.end"
+            :value="new Date(data.item.end).toLocaleString()"
+          />
         </template>
 
         <template #cell(targets)="{ data }">
-          <span v-for="(uri, index) in data.item.targets" :key="index">
+          <span
+            v-for="(uri, index) in data.item.targets"
+            :key="index"
+          >
             <template v-if="index < 2">
-              <opensilex-UriLink :uri="uri" :value="objectsLabels[uri]" :to="{
-                path: $opensilex.getTargetPath(uri, context, objectsPath[uri])
-              }" />
+              <opensilex-UriLink
+                :uri="uri"
+                :value="objectsLabels[uri]"
+                :to="{
+                  path: $opensilex.getTargetPath(uri, context, objectsPath[uri])
+                }"
+              />
               <span v-if="index < Math.min((data.item.targets?.length || 0), 2) - 1"> </span>
             </template>
             <template v-else-if="index === 2">
@@ -133,39 +226,80 @@
 
         <template #cell(actions)="{ data }">
           <n-button-group size="small">
-            <opensilex-DetailButton v-if="user.hasCredential(modificationCredentialId)"
-              @click="showEventView(data.item)" label="component.events.details" :small="true" />
-            <opensilex-EditButton v-if="user.hasCredential(modificationCredentialId)" @click="editEvent(data.item)"
-              label="component.common.list.buttons.update" :small="true" />
-            <opensilex-DeleteButton v-if="user.hasCredential(deleteCredentialId)" @click="deleteEvent(data.item.uri)"
-              label="component.common.list.buttons.delete" :small="true" />
+            <opensilex-DetailButton
+              v-if="user.hasCredential(modificationCredentialId)"
+              @click="showEventView(data.item)"
+              label="component.events.details"
+              :small="true"
+            />
+            <opensilex-EditButton
+              v-if="user.hasCredential(modificationCredentialId)"
+              @click="editEvent(data.item)"
+              label="component.common.list.buttons.update"
+              :small="true"
+            />
+            <opensilex-DeleteButton
+              v-if="user.hasCredential(deleteCredentialId)"
+              @click="deleteEvent(data.item.uri)"
+              label="component.common.list.buttons.delete"
+              :small="true"
+            />
           </n-button-group>
         </template>
       </opensilex-TableAsyncView>
 
-      <opensilex-EventModalView ref="eventModalViewRef" modalSize="lg" v-model:dto="selectedEvent"
-        v-model:type="selectedEvent.rdf_type" :uriLabels="uriLabels" :uriPaths="uriPaths"
-        :specificPropertiesLabels="specificPropertiesLabels" :specificPropertiesPaths="specificPropertiesPaths"
-        :positionsUriLabels="positionsUriLabels" :positionsUriPaths="positionsUriPaths" />
+      <opensilex-EventModalView
+        ref="eventModalViewRef"
+        modalSize="lg"
+        v-model:dto="selectedEvent"
+        v-model:type="selectedEvent.rdf_type"
+        :uriLabels="uriLabels"
+        :uriPaths="uriPaths"
+        :specificPropertiesLabels="specificPropertiesLabels"
+        :specificPropertiesPaths="specificPropertiesPaths"
+        :positionsUriLabels="positionsUriLabels"
+        :positionsUriPaths="positionsUriPaths"
+      />
 
-      <EventForm v-if="renderModalForm" ref="modalFormRef" :target="target" :context="context"
-        createTitle="component.events.add" editTitle="component.events.edit" @onCreate="displayAfterCreation"
-        @onUpdate="updateSelectedEvent" />
+      <EventForm
+        v-if="renderModalForm"
+        ref="modalFormRef"
+        :target="target"
+        :context="context"
+        createTitle="Event.add"
+        editTitle="Event.edit"
+        @onCreate="displayAfterCreation"
+        @onUpdate="updateSelectedEvent"
+      />
 
-      <opensilex-EventCsvForm v-if="renderCsvForm" ref="csvFormRef" :targets="[target]" @csvImported="onImport" />
+      <opensilex-EventCsvForm
+        v-if="renderCsvForm"
+        ref="csvFormRef"
+        :targets="[target]"
+        @csvImported="onImport"
+      />
 
-      <opensilex-EventCsvForm v-if="renderMoveCsvForm" ref="moveCsvFormRef" :targets="[target]" :isMove="true"
-        @csvImported="onImport" />
+      <opensilex-EventCsvForm
+        v-if="renderMoveCsvForm"
+        ref="moveCsvFormRef"
+        :targets="[target]"
+        :isMove="true"
+        @csvImported="onImport"
+      />
 
-      <opensilex-ModalForm v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-        ref="documentFormRef" component="opensilex-DocumentForm" createTitle="component.common.addDocument"
-        modalSize="lg" :initForm="initForm" icon="bi#bi-file-text" />
+      <DocumentForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+        ref="documentFormRef"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.editDocument')"
+        @onSuccess="refresh"
+      />
     </n-layout-content>
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
@@ -186,9 +320,10 @@ import type { OpenSilexResponse } from '@/lib/HttpResponse'
 import type { EventDetailsDTO } from 'opensilex-core/index'
 import { EventsService } from 'opensilex-core/api/events.service'
 import { OntologyService } from 'opensilex-core/api/ontology.service'
-import { EventGetDTO } from "opensilex-core/model/eventGetDTO";
-import { RowWithData } from "@/components/common/views/TableAsyncView.vue";
+import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import EventForm from '../form/EventForm.vue';
+import DocumentForm from '@/components/documents/DocumentForm.vue';
 
 type EventFilter = {
   target: string | undefined
@@ -237,7 +372,7 @@ const eventModalViewRef = ref<any>(null)
 const modalFormRef = ref<any>(null)
 const csvFormRef = ref<any>(null)
 const moveCsvFormRef = ref<any>(null)
-const documentFormRef = ref<any>(null)
+const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
 
 const uriLabels = ref<Record<string, string>>({})
 const uriPaths = ref<Record<string, string>>({})
@@ -285,9 +420,9 @@ const paginationInfo = computed(() => {
 const activeFiltersCount = computed(() => {
   const targetCount =
     props.displayTargetFilter &&
-      filter.value.target &&
-      filter.value.target !== '' &&
-      filter.value.target !== props.target
+    filter.value.target &&
+    filter.value.target !== '' &&
+    filter.value.target !== props.target
       ? 1
       : 0
 
@@ -562,7 +697,7 @@ function getSelected() {
 }
 
 function createDocument() {
-  documentFormRef.value?.showCreateForm?.(initForm())
+  documentFormRef.value?.showCreateForm(initForm())
 }
 
 function initForm() {

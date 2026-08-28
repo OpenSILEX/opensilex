@@ -3,17 +3,22 @@
       :nodes="nodes"
       defaultExpandAll
       @select="displayClassDetail($event[0]?.data?.uri)">
-    <template #node="{ node }">
-      <span class="item-icon">
-        <Icon v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon"
-              :icon="classParametersByURI[node.data.uri].icon"/>
-      </span>&nbsp;
-      <strong v-if="node.data.selected">{{ node.title }}</strong>
-      <span v-if="!node.data.selected">{{ node.title }}</span>
+    <template #node="{ node, selected }">
+      <span v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon" class="item-icon">
+        <Icon :icon="classParametersByURI[node.data.uri].icon"/>&nbsp;
+      </span>
+      <strong v-if="selected">{{ node.title }}</strong>
+      <span v-else>{{ node.title }}</span>
     </template>
 
     <template #buttons="{ node }">
       <n-button-group size="small" class="btn-group btn-group-sm">
+        <EditButton
+            v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+            @click="$emit('editClass' ,node.data)"
+            :label="t('OntologyClassTreeView.edit')"
+            :small="true"
+        ></EditButton>
         <AddChildButton
             v-if="user.isAdmin()"
             @click="emit('createChildClass' ,node.data.uri)"
@@ -42,10 +47,11 @@ import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {useI18n} from "vue-i18n";
-import TreeView from "@/components/common/views/TreeView.vue";
+import TreeView, {TreeViewOption} from "@/components/common/views/TreeView.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
 
 //#region Public
 const props = defineProps<{
@@ -53,9 +59,10 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  editClass: [nodeData: TreeViewOption],
   selectionChange: [selected: VueRDFTypeDTO],
   createChildClass: [uri: string],
-  deleteRDFType: [nodeData: any]
+  deleteRDFType: [nodeData: TreeViewOption]
 }>()
 
 defineExpose({
@@ -65,13 +72,17 @@ defineExpose({
 //#endregion
 
 //#region Private
+interface ClassTreeViewOption extends TreeViewOption {
+  data: ResourceTreeDTO;
+}
+
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
 const route = useRoute();
 const user = computed(() => store.state.user);
 const {t} = useI18n();
 
-const nodes = ref([]);
+const nodes = ref<Array<ClassTreeViewOption>>([]);
 const selected = ref<VueRDFTypeDTO | undefined>();
 const resourceTree = ref<Array<ResourceTreeDTO>>();
 const classParametersByURI = ref({});
@@ -126,7 +137,7 @@ function refresh(selection: VueRDFTypeDTO, nameFilter?: string) {
     let classesParameters = results[1].response.result;
     let classParamByURI = {};
     for (let i in classesParameters) {
-      classParamByURI[classesParameters[i].uri] = classesParameters[i];
+      classParamByURI[classesParameters[i].extendedClass] = classesParameters[i];
     }
     classParametersByURI.value = classParamByURI;
 
@@ -150,7 +161,7 @@ function getTree(): Array<ResourceTreeDTO> {
   return resourceTree.value;
 }
 
-function dtoToNode(dto: ResourceTreeDTO, selection) {
+function dtoToNode(dto: ResourceTreeDTO, selection): ClassTreeViewOption {
   let isLeaf = dto.children.length == 0;
 
   let childrenDTOs = [];
@@ -177,7 +188,6 @@ function dtoToNode(dto: ResourceTreeDTO, selection) {
     isSelected: isSelected,
     isDraggable: false,
     isSelectable: !dto.disabled,
-    prefix: () => icon ? h(FontAwesomeIcon, {icon}) : undefined
   };
 }
 

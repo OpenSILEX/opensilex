@@ -172,7 +172,7 @@ const emit = defineEmits<{
 const classPropertyForm = useTemplateRef<InstanceType<typeof ModalForm>>('classPropertyForm');
 const setPropertiesOrderRef = useTemplateRef<InstanceType<typeof Modal>>('setPropertiesOrderRef');
 
-const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
+const fields = computed<DataTableColumns<VueRDFTypePropertyDTO>>(() => [
   {
     key: "name",
     title: t("component.common.name"),
@@ -207,13 +207,13 @@ const fields: DataTableColumns<VueRDFTypePropertyDTO> = [
               size: "small",
               className: "btn-group btn-group-sm"
             },
-            h(DeleteButton, {
+            data.is_custom && !data.inherited && user.value.isAdmin() ? h(DeleteButton, {
               onClick: () => deleteClassPropertyRestriction(data.uri),
               label: t('component.ontology.class.detail.deleteProperty'),
               small: true
-            }))
+            }) : null)
   },
-];
+] as DataTableColumns<VueRDFTypePropertyDTO>)
 const customPropertyOrder = ref<Array<VueRDFTypePropertyDTO>>([]);
 
 const properties = computed<VueRDFTypePropertyDTO[]>(() => {

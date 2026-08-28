@@ -224,7 +224,6 @@
             },
             "title": "Titre",
             "date": "Date",
-            "authors": "Auteurs",
             "fullscreen": "Plein ecran",
             "change-viewing-mode": "Changer de mode de vue",
             "graphs": {
@@ -356,7 +355,7 @@
             }
         },
         "footer": {
-            "copyright": "Copyright © 2021 INRAE Tous Droits Déservés. PHIS {version} "
+            "copyright": "Copyright © 2021 INRAE Tous Droits Réservés. PHIS {version} "
         },
         "account": {
             "description": "Gérer et configurer les comptes",
@@ -968,13 +967,41 @@
             "author": "Auteur",
             "filter-keywords-placeholder": "Filtrer par mots-clés",
             "keywords": "Mots-clés",
+            "keywords-help": "Le(s) sujet(s) de la ressource. En règle générale, le sujet sera représenté à l'aide de mots-clés, d'expressions clés ou de codes de classification. La meilleure pratique recommandée consiste à utiliser un vocabulaire contrôlé.",
             "targets-placeholder": "Entrez l'URI concerné",
             "targets": "Cible",
-            "filter-deprecated": "Obsolète",
             "download": "Télécharger le fichier",
             "browseSource": "Naviguer à la source",
+            "browse": "Parcourir",
             "update": "Éditer le document",
-            "searchAll-placeholder": "Recherche par titre et mot-clé"
+            "searchAll-placeholder": "Recherche par titre et mot-clé",
+            "uri-help": "Identifiant unique du document généré automatiquement OU décochez la case pour lier une URL de fichier externe",
+            "type-help": "Type de Document",
+            "title": "Titre",
+            "title-help": "Titre de la ressource",
+            "placeholder-authors": "Nom, Prénom",
+            "authors": "Auteurs",
+            "authors-help": "Une entité à l'origine de la creation la ressource. La pratique recommandée consiste à identifier le créateur avec un URI. Si cela n'est pas possible ou faisable, une valeur littérale identifiant le créateur peut être fournie.",
+            "language": "Langue",
+            "language-help": "Langue de la ressource",
+            "placeholder-language": "fr",
+            "date-help": "Date de création",
+            "format": "Format",
+            "format-help": "Le format de fichier, le support physique ou les dimensions de la ressource",
+            "description": "Description",
+            "description-help": "Description associée aux métadonnées du document",
+            "targets-help": "Liste d'URI des ressources concernées par le document",
+            "deprecated": "Obsolète",
+            "deprecated-help": "Fichier obsolète",
+            "deprecated-title": "Sélectionnez cette option pour rendre le document obsolète",
+            "file": "Document",
+            "file-help": "Document à insérer limité à 100MB",
+            "identifier": "Identifiant",
+            "identifier-help": "La pratique recommandée est d'identifier la ressource au moyen d'une chaîne conforme à un système d'identification. Les exemples incluent le numéro international normalisé du livre (ISBN), l'identificateur d'objet numérique (DOI) et le nom uniforme de ressource (URN). Les identificateurs persistants doivent être fournis sous forme d'URI HTTP.",
+            "placeholder-identifier": "doi:10.1340/309registries",
+            "upload-file": "Importer un fichier",
+            "link-external-source": "Lier une source externe",
+            "external-source": "Source externe"
         },
         "organization": {
             "title": "Organisation",
@@ -1199,6 +1226,20 @@
         "GDPR": {
             "title": "RGPD",
             "title-description": "Politique RGPD"
+        },
+        "forgot-password": {
+            "title": "Mot de passe oublié ?",
+            "enter-email": "Entrez l'adresse e-mail liée à votre compte",
+            "reset-password": "Envoyer un e-mail à cette adresse",
+            "steps": "Changez votre mot de passe en trois étapes simples. Cela vous aidera à sécuriser votre mot de passe !",
+            "step-one": "Saisissez votre adresse électronique ci-dessous.",
+            "step-two": "Notre système vous enverra un lien temporaire.",
+            "step-three": "Utilisez le lien pour réinitialiser votre mot de passe.",
+            "service-not-available": "Service not available",
+            "invalid-identifier": "L'adresse e-mail n'appartient à aucun utilisateur existant.",
+            "empty-email": "L'adresse e-mail ne doit pas être vide",
+            "link-email": "Un email vous a été envoyé.",
+            "returnHome": "Retourner à la page d'accueil"
         },
         "reset-password": {
             "title": "Renouvellement de mot de passe",

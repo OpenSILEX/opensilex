@@ -342,10 +342,8 @@ function onVueTelInputBlur() {
 }
 //#endregion
 
-defineExpose({
-  showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm,
-})
+defineExpose(modalFormLogic.exposed)
+
 </script>
 
 <style lang="scss">

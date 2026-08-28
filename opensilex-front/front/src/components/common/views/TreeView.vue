@@ -3,8 +3,7 @@
   <!-- <p>nodes: {{ nodes }}</p> -->
 
 <n-tree
-  ref="treeRef"
-  :data="nodeList"
+  :data="nodes"
   :show-irrelevant-nodes="false"
   key-field="key"
   :selectable="true"
@@ -19,7 +18,7 @@
 </template>
 
 <script setup generic="T extends TreeViewOption" lang="ts">
-import {ref, useSlots, watch, onMounted, h, VNodeChild} from 'vue'
+import {ref, useSlots, watch, onMounted, h, VNodeChild, computed} from 'vue'
 import {NTree, TreeOption} from 'naive-ui'
 
 export interface TreeViewOption extends TreeOption {
@@ -31,7 +30,8 @@ const props = withDefaults(defineProps<{
   noButtons?: boolean
   defaultExpandAll: boolean
 }>(), {
-  defaultExpandAll: false
+  defaultExpandAll: false,
+  nodes: () => []
 })
 
 const emit = defineEmits<{
@@ -43,24 +43,7 @@ const slots = defineSlots<{
   node: (props: { node: T, selected: boolean }) => VNodeChild
 }>()
 
-const treeRef = ref<InstanceType<typeof NTree> | null>(null)
-const nodeList = ref(props.nodes || [])
 const selectedKeys = ref<string[]>([])
-
-onMounted(() => {
-  console.debug("[TreeView] nodeList au mount :", nodeList.value)
-})
-
-// Dans le watch de props.nodes
-watch(
-  () => props.nodes,
-  (newVal) => {
-     console.debug("[TreeView] Mise à jour des nodes", newVal)
-    nodeList.value = newVal
-  },
-  { immediate: true }
-)
-
 
 function onSelectItem(keys: string[], options: Array<T>) {
   selectedKeys.value = keys
@@ -86,7 +69,7 @@ function getSelectedNode() {
     return undefined
   }
 
-  return findNode(nodeList.value)
+  return findNode(props.nodes)
 }
 
 
@@ -122,8 +105,4 @@ defineExpose({
 </script>
 
 <style scoped>
-.toggle-icon {
-  padding-left: 5px;
-  padding-right: 5px;
-}
 </style>

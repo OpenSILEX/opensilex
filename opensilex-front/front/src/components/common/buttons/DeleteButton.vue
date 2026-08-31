@@ -1,5 +1,5 @@
 <template>
-    <opensilex-Button
+    <Button
       :label="label"
       :small="small"
       :disabled="disabled"
@@ -49,6 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
+import Button from "@/components/common/buttons/Button.vue";
 
 const props = defineProps<{
   label: string

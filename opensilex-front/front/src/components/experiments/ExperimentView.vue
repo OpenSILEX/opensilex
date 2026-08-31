@@ -173,6 +173,12 @@ import { DataService } from 'opensilex-core/api/data.service';
 import { ScientificObjectsService } from 'opensilex-core/index';
 import { ExperimentsService } from 'opensilex-core';
 import type { ExperimentGetDTO } from 'opensilex-core';
+import ExperimentDetail from "@/components/experiments/views/ExperimentDetail.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import ExperimentDataVisualisation from "@/components/experiments/ExperimentDataVisualisation.vue";
+import DocumentTabList from "@/components/documents/DocumentTabList.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import PageHeader from "@/components/layout/PageHeader.vue";
 
 const route = useRoute();
 const store = useStore();

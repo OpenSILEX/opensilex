@@ -309,23 +309,23 @@ routes:
     icon: bi#bi-globe
   - path: /organization/site/details/:uri
     component: opensilex-SiteDetailView
-  # - path: /experiment/details/:uri
-  #   component: opensilex-ExperimentView
-  #   rdfType: vocabulary:Experiment
-  # - path: /experiment/scientific-objects/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/data/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/data-visualisation/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/map/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/annotations/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/document/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/factors/:uri
-  #   component: opensilex-ExperimentView
+  - path: /experiment/details/:uri
+    component: opensilex-ExperimentView
+    rdfType: vocabulary:Experiment
+  - path: /experiment/scientific-objects/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/data/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/data-visualisation/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/map/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/annotations/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/document/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/factors/:uri
+    component: opensilex-ExperimentView
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView

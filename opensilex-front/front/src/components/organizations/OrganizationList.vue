@@ -47,17 +47,17 @@
           </n-form-item>
 
           <!-- Type -->
-          <opensilex-TypeForm
+          <TypeForm
             v-model:type="filter.type_uri"
             :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
-            :ignoreRoot="false"
+            :ignoreRoot="true"
             :placeholder="t('OrganizationList.filter.type-placeholder')"
             class="searchFilter typeFilter"
             @handlingEnterKey="applyFilters"
           />
 
           <!-- Parents of -->
-          <opensilex-FormSelector
+          <FormSelector
             v-model:selected="filter.direct_child_uri"
             :options="parentOptions"
             :multiple="false"
@@ -68,7 +68,7 @@
           />
 
           <!-- Children of -->
-          <opensilex-FormSelector
+          <FormSelector
             v-model:selected="filter.direct_parent_uri"
             :options="parentOptions"
             :multiple="false"
@@ -76,11 +76,12 @@
             :helpMessage="t('OrganizationList.filter.child-organizations-help')"
             :placeholder="t('OrganizationList.child-placeholder')"
             class="searchFilter"
+            disableBranchNodes
           />
 
           <!-- Facility -->
           <n-form-item :label="t('OrganizationList.facilities-label')">
-            <opensilex-FacilitySelector
+            <FacilitySelector
               v-model:facilities="filter.facility"
               :multiple="false"
               class="searchFilter"
@@ -88,13 +89,13 @@
           </n-form-item>
 
           <n-space justify="end" class="mt-2">
-            <opensilex-Button
+            <Button
               class="resetButton"
               :label="t('component.common.search.clear-button')"
               icon="bi-x-lg"
               @click="resetFilters"
             />
-            <opensilex-Button
+            <Button
               class="greenThemeColor"
               :label="t('component.common.search.search-button')"
               icon="bi-search"
@@ -183,6 +184,10 @@ import FacilitiesModalList from "@/components/facilities/FacilitiesModalList.vue
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import {TableField} from "@/components/common/views/TableField";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 interface OrganizationListFilter {
   name: string | undefined;

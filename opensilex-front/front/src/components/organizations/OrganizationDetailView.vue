@@ -1,6 +1,6 @@
 <template>
   <div v-if="selected" class="container-fluid">
-    <opensilex-PageHeader
+    <PageHeader
       icon="bi#bi-globe"
       :hasIcon="true"
       :title="selected.name"
@@ -8,12 +8,12 @@
       class="detail-element-header"
     />
 
-    <opensilex-PageActions :tabs="false" :returnButton="true" />
+    <PageActions :tabs="false" :returnButton="true" />
 
     <div class="detail-content">
       <div class="left-side">
         <!-- Organization detail -->
-        <opensilex-OrganizationDetail
+        <OrganizationDetail
           :selected="selected"
           :withActions="true"
           @onDelete="deleteOrganization"
@@ -22,7 +22,7 @@
 
         <!-- Site list -->
         <n-card class="mt-3">
-          <opensilex-SiteView
+          <SiteView
             :organizationsForFilter="[selected.uri]"
           />
         </n-card>
@@ -30,7 +30,7 @@
 
       <div class="right-side">
         <!-- Organization facilities -->
-        <opensilex-FacilitiesView
+        <FacilitiesView
           :withActions="true"
           :organization="selected"
           :isSelectable="false"
@@ -57,6 +57,12 @@ import type OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 // @ts-ignore
 import { OrganizationsService } from "opensilex-core/api/organizations.service";
 import type { OrganizationGetDTO } from "opensilex-core/index";
+import OrganizationDetail from "@/components/organizations/OrganizationDetail.vue";
+import PageActions from "@/components/layout/PageActions.vue";
+import PageHeader from "@/components/layout/PageHeader.vue";
+import SiteView from "@/components/organizations/site/SiteView.vue";
+import FacilitiesView from "@/components/facilities/FacilitiesView.vue";
+import {useStore} from "vuex";
 
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 const route = useRoute();
@@ -66,6 +72,7 @@ const { t } = useI18n();
 const selected = ref<OrganizationGetDTO | null>(null);
 const uri = ref<string>("");
 const service = $opensilex.getService<OrganizationsService>("opensilex-core.OrganizationsService")
+const store = useStore()
 
 watch(
   () => route.params.uri,
@@ -79,6 +86,9 @@ watch(
   },
   { immediate: true }
 );
+
+watch(() => store.getters.language, () => refresh())
+
 
 function refresh() {
   service

@@ -1,45 +1,31 @@
 <template>
-  <opensilex-FormField
-    :required="required"
-    :label="label"
-    :helpMessage="helpMessage"
-  >
+  <FormField :required="required" :label="label" :helpMessage="helpMessage">
     <template #field="{ id }">
       <div class="tag-input-form">
         <!-- Current tags if at least one tag -->
         <div class="tags" v-if='localTags.length > 0'>
-          <n-tag
-            v-for="(t, i) in localTags"
-            :key="t + '_' + i"
-            closable
-            :disabled="disabled"
-            @close="removeTag(i)"
-          >
+          <n-tag v-for="(t, i) in localTags" :key="t + '_' + i" closable :disabled="disabled" @close="removeTag(i)">
             {{ t }}
           </n-tag>
         </div>
 
         <!-- Input + Add -->
         <div class="adder">
-          <n-input
-            :id="id"
-            v-model:value="pending"
-            :disabled="disabled"
-            :placeholder="$t(placeholder || '')"
-            @keyup.enter="addTag"
-          />
+          <n-input :id="id" v-model:value="pending" :disabled="disabled" :placeholder="$t(placeholder || '')"
+            @keyup.enter="addTag" />
           <n-button :disabled="disabled || !canAdd" @click="addTag">
             {{ $t('component.common.add') }}
           </n-button>
         </div>
       </div>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { NInput, NButton, NTag } from 'naive-ui'
+import FormField from "@/components/common/forms/FormField.vue"
 
 type Props = {
   value?: string[]
@@ -75,7 +61,7 @@ const canAdd = computed(() => {
   return v.length > 0 && !localTags.value.includes(v)
 })
 
-function addTag () {
+function addTag() {
   const v = pending.value.trim()
   if (!v || localTags.value.includes(v)) return
   localTags.value = [...localTags.value, v]
@@ -86,7 +72,7 @@ function addTag () {
 
 // Keep all elelements except the one with the given index ("idx)")
 // _ is a common  convention in TS, means: I know this parameter exists, but I don't use it.
-function removeTag (idx: number) {
+function removeTag(idx: number) {
   localTags.value = localTags.value.filter((_, i) => i !== idx)
   emit('update:value', localTags.value)
   emit('change', localTags.value)
@@ -99,6 +85,7 @@ function removeTag (idx: number) {
   flex-direction: column;
   gap: 8px;
 }
+
 .tags {
   display: flex;
   flex-wrap: wrap;
@@ -107,8 +94,8 @@ function removeTag (idx: number) {
 }
 
 .tags .n-tag {
-background-color: #bfecdf;
-/* background-color: #96a2ad */
+  background-color: #bfecdf;
+  /* background-color: #96a2ad */
 }
 
 .adder {

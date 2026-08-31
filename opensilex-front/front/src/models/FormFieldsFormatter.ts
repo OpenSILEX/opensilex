@@ -77,6 +77,21 @@ export function requiredNotEmpty(fieldLabelKey: string): FormItemRule {
   }
 }
 
+export function validUri(message: string): FormItemRule {
+  return {
+    validator: (_rule, value: string) => {
+      try {
+        new URL(value)
+      } catch (error) {
+        return false
+      }
+      return true
+    },
+    message,
+    trigger: ["input", "blur"]
+  }
+}
+
 export function validEmail(): FormItemRule {
   /**
    * WARNING : `useI18n` should only be called inside <script setup>. Doing this is bad practice and

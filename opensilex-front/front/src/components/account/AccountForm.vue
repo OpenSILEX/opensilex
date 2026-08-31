@@ -241,10 +241,8 @@ async function update(formData: AccountFormDTO) {
 //#endregion
 
 //#endregion
-defineExpose({
-  showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm
-});
+defineExpose(modalFormLogic.exposed)
+
 </script>
 
 <style scoped lang="scss">

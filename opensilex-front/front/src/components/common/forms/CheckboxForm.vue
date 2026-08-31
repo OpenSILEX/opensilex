@@ -1,29 +1,14 @@
 <template>
-  <FormField
-    :required="required"
-    :label="label"
-    :helpMessage="helpMessage"
-  >
+  <FormField :required="required" :label="label" :helpMessage="helpMessage">
     <!-- le slot "field" fournit un id unique -->
     <template #field="{ id }">
       <label class="ox-checkbox" :for="id">
-        <input
-          :id="id"
-          type="checkbox"
-          :checked="booleanValue"
-          @change="onChange"
-          :disabled="disabled"
-          :required="required"
-        />
+        <input :id="id" type="checkbox" :checked="booleanValue" @change="onChange" :disabled="disabled"
+          :required="required" />
         <span class="ox-checkbox__label">
           {{ t(title) }}
-          <i
-            v-if="!label && title && helpMessage"
-            class="bi bi-question-circle-fill text-secondary"
-            :title="t(helpMessage)"
-            tabindex="0"
-            aria-hidden="true"
-          />
+          <i v-if="!label && title && helpMessage" class="bi bi-question-circle-fill text-secondary"
+            :title="t(helpMessage)" tabindex="0" aria-hidden="true" />
         </span>
       </label>
     </template>
@@ -31,9 +16,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import FormField from "@/components/common/forms/FormField.vue";
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import FormField from "@/components/common/forms/FormField.vue"
 
 const props = defineProps<{
   value?: boolean;             // v-model:value
@@ -42,11 +27,11 @@ const props = defineProps<{
   helpMessage?: string;        // clé i18n
   required?: boolean;
   disabled?: boolean;
-  rules?: string | ((v:any)=>any);
+  rules?: string | ((v: any) => any);
 }>();
 
 const emit = defineEmits<{
-  (e:'update:value', v:boolean): void;
+  (e: 'update:value', v: boolean): void;
 }>();
 
 const { t } = useI18n();
@@ -70,6 +55,7 @@ function onChange(e: Event) {
   gap: .5rem;
   cursor: pointer;
 }
+
 .ox-checkbox input[type="checkbox"] {
   width: 16px;
   height: 16px;

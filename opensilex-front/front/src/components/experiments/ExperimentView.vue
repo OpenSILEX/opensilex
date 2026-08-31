@@ -15,91 +15,100 @@
       :returnButton="true"
     >
       <template v-slot>
-        <b-nav-item
+        <router-link
+            class="tab"
           :active="isDetailsTab"
           :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.description') }}
-        </b-nav-item>
-        <b-nav-item
+          >{{ $t('component.common.description') }}
+        </router-link>
+        <router-link
+            class="tab"
           :active="isFactorsTab"
           :to="{ path: '/experiment/factors/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.factors') }}
+          >{{ $t('component.menu.experimentalDesign.factors') }}
           <span
             v-if="!factorsCountIsLoading && factors > 0"
             class="tabWithElements"
           >
             {{ opensilex.$numberFormatter.formateResponse(factors) }}
           </span>
-        </b-nav-item>
-        <b-nav-item
+        </router-link>
+        <router-link
+            class="tab"
           :active="isScientificObjectsTab"
           :to="{ path: '/experiment/scientific-objects/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.scientific-objects') }}
+          >{{ $t('component.menu.scientificObjectTypes') }}
           <span
             v-if="!scientificObjectsCountIsLoading && scientificObjects > 0"
             class="tabWithElements"
           >
             {{ opensilex.$numberFormatter.formateResponse(scientificObjects) }}
           </span>
-        </b-nav-item>
-        <b-nav-item
+        </router-link>
+        <router-link
+            class="tab"
           :active="isDataTab"
           :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.data') }}
+          >{{ $t('component.menu.data.label') }}
           <span
             v-if="!dataCountIsLoading && dataCount > 0"
             class="tabWithElements"
           >
             {{ opensilex.$numberFormatter.formateResponse(dataCount) }}
           </span>
-        </b-nav-item>
+        </router-link>
 
-        <b-nav-item
+        <router-link
+            class="tab"
           :active="isDatafilesTab"
           :to="{ path: '/experiment/datafiles/' + encodeURIComponent(uri) }"
-          >{{ $t('ScientificObjectDataFiles.datafiles') }}
+          >{{ $t('component.menu.data.datafiles') }}
           <span
             v-if="!datafilesCountIsLoading && datafiles > 0"
             class="tabWithElements"
           >
             {{ opensilex.$numberFormatter.formateResponse(datafiles) }}
           </span>
-        </b-nav-item>
+        </router-link>
 
-        <b-nav-item
+        <router-link
+            class="tab"
           :active="isDataVisualisation"
           :to="{ path: '/experiment/data-visualisation/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.data-visualisation') }}
-        </b-nav-item>
-        <b-nav-item
+          >{{ $t('component.menu.data.visualization') }}
+        </router-link>
+        <router-link
+            class="tab"
           :active="isMap"
           :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.map') }}
-        </b-nav-item>
+          >{{ $t('component.menu.spatial.map') }}
+        </router-link>
 
-        <b-nav-item
+        <router-link
+            class="tab"
           :active="isAnnotationTab"
           :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
-          >{{ $t('Annotation.list-title') }}
+          >{{ $t('component.annotation.list-title') }}
           <span
             v-if="!annotationsCountIsLoading && annotations > 0"
             class="tabWithElements"
           >
             {{ opensilex.$numberFormatter.formateResponse(annotations) }}
           </span>
-        </b-nav-item>
+        </router-link>
 
-        <b-nav-item
+        <router-link
+            class="tab"
           :active="isDocumentTab"
           :to="{ path: '/experiment/document/' + encodeURIComponent(uri) }"
-          >{{ $t('ExperimentView.document') }}
+          >{{ $t('component.project.documents') }}
           <span
             v-if="!documentsCountIsLoading && documents > 0"
             class="tabWithElements"
           >
             {{ opensilex.$numberFormatter.formateResponse(documents) }}
           </span>
-        </b-nav-item>
+        </router-link>
       </template>
     </PageActions>
 

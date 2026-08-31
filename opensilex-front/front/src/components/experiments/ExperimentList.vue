@@ -283,7 +283,7 @@ export function refresh() {
           </b-button-group>
         </template>
       </TableAsyncView>
-      <ModalForm
+      <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentForm"
         component="DocumentForm"
@@ -292,7 +292,7 @@ export function refresh() {
         :initForm="initForm"
         icon="ik#ik-file-text"
        edit-title="">
-      </ModalForm>
+      </DocumentForm>
     </PageContent>
   </div>
 </template>
@@ -321,7 +321,6 @@ import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import WizardForm from "@/components/common/forms/WizardForm.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');

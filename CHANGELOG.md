@@ -153,6 +153,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (!1540) [Facility] Removed duplicate label field in facility form
 - (!1541) [Site] Updating a site that has an address now works again
+- (!1543) [Scientific Objects] Fixed the scientific object export when several custom types are used in a hierarchy
+- (!1546) [Swagger] Changed the format of `LocationObservationDTO` dates from number to string
+- (!1549) [Facility] Adding custom relations to facilities now works again
 
 ## [1.5.4]
 

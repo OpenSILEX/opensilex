@@ -141,13 +141,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.5]
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+>
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
+>
+> If you are upgrading from 1.5.1 or higher, there's nothing to do.
+
+- (!1540) [Facility] Removed duplicate label field in facility form
+- (!1541) [Site] Updating a site that has an address now works again
+- (!1543) [Scientific Objects] Fixed the scientific object export when several custom types are used in a hierarchy
+- (!1546) [Swagger] Changed the format of `LocationObservationDTO` dates from number to string
+- (!1549) [Facility] Adding custom relations to facilities now works again
+
 ## [1.5.4]
 
 > Warning: upgrading to this new version may require manual operations.
 >
 > If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
 >
-> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1 (just below).
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
 >
 > If you are upgrading from 1.5.1 or higher, there's nothing to do.
 
@@ -161,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 >
 > If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
 >
-> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1 (just below).
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
 >
 > If you are upgrading from 1.5.1 or 1.5.2, there's nothing to do.
 

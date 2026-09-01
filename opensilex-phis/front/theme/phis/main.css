@@ -1,6 +1,11 @@
 /*********************************
 * GLOBAL STYLE
 *********************************/
+.trademark .btn {
+    --couleur-test: orange;
+    color: var(--couleur-test);
+}
+
 .bg-phis-green {
     background-color: #00A38D
 }

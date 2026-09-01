@@ -1,6 +1,5 @@
 package org.opensilex.core.ontology.bll;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.riot.Lang;
@@ -16,11 +15,9 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
@@ -55,7 +52,7 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
         dao = new ScientificObjectDAO(sparql);
     }
 
-    private static ExperimentModel make(URI experimentUri, String name) throws Exception {
+    private static ExperimentModel makeExperiment(URI experimentUri, String name) throws Exception {
         var experiment = new ExperimentModel();
         experiment.setName(name);
         experiment.setObjective(name + " objective");
@@ -107,6 +104,10 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
                         .addWhere(uri, RDF.type, rdfType));
     }
 
+    private static URI testUri(String suffix) {
+        return URI.create("http://example.org/opensilex/test/" + suffix);
+    }
+
     /**
      * The SPARQLRelationFetcher should not throw when fetching mixed mono- and multivalued properties. This test
      * follows this setup:
@@ -130,13 +131,13 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
     public void testMixedMultiMonoValuedProperty() throws Exception {
         sparql.loadOntology(ONTOLOGY_URI, OpenSilex.getResourceAsStream(ONTOLOGY_PATH.toString()), Lang.RDFXML);
 
-        var experimentUri = URI.create("http://example.org/opensilex/test/experiment/1");
+        var experimentUri = testUri("experiment/1");
         var experimentNode = nodeURI(experimentUri);
-        var device1Uri = URI.create("http://example.org/opensilex/test/device/1");
-        var device2Uri = URI.create("http://example.org/opensilex/test/device/2");
-        var object1Uri = URI.create("http://example.org/opensilex/test/object/1");
-        var object2Uri = URI.create("http://example.org/opensilex/test/object/2");
-        sparql.create(make(experimentUri, "experiment"));
+        var device1Uri = testUri("device/1");
+        var device2Uri = testUri("device/2");
+        var object1Uri = testUri("object/1");
+        var object2Uri = testUri("object/2");
+        sparql.create(makeExperiment(experimentUri, "experiment"));
         sparql.create(makeDevice(device1Uri, "device1"));
         sparql.create(makeDevice(device2Uri, "device2"));
         sparql.create(experimentNode, makeScientificObject(object1Uri, "object1", TYPE_1_URI, Map.of(PROP_1_URI, List.of(device1Uri, device2Uri))));

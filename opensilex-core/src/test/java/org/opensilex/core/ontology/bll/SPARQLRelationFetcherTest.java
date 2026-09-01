@@ -53,8 +53,6 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
         sparql = newSparqlService();
         mongodb = getMongoDBService();
         dao = new ScientificObjectDAO(sparql);
-
-        sparql.loadOntology(ONTOLOGY_URI, OpenSilex.getResourceAsStream(ONTOLOGY_PATH.toString()), Lang.RDFXML);
     }
 
     private static ExperimentModel make(URI experimentUri, String name) throws Exception {
@@ -109,8 +107,29 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
                         .addWhere(uri, RDF.type, rdfType));
     }
 
+    /**
+     * The SPARQLRelationFetcher should not throw when fetching mixed mono- and multivalued properties. This test
+     * follows this setup:
+     *
+     * <ul>
+     *     <li>Create an object property on Scientific Objects (prop1)</li>
+     *     <li>Create two Scientific Object types (type1 and type2)</li>
+     *     <li>Add a <strong>multivalued</strong> restriction in type1 on prop1</li>
+     *     <li>Add a <strong>monovalued</strong> restriction in type2 on prop1</li>
+     *     <li>Create an experiment</li>
+     *     <li>Create two Scientific Objects of types type1 and type2 in the experiment</li>
+     *     <li>Set values for the relation prop1 in both Scientific Objects</li>
+     * </ul>
+     *
+     * This specific combination previously failed with a NullPointerException when trying to populate the models with
+     * the fetched relations. That was because the type <code>type2</code> is not associated with any multivalued
+     * restriction, but the code to associate the multivalued relations is still executed because <code>type1</code> has
+     * a multivalued restriction on <code>prop1</code>.
+     */
     @Test
     public void testMixedMultiMonoValuedProperty() throws Exception {
+        sparql.loadOntology(ONTOLOGY_URI, OpenSilex.getResourceAsStream(ONTOLOGY_PATH.toString()), Lang.RDFXML);
+
         var experimentUri = URI.create("http://example.org/opensilex/test/experiment/1");
         var experimentNode = nodeURI(experimentUri);
         var device1Uri = URI.create("http://example.org/opensilex/test/device/1");

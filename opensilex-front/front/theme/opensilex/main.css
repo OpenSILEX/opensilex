@@ -8,11 +8,6 @@
     initial-value: red;
 }
 
-.trademark .btn {
-    text-decoration: underline;
-    color: var(--couleur-test);
-}
-
 .bg-phis-green {
     background-color: #00A38D
 }

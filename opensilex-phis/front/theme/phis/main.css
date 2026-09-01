@@ -5,10 +5,6 @@
     --couleur-test: purple;
 }
 
-.trademark .btn {
-    color: var(--couleur-test);
-}
-
 .bg-phis-green {
     background-color: #00A38D
 }

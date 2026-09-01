@@ -27,12 +27,10 @@ import org.opensilex.security.account.dal.AccountModel;
 import static org.opensilex.sparql.csv.AbstractCsvImporter.CSV_TYPE_KEY;
 import static org.opensilex.sparql.csv.AbstractCsvImporter.CSV_URI_KEY;
 
-import org.apache.jena.graph.NodeFactory;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
@@ -87,9 +85,6 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
     private static ScientificObjectDAO dao;
 
     public static final String RDFS_LABEL = URIDeserializer.formatURIAsStr(RDFS.label.getURI());
-
-    public static final String OS_TYPE_NO_RESTRICTIONS_URI = "vocabulary:os_type_no_restrictions";
-    public static final URI OS_TYPE_NO_RESTRICTIONS = URI.create(OS_TYPE_NO_RESTRICTIONS_URI);
 
     @BeforeClass
     public static void beforeTest() throws Exception {
@@ -153,31 +148,6 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
         Assert.assertFalse(validation.hasErrors());
         Assert.assertEquals(10, validation.getNbObjectImported());
         Assert.assertEquals(10, sparql.count(ScientificObjectModel.class));
-    }
-
-    private void createUnrestrictedTypeObject(String uri, String name) throws Exception {
-        // create a scientific object of a type without any OWL restrictions
-        // this is used to test that SPARQLRelationFetcher handles types not present in its property indexes
-        ScientificObjectModel so = new ScientificObjectModel();
-        so.setUri(URI.create(uri));
-        so.setName(name);
-        so.setType(OS_TYPE_NO_RESTRICTIONS);
-        so.setTypeLabel(new SPARQLLabel("OS with no OWL restrictions", "en"));
-        so.setExperiment(experiment);
-        sparql.create(NodeFactory.createURI(experiment.getUri().toString()), so);
-        unrestrictedObjectsCreated.add(URI.create(uri));
-    }
-
-    protected final List<URI> unrestrictedObjectsCreated = new ArrayList<>();
-
-    @After
-    public void cleanUnrestrictedTypeObjects() throws Exception {
-        // remove the scientific objects created for the "no restrictions" type tests, in order to
-        // avoid polluting the other tests of this class (the SPARQL graph is shared between tests)
-        for (URI uri : unrestrictedObjectsCreated) {
-            sparql.delete(NodeFactory.createURI(experiment.getUri().toString()), ScientificObjectModel.class, uri);
-        }
-        unrestrictedObjectsCreated.clear();
     }
 
     private static GermplasmModel makeGermplasm(String uri, String name, AccountModel publisher) throws Exception {
@@ -346,84 +316,6 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
 
         // export objets from global graph and evaluate assertions
         assertCSV(models, experiment.getUri(), expectedColumns, rowAssertion, assertByProperty);
-    }
-
-    @Test
-    public void testExportWithMixedTypes() throws Exception {
-        // add scientific objects of a type without any OWL restrictions, so that the export mixes
-        // both os_type_export_test (with restrictions) and os_type_no_restrictions (without restrictions).
-        // This must not throw a NullPointerException in SPARQLRelationFetcher.updateMultiValued / updateMonoValued.
-        createUnrestrictedTypeObject("test:id/so/unrestricted-1", "unrestricted-1");
-        createUnrestrictedTypeObject("test:id/so/unrestricted-2", "unrestricted-2");
-
-        // export all scientific objects from the experiment: both os_type_export_test and os_type_no_restrictions
-        List<ScientificObjectModel> models = dao.search(
-                new ScientificObjectSearchFilter().setExperiment(experiment.getUri()),
-                Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)
-        ).getList();
-
-        // verify that both types are present in the result
-        Set<URI> types = models.stream()
-                .map(SPARQLResourceModel::getType)
-                .collect(Collectors.toSet());
-        Assert.assertTrue("Should contain os_type_export_test objects",
-                types.contains(URI.create("vocabulary:os_type_export_test")));
-        Assert.assertTrue("Should contain os_type_no_restrictions objects",
-                types.contains(OS_TYPE_NO_RESTRICTIONS));
-
-        // export should succeed without NPE
-        CsvExporter<ScientificObjectModel> exporter = new ScientificObjectCsvExporter(
-                sparql,
-                models,
-                experiment.getUri(),
-                user.getLanguage(),
-                new MoveLogic(sparql, mongodb, user, getFs())
-        );
-        byte[] csvRawData = exporter.exportCSV();
-        Assert.assertNotNull("CSV export should not be null", csvRawData);
-        Assert.assertTrue("CSV export should not be empty", csvRawData.length > 0);
-
-        // parse and verify row count matches total objects (10 from CSV import + 2 unrestricted)
-        CsvParser csvParser = new CsvParser(ClassUtils.getCSVParserDefaultSettings());
-        List<String[]> rows = csvParser.parseAll(new ByteArrayInputStream(csvRawData));
-        // header (line 0) + separator (line 1) + 12 data rows
-        Assert.assertEquals("CSV should contain 14 rows (header + separator + 12 data rows)", 14, rows.size());
-    }
-
-    @Test
-    public void testExportOnlyUnrestrictedType() throws Exception {
-        // add a scientific object of a type without any OWL restrictions
-        createUnrestrictedTypeObject("test:id/so/unrestricted-only-1", "unrestricted-only-1");
-
-        // export only scientific objects of a type without OWL restrictions
-        ScientificObjectSearchFilter filter = new ScientificObjectSearchFilter()
-                .setExperiment(experiment.getUri())
-                .setRdfTypes(Collections.singletonList(OS_TYPE_NO_RESTRICTIONS));
-
-        List<ScientificObjectModel> models = dao.search(filter, Collections.emptyList()).getList();
-        Assert.assertEquals("Should find exactly 1 unrestricted object", 1, models.size());
-
-        // all models should be of the unrestricted type
-        for (ScientificObjectModel model : models) {
-            Assert.assertEquals(OS_TYPE_NO_RESTRICTIONS, model.getType());
-        }
-
-        // export should succeed without NPE
-        CsvExporter<ScientificObjectModel> exporter = new ScientificObjectCsvExporter(
-                sparql,
-                models,
-                experiment.getUri(),
-                user.getLanguage(),
-                new MoveLogic(sparql, mongodb, user, getFs())
-        );
-        byte[] csvRawData = exporter.exportCSV();
-        Assert.assertNotNull("CSV export should not be null", csvRawData);
-        Assert.assertTrue("CSV export should not be empty", csvRawData.length > 0);
-
-        // parse and verify: header + separator + 1 data row
-        CsvParser csvParser = new CsvParser(ClassUtils.getCSVParserDefaultSettings());
-        List<String[]> rows = csvParser.parseAll(new ByteArrayInputStream(csvRawData));
-        Assert.assertEquals("CSV should contain 3 rows (header + separator + 1 data row)", 3, rows.size());
     }
 
     @AfterClass

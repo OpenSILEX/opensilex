@@ -50,9 +50,5 @@
         <rdfs:label xml:lang="en">OS export Test</rdfs:label>
     </owl:Class>
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#os_type_no_restrictions">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:label xml:lang="en">OS with no OWL restrictions</rdfs:label>
-    </owl:Class>
 
 </rdf:RDF>

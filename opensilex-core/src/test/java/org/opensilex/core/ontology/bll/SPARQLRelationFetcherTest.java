@@ -1,7 +1,11 @@
 package org.opensilex.core.ontology.bll;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
@@ -9,12 +13,14 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
@@ -23,11 +29,13 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 import static org.opensilex.sparql.deserializer.SPARQLDeserializers.nodeURI;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
     private static SPARQLService sparql;
@@ -81,8 +89,24 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
         so.setType(type);
         so.setRelations(objectRelations.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream().map(value -> makeObjectRelation(entry.getKey(), value)))
-                .toList());
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll));
         return so;
+    }
+
+    private static SelectBuilder makeObjectSelect(URI experiment) {
+        var rdfType = makeVar("rdfType");
+        var uri = makeVar("uri");
+        var name = makeVar("name");
+        var experimentNode = nodeURI(experiment);
+
+        return new SelectBuilder()
+                .addVar(rdfType)
+                .addVar(uri)
+                .addVar(name)
+                .addWhere(rdfType, Ontology.subClassAny, Oeso.ScientificObject)
+                .addGraph(experimentNode, new WhereBuilder()
+                        .addWhere(uri, RDFS.label, name)
+                        .addWhere(uri, RDF.type, rdfType));
     }
 
     @Test
@@ -99,13 +123,17 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
         sparql.create(experimentNode, makeScientificObject(object1Uri, "object1", TYPE_1_URI, Map.of(PROP_1_URI, List.of(device1Uri, device2Uri))));
         sparql.create(experimentNode, makeScientificObject(object2Uri, "object2", TYPE_2_URI, Map.of(PROP_1_URI, List.of(device1Uri))));
 
-        // Previously threw an exception because of SPARQLRelationFetcher
-        var models = dao.search(
-                new ScientificObjectSearchFilter()
-                        .setExperiment(experimentUri),
-                List.of(ScientificObjectModel.FACTOR_LEVEL_FIELD)
-        ).getList();
-
-        assertTrue(CollectionUtils.isNotEmpty(models));
+        var initialModels = List.of(
+                makeScientificObject(object1Uri, "object1", TYPE_1_URI, Map.of()),
+                makeScientificObject(object2Uri, "object2", TYPE_2_URI, Map.of())
+        );
+        var select = makeObjectSelect(experimentUri);
+        var relationFetcher = new SPARQLRelationFetcher<>(
+                sparql,
+                ScientificObjectModel.class,
+                experimentNode,
+                select,
+                initialModels);
+        relationFetcher.updateModels();
     }
 }

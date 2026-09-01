@@ -13,9 +13,7 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLService;
@@ -30,14 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
 import static org.opensilex.sparql.deserializer.SPARQLDeserializers.nodeURI;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
     private static SPARQLService sparql;
-    private static MongoDBService mongodb;
-    private static ScientificObjectDAO dao;
 
     private static final Path ONTOLOGY_PATH = Paths.get("ontologies", "sparqlRelationFetcherTest.owl");
     private static final URI ONTOLOGY_URI = URI.create("http://example.org/opensilex/test/ontology/sparql-relation-fetcher#");
@@ -48,8 +43,6 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
     @BeforeClass
     public static void beforeTest() throws URISyntaxException, SPARQLException {
         sparql = newSparqlService();
-        mongodb = getMongoDBService();
-        dao = new ScientificObjectDAO(sparql);
     }
 
     private static ExperimentModel makeExperiment(URI experimentUri, String name) throws Exception {

@@ -4,7 +4,7 @@
 
 @property --couleur-test {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: red;
 }
 

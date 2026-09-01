@@ -1,8 +1,11 @@
 /*********************************
 * GLOBAL STYLE
 *********************************/
+:root {
+    --couleur-test: purple;
+}
+
 .trademark .btn {
-    --couleur-test: orange;
     color: var(--couleur-test);
 }
 

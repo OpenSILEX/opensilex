@@ -76,7 +76,6 @@
             :helpMessage="t('OrganizationList.filter.child-organizations-help')"
             :placeholder="t('OrganizationList.child-placeholder')"
             class="searchFilter"
-            disableBranchNodes
           />
 
           <!-- Facility -->

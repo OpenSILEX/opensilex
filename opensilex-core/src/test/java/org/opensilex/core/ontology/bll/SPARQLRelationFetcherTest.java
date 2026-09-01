@@ -27,7 +27,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.opensilex.sparql.deserializer.SPARQLDeserializers.getExpandedURI;
 import static org.opensilex.sparql.deserializer.SPARQLDeserializers.nodeURI;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -136,10 +142,9 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
         sparql.create(experimentNode, makeScientificObject(object1Uri, "object1", TYPE_1_URI, Map.of(PROP_1_URI, List.of(device1Uri, device2Uri))));
         sparql.create(experimentNode, makeScientificObject(object2Uri, "object2", TYPE_2_URI, Map.of(PROP_1_URI, List.of(device1Uri))));
 
-        var initialModels = List.of(
-                makeScientificObject(object1Uri, "object1", TYPE_1_URI, Map.of()),
-                makeScientificObject(object2Uri, "object2", TYPE_2_URI, Map.of())
-        );
+        var object1 = makeScientificObject(object1Uri, "object1", TYPE_1_URI, Map.of());
+        var object2 = makeScientificObject(object2Uri, "object2", TYPE_2_URI, Map.of());
+        var initialModels = List.of(object1, object2);
         var select = makeObjectSelect(experimentUri);
         var relationFetcher = new SPARQLRelationFetcher<>(
                 sparql,
@@ -148,5 +153,19 @@ public class SPARQLRelationFetcherTest extends AbstractMongoIntegrationTest {
                 select,
                 initialModels);
         relationFetcher.updateModels();
+
+        var rels1 = object1.getRelations();
+        var relProperties1 = rels1.stream().map(rel -> getExpandedURI(rel.getProperty().getURI())).collect(toSet());
+        var relValues1 = rels1.stream().map(rel -> getExpandedURI(rel.getValue())).collect(toSet());
+        var rels2 = object2.getRelations();
+        var relProperties2 = rels2.stream().map(rel -> getExpandedURI(rel.getProperty().getURI())).collect(toSet());
+        var relValues2 = rels2.stream().map(rel -> getExpandedURI(rel.getValue())).collect(toSet());
+
+        assertEquals(2, rels1.size());
+        assertTrue(isEqualCollection(Set.of(PROP_1_URI.toString()), relProperties1));
+        assertTrue(isEqualCollection(Set.of(device1Uri.toString(), device2Uri.toString()), relValues1));
+        assertEquals(1, rels2.size());
+        assertTrue(isEqualCollection(Set.of(PROP_1_URI.toString()), relProperties2));
+        assertTrue(isEqualCollection(Set.of(device1Uri.toString()), relValues2));
     }
 }

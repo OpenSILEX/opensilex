@@ -18,7 +18,6 @@
     @select="select"
     @deselect="deselect"
     @loadMoreItems="loadMoreItems"
-    :disableBranchNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
     :viewHandler="viewHandler"

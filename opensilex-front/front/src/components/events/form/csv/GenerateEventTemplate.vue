@@ -23,7 +23,6 @@
               :ignoreRoot="false"
               :unselectableTypes="unselectableTypes"
               :tree="true"
-              checkStrategy="all"
               :selectBranchNodes="true"
               :placeholder="t('GenerateEventTemplate.type-placeholder')"
               @update:type="types = $event"

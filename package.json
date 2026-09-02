@@ -44,14 +44,15 @@
     },
     "devDependencies": {
         "@types/node": "22.15.1",
-        "@vitejs/plugin-vue": "^5.2.4",
+        "@vitejs/plugin-vue": "^6.0.8",
         "@vue/compiler-sfc": "^3.5.21",
+        "esbuild": "^0.28.0",
         "eslint": "^9.27.0",
         "eslint-plugin-vue": "^9.32.0",
         "sass": "1.89.0",
         "sass-loader": "16.0.5",
         "typescript": "^5.8.3",
-        "vite": "^6.3.5",
+        "vite": "^8.2.2",
         "vite-plugin-vue-devtools": "^8.0.2"
     },
     "eslintConfig": {

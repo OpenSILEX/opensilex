@@ -551,10 +551,8 @@ function createExternalSource(submittedForm: DataFileFormModel) {
 //#endregion
 
 //#endregion
-defineExpose({
-  showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm
-})
+defineExpose(modalFormLogic.exposed)
+
 </script>
 
 <i18n>

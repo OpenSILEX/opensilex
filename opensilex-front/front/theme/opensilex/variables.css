@@ -1,0 +1,170 @@
+@property --color-empty {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+}
+@property --color-dark {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #212121;
+}
+@property --color-default {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #d6d6d6;
+}
+@property --color-primary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #007bff;
+}
+@property --color-success {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #2dce89;
+}
+@property --color-info {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #11cdef;
+}
+@property --color-warning {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #fb6340;
+}
+@property --color-danger {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #f5365c;
+}
+@property --color-muted {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #6c757d;
+}
+@property --color-inverse {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #4c5667;
+}
+@property --color-purple {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #BF55EC;
+}
+@property --color-pink {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #f76397;
+}
+@property --color-white {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #ffffff;
+}
+@property --color-grey {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #9aa0ac;
+}
+@property --color-aqua {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #3ec5d6;
+}
+@property --color-blue {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #19B5FE;
+}
+@property --color-light-blue {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #89CFF0;
+}
+@property --color-teal {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #008081;
+}
+@property --color-yellow {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #F7CA18;
+}
+@property --color-orange {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #FF8000;
+}
+@property --color-green {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #26C281;
+}
+@property --color-lime {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #cad900;
+}
+@property --color-red {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #F22613;
+}
+@property --color-fuchsia {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #df2de3;
+}
+@property --color-navy {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #000080;
+}
+@property --color-theme {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #ef4153;
+}
+@property --color-facebook {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #3b579d;
+}
+@property --color-twitter {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #1da1f2;
+}
+@property --color-dribbble {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #ea4c89;
+}
+@property --color-linkedin {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #0177b4;
+}
+@property --color-google {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #dc4a38;
+}
+@property --color-instagram {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #fb3958;
+}
+@property --color-behance {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #053eff;
+}
+@property --font-family {
+    syntax: '<string>';
+    inherits: true;
+    initial-value: 'Nunito Sans', sans-serif;
+}

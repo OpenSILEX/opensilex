@@ -12,76 +12,76 @@
 	}
 }
 .badge-primary, .badge-success, .badge-info, .badge-warning, .badge-danger, .badge-inverse, .badge-purple, .badge-pink, .badge-twitter, .badge-facebook, .badge-linkedin, .badge-google, .badge-dribbble, .badge-instagram {
-    color: $white;
+    color: var(--color-white);
 }
 .badge-theme {
-    background-color: $theme;
+    background-color: var(--color-theme);
 }
 .badge-aqua {
-    background-color: $aqua;
+    background-color: var(--color-aqua);
 }
 .badge-blue {
-    background-color: $blue;
+    background-color: var(--color-blue);
 }
 .badge-light-blue {
-    background-color: $light-blue;
+    background-color: var(--color-light-blue);
 }
 .badge-teal {
-    background-color: $teal;
+    background-color: var(--color-teal);
 }
 .badge-yellow {
-    background-color: $yellow;
+    background-color: var(--color-yellow);
 }
 .badge-orange {
-    background-color: $orange;
+    background-color: var(--color-orange);
 }
 .badge-green {
-    background-color: $green;
+    background-color: var(--color-green);
 }
 .badge-lime {
-    background-color: $lime;
+    background-color: var(--color-lime);
 }
 .badge-red {
-    background-color: $red;
+    background-color: var(--color-red);
 }
 .badge-fuchsia {
-    background-color: $fuchsia;
+    background-color: var(--color-fuchsia);
 }
 .badge-navy {
-    background-color: $navy;
+    background-color: var(--color-navy);
 }
 .badge-empty {
-    background: $empty;
+    background: var(--color-empty);
 }
 .badge-primary {
-    background-color: $primary;
+    background-color: var(--color-primary);
 }
 .badge-success {
-    background-color: $success;
+    background-color: var(--color-success);
 }
 .badge-info {
-    background-color: $info;
+    background-color: var(--color-info);
 }
 .badge-warning {
-    background-color: $warning;
+    background-color: var(--color-warning);
 }
 .badge-danger {
-    background-color: $danger;
+    background-color: var(--color-danger);
 }
 .badge-muted {
-    background-color: $muted;
+    background-color: var(--color-muted);
 }
 .badge-inverse {
-    background-color: $inverse;
+    background-color: var(--color-inverse);
 }
 .badge-purple {
-    background-color: $purple;
+    background-color: var(--color-purple);
 }
 .badge-pink {
-    background-color: $pink;
+    background-color: var(--color-pink);
 }
 .badge-white {
-    background-color: $white;
+    background-color: var(--color-white);
 }
 .btn {
 	.badge {

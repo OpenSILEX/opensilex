@@ -1,15 +1,10 @@
 
-.trademark .btn {
-	color: var(--couleur-test);
-}
-
-$ff: 'Nunito Sans', sans-serif;
 body {
     color: #212121;
     font-size: .8rem;
     line-height: 1.5;
     font-weight: 400;
-    font-family: $ff;
+    font-family: var(--font-family);
 }
 p {
 	font-size: 14px;
@@ -20,7 +15,7 @@ p {
     }
 }
 .tooltip {
-    font-family: $ff;
+    font-family: var(--font-family);
     font-size: 12px;
     font-weight: 700;
 }
@@ -81,13 +76,13 @@ p {
 .dropdown-menu {
     padding: 5px;
     font-size: 12px;
-    background-color: $white;
-    border-color: $empty;
+    background-color: var(--color-white);
+    border-color: var(--color-empty);
     margin: 0;
     @include border-radius(6px);
     @include box-shadow(0 2px 30px rgba(0,0,0,.08));
 	.dropdown-item {
-	    background-color: $white;
+	    background-color: var(--color-white);
 	    padding: 8px 15px;
 	    line-height: 14px;
 	    @include border-radius(4px);
@@ -97,11 +92,11 @@ p {
 		    font-size: 16px;
 		    margin-right: 5px;
 		    vertical-align: -2px;
-		    color: $grey;
+		    color: var(--color-grey);
 		}
 		&:hover, &:focus {
 			background-color: #dee2e6 !important;
-			color: $dark;
+			color: var(--color-dark);
 		}
 		.badge {
 		    width: 15px;
@@ -122,7 +117,7 @@ p {
 	    position: absolute;
 	    pointer-events: none;
 	    border-color: rgba(136, 183, 213, 0);
-	    border-bottom-color: $white;
+	    border-bottom-color: var(--color-white);
 	    border-width: 5px;
     }
     &.dropdown-menu-right::after {
@@ -132,7 +127,7 @@ p {
 }
 .wrapper {
 	.header-top {
-		background-color: $white;
+		background-color: var(--color-white);
 		z-index: 1030;
 	    position: relative;
 	    padding: 15px 0;
@@ -226,7 +221,7 @@ p {
 			    padding: 0;
 			    text-align: center;
 			    line-height: 36px;
-			    color: $dark;
+			    color: var(--color-dark);
 			    border: none;
 			    position: relative;
 			    @include border-radius(50%);
@@ -251,7 +246,7 @@ p {
 				}
 			}
 			.avatar {
-			    color: $inverse;
+			    color: var(--color-inverse);
 			    font-weight: 600;
 			    width: 30px;
 			    height: 30px;
@@ -336,36 +331,36 @@ p {
 		    padding-left: 0;
 		}
 		&[header-theme="light"] {
-		    background: $white;
+		    background: var(--color-white);
 		}
 		&[header-theme="dark"] {
 		    background: #272d36;
 		}
 		&[header-theme="blue"] {
-		    background: $primary;
+		    background: var(--color-primary);
 		}
 		&[header-theme="red"] {
-		    background: $danger;
+		    background: var(--color-danger);
 		}
 		&[header-theme="orange"] {
-		    background: $warning;
+		    background: var(--color-warning);
 		}
 		&[header-theme="green"] {
-		    background: $success;
+		    background: var(--color-success);
 		}
 		&[header-theme="purple"] {
-		    background: $purple;
+		    background: var(--color-purple);
 		}
 		&[header-theme="blue"], &[header-theme="red"], &[header-theme="orange"], &[header-theme="green"], &[header-theme="purple"], &[header-theme="dark"] {
 			.top-menu {
 		    	.nav-link {
-		    		color: $white;
-		    		background-color: $empty;
+		    		color: var(--color-white);
+		    		background-color: var(--color-empty);
 		    	}
 		    	.header-search {
 					.input-group {
 						.input-group-addon {
-						    color: $white;
+						    color: var(--color-white);
 						}
 					}
 				}
@@ -400,7 +395,7 @@ p {
 		    top: 0;
 		    width: 240px;
 		    height: 100vh;
-		    background-color: $white;
+		    background-color: var(--color-white);
 		    z-index: 1040;
 		    @include box-shadow(0 3px 30px rgba(0,0,0,.1), 0 3px 20px rgba(0,0,0,.1));
 		    @include transition(width 0.3s cubic-bezier(0, 0, 0.2, 1));
@@ -416,8 +411,8 @@ p {
 			    
 				.nav-toggle {
 					border: none;
-					background-color: $empty;
-					color: $white;
+					background-color: var(--color-empty);
+					color: var(--color-white);
 					font-size: 20px;
 					@include box-shadow(none);
 				}
@@ -427,8 +422,8 @@ p {
 				.nav-close {
 				    display: none;
 				    border: none;
-					background-color: $empty;
-					color: $white;
+					background-color: var(--color-empty);
+					color: var(--color-white);
 					font-size: 20px;
 					@include box-shadow(none);
 				    @include mq('tablet-wide', 'max') {
@@ -600,7 +595,7 @@ p {
 		    	.sidebar-header {
 				    background-color: #272d36;
 				    .header-brand {
-					    color: $white;
+					    color: var(--color-white);
 					}
 				}
 				.sidebar-content {
@@ -610,7 +605,7 @@ p {
 							.nav-item {
 							    border-color: rgba(243, 243, 243, 0.15);
 							    a {
-								    color: $white;
+								    color: var(--color-white);
 								    i {
 									    color: #bcc8d8;
 									}
@@ -778,7 +773,7 @@ p {
 							}
 							&.quick-view-opened {
 							    height: auto;
-							    background-color: $white;
+							    background-color: var(--color-white);
 							    border: none;
 							    z-index: 5;
 							    @include box-shadow(0 0 0 0 rgba(0, 0, 0, 0.01), 0 0 32px 0 rgba(0, 0, 0, 0.1));
@@ -807,7 +802,7 @@ p {
 		    }
 		}
 		.footer {
-		    background: $white;
+		    background: var(--color-white);
 		    padding: 20px 30px;
 		    border-top: 1px solid rgba(0, 0, 0, 0.04);
 		    font-size: calc(0.875rem - 0.05rem);
@@ -1233,21 +1228,21 @@ hr {
 .todo-task {
 	.dd-handle {
 	    @include pseudo-element('after') {
-	    	background-color: $danger;
+	    	background-color: var(--color-danger);
 	    }
 	}
 }
 .progress-task {
 	.dd-handle {
 	    @include pseudo-element('after') {
-	    	background-color: $yellow;
+	    	background-color: var(--color-yellow);
 	    }
 	}
 }
 .completed-task {
 	.dd-handle {
 	    @include pseudo-element('after') {
-	    	background-color: $green;
+	    	background-color: var(--color-green);
 	    }
 	}
 }

@@ -157,7 +157,7 @@ textarea.form-control {
 	    position: absolute;
 	}
 	.file-upload-info {
-	    background: $empty;
+	    background: var(--color-empty);
 	}
 }
 .select2 { 
@@ -208,7 +208,7 @@ textarea.form-control {
 }
 .select2-container--default {
 	.select2-dropdown {
-	    background-color: $white;
+	    background-color: var(--color-white);
 	    border: none;
 	    @include border-radius(6px);
 	    @include box-shadow(0 2px 30px rgba(0,0,0,.08));
@@ -239,10 +239,10 @@ textarea.form-control {
 .bootstrap-datetimepicker-widget {
 	.table {
 		thead {
-			background-color: $empty;
+			background-color: var(--color-empty);
 			tr {
 				th {
-					color: $dark;
+					color: var(--color-dark);
 					@include border-radius(6px);
 				}
 			}
@@ -260,7 +260,7 @@ textarea.form-control {
 			}
 			td {
 				&.today, &.active {
-					color: $white;
+					color: var(--color-white);
 				    position: relative;
 				    z-index: 1;
 				    background-color: transparent;
@@ -291,7 +291,7 @@ textarea.form-control {
 				}
 				&.today {
 					@include pseudo-element('before') {
-					    background-color: $theme;
+					    background-color: var(--color-theme);
 					}
 				}
 				&.day, &.hour, &.minute, &.second {
@@ -396,14 +396,14 @@ textarea.form-control {
 	    display: inline-block;
 	    text-transform: capitalize;
 	    @include border-radius(4px);
-	    background-color: $inverse;
+	    background-color: var(--color-inverse);
 	}
 }
 .note-editor.note-frame.card {
     @include box-shadow(none);
 }
 $form-border-state: primary, warning, default, danger, success, inverse, info;
-$form-border-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$form-border-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $form-border-state {
     $i: index($form-border-state, $var);
 
@@ -422,7 +422,7 @@ $form-border-color: $primary, $warning, $default, $danger, $success, $inverse, $
             .input-group-text {
                 background-color: nth($form-border-color, $i);
                 border-color: nth($form-border-color, $i);
-                color: $white;
+                color: var(--color-white);
             }
         }
 
@@ -432,7 +432,7 @@ $form-border-color: $primary, $warning, $default, $danger, $success, $inverse, $
     }
 }
 $form-txt-state: primary, warning, default, danger, success, inverse, info;
-$form-txt-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$form-txt-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $form-txt-state {
     $i: index($form-txt-state, $var);
 
@@ -458,7 +458,7 @@ $form-txt-color: $primary, $warning, $default, $danger, $success, $inverse, $inf
     }
 }
 $form-bg-state: primary, warning, default, danger, success, inverse, info;
-$form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$form-bg-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $form-bg-state {
     $i: index($form-bg-state, $var);
 
@@ -528,8 +528,8 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
 
         &::after {
             transform: scale(0);
-            background-color: $primary;
-            border-color: $primary;
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
         }
 
         &::after,
@@ -545,12 +545,12 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
             transition: -webkit-transform 0.28s ease;
             transition: transform 0.28s ease, -webkit-transform 0.28s ease;
             border-radius: 50%;
-            border: 0.125rem solid $primary;
+            border: 0.125rem solid var(--color-primary);
         }
     }
 
     label:hover .helper {
-        color: $primary;
+        color: var(--color-primary);
     }
 
     input {
@@ -559,7 +559,7 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
         }
 
         &:checked ~ .helper::before {
-            color: $primary;
+            color: var(--color-primary);
             animation: ripple 0.3s linear forwards;
         }
     }
@@ -570,7 +570,7 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
         }
 
         .helper::after {
-            background-color: $primary;
+            background-color: var(--color-primary);
         }
     }
 
@@ -581,7 +581,7 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
 
         .helper::after {
             background-color: #fff;
-            border: 0.225rem solid $primary;
+            border: 0.225rem solid var(--color-primary);
         }
     }
 
@@ -596,7 +596,7 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
         }
 
         input:checked ~ .helper::before {
-            background-color: $primary;
+            background-color: var(--color-primary);
         }
     }
 
@@ -613,7 +613,7 @@ $form-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info
     margin-right: 20px;
 }
 $radio-bg-state: primary, warning, default, danger, success, inverse, info;
-$radio-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$radio-bg-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $radio-bg-state {
     $i: index($radio-bg-state, $var);
 
@@ -682,7 +682,7 @@ $radio-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $inf
             -webkit-animation: check linear 0.5s;
             animation: check linear 0.5s;
             opacity: 1;
-            border-color: $primary;
+            border-color: var(--color-primary);
 
             .border-checkbox-label {
                 &:before {
@@ -720,7 +720,7 @@ $radio-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $inf
             &:before {
                 content: "";
                 display: block;
-                border: 2px solid $primary;
+                border: 2px solid var(--color-primary);
                 width: 20px;
                 height: 20px;
                 position: absolute;
@@ -757,7 +757,7 @@ $radio-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $inf
     }
 }
 $border-checkbox-bg-state: primary, warning, default, danger, success, inverse, info;
-$border-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$border-checkbox-bg-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $border-checkbox-bg-state {
     $i: index($border-checkbox-bg-state, $var);
 
@@ -813,7 +813,7 @@ $border-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $inv
 
     .cr {
         border-radius: 0;
-        border: 2px solid $primary;
+        border: 2px solid var(--color-primary);
         cursor: pointer;
         display: inline-block;
         float: left;
@@ -823,7 +823,7 @@ $border-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $inv
         width: 20px;
 
         .cr-icon {
-            color: $primary;
+            color: var(--color-primary);
             font-size: 1em;
             left: 0;
             line-height: 0;
@@ -885,7 +885,7 @@ $border-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $inv
     }
 }
 $fade-in-checkbox-bg-state: primary, warning, default, danger, success, inverse, info;
-$fade-in-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$fade-in-checkbox-bg-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $fade-in-checkbox-bg-state {
     $i: index($fade-in-checkbox-bg-state, $var);
 
@@ -999,7 +999,7 @@ $fade-in-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $in
     border-color: #2196f3;
 }
 $background-checkbox-bg-state: primary, warning, default, danger, success, inverse, info;
-$background-checkbox-bg-color: $primary, $warning, $default, $danger, $success, $inverse, $info;
+$background-checkbox-bg-color: var(--color-primary), var(--color-warning), var(--color-default), var(--color-danger), var(--color-success), var(--color-inverse), var(--color-info);
 @each $var in $background-checkbox-bg-state {
     $i: index($background-checkbox-bg-state, $var);
 

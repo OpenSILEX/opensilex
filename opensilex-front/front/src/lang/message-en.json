@@ -299,7 +299,8 @@
             "experimentalDesign": {
                 "label": "Scientific Information",
                 "factors": "Factors",
-                "germplasm": "Germplasm"
+                "germplasm": "Germplasm",
+                "factorLevels": "Levels"
             },
             "groupVariables": "Variables Groups",
             "organizations": "Organizations",
@@ -768,11 +769,20 @@
             "factors-categories-placeholder": "Sélectionner une ou plusieurs categories",
             "add-factor": "Add factor",
             "factors-categories": "Factors categories",
+            "name-factor-help": "Usual name witch describes a factor in an experiment",
+            "name-factor-placeholder": "Irrigation, Shading, Planting year, etc.",
             "state-placeholder": "Select an experiment state",
             "project-placeholder": "Select a project",
             "facilities-placeholder": "Select one or more facilities",
             "public-label": "Public experiment",
             "public-title": "Select this option to make experiment data publicly available",
+            "category-help-more": "More informations ",
+            "category-factor-placeholder": "Select a category",
+            "category-factor-help": "Select a category for the factor",
+            "description-factor-help": "Description associated with this factor (Protocole, amount of component)",
+            "description-factor-placeholder":"Protocole n°1289 - Amount of water 5ml/Days",
+            "associated-factor-help": "Levels describe the possible values of a factor",
+            "factor-level-add": "Add row",
             "common": {
                 "status": {
                     "finished": "Finished",

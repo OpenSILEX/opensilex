@@ -3,11 +3,11 @@
     <b-col>
       <h6 class="mb-3">
         <strong
-          >{{ $t("component.factorLevel.associated") }}
+        >{{ $t("component.menu.experimentalDesign.factorLevels") }}
           <span class="required">*</span></strong
         >
       </h6>
-      <p>{{ $t("component.factorLevel.associated-help") }}</p>
+      <p>{{ $t("component.experiment.associated-factor-help") }}</p>
       <p v-if="editMode" class="alert-info">
         {{ $t("component.factorLevel.alert-help") }}
       </p>
@@ -17,29 +17,31 @@
           <b-button-group>
             <b-row class="ml-1">
               <b-button
-                class="mb-2 mr-2"
-                @click="csvExport"
-                variant="outline-primary"
-                >{{
+                  class="mb-2 mr-2"
+                  @click="csvExport"
+                  variant="outline-primary"
+              >{{
                   $t("component.common.import-files.csv-template")
-                }}</b-button
+                }}
+              </b-button
               >
               <CSVInputFile
-                :headersExactMatch="['name', 'description']"
-                v-on:updated="uploaded"
+                  :headersExactMatch="['name', 'description']"
+                  v-on:updated="uploaded"
               ></CSVInputFile>
               <b-button
-                class="mb-2 mr-2"
-                @click="resetTable"
-                variant="outline-secondary"
-                >{{ $t("component.common.tabulator.reset-table") }}</b-button
+                  class="mb-2 mr-2"
+                  @click="resetTable"
+                  variant="outline-secondary"
+              >{{ $t("component.common.tabulator.reset-table") }}
+              </b-button
               >
               <Button
-                class="mb-2 mr-4"
-                @click="addEmptyRow"
-                variant="outline-dark"
-                label="component.factorLevel.add"
-                :small="false"
+                  class="mb-2 mr-4"
+                  @click="addEmptyRow"
+                  variant="outline-dark"
+                  label="component.experiment.factor-level-add"
+                  :small="false"
               ></Button>
             </b-row>
           </b-button-group>
@@ -50,7 +52,7 @@
           <div ref="table" class="tab"></div>
         </b-col>
       </b-row>
-      <!-- <span class="error-message alert alert-info"> Number of factor{{this.internalFactorLevels.length}}</span> -->
+      <!-- <span class="error-message alert alert-info"> Number of factor{{this.factorLevels.length}}</span> -->
     </b-col>
   </b-row>
 </template>
@@ -113,7 +115,7 @@ import Papa from 'papaparse'
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
-const { t } = useI18n()
+const {t} = useI18n()
 const bvModal = ref<any>()
 
 const table = useTemplateRef<HTMLDivElement>('table')
@@ -126,23 +128,21 @@ const props = withDefaults(defineProps<Props>(), {
   editMode: false,
 });
 
-const factorLevels = defineModel('factorLevels')
-
-
-const internalFactorLevels = ref<FactorLevelGetDTO[]>([]);
+const factorLevels = defineModel<FactorLevelGetDTO[]>('factorLevels', {
+  default: []
+})
 
 const tableColumns = computed<ColumnDefinition[]>(() => {
-  let editMode;
   return [
     {
       title: "Generated Uri",
       field: "uri",
       widthGrow: 0.5,
-      visible: editMode.value,
+      visible: props.editMode,
     },
     {
       title:
-          t("component.factorLevel.name") +
+          t("component.experiment.label") +
           ' <span class="required">*</span>',
       field: "name",
       editor: "input",
@@ -150,7 +150,7 @@ const tableColumns = computed<ColumnDefinition[]>(() => {
       widthGrow: 0.5,
     },
     {
-      title: t("component.factorLevel.description").toString(),
+      title: t("component.document.description").toString(),
       field: "description",
       editor: "input",
       widthGrow: 1,
@@ -170,7 +170,7 @@ const tableColumns = computed<ColumnDefinition[]>(() => {
 const tabulator = ref<Tabulator | null>(null);
 
 watch(
-    internalFactorLevels,
+    factorLevels,
     (value: FactorLevelGetDTO[]) => {
       tabulator.value?.replaceData(value);
     }
@@ -195,37 +195,37 @@ onBeforeUnmount(() => {
   langUnwatcher.value?.();
 });
 
-    /**
-     * add factor levels from CSV in the internalFactorLevels field. Add only none empty and unique factor levels
-     * @param factor_levels factor levels to add
-     */
-    function uploaded(factor_levels: any[]) {
-      let validated_factors: any[] = [];
+/**
+ * add factor levels from CSV in the factorLevels field. Add only none empty and unique factor levels
+ * @param factor_levels factor levels to add
+ */
+function uploaded(factor_levels: any[]) {
+  let validated_factors: any[] = [];
 
-      factor_levels.forEach((row) => {
-        if (
-            validated_factors.some(
-                (factor) => factor.name === row.name
-            )
-        ) {
-          opensilex.showInfoToast(
-              "Duplicated factor level : " + row.name
-          );
-
-          return;
-        }
-
-        validated_factors.push(row);
-      });
-
-      validated_factors = remove_blanks_factors(
-          internalFactorLevels.value.concat(validated_factors)
+  factor_levels.forEach((row) => {
+    if (
+        validated_factors.some(
+            (factor) => factor.name === row.name
+        )
+    ) {
+      opensilex.showInfoToast(
+          "Duplicated factor level : " + row.name
       );
 
-      internalFactorLevels.value = validated_factors;
-
-      opensilex.showSuccessToast("Data successfully loaded");
+      return;
     }
+
+    validated_factors.push(row);
+  });
+
+  validated_factors = remove_blanks_factors(
+      factorLevels.value.concat(validated_factors)
+  );
+
+  factorLevels.value = validated_factors;
+
+  opensilex.showSuccessToast("Data successfully loaded");
+}
 
 function remove_blanks_factors(
     factors: Array<FactorLevelGetDTO>
@@ -235,18 +235,46 @@ function remove_blanks_factors(
   );
 }
 
-  const options = ref<any>(
-      {
-        layout: "fitColumns",
-        cellHozAlign: "center",
-        clipboard: true,
-        columns: tableColumns.value,
-        maxHeight: "100%", //do not let table get bigger than the height of its parent element
-        // pagination: "local", //enable local pagination.
-        // paginationSize: 5, // this option can take any positive integer value (default = 10)
-        langs: langs.value,
-      }
-  )
+
+const langs = {
+  fr: {
+    pagination: {
+      first: "Premier",
+      first_title: "Premier Page",
+      last: "Dernier",
+      last_title: "Dernier Page",
+      prev: "Précédent",
+      prev_title: "Précédent Page",
+      next: "Prochain",
+      next_title: "Prochain Page",
+    },
+  },
+  en: {
+    pagination: {
+      first: "First", //text for the first page button
+      first_title: "First Page", //tooltip text for the first page button
+      last: "Last",
+      last_title: "Last Page",
+      prev: "Prev",
+      prev_title: "Prev Page",
+      next: "Next",
+      next_title: "Next Page",
+    },
+  },
+};
+
+const options = ref<any>(
+    {
+      layout: "fitColumns",
+      cellHozAlign: "center",
+      clipboard: true,
+      columns: tableColumns.value,
+      maxHeight: "100%", //do not let table get bigger than the height of its parent element
+      // pagination: "local", //enable local pagination.
+      // paginationSize: 5, // this option can take any positive integer value (default = 10)
+      langs,
+    }
+)
 
 function cellActions(evt: any, clickedCell: any): void {
   console.debug(evt, clickedCell);
@@ -266,7 +294,7 @@ function cellActions(evt: any, clickedCell: any): void {
 
     let factorLevelUri = row.getCell("uri").getValue();
 
-    if (internalFactorLevels.value.length == 1) {
+    if (factorLevels.value.length == 1) {
       opensilex.showWarningToast(
           t("component.factorLevel.errors.minimum-factor-level")
       );
@@ -289,8 +317,8 @@ function cellActions(evt: any, clickedCell: any): void {
                     uriCell
                 );
               } else {
-                internalFactorLevels.value =
-                    internalFactorLevels.value.filter(
+                factorLevels.value =
+                    factorLevels.value.filter(
                         (factorLevel) =>
                             factorLevel.name !== nameCell.getValue()
                     );
@@ -309,7 +337,7 @@ function deleteFactorLevelRow(
 
   deleteFactorLevel(factorLevelUri)
       .then(() => {
-        internalFactorLevels.value = internalFactorLevels.value.filter(
+        factorLevels.value = factorLevels.value.filter(
             (factorLevel) => factorLevel.uri !== uriCell.getValue()
         );
 
@@ -334,9 +362,9 @@ function deleteFactorLevelRow(
 }
 
 function hasEmptyValue(): boolean {
-  if (internalFactorLevels.value.length != 0) {
+  if (factorLevels.value.length != 0) {
     if (
-        internalFactorLevels.value.some(
+        factorLevels.value.some(
             (factorLevel) =>
                 factorLevel.name === null || factorLevel.name === ""
         )
@@ -347,10 +375,10 @@ function hasEmptyValue(): boolean {
   return false;
 }
 
-  function deleteFactorLevel(uri: string) : any {
-    console.debug("delete Factor Level" + uri);
-    return service.value.deleteFactorLevel(uri);
-  }
+function deleteFactorLevel(uri: string): any {
+  console.debug("delete Factor Level" + uri);
+  return service.value.deleteFactorLevel(uri);
+}
 
 function resetTable(): void {
   bvModal
@@ -365,45 +393,49 @@ function resetTable(): void {
       )
       .then((confirmation) => {
         if (confirmation) {
-          internalFactorLevels.value = [];
+          factorLevels.value = [];
         }
       });
 }
 
-  function addEmptyRow() : void  {
-    console.debug("Add row", "empty row", hasEmptyValue());
-    if (!hasEmptyValue()) {
-      internalFactorLevels.value = internalFactorLevels.value.concat({
-        uri: null,
-        name: null,
-        description: null,
-      });
-    } else {
-      opensilex.showWarningToast(
+function addEmptyRow(): void {
+  console.debug("Add row", "empty row", hasEmptyValue());
+  if (!hasEmptyValue()) {
+    factorLevels.value.push({
+      uri: null,
+      name: null,
+      description: null,
+    });
+  } else {
+    opensilex.showWarningToast(
         t("component.factorLevel.errors.factor-empty-row")
-      );
-    }
+    );
   }
+}
 
-  function csvExport(): void {
-    let arrData = [{ name: "", description: "" }];
-    Papa.download(Papa.unparse(arrData), "factorLevelTemplate");
-  }
+function csvExport(): void {
+  let arrData = [{name: "", description: ""}];
+  Papa.download(Papa.unparse(arrData), "factorLevelTemplate");
+}
 
-  function instanciateTabulator() {
-    tabulator.value = new Tabulator(table.value, {
-      data: internalFactorLevels.value, //link data to table
-      reactiveData: true, //enable data reactivity
-      columns: tableColumns.value, //define table columns
-      layout: "fitColumns",
-      layoutColumnsOnNewData: true,
-      index: "uri",
-    });
+function instanciateTabulator() {
+  tabulator.value = new Tabulator(table.value, {
+    data: factorLevels.value, //link data to table
+    reactiveData: true, //enable data reactivity
+    columns: tableColumns.value, //define table columns
+    layout: "fitColumns",
+    layoutColumnsOnNewData: true,
+    index: "uri",
+  });
 
-    tabulator.value.on("cellClick", (e, cell) => {
-      cellActions(e, cell);
-    });
-  }
+  tabulator.value.on("dataChanged", (data) => {
+    factorLevels.value = data
+  })
+
+  tabulator.value.on("cellClick", (e, cell) => {
+    cellActions(e, cell);
+  });
+}
 
 </script>
 
@@ -435,8 +467,8 @@ en:
         factor-empty-row: You can't add several empty rows
         factor-empty-levels: Missing factor levels
         factor-badname-levels: "Must not contain -,+,=,<>,=,?,/,*,&"
-        associated-factor-level : You can't remove a factor level which is associated to a scientific object
-        minimum-factor-level : You must have one factor level a least
+        associated-factor-level: You can't remove a factor level which is associated to a scientific object
+        minimum-factor-level: You must have one factor level a least
       delete: delete
 fr:
   component:
@@ -462,8 +494,8 @@ fr:
         factor-empty-row: Vous ne pouvez pas ajouter plusieurs lignes vides
         factor-empty-levels: Niveaux de facteurs manquants
         factor-badname-levels: "Ne doit pas contenir -,+,=,<>,=,?,/,*,&"
-        associated-factor-level : Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique
-        minimum-factor-level : Vous devez au moins avoir un niveau de facteur
+        associated-factor-level: Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique
+        minimum-factor-level: Vous devez au moins avoir un niveau de facteur
       delete: supprimer
 
 

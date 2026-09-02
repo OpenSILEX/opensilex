@@ -23,13 +23,14 @@
 
     <FactorForm
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+      :experiment="uri"
       ref="factorForm"
       modalSize="lg"
       :tutorial="true"
       :successMessage="successMessage"
       component="FactorForm"
-      createTitle="component.factor.add"
-      editTitle="component.factor.update"
+      :createTitle="t('component.factor.add')"
+      :editTitle="t('component.factor.update')"
       icon="fa#sun"
       :initForm="initForm"
       @onCreate="showFactorDetails"
@@ -64,7 +65,7 @@
 
 <script setup lang="ts">
 
-import Vue, {computed, inject, ref, useTemplateRef} from "vue";
+import Vue, {computed, inject, onMounted, ref, useTemplateRef} from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 // @ts-ignore
 import { FactorsService, FactorDetailsGetDTO, FactorUpdateDTO } from "opensilex-core/index";
@@ -76,14 +77,16 @@ import ExternalReferencesModalForm from "@/components/common/external-references
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import FactorList from "@/components/experiments/factors/FactorList.vue";
+import FactorForm from "@/components/experiments/factors/FactorForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 let service = opensilex.getService<FactorsService>('opensilex.FactorsService')
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const uri = ref<string>()
 
 const selectedFactor = ref<any>({
@@ -118,12 +121,10 @@ const skosReferences = useTemplateRef<InstanceType<typeof ExternalReferencesModa
 const modalRef = ref<any>()
 const helpModal = ref<any>()
 
-  function created() {
+  onMounted(()  => {
     console.debug("Loading ExperimentFactors view...");
-    uri.value = decodeURIComponent(route.params.uri.value);
-
-    this.service = this.$opensilex.getService("opensilex.FactorsService");
-  }
+    uri.value = decodeURIComponent(route.params.uri as string);
+  })
 
  function showCreateForm() {
     factorForm.value.showCreateForm();
@@ -200,7 +201,7 @@ const helpModal = ref<any>()
   function deleteFactor(factor: any) {
     console.debug("check Associated factor " + factor.uri);
     let isAssociated = opensilex
-      .getService("opensilex.FactorsService")
+      .getService<FactorsService>("opensilex.FactorsService")
       .getFactorAssociatedExperiments(factor.uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         if (

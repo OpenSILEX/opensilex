@@ -1,24 +1,29 @@
 <template>
-  <Modal>
+  <Modal ref="modal">
+    <template #header>
+      <FormHeader :title="formTitle"/>
+    </template>
     <div>
       <Tutorial
-          v-if="!editMode"
+          v-if="!isEditMode"
           ref="factorTutorial"
           :steps="steps"
           @onSkip="continueFormEditing()"
           @onFinish="continueFormEditing()"
-          :editMode="editMode"
+          :editMode="isEditMode"
       ></Tutorial>
-      <p v-if="editMode" class="alert-info">
+      <p v-if="isEditMode" class="alert-info">
         {{ $t("component.factor.alert-help") }}
       </p>
-      <b-form>
+      <n-form
+          ref="nForm"
+      >
         <!-- URI -->
         <UriForm
             v-model:uri="form.uri"
-            label="component.factor.uri"
+            :label="t('component.experiment.search.column.uri')"
             helpMessage="component.common.uri-help-message"
-            :editMode="editMode"
+            :editMode="isEditMode"
             :generated.sync="uriGenerated"
         ></UriForm>
 
@@ -27,16 +32,16 @@
           <InputForm
               rules="nameFiltered"
               v-model:value="form.name"
-              label="component.factor.name"
-              helpMessage="component.factor.name-help"
+              :label="t('component.experiment.label')"
+              :helpMessage="t('component.experiment.name-factor-help')"
               type="text"
               :required="true"
-              placeholder="component.factor.name-placeholder"
+              :placeholder="t('component.experiment.name-factor-placeholder')"
           ></InputForm>
         </div>
 
         <p class="alert-info">
-          {{ $t("component.factor.category-help-more") }} : PECO (
+          {{ $t("component.experiment.category-help-more") }} : PECO (
           <a
               target="_blank"
               href="http://agroportal.lirmm.fr/ontologies/PECO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPECO_0001001"
@@ -65,16 +70,15 @@
             Agrovoc
           </a>
           )
-          {{ $t("component.factor.or") }}
 
         </p>
         <!-- Category-->
         <div id="v-step-1">
           <FactorCategorySelector
               ref="factorCategorySelector"
-              label="component.factor.category"
-              placeholder="component.factor.category-placeholder"
-              helpMessage="component.factor.name-help"
+              label="component.experiment.category"
+              placeholder="component.experiment.category-factor-placeholder"
+              helpMessage="component.experiment.category-factor-help"
               v-model:category="form.category"
           ></FactorCategorySelector>
         </div>
@@ -82,20 +86,24 @@
         <div id="v-step-2">
           <TextAreaForm
               :value.sync="form.description"
-              label="component.factor.description"
-              helpMessage="component.factor.description-help"
-              placeholder="component.factor.description-placeholder"
+              label="component.experiment.description"
+              :placeholder="t('component.experiment.description-factor-placeholder')"
+              helpMessage="component.experiment.description-factor-help"
           ></TextAreaForm>
         </div>
         <div id="v-step-3">
-                  <FactorLevelTable
-                    ref="factorLevelTable"
-                    :editMode.sync="editMode"
-                    :factorLevels.sync="form.levels"
-                  ></FactorLevelTable>
+          <FactorLevelTable
+              ref="factorLevelTable"
+              :editMode.sync="isEditMode"
+              v-model:factorLevels="form.levels"
+          ></FactorLevelTable>
         </div>
-      </b-form>
+      </n-form>
     </div>
+
+    <template #footer>
+      <FormFooter @cancel="hide" @submit="submit"/>
+    </template>
   </Modal>
 </template>
 
@@ -114,13 +122,17 @@ import FactorCategorySelector from "@/components/experiments/factors/FactorCateg
 import {FactorsService} from "opensilex-core/api/factors.service";
 import {FactorCreationDTO} from "opensilex-core/model/factorCreationDTO";
 import FactorLevelTable from "@/components/experiments/factors/FactorLevelTable.vue";
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
+import {NForm} from "naive-ui";
+import Modal from "@/components/common/views/Modal.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex')
 const store = useStore()
-const { t } = useI18n()
+const {t} = useI18n()
 
-const user = computed(() =>
-{
+const user = computed(() => {
   return store.state.user;
 })
 
@@ -130,102 +142,107 @@ const factorLevelTable = useTemplateRef<InstanceType<typeof FactorLevelTable>>('
 
 const uriGenerated = ref(true);
 
+const props = defineProps<ModalFormProps & {
+  experiment: string
+}>();
 
-interface Props {
-  editMode?: boolean;
-}
+const emit = defineEmits<ModalFormEmits>()
 
-const props = withDefaults(defineProps<Props>(), {
-  editMode: false,
-});
-
-const editMode = props.editMode;
-const form = defineModel<FactorCreationDTO>("factor")
+const {form, formTitle, isEditMode, exposed, submit, hide} = useModalFormLogic<FactorCreationDTO>({
+  modalRef: useTemplateRef<InstanceType<typeof Modal>>('modal'),
+  nFormRef: useTemplateRef<InstanceType<typeof NForm>>('nForm'),
+  getEmptyForm,
+  create,
+  update,
+  props,
+  emit
+})
 
 let savedForm: Partial<FactorCreationDTO> = {};
 
-  function reset(uriGenerated) {
-    uriGenerated = true;
-    if (!editMode) {
-      factorTutorial.value.stop();
-    }
+function reset(uriGenerated) {
+  uriGenerated = true;
+  if (!isEditMode) {
+    factorTutorial.value.stop();
   }
+}
 
-  function addEmptyRow(form) {
-    console.debug("add row");
-    form.value.levels.unshift({
-      uri: null,
-      name: null,
-      description: null,
-    });
-  }
-  function saveForm() {
-    savedForm = JSON.parse(JSON.stringify(form));
-  }
+function addEmptyRow(form) {
+  console.debug("add row");
+  form.value.levels.unshift({
+    uri: null,
+    name: null,
+    description: null,
+  });
+}
 
-  function getEmptyForm(): FactorCreationDTO {
-    return {
-      uri: null,
-      name: null,
-      category: null,
-      description: null,
-      levels: [
-          {
-              uri: null,
-              name: null,
-              description: null,
-          },
-      ],
-    };
-  }
+function saveForm() {
+  savedForm = structuredClone(form.value);
+}
 
-  const steps = computed(() =>
-  {
-    return [
+function getEmptyForm(): FactorCreationDTO {
+  return {
+    uri: null,
+    name: null,
+    category: null,
+    description: null,
+    experiment: props.experiment,
+    levels: [
       {
-        target: "#v-step-0", // We're using document.querySelector() under the hood
-        header: {
-          title: t("component.factor.name").toString(),
-        },
-        content: t("component.factor.name-help").toString(),
-        params: {
-          placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-        },
+        uri: null,
+        name: null,
+        description: null,
       },
-      {
-        target: "#v-step-1",
-        header: {
-          title: t("component.factor.category").toString(),
-        },
-        content: t("component.factor.category-help").toString(),
-        params: {
-          placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-        },
+    ],
+  };
+}
+
+const steps = computed(() => {
+  return [
+    {
+      target: "#v-step-0", // We're using document.querySelector() under the hood
+      header: {
+        title: t("component.factor.name").toString(),
       },
-      {
-        target: "#v-step-2",
-        header: {
-          title: t("component.factor.description").toString(),
-        },
-        content: t("component.factor.description-help").toString(),
-        params: {
-          placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-        },
+      content: t("component.factor.name-help").toString(),
+      params: {
+        placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
       },
-      {
-        target: "#v-step-3",
-        header: {
-          title: t("component.factorLevel.associated").toString(),
-        },
-        content:
-            t("component.factorLevel.associated-help")
-            .toString(),
-        params: {
-          placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
-        },
+    },
+    {
+      target: "#v-step-1",
+      header: {
+        title: t("component.factor.category").toString(),
       },
-    ];
-  })
+      content: t("component.factor.category-help").toString(),
+      params: {
+        placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+      },
+    },
+    {
+      target: "#v-step-2",
+      header: {
+        title: t("component.factor.description").toString(),
+      },
+      content: t("component.factor.description-help").toString(),
+      params: {
+        placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+      },
+    },
+    {
+      target: "#v-step-3",
+      header: {
+        title: t("component.factorLevel.associated").toString(),
+      },
+      content:
+          t("component.factorLevel.associated-help")
+              .toString(),
+      params: {
+        placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+      },
+    },
+  ];
+})
 
 
 function continueFormEditing() {
@@ -238,58 +255,17 @@ function continueFormEditing() {
   form.value.levels = savedForm.levels
 }
 
-  function setUri(uri: string) {
-    form.value.uri = uri;
-  }
-
-const emit = defineEmits(['onCreate', 'onDetails', 'onUpdate', ])
-
-async function updatefactor() {
-  console.debug('update', form.value)
-
-  return new Promise((resolve, reject) => {
-    emit('onUpdate', form.value, (result: any) => {
-      if (result instanceof Promise) {
-        result
-            .then((value) => {
-              console.debug('resolve', value)
-              resolve(value)
-            })
-            .catch((error) => {
-              console.debug('reject', error)
-              reject(error)
-            })
-      } else {
-        resolve(result)
-      }
-    })
-  })
+function setUri(uri: string) {
+  form.value.uri = uri;
 }
 
-  function createFactor() {
-    return new Promise((resolve, reject) => {
-      return emit("onCreate", form.value, (result) => {
-        if (result instanceof Promise) {
-          return result
-            .then((uri) => {
-              afterCreate(uri);
-              return uri;
-            })
-            .catch(reject);
-        } else {
-          return resolve(result);
-        }
-      });
-    });
-  }
-  function afterCreate(uri: string) {
-    setUri(uri);
-    emit("onDetails", uri);
-  }
+function afterCreate(uri: string) {
+  setUri(uri);
+}
 
-  function create(form) {
-    console.debug("factor", form);
-    return opensilex
+function create(form) {
+  console.debug("factor", form);
+  return opensilex
       .getService<FactorsService>("opensilex.FactorsService")
       .createFactor(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
@@ -302,49 +278,50 @@ async function updatefactor() {
         if (error.status == 409) {
           console.error("Factor already exists", error);
           opensilex.errorHandler(
-            error,
-            t("component.account.errors.user-already-exists")
+              error,
+              t("component.account.errors.user-already-exists")
           );
         } else {
           opensilex.errorHandler(error);
         }
       });
-  }
+}
 
-  function update(form) {
-    return opensilex
+function update(form) {
+  return opensilex
       .getService<FactorsService>("opensilex.FactorsService")
       .updateFactor(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Factor updated", uri);
+        return http
       })
       .catch(opensilex.errorHandler);
-  }
+}
 
-  const languageCode = computed(() =>
-{
+const languageCode = computed(() => {
   return opensilex.getLocalLangCode();
 })
 
 
-  function tutorial() {
-    form.value.name = t("component.factor.example.name");
-    form.value.category = t("component.factor.example.category");
+function tutorial() {
+  form.value.name = t("component.factor.example.name");
+  form.value.category = t("component.factor.example.category");
 
-    form.value.description = t(
+  form.value.description = t(
       "component.factor.example.description"
-    );
-    let levels = [];
-    for (const [key, value] of Object.entries(
+  );
+  let levels = [];
+  for (const [key, value] of Object.entries(
       t("component.factor.example.factorLevels")
-    )) {
-      levels.push(value);
-    }
-    form.value.levels = levels;
-    factorTutorial.value.start();
+  )) {
+    levels.push(value);
   }
+  form.value.levels = levels;
+  factorTutorial.value.start();
+}
 
+defineExpose(exposed)
 </script>
 
 <style scoped lang="scss">
@@ -358,11 +335,11 @@ en:
   component:
     factor:
       alert-help: This factor can be linked to existing experiments be careful when update
-      example :
-        name : Nitrogen
-        category : "http://aims.fao.org/aos/agrovoc/c_5b384c25"
-        description : Chemical compound added in the soil
-        factorLevels :
+      example:
+        name: Nitrogen
+        category: "http://aims.fao.org/aos/agrovoc/c_5b384c25"
+        description: Chemical compound added in the soil
+        factorLevels:
           - name: "N-10/N+"
             description: "Dose 10 mmolar"
           - name: "N-5/N-"
@@ -374,17 +351,17 @@ fr:
   component:
     factor:
       alert-help: Ce facteur peut être lié à des expérimentations faite attention lors de son édition
-      example :
-        name : Azote
-        category : "http://aims.fao.org/aos/agrovoc/c_5b384c25"
-        description : Composant chimique ajouté dans le sol
-        factorLevels :
+      example:
+        name: Azote
+        category: "http://aims.fao.org/aos/agrovoc/c_5b384c25"
+        description: Composant chimique ajouté dans le sol
+        factorLevels:
           - name: "N-10/N+"
             description: "Dosage 10 mmol"
           - name: "N-5/N-"
             description: "Dosage 5 mmol"
       category-help-more: "Plus d'informations"
-      or : ou
+      or: ou
       category-help: "Classifie le facteur utilisé pour des recherches"
 
 </i18n>

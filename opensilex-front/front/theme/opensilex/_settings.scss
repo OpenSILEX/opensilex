@@ -1,4 +1,174 @@
 
+@property --color-empty {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+@property --color-dark {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #212121;
+}
+@property --color-default {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #d6d6d6;
+}
+@property --color-primary {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #007bff;
+}
+@property --color-success {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #2dce89;
+}
+@property --color-info {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #11cdef;
+}
+@property --color-warning {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #fb6340;
+}
+@property --color-danger {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f5365c;
+}
+@property --color-muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #6c757d;
+}
+@property --color-inverse {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #4c5667;
+}
+@property --color-purple {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #BF55EC;
+}
+@property --color-pink {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f76397;
+}
+@property --color-white {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffffff;
+}
+@property --color-grey {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #9aa0ac;
+}
+@property --color-aqua {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #3ec5d6;
+}
+@property --color-blue {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #19B5FE;
+}
+@property --color-light-blue {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #89CFF0;
+}
+@property --color-teal {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #008081;
+}
+@property --color-yellow {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #F7CA18;
+}
+@property --color-orange {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #FF8000;
+}
+@property --color-green {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #26C281;
+}
+@property --color-lime {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #cad900;
+}
+@property --color-red {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #F22613;
+}
+@property --color-fuchsia {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #df2de3;
+}
+@property --color-navy {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #000080;
+}
+@property --color-theme {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ef4153;
+}
+@property --color-facebook {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #3b579d;
+}
+@property --color-twitter {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #1da1f2;
+}
+@property --color-dribbble {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ea4c89;
+}
+@property --color-linkedin {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0177b4;
+}
+@property --color-google {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dc4a38;
+}
+@property --color-instagram {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #fb3958;
+}
+@property --color-behance {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #053eff;
+}
+@property --font-family {
+  syntax: '<string>';
+  inherits: true;
+  initial-value: 'Nunito Sans', sans-serif;
+}
 html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
@@ -256,41 +426,7 @@ a {
   }
 }
 
-$empty: transparent;
-$default: #d6d6d6;
-$primary: #007bff;
-$success: #2dce89;
-$info: #11cdef;
-$warning: #fb6340;
-$danger: #f5365c;
-$muted: #6c757d;
-$inverse: #4c5667;
-$purple: #BF55EC;
-$pink: #f76397;
-$white: #ffffff;
-$dark: var(--color-dark);
-$grey: #9aa0ac;
-$aqua: #3ec5d6;
-$blue: #19B5FE;
-$light-blue: #89CFF0;
-$teal: #008081;
-$yellow: #F7CA18;
-$orange: #FF8000;
-$green: #26C281;
-$lime: #cad900;
-$red: #F22613;
-$fuchsia: #df2de3;
-$navy: #000080;
-
-$theme: #ef4153;
-$facebook: #3b579d;
-$twitter: #1da1f2;
-$dribbble: #ea4c89;
-$linkedin: #0177b4;
-$google: #dc4a38;
-$instagram: #fb3958;
-$behance: #053eff;
-$element-color: 'primary' $primary, 'warning' $warning, 'danger' $danger, 'success' $success, 'inverse' $inverse, 'info' $info;
+$element-color: 'primary' var(--color-primary), 'warning' var(--color-warning), 'danger' var(--color-danger), 'success' var(--color-success), 'inverse' var(--color-inverse), 'info' var(--color-info);
 
 $i: 0;
 @while $i<=50 {
@@ -376,178 +512,178 @@ $i: 20;
     }
 }
 .bg-default {
-    background-color: $default !important;
+    background-color: var(--color-default) !important;
 }
 .bg-theme {
-    background-color: $theme !important;
+    background-color: var(--color-theme) !important;
 }
 .bg-aqua {
-    background-color: $aqua !important;
+    background-color: var(--color-aqua) !important;
 }
 .bg-blue {
-    background-color: $blue !important;
+    background-color: var(--color-blue) !important;
 }
 .bg-light-blue {
-    background-color: $light-blue !important;
+    background-color: var(--color-light-blue) !important;
 }
 .bg-teal {
-    background-color: $teal !important;
+    background-color: var(--color-teal) !important;
 }
 .bg-yellow {
-    background-color: $yellow !important;
+    background-color: var(--color-yellow) !important;
 }
 .bg-orange {
-    background-color: $orange !important;
+    background-color: var(--color-orange) !important;
 }
 .bg-green {
-    background-color: $green !important;
+    background-color: var(--color-green) !important;
 }
 .bg-lime {
-    background-color: $lime !important;
+    background-color: var(--color-lime) !important;
 }
 .bg-red {
-    background-color: $red !important;
+    background-color: var(--color-red) !important;
 }
 .bg-fuchsia {
-    background-color: $fuchsia !important;
+    background-color: var(--color-fuchsia) !important;
 }
 .bg-navy {
-    background-color: $navy !important;
+    background-color: var(--color-navy) !important;
 }
 .bg-empty {
-    background: $empty !important;
+    background: var(--color-empty) !important;
 }
 .bg-primary {
-    background-color: $primary !important;
+    background-color: var(--color-primary) !important;
 }
 .bg-success {
-    background-color: $success !important;
+    background-color: var(--color-success) !important;
 }
 .bg-info {
-    background-color: $info !important;
+    background-color: var(--color-info) !important;
 }
 .bg-warning {
-    background-color: $warning !important;
+    background-color: var(--color-warning) !important;
 }
 .bg-danger {
-    background-color: $danger !important;
+    background-color: var(--color-danger) !important;
 }
 .bg-muted {
-    background-color: $muted !important;
+    background-color: var(--color-muted) !important;
 }
 .bg-inverse {
-    background-color: $inverse !important;
+    background-color: var(--color-inverse) !important;
 }
 .bg-purple {
-    background-color: $purple !important;
+    background-color: var(--color-purple) !important;
 }
 .bg-pink {
-    background-color: $pink !important;
+    background-color: var(--color-pink) !important;
 }
 .bg-white {
-    background-color: $white !important;
+    background-color: var(--color-white) !important;
 }
 .bg-facebook {
-    background-color: $facebook !important;
+    background-color: var(--color-facebook) !important;
 }
 .bg-twitter {
-    background-color: $twitter !important;
+    background-color: var(--color-twitter) !important;
 }
 .bg-google {
-    background-color: $google !important;
+    background-color: var(--color-google) !important;
 }
 .bg-linkedin {
-    background-color: $linkedin !important;
+    background-color: var(--color-linkedin) !important;
 }
 .text-default {
-    color: $default !important;
+    color: var(--color-default) !important;
 }
 .text-blue {
-    color: $blue !important;
+    color: var(--color-blue) !important;
 }
 .text-light-blue {
-    color: $light-blue !important;
+    color: var(--color-light-blue) !important;
 }
 .text-teal {
-    color: $teal !important;
+    color: var(--color-teal) !important;
 }
 .text-navy {
-    color: $navy !important;
+    color: var(--color-navy) !important;
 }
 .text-lime {
-    color: $lime !important;
+    color: var(--color-lime) !important;
 }
 .text-orange {
-    color: $orange !important;
+    color: var(--color-orange) !important;
 }
 .text-yellow {
-    color: $yellow !important;
+    color: var(--color-yellow) !important;
 }
 .text-aqua {
-    color: $aqua !important;
+    color: var(--color-aqua) !important;
 }
 .text-white {
-    color: $white !important;
+    color: var(--color-white) !important;
 }
 .text-danger {
-    color: $danger !important;
+    color: var(--color-danger) !important;
 }
 .text-green {
-    color: $green !important;
+    color: var(--color-green) !important;
 }
 .text-primary {
-    color: $primary !important;
+    color: var(--color-primary) !important;
 }
 .text-warning {
-    color: $warning !important;
+    color: var(--color-warning) !important;
 }
 .text-success {
-    color: $success !important;
+    color: var(--color-success) !important;
 }
 .text-info {
-    color: $info !important;
+    color: var(--color-info) !important;
 }
 .text-inverse {
-    color: $inverse !important;
+    color: var(--color-inverse) !important;
 }
 .text-pink {
-    color: $pink !important;
+    color: var(--color-pink) !important;
 }
 .text-purple {
-    color: $purple !important;
+    color: var(--color-purple) !important;
 }
 .text-dark {
-    color: $dark !important;
+    color: var(--color-dark) !important;
 }
 .text-fuchsia {
-    color: $fuchsia !important;
+    color: var(--color-fuchsia) !important;
 }
 .text-red {
-    color: $red !important;
+    color: var(--color-red) !important;
 }
 .text-facebook {
-    color: $facebook !important;
+    color: var(--color-facebook) !important;
 }
 .text-twitter {
-    color: $twitter !important;
+    color: var(--color-twitter) !important;
 }
 .text-instagram {
-    color: $instagram !important;
+    color: var(--color-instagram) !important;
 }
 .text-google {
-    color: $google !important;
+    color: var(--color-google) !important;
 }
 .text-linkedin {
-    color: $linkedin !important;
+    color: var(--color-linkedin) !important;
 }
 .text-behance {
-    color: $behance !important;
+    color: var(--color-behance) !important;
 }
 .text-dribbble {
-    color: $dribbble !important;
+    color: var(--color-dribbble) !important;
 }
 .text-red {
-    color: $red !important;
+    color: var(--color-red) !important;
 }
 
 .min-width-zero {

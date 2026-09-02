@@ -52,7 +52,7 @@
 
 .slider-handle {
     top: -5px;
-    background-image: linear-gradient(to bottom, $primary 0%, $primary 100%);
+    background-image: linear-gradient(to bottom, var(--color-primary) 0%, var(--color-primary) 100%);
     box-shadow: none;
 }
 
@@ -64,7 +64,7 @@
 .slider-handle.custom::before {
     line-height: 15px;
     font-size: 35px;
-    color: $primary;
+    color: var(--color-primary);
 }
 
 #slider12a,
@@ -86,11 +86,11 @@
 }
 
 .slider-selection.tick-slider-selection {
-    background-image: linear-gradient(to bottom, lighten($primary,10%) 0%, lighten($primary,10%) 100%);
+    background-image: linear-gradient(to bottom, color-mix(in srgb, var(--color-primary) 90%, white) 0%, color-mix(in srgb, var(--color-primary) 90%, white) 100%);
 }
 
 .slider-tick.in-selection {
-    background-image: linear-gradient(to bottom, lighten($primary,10%) 0%, lighten($primary,10%) 100%);
+    background-image: linear-gradient(to bottom, color-mix(in srgb, var(--color-primary) 90%, white) 0%, color-mix(in srgb, var(--color-primary) 90%, white) 100%);
 }
 
 .slider.slider-horizontal {

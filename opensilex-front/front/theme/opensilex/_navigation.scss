@@ -14,21 +14,21 @@
 		    color: #3e5569;
 		    @include border-radius(30px);
 		    &.first, &.last {
-			    color: $white;
+			    color: var(--color-white);
 			    background-color: #3e5569;
 		    }
 		}
 		&.active {
 			.page-link {
 				background-color: #00A38D;
-				color: $white;
+				color: var(--color-white);
 			}
 		}
 	}
 
 	.page-link:hover {
 		background-color: #018371;
-		color: $white;
+		color: var(--color-white);
 		transition: all .2s ease-in-out;
 	}
 }

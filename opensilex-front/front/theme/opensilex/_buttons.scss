@@ -26,13 +26,13 @@
     border-radius: 50%;
     text-align: center;
     line-height: 30px;
-    color: $white;
+    color: var(--color-white);
 	i {
 		margin: 0;
 	}
 }
 .btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-inverse, .btn-purple, .btn-pink, .btn-twitter, .btn-facebook, .btn-linkedin, .btn-google, .btn-dribbble, .btn-instagram {
-    color: $white;
+    color: var(--color-white);
 }
 .btn {
     &-theme {
@@ -45,98 +45,98 @@
         &:focus, &:hover, &:active, &.active {
             background-color: #dae6ec;
             border-color: #C2CED4;
-            color: $white !important;
+            color: var(--color-white) !important;
         }
     }
     &-primary {
-        background-color: $primary;
-        border: 1px solid $primary;
+        background-color: var(--color-primary);
+        border: 1px solid var(--color-primary);
         &:hover, &:focus, &.active {
-            background-color: darken($primary, 5%);
-            border: 1px solid darken($primary, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-primary) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-primary) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-success {
-        background-color: $success;
-        border: 1px solid $success;
+        background-color: var(--color-success);
+        border: 1px solid var(--color-success);
         &:hover, &:focus, &.active {
-            background-color: darken($success, 5%);
-            border: 1px solid darken($success, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-success) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-success) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-info {
-        background-color: $info;
-        border: 1px solid $info;
+        background-color: var(--color-info);
+        border: 1px solid var(--color-info);
         &:hover, &:focus, &.active {
-            background-color: darken($info, 5%);
-            border: 1px solid darken($info, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-info) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-info) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-warning {
-        background-color: $warning;
-        border: 1px solid $warning;
+        background-color: var(--color-warning);
+        border: 1px solid var(--color-warning);
         &:hover, &:focus, &.active {
-            background-color: darken($warning, 5%);
-            border: 1px solid darken($warning, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-warning) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-warning) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-danger {
-        background-color: $danger;
-        border: 1px solid $danger;
+        background-color: var(--color-danger);
+        border: 1px solid var(--color-danger);
         &:focus, &:hover, &.active {
-            background-color: darken($danger, 5%);
-            border: 1px solid darken($danger, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-danger) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-danger) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-inverse {
-        background-color: $inverse;
-        border: 1px solid $inverse;
+        background-color: var(--color-inverse);
+        border: 1px solid var(--color-inverse);
         &:hover, &:focus, &.active {
-            background-color: darken($inverse, 5%);
-            border: 1px solid darken($inverse, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-inverse) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-inverse) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-purple {
-        background-color: $purple;
-        border: 1px solid $purple;
+        background-color: var(--color-purple);
+        border: 1px solid var(--color-purple);
         &:hover, &:focus, &.active {
-            background-color: darken($purple, 5%);
-            border: 1px solid darken($purple, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-purple) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-purple) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-pink {
-        background-color: $pink;
-        border: 1px solid $pink;
+        background-color: var(--color-pink);
+        border: 1px solid var(--color-pink);
         &:hover, &:focus, &.active {
-            background-color: darken($pink, 5%);
-            border: 1px solid darken($pink, 5%);
-            color: $white !important;
+            background-color: color-mix(in srgb, var(--color-pink) 95%, black);
+            border: 1px solid color-mix(in srgb, var(--color-pink) 95%, black);
+            color: var(--color-white) !important;
         }
     }
     &-facebook {
-        background: $facebook;
+        background: var(--color-facebook);
     }
     &-twitter {
-        background: $twitter;
+        background: var(--color-twitter);
     }
     &-dribbble {
-        background: $dribbble;
+        background: var(--color-dribbble);
     }
     &-linkedin {
-        background: $linkedin;
+        background: var(--color-linkedin);
     }
     &-google {
-        background: $google;
+        background: var(--color-google);
     }
     &-instagram {
-        background: $instagram;
+        background: var(--color-instagram);
     }
 }
 .template-demo {

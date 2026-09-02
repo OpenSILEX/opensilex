@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.*;
+import org.opensilex.core.utils.GetByUrisWithSharedResourceInstanceDTO;
 
 /**
  * @author Hamza IKIOU
@@ -164,6 +165,13 @@ public class VariablesGroupAPI {
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
+    /**
+     * Return a list of variables groups corresponding to the given URIs
+     *
+     * @param uris list of variables groups uri
+     * @return Corresponding list of variables groups
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
     @GET
     @Path(VariablesGroupAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get variables groups by their URIs")
@@ -171,14 +179,67 @@ public class VariablesGroupAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return variables groups", response = VariablesGroupGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)    
+    @Produces(MediaType.APPLICATION_JSON)
+    @Deprecated(forRemoval = true, since = "1.5.2")
     public Response getVariablesGroupByURIs(
             @ApiParam(value = "Variables group URIs", required = true) @QueryParam(VariablesGroupAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
             @ApiParam(value = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
+        if (sharedResourceInstance == null) {
+            VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
+            List<VariablesGroupModel> models = dao.getList(uris);
+
+            if (!models.isEmpty()) {
+                List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
+                models.forEach(result -> resultDTOList.add(VariablesGroupGetDTO.fromModel(result)));
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            } else {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Variables group not found", "Unknown variables group URIs or variables URIs").getResponse();
+            }
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<VariablesGroupGetDTO> detailsList = service.getListByURI(Paths.get(VariablesGroupAPI.PATH, VariablesGroupAPI.GET_BY_URIS_PATH).toString(),
+                VariablesGroupAPI.GET_BY_URIS_URI_PARAM,
+                uris, VariablesGroupGetDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
+    }
+
+    /**
+     * Return a list of variables groups corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs
+     * @return Corresponding list of variables groups
+     */
+    @POST
+    @Path(VariablesGroupAPI.GET_BY_URIS_PATH)
+    @ApiOperation("Get variables groups by their URIs")
+    @ApiProtected
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables groups", response = VariablesGroupGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Variables group not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchVariablesGroupByURIs(
+            @ApiParam(value = "Variables group URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+        URI sharedResourceInstance = dto == null ? null : dto.getSharedResourceInstance();
+        
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         if (sharedResourceInstance == null) {
             VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
             List<VariablesGroupModel> models = dao.getList(uris);

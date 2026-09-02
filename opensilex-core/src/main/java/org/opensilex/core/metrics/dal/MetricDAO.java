@@ -374,7 +374,7 @@ public class MetricDAO {
     public void createExperimentSummary() throws Exception {
 
         createIndexes();
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
 
         Set<URI> experiments = experimentDAO.getUserExperiments(user);
 
@@ -408,7 +408,7 @@ public class MetricDAO {
         CountListItemModel experimentsByCount = new CountListItemModel();
         experimentsByCount.setName("Experiment");
         experimentsByCount.setType(new URI(Oeso.Experiment.getURI()));
-        ExperimentDAO expDao = new ExperimentDAO(sparql,nosql);
+        ExperimentDAO expDao = new ExperimentDAO(sparql, nosql, fs);
         experimentsByCount.setCalculatedTotalCount(expDao.count());
 
         model.setScientificObjectsByType(scientificObjectTypesByCount);
@@ -441,7 +441,7 @@ public class MetricDAO {
         inFilter.put("$in", new ArrayList<>(tmpVariable.keySet()));
         filter.put("variable", inFilter);
         // Add experiment filter
-        DataFilterBuilder.appendExperimentUserAccessFilter(filter, currentUser, experiments, sparql, nosql);
+        DataFilterBuilder.appendExperimentUserAccessFilter(filter, currentUser, experiments, sparql, nosql, fs);
         // 1.match - Filter data on these variables
         // 2.group - Group variables with number of data  
         Set<Document> variablesWithDataCount = nosql.aggregate(
@@ -478,7 +478,7 @@ public class MetricDAO {
             Node context = SPARQLDeserializers.nodeURI(contextURI);
             select.addGraph(context, varUri, RDF.type, varType);
         } else if (!currentUser.isAdmin() && isExperimentContext) {
-            ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql, fs);
             Set<URI> graphFilterURIs = xpDO.getUserExperiments(currentUser);
 
             select.addGraph(varG, varUri, RDF.type, varType);

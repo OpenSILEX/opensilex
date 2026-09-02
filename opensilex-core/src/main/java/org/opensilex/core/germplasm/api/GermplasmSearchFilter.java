@@ -48,8 +48,6 @@ public class GermplasmSearchFilter extends SearchFilter {
     private Boolean isPublic;
     private AccountModel user;
 
-    private List<URI> groups;
-
     @ApiModelProperty(value = "Regex pattern for filtering list by uri", example = GermplasmAPI.GERMPLASM_EXAMPLE_URI)
     public String getUri() {
         return uri;
@@ -224,13 +222,4 @@ public class GermplasmSearchFilter extends SearchFilter {
         this.user = user;
         return this;
     }
-
-    public List<URI> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<URI> groups) {
-        this.groups = groups;
-    }
-
 }

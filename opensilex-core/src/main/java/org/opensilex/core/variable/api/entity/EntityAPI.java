@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.opensilex.core.utils.GetByUrisWithSharedResourceInstanceDTO;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
@@ -131,6 +132,14 @@ public class EntityAPI {
         }
     }
 
+    /**
+     * Return a list of entities corresponding to the given URIs
+     *
+     * @param uris list of entities uri
+     * @return Corresponding list of entities
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(EntityAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed entities by uris")
@@ -140,12 +149,66 @@ public class EntityAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getEntitiesByURIs(
             @ApiParam(value = "Entities URIs", required = true) @QueryParam(EntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
             @ApiParam(value = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+
+            try {
+                List<EntityDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(EntityDetailsDTO::new)
+                        .collect(Collectors.toList());
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Entities not found", e.getStrUris()).getResponse();
+            }
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<EntityDetailsDTO> detailsList = service.getListByURI(Paths.get(EntityAPI.PATH, EntityAPI.GET_BY_URIS_PATH).toString(),
+                EntityAPI.GET_BY_URIS_URI_PARAM,
+                uris, EntityDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
+    }
+
+    /**
+     * Return a list of entities corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs and optional shared resource instance
+     * @return Corresponding list of entities
+     */
+    @POST
+    @Path(EntityAPI.GET_BY_URIS_PATH)
+    @ApiOperation("Get detailed entities by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchEntitiesByURIs(
+            @ApiParam(value = "Entities URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+        URI sharedResourceInstance = dto == null ? null : dto.getSharedResourceInstance();
+        
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         if (sharedResourceInstance == null) {
             BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
 

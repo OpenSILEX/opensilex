@@ -475,7 +475,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         locationObservationModel.setLocation(locationModel);
         moveModel.setLocationObservation(locationObservationModel);
 
-        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), AccountModel.getSystemUser());
+        MoveLogic moveLogic = new MoveLogic(getSparqlService(), getMongoDBService(), AccountModel.getSystemUser(), getFs());
         moveLogic.create(moveModel);
 
         return moveModel;

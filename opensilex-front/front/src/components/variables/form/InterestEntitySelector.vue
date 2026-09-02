@@ -119,7 +119,7 @@ en:
 fr:
   component: 
     interestEntity: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une entité d'intérêt
           placeholder-multiple : Sélectionner une ou plusieurs entités d'intérêt

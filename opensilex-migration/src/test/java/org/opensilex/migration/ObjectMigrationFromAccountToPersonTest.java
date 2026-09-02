@@ -142,7 +142,7 @@ public class ObjectMigrationFromAccountToPersonTest extends AbstractMongoIntegra
     public void experiment_hasScientificSupervisor() throws Exception {
         AccountModel account = createAccount();
         PersonModel person = createPerson(account);
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService());
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService(), getFs());
         ExperimentModel experiment = experimentDAO.create(getExperimentModel());
 
         createOldPredicateFromSubjectToAccount(experiment.getUri(), Oeso.hasScientificSupervisor.asNode(), account);

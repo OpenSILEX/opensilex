@@ -194,19 +194,19 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLException {
-        addPrefixes(ask);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL ASK\n" + ask.buildString());
         }
+        addPrefixes(ask);
         return connection.executeAskQuery(ask);
     }
 
     @Override
     public List<SPARQLStatement> executeDescribeQuery(DescribeBuilder describe) throws SPARQLException {
-        addPrefixes(describe);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("SPARQL DESCRIBE\n" + describe.buildString());
         }
+        addPrefixes(describe);
         return connection.executeDescribeQuery(describe);
     }
 
@@ -236,37 +236,37 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public List<SPARQLStatement> executeConstructQuery(ConstructBuilder construct) throws SPARQLException {
-        addPrefixes(construct);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("SPARQL CONSTRUCT%n%s", construct.buildString()));
         }
+        addPrefixes(construct);
         return connection.executeConstructQuery(construct);
     }
 
     @Override
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
-        addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("SPARQL SELECT%n%s", select.buildString()));
         }
+        addPrefixes(select);
         return connection.executeSelectQuery(select, resultHandler);
     }
 
     @Override
     public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
-        addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("SPARQL SELECT%n%s", select.buildString()));
         }
+        addPrefixes(select);
         return connection.executeSelectQueryAsStream(select);
     }
 
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
-        addPrefixes(update);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("SPARQL UPDATE%n%s", update.buildRequest()));
         }
+        addPrefixes(update);
         connection.executeUpdateQuery(update);
     }
 
@@ -280,10 +280,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
-        addPrefixes(delete);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("SPARQL DELETE%n%s", delete.buildRequest()));
         }
+        addPrefixes(delete);
         connection.executeDeleteQuery(delete);
     }
 
@@ -2778,5 +2778,45 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if ( executeAskQuery(isLinked) ){
             throw new ConflictException("URI <"+instanceURI+"> is linked with other resources");
         }
+    }
+
+    /**
+     * Basically the same method as
+     * @see SPARQLService#requireUriIsNotLinkedWithOtherResourcesInRDF(URI, List).
+     * It runs a request looking at all triples who have the instanceURI as Object (not subject or predicate)
+     * But we instead return a list of the relations in question, by using the same request in a
+     * Select instead of an Ask.
+     *
+     * @param instanceURI The URI we are checking
+     * @param predicateUrisToExclude Any predicates that we want to ignore
+     * @return The list of Triples whom are all reverse relations for the URI in question.
+     * @throws SPARQLException if something went wrong during request
+     */
+    public List<Triple> getUriLinksWithOtherResources(URI instanceURI, List<String> predicateUrisToExclude) throws SPARQLException {
+        Node uriNode = SPARQLDeserializers.nodeURI(instanceURI);
+        Var pVar = SPARQLQueryHelper.makeVar("?p");
+        Var sVar = SPARQLQueryHelper.makeVar("?s");
+
+        SelectBuilder isLinked = new SelectBuilder()
+                .addVar(sVar)
+                .addVar(pVar)
+                .addWhere(sVar, pVar, uriNode);
+
+        if (Objects.nonNull(predicateUrisToExclude)) {
+            predicateUrisToExclude.forEach(uri -> {
+                Node predicateUri = SPARQLDeserializers.nodeURI(uri);
+                isLinked.addFilter(new ExprFactory().ne(pVar.getVarName(), predicateUri));
+            });
+        }
+        return executeSelectQuery(isLinked)
+                .stream()
+                .map(
+                        e -> Triple.create(
+                                NodeFactory.createURI(SPARQLDeserializers.getShortURI(e.getStringValue(sVar.getVarName()))),
+                                NodeFactory.createURI(SPARQLDeserializers.getShortURI(e.getStringValue(pVar.getVarName()))),
+                                NodeFactory.createURI(SPARQLDeserializers.getShortURI(instanceURI))
+                        )
+                )
+                .toList();
     }
 }

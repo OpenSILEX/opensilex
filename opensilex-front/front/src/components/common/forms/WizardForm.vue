@@ -261,6 +261,12 @@ async function submitForm () {
   } catch (e) {
     console.error(e)
   }
+
+  async getStepRef(index: number): Promise<any> {
+    await this.$nextTick();
+    const key = "step" + index;
+    return this.$refs[key][0];
+  }
 }
 
 function fillForm (dto: any) {

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#">
+        <dc:creator>Valentin Rigolle</dc:creator>
+        <rdfs:label xml:lang="en">Test ontology for SPARQLRelationFetcher</rdfs:label>
+    </owl:Ontology>
+
+    <owl:ObjectProperty rdf:about="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#prop1">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:label xml:lang="en">SO prop 1</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:Class rdf:about="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#type1">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="en">SO type 1</rdfs:label>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#prop1"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#type2">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="en">SO type 2</rdfs:label>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://example.org/opensilex/test/ontology/sparql-relation-fetcher#prop1"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minQualifiedCardinality>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+</rdf:RDF>

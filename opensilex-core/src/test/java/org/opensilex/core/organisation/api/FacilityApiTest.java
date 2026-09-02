@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static junit.framework.TestCase.*;
@@ -36,13 +37,23 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     public final static String URI_PATH = PATH + "/{uri}";
     public final static String URIS_PATH = PATH + "/by_uris";
     protected final static String SEARCH_PATH = PATH;
+    public static final ServiceDescription GET_BY_URI;
     public static final ServiceDescription create;
+    public static final ServiceDescription searchByURIs;
 
     static {
         try {
             create = new ServiceDescription(
                     FacilityAPI.class.getMethod("createFacility", FacilityCreationDTO.class),
                     PATH
+            );
+            searchByURIs = new ServiceDescription(
+                    FacilityAPI.class.getMethod("searchFacilitiesByURIs", List.class),
+                    URIS_PATH
+            );
+            GET_BY_URI = new ServiceDescription(
+                    FacilityAPI.class.getMethod("getFacility", URI.class),
+                    URI_PATH
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -107,7 +118,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         if(Objects.nonNull(geoJson)) {
             LocationObservationDTO location = new LocationObservationDTO();
             location.setGeojson(geoJson);
-            location.setEndDate(Instant.parse("2021-09-08T00:00:00.00Z"));
+            location.setEndDate(OffsetDateTime.parse("2021-09-08T00:00:00.00Z"));
             locations.add(location);
         }
 
@@ -126,7 +137,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         if(Objects.nonNull(geoJson)) {
             LocationObservationDTO location = new LocationObservationDTO();
             location.setGeojson(geoJson);
-            location.setEndDate(Instant.parse("2021-09-08T12:00:00+01:00"));
+            location.setEndDate(OffsetDateTime.parse("2021-09-08T12:00:00+01:00"));
             locations.add(location);
         }
 
@@ -141,11 +152,8 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         // insert the both facility
         FacilityUpdateDTO facility1 = getCreationDTO(1);
         FacilityUpdateDTO facility2 = getCreationDTO(2);
-
-        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility1);
-        assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility2);
-        assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
+        createFacilityAndAssertResponseStatus(facility1);
+        createFacilityAndAssertResponseStatus(facility2);
 
         // test search with pattern which match the both facility
         Map<String,Object> searchParams = new HashMap<>();
@@ -181,35 +189,22 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         // insert the both facility
         FacilityUpdateDTO facility1 = getCreationDTO(1);
         FacilityUpdateDTO facility2 = getCreationDTO(2);
+        createFacilityAndAssertResponseStatus(facility1);
+        createFacilityAndAssertResponseStatus(facility2);
 
-        Response creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility1);
-        assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-        creationResponse = getJsonPostResponseAsAdmin(target(create.getPathTemplate()), facility2);
-        assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-
-
-        // test search with pattern which match the both facility
-        Map<String,Object> searchParams = new HashMap<>();
-        searchParams.put(URIS_PARAM_NAME,Arrays.asList(facility1.getUri(),facility2.getUri()));
-
-        List<FacilityGetDTO> results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
+        //test with both facility
+        List<FacilityGetDTO> results = getFacilitiesByUris(List.of(facility1.getUri(),facility2.getUri()));
         assertEquals(2,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
 
-        // test search with pattern which match only one facility
-        searchParams = new HashMap<>();
-        searchParams.put(URIS_PARAM_NAME, Collections.singletonList(facility1.getUri()));
-
-        results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
+        //test with only the first facility
+        results = getFacilitiesByUris(List.of(facility1.getUri()));
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
 
-        // test search with pattern which match only one facility
-        searchParams = new HashMap<>();
-        searchParams.put(URIS_PARAM_NAME, Collections.singletonList(facility2.getUri()));
-
-        results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
+        // test with only the second facility
+        results = getFacilitiesByUris(List.of(facility2.getUri()));
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
     }
@@ -422,6 +417,23 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     }
     //#endregion
 
+    //#region private methods
+    private List<FacilityGetDTO> getFacilitiesByUris(List<URI> uris) throws Exception {
+        return new UserCallBuilder(searchByURIs)
+                .setBody(uris)
+                .buildAdmin()
+                .executeCallAndDeserialize(listTypeReference)
+                .getDeserializedResponse()
+                .getResult();
+    }
+
+    private void createFacilityAndAssertResponseStatus(FacilityCreationDTO dto) throws Exception {
+        new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.CREATED);
+    }
+    //#endregion
 
     @Override
     protected List<String> getCollectionsToClearNames() {

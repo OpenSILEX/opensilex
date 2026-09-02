@@ -78,8 +78,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         siteC.setFacilities(Arrays.asList(facilityA, facilityB));
         sparql.create(SiteModel.class, Arrays.asList(siteA, siteB, siteC));
 
-        MongoDBServiceV2 mongo = openSilexTestEnv.getOpenSilex().getServiceInstance(MongoDBServiceV2.DEFAULT_SERVICE, MongoDBServiceV2.class);
-        logic = new SiteLogic(sparql, mongo);
+        logic = new SiteLogic(sparql, getMongoDBService(), getFs());
     }
 
     @Test

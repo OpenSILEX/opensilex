@@ -1,3 +1,15 @@
+@property --main-color-theme {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #00A38D;
+}
+
+@property --main-color-theme-hover {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #018371;
+}
+
 @property --color-empty {
     syntax: '<color>';
     inherits: true;

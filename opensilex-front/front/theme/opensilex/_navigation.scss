@@ -20,14 +20,14 @@
 		}
 		&.active {
 			.page-link {
-				background-color: #00A38D;
+				background-color: var(--main-color-theme);
 				color: var(--color-white);
 			}
 		}
 	}
 
 	.page-link:hover {
-		background-color: #018371;
+		background-color: var(--main-color-theme);
 		color: var(--color-white);
 		transition: all .2s ease-in-out;
 	}

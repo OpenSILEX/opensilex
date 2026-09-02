@@ -9,7 +9,7 @@
 }
 
 .bg-phis-green {
-    background-color: #00A38D
+    background-color: var(--main-color-theme)
 }
 
 .inline-action .inline-action-btn {
@@ -341,7 +341,7 @@ a.external-url-link:hover {
 }
 
 .nav-tab .nav-tab-item .nav-tab-link.active {
-    border-bottom: 2px solid #00A38D;    
+    border-bottom: 2px solid var(--main-color-theme);
     font-weight: bold;
     background-color: #fff;
 }
@@ -386,7 +386,7 @@ a.external-url-link:hover {
       line-height: 1.25rem;
       text-align: center;
       color: #fff;
-      background: #00A38D;
+      background: var(--main-color-theme);
       font-weight: bold;
     }
   
@@ -446,7 +446,7 @@ a.external-url-link:hover {
 }
 
 .sidebar-header {
-    background-color: #00A38D;
+    background-color: var(--main-color-theme);
     position: absolute;
     width: 240px;
 }
@@ -472,7 +472,7 @@ a.external-url-link:hover {
 }
 
 .customized #main-menu-navigation .nav-item.active::after {
-    background: #00A38D;
+    background: var(--main-color-theme);
     border-radius: 10px;
     color: #fff;
     content: " ";
@@ -497,7 +497,7 @@ a.external-url-link:hover {
 }
 
 .customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item.active::after {
-    background: #00A38D;
+    background: var(--main-color-theme);
     border-radius: 10px;
     color: #fff;
     content: " ";
@@ -642,8 +642,8 @@ body.modal-open {
 .custom-control-input:checked ~ .custom-control-label::before,
 .form-check-input:checked {
     color: #fff;
-    border-color: #00A38D;
-    background-color: #00A38D;
+    border-color: var(--main-color-theme);
+    background-color: var(--main-color-theme);
 }
 
 .modal-header .close:hover {
@@ -690,20 +690,20 @@ body.modal-open {
   }
 
 .greenThemeColor, .n-button.greenThemeColor {
-    background-color: #00A38D;
-    border-color: #00A38D;
+    background-color: var(--main-color-theme);
+    border-color: var(--main-color-theme);
     color: #fff;
 }
 
 .greenThemeColor:hover, .n-button.greenThemeColor:hover {
-    background-color: #018371;
-    border-color:#018371;
+    background-color: var(--main-color-theme-hover);
+    border-color:var(--main-color-theme-hover);
     color: #fff;
 }
 
 .createButton:hover {
-    background-color: #018371;
-    border-color:#018371;
+    background-color: var(--main-color-theme-hover);
+    border-color:var(--main-color-theme-hover);
 }
 .createButton:focus, .totalCountDetailButton:focus{
     background-color: #007969;
@@ -714,13 +714,13 @@ body.modal-open {
 .ScientificObjectImportHelpEyeIcon,
 .EventHelpTableViewHelpEyeIcon,
 .DataHelpTableViewHelpEyeIcon {
-    color: #00A38D;
-    border-color: #00A38D;
+    color: var(--main-color-theme);
+    border-color: var(--main-color-theme);
     margin-bottom: 5px;
 }
 .addChildButton:hover{
-    background-color: #00A38D;
-    border-color: #00A38D;
+    background-color: var(--main-color-theme);
+    border-color: var(--main-color-theme);
     color: #f1f1f1
 }
 
@@ -729,20 +729,20 @@ body.modal-open {
 }
 
 .downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon {
-    color: #00A38D;
-    border-color: #00A38D;
+    color: var(--main-color-theme);
+    border-color: var(--main-color-theme);
 }
 
 .downloadTemplateBtn:hover, .cardAdvancedSearchIcon:hover, .cardAnnotationIcon:hover {
-    background-color: #00A38D;
+    background-color: var(--main-color-theme);
     color: #f1f1f1;
 }
 
 .greenThemeColorText {
-    color: #00A38D;
+    color: var(--main-color-theme);
 }
 .greenThemeColorText:hover {
-    color: #018371;
+    color: var(--main-color-theme-hover);
 }
 
 .resetButton {
@@ -772,8 +772,8 @@ body.modal-open {
 .searchMenuIcon .ik-search{
     font-size: 1.3em;
     font-weight: 900;
-    -webkit-text-stroke: 1px #00A38D;
-    color:#00A38D;
+    -webkit-text-stroke: 1px var(--main-color-theme);
+    color:var(--main-color-theme);
     /* margin-top: 5px */
 }
 

@@ -20,7 +20,7 @@
 		}
 		&.active {
 			.page-link {
-				background-color: #00A38D;
+				background-color: var(--main-color-theme);
 				color: var(--color-white);
 			}
 		}

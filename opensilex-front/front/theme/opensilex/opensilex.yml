@@ -1,4 +1,5 @@
 stylesheets:
+    - variables.css
     - _mixins.scss
     - _settings.scss
     - _cards.scss

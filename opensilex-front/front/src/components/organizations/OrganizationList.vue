@@ -63,7 +63,7 @@
             :multiple="false"
             :label="t('OrganizationList.filter.parent-organizations')"
             :helpMessage="t('OrganizationList.filter.parent-organizations-help')"
-            :placeholder="t('OrganizationList.parent-placeholder') "
+            :placeholder="t('OrganizationList.child-placeholder') "
             class="searchFilter"
           />
 
@@ -74,7 +74,7 @@
             :multiple="false"
             :label="t('OrganizationList.filter.child-organizations')"
             :helpMessage="t('OrganizationList.filter.child-organizations-help')"
-            :placeholder="t('OrganizationList.child-placeholder')"
+            :placeholder="t('OrganizationList.parent-placeholder')"
             class="searchFilter"
           />
 
@@ -407,10 +407,8 @@ en:
         type-placeholder: "Filter by type"
         parent-organizations: "Parents of"
         parent-organizations-help: "Only direct parents of this organization will be displayed"
-        parent-organizations-placeholder: "Filter by child organization"
         child-organizations: "Children of"
         child-organizations-help: "Only direct children of this organization will be displayed"
-        child-organizations-placeholder: "Filter by parent organization"
     facilities: "Facilities"
     facilities-label: Facilities
     parent-placeholder: Select parent organization
@@ -422,10 +420,8 @@ fr:
         type-placeholder: "Filtrer par type"
         parent-organizations: "Parents de"
         parent-organizations-help: "Seuls les parents directs de cette organisation seront affichés"
-        parent-organizations-placeholder: "Filtrer par organisation enfant"
         child-organizations: "Enfants de"
         child-organizations-help: "Seuls les enfants directs de cette organisation seront affichés"
-        child-organizations-placeholder: "Filtrer par organisation parent"
     facilities: "Installations"
     facilities-label: Installations environnementales
     parent-placeholder: Sélectionner l'organisation parente

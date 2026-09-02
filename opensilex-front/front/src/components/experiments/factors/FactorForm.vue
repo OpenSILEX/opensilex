@@ -19,6 +19,7 @@
           ref="nForm"
       >
         <!-- URI -->
+        <n-form-item>
         <UriForm
             v-model:uri="form.uri"
             :label="t('component.experiment.search.column.uri')"
@@ -26,9 +27,11 @@
             :editMode="isEditMode"
             :generated.sync="uriGenerated"
         ></UriForm>
+        </n-form-item>
 
         <!-- Name -->
         <div id="v-step-0">
+          <n-form-item>
           <InputForm
               rules="nameFiltered"
               v-model:value="form.name"
@@ -38,6 +41,7 @@
               :required="true"
               :placeholder="t('component.experiment.name-factor-placeholder')"
           ></InputForm>
+          </n-form-item>
         </div>
 
         <p class="alert-info">
@@ -74,6 +78,7 @@
         </p>
         <!-- Category-->
         <div id="v-step-1">
+          <n-form-item>
           <FactorCategorySelector
               ref="factorCategorySelector"
               label="component.experiment.category"
@@ -81,15 +86,18 @@
               helpMessage="component.experiment.category-factor-help"
               v-model:category="form.category"
           ></FactorCategorySelector>
+          </n-form-item>
         </div>
         <!-- description -->
         <div id="v-step-2">
+          <n-form-item>
           <TextAreaForm
               :value.sync="form.description"
               label="component.experiment.description"
               :placeholder="t('component.experiment.description-factor-placeholder')"
               helpMessage="component.experiment.description-factor-help"
           ></TextAreaForm>
+          </n-form-item>
         </div>
         <div id="v-step-3">
           <FactorLevelTable
@@ -124,9 +132,11 @@ import {FactorCreationDTO} from "opensilex-core/model/factorCreationDTO";
 import FactorLevelTable from "@/components/experiments/factors/FactorLevelTable.vue";
 import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
 import {NForm} from "naive-ui";
+import {NFormItem} from "naive-ui";
 import Modal from "@/components/common/views/Modal.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
+
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex')
 const store = useStore()

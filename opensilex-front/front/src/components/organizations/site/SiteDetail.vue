@@ -116,7 +116,6 @@ import TypeView from "@/components/common/views/TypeView.vue";
 import UriListView from "@/components/common/views/UriListView.vue";
 import AddressView from "@/components/common/views/AddressView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import SiteForm from "@/components/organizations/site/SiteForm.vue";
 
 // Props

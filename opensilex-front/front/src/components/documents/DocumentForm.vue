@@ -185,7 +185,7 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import {requiredTrimmed} from "@/models/FormFieldsFormatter";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
-interface DocumentFormModel {
+export interface DocumentFormModel {
   description: {
     uri?: string
     identifier?: string

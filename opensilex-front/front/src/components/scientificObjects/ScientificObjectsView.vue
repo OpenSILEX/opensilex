@@ -197,14 +197,11 @@
       </n-layout>
     </PageContent>
 
-    <ModalForm
+    <DocumentForm
       ref="documentForm"
-      component="opensilex-DocumentForm"
       createTitle="component.common.addDocument"
-      modalSize="lg"
-      :initForm="initForm"
-      icon="bi#bi-file-earmark-text"
-    ></ModalForm>
+      editTitle=""
+    ></DocumentForm>
 
     <EventCsvForm
       ref="eventCsvForm"
@@ -221,16 +218,14 @@
 
 <script setup lang="ts">
 
-import {computed, inject, ref} from "vue";
+import {computed, ref} from "vue";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 import CriteriaSearchModalCreator from "./CriteriaSearchModalCreator.vue";
 import {useStore} from "vuex";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import ScientificObjectList, {ScientificObjectFilter} from "@/components/scientificObjects/ScientificObjectList.vue";
 import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
-import {DocForm} from "@/components/documents/DocumentForm.vue";
+import DocumentForm, {DocumentFormModel} from "@/components/documents/DocumentForm.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
@@ -280,7 +275,7 @@ const expandedNCollapseNames = ref<string[]>([])
 //#region Template refs
 const soForm = ref<InstanceType<typeof ScientificObjectForm> | null>(null);
 const importForm = ref<InstanceType<typeof ScientificObjectCSVImporter> | null>(null);
-const documentForm = ref<InstanceType<typeof ModalForm> | null>(null);
+const documentForm = ref<InstanceType<typeof DocumentForm> | null>(null);
 const eventCsvForm = ref<InstanceType<typeof EventCsvForm> | null>(null);
 const moveCsvForm = ref<InstanceType<typeof EventCsvForm> | null>(null);
 const soList = ref<InstanceType<typeof ScientificObjectList> | null>(null);
@@ -326,7 +321,7 @@ function redirectToDetail(http): void {
  * Shows the modal form to create a new document on an OS.
  */
 function createDocument(): void {
-  documentForm.value.showCreateForm();
+  documentForm.value?.showCreateForm(initForm());
 }
 
 function createEvents(): void {
@@ -346,7 +341,7 @@ function updateSelectedUris(): void{
   }
 }
 
-function initForm(): DocForm{
+function initForm(): DocumentFormModel{
   let targetURI = [];
   for (let select of soList.value.getSelected()) {
     targetURI.push(select.uri);

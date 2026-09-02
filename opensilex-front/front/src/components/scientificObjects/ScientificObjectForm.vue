@@ -1,36 +1,30 @@
 <template>
-  <ModalForm
+  <OntologyObjectForm
     ref="modalForm"
-    component="opensilex-OntologyObjectForm"
-    createTitle="ExperimentScientificObjects.add"
-    editTitle="ExperimentScientificObjects.update"
-    modalSize="lg"
-    icon="ik#ik-target"
-    :createAction="callScientificObjectCreation"
-    :updateAction="callScientificObjectUpdate"
-    :context="context"
-    @onCreate="$emit('onCreate', $event)"
-    @onUpdate="$emit('onUpdate', $event)"
-    :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-    :currentType="currentType || $opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-  >
-  </ModalForm>
+    create-title="component.scientificObjects.actions.add"
+    edit-title="component.scientificObjects.actions.update"
+    :current-type="currentType || $opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+    :base-type="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+    :create-action="callScientificObjectCreation"
+    :update-action="callScientificObjectUpdate"
+  ></OntologyObjectForm>
 </template>
 
 <script setup lang="ts">
-import {inject, Ref, ref} from "vue";
-import {ScientificObjectsService} from "opensilex-core/index";
-import ModalForm from "../common/forms/ModalForm.vue";
+import {inject, Ref, ref, useTemplateRef} from "vue";
 import Oeso from "../../ontologies/Oeso";
 import Rdfs from "../../ontologies/Rdfs";
-import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
-import {ScientificObjectCreationDTO} from "opensilex-core/model/scientificObjectCreationDTO";
-import {ScientificObjectUpdateDTO} from "opensilex-core/model/scientificObjectUpdateDTO";
 import DTOConverter from "../../models/DTOConverter";
-import {UserGetDTO} from "../../../../../opensilex-security/front/src/lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "@/components/ontology/models/MultiValuedRDFObjectRelation";
-import OntologyObjectForm from "@/components/ontology/OntologyObjectForm.vue";
+import OntologyObjectForm, {OntologyObjectFormModel} from "@/components/ontology/OntologyObjectForm.vue";
+import {
+  ScientificObjectCreationDTO,
+  ScientificObjectDetailDTO,
+  ScientificObjectsService,
+  ScientificObjectUpdateDTO
+} from "../../../../../opensilex-core/front/src/lib";
+import {UserGetDTO} from "@/lib";
 
 //#region type helpers
 //To not have to put the extremely annoying 'InstanceType...' every time
@@ -51,31 +45,31 @@ const props = defineProps<Props>();
 
 //endregion
 
-//#region Template Refs
-const modalForm = ref<InstanceType<typeof ModalForm>>(null);
-//endregion
 
 //#region reactive data
 //Data to track what type of OS is being created or updated
 const currentType = ref<string>(null);
 //#endregion
 
+//#region Template refs
+const modalForm = useTemplateRef<OntologyObjectFormInstance>('modalForm')
+//#endregion
+
 //#region Public methods & Expose
 function createScientificObject(parentURI?) {
 
-  let form: OntologyObjectFormInstance = modalForm.value.getFormRef();
-  initOntologyObjectForm(form, undefined);
+  let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
+  initOntologyObjectForm(ontologyObjectForm);
 
   // if parentURI property is set, then use this value as default isPartOf relation value
-  form.setInitHandler((relation: Ref<MultiValuedRDFObjectRelation>) => {
+  ontologyObjectForm.setInitHandler((relation: Ref<MultiValuedRDFObjectRelation>) => {
     if (parentURI) {
       if ($opensilex.Oeso.checkURIs(relation.value.property.uri, $opensilex.Oeso.IS_PART_OF)) {
         relation.value.value = parentURI;
-        form.updateRelations();
+        ontologyObjectForm.updateRelations();
       }
     }
   });
-
   modalForm.value.showCreateForm();
 }
 
@@ -83,14 +77,14 @@ function editScientificObject(objectURI: string) {
   soService
     .getScientificObjectDetail(objectURI, getExperimentURI())
     .then((http) => {
-      let form: OntologyObjectFormInstance = modalForm.value.getFormRef();
+      let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
       let os: ScientificObjectDetailDTO = http.response.result;
 
       currentType.value = os.rdf_type;
-      initOntologyObjectForm(form, os.rdf_type);
-      excludeCurrentURIFromParentSelector(objectURI, form);
+      initOntologyObjectForm(ontologyObjectForm);
+      excludeCurrentURIFromParentSelector(objectURI, ontologyObjectForm);
       let publisher: UserGetDTO = os.publisher;
-      const editDto = DTOConverter.extractURIFromResourceProperties<ScientificObjectDetailDTO, ScientificObjectUpdateDTO>(os);
+      const editDto = DTOConverter.extractURIFromResourceProperties<ScientificObjectDetailDTO, OntologyObjectFormModel>(os);
       editDto.publisher = publisher;
 
       modalForm.value.showEditForm(editDto);
@@ -103,20 +97,18 @@ defineExpose({createScientificObject, editScientificObject})
 //#region Private methods
 /**
  * Inner function used to pass some properties to the OntologyObjectForm
- * @param form
- * @param type
  */
-function initOntologyObjectForm(form: OntologyObjectFormInstance, type: string) {
+function initOntologyObjectForm(ontologyObjectForm: OntologyObjectFormInstance) {
 
   let excludedProperties = new Set<string>([
     Oeso.getShortURI(Oeso.HAS_GEOMETRY), // location with move
     Rdfs.getShortURI(Rdfs.LABEL) // let OntologyObjectForm handle rdfs:label by default
   ]);
 
-  form.setExcludedProperties(excludedProperties);
+  ontologyObjectForm.setExcludedProperties(excludedProperties);
 
   if (!props.context) {
-    form.setLoadCustomProperties(false);
+    ontologyObjectForm.setLoadCustomProperties(false);
   }
 }
 

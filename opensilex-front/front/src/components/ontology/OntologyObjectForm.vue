@@ -1,79 +1,97 @@
 <template>
-  <n-form
-    v-if="form"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-  >
-    <!-- URI -->
-    <UriForm
-      v-model:uri="form.uri"
-      :generated="uriGenerated"
-      @update:generated="val => (uriGenerated = val)"
-      :editMode="editMode"
-      label="component.common.forms-generic-placeholders.uri-label"
-      helpMessage="component.common.uri-help-message"
-    ></UriForm>
+  <Modal ref="modalRef">
+    <n-form
+      ref="formRef"
+      v-if="form"
+      :model="form"
+      :rules="rules"
+      label-placement="top"
+      :show-require-mark="true"
+    >
+      <!-- URI -->
+      <n-form-item path="uri">
+        <UriForm
+          v-model:uri="form.uri"
+          :generated="uriGenerated"
+          @update:generated="val => (uriGenerated = val)"
+          :editMode="isEditMode"
+          label="component.common.forms-generic-placeholders.uri-label"
+          helpMessage="component.common.uri-help-message"
+        ></UriForm>
+      </n-form-item>
 
-    <!-- Name -->
-    <InputForm
-      v-model:value="form.name"
-      label="component.common.name"
-      type="text"
-      :required="true"
-      placeholder="component.common.forms-generic-placeholders.form-name-placeholder"
-    ></InputForm>
+      <!-- Name -->
+      <n-form-item path="name">
+        <InputForm
+          v-model:value="form.name"
+          label="component.common.name"
+          type="text"
+          :required="true"
+          placeholder="component.common.forms-generic-placeholders.form-name-placeholder"
+        ></InputForm>
+      </n-form-item>
 
-    <!-- Type -->
-    <n-form-item path="rdf_type" ref="rdfTypeItem">
-      <TypeForm
-        v-if="baseType"
-        v-model:type="form.rdf_type"
+      <!-- Type -->
+      <n-form-item path="rdf_type" ref="rdfTypeItem">
+        <TypeForm
+          v-if="baseType"
+          v-model:type="form.rdf_type"
+          :baseType="baseType"
+          :required="true"
+          :disabled="isEditMode"
+          :ignoreRoot="false"
+          placeholder="component.common.forms-generic-placeholders.form-type-placeholder"
+          @select="typeSwitch($event.id,false)"
+        ></TypeForm>
+      </n-form-item>
+
+      <!-- Custom properties -->
+      <OntologyRelationsForm
+        v-if="baseType && loadCustomProperties"
+        ref="ontologyRelationsForm"
+        :rdfType="form.rdf_type"
+        :typeToLoad="currentType"
+        :relations="form.relations"
+        :excludedProperties="excludedProperties"
+        :customComponentProps="customComponentProps"
         :baseType="baseType"
-        :required="true"
-        :disabled="editMode"
-        :ignoreRoot="false"
-        placeholder="component.common.forms-generic-placeholders.form-type-placeholder"
-        @select="typeSwitch($event.id,false)"
-      ></TypeForm>
-    </n-form-item>
+        :editMode="isEditMode"
+        :context="context ? { experimentURI: context} : undefined"
+        :initHandler="initHandler"
+      ></OntologyRelationsForm>
 
-    <!-- Custom properties -->
-    <OntologyRelationsForm
-      v-if="baseType && loadCustomProperties"
-      ref="ontologyRelationsForm"
-      :rdfType="form.rdf_type"
-      :typeToLoad="currentType"
-      :relations="form.relations"
-      :excludedProperties="excludedProperties"
-      :customComponentProps="customComponentProps"
-      :baseType="baseType"
-      :editMode="editMode"
-      :context="context ? { experimentURI: context} : undefined"
-      :initHandler="initHandler"
-    ></OntologyRelationsForm>
+      <slot v-if="form.rdf_type" v-bind:form="form"></slot>
+    </n-form>
 
-    <slot v-if="form.rdf_type" v-bind:form="form"></slot>
-  </n-form>
+    <template #footer>
+      <FormFooter @cancel="hide" @submit="submit" />
+    </template>
+  </Modal>
+
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from "vue";
+import {computed, ref, useTemplateRef, watch} from "vue";
 import OntologyRelationsForm from "./OntologyRelationsForm.vue";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import Rdfs from "../../ontologies/Rdfs";
 import DC from "../../ontologies/DC";
-import type {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import {
+  FormRules,
   NForm,
   NFormItem
 } from 'naive-ui'
 import {FormItemInst} from "naive-ui";
 import {useI18n} from "vue-i18n";
+import useModalFormLogic, {type ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
+import Modal from "@/components/common/views/Modal.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import {RDFObjectRelationDTO} from "../../../../../opensilex-core/front/src/lib";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
+import {UserGetDTO} from "@/lib";
 
 /*
  * Component used for handling URI, type, name and custom properties for a given type
@@ -86,8 +104,10 @@ export interface OntologyObjectFormModel{
   uri?: string,
   rdf_type?: string,
   name: string,
-  relations: Array<RDFObjectRelationDTO>
+  relations: Array<RDFObjectRelationDTO>,
+  publisher?: UserGetDTO
 }
+
 //#endregion
 
 //#region Reactive data
@@ -109,34 +129,39 @@ const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => void>(
 const loadCustomProperties = ref<boolean>(true);
 //#endregion
 
-//#region Template refs
+//#region Template
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 const ontologyRelationsForm = ref<InstanceType<typeof OntologyRelationsForm>>(null);
 const rdfTypeItem = ref<FormItemInst | null>(null)
 //#endregion
 
 //#region Props
 interface Props {
-  editMode: boolean,
-  form: OntologyObjectFormModel,
+  //form: OntologyObjectFormModel,
   context?: string,
   currentType: string,
-  baseType: string
+  baseType: string,
+  createAction: (form: any) => Promise<HttpResponse<OpenSilexResponse>>,
+  updateAction: (form: any) => Promise<HttpResponse<OpenSilexResponse>>,
 }
 
-const props = withDefaults(
-  defineProps<Props>(),
-  {
-    form: () => ( {
-      uri: null,
-      rdf_type: null,
-      name: "",
-      relations: []
-    })
-  }
-);
+const props = defineProps<ModalFormProps & Props>();
+
 //#endregion
 
+const emit = defineEmits<ModalFormEmits>()
+
 //#region functions
+
+function getEmptyForm(): OntologyObjectFormModel {
+  return {
+    uri: null,
+    rdf_type: null,
+    name: "",
+    relations: []
+  }
+}
 
 function setInitHandler(handler) {
   initHandler.value = handler;
@@ -166,7 +191,7 @@ async function typeSwitch(type: string, initialLoad: boolean) {
 //#endregion
 
 //#region Computed
-const rules = computed(() => ({
+const rules = computed<FormRules>(() => ({
   'name': {
     required: true,
     message: t('validations.required_if', {_field_: t('component.common.name')}),
@@ -180,14 +205,25 @@ const rules = computed(() => ({
 }))
 //#endregion
 
+const {form, isEditMode, exposed, hide, submit} = useModalFormLogic<OntologyObjectFormModel>({
+  modalRef,
+  nFormRef: formRef,
+  getEmptyForm,
+  create: props.createAction,
+  update: props.updateAction,
+  props,
+  emit
+})
+
 //#region Watch towers
 //A watcher to remove error state when a new type is filled
 watch(
-  () => props.form.rdf_type,
+  () => form?.value.rdf_type,
   () => rdfTypeItem.value?.restoreValidation(),
   { flush: 'post' }
 );
 //#endregion
+
 
 //#region Exposed
 defineExpose({
@@ -195,7 +231,8 @@ defineExpose({
   updateRelations,
   setExcludedProperties,
   setCustomComponentProps,
-  setLoadCustomProperties
+  setLoadCustomProperties,
+  ...exposed
 })
 //#endregion
 

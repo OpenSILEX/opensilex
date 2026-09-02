@@ -1,10 +1,10 @@
 <template>
-  
-  <opensilex-TypeForm
+
+  <TypeForm
     ref="formSelector"
-    :type.sync="categoryString"
-    :baseType="$opensilex.Oeso.FACTOR_CATEGORY_URI"
-    :multiple="multiple" 
+    v-model:type="category"
+    :baseType="opensilex.Oeso.FACTOR_CATEGORY_URI"
+    :multiple="multiple"
     :label="label"
     placeholder="component.factors.form.placeholder.factors"
     @clear="$emit('clear')"
@@ -13,49 +13,47 @@
     noResultsText="component.account.filter-search-no-result"
     :helpMessage="helpMessage"
     @handlingEnterKey="onEnter"
-  ></opensilex-TypeForm>
+  ></TypeForm>
 </template>
 
-<script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import FormSelector from "../../common/forms/FormSelector.vue";
+<script setup lang="ts">
+import Vue, {inject, useTemplateRef} from "vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {I18nN, useI18n} from "vue-i18n";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
-@Component
-export default class FactorCategorySelector extends Vue {
-  $opensilex: any;
-  $i18n: any;
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+const { t } = useI18n()
 
-  @Ref("formSelector") readonly forcmSelector!: FormSelector;
+const formSelector = useTemplateRef<InstanceType<typeof TypeForm>>('formSelector')
 
-  @PropSync("category")
-  categoryString;
-
-  @Prop({
-    default: "component.factors.category",
-  })
-  label;
-
-  @Prop()
-  multiple;
-
-  @Prop()
-  helpMessage: string;
-
-
-  select(value) {
-    this.$emit("select", value);
-  }
-
-  deselect(value) {
-    this.$emit("deselect", value);
-  }
-
-  onEnter() {
-    this.$emit("handlingEnterKey")
-  }
-
+const category = defineModel('category')
+interface Props {
+  label?: string;
+  multiple?: boolean;
+  helpMessage?: string;
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  label: "component.factors.category",
+});
+
+const emit = defineEmits(['select', 'deselect', 'handlingEnterKey', 'clear'])
+
+  function select(value) {
+    emit("select", value);
+  }
+
+  function deselect(value) {
+    emit("deselect", value);
+  }
+
+  function onEnter() {
+    emit("handlingEnterKey")
+  }
+
+
 </script>
 
 <style scoped lang="scss">

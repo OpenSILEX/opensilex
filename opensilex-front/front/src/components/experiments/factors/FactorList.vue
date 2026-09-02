@@ -1,54 +1,54 @@
 <template>
   <div>
-    <opensilex-SearchFilterField
+    <SearchFilterField
       v-if="searchBar"
       @clear="resetSearch()"
       @search="updateFilters()"
       label="component.factor.list.filter.label"
     >
       <template v-slot:filters>
-        <opensilex-FilterField>
+        <FilterField>
           <b-form-group>
             <label for="name">{{
               $t("component.factor.list.filter.name")
             }}</label>
-            <opensilex-StringFilter
+            <StringFilter
               id="name"
-              :filter.sync="filter.name"
+              v-model:filter="filter.name"
               placeholder="component.factor.name-placeholder"
-            ></opensilex-StringFilter>
+            ></StringFilter>
           </b-form-group>
-        </opensilex-FilterField>
+        </FilterField>
 
-        <opensilex-FilterField>
+        <FilterField>
           <b-form-group>
             <b-input-group>
               <!-- Factor categories -->
-              <opensilex-FactorCategorySelector
+              <FactorCategorySelector
                 label="component.factor.list.filter.category"
                 placeholder="component.factor.names.category-placeholder"
                 :category.sync="filter.category"
-              ></opensilex-FactorCategorySelector>
+              ></FactorCategorySelector>
             </b-input-group>
           </b-form-group>
-        </opensilex-FilterField>
+        </FilterField>
 
-        <opensilex-FilterField v-if="experiment == null">
+        <FilterField v-if="experiment == null">
           <b-form-group>
             <b-input-group>
               <!-- Experiments -->
-              <opensilex-ExperimentSelector
+              <ExperimentSelector
                 label="component.factor.list.filter.experiment"
                 :multiple="false"
                 :experiments.sync="filter.experiment"
-              ></opensilex-ExperimentSelector>
+              ></ExperimentSelector>
             </b-input-group>
           </b-form-group>
-        </opensilex-FilterField>
+        </FilterField>
       </template>
-    </opensilex-SearchFilterField>
+    </SearchFilterField>
 
-    <opensilex-TableAsyncView
+    <TableAsyncView
       ref="tableRef"
       :searchMethod="searchFactors"
       :fields="fields"
@@ -65,106 +65,113 @@
       <!-- <template v-slot:head(uri)="{data}">{{$t(data.label)}}</template> -->
       <template v-slot:head(actions)="{ data }">{{ $t(data.label) }}</template>
       <template v-slot:cell(name)="{ data }">
-        <opensilex-UriLink
+        <UriLink
           :uri="data.item.uri"
           :value="data.item.name"
           :to="{ path: '/' +encodeURIComponent(experiment) + '/factor/details/' + encodeURIComponent(data.item.uri) }"
-        ></opensilex-UriLink>
+        ></UriLink>
       </template>
       <template v-slot:cell(category)="{ data }"
         ><span class="capitalize-first-letter">{{
-          $opensilex.getFactorCategoryName(data.value)
+          opensilex.getFactorCategoryName(data.value)
         }}</span></template
       >
       <template v-slot:cell(actions)="{ data }">
         <b-button-group size="sm">
-          <opensilex-EditButton
+          <EditButton
             v-if="
               user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
             "
             :small="true"
             label="component.common.list.buttons.update"
             @click="$emit('onEdit', data.item.uri)"
-          ></opensilex-EditButton>
-          <opensilex-InteroperabilityButton
+          ></EditButton>
+          <InteroperabilityButton
             v-if="
               user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
             "
             :small="true"
             label="component.common.list.buttons.interoperability"
             @click="$emit('onInteroperability', data.item.uri)"
-          ></opensilex-InteroperabilityButton>
-          <opensilex-DeleteButton
+           disabled></InteroperabilityButton>
+          <DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
             :small="true"
             label="component.common.list.buttons.delete"
             @click="$emit('onDelete', data.item)"
-          ></opensilex-DeleteButton>
+          ></DeleteButton>
         </b-button-group>
       </template>
-    </opensilex-TableAsyncView>
+    </TableAsyncView>
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
-import Vue from "vue";
+<script setup lang="ts">
+
 // @ts-ignore
-import { FactorsService } from "opensilex-core/index";
+import {FactorsfactorService} from "core/index";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import InteroperabilityButton from "@/components/common/buttons/InteroperabilityButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import {computed, inject, onBeforeUnmount, onMounted, useTemplateRef} from "vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {useStore} from "vuex";
+import {useRoute} from "vue-router";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import {FactorsService} from "opensilex-core/api/factors.service";
 
-@Component
-export default class FactorList extends Vue {
-  $opensilex: any;
-  service: FactorsService;
-  $store: any;
-  $route: any;
-  categories: any = {};
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+const factorService = opensilex.getService<FactorsService>('opensilex.FactorsService')
+const store = useStore()
+const route = useRoute()
 
-  @Prop({
-    default: null,
-  })
-  experiment: string;
 
-  @Prop({
-    default: false,
-  })
-  isSelectable;
+interface Props {
+  experiment: string | null
+  isSelectable: boolean
+  noActions: boolean
+  searchBar: boolean
+}
 
-  @Prop({
-    default: false,
-  })
-  noActions;
+const props = withDefaults(defineProps<Props>(), {
+  experiment: null,
+  isSelectable: false,
+  noActions: false,
+  searchBar: false,
+})
 
-  @Prop({
-    default: false,
-  })
-  searchBar;
+let langUnwatcher: (() => void) | undefined
 
-  private langUnwatcher;
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      (lang) => {
-        this.$opensilex.loadFactorCategories().then(() => {
-          this.refresh();
-        });
+onMounted(() => {
+  langUnwatcher = store.watch(
+      (state, getters) => getters.language,
+      async () => {
+        await opensilex.loadFactorCategories()
+        refresh()
       }
-    );
+  )
+})
+
+onBeforeUnmount(() => {
+  langUnwatcher?.()
+})
+
+ function beforeDestroy() {
+    langUnwatcher();
   }
 
-  beforeDestroy() {
-    this.langUnwatcher();
-  }
+  const user = computed(() => {
+    return store.state.user
+  })
 
-  get user() {
-    return this.$store.state.user;
-  }
+const credentials = computed(() => {
+  return store.state.credentials
+})
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-
-  filter = {
+  const filter = {
     uri: "",
     name: "",
     description: "",
@@ -172,104 +179,105 @@ export default class FactorList extends Vue {
     category: "",
   };
 
-  resetSearch() {
-    this.resetFilters();
-    this.refresh();
+  function resetSearch() {
+    resetFilters();
+    refresh();
   }
 
-  resetFilters() {
-    this.filter = {
-      uri: null,
-      name: "",
-      description: "",
-      experiment: null,
-      category: "",
-    };
+  function resetFilters() {
+    filter.uri = null;
+    filter.name = "";
+    filter.description = "";
+    filter.experiment = null;
+    filter.category = "";
     // Only if search and reset button are use in list
-    if (this.experiment != null) {
-      this.filter.experiment = this.experiment;
+    if (props.experiment != null) {
+      filter.experiment = props.experiment;
     }
   }
+const emit = defineEmits(['onDetails', 'onDelete', 'onDetails', 'onInteroperability', 'onEdit'])
 
-  onDetails(uri) {
-    this.$emit("onDetails", uri);
-  }
+function onDetails(uri: string) {
+  emit('onDetails', uri)
+}
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.FactorsService");
-    let query: any = this.$route.query;
+function created() {
+  const query: any = route.query
 
-    this.resetFilters();
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        this.filter[key] = decodeURIComponent(query[key]);
-      }
+  resetFilters()
+
+  for (const [key] of Object.entries(filter)) {
+    if (query[key]) {
+      filter[key] = decodeURIComponent(query[key] as string)
     }
   }
+}
 
-  updateFilters(value: string) {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");
+  function updateFilters() {
+    for (let [key, value] of Object.entries(filter)) {
+      opensilex.updateURLParameter(key, value, "");
     }
-    this.refresh();
+    refresh();
   }
 
-  get fields() {
+  const fields = computed(() =>
+  {
     let tableFields: any = [
       {
         key: "name",
-        label: "component.factor.list.name",
+        label: "component.experiment.label",
         sortable: true,
       },
       {
         key: "category",
-        label: "component.factor.list.category",
+        label: "component.experiment.category",
         sortable: true,
       },
       {
         key: "description",
-        label: "component.factor.list.description",
+        label: "component.experiment.description",
         sortable: false,
       },
     ];
-    if (!this.noActions) {
+    if (!props.noActions) {
       tableFields.push({
         key: "actions",
         label: "component.common.actions",
       });
     }
     return tableFields;
+  })
+
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
+
+
+  function onItemUnselected(row) {
+    tableRef.value.onItemUnselected(row);
+  }
+  function onItemSelected(row) {
+    tableRef.value.onItemSelected(row);
   }
 
-  @Ref("tableRef") readonly tableRef!: any;
-
-  onItemUnselected(row) {
-    this.tableRef.onItemUnselected(row);
-  }
-  onItemSelected(row) {
-    this.tableRef.onItemSelected(row);
+  function refresh() {
+    tableRef.value.refresh();
   }
 
-  refresh() {
-    this.tableRef.refresh();
+  function getSelected() {
+    return tableRef.value.getSelected();
   }
 
-  getSelected() {
-    return this.tableRef.getSelected();
-  }
-
-  searchFactors(options) {
-    return this.service.searchFactors(
-      this.$opensilex.prepareGetParameter(this.filter.name), // name
-      this.$opensilex.prepareGetParameter(this.filter.description), // description
-      this.$opensilex.prepareGetParameter(this.filter.category), // category
-      this.$opensilex.prepareGetParameter(this.filter.experiment), // experiment
+  function searchFactors(options) {
+    return factorService.searchFactors(
+      opensilex.prepareGetParameter(filter.name), // name
+      opensilex.prepareGetParameter(filter.description), // description
+      opensilex.prepareGetParameter(filter.category), // category
+      opensilex.prepareGetParameter(filter.experiment), // experiment
       options.orderBy, // orderBy
       options.currentPage, // page
       options.pageSize // pageSize
     );
   }
-}
+
 </script>
 
 <style scoped lang="scss">

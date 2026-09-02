@@ -121,7 +121,7 @@ export type RowWithData<T> = {
 };
 
 // Props
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   fields: Array<TableField>;
   fieldKeyToSortableModelLabelMap?: Record<string, string>;
   searchMethod: Function;
@@ -133,13 +133,20 @@ const props = defineProps<{
   iconNumberOfSelectedRow?: string;
   maximumSelectedRows?: number;
   selectAllLimit?: number;
-  defaultPageSize?: { type: number; default: 20 };
-  showCount?: { type: Boolean; default: true };
-  isSelectable?: { type: Boolean; default: false };
-  showHeaderCount?: { type: Boolean; default: true };
-  allowOnlySelected?: { type: Boolean; default: false }; // optionnel, par défaut false
-  showActions?: { type: Boolean; default: false }; // pour bouton dropdown actions groupées
-}>();
+  defaultPageSize?: number;
+  showCount?: boolean;
+  isSelectable?: boolean;
+  showHeaderCount?: boolean;
+  allowOnlySelected?: boolean; // optionnel, par défaut false
+  showActions?: boolean; // pour bouton dropdown actions groupées
+}>(), {
+  defaultPageSize: 20,
+  showCount: true,
+  isSelectable: false,
+  showHeaderCount: true,
+  allowOnlySelected: false,
+  showActions: false
+});
 
 //  Injections
 const route = useRoute();

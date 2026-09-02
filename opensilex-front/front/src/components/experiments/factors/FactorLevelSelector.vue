@@ -1,6 +1,6 @@
 <template>
   <div v-if="!disabled">
-    <opensilex-FormSelector
+    <FormSelector
       :label="label"
       v-model:selected="internalValue"
       :multiple="multiple"
@@ -21,6 +21,9 @@ import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import {FactorsService} from "opensilex-core/api/factors.service";
 
 type FactorLevelDTO = {
   uri: string
@@ -77,8 +80,8 @@ async function loadFactorLevels(): Promise<FactorNode[]> {
   }
 
   try {
-    const http: HttpResponse<OpenSilexResponse<FactorDTO[]>> = await $opensilex
-      .getService('opensilex.ExperimentsService')
+    const http = await $opensilex
+      .getService<ExperimentsService>('opensilex.ExperimentsService')
       .getAvailableFactors(props.experimentURI)
 
     const factors = http.response.result ?? []
@@ -105,12 +108,12 @@ async function loadFactorLevels(): Promise<FactorNode[]> {
 function searchFactorLevels(name: string, page: number, pageSize: number) {
   if (props.experimentURI) {
     return $opensilex
-      .getService('opensilex.ExperimentsService')
+      .getService<ExperimentsService>('opensilex.ExperimentsService')
       .getAvailableFactors(props.experimentURI)
   }
 
   return $opensilex
-    .getService('opensilex.FactorsService')
+    .getService<FactorsService>('opensilex.FactorsService')
     .searchFactorLevels(name, ['name=asc'], page, pageSize)
 }
 

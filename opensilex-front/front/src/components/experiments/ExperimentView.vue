@@ -188,6 +188,7 @@ import ExperimentDataVisualisation from "@/components/experiments/ExperimentData
 import DocumentTabList from "@/components/documents/DocumentTabList.vue";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
+import ExperimentFactors from "@/components/experiments/views/ExperimentFactors.vue";
 
 const route = useRoute();
 const store = useStore();

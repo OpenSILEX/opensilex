@@ -474,9 +474,8 @@ async function searchDatafiles(options: any) {
     provUris = [provUris]
   }
 
-  currentPage.value = (options.currentPage ?? 0) + 1
-  currentPageSize.value = options.pageSize ?? 10
-
+  currentPage.value = (options.currentPage ?? 0) + 1;
+  currentPageSize.value = options.pageSize ?? 10;
   const http = await service.value?.getDataFileDescriptionsByTargets(
     $opensilex.prepareGetParameter(props.filter.name),
     $opensilex.prepareGetParameter(props.filter.rdf_type),

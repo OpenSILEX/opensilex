@@ -864,6 +864,8 @@
             }
         },
         "scientificObjects": {
+            "scientificObjects": "Objet(s) scientifique(s)",
+            "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
             "error": {
                 "delete": {
                     "associated-data": "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des données associées. Vous devez les supprimer d'abord",
@@ -1144,6 +1146,9 @@
             "update": "Modifier un fichier de donnée",
             "description": "Voir les fichiers de données",
             "download-image" : "Télecharger l'image",
+            "fileName" : "Nom de fichier",
+            "fileName-placeholder": "Saisir un nom de fichier",
+            "imagesView": "Visualisation",
             "filters": {
                 "rdfType-placeholder": "Sélectionner le type de fichier",
                 "provenance": "Provenance"

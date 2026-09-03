@@ -49,11 +49,11 @@
                 @submit.prevent.stop="refresh"
               >
                 <!-- FileName -->
-                <n-form-item v-if="withFileNameFilter" :label="t('DataFilesView.fileName')" class="compact-form-item">
+                <n-form-item v-if="withFileNameFilter" :label="t('component.datafile.fileName')" class="compact-form-item">
                   <n-input
                     v-model:value="filter.name"
                     clearable
-                    :placeholder="t('DataFilesView.fileName-placeholder')"
+                    :placeholder="t('component.datafile.fileName-placeholder')"
                     class="searchFilter"
                     @keydown.enter.prevent.stop="refresh"
                   />
@@ -101,8 +101,8 @@
                 <n-form-item v-if="!enforcedScientificObjectUri" class="compact-form-item">
                   <ModalFormSelector
                     ref="soSelector"
-                    :label="t('DataFilesView.filter.scientificObjects')"
-                    :placeholder="t('DataFilesView.filter.scientificObjects-placeholder')"
+                    :label="t('component.scientificObjects.scientificObjects')"
+                    :placeholder="t('component.scientificObjects.scientificObjects-placeholder')"
                     v-model:selected="filter.scientificObjects"
                     modalComponent="opensilex-ScientificObjectModalList"
                     v-model:filter="soFilter"
@@ -169,7 +169,7 @@
                 <n-form-item v-if="withImagesViewOption" class="compact-form-item">
                   <n-space align="center">
                     <n-switch v-model:value="filter.imagesView" />
-                    <strong>{{ t('DataFilesView.imagesView') }}</strong>
+                    <strong>{{ t('component.datafile.imagesView') }}</strong>
                   </n-space>
                 </n-form-item>
 
@@ -224,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref} from 'vue'
+import {computed, inject, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import {
@@ -258,13 +258,35 @@ import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import {useRoute} from "vue-router";
 import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
 
+//#region Used Models
+interface FilterModel{
+  name?: string;
+  start_date?: string;
+  end_date?: string;
+  rdf_type?: string;
+  provenance?: string;
+  experiments: string[];
+  scientificObjects: string[];
+  imagesView: boolean;
+}
+interface SoFilterModel {
+  name?: string;
+  experiment?: string;
+  germplasm?: string;
+  factorLevels: string[];
+  types: string[];
+  existenceDate?: string;
+  creationDate?: string;
+}
+//#endregion
+
 //#region Constant values, services and composables
 const { t } = useI18n();
 const $route = useRoute();
 const $store = useStore();
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const Oeso = $opensilex.Oeso;
-const SCIENTIFIC_OBJECTS_FILTER_KEY: keyof typeof filter = 'scientificObjects'
+const SCIENTIFIC_OBJECTS_FILTER_KEY: keyof typeof filter.value = 'scientificObjects'
 //#endregion
 
 //#region Props
@@ -297,56 +319,57 @@ const provenanceDetailsAreVisible = ref(false);
 const selectedProvenance = ref<any>(null);
 const resetExperimentSelectorKey = ref(0);
 
-const filter = reactive({
-  name: undefined as string | undefined,
-  start_date: undefined as string | undefined,
-  end_date: undefined as string | undefined,
-  rdf_type: undefined as string | undefined,
-  provenance: undefined as string | undefined,
-  experiments: [] as string[],
+const filter = ref<FilterModel>({
+  name: undefined,
+  start_date: undefined,
+  end_date: undefined,
+  rdf_type: undefined,
+  provenance: undefined,
+  experiments: [],
   //Even if an OS URI was passed in prop, we leave this empty to not have an invisible filter display in the filters count
-  scientificObjects: [] as string[],
+  scientificObjects: [],
   imagesView: false
 });
 
-const soFilter = reactive({
-  name: undefined as string | undefined,
-  experiment: undefined as string | undefined,
-  germplasm: undefined as string | undefined,
-  factorLevels: [] as string[],
-  types: [] as string[],
-  existenceDate: undefined as string | undefined,
-  creationDate: undefined as string | undefined
+const soFilter = ref<SoFilterModel>({
+  name: undefined,
+  experiment: undefined,
+  germplasm: undefined,
+  factorLevels: [],
+  types: [],
+  existenceDate: undefined,
+  creationDate: undefined
 });
 //#endregion
 
 //#region Template refs
-const datafilesList = ref<any>(null);
-const datafilesImagesList = ref<any>(null);
-const provSelector = ref<any>(null);
-const soSelector = ref<any>(null);
-const datafileForm = ref<any>(null);
+const datafilesList = useTemplateRef<InstanceType<typeof DataFilesList>>("datafilesList");
+const datafilesImagesList = useTemplateRef<InstanceType<typeof DataFilesImagesList>>("datafilesImagesList");
+const provSelector = useTemplateRef<InstanceType<typeof DatafileProvenanceSelector>>("provSelector");
+const soSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>("soSelector");
+const datafileForm = useTemplateRef<InstanceType<typeof DataFileForm>>("datafileForm");
+
 //#endregion
 
 //#region Computed
 const realFilterToApply = computed<DatafileFilter>(() => {
   return {
-    ...filter,
-    scientificObjects: (props.enforcedScientificObjectUri ? [props.enforcedScientificObjectUri] : [] as string[]),
-    devices: (props.passedDeviceUri ? [props.passedDeviceUri] : [] as string[])
+    ...filter.value,
+    scientificObjects: (props.enforcedScientificObjectUri ? [props.enforcedScientificObjectUri] : filter.value.scientificObjects),
+    devices: (props.passedDeviceUri ? [props.passedDeviceUri] : [])
   }
 });
 
 const activeFiltersCount = computed(() => {
   return [
-    filter.name,
-    filter.start_date,
-    filter.end_date,
-    filter.rdf_type,
-    filter.provenance,
-    filter.imagesView ? 'imagesView' : '',
-    ...filter.experiments,
-    ...filter.scientificObjects
+    filter.value.name,
+    filter.value.start_date,
+    filter.value.end_date,
+    filter.value.rdf_type,
+    filter.value.provenance,
+    filter.value.imagesView ? 'imagesView' : '',
+    ...filter.value.experiments,
+    ...filter.value.scientificObjects
   ].filter(v => v !== undefined && String(v).trim() !== '').length
 });
 //#endregion
@@ -355,10 +378,9 @@ const activeFiltersCount = computed(() => {
 let langUnwatcher: (() => void) | undefined;
 
 onMounted(() => {
-  resetFilter();
   const query = $route.query
 
-  for (const currentFilterKey of Object.keys(filter)) {
+  for (const currentFilterKey of Object.keys(filter.value)) {
     //Before looking in query to update filter, check that next key is not scientific objects,
     // if so we ignore this key if we are coming from OS Datafiles, as we handle the setting of real filter in realFilterToApply computed
     if(currentFilterKey === SCIENTIFIC_OBJECTS_FILTER_KEY && $route.name === SCIENTIFIC_OBJECT_DATAFILES_PATHNAME){
@@ -367,12 +389,12 @@ onMounted(() => {
 
     const valueFromRouteQuery = query[currentFilterKey]
     if (valueFromRouteQuery !== undefined) {
-      if (Array.isArray(filter[currentFilterKey as keyof typeof filter])) {
-        filter[currentFilterKey as keyof typeof filter] = (Array.isArray(valueFromRouteQuery)
+      if (Array.isArray(filter.value[currentFilterKey as keyof typeof filter.value])) {
+        filter.value[currentFilterKey as keyof typeof filter.value] = (Array.isArray(valueFromRouteQuery)
           ? valueFromRouteQuery.map(v => decodeURIComponent(String(v)))
           : [decodeURIComponent(String(valueFromRouteQuery))]) as never;
       } else {
-        filter[currentFilterKey as keyof typeof filter] = decodeURIComponent(String(valueFromRouteQuery)) as never
+        filter.value[currentFilterKey as keyof typeof filter.value] = decodeURIComponent(String(valueFromRouteQuery)) as never
       }
     }
   }
@@ -397,24 +419,24 @@ function showCreateDataFileForm() {
 }
 
 function resetFilter() {
-  filter.name = undefined;
-  filter.start_date = undefined;
-  filter.end_date = undefined;
-  filter.rdf_type = undefined;
-  filter.provenance = undefined;
-  filter.experiments = [];
+  filter.value.name = undefined;
+  filter.value.start_date = undefined;
+  filter.value.end_date = undefined;
+  filter.value.rdf_type = undefined;
+  filter.value.provenance = undefined;
+  filter.value.experiments = [];
   //Even if an OS URI was passed in prop, we leave this empty to not have an invisible filter display in the filters count
-  filter.scientificObjects = [] as string[];
-  filter.imagesView = false;
+  filter.value.scientificObjects = [] as string[];
+  filter.value.imagesView = false;
 }
 
 function normalizeDates() {
-  if (filter.start_date === '') {
-    filter.start_date = undefined;
+  if (filter.value.start_date === '') {
+    filter.value.start_date = undefined;
   }
 
-  if (filter.end_date === '') {
-    filter.end_date = undefined;
+  if (filter.value.end_date === '') {
+    filter.value.end_date = undefined;
   }
 }
 
@@ -432,7 +454,7 @@ function updateSOFilter() {
   if(props.enforcedScientificObjectUri){
     return;
   }
-  soFilter.experiment = filter.experiments[0];
+  soFilter.value.experiment = filter.value.experiments[0];
   refreshProvComponent();
   soSelector.value?.refreshModalSearch?.();
 }
@@ -442,7 +464,7 @@ async function refresh() {
 
   await nextTick();
 
-  if (filter.imagesView) {
+  if (filter.value.imagesView) {
     datafilesImagesList.value?.refresh?.();
   } else {
     datafilesList.value?.refresh?.();
@@ -552,28 +574,3 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 </style>
-
-<i18n>
-en:
-  DataFilesView:
-    description: View datafiles
-    details: view datafile metadata
-    fileName: File Name
-    fileName-placeholder: Enter file name
-    imagesView: View
-    filter:
-      scientificObjects: Scientific object(s)
-      scientificObjects-placeholder: Select scientific objects
-
-
-fr:
-  DataFilesView:
-    description: Voir les fichiers de données
-    details: Voir les métadonnées du fichier
-    fileName: Nom de fichier
-    fileName-placeholder: Saisir un nom de fichier
-    imagesView: Visualisation
-    filter:
-      scientificObjects: Objet(s) scientifique(s)
-      scientificObjects-placeholder: Sélectionner des objets scientifiques
-</i18n>

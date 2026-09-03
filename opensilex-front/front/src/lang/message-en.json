@@ -882,6 +882,8 @@
             }
         },
         "scientificObjects": {
+            "scientificObjects": "Scientific object(s)",
+            "scientificObjects-placeholder": "Select scientific objects",
             "error" : {
                 "delete" : {
                     "associated-data" : "The object {scientific_object} can't be deleted since there are some associated data. You must delete them first",
@@ -1088,6 +1090,9 @@
             "update": "Update data file",
             "description": "View datafiles",
             "download-image" : "Download image",
+            "fileName" : "File Name",
+            "fileName-placeholder": "Enter file name",
+            "imagesView": "View",
             "filters": {
                 "rdfType-placeholder": "Select the datafile type",
                 "provenance": "Provenance"

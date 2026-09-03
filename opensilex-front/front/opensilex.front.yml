@@ -392,18 +392,18 @@ routes:
   # - path: /germplasm/group
   #   component: opensilex-GermplasmGlobalView
 
-  # - path: /factor/create
-  #   component: opensilex-FactorForm
-  #   credentials:
-  #     - factor-modification
-  # - path: /:xpUri/factor/details/:uri
-  #   component: opensilex-FactorView
-  # - path: /:xpUri/factor/experiments/:uri
-  #   component: opensilex-FactorView
-  # - path: /:xpUri/factor/annotations/:uri
-  #   component: opensilex-FactorView
-  # - path: /:xpUri/factor/document/:uri
-  #   component: opensilex-FactorView
+  - path: /factor/create
+    component: opensilex-FactorForm
+    credentials:
+       - factor-modificationdocumentForm
+  - path: /:xpUri/factor/details/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/experiments/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/annotations/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/document/:uri
+    component: opensilex-FactorView
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails

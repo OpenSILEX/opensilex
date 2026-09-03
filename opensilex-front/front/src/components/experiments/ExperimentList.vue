@@ -322,6 +322,7 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import WizardForm from "@/components/common/forms/WizardForm.vue";
 import PageContent from "@/components/layout/PageContent.vue";
+import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');

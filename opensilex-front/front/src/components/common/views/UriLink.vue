@@ -86,8 +86,8 @@
 import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import copy from "copy-to-clipboard";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import Icon from "@/components/common/views/Icon.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 export type UriLinkDestination = string | { path: string };
 
@@ -108,7 +108,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { t } = useI18n();
-const $opensilex = inject<OpenSilexVuePlugin | undefined>("$opensilex");
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
 const emit = defineEmits<{
   (event: "click", uri: string): void;

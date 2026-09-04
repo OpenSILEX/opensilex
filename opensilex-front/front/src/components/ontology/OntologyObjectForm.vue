@@ -120,7 +120,7 @@ const excludedProperties = ref<Set<string>>(new Set<string>([
   DC.PUBLISHER
 ]));
 
-const customComponentProps = ref<Map<string, Map<string, any>>>(new Map<string, Map<string, any>>());
+const customComponentProps = ref<Map<string, Map<string, any>>>(new Map());
 
 const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => void>(
   (relation: MultiValuedRDFObjectRelation) => {}

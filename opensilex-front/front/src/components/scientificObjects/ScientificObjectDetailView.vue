@@ -18,7 +18,7 @@
       :experiment="experiment"
       icon="bi#bi-bullseye"
       @onUpdate="refresh"
-      @tabChanged="onForcedTabChange"
+      @forceTabChange="onForcedTabChange"
     ></ScientificObjectDetail>
   </div>
 </template>

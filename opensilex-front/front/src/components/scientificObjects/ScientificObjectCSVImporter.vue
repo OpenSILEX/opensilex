@@ -56,7 +56,7 @@ import ScientificObjectImportHelp from "@/components/scientificObjects/Scientifi
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const $store = useStore();
 
-const moveDescriptionGeneratorsPerMoveHeader: Map<string, DescriptionGeneratorInformation> = new Map<string, DescriptionGeneratorInformation>([
+const moveDescriptionGeneratorsPerMoveHeader: Map<string, DescriptionGeneratorInformation> = new Map([
   ["start_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.startHelp", required: false, example: "component.events.start-example"}],
   ["end_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.endHelp", required: false, example: "component.events.start-example"}],
   ...Array.from(MOVE_DESCRIPTION_GENERATOR_BY_HEADER.entries())

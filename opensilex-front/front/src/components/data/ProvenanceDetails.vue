@@ -54,7 +54,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {ProvenanceGetDTO} from "opensilex-core/model/provenanceGetDTO";
+import {ProvenanceGetDTO} from "../../../../../opensilex-core/front/src/lib";
+
 
 type ProvenanceAgent = {
   uri: string
@@ -64,14 +65,14 @@ type ProvenanceActivity = {
   rdf_type: string
 }
 
-type Provenance = {
+/*type Provenance = {
   uri: string | null
   name: string | null
   description: string | null
   experiments?: any[]
   prov_activity: ProvenanceActivity[]
   prov_agent: ProvenanceAgent[]
-}
+}*/
 
 const { t } = useI18n()
 
@@ -81,7 +82,7 @@ const emit = defineEmits<{
 
 const props = withDefaults(defineProps<{
   label?: string
-  provenance?: ProvenanceGetDTO | Provenance
+  provenance?: ProvenanceGetDTO
   dataImportResult?: boolean
 }>(), {
   label: 'ProvenanceDetails.title',
@@ -127,11 +128,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.details-actions-row {
-  margin-top: -35px;
-  margin-left: -15px;
-  margin-right: 15px;
-}
 
 .provenance-details-row {
   display: flex;

@@ -10,7 +10,30 @@
           class="tab"
           exact-active-class="active"
         >
+          <!-- label -->
           {{ tab.label }}
+
+          <!-- Count for the tabs that have that information -->
+          <span v-if="tab.key === 'datafiles' && !datafilesCountIsLoading && datafileQuantity > 0" class="tabWithElements">
+            {{ $opensilex.$numberFormatter.formateResponse(datafileQuantity) }}
+          </span>
+
+          <span v-if="tab.key === 'events' && !eventsCountIsLoading && eventQuantity > 0" class="tabWithElements">
+            {{ $opensilex.$numberFormatter.formateResponse(eventQuantity) }}
+          </span>
+
+          <span v-if="tab.key === 'positions' && !positionsCountIsLoading && positionQuantity > 0" class="tabWithElements">
+            {{ $opensilex.$numberFormatter.formateResponse(positionQuantity) }}
+          </span>
+
+          <span v-if="tab.key === 'annotations' && !annotationsCountIsLoading && annotationQuantity > 0" class="tabWithElements">
+            {{ $opensilex.$numberFormatter.formateResponse(annotationQuantity) }}
+          </span>
+
+          <span v-if="tab.key === 'documents' && !documentsCountIsLoading && documentQuantity > 0" class="tabWithElements">
+            {{ $opensilex.$numberFormatter.formateResponse(documentQuantity) }}
+          </span>
+
         </router-link>
       </nav>
 

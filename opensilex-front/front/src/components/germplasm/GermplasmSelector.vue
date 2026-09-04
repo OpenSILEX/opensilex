@@ -28,8 +28,9 @@ import type { GermplasmGetAllDTO } from 'opensilex-core/model/germplasmGetAllDTO
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t, locale } = useI18n()
 
+const germplasmURI = defineModel<string[] | undefined>('germplasm')
+
 const emit = defineEmits<{
-  (e: 'update:germplasm', value: string[] | undefined): void
   (e: 'select', value: any): void
   (e: 'deselect', value: any): void
   (e: 'clear'): void
@@ -37,7 +38,6 @@ const emit = defineEmits<{
 }>()
 
 const props = withDefaults(defineProps<{
-  germplasm?: string[]
   label?: string
   placeholder?: string
   required?: boolean
@@ -53,11 +53,6 @@ const props = withDefaults(defineProps<{
 const formSelector = ref<any>(null)
 
 const germplasmService = $opensilex.getService<GermplasmService>('opensilex.GermplasmService')
-
-const germplasmURI = computed({
-  get: () => props.germplasm,
-  set: (value) => emit('update:germplasm', value)
-})
 
 const computedLabel = computed(() => t(props.label))
 const computedPlaceholder = computed(() => t(props.placeholder))

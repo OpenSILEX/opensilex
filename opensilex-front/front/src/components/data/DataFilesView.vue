@@ -568,9 +568,4 @@ defineExpose({
   white-space: nowrap;
 }
 
-/* neutralisation des classes injectées par naive dans les <n-form-item> qui créent des espaces indésirés entre les champs */
-:deep(.compact-form-item) {
-  --n-label-height: 0px !important;
-  --n-label-padding: 0 !important;
-}
 </style>

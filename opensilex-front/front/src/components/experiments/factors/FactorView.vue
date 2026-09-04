@@ -13,7 +13,7 @@
     >
       <template v-slot>
         <router-link
-          class="nav-link ml-3"
+          class="nav-link ml-3, tab"
           :class="{ active: isDetailsTab() }"
           :to="{
             path: '/' + encodeURIComponent(xpUri) + '/factor/details/' + encodeURIComponent(uri),
@@ -21,21 +21,21 @@
           >{{ $t('component.common.details-label') }}
         </router-link>
         <router-link
-          class="nav-link"
+            class="nav-link ml-3, tab"
           :class="{ active: isDocumentTab() }"
           :to="{
             path: '/' + encodeURIComponent(xpUri) + '/factor/document/' + encodeURIComponent(uri),
           }"
-          >{{ $t('ExperimentView.document') }}
+          >{{ $t('component.common.details.document') }}
         </router-link>
         <router-link
-          class="nav-link"
+            class="nav-link ml-3, tab"
           :class="{ active: isAnnotationTab() }"
           :to="{
             path:
               '/' + encodeURIComponent(xpUri) + '/factor/annotations/' + encodeURIComponent(uri),
           }"
-          >{{ $t('Annotation.list-title') }}
+          >{{ $t('component.annotation.list-title') }}
         </router-link>
         <AnnotationModalForm
           v-if="

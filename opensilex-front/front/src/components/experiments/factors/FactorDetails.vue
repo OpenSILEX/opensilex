@@ -12,6 +12,7 @@
                 v-if="
                   user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
                 "
+                :small="true"
                 @click="factorForm.showEditForm(factor)"
                 variant="outline-primary"
                 label="component.common.list.buttons.update"
@@ -20,6 +21,7 @@
                 v-if="
                   user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
                 "
+                :small="true"
                 label="component.skos.update"
                 @click="skosReferences.show()"
               ></InteroperabilityButton>
@@ -267,12 +269,12 @@ interface FactorLevelField {
 const factorLevelFields: FactorLevelField[] = [
   {
     key: 'name',
-    label: 'component.factorLevel.name',
+    label: t('component.experiment.label'),
     sortable: true,
   },
   {
     key: 'description',
-    label: 'component.factorLevel.description',
+    label: t('component.experiment.description'),
     sortable: false,
   },
 ];

@@ -12,14 +12,13 @@
 <script setup lang="ts">
 defineProps<{
   label: string;
-  small: boolean;
-  disabled: boolean;
-}>()
+  small?: boolean;
+  disabled?: boolean;
+}>();
 
 defineEmits<{
   (e: 'click'): void;
-}>()
+}>();
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>

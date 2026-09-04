@@ -303,6 +303,8 @@
                 "factors": "Facteurs",
                 "factorLevels": "Niveaux de facteurs",
                 "associated-level-factor": "Niveau facteur associé",
+                "factor-alert-help": "Ce facteur peut être lié à des expérimentations faite attention lors de son édition",
+                "factorLevel-alert-help": "Les niveaux peuvent être liés à des objets scientifique faite attention lors de leur édition",
                 "btn-exportAll": "Tout exporter",
                 "germplasm": "Ressources Génétiques"
             },
@@ -769,6 +771,7 @@
             "funding-placeholder": "Select an experiment funding",
             "factors-categories-placeholder": "Select one or more categories",
             "add-factor": "Ajouter un facteur",
+            "update-factor": "Mettre à jour un facteur",
             "factors-categories": "Categories de facteurs",
             "name-factor-help": "Nom qui décrit un facteur dans une expérimentation",
             "name-factor-placeholder": "Irrigation, Ombrage, Année de plantation, etc.",

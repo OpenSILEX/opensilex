@@ -12,8 +12,8 @@
           @onFinish="continueFormEditing()"
           :editMode="isEditMode"
       ></Tutorial>
-      <p v-if="isEditMode" class="alert-info">
-        {{ $t("component.factor.alert-help") }}
+      <p v-if="isEditMode" class="alert alert-info">
+        {{ $t("component.menu.experimentalDesign.factor-alert-help") }}
       </p>
       <n-form
           ref="nForm"
@@ -44,7 +44,7 @@
           </n-form-item>
         </div>
 
-        <p class="alert-info">
+        <p class="alert alert-info">
           {{ $t("component.experiment.category-help-more") }} : PECO (
           <a
               target="_blank"
@@ -92,7 +92,7 @@
         <div id="v-step-2">
           <n-form-item>
           <TextAreaForm
-              :value.sync="form.description"
+              v-model:value="form.description"
               label="component.experiment.description"
               :placeholder="t('component.experiment.description-factor-placeholder')"
               helpMessage="component.experiment.description-factor-help"

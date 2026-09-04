@@ -9,26 +9,20 @@
           <template v-slot:rightHeader>
             <div class="ml-3">
               <EditButton
-                v-if="
-                  user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
-                "
+                v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
                 :small="true"
-                @click="factorForm.showEditForm(factor)"
+                @click="factorForm?.showEditForm(factor)"
                 variant="outline-primary"
                 label="component.common.list.buttons.update"
               ></EditButton>
               <InteroperabilityButton
-                v-if="
-                  user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
-                "
+                v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
                 :small="true"
                 label="component.skos.update"
                 @click="skosReferences.show()"
               ></InteroperabilityButton>
               <DeleteButton
-                v-if="
-                  user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)
-                "
+                v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
                 :small="true"
                 label="component.common.list.buttons.delete"
                 @click="$emit('onDelete')"
@@ -53,6 +47,7 @@
               label="component.common.description"
               :value="factor.description"
             ></StringView>
+
             <MetadataView
               v-if="factor.publisher && factor.publisher.uri"
               :publisher="factor.publisher"
@@ -89,12 +84,12 @@
               :globalFilterField="true"
             >
               <template v-slot:export>
-                <b-button
+                <n-button
                   class="mb-2 mr-2"
                   variant="secondary"
                   @click="exportFactorLevels()"
                   >{{ $t('component.menu.experimentalDesign.btn-exportAll') }}
-                </b-button>
+                </n-button>
               </template>
               <template v-slot:cell(name)="{ data }">
                 <UriLink
@@ -111,18 +106,18 @@
         </Card>
       </b-col>
     </b-row>
-    <Modal
+    <FactorForm
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
       ref="factorForm"
+      :experiment="xpUri"
       modalSize="lg"
       :tutorial="true"
       :successMessage="successMessage"
-      component="FactorForm"
-      createTitle="component.factor.add"
-      editTitle="component.factor.update"
+      createTitle="component.experiment.add-factor"
+      editTitle="component.experiment.update-factor"
       icon="fa#sun"
-    ></Modal>
-
+      @onUpdate="update"
+    ></FactorForm>
     <ExternalReferencesModalForm
       ref="skosReferences"
       :references.sync="factor"
@@ -144,13 +139,13 @@ import MetadataView from '@/components/common/views/MetadataView.vue';
 import ExternalReferencesDetails from '@/components/common/external-references/ExternalReferencesDetails.vue';
 import TableView from '@/components/common/views/TableView.vue';
 import ExternalReferencesModalForm from '@/components/common/external-references/ExternalReferencesModalForm.vue';
+import FactorForm from '@/components/experiments/factors/FactorForm.vue';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { NForm } from 'naive-ui';
+import { NButton } from 'naive-ui';
 import UriLink from '@/components/common/views/UriLink.vue';
-import Modal from '@/components/common/views/Modal.vue';
 import InteroperabilityButton from '@/components/common/buttons/InteroperabilityButton.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex');

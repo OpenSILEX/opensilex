@@ -8,41 +8,43 @@
         >
       </h6>
       <p>{{ $t("component.experiment.associated-factor-help") }}</p>
-      <p v-if="editMode" class="alert-info">
-        {{ $t("component.factorLevel.alert-help") }}
+      <p v-if="editMode" class="alert alert-info">
+        {{ $t("component.menu.experimentalDesign.factorLevel-alert-help") }}
       </p>
       <b-row>
         <b-col>
           <!-- <p>{{$t('component.common.tabulator.add-multiple')}}</p> -->
           <b-button-group>
             <b-row class="ml-1">
-              <b-button
-                  class="mb-2 mr-2"
+              <n-button
+                  ghost
+                  class="mb-2 mr-2 csv-button"
                   @click="csvExport"
-                  variant="outline-primary"
+                  type="primary"
               >{{
                   $t("component.common.import-files.csv-template")
                 }}
-              </b-button
+              </n-button
               >
               <CSVInputFile
                   :headersExactMatch="['name', 'description']"
                   v-on:updated="uploaded"
               ></CSVInputFile>
-              <b-button
-                  class="mb-2 mr-2"
+              <n-button
+                  ghost
+                  class="mb-2 mr-2 reset-button"
                   @click="resetTable"
-                  variant="outline-secondary"
-              >{{ $t("component.common.tabulator.reset-table") }}
-              </b-button
+                  type="secondary"
               >
-              <Button
-                  class="mb-2 mr-4"
+                {{ $t("component.common.tabulator.reset-table") }}
+              </n-button>
+              <n-button
+                  class="mb-2 mr-4 addLine"
                   @click="addEmptyRow"
                   variant="outline-dark"
-                  label="component.experiment.factor-level-add"
                   :small="false"
-              ></Button>
+                  type="tertiary"
+              >{{ $t("component.experiment.factor-level-add") }}</n-button>
             </b-row>
           </b-button-group>
         </b-col>
@@ -276,6 +278,7 @@ const options = ref<any>(
     }
 )
 
+
 function cellActions(evt: any, clickedCell: any): void {
   console.debug(evt, clickedCell);
 
@@ -440,6 +443,43 @@ function instanciateTabulator() {
 </script>
 
 <style scoped lang="scss">
+.reset-button {
+  color: #808080;
+  border-color: #808080;
+  --n-border: 1px solid #808080 !important;
+}
+
+.reset-button:hover {
+  color: #ffffff;
+  background-color: #808080;
+  border-color: #808080;
+}
+
+.csv-button {
+  color: #2080f0;
+  border-color: #2080f0;
+
+  --n-border: 1px solid #2080f0 !important;
+  --n-border-hover: 1px solid #2080f0 !important;
+  --n-border-pressed: 1px solid #2080f0 !important;
+}
+
+.csv-button:hover {
+  background-color: #2080f0 !important;
+  color: #ffffff !important;
+}
+
+.addLine{
+  color: #212529;
+  --n-border: 1px solid #212529 !important;
+}
+.addLine:hover{
+  color: #FFFFFF;
+  background-color: #212529;
+  --n-border: #212529;
+  --n-border-hover: 1px solid #212529!important;
+  --n-border-pressed: 1px solid #212529 !important;
+}
 </style>
 
 <i18n>

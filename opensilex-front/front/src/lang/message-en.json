@@ -302,6 +302,8 @@
                 "factors": "Factors",
                 "germplasm": "Germplasm",
                 "factorLevels": "Levels",
+                "factor-alert-help": "This factor can be linked to existing experiments be careful when update",
+                "factorLevel-alert-help": "Levels can be linked to scientific objects be careful when update",
                 "btn-exportAll": "Export all",
                 "associated-level-factor": "associated level factor"
             },
@@ -771,6 +773,7 @@
             "funding-placeholder": "Sélectionner un financeur",
             "factors-categories-placeholder": "Sélectionner une ou plusieurs categories",
             "add-factor": "Add factor",
+            "update-factor": "Update factor",
             "factors-categories": "Factors categories",
             "name-factor-help": "Usual name witch describes a factor in an experiment",
             "name-factor-placeholder": "Irrigation, Shading, Planting year, etc.",

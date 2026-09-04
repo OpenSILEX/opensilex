@@ -174,7 +174,7 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
                 models,
                 graph,
                 user.getLanguage(),
-                new MoveLogic(sparql, mongodb, user)
+                new MoveLogic(sparql, mongodb, user, getFs())
         );
         byte[] csvRawData = exporter.exportCSV();
 

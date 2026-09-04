@@ -86,7 +86,7 @@ public class PositionAPI {
             @ApiParam(value = "Object URI", example = "http://opensilex.dev/plant/plant5841", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, fs);
 
         MoveModel moveModel = moveLogic.getLastMoveAfter(uri, time != null ? OffsetDateTime.parse(time) : null);
 
@@ -121,7 +121,7 @@ public class PositionAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, fs);
 
         try {
             var positionHistory = moveLogic.getPositionsHistory(
@@ -157,8 +157,8 @@ public class PositionAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) @Max(1000) int pageSize
     ) throws Exception {
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, fs);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
 
         try {
             //create search filter

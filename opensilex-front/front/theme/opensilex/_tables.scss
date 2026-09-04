@@ -59,12 +59,12 @@
 		}
 	}
 }
-.table {
+.os-table {
 	thead {
 		background-color: #f6f8fb;
 		th {
 			font-weight: 600;
-		    color: #879099;
+		    color: var(--color-gray);
 		    font-size: 14px;
 		}
 	}

@@ -17,7 +17,6 @@
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
-            :checkStrategy="checkStrategy"
             :placeholder="placeholder"
             :disabled="disabled"
             @optionsLoadingMethod="optionsLoadingMethod"
@@ -78,9 +77,6 @@
 import { computed, nextTick, onMounted, ref, watch, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NFormItem } from 'naive-ui'
-import CustomTreeselect from './CustomTreeselect.vue'
-
-// API interne Naive UI pour accéder au NForm parent
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import FormField from "@/components/common/forms/FormField.vue";
@@ -95,7 +91,6 @@ const props = defineProps<{
   searchMethod?: Function
   multiple?: boolean
   checkable?: boolean
-  checkStrategy?: 'all' | 'child' | 'parent'
   itemLoadingMethod?: Function
   optionsLoadingMethod?: Function
   options?: any[]
@@ -152,14 +147,14 @@ const totalCount = ref(0)
 const resultCount = ref(0)
 const resultLimit = ref(10)
 
-const customTreeselect = ref<InstanceType<typeof CustomTreeselect> | null>(null)
-const refresh = () => customTreeselect.value?.refresh()
-const openTreeselect = () => customTreeselect.value?.openTreeselect()
+const customTreeselectRef = ref<InstanceType<typeof CustomTreeselect> | null>(null)
+const refresh = () => customTreeselectRef.value?.refresh()
+const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {
   resultLimit.value = 0
   showAllResults.value = true
-  customTreeselect.value?.refresh(resultLimit.value)
+  customTreeselectRef.value?.refresh(resultLimit.value)
   nextTick(() => openTreeselect())
 }
 

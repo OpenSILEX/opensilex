@@ -265,13 +265,13 @@ public class GroupAPI {
     }
 
     /**
-     * *
      * Return a list of groups corresponding to the given URIs
      *
      * @param uris list of groups uri
      * @return Corresponding list of groups
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get groups by their URIs")
@@ -281,11 +281,54 @@ public class GroupAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getGroupsByURI(
             @ApiParam(value = "Groups URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        GroupDAO dao = new GroupDAO(sparql);
+        List<GroupModel> models = dao.getList(uris);
+
+        if (!models.isEmpty()) {
+            List<GroupDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(GroupDTO.getDTOFromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Groups not found",
+                    "Unknown group URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * @return a list of groups corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get groups by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchGroupsByURIs(
+            @ApiParam(value = "Group URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         GroupDAO dao = new GroupDAO(sparql);
         List<GroupModel> models = dao.getList(uris);
 

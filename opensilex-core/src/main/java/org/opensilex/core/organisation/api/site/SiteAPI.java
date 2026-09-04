@@ -6,7 +6,8 @@ import org.opensilex.core.organisation.api.OrganizationAPI;
 import org.opensilex.core.organisation.bll.SiteLogic;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -61,7 +62,10 @@ public class SiteAPI {
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBServiceV2 nosql;
+    private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -81,7 +85,7 @@ public class SiteAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
 
         SiteSearchFilter filter = (SiteSearchFilter) new SiteSearchFilter()
                 .setNamePattern(pattern)
@@ -111,7 +115,7 @@ public class SiteAPI {
     public Response getSite(
             @ApiParam(value = "Site URI") @PathParam("uri") @NotNull URI siteUri
     ) throws Exception {
-        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
 
         SiteModel model = siteLogic.get(siteUri, currentUser);
         LocationObservationModel locationModel= siteLogic.getSiteLocationObservationModel(model);
@@ -139,7 +143,7 @@ public class SiteAPI {
     public Response getSitesByURI(
             @ApiParam(value = "Site URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris
     ) throws Exception {
-        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
         List<SiteModel> siteModels = siteLogic.getList(uris, currentUser);
 
         List<NamedResourceDTO> dtoList = siteModels.stream()
@@ -167,7 +171,7 @@ public class SiteAPI {
     ) throws Exception {
 
         try {
-            SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+            SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
             SiteModel created = siteCreationDto.newModel();
 
             created = siteLogic.create(created, currentUser);
@@ -199,7 +203,7 @@ public class SiteAPI {
             @ApiParam("Site update object") @Valid SiteUpdateDTO siteUpdateDTO
     ) throws Exception {
         try {
-            SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+            SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
 
             SiteModel siteModel = siteUpdateDTO.newModel();
             siteLogic.update(siteModel, currentUser);
@@ -227,7 +231,7 @@ public class SiteAPI {
     public Response deleteSite(
             @ApiParam(value = "Site URI", required = true) @PathParam("uri") @NotNull @Valid URI siteUri
     ) throws Exception {
-        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
 
         siteLogic.delete(siteUri, currentUser);
 
@@ -244,7 +248,7 @@ public class SiteAPI {
             @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetWithGeometryDTO.class, responseContainer = "List")
     })
     public Response getSitesWithLocation() throws Exception {
-        SiteLogic siteLogic = new SiteLogic(sparql, nosql);
+        SiteLogic siteLogic = new SiteLogic(sparql, nosql, fs);
         List<SiteGetWithGeometryDTO> siteDTOList = new ArrayList<>();
 
         Map<SiteModel, LocationObservationModel> sitesAndLocationsMap = siteLogic.getSitesWithPosition(currentUser);

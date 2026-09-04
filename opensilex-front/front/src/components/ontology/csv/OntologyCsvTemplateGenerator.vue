@@ -24,7 +24,6 @@
               :placeholder="typePlaceholder"
               :tree="true"
               :selectBranchNodes="true"
-              checkStrategy="all"
               @update:type="types = $event"
             />
           </div>

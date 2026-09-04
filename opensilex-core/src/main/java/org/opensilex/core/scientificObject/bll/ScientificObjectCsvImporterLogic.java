@@ -170,12 +170,12 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
 
         this.currentUser = user;
         this.experiment = experiment;
-        experimentDAO = new ExperimentDAO(sparql, mongoDB);
+        experimentDAO = new ExperimentDAO(sparql, mongoDB, fs);
         germplasmDAO = new GermplasmDAO(sparql, mongoDB);
 
-        moveLogic = new MoveLogic(sparql, mongoDB, user, session);
+        moveLogic = new MoveLogic(sparql, mongoDB, user, session, fs);
         this.locationObservationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-        this.locationObservationLogic = new LocationObservationLogic(mongoDB.getServiceV2(), sparql);
+        this.locationObservationLogic = new LocationObservationLogic(mongoDB, sparql, fs);
         scientificObjectDAO = new ScientificObjectDAO(sparql);
         this.scientificObjectLogic = new ScientificObjectLogic(sparql, mongoDB, fs);
 
@@ -590,8 +590,10 @@ public class ScientificObjectCsvImporterLogic extends AbstractCsvImporter<Scient
         currentMoveModel.setType(URI.create(Oeev.Move.getURI()));
 
         //Add Move to the map and initialize next move
-
-        movePerScientificObjectUri.put(sciObjModel.getUri(), currentMoveModel);
+        //Only add next Move if SciObjModel's URI is not null, this can happen when other errors happened, example no given name
+        if(sciObjModel.getUri() != null){
+            movePerScientificObjectUri.put(sciObjModel.getUri(), currentMoveModel);
+        }
         atLeast1MoveFieldFilledForCurrentRow = false;
         currentMoveModel = new MoveModel();
     }

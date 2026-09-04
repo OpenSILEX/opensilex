@@ -19,6 +19,7 @@ import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
@@ -90,6 +91,7 @@ public class DataValidation {
     final Collection<DataModel> models;
     final SPARQLService sparql;
     final MongoDBService mongodb;
+    final FileStorageService fs;
     final AccountModel user;
 
     private final DataFileDaoV2 datafileDao;
@@ -98,13 +100,14 @@ public class DataValidation {
 
     private static final List<Class<? extends SPARQLResourceModel>> agentClasses = List.of(DeviceModel.class, AccountModel.class);
 
-    public DataValidation(Collection<DataModel> models, SPARQLService sparql, MongoDBService mongodb, AccountModel user) {
+    public DataValidation(Collection<DataModel> models, SPARQLService sparql, MongoDBService mongodb, AccountModel user, FileStorageService fs) {
         this.models = models;
         this.sparql = sparql;
         this.mongodb = mongodb;
         this.user = user;
+        this.fs = fs;
 
-        datafileDao = new DataFileDaoV2(this.mongodb, this.sparql);
+        datafileDao = new DataFileDaoV2(this.mongodb, this.sparql, fs);
 
         try {
             variableFetcher =  new SparqlNoProxyFetcher<>(VariableModel.class, sparql, true);
@@ -214,7 +217,7 @@ public class DataValidation {
     private void experimentAndTargetValidation() throws Exception {
 
         // Validate user permissions on experiments
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, mongodb);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, mongodb, fs);
         xpDao.validateExperimentAccess(experimentURIs, user);
 
         Node facilityGraph = sparql.getDefaultGraph(FacilityModel.class);

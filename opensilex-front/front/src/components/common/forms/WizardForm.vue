@@ -273,6 +273,12 @@ async function submitForm () {
   }
 }
 
+async function getStepRef(index: number): Promise<any> {
+  await this.$nextTick();
+  const key = "step" + index;
+  return this.$refs[key][0];
+}
+
 function fillForm (dto: any) {
   if (props.convertAction) form.value = props.convertAction(form.value, dto)
 }
@@ -304,7 +310,7 @@ const doneText = computed(() => {
 
 
 
-defineExpose({ showCreateForm, showEditForm, close })
+defineExpose({ showCreateForm, showEditForm, close, getStepRef })
 </script>
 
 

@@ -10,7 +10,6 @@
 package org.opensilex.faidare.api;
 
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.responses.BrAPIv1AccessionWarning;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -33,7 +32,6 @@ import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
@@ -41,7 +39,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +88,7 @@ public class StudiesAPI extends FaidareCall {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
 
         String experimentPathExtention = "";
         List<RouteDTO> routeDTOS = frontModule.getConfigDTO(currentUser, sparql).getRoutes();

@@ -21,6 +21,7 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -51,6 +52,7 @@ public class AnnotationDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+    protected final FileStorageService fs;
     protected final Node annotationGraph;
     protected final URI annotationGraphURI;
     protected final Triple targetTriple;
@@ -58,9 +60,10 @@ public class AnnotationDAO {
     protected final static Var motivationNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(AnnotationModel.MOTIVATION_FIELD));
     protected final static Var motivationDefaultNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(AnnotationModel.MOTIVATION_FIELD));
 
-    public AnnotationDAO(SPARQLService sparql, MongoDBService nosql) throws SPARQLException, URISyntaxException {
+    public AnnotationDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) throws SPARQLException, URISyntaxException {
         this.sparql = sparql;
         this.nosql = nosql;
+        this.fs = fs;
         annotationGraph = sparql.getDefaultGraph(AnnotationModel.class);
         annotationGraphURI = new URI(annotationGraph.toString());
 
@@ -274,7 +277,7 @@ public class AnnotationDAO {
         if(user.isAdmin()){
             return Collections.emptyList();
         }
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
         Node experimentTypeNode = SPARQLDeserializers.nodeURI(Oeso.Experiment.getURI());
         Node annotationGraph = sparql.getDefaultGraph(AnnotationModel.class);

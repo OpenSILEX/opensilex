@@ -76,7 +76,7 @@
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="bi#bi-clipboard" />
+        <Icon icon="bi#bi-clipboard" />
       </button>
     </a>
   </span>
@@ -195,10 +195,10 @@ const handleUriLinkClicked = () => {
 .uri .uri-copy-visible {
   border: 1px solid #d8dde5;
   border-radius: 5px;
-  padding: 5px 6px 3px;
+  padding: 3px 5px 0 5px;
   position: absolute;
   right: 0;
-  // top: -3px;
+  top: -4px;
 }
 
 .uri:hover .uri-copy,

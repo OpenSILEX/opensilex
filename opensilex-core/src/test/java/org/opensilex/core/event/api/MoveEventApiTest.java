@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.geojson.Feature;
-import org.geojson.GeoJsonObject;
 import org.geojson.Point;
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +21,10 @@ import org.opensilex.core.location.dal.LocationModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.position.api.*;
+import org.opensilex.core.position.api.PositionAPI;
+import org.opensilex.core.position.api.PositionCreationDTO;
+import org.opensilex.core.position.api.PositionGetDTO;
+import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.security.SecurityModule;
@@ -85,7 +87,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
                     updatePath
             );
             getByUriList = new ServiceDescription(
-                    EventAPI.class.getMethod("getMoveEventByUris", List.class),
+                    EventAPI.class.getMethod("searchMoveEventByUris", List.class),
                     getByUriListPath
             );
         } catch (NoSuchMethodException e) {
@@ -372,20 +374,16 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         var uri3 = uriList.getResult().get(2);
 
         // Retrieve the moves 2 and 3
-        var result23 = new UserCallBuilder(getByUriList)
-                .addParam("uris", List.of(uri2, uri3))
-                .buildAdmin()
-                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveDetailsDTO>>() {})
-                .getDeserializedResponse();
+        var result23 = getMoveByUris(List.of(uri2, uri3));
 
         // The service MUST return the moves 2 and 3
-        assertEquals(2, result23.getResult().size());
-        assertTrue(result23.getResult().stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri2)));
-        assertTrue(result23.getResult().stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri3)));
+        assertEquals(2, result23.size());
+        assertTrue(result23.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri2)));
+        assertTrue(result23.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri3)));
 
-        var result2 = result23.getResult().stream().filter(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri2)).findFirst()
+        var result2 = result23.stream().filter(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri2)).findFirst()
                 .orElseThrow();
-        var result3 = result23.getResult().stream().filter(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri3)).findFirst()
+        var result3 = result23.stream().filter(dto -> SPARQLDeserializers.compareURIs(dto.getUri(), uri3)).findFirst()
                 .orElseThrow();
 
         // Move 2 MUST have its position information. Move 3 MUST NOT have any position information.
@@ -590,13 +588,9 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         assertEquals("3 different move should have been created as the move has 3 target_positions", 3, uriList.size());
 
-        var resultModels = new UserCallBuilder(getByUriList)
-                .addParam("uris", uriList)
-                .buildAdmin()
-                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveDetailsDTO>>() {})
-                .getDeserializedResponse();
+        var resultModels = getMoveByUris(uriList);
 
-        var firstMove = resultModels.getResult().stream().filter(m -> SPARQLDeserializers.compareURIs(m.getUri(), uriList.get(0))).findFirst().orElseThrow();
+        var firstMove = resultModels.stream().filter(m -> SPARQLDeserializers.compareURIs(m.getUri(), uriList.get(0))).findFirst().orElseThrow();
         assertEquals("target_position.position.x should now be on location.x", "72", firstMove.getLocation().getX());
         assertEquals("target_position.position.y should now be on location.y", "500", firstMove.getLocation().getY());
         assertEquals("target_position.position.z should now be on location.z", "400", firstMove.getLocation().getZ());
@@ -604,7 +598,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         Feature firstMoveGeojson = (Feature) firstMove.getLocation().getGeojson();
         assertEquals("target_position.position.point should now be on location.geojson", new Point(1, 1), firstMoveGeojson.getGeometry());
 
-        var otherMoves = resultModels.getResult().stream().filter(m -> !SPARQLDeserializers.compareURIs(m.getUri(), uriList.get(0))).toList();
+        var otherMoves = resultModels.stream().filter(m -> !SPARQLDeserializers.compareURIs(m.getUri(), uriList.get(0))).toList();
         for (MoveDetailsDTO move : otherMoves) {
             assertNull("other moves was created without x position", move.getLocation().getX());
             assertNull("other moves was created without y position", move.getLocation().getY());
@@ -652,19 +646,24 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
                 .buildAdmin()
                 .executeCallAndAssertStatus("move creation with location should ignore deprecated properties and be created successfully", Response.Status.CREATED);
 
-        MoveGetDTO returnedMove = new UserCallBuilder(getByUriList)
-                .addParam("uris", List.of(moveURI))
-                .buildAdmin()
-                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveGetDTO>>() {})
-                .getDeserializedResponse()
-                .getResult()
-                .get(0);
+        MoveGetDTO returnedMove = getMoveByUris(List.of(moveURI)).get(0);
         assertEquals("move should save the 'X' property from location and not from deprecated property", "800", returnedMove.getLocation().getX());
         assertEquals("move should save the 'Y' property from location and not from deprecated property", "800", returnedMove.getLocation().getY());
         assertEquals("move should save the 'Z' property from location and not from deprecated property", "800", returnedMove.getLocation().getZ());
         assertTrue("move should save the 'from' property from location and not from deprecated property", SPARQLDeserializers.compareURIs(facilityB.getUri(), returnedMove.getLocation().getFrom()));
         assertTrue("move should save the 'to' property from location and not from deprecated property", SPARQLDeserializers.compareURIs(facilityC.getUri(), returnedMove.getLocation().getTo()));
         assertEquals("move should save the 'textualPosition' property from location and not from deprecated property", null, returnedMove.getLocation().getTextualPosition());
+    }
+    //#endregion
+
+    //#region private methods
+    private List<MoveDetailsDTO> getMoveByUris(List<URI> uris) throws Exception {
+        return new UserCallBuilder(getByUriList)
+                .setBody(uris)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<PaginatedListResponse<MoveDetailsDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
     }
     //#endregion
 

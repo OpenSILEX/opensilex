@@ -598,6 +598,7 @@
             "details": "Afficher ou masquer les détails du profil",
             "filter-placeholder": "Rechercher des profils...",
             "credentials": "Droits",
+            "credential-groups": "Groupes d'autorisation",
             "credential": "aucun droit | 1 droit | {count} droits",
             "errors": {
                 "profile-already-exists": "Un profil existe déjà avec cette URI ou ce nom."

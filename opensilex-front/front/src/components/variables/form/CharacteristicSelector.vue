@@ -104,7 +104,7 @@ en:
 fr:
   component: 
     characteristic: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une caractéristique
           placeholder-multiple : Sélectionner une ou plusieurs caractéristiques

@@ -6,6 +6,7 @@ html {
 
   //global colors
   --color-dark: #212121;
+  --color-gray: #9aa0ac;
 }
 body {
   margin: 0;
@@ -269,7 +270,7 @@ $purple: #BF55EC;
 $pink: #f76397;
 $white: #ffffff;
 $dark: var(--color-dark);
-$grey: #9aa0ac;
+$grey: var(--color-gray);
 $aqua: #3ec5d6;
 $blue: #19B5FE;
 $light-blue: #89CFF0;

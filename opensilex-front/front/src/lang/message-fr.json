@@ -103,6 +103,7 @@
             "url-copy": "URL copiée dans le presse-papier",
             "search-prompt-text": "Ecrire pour rechercher...",
             "advanced-search-title": "Recherche Avancée",
+            "search-name-description": "Recherche dans noms et description",
             "not-specified": "Non renseigné(e)",
             "validate": "Valider",
             "apply": "Appliquer",
@@ -301,6 +302,8 @@
                 "label": "Informations scientifiques",
                 "factors": "Facteurs",
                 "factorLevels": "Niveaux de facteurs",
+                "associated-level-factor": "Niveau facteur associé",
+                "btn-exportAll": "Tout exporter",
                 "germplasm": "Ressources Génétiques"
             },
             "groupVariables": "Groupe de variables",

@@ -103,6 +103,7 @@
             "url-copy": "URL copied to clipboard",
             "uri-or-url": "URI or URL",
             "search-prompt-text": "Type to search...",
+            "search-name-description": "Search in name and description",
             "advanced-search-title": "Advanced Search",
             "not-specified": "Not specified",
             "required": "Required",
@@ -300,7 +301,9 @@
                 "label": "Scientific Information",
                 "factors": "Factors",
                 "germplasm": "Germplasm",
-                "factorLevels": "Levels"
+                "factorLevels": "Levels",
+                "btn-exportAll": "Export all",
+                "associated-level-factor": "associated level factor"
             },
             "groupVariables": "Variables Groups",
             "organizations": "Organizations",

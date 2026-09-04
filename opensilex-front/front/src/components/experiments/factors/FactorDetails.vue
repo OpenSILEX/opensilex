@@ -5,30 +5,27 @@
   >
     <b-row>
       <b-col md="5">
-        <Card label="component.factor.details.description">
+        <Card label="component.common.description">
           <template v-slot:rightHeader>
             <div class="ml-3">
               <EditButton
                 v-if="
-                  user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID) &&
-                  xpUri == factor.experiment
+                  user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
                 "
                 @click="factorForm.showEditForm(factor)"
                 variant="outline-primary"
-                label="component.factor.update-button"
+                label="component.common.list.buttons.update"
               ></EditButton>
               <InteroperabilityButton
                 v-if="
-                  user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID) &&
-                  xpUri == factor.experiment
+                  user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
                 "
                 label="component.skos.update"
                 @click="skosReferences.show()"
               ></InteroperabilityButton>
               <DeleteButton
                 v-if="
-                  user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID) &&
-                  xpUri == factor.experiment
+                  user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)
                 "
                 :small="true"
                 label="component.common.list.buttons.delete"
@@ -39,19 +36,19 @@
 
           <template v-slot:body>
             <LabelUriView
-              label="component.factor.uri"
+              label="component.common.uri"
               :uri="factor.uri"
             ></LabelUriView>
             <StringView
-              label="component.factor.name"
+              label="component.common.name"
               :value="factor.name"
             ></StringView>
             <StringView
-              label="component.factor.category"
+              label="component.experiment.category"
               :value="getCategoryLabel()"
             ></StringView>
             <StringView
-              label="component.factor.description"
+              label="component.common.description"
               :value="factor.description"
             ></StringView>
             <MetadataView
@@ -78,13 +75,13 @@
 
       <b-col>
         <Card
-          label="component.factor.details.factorLevels"
+          label="component.menu.experimentalDesign.associated-level-factor"
           icon="fa#list"
         >
           <template v-slot:body>
             <TableView
               v-if="factor.levels != undefined && factor.levels.length > 0"
-              filterPlaceholder="component.factor.details.search"
+              filterPlaceholder="component.common.search-name-description"
               :items="factor.levels"
               :fields="factorLevelFields"
               :globalFilterField="true"
@@ -94,7 +91,7 @@
                   class="mb-2 mr-2"
                   variant="secondary"
                   @click="exportFactorLevels()"
-                  >{{ $t('component.factor.details.export') }}
+                  >{{ $t('component.menu.experimentalDesign.btn-exportAll') }}
                 </b-button>
               </template>
               <template v-slot:cell(name)="{ data }">
@@ -112,7 +109,7 @@
         </Card>
       </b-col>
     </b-row>
-    <ModalForm
+    <Modal
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
       ref="factorForm"
       modalSize="lg"
@@ -122,7 +119,7 @@
       createTitle="component.factor.add"
       editTitle="component.factor.update"
       icon="fa#sun"
-    ></ModalForm>
+    ></Modal>
 
     <ExternalReferencesModalForm
       ref="skosReferences"
@@ -135,7 +132,7 @@
 <script setup lang="ts">
 import Vue, { computed, inject, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 // @ts-ignore
-import { FactorsService } from 'core/index';
+import { FactorsService } from 'opensilex-core/index';
 import Card from '@/components/common/views/Card.vue';
 import EditButton from '@/components/common/buttons/EditButton.vue';
 import DeleteButton from '@/components/common/buttons/DeleteButton.vue';
@@ -151,6 +148,8 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { NForm } from 'naive-ui';
 import UriLink from '@/components/common/views/UriLink.vue';
+import Modal from '@/components/common/views/Modal.vue';
+import InteroperabilityButton from '@/components/common/buttons/InteroperabilityButton.vue';
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex');
 const store = useStore();

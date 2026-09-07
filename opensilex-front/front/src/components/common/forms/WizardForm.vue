@@ -306,7 +306,7 @@ defineExpose({ showCreateForm, showEditForm, close })
 }
 /* Pastille de chaque étape */
 .wizard-steps .n-step-indicator {
-  background-color: #00A38D !important;
+  background-color: var(--main-color-theme) !important;
 }
 
 /* Icone des étapes validées */
@@ -328,7 +328,7 @@ defineExpose({ showCreateForm, showEditForm, close })
 
 /* Au survol */
 .wizard-help-btn:hover {
-  background-color: #00A38D;
+  background-color: var(--main-color-theme);
   color: #fff;
 }
 

@@ -219,7 +219,7 @@ const handleUriLinkClicked = () => {
 
 .onlyCopyAllowed:hover {
   text-decoration: none !important;
-  color: #018371 !important;
+  color: var(--main-color-theme-hover) !important;
 }
 
 .uri-in-table {

@@ -270,7 +270,7 @@ function isMove() {
 .data-uri-details-item {
   background: none;
   border: none;
-  color: #00A38D;
+  color: var(--main-color-theme);
 }
 .data-uri-details-item:hover {
   color: #02c5ab;

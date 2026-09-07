@@ -61,7 +61,7 @@ onMounted(() => {
   margin-right: 10px;
 
   select {
-    color: #00A38D;
+    color: var(--main-color-theme);
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -75,16 +75,16 @@ onMounted(() => {
     }
 
     &:hover {
-      border-color: #00A38D;
+      border-color: var(--main-color-theme);
     }
 
     option {
       background-color: #fff;
-      color: #00A38D;
+      color: var(--main-color-theme);
       font-weight: bold;
 
       &:checked {
-        background-color: #00A38D;
+        background-color: var(--main-color-theme);
         color: #fff;
       }
     }

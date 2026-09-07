@@ -248,7 +248,7 @@ const leave = (el: Element) => {
   width: 60px;
   left: 0px;
   top: 0px;
-  background-color: #00a38d;
+  background-color: var(--main-color-theme);
 }
 
 .hamburger {

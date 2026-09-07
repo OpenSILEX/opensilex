@@ -71,7 +71,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
-$v-tour-base-color: #00a38d !important;
+$v-tour-base-color: var(--main-color-theme) !important;
 $v-tour-base-text-color: black !important;
 $v-tour-background-color: #fff !important;
 

@@ -129,7 +129,7 @@ const displayableExperiments = computed(() => {
 .help {
   font-size: 1.9em;
   background: #f1f1f1;
-  color: #00A38D;
+  color: var(--main-color-theme);
   border-radius: 50%;
   margin-left: 10px;
 }

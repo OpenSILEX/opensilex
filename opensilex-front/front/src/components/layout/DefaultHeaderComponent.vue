@@ -334,7 +334,7 @@ export default defineComponent({
   height:65px;
   top: 0;
   left: 38px;
-  background-color: rgb(0, 163, 141);
+  background-color: var(--main-color-theme);
   padding-top: 6px;
   padding-bottom: 6px;
   padding-left: 35px;
@@ -382,7 +382,7 @@ margin-top: 5px
   justify-content: center;
   align-items: center;
   box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.5);
-  background-color: #00a38d; 
+  background-color: var(--main-color-theme);
 }
 
 .header-title{
@@ -515,15 +515,15 @@ color: #00A28C;
 }
 
 .helpButton {
-    color: #00A38D;
-    border-color: #00A38D;
+    color: var(--main-color-theme);
+    border-color: var(--main-color-theme);
     background-color: #FFFFFF;
     padding-bottom: 5px
 }
 .helpButton:hover{
     background-color: #F0F1F5;
-    border-color: #00A38D;
-    color: #00A38D;
+    border-color: var(--main-color-theme);
+    color: var(--main-color-theme);
 }
 
 // .bi-house, .settingsButton {

@@ -81,6 +81,9 @@ public class GermplasmGetAllDTO {
         this.groups = groups;
     }
 
+    public List<URI> getGroups() {
+        return groups;
+    }
 
     public URI getUri() {
         return uri;

@@ -307,7 +307,7 @@ public class UriSearchLogic {
 
         Set<URI> userExperiments;
         try {
-            userExperiments = new ExperimentDAO(sparql, nosql).getUserExperiments(currentUser);
+            userExperiments = new ExperimentDAO(sparql, nosql, fs).getUserExperiments(currentUser);
         } catch (Exception e) {
             throw new RuntimeException("Unexpected error when retrieving user experiments during uri search for a found data", e);
         }
@@ -325,7 +325,7 @@ public class UriSearchLogic {
     private URIGlobalSearchDTO searchInDataFiles(URI uri) throws Exception {
         DataFileModel dataFileModel = null;
         try{
-            DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql);
+            DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql, fs);
             dataFileModel = dataFileDaoV2.get(uri);
         }catch(Exception notFound){
             return null;

@@ -419,7 +419,7 @@ public class DocumentDAO {
         }
 
         //Initialisation of some things we will need
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
         Node experimentTypeNode = SPARQLDeserializers.nodeURI(Oeso.Experiment.getURI());
         Node documentGraph = sparql.getDefaultGraph(DocumentModel.class);

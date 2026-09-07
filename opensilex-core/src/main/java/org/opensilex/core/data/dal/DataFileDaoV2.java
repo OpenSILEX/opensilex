@@ -7,6 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
@@ -15,7 +16,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.opensilex.core.data.dal.DataProvenanceModel.*;
 
@@ -25,18 +25,19 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
     public static final String FILE_PREFIX = "file";
     public static final String FS_FILE_PREFIX = "datafile";
 
-    //TODO temporary old nosql service and sparql to delete once the BLL is done
     private final MongoDBService mongoDBService;
     private final SPARQLService sparqlService;
+    private final FileStorageService fs;
 
     // Provenance empty filters and fields
     protected static final Bson NO_EXPERIMENT_FILTER = Filters.eq(PROVENANCE_EXPERIMENT_FIELD, null);
     protected static final Bson NO_PROV_WAS_ASSOCIATED_WITH_FILTER = Filters.eq(PROVENANCE_AGENTS_URI_FIELD, null);
 
-    public DataFileDaoV2(MongoDBService mongoDBService, SPARQLService sparqlService) {
+    public DataFileDaoV2(MongoDBService mongoDBService, SPARQLService sparqlService, FileStorageService fs) {
         super(mongoDBService.getServiceV2(), DataFileModel.class, COLLECTION_NAME, COLLECTION_NAME);
         this.mongoDBService = mongoDBService;
         this.sparqlService = sparqlService;
+        this.fs = fs;
     }
 
     public static Map<Bson, IndexOptions> getIndexes() {
@@ -128,7 +129,7 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
 
         Set<URI> userExperiments;
         try {
-            userExperiments = new ExperimentDAO(sparqlService, mongoDBService).getUserExperiments(user);
+            userExperiments = new ExperimentDAO(sparqlService, mongoDBService, fs).getUserExperiments(user);
         } catch (Exception e) {
             throw new RuntimeException("Unexpected error when retrieving user experiments during data filter building", e);
         }

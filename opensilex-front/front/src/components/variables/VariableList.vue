@@ -28,7 +28,7 @@
       >
         {{ t('component.common.actions') }}
       </n-button>
-    </n-dropdown> 
+    </n-dropdown>
 
 
     <!-- Affichage Counts  -->
@@ -64,10 +64,10 @@
 
 <n-layout has-sider class="vars-layout">
   <n-space class="mb-2 me-1" align="top">
-    <n-button 
-      quaternary 
-      circle 
-      @click="filtersCollapsed = !filtersCollapsed" 
+    <n-button
+      quaternary
+      circle
+      @click="filtersCollapsed = !filtersCollapsed"
       :title="t('VariableList.label-filter')"
       :class="{ 'greenThemeColor' : (filtersCollapsed)}"
       class="globalFiltersSearchButton"
@@ -81,7 +81,7 @@
 
     </n-button>
   </n-space>
-  
+
   <!-- SIDEBAR / FILTRES -->
   <n-layout-sider
     v-model:collapsed="filtersCollapsed"
@@ -124,7 +124,7 @@
           />
         </n-form-item>
 
-        
+
 
         <!-- Group of variables -->
         <n-form-item :label="t('component.variable.groupVariable.groupVariable')" :show-feedback="false">
@@ -219,7 +219,7 @@
             icon="bi-x-lg"
             @click="resetFilters"
           />
-          <opensilex-Button 
+          <opensilex-Button
             class="greenThemeColor"
             :label="t('component.common.search.search-button')"
             icon="bi-search"
@@ -235,7 +235,7 @@
   <n-layout-content class="vars-content">
 
   <n-data-table
-    :remote="!onlySelected"                
+    :remote="!onlySelected"
     :columns="columns"
     :data="tableData"
     :row-key="rowKey"
@@ -245,8 +245,8 @@
     @update:expanded-row-keys="handleExpandedRowChange"
     @update:page="onPageChange"
     @update:page-size="onPageSizeChange"
-    v-model:sorter="sorterState"       
-    @update:sorter="onSortChange"        
+    v-model:sorter="sorterState"
+    @update:sorter="onSortChange"
   />
     </n-layout-content>
 </n-layout>
@@ -438,7 +438,7 @@ watch(checkedRowKeys, (now) => {
   for (const key of nowSet) {
     if (!prevPageChecked.has(key)) {
        emit('select', { uri: String(key), name: variables.value.find(row => row.item.uri === key)?.item.name })
-    
+
       if (allSelected.value) {
         unselectedSet.value.delete(key)
       } else {
@@ -1030,10 +1030,10 @@ async function applySelectionToPage() {
   await nextTick()
 
 
-  console.log("applySelectionToPage:", { 
-  pageKeys, 
-  checkedRowKeys: checkedRowKeys.value, 
-  selectedSet: Array.from(selectedSet.value) 
+  console.log("applySelectionToPage:", {
+  pageKeys,
+  checkedRowKeys: checkedRowKeys.value,
+  selectedSet: Array.from(selectedSet.value)
 })
 
 }
@@ -1208,7 +1208,7 @@ defineExpose({
   }
 
 
-.listActionButtons{ 
+.listActionButtons{
   position: relative;
   display: flex;
   gap: 0 !important; /* espace entre boutons */
@@ -1228,8 +1228,8 @@ defineExpose({
 }
 
 .globalFiltersSearchButton {
-  width: 40px;  
-  height: 55px;  
+  width: 40px;
+  height: 55px;
 }
 
 .globalFiltersSearchButton span{

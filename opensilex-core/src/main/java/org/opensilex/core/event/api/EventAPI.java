@@ -24,6 +24,7 @@ import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -98,6 +99,9 @@ public class EventAPI {
 
     @Inject
     private MongoDBService nosql;
+    
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -375,7 +379,7 @@ public class EventAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
-            MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+            MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, fs);
             logic.fillLocationPropertyWhenNeededForRetrocompatibilityPurposes(dtoList);
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, logic);
             models = logic.create(models, false);
@@ -459,10 +463,10 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null);
+        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null, fs);
 
         return buildCsvResponse(csvImporter, logic, false).getResponse();
     }
@@ -479,9 +483,9 @@ public class EventAPI {
             @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null);
+        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser, nosql, null, fs);
         return buildCsvResponse(csvImporter, logic, true).getResponse();
     }
 
@@ -502,7 +506,7 @@ public class EventAPI {
     public Response updateMoveEvent(
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, fs);
         logic.assertNoDeprecatedPropertiesIsFilled(dto);
         MoveModel model = logic.setEventRelations(dto.toModel(), dto.getRelations(), dto.getType(), null);
         try {
@@ -527,7 +531,7 @@ public class EventAPI {
     public Response getMoveEvent(
             @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveModel model = new MoveLogic(sparql, nosql, currentUser).get(uri);
+        MoveModel model = new MoveLogic(sparql, nosql, currentUser, fs).get(uri);
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
         if (Objects.nonNull(model.getPublisher())){
@@ -536,6 +540,13 @@ public class EventAPI {
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
+    /**
+     * @return  a list of moves corresponding to the given URIs
+     *
+     * @param uris list of moves uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(MOVE_PATH_PREFIX + "/by_uris")
     @ApiOperation("Get a list of moves with all positional information")
@@ -549,7 +560,7 @@ public class EventAPI {
     public Response getMoveEventByUris(
             @ApiParam(value = "Move URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        var logic = new MoveLogic(sparql, nosql, currentUser);
+        var logic = new MoveLogic(sparql, nosql, currentUser, fs);
         var accountDao = new AccountDAO(sparql);
         //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
         //      to all services that need it.
@@ -580,6 +591,59 @@ public class EventAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
+    /**
+     * @return  a list of moves corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path(MOVE_PATH_PREFIX + "/by_uris")
+    @ApiOperation("Get a list of moves with all positional information")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Moves retrieved", response = MoveDetailsDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchMoveEventByUris(
+            @ApiParam(value = "Move URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
+        var logic = new MoveLogic(sparql, nosql, currentUser, fs);
+        var accountDao = new AccountDAO(sparql);
+        //@todo This map is used to fetch all accounts at once and fill them on the DTOs. This should be generalized
+        //      to all services that need it.
+        var publisherMap = new HashMap<URI, AccountModel>();
+        var dtoList = new ArrayList<MoveDetailsDTO>(uris == null ? 0 : uris.size());
+
+        for (var model : logic.getList(uris)) {
+            var mDto = new MoveDetailsDTO(model);
+            if (model.getPublisher() != null) {
+                publisherMap.put(model.getPublisher(), null);
+                mDto.setPublisher(new UserGetDTO());
+                mDto.getPublisher().setUri(model.getPublisher());
+            }
+            dtoList.add(mDto);
+        }
+
+        //@todo Find a better way to fetch accounts for a list of model. Propagate this to all APIs.
+        for (var publisher : accountDao.getList((publisherMap.keySet()))) {
+            publisherMap.put(publisher.getUri(), publisher);
+        }
+
+        for (var mDto : dtoList) {
+            if (mDto.getPublisher() != null) {
+                mDto.setPublisher(UserGetDTO.fromModel(publisherMap.get(mDto.getPublisher().getUri())));
+            }
+        }
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
     @DELETE
     @Path(MOVE_PATH_PREFIX + "/{uri}")
     @ApiOperation("Delete a move event")
@@ -597,7 +661,7 @@ public class EventAPI {
     public Response deleteMoveEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic logic = new MoveLogic(sparql, nosql, currentUser, fs);
         logic.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }

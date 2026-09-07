@@ -20,9 +20,9 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -238,6 +238,13 @@ public class GermplasmGroupApi {
     }
 
 
+    /**
+     * @return  a list of germplasm groups corresponding to the given URIs
+     *
+     * @param uris list of germplasm group uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by-uris")
     @ApiOperation("Get germplasm groups by their URIs")
@@ -245,13 +252,56 @@ public class GermplasmGroupApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return germplasm groups", response = GermplasmGroupGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Germplasm group not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Germplasm group not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGermplasmGroupByURIs(
             @ApiParam(value = "Germplasm group URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        List<GermplasmGroupModel> models = dao.getList(uris);
+        if (!models.isEmpty()) {
+            List<GermplasmGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                GermplasmGroupGetDTO next = GermplasmGroupGetDTO.fromModel(result);
+                try {
+                    next.setGermplasmCount(germplasmDAO.countInGroup(next.getUri(), currentUser.getLanguage()));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                resultDTOList.add(next);
+            });
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Germplasm group not found", "Unknown germplasm group URI").getResponse();
+        }
+    }
+
+    /**
+     * @return  a list of germplasm groups corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get germplasm groups by their URIs")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return germplasm groups", response = GermplasmGroupGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Germplasm group not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchGermplasmGroupByURIs(
+            @ApiParam(value = "Germplasm group URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         List<GermplasmGroupModel> models = dao.getList(uris);

@@ -70,7 +70,7 @@ public class TrialsAPI extends FaidareCall {
                 null, null, null, null, currentUser, null, page, pageSize
         );
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb, fs);
         Faidarev1TrialDTOBuilder builder = new Faidarev1TrialDTOBuilder(experimentDAO);
         ListWithPagination<Faidarev1TrialDTO> resultDTOList = projects.convert(
                 Faidarev1TrialDTO.class,

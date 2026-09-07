@@ -277,8 +277,12 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     }
 
     protected void updateMonoValued(SPARQLResult result, T initialModel) {
-
         List<URI> typeProperties = this.monoValuedPropertiesByType.get(initialModel.getType());
+
+        if (typeProperties == null) {
+            return;
+        }
+
         List<String> propertiesNames = this.monoValuedPropertiesByTypeVarNames.get(initialModel.getType());
 
         for (int i = 0; i < typeProperties.size(); i++) {
@@ -294,8 +298,12 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     }
 
     protected void updateMultiValued(SPARQLResult result, T initialModel) {
-
         List<URI> typeProperties = this.multiValuedPropertiesByType.get(initialModel.getType());
+
+        if (typeProperties == null) {
+            return;
+        }
+
         List<String> propertiesNames = this.multiValuedPropertiesByTypeVarNames.get(initialModel.getType());
 
         for (int i = 0; i < typeProperties.size(); i++) {

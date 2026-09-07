@@ -1,33 +1,39 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.5.1]](#151)
+  * [[1.5.4]](#154)
     * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.5.3]](#153)
+    * [Fixed or optimized](#fixed-or-optimized-1)
+  * [[1.5.2]](#152)
+    * [Fixed or optimized](#fixed-or-optimized-2)
+  * [[1.5.1]](#151)
+    * [Fixed or optimized](#fixed-or-optimized-3)
   * [[1.5.0] - Freaky Fossil](#150---freaky-fossil)
     * [Changes and new features](#changes-and-new-features)
     * [Fixed or optimized](#fixed-or-optimized-)
   * [[1.4.10]](#1410)
-    * [Fixed or optimized](#fixed-or-optimized-1)
-  * [[1.4.9]](#149)
-    * [Fixed or optimized](#fixed-or-optimized-2)
-  * [[1.4.8]](#148)
-    * [Fixed or optimized](#fixed-or-optimized-3)
-  * [[1.4.7]](#147)
     * [Fixed or optimized](#fixed-or-optimized-4)
-  * [[1.4.6]](#146)
+  * [[1.4.9]](#149)
     * [Fixed or optimized](#fixed-or-optimized-5)
-  * [[1.4.5]](#145)
+  * [[1.4.8]](#148)
     * [Fixed or optimized](#fixed-or-optimized-6)
-  * [[1.4.4]](#144)
+  * [[1.4.7]](#147)
     * [Fixed or optimized](#fixed-or-optimized-7)
-  * [[1.4.3]](#143)
+  * [[1.4.6]](#146)
     * [Fixed or optimized](#fixed-or-optimized-8)
-  * [[1.4.2]](#142)
+  * [[1.4.5]](#145)
     * [Fixed or optimized](#fixed-or-optimized-9)
-  * [[1.4.1]](#141)
+  * [[1.4.4]](#144)
     * [Fixed or optimized](#fixed-or-optimized-10)
+  * [[1.4.3]](#143)
+    * [Fixed or optimized](#fixed-or-optimized-11)
+  * [[1.4.2]](#142)
+    * [Fixed or optimized](#fixed-or-optimized-12)
+  * [[1.4.1]](#141)
+    * [Fixed or optimized](#fixed-or-optimized-13)
   * [[1.4.0] - Explosive Emerald](#140---explosive-emerald)
     * [Changes and new features](#changes-and-new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-11)
+    * [Fixed or optimized](#fixed-or-optimized-14)
     * [Other](#other)
   * [[1.3.5]](#135)
     * [Fixed](#fixed)
@@ -42,20 +48,20 @@
     * [Fixed](#fixed-4)
   * [[1.3.0] - Dizzy Diamond](#130---dizzy-diamond-)
     * [Changes and new features](#changes-and-new-features-3)
-    * [Fixed or optimized](#fixed-or-optimized-12)
+    * [Fixed or optimized](#fixed-or-optimized-15)
   * [[1.2.7]](#127)
-    * [Fixed or optimized](#fixed-or-optimized-13)
+    * [Fixed or optimized](#fixed-or-optimized-16)
   * [[1.2.6]](#126)
-    * [Fixed or optimized](#fixed-or-optimized-14)
+    * [Fixed or optimized](#fixed-or-optimized-17)
     * [Known issue](#known-issue)
   * [[1.2.5]](#125)
-    * [Fixed or optimized](#fixed-or-optimized-15)
+    * [Fixed or optimized](#fixed-or-optimized-18)
   * [[1.2.4]](#124)
-    * [Fixed or optimized](#fixed-or-optimized-16)
+    * [Fixed or optimized](#fixed-or-optimized-19)
   * [[1.2.3]](#123)
     * [Highlight](#highlight)
     * [Changes and new features](#changes-and-new-features-4)
-    * [Fixed or optimized](#fixed-or-optimized-17)
+    * [Fixed or optimized](#fixed-or-optimized-20)
   * [[1.2.2]](#122)
     * [Fixed](#fixed-5)
   * [[1.2.1]](#121)
@@ -63,35 +69,35 @@
   * [[1.2.0] - Caramelized Crystal](#120---caramelized-crystal)
     * [Highlight](#highlight-1)
     * [Changes and new features](#changes-and-new-features-5)
-    * [Fixed or optimized](#fixed-or-optimized-18)
+    * [Fixed or optimized](#fixed-or-optimized-21)
     * [Versions changes](#versions-changes)
     * [Technical changes](#technical-changes)
       * [Updated Dependencies](#updated-dependencies)
   * [[1.1.0] - Blazing Basalt](#110---blazing-basalt)
     * [Changes and new features](#changes-and-new-features-6)
-    * [Fixed or optimized](#fixed-or-optimized-19)
+    * [Fixed or optimized](#fixed-or-optimized-22)
   * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
-    * [Fixed or optimized](#fixed-or-optimized-20)
+    * [Fixed or optimized](#fixed-or-optimized-23)
       * [API](#api)
       * [Web client](#web-client)
   * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features)
-    * [Fixed or optimized](#fixed-or-optimized-21)
+    * [Fixed or optimized](#fixed-or-optimized-24)
       * [API](#api-1)
       * [Web client](#web-client-1)
   * [[1.0.0-rc+7]](#100-rc7)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-22)
+    * [Fixed or optimized](#fixed-or-optimized-25)
   * [[1.0.0-rc+6]](#100-rc6)
-    * [Fixed or optimized](#fixed-or-optimized-23)
+    * [Fixed or optimized](#fixed-or-optimized-26)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-24)
+    * [Fixed or optimized](#fixed-or-optimized-27)
   * [[1.0.0-rc+5.1]](#100-rc51)
-    * [Fixed or optimized](#fixed-or-optimized-25)
+    * [Fixed or optimized](#fixed-or-optimized-28)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-26)
+    * [Fixed or optimized](#fixed-or-optimized-29)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
     * [Fixed](#fixed-7)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
@@ -107,10 +113,10 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-27)
+    * [Fixed or optimized](#fixed-or-optimized-30)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-28)
+    * [Fixed or optimized](#fixed-or-optimized-31)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
@@ -134,6 +140,71 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.5.5]
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+>
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
+>
+> If you are upgrading from 1.5.1 or higher, there's nothing to do.
+
+- (!1540) [Facility] Removed duplicate label field in facility form
+- (!1541) [Site] Updating a site that has an address now works again
+- (!1543) [Scientific Objects] Fixed the scientific object export when several custom types are used in a hierarchy
+- (!1546) [Swagger] Changed the format of `LocationObservationDTO` dates from number to string
+- (!1549) [Facility] Adding custom relations to facilities now works again
+
+## [1.5.4]
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+>
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
+>
+> If you are upgrading from 1.5.1 or higher, there's nothing to do.
+
+### Fixed or optimized
+
+- (!1536) [Scientific objects] No longer show an error when looking at an SO that has multiple locations with same date
+
+## [1.5.3]
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+>
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1.
+>
+> If you are upgrading from 1.5.1 or 1.5.2, there's nothing to do.
+
+### Fixed or optimized
+
+- (!1528) [Germplasm] Updating a species no longer removes the "fromSpecies" association with varities or accessions
+- (!1530) [Germplasm] Fixed update and export of private germplasms with groups
+- (!1522) [Geospatial] Stopped pointless empty locations from being created during the 1.5 migration AND repaired geospatial export
+- (!1519) [Scientific objects] Fixed Scientific Objects import/export
+
+## [1.5.2]
+
+### Fixed or optimized
+
+> Warning: upgrading to this new version may require manual operations.
+>
+> If you are upgrading from 1.4.x, you can follow the [versioning notes for 1.5.0](opensilex-doc/src/main/resources/release/1.5.0.md).
+> 
+> If you are upgrading from 1.5.0, please follow the migration instructions for 1.5.1 (just below). 
+> 
+> If you are upgrading from 1.5.1, there's nothing to do.
+
+- (!1506) [Migration] Optimized migration to 1.5.x with large datasets
+- (!1506) [Map] Fixed geometry visualization for scientific objects with an associated facility
+- (!1507) [UI] The global URI search now works again in instances with a unique header
+- (!1511) [Development] Pinned the typescript version at 6 to make the build work again
+- (!1510) [API] Added new `by_uris` services that use the HTTP POST method to allow requesting more URIs at once
 
 ## [1.5.1]
 
@@ -643,7 +714,7 @@ if your need more information or contact our team for support.
 
 >  ⚠️ WARNING : upgrading to this new version require manual operations. Please
 > see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.0.md).
-> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.1.0.md)
+> Also available [here](opensilex-doc/src/main/resources/release/1.1.0.md)
 
 ### Changes and new features
 

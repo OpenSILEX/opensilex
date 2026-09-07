@@ -725,7 +725,8 @@
             "lastUpdateDate": "Modified",
             "specific-properties": "Specific properties",
             "multiple-insert": "event(s) registered.",
-            "move-multiple-insert": "move(s) registered."
+            "move-multiple-insert": "move(s) registered.",
+            "move" : "Move"
 
         },
         "sharedResourceInstances": {
@@ -1097,7 +1098,8 @@
             "filters": {
                 "rdfType-placeholder": "Select the datafile type",
                 "provenance": "Provenance"
-            }
+            },
+            "list-title": "Datafiles"
         },
         "custom-properties" : {
             "linked-resources" : "Linked resources"

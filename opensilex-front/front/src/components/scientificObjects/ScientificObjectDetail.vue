@@ -108,7 +108,7 @@ const props = withDefaults(
   defineProps<Props>(),
   {
     objectByContext: (() => []),
-    withReturnButton: true,
+    withReturnButton: false,
     experiment: null
   }
 )

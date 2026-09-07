@@ -11,185 +11,137 @@
     <PageContent class="pagecontent">
       <template #default>
         <n-layout has-sider class="datafiles-layout">
-          <!-- Search Button -->
-          <n-space class="mb-2 me-1" align="start">
-            <n-button
-              quaternary
-              circle
-              @click="filtersCollapsed = !filtersCollapsed"
-              :title="t('searchfilter.label')"
-              :class="{ greenThemeColor: filtersCollapsed }"
-              class="globalFiltersSearchButton"
-            >
-                <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-              <div
-                v-show="filtersCollapsed && activeFiltersCount > 0"
-                class="filters-count-badge"
-              >
-                ( {{ activeFiltersCount }} )
-              </div>
-            </n-button>
-          </n-space>
-
-          <!-- Sidebar / Filters-->
-          <n-layout-sider
-            v-model:collapsed="filtersCollapsed"
-            :collapsed-width="0"
-            :width="360"
-            collapse-mode="width"
-            show-trigger
-            bordered
-            class="project-sider"
+          <SearchFiltersSidebar
+            :activeFiltersCount="activeFiltersCount"
+            @refresh="refresh"
+            @reset="reset"
           >
-            <n-space class="p-3 searchFilterField" vertical>
-              <n-form
-                label-placement="top"
-                size="small"
-                @submit.prevent.stop="refresh"
-              >
-                <!-- FileName -->
-                <n-form-item v-if="withFileNameFilter" :label="t('component.datafile.fileName')" class="compact-form-item">
-                  <n-input
-                    v-model:value="filter.name"
-                    clearable
-                    :placeholder="t('component.datafile.fileName-placeholder')"
-                    class="searchFilter"
-                    @keydown.enter.prevent.stop="refresh"
-                  />
-                </n-form-item>
+            <!-- Contents of unnamed filter fields slot go here -->
+            <!-- FileName -->
+            <n-form-item v-if="withFileNameFilter" :label="t('component.datafile.fileName')" class="compact-form-item">
+              <n-input
+                v-model:value="filter.name"
+                clearable
+                :placeholder="t('component.datafile.fileName-placeholder')"
+                class="searchFilter"
+                @keydown.enter.prevent.stop="refresh"
+              />
+            </n-form-item>
 
-                <!-- Type -->
-                <n-form-item class="compact-form-item">
-                  <TypeForm
-                    v-if="filter.imagesView"
-                    v-model:type="filter.rdf_type"
-                    :baseType="Oeso.IMAGE_TYPE_URI"
-                    :ignoreRoot="false"
-                    :placeholder="t('component.datafile.filters.rdfType-placeholder')"
-                    class="searchFilter"
-                    key="imageTypeForm"
-                    @handlingEnterKey="refresh"
-                  />
+            <!-- Type -->
+            <n-form-item class="compact-form-item">
+              <TypeForm
+                v-if="filter.imagesView"
+                v-model:type="filter.rdf_type"
+                :baseType="Oeso.IMAGE_TYPE_URI"
+                :ignoreRoot="false"
+                :placeholder="t('component.datafile.filters.rdfType-placeholder')"
+                class="searchFilter"
+                key="imageTypeForm"
+                @handlingEnterKey="refresh"
+              />
 
-                  <TypeForm
-                    v-else
-                    v-model:type="filter.rdf_type"
-                    :baseType="Oeso.DATAFILE_TYPE_URI"
-                    :ignoreRoot="false"
-                    :placeholder="t('component.datafile.filters.rdfType-placeholder')"
-                    class="searchFilter"
-                    key="datafileTypeForm"
-                    @handlingEnterKey="refresh"
-                  />
-                </n-form-item>
+              <TypeForm
+                v-else
+                v-model:type="filter.rdf_type"
+                :baseType="Oeso.DATAFILE_TYPE_URI"
+                :ignoreRoot="false"
+                :placeholder="t('component.datafile.filters.rdfType-placeholder')"
+                class="searchFilter"
+                key="datafileTypeForm"
+                @handlingEnterKey="refresh"
+              />
+            </n-form-item>
 
-                <!-- Experiments -->
-                <n-form-item class="compact-form-item">
-                  <opensilex-ExperimentSelector
-                    :label="t('component.experiment.view.experiment-experiments')"
-                    v-model:experiments="filter.experiments"
-                    :multiple="true"
-                    @select="updateSOFilter"
-                    @clear="updateSOFilter"
-                    class="searchFilter"
-                    :key="resetExperimentSelectorKey"
-                  />
-                </n-form-item>
+            <!-- Experiments -->
+            <n-form-item class="compact-form-item">
+              <opensilex-ExperimentSelector
+                :label="t('component.experiment.view.experiment-experiments')"
+                v-model:experiments="filter.experiments"
+                :multiple="true"
+                @select="updateSOFilter"
+                @clear="updateSOFilter"
+                class="searchFilter"
+                :key="resetExperimentSelectorKey"
+              />
+            </n-form-item>
 
-                <!-- Scientific objects -->
-                <n-form-item v-if="!enforcedScientificObjectUri" class="compact-form-item">
-                  <ModalFormSelector
-                    ref="soSelector"
-                    :label="t('component.scientificObjects.scientificObjects')"
-                    :placeholder="t('component.scientificObjects.scientificObjects-placeholder')"
-                    v-model:selected="filter.scientificObjects"
-                    modalComponent="opensilex-ScientificObjectModalList"
-                    v-model:filter="soFilter"
-                    :clearable="true"
-                    :multiple="true"
-                    @onValidate="refreshProvComponent"
-                    @onClose="refreshProvComponent"
-                    @clear="refreshSoSelector"
-                    :limit="1"
-                    class="searchFilter scientificObjectsSelector"
-                  />
-                </n-form-item>
+            <!-- Scientific objects -->
+            <n-form-item v-if="!enforcedScientificObjectUri" class="compact-form-item">
+              <ModalFormSelector
+                ref="soSelector"
+                :label="t('component.scientificObjects.scientificObjects')"
+                :placeholder="t('component.scientificObjects.scientificObjects-placeholder')"
+                v-model:selected="filter.scientificObjects"
+                modalComponent="opensilex-ScientificObjectModalList"
+                v-model:filter="soFilter"
+                :clearable="true"
+                :multiple="true"
+                @onValidate="refreshProvComponent"
+                @onClose="refreshProvComponent"
+                @clear="refreshSoSelector"
+                :limit="1"
+                class="searchFilter scientificObjectsSelector"
+              />
+            </n-form-item>
 
-                <!-- Start Date -->
-                <n-form-item class="compact-form-item">
-                  <DateTimeForm
-                    v-model:value="filter.start_date"
-                    label="component.common.date-time.begin"
-                    name="startDate"
-                    :max-date="filter.end_date ? filter.end_date : undefined"
-                    class="searchFilter"
-                  />
-                </n-form-item>
+            <!-- Start Date -->
+            <n-form-item class="compact-form-item">
+              <DateTimeForm
+                v-model:value="filter.start_date"
+                label="component.common.date-time.begin"
+                name="startDate"
+                :max-date="filter.end_date ? filter.end_date : undefined"
+                class="searchFilter"
+              />
+            </n-form-item>
 
-                <!-- End Date -->
-                <n-form-item class="compact-form-item">
-                  <DateTimeForm
-                    v-model:value="filter.end_date"
-                    label="component.common.date-time.end"
-                    name="endDate"
-                    :min-date="filter.start_date ? filter.start_date : undefined"
-                    :maxDate="filter.end_date"
-                    class="searchFilter"
-                  />
-                </n-form-item>
+            <!-- End Date -->
+            <n-form-item class="compact-form-item">
+              <DateTimeForm
+                v-model:value="filter.end_date"
+                label="component.common.date-time.end"
+                name="endDate"
+                :min-date="filter.start_date ? filter.start_date : undefined"
+                :maxDate="filter.end_date"
+                class="searchFilter"
+              />
+            </n-form-item>
 
-                <!-- Provenance -->
-                <n-form-item class="compact-form-item">
-                  <DatafileProvenanceSelector
-                    ref="provSelector"
-                    v-model:provenances="filter.provenance"
-                    :label="t('component.datafile.filters.provenance')"
-                    @select="loadProvenance"
-                    :devices="passedDeviceUri ? [passedDeviceUri] : undefined"
-                    :targets="filter.scientificObjects"
-                    :experiments="filter.experiments"
-                    :multiple="false"
-                    :viewHandler="showProvenanceDetails"
-                    :viewHandlerDetailsVisible="provenanceDetailsAreVisible"
-                    :showURI="false"
-                    :key="refreshKey"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh"
-                  />
-                </n-form-item>
+            <!-- Provenance -->
+            <n-form-item class="compact-form-item">
+              <DatafileProvenanceSelector
+                ref="provSelector"
+                v-model:provenances="filter.provenance"
+                :label="t('component.datafile.filters.provenance')"
+                @select="loadProvenance"
+                :devices="passedDeviceUri ? [passedDeviceUri] : undefined"
+                :targets="filter.scientificObjects"
+                :experiments="filter.experiments"
+                :multiple="false"
+                :viewHandler="showProvenanceDetails"
+                :viewHandlerDetailsVisible="provenanceDetailsAreVisible"
+                :showURI="false"
+                :key="refreshKey"
+                class="searchFilter"
+                @handlingEnterKey="refresh"
+              />
+            </n-form-item>
 
-                <ProvenanceDetails
-                  v-if="selectedProvenance && provenanceDetailsAreVisible"
-                  :provenance="selectedProvenance"
-                  class="provenanceDetails"
-                />
+            <ProvenanceDetails
+              v-if="selectedProvenance && provenanceDetailsAreVisible"
+              :provenance="selectedProvenance"
+              class="provenanceDetails"
+            />
 
-                <!-- Images -->
-                <n-form-item v-if="withImagesViewOption" class="compact-form-item">
-                  <n-space align="center">
-                    <n-switch v-model:value="filter.imagesView" />
-                    <strong>{{ t('component.datafile.imagesView') }}</strong>
-                  </n-space>
-                </n-form-item>
-
-                <n-space justify="end" class="mt-2">
-                  <Button
-                    class="resetButton"
-                    :label="t('component.common.search.clear-button')"
-                    icon="bi-x-lg"
-                    @click="reset"
-                  />
-                  <Button
-                    class="greenThemeColor"
-                    :label="t('component.common.search.search-button')"
-                    icon="bi-search"
-                    @click="refresh"
-                  />
-                </n-space>
-              </n-form>
-            </n-space>
-          </n-layout-sider>
+            <!-- Images -->
+            <n-form-item v-if="withImagesViewOption" class="compact-form-item">
+              <n-space align="center">
+                <n-switch v-model:value="filter.imagesView" />
+                <strong>{{ t('component.datafile.imagesView') }}</strong>
+              </n-space>
+            </n-form-item>
+          </SearchFiltersSidebar>
 
           <!-- Contenu Liste -->
           <n-layout-content class="project-content">
@@ -257,6 +209,7 @@ import PageActions from "@/components/layout/PageActions.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import {useRoute} from "vue-router";
 import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 //#region Used Models
 interface FilterModel{

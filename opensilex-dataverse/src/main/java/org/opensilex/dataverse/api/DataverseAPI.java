@@ -138,7 +138,7 @@ public class DataverseAPI {
         }
 
 
-        ExperimentDAO expeDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO expeDAO = new ExperimentDAO(sparql, nosql, fs);
         ExperimentModel experimentModel = expeDAO.get(experimentUri, currentAccount);
 
         PersonDAO personDAO = new PersonDAO(sparql);

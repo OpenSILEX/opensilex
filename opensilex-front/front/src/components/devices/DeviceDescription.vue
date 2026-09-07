@@ -3,7 +3,7 @@
     <opensilex-PageContent>
       <div class="row">
         <div class="col-lg-6">
-          <opensilex-Card
+          <Card
             label="component.common.informations"
             icon="bi-clipboard"
           >
@@ -158,7 +158,7 @@
                     />
                 </div>
             </template>
-          </opensilex-Card>
+          </Card>
         </div>
 
         <div class="col-lg-6">
@@ -251,6 +251,7 @@ import type { PositionsService } from 'opensilex-core/api/positions.service'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type { SecurityService, PersonDTO } from 'opensilex-security/index'
 import DeviceForm from "@/components/devices/form/DeviceForm.vue";
+import Card from "@/components/common/views/Card.vue";
 
 const store = useStore()
 const route = useRoute()
@@ -568,14 +569,6 @@ watch(
   }
 )
 </script>
-
-<style scoped lang="scss">
-.detailsCard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-</style>
 
 <i18n>
 en:

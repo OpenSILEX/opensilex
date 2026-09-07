@@ -5,10 +5,15 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
+import java.net.URI;
+import java.util.Optional;
 import java.util.function.BiConsumer;
+
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.opensilex.sparql.service.SPARQLLiteral;
 import org.opensilex.sparql.service.SPARQLResult;
 
 
@@ -18,7 +23,7 @@ import org.opensilex.sparql.service.SPARQLResult;
  */
 public class RDF4JResult implements SPARQLResult {
 
-    private BindingSet bindingSet;
+    private final BindingSet bindingSet;
 
     public RDF4JResult(BindingSet bindingSet) {
         this.bindingSet = bindingSet;
@@ -26,19 +31,46 @@ public class RDF4JResult implements SPARQLResult {
 
     @Override
     public String getStringValue(String key) {
-        Value binding = bindingSet.getValue(key);
-        if (binding == null) {
-            return null;
-        } else {
-            return bindingSet.getValue(key).stringValue();
+        return getValue(key)
+                .map(Value::stringValue)
+                .orElse(null);
+    }
+
+    @Override
+    public Optional<SPARQLLiteral> getLiteralValue(String key) {
+        var value = getValue(key);
+        if (value.isEmpty() || !value.get().isLiteral()) {
+            return Optional.empty();
         }
+
+        var literal = (Literal) value.get();
+        return Optional.of(new SPARQLLiteral(
+                literal.stringValue(),
+                literal.getLanguage().orElse(null),
+                URI.create(literal.getDatatype().stringValue())));
+    }
+
+    @Override
+    public boolean isURI(String key) {
+        return getValue(key)
+                .map(Value::isIRI)
+                .orElse(false);
+    }
+
+    @Override
+    public boolean isLiteral(String key) {
+        return getValue(key)
+                .map(Value::isLiteral)
+                .orElse(false);
     }
 
     @Override
     public void forEach(BiConsumer<? super String, ? super String> action) {
-        bindingSet.forEach((Binding bind) -> {
-            action.accept(bind.getName(), bind.getValue().stringValue());
-        });
+        bindingSet.forEach((Binding bind) ->
+                action.accept(bind.getName(), bind.getValue().stringValue()));
     }
 
+    private Optional<Value> getValue(String key) {
+        return Optional.ofNullable(bindingSet.getValue(key));
+    }
 }

@@ -10,83 +10,97 @@
       />
     </div>
     <n-space class="listActionButtons">
-        <div class="displayAndListSelectionCount">
-            <div v-if="showCount">
-                <div v-if="hasResults">
-                    <strong>
-                        <span class="ml-1">
-                            {{ t('component.common.list.pagination.nbEntries', {
-                            limit: start,
-                            offset: end,
-                            totalRow: n(total)
-                            }) }}
-                        </span>
-                    </strong>
-                </div>
-                <div v-else>
-                    <strong>
-                        <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-                    </strong>
-                </div>
-            </div>
+      <div class="displayAndListSelectionCount">
+        <div v-if="showCount">
+          <div v-if="hasResults">
+            <strong>
+              <span class="ml-1">
+                {{
+                  t('component.common.list.pagination.nbEntries', {
+                    limit: start,
+                    offset: end,
+                    totalRow: n(total),
+                  })
+                }}
+              </span>
+            </strong>
+          </div>
+          <div v-else>
+            <strong>
+              <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
+            </strong>
+          </div>
         </div>
+      </div>
     </n-space>
 
     <!-- Table -->
     <PageContent v-if="renderComponent">
-        <template #default>
-            <TableAsyncView
-                ref="tableRef"
-                :searchMethod="search"
-                :fields="fields"
-                :isSelectable="isSelectable"
-            >
-                <!-- colonnes -->
-                <template #cell(published)="{ data }">
-                    <TextView :value="formatDate(data.item.published)" label="" />
-                </template>
+      <template #default>
+        <TableAsyncView
+          ref="tableRef"
+          :searchMethod="search"
+          :fields="fields"
+          :isSelectable="isSelectable"
+        >
+          <!-- colonnes -->
+          <template #cell(published)="{ data }">
+            <TextView
+              :value="formatDate(data.item.published)"
+              label=""
+            />
+          </template>
 
-                <template #cell(publisher)="{ data }">
-                    <PersonContact
-                        v-if="data.item.publisher && accountsByUri.get(data.item.publisher)"
-                        :personContact="accountsByUri.get(data.item.publisher)"
-                        :customDisplayableName="getAccountNames(data.item.publisher)"
-                    />
-                </template>
+          <template #cell(publisher)="{ data }">
+            <PersonContact
+              v-if="data.item.publisher && accountsByUri.get(data.item.publisher)"
+              :personContact="accountsByUri.get(data.item.publisher)"
+              :customDisplayableName="getAccountNames(data.item.publisher)"
+            />
+          </template>
 
-                <template #cell-description="{ data }">
-                    <TextView v-if="data.item.description" :value="data.item.description" />
-                </template>
+          <template #cell-description="{ data }">
+            <TextView
+              v-if="data.item.description"
+              :value="data.item.description"
+            />
+          </template>
 
-                <template v-if="displayTargetColumn" #cell-targets="{ data }">
-                    <opensilex-TextView :value="data.item.targets?.[0]" />
-                </template>
+          <template
+            v-if="displayTargetColumn"
+            #cell-targets="{ data }"
+          >
+            <opensilex-TextView :value="data.item.targets?.[0]" />
+          </template>
 
-                <template v-if="enableActions" #cell(actions)="{ data }">
-                    <div class="action-group">
-                        <DetailButton
-                            v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                            @click="showDetails(data)"
-                            :label="t('Annotation.details')"
-                            :title="t('Annotation.details')"
-                            :small="true"
-                        />
-                        <EditButton
-                            v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                            @click="editAnnotation(data.item)"
-                            :label="t('component.annotation.edit')"
-                            :small="true"
-                        />
-                        <DeleteButton
-                            v-if="!deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                            @click="deleteAnnotation(data.item.uri)"
-                            :label="t('Annotation.delete')"
-                            :small="true"
-                        />
-                    </div>
-                </template>
-            </TableAsyncView>
-        </template>
+          <template
+            v-if="enableActions"
+            #cell(actions)="{ data }"
+          >
+            <div class="action-group">
+              <DetailButton
+                v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                @click="showDetails(data)"
+                :label="t('Annotation.details')"
+                :title="t('Annotation.details')"
+                :small="true"
+              />
+              <EditButton
+                v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                @click="editAnnotation(data.item)"
+                :label="t('component.annotation.edit')"
+                :small="true"
+              />
+              <DeleteButton
+                v-if="!deleteCredentialId || user.hasCredential(deleteCredentialId)"
+                @click="deleteAnnotation(data.item.uri)"
+                :label="t('Annotation.delete')"
+                :small="true"
+              />
+            </div>
+          </template>
+        </TableAsyncView>
+      </template>
     </PageContent>
 
     <!-- Détails en modal -->
@@ -109,64 +123,76 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ComputedRef, inject, nextTick, onBeforeUnmount, ref, useTemplateRef, watch} from 'vue';
+import {
+  computed,
+  ComputedRef,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
-import {AnnotationGetDTO} from 'opensilex-core/index';
+import { AnnotationGetDTO } from 'opensilex-core/index';
 import type { AnnotationsService } from 'opensilex-core/api/annotations.service';
 import type { SecurityService } from 'opensilex-security/api/security.service';
 import type { UserGetDTO } from 'opensilex-security/index';
 import type { AccountGetDTO } from 'opensilex-security/model/accountGetDTO';
-import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
-import CreateButton from "@/components/common/buttons/CreateButton.vue";
-import PageContent from "@/components/layout/PageContent.vue";
-import TextView from "@/components/common/views/TextView.vue";
-import PersonContact from "@/components/persons/PersonContact.vue";
-import DetailButton from "@/components/common/buttons/DetailButton.vue";
-import EditButton from "@/components/common/buttons/EditButton.vue";
-import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import AnnotationDetails from "@/components/annotations/list/form/AnnotationDetails.vue";
-import AnnotationForm from "@/components/annotations/list/form/AnnotationForm.vue";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import {TableField} from "@/components/common/views/TableField";
+import TableAsyncView, { RowWithData } from '@/components/common/views/TableAsyncView.vue';
+import CreateButton from '@/components/common/buttons/CreateButton.vue';
+import PageContent from '@/components/layout/PageContent.vue';
+import TextView from '@/components/common/views/TextView.vue';
+import PersonContact from '@/components/persons/PersonContact.vue';
+import DetailButton from '@/components/common/buttons/DetailButton.vue';
+import EditButton from '@/components/common/buttons/EditButton.vue';
+import DeleteButton from '@/components/common/buttons/DeleteButton.vue';
+import AnnotationDetails from '@/components/annotations/list/form/AnnotationDetails.vue';
+import AnnotationForm from '@/components/annotations/list/form/AnnotationForm.vue';
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
+import { TableField } from '@/components/common/views/TableField';
 
 // Props
-const props = withDefaults(defineProps<{
-  isSelectable?: boolean;
-  modificationCredentialId?: string;
-  deleteCredentialId?: string;
-  enableActions?: boolean;
-  displayTargetColumn?: boolean;
-  columnsToDisplay?: Set<string>;
-  filter?: {
-    bodyValue?: string;
-    motivation?: string;
-    published?: string;
-    publisher?: string;
-  };
-  target?: string;
-  showCount?: boolean;
-}>(), {
-  isSelectable: false,
-  enableActions: true,
-  displayTargetColumn: true,
-  columnsToDisplay: () => new Set(['published', 'description', 'publisher']),
-  filter: () => ({
-    bodyValue: undefined,
-    motivation: undefined,
-    published: undefined,
-    publisher: undefined
-  }),
-  showCount: true
-});
+const props = withDefaults(
+  defineProps<{
+    isSelectable?: boolean;
+    modificationCredentialId?: string;
+    deleteCredentialId?: string;
+    enableActions?: boolean;
+    displayTargetColumn?: boolean;
+    columnsToDisplay?: Set<string>;
+    filter?: {
+      bodyValue?: string;
+      motivation?: string;
+      published?: string;
+      publisher?: string;
+    };
+    target?: string;
+    showCount?: boolean;
+  }>(),
+  {
+    isSelectable: false,
+    enableActions: true,
+    displayTargetColumn: true,
+    columnsToDisplay: () => new Set(['published', 'description', 'publisher']),
+    filter: () => ({
+      bodyValue: undefined,
+      motivation: undefined,
+      published: undefined,
+      publisher: undefined,
+    }),
+    showCount: true,
+  }
+);
 
 // Emits
 const emit = defineEmits<{
-  (e: 'onDelete', uri: string): void
-  (e: 'changed', payload?: { reason: 'create' | 'update' | 'delete' }): void
-}>()
+  (e: 'onDelete', uri: string): void;
+  (e: 'changed', payload?: { reason: 'create' | 'update' | 'delete' }): void;
+}>();
 
 // Services / env
 const store = useStore();
@@ -192,7 +218,6 @@ const end = computed(() => paginationInfo.value.end);
 const total = computed(() => paginationInfo.value.total);
 const hasResults = computed(() => paginationInfo.value.hasResults);
 
-
 // Store bindings
 const user = computed(() => store.state.user);
 
@@ -214,71 +239,85 @@ function formatDate(dateStr: string): string {
 // Champs table
 const fields: ComputedRef<Array<TableField>> = computed(() => {
   const f: Array<TableField> = [];
-  if (props.columnsToDisplay.has('published'))   f.push({ key: 'published',   label: t('Annotation.published'),   sortable: true  });
-  if (props.columnsToDisplay.has('publisher'))   f.push({ key: 'publisher',   label: t('Annotation.publisher'),   sortable: false });
-  if (props.columnsToDisplay.has('description')) f.push({ key: 'description', label: t('Annotation.description'), sortable: true  });
-  if (props.columnsToDisplay.has('targets'))     f.push({ key: 'targets',     label: t('Annotation.targets'),     sortable: true  });
-  if (props.enableActions)                       f.push({ key: 'actions',     label: t('component.common.actions'), sortable: false, resizable: false, naiveProps: {width: 100} });
+  if (props.columnsToDisplay.has('published'))
+    f.push({ key: 'published', label: t('Annotation.published'), sortable: true });
+  if (props.columnsToDisplay.has('publisher'))
+    f.push({ key: 'publisher', label: t('Annotation.publisher'), sortable: false });
+  if (props.columnsToDisplay.has('description'))
+    f.push({ key: 'description', label: t('Annotation.description'), sortable: true });
+  if (props.columnsToDisplay.has('targets'))
+    f.push({ key: 'targets', label: t('Annotation.targets'), sortable: true });
+  if (props.enableActions)
+    f.push({
+      key: 'actions',
+      label: t('component.common.actions'),
+      sortable: false,
+      resizable: false,
+      naiveProps: { width: 100 },
+    });
   return f;
 });
 
 // Recherche (pour TableAsyncView)
-function search(options: { orderBy: string[]; currentPage: number; pageSize: number; }) {
-
+function search(options: { orderBy: string[]; currentPage: number; pageSize: number }) {
   // mémorise la pagination courante
   pagination.value.page = (options.currentPage ?? 0) + 1;
   pagination.value.pageSize = options.pageSize ?? 10;
 
   return new Promise((resolve, reject) => {
-    annotationService.searchAnnotations(
-      props.filter.bodyValue,
-      props.target,
-      props.filter.motivation,
-      props.filter.publisher,
-      options.orderBy,
-      options.currentPage,
-      options.pageSize
-    )
-    .then((http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
-
+    annotationService
+      .searchAnnotations(
+        props.filter.bodyValue,
+        props.target,
+        props.filter.motivation,
+        props.filter.publisher,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
         // total côté serveur
-        serverTotal.value = http?.response?.metadata?.pagination?.totalCount ?? (http?.response?.result?.length ?? 0);
+        serverTotal.value =
+          http?.response?.metadata?.pagination?.totalCount ?? http?.response?.result?.length ?? 0;
 
-      const results = http.response.result ?? [];
-      if (results.length === 0) {
-        resolve(http);
-      } else {
-        buildUsersIndexPromise(results, reject).then(() => resolve(http));
-      }
-    })
-    .catch(reject);
+        const results = http.response.result ?? [];
+        if (results.length === 0) {
+          resolve(http);
+        } else {
+          buildUsersIndexPromise(results, reject).then(() => resolve(http));
+        }
+      })
+      .catch(reject);
   });
 }
 
 function onAnnotationCreated() {
-  console.log("annoList - anno created")
-  refresh()
-  emit('changed', { reason: 'create' })
+  console.log('annoList - anno created');
+  refresh();
+  emit('changed', { reason: 'create' });
 }
 
 function onAnnotationUpdated() {
-  refresh()
-  emit('changed', { reason: 'update' })
+  refresh();
+  emit('changed', { reason: 'update' });
 }
 
 // Indexer les comptes pour affichage publisher
 function buildUsersIndexPromise(
   annotations: Array<AnnotationGetDTO>,
-  reject: (e:any)=>void
+  reject: (e: any) => void
 ): Promise<void | HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>> {
   accountsByUri.value = new Map();
   const uniqueUsers = new Set<string>();
-  annotations.forEach(a => { if (a.publisher) uniqueUsers.add(a.publisher); });
+  annotations.forEach((a) => {
+    if (a.publisher) uniqueUsers.add(a.publisher);
+  });
 
   if (uniqueUsers.size === 0) return Promise.resolve();
 
-  return securityService.getAccountsByURI(Array.from(uniqueUsers))
-    .then(http => {
+  return securityService
+    .getAccountsByURI(Array.from(uniqueUsers))
+    .then((http) => {
       http.response.result.forEach((acc: AccountGetDTO) => {
         accountsByUri.value.set(acc.uri, acc);
       });
@@ -294,67 +333,81 @@ function getAccountNames(accountUri: string): string | undefined {
 }
 
 function refresh() {
-    console.log("annotationList refresh")
+  console.log('annotationList refresh');
   tableRef.value?.refresh?.();
 }
 
 async function editAnnotation(annotation: AnnotationGetDTO) {
   try {
-    const uri = annotation?.uri
-    if (!uri) return
+    const uri = annotation?.uri;
+    if (!uri) return;
 
-    const http = await annotationService.getAnnotation(uri)
-    const selectedAnnotation = http.response.result
+    const http = await annotationService.getAnnotation(uri);
+    const selectedAnnotation = http.response.result;
 
-    annotationFormRef.value?.showEditForm?.(JSON.parse(JSON.stringify(selectedAnnotation)))
+    annotationFormRef.value?.showEditForm?.(JSON.parse(JSON.stringify(selectedAnnotation)));
   } catch (e) {
-    opensilex.errorHandler(e)
+    opensilex.errorHandler(e);
   }
 }
 
 function showDetails(row: RowWithData<AnnotationGetDTO>) {
-  const annotation = row.item
+  const annotation = row.item;
   selectedAnnotation.value = {
     uri: annotation.uri,
     motivation: annotation.motivation ? { name: annotation.motivation.name } : undefined,
     published: annotation.published,
     publisher: getAccountNames(annotation.publisher) as any,
-    description: annotation.description
+    description: annotation.description,
   } as AnnotationGetDTO;
   isModalVisible.value = true;
 }
 
 function deleteAnnotation(uri: string) {
-  annotationService.deleteAnnotation(uri)
+  annotationService
+    .deleteAnnotation(uri)
     .then(() => nextTick(() => refresh()))
     .then(() => {
       const message = `${t('Annotation.name')} ${uri} ${t('component.common.success.delete-success-message')}`;
       opensilex.showSuccessToast(message);
       emit('onDelete', uri);
-      emit('changed', { reason: 'delete' })
+      emit('changed', { reason: 'delete' });
     })
     .catch(opensilex.errorHandler);
 }
 
 // Re-montage quand la cible change (pour forcer TableAsyncView à relire la prop)
-watch(() => props.target, () => {
-  renderComponent.value = false;
-  nextTick(() => { renderComponent.value = true; });
-});
+watch(
+  () => props.target,
+  () => {
+    renderComponent.value = false;
+    nextTick(() => {
+      renderComponent.value = true;
+    });
+  }
+);
 
 // Refresh auto quand la langue change
 const unwatchLang = store.watch(
   () => store.getters.language,
   () => refresh()
 );
-onBeforeUnmount(() => { unwatchLang && unwatchLang(); });
+onBeforeUnmount(() => {
+  unwatchLang && unwatchLang();
+});
 
 defineExpose({ refresh });
 </script>
 
 <style scoped lang="scss">
-.pageActionsBtns { margin-left: 10px; margin-bottom: 10px; }
-.action-group { display: inline-flex; gap: .35rem; }
+.pageActionsBtns {
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+.action-group {
+  display: inline-flex;
+  gap: 0.35rem;
+}
 
 .listActionButtons {
   display: flex;
@@ -362,7 +415,7 @@ defineExpose({ refresh });
   align-items: center;
   flex-wrap: wrap;
   width: 100%;
-  margin: 8px 0 12px;       /* espace sous la barre -> évite le chevauchement */
+  margin: 8px 0 12px; /* espace sous la barre -> évite le chevauchement */
 }
 </style>
 

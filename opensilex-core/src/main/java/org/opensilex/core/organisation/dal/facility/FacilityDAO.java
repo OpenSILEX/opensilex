@@ -124,6 +124,9 @@ public class FacilityDAO {
         );
     }
 
+    /**
+     * @param uri the URI of the facility to delete
+     */
     public void delete(URI uri) throws Exception {
         sparql.delete(FacilityModel.class, uri);
     }

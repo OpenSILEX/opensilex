@@ -777,10 +777,8 @@ onBeforeUnmount(() => {
 
 //#endregion
 
-defineExpose({
-  showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm
-})
+defineExpose(modalFormLogic.exposed)
+
 </script>
 
 <style scoped>

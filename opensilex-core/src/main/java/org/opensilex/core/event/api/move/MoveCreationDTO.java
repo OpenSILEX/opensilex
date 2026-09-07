@@ -14,6 +14,7 @@ import org.opensilex.core.position.api.TargetPositionCreationDTO;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -72,10 +73,10 @@ public class MoveCreationDTO extends EventCreationDTO {
         if (Objects.nonNull(location)) {
             //Set start and end date in function of the move's ones in case we didn't duplicate this information from the front
             if(location.getEndDate() == null){
-                location.setEndDate(Instant.parse(super.getEnd()));
+                location.setEndDate(OffsetDateTime.parse(super.getEnd()));
             }
             if(super.getStart() != null && location.getStartDate() == null){
-                location.setStartDate(Instant.parse(super.getStart()));
+                location.setStartDate(OffsetDateTime.parse(super.getStart()));
             }
             LocationObservationModel locationObservationModel = location.newModel();
             model.setLocationObservation(locationObservationModel);

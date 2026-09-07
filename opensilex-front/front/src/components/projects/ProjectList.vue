@@ -216,21 +216,19 @@
       </TableAsyncView>
 
       <!-- Formulaire Creation Document -->
-      <ModalForm
+      <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
         ref="documentForm"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="bi#bi-file-earmark-text"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.editDocument')"
+        @onSuccess="refresh"
       />
     </n-layout-content>
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
@@ -247,7 +245,7 @@ import UriLink from "@/components/common/views/UriLink.vue";
 import DateView from "@/components/common/views/DateView.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
+import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
 
 const emit = defineEmits<{
@@ -280,7 +278,7 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const service = $opensilex.getService<ProjectsService>('opensilex.ProjectsService')
 
 const tableRef = ref<any>(null)
-const documentForm = ref<any>(null)
+const documentForm = useTemplateRef<any>('documentForm')
 
 const filtersCollapsed = ref(true)
 
@@ -447,7 +445,7 @@ const actionsDropdownOptions = computed(() => [
 
 function onActionsDropdownSelect(key: string) {
   if (key === 'addDocument') {
-    documentForm.value?.showCreateForm?.(initForm())
+    documentForm.value?.showCreateForm(initForm())
   }
 }
 

@@ -271,14 +271,12 @@
         </template>
       </TableAsyncView>
 
-      <ModalForm
+      <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="bi#bi-file-earmark-text"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.editDocument')"
+        @onSuccess="refresh"
       />
 
       <DeviceForm
@@ -315,7 +313,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, nextTick, onMounted, ref, watch} from 'vue'
+import {computed, inject, nextTick, onMounted, ref, useTemplateRef, watch} from 'vue'
 import type {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from 'opensilex-core'
 import {useI18n} from 'vue-i18n'
 import {useRoute} from 'vue-router'
@@ -345,7 +343,7 @@ import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncV
 import UriLink from "@/components/common/views/UriLink.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
+import DocumentForm from "@/components/documents/DocumentForm.vue";
 import VariableModalList from "@/components/variables/VariableModalList.vue";
 import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
 import {TableField} from "@/components/common/views/TableField";
@@ -367,7 +365,7 @@ const organizationService = $opensilex.getService<OrganizationsService>('opensil
 const vueOntologyService = $opensilex.getService<VueJsOntologyExtensionService>('opensilex-front.VueJsOntologyExtensionService')
 
 const tableRef = ref<any>(null)
-const documentFormRef = ref<any>(null)
+const documentFormRef = useTemplateRef<any>('documentFormRef')
 const deviceFormRef = ref<any>(null)
 const variableSelectionRef = ref<any>(null)
 const eventCsvFormRef = ref<any>(null)
@@ -657,7 +655,7 @@ function initForm() {
  * avec les URI des devices actuellement sélectionnés
  */
 function createDocument() {
-  documentFormRef.value?.showCreateForm?.(initForm())
+  documentFormRef.value?.showCreateForm(initForm())
 }
 
 function exportDevices() {

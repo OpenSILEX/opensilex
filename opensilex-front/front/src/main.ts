@@ -163,7 +163,7 @@ import Highcharts from 'highcharts';
 
 const app = createApp(App);
 
-const $opensilex = new OpenSilexVuePlugin(baseApi, store, null);
+const $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n.global);
 $opensilex.setIconIDs(iconIDs)
 
 // Fournit l'instance pour injection dans Vue 3

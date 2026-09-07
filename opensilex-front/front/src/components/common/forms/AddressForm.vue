@@ -1,14 +1,16 @@
 <template>
   <div v-if="addressState">
     <!-- Street address -->
-    <opensilex-InputForm
-      v-model:value="addressState.streetAddress"
-      :label="t('AddressForm.streetAddress.label')"
-      type="text"
-      :placeholder="t('AddressForm.streetAddress.placeholder')"
-      @input="onAddressInput"
-      @blur="onAddressBlur"
-    />
+    <n-form-item>
+      <InputForm
+        v-model:value="addressState.streetAddress"
+        :label="t('AddressForm.streetAddress.label')"
+        type="text"
+        :placeholder="t('AddressForm.streetAddress.placeholder')"
+        @input="onAddressInput"
+        @blur="onAddressBlur"
+      />
+    </n-form-item>
 
     <!-- Autocomplete -->
     <div ref="autocompleteMenuRef" class="autocompleteMenu btn-group-vertical w-100">
@@ -24,42 +26,48 @@
     </div>
 
     <!-- Locality -->
-    <opensilex-InputForm
-      v-model:value="addressState.locality"
-      :label="t('AddressForm.locality.label')"
-      type="text"
-      :placeholder="t('AddressForm.locality.placeholder')"
-    />
+    <n-form-item>
+      <InputForm
+        v-model:value="addressState.locality"
+        :label="t('AddressForm.locality.label')"
+        type="text"
+        :placeholder="t('AddressForm.locality.placeholder')"
+      />
+    </n-form-item>
 
-    <div class="row">
-      <div class="col-12 col-lg-8">
-        <!-- Region -->
-        <opensilex-InputForm
-          v-model:value="addressState.region"
-          :label="t('AddressForm.region.label')"
-          type="text"
-          :placeholder="t('AddressForm.region.placeholder')"
-        />
-      </div>
+    <n-form-item>
+      <div class="row">
+        <div class="col-12 col-lg-8">
+          <!-- Region -->
+          <InputForm
+            v-model:value="addressState.region"
+            :label="t('AddressForm.region.label')"
+            type="text"
+            :placeholder="t('AddressForm.region.placeholder')"
+          />
+        </div>
 
-      <div class="col-12 col-lg-4">
-        <!-- Postal code -->
-        <opensilex-InputForm
-          v-model:value="addressState.postalCode"
-          :label="t('AddressForm.postalCode.label')"
-          type="text"
-          :placeholder="t('AddressForm.postalCode.placeholder')"
-        />
+        <div class="col-12 col-lg-4">
+          <!-- Postal code -->
+          <InputForm
+            v-model:value="addressState.postalCode"
+            :label="t('AddressForm.postalCode.label')"
+            type="text"
+            :placeholder="t('AddressForm.postalCode.placeholder')"
+          />
+        </div>
       </div>
-    </div>
+    </n-form-item>
 
     <!-- Country -->
-    <opensilex-InputForm
-      v-model:value="addressState.countryName"
-      :label="t('AddressForm.countryName.label')"
-      type="text"
-      :placeholder="t('AddressForm.countryName.placeholder')"
-    />
+    <n-form-item>
+      <InputForm
+        v-model:value="addressState.countryName"
+        :label="t('AddressForm.countryName.label')"
+        type="text"
+        :placeholder="t('AddressForm.countryName.placeholder')"
+      />
+    </n-form-item>
   </div>
 </template>
 
@@ -70,6 +78,8 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type IGeocodingService from "../../../services/geocoding/IGeocodingService";
 import type { GeocodingAddressResult } from "../../../services/geocoding/IGeocodingService";
 import type { FacilityAddressDTO } from 'opensilex-core/index'
+import InputForm from "@/components/common/forms/InputForm.vue";
+import {NFormItem} from "naive-ui";
 
 const { t } = useI18n()
 const AUTOCOMPLETE_TIMEOUT_MS = 250

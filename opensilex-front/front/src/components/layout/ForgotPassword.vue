@@ -16,24 +16,24 @@
     <div class="row">
       <div class="col"></div>
       <div class="col-8">
-        <h3>{{ t("ForgotPasswordComponent.title") }}</h3>
+        <h3>{{ t("component.forgot-password.title") }}</h3>
         <br/>
         <div>
           <p>
-            {{ t("ForgotPasswordComponent.steps") }}
+            {{ t("component.forgot-password.steps") }}
           </p>
           <ol class="list-unstyled">
             <li>
               <span class="text-primary text-medium">1. </span
-              >{{ t("ForgotPasswordComponent.step-one") }}
+              >{{ t("component.forgot-password.step-one") }}
             </li>
             <li>
               <span class="text-primary text-medium">2. </span
-              >{{ t("ForgotPasswordComponent.step-two") }}
+              >{{ t("component.forgot-password.step-two") }}
             </li>
             <li>
               <span class="text-primary text-medium">3. </span
-              >{{ t("ForgotPasswordComponent.step-three") }}
+              >{{ t("component.forgot-password.step-three") }}
             </li>
           </ol>
         </div>
@@ -42,14 +42,17 @@
           <!-- Email -->
           <div class="row mb-4">
             <div class="form-group">
-              <opensilex-InputForm
-                  v-model:value="email"
-                  :label="t('ForgotPasswordComponent.enter-email')"
-                  type="email"
-                  :required="true"
-                  rules="email"
-                  :placeholder="t('component.account.form-email-placeholder')"
-              ></opensilex-InputForm>
+              <n-form :model="formModel" :rules="rules">
+                <n-form-item path="email">
+                  <InputForm
+                      v-model:value="formModel.email"
+                      :label="t('component.forgot-password.enter-email')"
+                      type="email"
+                      :required="true"
+                      :placeholder="t('component.account.form-email-placeholder')"
+                  ></InputForm>
+                </n-form-item>
+              </n-form>
             </div>
           </div>
         </div>
@@ -59,7 +62,7 @@
             <button
                 class="btn btn-primary"
                 type="submit"
-                v-text="t('ForgotPasswordComponent.reset-password')"
+                v-text="t('component.forgot-password.reset-password')"
                 @click="resetPasswordByEmail"
             ></button>
           </div>
@@ -68,7 +71,7 @@
             >
               <button
                   class="btn btn-secondary"
-                  v-text="t('ForgotPasswordComponent.returnHome')"
+                  v-text="t('component.forgot-password.returnHome')"
               ></button
               >
             </router-link>
@@ -80,121 +83,71 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {computed, defineComponent, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {AuthenticationService} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {useRouter} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
+import InputForm from "@/components/common/forms/InputForm.vue";
+import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
+import {NForm, NFormItem, NDropdown, NButton, FormRules} from "naive-ui";
 
-export default defineComponent({
-  name: 'forgotPassword',
-  props: {},
-  setup() {
-    const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-    const router = useRouter();
-    const store = useStore();
-    const {t, locale, availableLocales} = useI18n();
-    const user = computed(() => store.state.user);
-    const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
-    const email = ref<string>("");
-    const languages = computed(() =>
-        availableLocales.map(l => ({
-          key: l,
-          label: t(`component.header.language.${l}`)
-        })));
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const store = useStore();
+const {t, locale, availableLocales} = useI18n();
+const authenticationService = opensilex.getService<AuthenticationService>("opensilex-security.AuthenticationService");
+const formModel = ref({
+  email: ""
+});
+const languages = computed(() =>
+    availableLocales.map(l => ({
+      key: l,
+      label: t(`component.header.language.${l}`)
+    })));
+const rules = computed<FormRules>(() => ({
+  email: [validEmail(), requiredTrimmed('component.account.email-address')]
+}));
 
-    return {
-      opensilex,
-      router,
-      store,
-      t,
-      locale,
-      availableLocales,
-      user,
-      authenticationService,
-      email,
-      languages
-    };
-  },
-  methods: {
-    async asyncInit($opensilex: OpenSilexVuePlugin) {
-      await $opensilex.loadService("opensilex-security.AuthenticationService");
-    },
-    resetPasswordByEmail() {
-      if (!this.email) {
-        this.opensilex.showErrorToast(this.t("ForgotPasswordComponent.empty-email"));
-        return;
-      }
-      this.authenticationService
-          .forgotPassword(this.email)
-          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-            this.$opensilex.showSuccessToastWithDelay(
-                this.$t("ForgotPasswordComponent.link-email"),
-                5000
-            );
-          })
-          .catch((error) => {
-            if (error.status == 503) {
-              console.error("Service not available", error);
-              this.$opensilex.errorHandler(
-                  error,
-                  this.$t("ForgotPasswordComponent.service-not-available")
-              );
-            } else if (error.status == 403 || error.status == 500) {
-              console.error("Invalid credentials", error);
-              this.$opensilex.errorHandler(
-                  error,
-                  this.$t("ForgotPasswordComponent.invalid-identifier")
-              );
-            } else {
-              console.log(error);
-              this.$opensilex.errorHandler(error);
-            }
-            this.$opensilex.hideLoader();
-          });
-    },
-    onLanguageSelected(newLocale: string) {
-      this.$i18n.locale = newLocale;
-      this.$store.commit("lang", newLocale);
-    },
+function resetPasswordByEmail() {
+  if (!formModel.value.email) {
+    opensilex.showErrorToast(t("component.forgot-password.empty-email"));
+    return;
   }
-})
+  authenticationService
+      .forgotPassword(formModel.value.email)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        opensilex.showSuccessToast(
+            t("component.forgot-password.link-email")
+        );
+      })
+      .catch((error) => {
+        if (error.status == 503) {
+          console.error("Service not available", error);
+          opensilex.errorHandler(
+              error,
+              t("component.forgot-password.service-not-available")
+          );
+        } else if (error.status == 403 || error.status == 500) {
+          console.error("Invalid credentials", error);
+          opensilex.errorHandler(
+              error,
+              t("component.forgot-password.invalid-identifier")
+          );
+        } else {
+          console.log(error);
+          opensilex.errorHandler(error);
+        }
+        opensilex.hideLoader();
+      });
+}
 
+function onLanguageSelected(newLocale: string) {
+  locale.value = newLocale;
+  store.commit("lang", newLocale);
+}
 </script>
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  ForgotPasswordComponent:
-    title: "Forgot password ?"
-    enter-email: Enter the e-mail linked to your account
-    reset-password: Send an e-mail to this adress
-    steps: "Change your password in three easy steps. This will help you to secure your password!"
-    step-one: "Enter your email address below."
-    step-two: "Our system will send you a temporary link."
-    step-three: "Use the link to reset your password."
-    service-not-available: Service not available
-    invalid-identifier: Invalid identifier
-    empty-email: E-mail address cannot be empty
-    link-email: An e-mail has been sent to you
-    returnHome: Return to homepage
-fr:
-  ForgotPasswordComponent:
-    title: "Mot de passe oublié ?"
-    enter-email: Entrez l'adresse e-mail liée à votre compte
-    reset-password: Envoyer un e-mail à cette adresse
-    steps: "Changez votre mot de passe en trois étapes simples. Cela vous aidera à sécuriser votre mot de passe !"
-    step-one: "Saisissez votre adresse électronique ci-dessous."
-    step-two: "Notre système vous enverra un lien temporaire."
-    step-three: "Utilisez le lien pour réinitialiser votre mot de passe."
-    service-not-available: Service not available
-    invalid-identifier: Identifiant invalide
-    empty-email: L'adresse e-mail ne doit pas être vide
-    link-email: Un email vous a été envoyé
-    returnHome: Retourner à la page d'accueil
-</i18n>

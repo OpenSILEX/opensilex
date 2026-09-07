@@ -262,7 +262,7 @@ public class DataAPI {
         Set<URI> finalTargetsFilter = new HashSet<>(targets);
 
         //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         List<URI> xpForTargetSearch = experiments;
 
         if (CollectionUtils.isEmpty(experiments)) {

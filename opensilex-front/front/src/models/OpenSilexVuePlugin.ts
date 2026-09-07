@@ -2,7 +2,7 @@ import { Container } from 'inversify';
 import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
 import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
 import { useCookies } from 'vue3-cookies';
-import VueI18n from 'vue-i18n';
+import { Composer } from 'vue-i18n';
 import { Store } from 'vuex';
 import {
     ApiServiceBinder,
@@ -37,6 +37,8 @@ import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import { useI18n } from 'vue-i18n'
 import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
+import {AuthenticationService} from "opensilex-security/api/authentication.service";
+import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
 
 const { cookies: $cookies } = useCookies();
 
@@ -71,7 +73,7 @@ export default class OpenSilexVuePlugin {
     private toastManager: any = null;
 
     public $store: Store<any>;
-    public $i18n;
+    public $i18n: Composer;
     public $bvToast: any;
     public $dateTimeFormatter: DateTimeFormatter;
     public $numberFormatter: NumberFormatter;
@@ -83,7 +85,7 @@ export default class OpenSilexVuePlugin {
     public Time = Time;
     public Rdfs = Rdfs;
 
-    constructor(baseApi: string, store: Store<any>, i18n) {
+    constructor(baseApi: string, store: Store<any>, i18n: Composer) {
         this.container = new Container();
         this.container.bind<OpenSilexVuePlugin>(OpenSilexVuePlugin).toConstantValue(this);
         this.container.bind<IHttpClient>("IApiHttpClient").toConstantValue(new OpenSilexHttpClient(this));
@@ -605,10 +607,10 @@ export default class OpenSilexVuePlugin {
         return hash;
     }
 
-    private handleError(error, message?) {
+    private handleError(error, message?: string) {
         if (!message && error?.response?.result?.translationKey) {
             message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
-        } else if (error?.response?.result?.message) {
+        } else if (!message && error?.response?.result?.message) {
             message = error.response.result.message;
         }
 
@@ -931,30 +933,26 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    private credentials: Array<CredentialsGroupDTO> | Promise<Array<CredentialsGroupDTO>> = null;
 
-    private credentials = null;
-
-    public getCredentials() {
-        if (this.credentials == null) {
-            this.credentials = new Promise((resolve, reject) => {
-                console.debug("Loading credentials list...");
-                this.getService<any>(
-                    "opensilex-security.AuthenticationService"
-                ).getCredentialsGroups().then((http) => {
-                    this.credentials = http.response.result;
-                    console.debug("Credentials list loaded !", this.credentials);
-                    resolve(http.response.result);
-                }).catch(this.errorHandler)
-
-            })
+    public getCredentials(): Promise<Array<CredentialsGroupDTO>> {
+        if (this.credentials instanceof Promise) {
             return this.credentials;
-        } else if (this.credentials instanceof Promise) {
-            console.log("credentials2 list ", this.credentials)
-            return this.credentials;
-        } else {
-            console.log("credentials3 ", this.credentials)
+        }
+
+        if (Array.isArray(this.credentials)) {
             return Promise.resolve(this.credentials);
         }
+
+        this.credentials = new Promise((resolve, reject) => {
+            this.getService<AuthenticationService>(
+                "opensilex-security.AuthenticationService"
+            ).getCredentialsGroups().then((http) => {
+                this.credentials = http.response.result;
+                resolve(http.response.result);
+            }).catch(this.errorHandler)
+        })
+        return this.credentials;
     }
 
     public fromToken(token: string) {

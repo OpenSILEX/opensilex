@@ -314,7 +314,7 @@ public class DataImportLogic {
 
         // check user access to experiment if not null
         if (experiment != null) {
-            new ExperimentDAO(sparql, nosql).validateExperimentAccess(experiment, user);
+            new ExperimentDAO(sparql, nosql, fs).validateExperimentAccess(experiment, user);
         }
 
         //Validate csv file

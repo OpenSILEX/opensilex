@@ -39,7 +39,7 @@
         <TypeForm
           v-model:type="modalFormLogic.form.value.rdf_type"
           :baseType="opensilex.Foaf.ORGANIZATION_TYPE_URI"
-          :ignoreRoot="false"
+          :ignoreRoot="true"
           :required="true"
           :tree="true"
           :placeholder="t('OrganizationForm.form-type-placeholder')"
@@ -201,10 +201,8 @@ async function update(targetForm: OrganizationFormModel) {
 //#endregion
 
 //#endregion
-defineExpose({
-  showCreateForm: modalFormLogic.showCreateForm,
-  showEditForm: modalFormLogic.showEditForm
-});
+defineExpose(modalFormLogic.exposed)
+
 </script>
 
 <style scoped lang="scss">

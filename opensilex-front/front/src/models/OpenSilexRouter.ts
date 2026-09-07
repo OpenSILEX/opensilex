@@ -195,6 +195,20 @@ export class OpenSilexRouter {
         const loadComponent = (componentId: string) => {
             return async () => await this.getComponentImport(componentId);
         };
+        //Function to load child routes
+        const buildRoute = (routeConfig) : RouteRecordRaw => {
+            return {
+                path: routeConfig.path,
+                name: routeConfig.name || undefined,
+                component: loadComponent(routeConfig.component),
+                meta: {
+                    public: routeConfig.credentials?.includes(PUBLIC_ROUTE) === true
+                },
+                children: routeConfig.children?.map(buildRoute) || []
+
+            };
+
+        }
 
         // 📌 General routes from frontConfig
         if (frontConfig) {
@@ -209,14 +223,7 @@ export class OpenSilexRouter {
             });
 
             for (const routeConfig of frontConfig.routes) {
-                routes.push({
-                    path: routeConfig.path,
-                    name: routeConfig.name || undefined,
-                    component: loadComponent(routeConfig.component),
-                    meta: {
-                        public: routeConfig.credentials?.includes(PUBLIC_ROUTE) === true
-                    }
-                });
+                routes.push(buildRoute(routeConfig));
             }
         }
 

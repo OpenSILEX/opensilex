@@ -82,28 +82,25 @@
         </opensilex-PageContent>
       </div>
 
-    <opensilex-ModalForm
+    <DocumentForm
       v-if="user.hasCredential(props.modificationCredentialId)"
       ref="documentForm"
-      component="opensilex-DocumentForm"
       :createTitle="t('DocumentTabList.add')"
       :editTitle="t('DocumentTabList.update')"
-      modalSize="lg"
-      :data="{ initialTargets}"
-      icon="bi#bi-file-text"
-      @onCreate="onCreated"
-      @onUpdate="onUpdated"
+      @onSuccess="onDocumentFormSuccess"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, defineProps, defineEmits, onMounted, nextTick, inject} from 'vue';
-import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { DocumentsService } from '../../../../../opensilex-core/front/src/lib';
+import { ref, computed, watch, onMounted, nextTick, inject, useTemplateRef } from 'vue'
+import { useStore } from 'vuex'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import { DocumentsService } from 'opensilex-core/api/documents.service'
+import DocumentForm from '@/components/documents/DocumentForm.vue'
+import { NButtonGroup } from 'naive-ui'
 
 const props = defineProps({
   uri: [String, Array] as unknown as () => string | string[] | undefined,
@@ -112,35 +109,35 @@ const props = defineProps({
     type: Boolean,
     default: true
   }
-});
+})
 
- const initialTargets = computed<string[]>(() => {
-   const elementUri = props.uri
-   if (!elementUri) return []
-   return Array.isArray(elementUri) ? elementUri.filter(Boolean) as string[] : [elementUri]
- })
+const initialTargets = computed<string[]>(() => {
+  const elementUri = props.uri
+  if (!elementUri) return []
+  return Array.isArray(elementUri) ? elementUri.filter(Boolean) as string[] : [elementUri]
+})
 
 const emit = defineEmits<{
   (e: 'onUpdate', payload?: any): void
   (e: 'changed', payload?: { reason: 'create' | 'update' | 'deprecated' | 'delete', uri?: string }): void
 }>()
 
-const store = useStore();
-const route = useRoute();
-const { t } = useI18n();
-const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const store = useStore()
+const route = useRoute()
+const { t } = useI18n()
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 
-const tableRef = ref();
-const documentForm = ref();
-const renderComponent = ref(true);
+const tableRef = ref()
+const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm')
+const renderComponent = ref(true)
 
-const user = computed(() => store.state.user);
+const user = computed(() => store.state.user)
 
-let service: DocumentsService;
+let service: DocumentsService
 
 onMounted(() => {
-  service = opensilex.getService('opensilex.DocumentsService');
-});
+  service = opensilex.getService('opensilex.DocumentsService')
+})
 
 const fields = computed(() => [
   { key: 'uri', label: t('DocumentTabList.title'), sortable: true },
@@ -148,8 +145,7 @@ const fields = computed(() => [
   { key: 'date', label: t('DocumentTabList.date'), sortable: true },
   { key: 'rdf_type_name', label: t('DocumentTabList.type'), sortable: true },
   { key: 'actions', label: t('component.common.actions'), resizable:false, sortable: false, naiveProps: {width: 100}}
-]);
-
+])
 
 const filter = ref({
   title: undefined,
@@ -160,17 +156,17 @@ const filter = ref({
   keywords: undefined,
   targets: undefined,
   multiple: undefined
-});
+})
 
 watch(() => props.uri, () => {
-  renderComponent.value = false;
+  renderComponent.value = false
   nextTick(() => {
-    renderComponent.value = true;
-  });
-});
+    renderComponent.value = true
+  })
+})
 
 function searchDocuments(options) {
-  const target: string | undefined = Array.isArray(props.uri) ? props.uri[0] : props.uri;
+  const target: string | undefined = Array.isArray(props.uri) ? props.uri[0] : props.uri
 
   return service.searchDocuments(
     undefined,
@@ -184,85 +180,82 @@ function searchDocuments(options) {
     options.orderBy,
     options.currentPage,
     options.pageSize
-  );
+  )
 }
 
-function onCreated(payload: any) {
+function onDocumentFormSuccess() {
   refresh()
   emit('changed', { reason: 'create' })
-  emit('onUpdate', payload)
+  emit('onUpdate')
 }
-
-function onUpdated(payload: any) {
-  refresh()
-  emit('changed', { reason: 'update' })
-  emit('onUpdate', payload)
-}
-
 
 function refresh() {
-  tableRef.value?.refresh();
+  tableRef.value?.refresh()
 }
 
 function createDocument() {
-  documentForm.value?.showCreateForm();
+  const form = {
+    description: { targets: initialTargets.value },
+    file: undefined
+  }
+  documentForm.value?.showCreateForm(form)
 }
 
 function deprecatedDocument(uri: string) {
   service
     .getDocumentMetadata(uri)
     .then((http) => {
-      const document = http.response.result;
+      const document = http.response.result
       const form = {
         description: { ...document, deprecated: true }
-      };
-      updateForDeprecated(form);
+      }
+      updateForDeprecated(form)
     })
-    .catch(opensilex.errorHandler);
+    .catch(opensilex.errorHandler)
 }
 
 function updateForDeprecated(form) {
   return opensilex
     .uploadFileToService('/core/documents', form, null, true)
     .then((http) => {
-      emit('onUpdate', form);
+      emit('onUpdate', form)
       emit('changed', { reason: 'deprecated', uri: form?.description?.uri })
-      refresh();
+      refresh()
     })
-    .catch(opensilex.errorHandler);
+    .catch(opensilex.errorHandler)
 }
 
 function editDocument(uri: string) {
- service
+  service
     .getDocumentMetadata(uri)
     .then((http) => {
-      const document = http.response.result;
+      const document = http.response.result
       const form = {
         description: { ...document }
-      };
-      documentForm.value?.showEditForm(form);
+      }
+      documentForm.value?.showEditForm(form)
     })
-    .catch(opensilex.errorHandler);
+    .catch(opensilex.errorHandler)
 }
 
 function loadFile(uri: string, title: string, format: string) {
-  const path = `/core/documents/${encodeURIComponent(uri)}`;
-  opensilex.downloadFilefromService(path, title, format, {});
+  const path = `/core/documents/${encodeURIComponent(uri)}`
+  opensilex.downloadFilefromService(path, title, format, {})
 }
 
 function updateFilters() {
-  opensilex.updateURLParameter('name', filter.value.title, '');
-  refresh();
+  opensilex.updateURLParameter('name', filter.value.title, '')
+  refresh()
 }
 
 function resetSearch() {
-  filter.value.title = '';
-  opensilex.updateURLParameter('name', undefined, undefined);
-  refresh();
+  filter.value.title = ''
+  opensilex.updateURLParameter('name', undefined, undefined)
+  refresh()
 }
 
 function browseSource(source: string) {
-  window.open(source);
+  window.open(source)
 }
 </script>
 

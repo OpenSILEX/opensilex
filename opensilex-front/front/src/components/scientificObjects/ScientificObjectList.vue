@@ -54,10 +54,10 @@
         </strong>
       </div>
       <span> | </span>
-      <n-p>
+      <span>
         {{ t('ScientificObjectList.selected') }} :
         <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </n-p>
+      </span>
     </div>
   </n-space>
 
@@ -93,8 +93,9 @@ import {
 import { ScientificObjectsService } from 'opensilex-core'
 import type { ExperimentGetDTO } from 'opensilex-core'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import {CriteriaDTO} from "@/components/scientificObjects/CriteriaSearchModalCreator.vue";
 
-type ScientificObjectFilter = {
+export type ScientificObjectFilter = {
   name?: string
   experiment?: string
   germplasm?: string[]
@@ -104,7 +105,7 @@ type ScientificObjectFilter = {
   types?: string[]
   existenceDate?: string
   creationDate?: string
-  criteriaDto?: Record<string, any>
+  criteriaDto?: CriteriaDTO
   facility?: string
 }
 
@@ -174,7 +175,7 @@ const UriLink = resolveComponent('opensilex-UriLink')
 
 const filter = ref<ScientificObjectFilter>({
   ...defaultFilter(),
-  ...props.searchFilter
+  ...props.searchFilter || {}
 })
 
 watch(
@@ -1023,7 +1024,6 @@ defineExpose({
 <i18n>
 en:
   ScientificObjectList:
-    name-placeholder: Enter name
     selected: Selected Scientific Objects
     selected-all: All scientific objects
     description: Manage and configure scientific objects
@@ -1065,7 +1065,6 @@ en:
     export-all: Export all
 fr:
   ScientificObjectList:
-    name-placeholder: Saisir un nom
     selected: Objets Scientifiques Sélectionnés
     selected-all: Tout les objets scientifiques
     description: Gérer et configurer les objets scientifiques

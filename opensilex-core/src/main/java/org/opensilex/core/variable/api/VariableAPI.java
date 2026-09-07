@@ -15,10 +15,10 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.sharedResource.CopyResourceDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
+import org.opensilex.core.utils.URIsListPostDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicAPI;
 import org.opensilex.core.variable.api.characteristic.CharacteristicDetailsDTO;
 import org.opensilex.core.variable.api.entity.EntityAPI;
@@ -37,9 +37,9 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.api.UserGetDTO;
+import org.opensilex.server.exceptions.NotFoundURIException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -400,7 +400,9 @@ public class VariableAPI {
      * @param uris list of variables uri
      * @return Corresponding list of variables
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(GET_BY_URIS_PATH)
     @ApiOperation("Get detailed variables by uris")
@@ -410,12 +412,55 @@ public class VariableAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return variables", response = VariableDetailsDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getVariablesByURIs(
             @ApiParam(value = "Variables URIs", required = true) @QueryParam(GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris
     ) throws Exception {
         VariableDAO dao = getDao();
+        List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
+
+        if (!models.isEmpty()) {
+            List<VariableDetailsDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> resultDTOList.add(new VariableDetailsDTO(result)));
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Variables not found",
+                    "Unknown variable URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * Return a list of variables corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs
+     * @return Corresponding list of variables
+     */
+    @POST
+    @Path(GET_BY_URIS_PATH)
+    @ApiOperation("Get detailed variables by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return variables", response = VariableDetailsDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchVariablesByURIs(
+            @ApiParam(value = "Variable URIs") List<URI> uris
+    ) throws Exception {
+        VariableDAO dao = getDao();
+        if (uris == null) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
 
         if (!models.isEmpty()) {

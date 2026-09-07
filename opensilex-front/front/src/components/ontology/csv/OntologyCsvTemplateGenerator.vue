@@ -24,7 +24,6 @@
               :placeholder="typePlaceholder"
               :tree="true"
               :selectBranchNodes="true"
-              checkStrategy="all"
               @update:type="types = $event"
             />
           </div>
@@ -221,7 +220,7 @@ function getPropertyDescriptionFromInfoObject(
     '. ',
     '\n',
     propertyDescriptionInfo.example && propertyDescriptionInfo.example.length > 0
-      ? `${t('component.common.example')} : ${t(propertyDescriptionInfo.example)}`
+      ? `${t('component.common.example')} : ${propertyDescriptionInfo.example}`
       : ''
   )
 

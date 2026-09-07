@@ -50,7 +50,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     public DataDaoV2(SPARQLService sparql, MongoDBService mongoDBService, FileStorageService fs) {
         super(mongoDBService.getServiceV2(), DataModel.class, COLLECTION_NAME, "data");
         this.sparql = sparql;
-        this.dataFileDaoV2 = new DataFileDaoV2(mongoDBService, sparql);
+        this.dataFileDaoV2 = new DataFileDaoV2(mongoDBService, sparql, fs);
         this.mongoDBService = mongoDBService;
         this.fs = fs;
     }
@@ -571,7 +571,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             aggregationDocuments.add(new Document("$match", dataSearchFilter));
         }else{
             Document experimentFilter = new Document();
-            DataFilterBuilder.appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment), sparql, mongoDBService);
+            DataFilterBuilder.appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment), sparql, mongoDBService, fs);
             List<Document> andList = new ArrayList<>();
             andList.add(dataSearchFilter);
             andList.add(experimentFilter);

@@ -25,7 +25,7 @@
 
       <div class="row">
         <div class="col-lg-6">
-          <n-form-item path="rdf_type">
+          <n-form-item path="rdf_type" :label="t('component.ontology.property.form.propertyType')">
             <n-radio-group v-model:value="form.rdf_type" id="datatypeRadio">
               <div>
                 <n-radio
@@ -159,7 +159,7 @@ import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
 import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/useModalFormLogic";
 import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
-import { required } from "@/models/FormFieldsFormatter";
+import {required, validUri} from "@/models/FormFieldsFormatter";
 
 //#region Public
 const props = defineProps<ModalFormProps & {
@@ -179,15 +179,15 @@ const lang = computed(() => store.state.lang);
 const enLangRequired = computed(() => lang.value === "en");
 const otherLangRequired = computed(() => lang.value !== "en");
 
-const rules: FormRules = {
-  uri: required("component.common.uri"),
+const rules = computed<FormRules>(() => ({
+  uri: validUri(t("validations.url", { _field_: "URI"})),
   domain: required("component.ontology.property.form.domain"),
   range: required("component.ontology.property.form.range"),
   name_translations: {
     en: enLangRequired.value ? required("component.ontology.property.form.label.en") : undefined,
     fr: otherLangRequired.value ? required("component.ontology.property.form.label.fr") : undefined,
   }
-};
+}));
 
 const availableParents = ref([]);
 const rdfTypeByParentURI = ref({});

@@ -134,13 +134,11 @@
 import {computed, h, inject, ref, useTemplateRef, VNodeChild} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
-import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
 import {DataTableColumns, NList, NListItem, NTooltip, NConfigProvider, NButtonGroup} from "naive-ui";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import Modal from "@/components/common/views/Modal.vue";
 import {VueDraggable} from "vue-draggable-plus";
 import IconView from "@/components/common/views/IconView.vue";
@@ -151,6 +149,7 @@ import StringView from "@/components/common/views/StringView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
 import Button from "@/components/common/buttons/Button.vue";
 import OntologyClassPropertyForm from "@/components/ontology/class/OntologyClassPropertyForm.vue";
+import {OntologyService} from "../../../../../../opensilex-core/front/src/lib";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const ontologyService = opensilex.getService<OntologyService>("opensilex-core.OntologyService");
@@ -169,7 +168,7 @@ const emit = defineEmits<{
   onDetailChange: []
 }>()
 
-const classPropertyForm = useTemplateRef<InstanceType<typeof ModalForm>>('classPropertyForm');
+const classPropertyForm = useTemplateRef<InstanceType<typeof OntologyClassPropertyForm>>('classPropertyForm');
 const setPropertiesOrderRef = useTemplateRef<InstanceType<typeof Modal>>('setPropertiesOrderRef');
 
 const fields = computed<DataTableColumns<VueRDFTypePropertyDTO>>(() => [

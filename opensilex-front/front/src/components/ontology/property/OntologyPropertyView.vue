@@ -64,7 +64,6 @@ import {useI18n} from "vue-i18n";
 import OntologyPropertyTreeView from "@/components/ontology/property/OntologyPropertyTreeView.vue";
 import Card from "@/components/common/views/Card.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import OntologyPropertyDetail from "@/components/ontology/property/OntologyPropertyDetail.vue";
 import OntologyPropertyForm from "@/components/ontology/property/OntologyPropertyForm.vue";

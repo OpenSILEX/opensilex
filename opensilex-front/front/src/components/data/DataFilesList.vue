@@ -65,10 +65,10 @@
 
         <span> | </span>
 
-        <n-p>
+        <span>
           {{ t('DataFilesList.selected') }} :
           <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-        </n-p>
+        </span>
       </div>
     </n-space>
 
@@ -177,7 +177,7 @@ import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import type { OntologyService } from 'opensilex-core/api/ontology.service'
 import type { DataService } from 'opensilex-core/api/data.service'
 
-type DatafileFilter = {
+export type DatafileFilter = {
   name?: string | null
   start_date?: string | null
   end_date?: string | null
@@ -197,7 +197,6 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 
 const props = withDefaults(defineProps<{
   filter?: DatafileFilter
-  device?: string
   contextUri?: string
   hideTarget?: boolean
 }>(), {
@@ -475,9 +474,8 @@ async function searchDatafiles(options: any) {
     provUris = [provUris]
   }
 
-  currentPage.value = (options.currentPage ?? 0) + 1
-  currentPageSize.value = options.pageSize ?? 10
-
+  currentPage.value = (options.currentPage ?? 0) + 1;
+  currentPageSize.value = options.pageSize ?? 10;
   const http = await service.value?.getDataFileDescriptionsByTargets(
     $opensilex.prepareGetParameter(props.filter.name),
     $opensilex.prepareGetParameter(props.filter.rdf_type),

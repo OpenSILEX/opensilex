@@ -205,10 +205,9 @@
 </script>
 
 <style scoped lang="scss">
-
 .tab {
   text-decoration: none;
-  color: inherit;
+  color: var(--color-dark);
 }
 
 </style>

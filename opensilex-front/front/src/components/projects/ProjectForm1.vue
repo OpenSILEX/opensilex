@@ -19,7 +19,7 @@
         label="component.project.name"
         type="text"
         :required="true"
-        :placeholder="t('component.project.form-name-placeholder')"
+        :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
       />
       <div v-if="nameError" class="field-error">
         {{ nameError }}

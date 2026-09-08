@@ -52,7 +52,7 @@
         labelStart="component.experiment.startDate"
         labelEnd="component.experiment.endDate"
         :requiredStart="true"
-        startDatePath="start_date"
+        startDateValidatePath="start_date"
         endDatePath="end_date"
     ></DateRangePickerForm>
 

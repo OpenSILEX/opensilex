@@ -50,7 +50,7 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   start?: string | undefined
   end?: string | undefined
-  startDatePath?: string
+  startDateValidatePath?: string
   endDatePath?: string
 }>(), {
   requiredStart: false,

@@ -195,8 +195,6 @@ onBeforeUnmount(() => {
 defineExpose({
   showCreateForm,
   showEditForm,
-  reset,
-
 })
 </script>
 

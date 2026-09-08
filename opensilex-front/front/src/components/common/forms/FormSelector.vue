@@ -80,6 +80,7 @@ import { NButton, NFormItem } from 'naive-ui'
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import FormField from "@/components/common/forms/FormField.vue";
+import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 
 const { t } = useI18n()
 
@@ -148,7 +149,6 @@ const resultCount = ref(0)
 const resultLimit = ref(10)
 
 const customTreeselectRef = ref<InstanceType<typeof CustomTreeselect> | null>(null)
-const refresh = () => customTreeselectRef.value?.refresh()
 const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {

@@ -118,6 +118,8 @@ import { ref, computed, nextTick, inject } from 'vue'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
+import HelpButton from "@/components/common/buttons/HelpButton.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 export type WizardStep = {
   component: any

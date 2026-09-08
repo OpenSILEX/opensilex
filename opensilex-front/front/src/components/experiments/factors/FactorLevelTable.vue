@@ -55,6 +55,15 @@
           </b-button-group>
         </b-col>
       </b-row>
+      <n-alert
+          v-if="props.showFactorLevelsWarning"
+          type="error"
+          :show-icon="false"
+          :closable="false"
+          class="factor-level-alert"
+      >
+        {{ t("component.factorLevel.errors.minimum-factor-level") }}
+      </n-alert>
       <b-row>
         <b-col cols="10">
           <div ref="table" class="tab"></div>
@@ -79,20 +88,13 @@ import {useI18n} from "vue-i18n";
 import {FactorLevelGetDTO} from "opensilex-core/model/factorLevelGetDTO";
 import Papa from 'papaparse'
 import {useDialog} from "naive-ui";
+import {NAlert} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 const {t} = useI18n()
 const table = useTemplateRef<HTMLDivElement>('table')
 const dialog = useDialog()
-
-interface Props {
-  editMode?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  editMode: false,
-});
 
 const factorLevels = defineModel<FactorLevelGetDTO[]>('factorLevels', {
   default: []
@@ -131,6 +133,16 @@ const tableColumns = computed<ColumnDefinition[]>(() => {
       },
     },
   ];
+});
+
+interface Props {
+  editMode?: boolean;
+  showFactorLevelsWarning?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  editMode: false,
+  showFactorLevelsWarning: false,
 });
 
 const tabulator = ref<Tabulator | null>(null);

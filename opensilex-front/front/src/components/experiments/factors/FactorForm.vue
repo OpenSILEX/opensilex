@@ -102,19 +102,11 @@
           </n-form-item>
         </div>
         <div id="v-step-3">
-          <n-alert
-              v-if="showFactorLevelsWarning"
-              type="error"
-              :closable="false"
-              :show-icon="false"
-              class="mb-3"
-          >
-            {{ t("component.factorLevel.errors.minimum-factor-level") }}
-          </n-alert>
           <FactorLevelTable
               ref="factorLevelTable"
               :editMode.sync="isEditMode"
               v-model:factorLevels="form.levels"
+              :show-factor-levels-warning="showFactorLevelsWarning"
           ></FactorLevelTable>
         </div>
       </n-form>

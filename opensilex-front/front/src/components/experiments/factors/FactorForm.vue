@@ -12,7 +12,7 @@
           @onFinish="continueFormEditing()"
           :editMode="isEditMode"
       ></Tutorial>
-      <p v-if="isEditMode" class="alert alert-info">
+      <p v-if="isEditMode" class="divHelpMsg">
         {{ $t("component.menu.experimentalDesign.factor-alert-help") }}
       </p>
       <n-form
@@ -31,20 +31,22 @@
 
         <!-- Name -->
         <div id="v-step-0">
-          <n-form-item>
-          <InputForm
-              rules="nameFiltered"
-              v-model:value="form.name"
-              :label="t('component.experiment.label')"
-              :helpMessage="t('component.experiment.name-factor-help')"
-              type="text"
-              :required="true"
-              :placeholder="t('component.experiment.name-factor-placeholder')"
-          ></InputForm>
-          </n-form-item>
+          <n-form :model="form" :rules="rules">
+            <n-form-item path="name">
+              <InputForm
+                  v-model:value="form.name"
+                  rules="nameFiltered"
+                  :label="t('component.experiment.label')"
+                  :helpMessage="t('component.experiment.name-factor-help')"
+                  type="text"
+                  :required="true"
+                  :placeholder="t('component.experiment.name-factor-placeholder')"
+              />
+            </n-form-item>
+          </n-form>
         </div>
 
-        <p class="alert alert-info">
+        <p class="divHelpMsg">
           {{ $t("component.experiment.category-help-more") }} : PECO (
           <a
               target="_blank"
@@ -100,6 +102,15 @@
           </n-form-item>
         </div>
         <div id="v-step-3">
+          <n-alert
+              v-if="showFactorLevelsWarning"
+              type="error"
+              :closable="false"
+              :show-icon="false"
+              class="mb-3"
+          >
+            {{ t("component.factorLevel.errors.minimum-factor-level") }}
+          </n-alert>
           <FactorLevelTable
               ref="factorLevelTable"
               :editMode.sync="isEditMode"
@@ -110,7 +121,7 @@
     </div>
 
     <template #footer>
-      <FormFooter @cancel="hide" @submit="submit"/>
+      <FormFooter @cancel="hide" @submit="validateAndSubmit"/>
     </template>
   </Modal>
 </template>
@@ -136,6 +147,7 @@ import {NFormItem} from "naive-ui";
 import Modal from "@/components/common/views/Modal.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
+import {NAlert} from "naive-ui";
 
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex')
@@ -254,6 +266,13 @@ const steps = computed(() => {
   ];
 })
 
+const rules = {
+  name: {
+    required: true,
+    message: t('component.experiment.name-required'),
+    trigger: ['input', 'blur'],
+  },
+}
 
 function continueFormEditing() {
   console.debug('Reinitialise form')
@@ -331,13 +350,38 @@ function tutorial() {
   factorTutorial.value.start();
 }
 
+const showFactorLevelsWarning = ref(false);
+
+function validateAndSubmit() {
+  console.log("validateAndSubmit appelée");
+
+  const levels = form.value.levels ?? [];
+
+  showFactorLevelsWarning.value =
+      levels.length === 0 ||
+      levels.some(
+          (level) => level.name === null || level.name === ""
+      );
+
+  console.log("levels:", levels);
+  console.log("showFactorLevelsWarning:", showFactorLevelsWarning.value);
+
+  if (showFactorLevelsWarning.value) {
+    return;
+  }
+
+  submit();
+}
+
 defineExpose(exposed)
+
 </script>
 
 <style scoped lang="scss">
 a {
   color: #007bff;
 }
+
 </style>
 <i18n>
 

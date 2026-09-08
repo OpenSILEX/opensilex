@@ -168,6 +168,7 @@
                 "reset-table": "Vider la table",
                 "add-one": "Ajouter un par un",
                 "add-multiple": "Ajouter plusieurs en une fois",
+                "load-csv": "Charger CSV",
                 "lang-options": {
                     "pagination": {
                         "first": "Premier",

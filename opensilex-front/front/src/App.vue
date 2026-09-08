@@ -73,9 +73,11 @@
 
           <div id="main-content">
             <main class="main-content">
-              <n-message-provider>
-                <router-view/>
-              </n-message-provider>
+              <n-dialog-provider> <!--allow using naive use dialog in components-->
+                <n-message-provider>
+                  <router-view/>
+                </n-message-provider>
+              </n-dialog-provider>
 
             </main>
           </div>
@@ -93,7 +95,7 @@ import {useI18n} from 'vue-i18n';
 import {Carousel, Dropdown} from "bootstrap";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 import ToastContainer from './components/common/ToastContainer.vue';
-import {NConfigProvider, NSpin, useMessage, NMessageProvider} from 'naive-ui';
+import {NConfigProvider, NSpin, useMessage, NMessageProvider, NDialogProvider} from 'naive-ui';
 import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 const toastContainer = ref();

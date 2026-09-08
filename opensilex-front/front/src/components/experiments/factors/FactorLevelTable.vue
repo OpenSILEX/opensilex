@@ -8,7 +8,7 @@
         >
       </h6>
       <p>{{ $t("component.experiment.associated-factor-help") }}</p>
-      <p v-if="editMode" class="alert alert-info">
+      <p v-if="editMode" class="divHelpMsg">
         {{ $t("component.menu.experimentalDesign.factorLevel-alert-help") }}
       </p>
       <b-row>
@@ -26,10 +26,16 @@
                 }}
               </n-button
               >
+              <n-button
+                  ghost
+                  class="mb-2 mr-2 load-csv-button"
+                  @click="csvExport"
+                  type="primary">
               <CSVInputFile
                   :headersExactMatch="['name', 'description']"
                   v-on:updated="uploaded"
-              ></CSVInputFile>
+              > {{ $t("component.common.tabulator.load-csv") }}</CSVInputFile>
+              </n-button>
               <n-button
                   ghost
                   class="mb-2 mr-2 reset-button"
@@ -67,60 +73,18 @@ import Vue, {computed, inject, onMounted, onBeforeUnmount, ref, watch, useTempla
 import HttpResponse from "../../../lib/HttpResponse";
 import {ColumnDefinition, TabulatorFull as Tabulator} from "tabulator-tables";
 import 'tabulator-tables/dist/css/tabulator.min.css';
-import Button from "@/components/common/buttons/Button.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {FactorLevelGetDTO} from "opensilex-core/model/factorLevelGetDTO";
 import Papa from 'papaparse'
-
-// extend("requiredTabulator", (value) => {
-//   let valid = true;
-//   if (value.length == 0) {
-//     valid = false;
-//   } else {
-//     value.some(function (factorLevel) {
-//       if (factorLevel.name == null || factorLevel.name.trim() === "") {
-//         valid = false;
-//       }
-//     });
-//   }
-//
-//   if (!valid) {
-//     return "component.factorLevel.errors.factor-empty-levels";
-//   } else {
-//     return valid;
-//   }
-// });
-//
-// extend("badNameTabulator", (value) => {
-//   var substrings = ["-", "+", "=", "<", ">", "=", "?", "/", "*", "&"];
-//   let valid = true;
-//   if (value.length != 0) {
-//     value.some(function (factorLevel) {
-//       if (factorLevel.name != null && factorLevel.name.trim() !== "") {
-//         substrings.forEach((substring) => {
-//           if (factorLevel.name.indexOf(substring) != -1) {
-//             valid = false;
-//           }
-//         });
-//       }
-//     });
-//   }
-//
-//   if (!valid) {
-//     return "component.factorLevel.errors.factor-badname-levels";
-//   } else {
-//     return valid;
-//   }
-// });
+import {useDialog} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 const {t} = useI18n()
-const bvModal = ref<any>()
-
 const table = useTemplateRef<HTMLDivElement>('table')
+const dialog = useDialog()
 
 interface Props {
   editMode?: boolean;
@@ -302,32 +266,27 @@ function cellActions(evt: any, clickedCell: any): void {
           t("component.factorLevel.errors.minimum-factor-level")
       );
     } else {
-      bvModal
-          .msgBoxConfirm(
-              t("component.common.delete-confirmation").toString(),
-              {
-                cancelTitle: t("component.common.cancel").toString(),
-                okTitle: t("component.common.delete").toString(),
-                okVariant: "danger",
-                centered: true,
-              }
-          )
-          .then((confirmation) => {
-            if (confirmation) {
-              if (factorLevelUri != null) {
-                deleteFactorLevelRow(
-                    factorLevelUri,
-                    uriCell
-                );
-              } else {
-                factorLevels.value =
-                    factorLevels.value.filter(
-                        (factorLevel) =>
-                            factorLevel.name !== nameCell.getValue()
-                    );
-              }
-            }
-          });
+      dialog.error({
+        content: t("component.common.delete-confirmation").toString(),
+        positiveText: t("component.common.delete").toString(),
+        negativeText: t("component.common.cancel").toString(),
+        showIcon: false,
+        closable: false,
+
+        onPositiveClick: () => {
+          if (factorLevelUri != null) {
+            deleteFactorLevelRow(
+                factorLevelUri,
+                uriCell
+            );
+          } else {
+            factorLevels.value = factorLevels.value.filter(
+                (factorLevel) =>
+                    factorLevel.name !== nameCell.getValue()
+            );
+          }
+        }
+      });
     }
   }
 }
@@ -364,6 +323,24 @@ function deleteFactorLevelRow(
       });
 }
 
+function validateFactorLevels(): boolean {
+  if (factorLevels.value.length === 0) {
+    opensilex.showWarningToast(
+        t("component.factorLevel.errors.factor-empty-levels")
+    );
+    return false;
+  }
+
+  if (hasEmptyValue()) {
+    opensilex.showWarningToast(
+        t("component.factorLevel.errors.factor-empty-row")
+    );
+    return false;
+  }
+
+  return true;
+}
+
 function hasEmptyValue(): boolean {
   if (factorLevels.value.length != 0) {
     if (
@@ -384,21 +361,17 @@ function deleteFactorLevel(uri: string): any {
 }
 
 function resetTable(): void {
-  bvModal
-      .msgBoxConfirm(
-          t("component.factorLevel.delete-confirmation-table").toString(),
-          {
-            cancelTitle: t("component.common.cancel").toString(),
-            okTitle: t("component.common.delete").toString(),
-            okVariant: "danger",
-            centered: true,
-          }
-      )
-      .then((confirmation) => {
-        if (confirmation) {
-          factorLevels.value = [];
-        }
-      });
+  dialog.error({
+    content: t("component.factorLevel.delete-confirmation-table").toString(),
+    positiveText: "Reset",
+    negativeText: t("component.common.cancel").toString(),
+    showIcon: false,
+    closable: false,
+
+    onPositiveClick: () => {
+      factorLevels.value = [];
+    }
+  });
 }
 
 function addEmptyRow(): void {
@@ -443,6 +416,20 @@ function instanciateTabulator() {
 </script>
 
 <style scoped lang="scss">
+
+//Button load csv
+.load-csv-button{
+   color: #28A745;
+   border-color: #28A745;
+   --n-border: 1px solid #28A745 !important;
+ }
+
+.load-csv-button:hover{
+  color: #ffffff;
+  background-color: #28A745;
+  border-color: #28A745;
+}
+// Button reset
 .reset-button {
   color: #808080;
   border-color: #808080;
@@ -455,6 +442,7 @@ function instanciateTabulator() {
   border-color: #808080;
 }
 
+//Button download CSV
 .csv-button {
   color: #2080f0;
   border-color: #2080f0;
@@ -469,6 +457,7 @@ function instanciateTabulator() {
   color: #ffffff !important;
 }
 
+// Button add line
 .addLine{
   color: #212529;
   --n-border: 1px solid #212529 !important;

@@ -167,6 +167,7 @@
                 "reset-table": "Reset table",
                 "add-one": "Add one by one",
                 "add-multiple": "Add multiple at once",
+                "load-csv": "Load CSV",
                 "lang-options": {
                     "pagination": {
                         "first": "First",

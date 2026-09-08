@@ -66,91 +66,50 @@
 
   <!-- Layout -->
   <n-layout has-sider class="project-layout">
-    <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="top">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="t('ProjectList.label-filter')"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div v-show="filtersCollapsed && activeFiltersCount > 0" class="filters-count-badge">
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <!-- Sidebar / Filtres -->
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
-      class="project-sider"
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      searchButtonLabelTranslationKey="component.project.search-projects"
+      @refresh="applyFilters()"
+      @reset="resetFilters()"
     >
-      <n-space class="p-3" vertical>
-        <!-- IMPORTANT : empêcher le submit natif -->
-        <n-form label-placement="top" size="small" @submit.prevent.stop="applyFilters">
-          <n-form-item :label="t('component.common.name')">
-            <n-input
-              v-model:value="filter.name"
-              clearable
-              :placeholder="t('component.project.filter-label-placeholder')"
-              @keydown.enter.prevent.stop="applyFilters"
-            />
-          </n-form-item>
+      <n-form-item :label="t('component.common.name')">
+        <n-input
+          v-model:value="filter.name"
+          clearable
+          :placeholder="t('component.project.filter-label-placeholder')"
+          @keydown.enter.prevent.stop="applyFilters"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('component.common.date-time.year')">
-            <n-input
-              v-model:value="filter.year"
-              clearable
-              type="number"
-              :placeholder="t('component.project.filter-year-placeholder')"
-              @keydown.enter.prevent.stop="applyFilters"
-            />
-          </n-form-item>
+      <n-form-item :label="t('component.common.date-time.year')">
+        <n-input
+          v-model:value="filter.year"
+          clearable
+          type="number"
+          :placeholder="t('component.project.filter-year-placeholder')"
+          @keydown.enter.prevent.stop="applyFilters"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('component.common.keyword')">
-            <n-input
-              v-model:value="filter.keyword"
-              clearable
-              :placeholder="t('component.project.filter-keywords-placeholder')"
-              @keydown.enter.prevent.stop="applyFilters"
-            />
-          </n-form-item>
+      <n-form-item :label="t('component.common.keyword')">
+        <n-input
+          v-model:value="filter.keyword"
+          clearable
+          :placeholder="t('component.project.filter-keywords-placeholder')"
+          @keydown.enter.prevent.stop="applyFilters"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('component.project.financialFunding')">
-            <n-input
-              v-model:value="filter.financial"
-              clearable
-              :placeholder="t('component.project.filter-financial-placeholder')"
-              @keydown.enter.prevent.stop="applyFilters"
-            />
-          </n-form-item>
-
-          <n-space justify="end" class="mt-2">
-            <Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="resetFilters"
-            />
-            <Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="applyFilters"
-            />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+      <n-form-item :label="t('component.project.financialFunding')">
+        <n-input
+          v-model:value="filter.financial"
+          clearable
+          :placeholder="t('component.project.filter-financial-placeholder')"
+          @keydown.enter.prevent.stop="applyFilters"
+        />
+      </n-form-item>
+    </SearchFiltersSidebar>
 
     <!-- Contenu Liste -->
     <n-layout-content class="project-content">
@@ -247,6 +206,7 @@ import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', project: any): void
@@ -504,12 +464,10 @@ en:
     selected: Selected Project(s)
     selected-all: All projects
     display: Display
-    label-filter: Search projects
 fr:
   ProjectList:
     name: Le projet
     selected: Projet(s) sélectionné(s)
     selected-all: Tous les projets
     display: Affichage
-    label-filter: Rechercher des projets
 </i18n>

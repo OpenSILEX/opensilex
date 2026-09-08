@@ -56,112 +56,67 @@
 
   <!-- Layout -->
   <n-layout has-sider class="event-layout">
-    <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="top">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="searchFiltersPanel"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div
-          v-show="filtersCollapsed && activeFiltersCount > 0"
-          class="filters-count-badge"
-        >
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <!-- Sidebar filtres -->
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
-      class="event-sider"
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      @refresh="refresh"
+      @reset="reset"
     >
-      <n-space class="p-3" vertical>
-        <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
-          <n-form-item class="compact-form-item">
-            <opensilex-TypeForm
-              v-model:type="filter.type"
-              :baseType="baseType"
-              :ignoreRoot="false"
-              :placeholder="t('EventList.type-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <n-form-item class="compact-form-item">
+        <opensilex-TypeForm
+          v-model:type="filter.type"
+          :baseType="baseType"
+          :ignoreRoot="false"
+          :placeholder="t('EventList.type-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-form-item
-            v-if="displayTargetFilter"
-            :label="t('EventList.targets')"
-            class="compact-form-item"
-          >
-            <opensilex-StringFilter
-              v-model:filter="filter.target"
-              :placeholder="t('EventList.target-filter-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <n-form-item
+        v-if="displayTargetFilter"
+        :label="t('EventList.targets')"
+        class="compact-form-item"
+      >
+        <opensilex-StringFilter
+          v-model:filter="filter.target"
+          :placeholder="t('EventList.target-filter-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-form-item
-            :label="t('component.common.description')"
-            class="compact-form-item"
-          >
-            <opensilex-StringFilter
-              v-model:filter="filter.description"
-              :placeholder="t('EventList.filter-label-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <n-form-item
+        :label="t('component.common.description')"
+        class="compact-form-item"
+      >
+        <opensilex-StringFilter
+          v-model:filter="filter.description"
+          :placeholder="t('EventList.filter-label-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('EventList.start')" class="compact-form-item">
-            <opensilex-DateTimeForm
-              v-model:value="filter.start"
-              :max-date="filter.end ? filter.end : undefined"
-              :required="false"
-              class="searchFilter"
-            />
-          </n-form-item>
+      <n-form-item :label="t('EventList.start')" class="compact-form-item">
+        <opensilex-DateTimeForm
+          v-model:value="filter.start"
+          :max-date="filter.end ? filter.end : undefined"
+          :required="false"
+          class="searchFilter"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('EventList.end')" class="compact-form-item">
-            <opensilex-DateTimeForm
-              v-model:value="filter.end"
-              :min-date="filter.start ? filter.start : undefined"
-              :minDate="filter.start"
-              :maxDate="filter.end"
-              :required="false"
-              class="searchFilter"
-            />
-          </n-form-item>
-
-          <n-space justify="end" class="mt-2">
-            <opensilex-Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="reset"
-            />
-            <opensilex-Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="refresh"
-            />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+      <n-form-item :label="t('EventList.end')" class="compact-form-item">
+        <opensilex-DateTimeForm
+          v-model:value="filter.end"
+          :min-date="filter.start ? filter.start : undefined"
+          :maxDate="filter.end"
+          :required="false"
+          class="searchFilter"
+        />
+      </n-form-item>
+    </SearchFiltersSidebar>
 
     <!-- Contenu -->
     <n-layout-content class="event-content">
@@ -324,6 +279,7 @@ import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
 import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 type EventFilter = {
   target: string | undefined

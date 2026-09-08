@@ -1,7 +1,7 @@
 import DefaultTheme from 'vitepress/theme'
 
-// À renseigner : le nouveau host de destination (sans slash final)
-// ex: 'https://mondomaine.example.com'
+/**this theme catch all link redicting to the other documentation (the technical one) and fix navigation between them */
+
 const NEW_HOST = 'https://opensilex.pages-forge.inrae.fr/opensilex-dev'
 const PREFIXES = ['/technical-documentation/', '/functional-specifications/']
 

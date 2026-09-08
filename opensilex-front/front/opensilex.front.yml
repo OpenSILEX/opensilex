@@ -408,7 +408,6 @@ routes:
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
     credentials: [ ]
-
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
     rdfType: vocabulary:Device

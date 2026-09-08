@@ -77,7 +77,7 @@
         }}</span></template
       >
       <template v-slot:cell(actions)="{ data }">
-        <b-button-group size="sm">
+        <n-button-group size="small" class="btn-group btn-group-sm">
           <EditButton
             v-if="
               user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
@@ -100,7 +100,7 @@
             label="component.common.list.buttons.delete"
             @click="$emit('onDelete', data.item)"
           ></DeleteButton>
-        </b-button-group>
+        </n-button-group>
       </template>
     </TableAsyncView>
   </div>
@@ -122,6 +122,8 @@ import {useStore} from "vuex";
 import {useRoute} from "vue-router";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import {FactorsService} from "opensilex-core/api/factors.service";
+import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
+import {NButtonGroup} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const factorService = opensilex.getService<FactorsService>('opensilex.FactorsService')

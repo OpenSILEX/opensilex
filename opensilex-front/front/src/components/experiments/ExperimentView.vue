@@ -4,7 +4,8 @@
     class="container-fluid"
   >
     <PageHeader
-      icon="ik#ik-layers"
+      icon="bi#bi-layers"
+      has-icon
       :title="name"
       description="component.experiment.view.title"
       class="detail-element-header"
@@ -86,7 +87,7 @@
 
         <router-link
             class="tab"
-          :active="isAnnotationTab"
+          :active="isAnnotationTab"PageHeader
           :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
           >{{ $t('component.annotation.list-title') }}
           <span

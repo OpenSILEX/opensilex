@@ -1,6 +1,4 @@
 <template>
-  <b-row>
-    <b-col>
       <h6 class="mb-3">
         <strong
         >{{ $t("component.menu.experimentalDesign.factorLevels") }}
@@ -11,51 +9,53 @@
       <p v-if="editMode" class="divHelpMsg">
         {{ $t("component.menu.experimentalDesign.factorLevel-alert-help") }}
       </p>
-      <b-row>
-        <b-col>
           <!-- <p>{{$t('component.common.tabulator.add-multiple')}}</p> -->
-          <b-button-group>
-            <b-row class="ml-1">
-              <n-button
-                  ghost
-                  class="mb-2 mr-2 csv-button"
-                  @click="csvExport"
-                  type="primary"
-              >{{
-                  $t("component.common.import-files.csv-template")
-                }}
-              </n-button
-              >
-              <n-button
-                  ghost
-                  class="mb-2 mr-2 load-csv-button"
-                  @click="csvExport"
-                  type="primary">
-              <CSVInputFile
-                  :headersExactMatch="['name', 'description']"
-                  v-on:updated="uploaded"
-              > {{ $t("component.common.tabulator.load-csv") }}</CSVInputFile>
-              </n-button>
-              <n-button
-                  ghost
-                  class="mb-2 mr-2 reset-button"
-                  @click="resetTable"
-                  type="secondary"
-              >
-                {{ $t("component.common.tabulator.reset-table") }}
-              </n-button>
-              <n-button
-                  class="mb-2 mr-4 addLine"
-                  @click="addEmptyRow"
-                  variant="outline-dark"
-                  :small="false"
-                  type="tertiary"
-              >{{ $t("component.experiment.factor-level-add") }}</n-button>
-            </b-row>
-          </b-button-group>
-        </b-col>
-      </b-row>
-      <n-alert
+  <n-button-group size="small" class="btn-group btn-group-sm">
+  <n-space>
+    <n-button
+        ghost
+        class="mb-2 csv-button"
+        @click="csvExport"
+        type="primary"
+    >
+      {{ $t("component.common.import-files.csv-template") }}
+    </n-button>
+
+    <n-button
+        ghost
+        class="mb-2 load-csv-button"
+        @click="uploaded"
+        type="primary"
+    >
+      <CSVInputFile
+          :headersExactMatch="['name', 'description']"
+          v-on:updated="uploaded"
+      >
+        {{ $t("component.common.tabulator.load-csv") }}
+      </CSVInputFile>
+    </n-button>
+
+    <n-button
+        ghost
+        class="mb-2 reset-button"
+        @click="resetTable"
+        type="secondary"
+    >
+      {{ $t("component.common.tabulator.reset-table") }}
+    </n-button>
+
+    <n-button
+        class="mb-2 addLine"
+        @click="addEmptyRow"
+        variant="outline-dark"
+        :small="false"
+        type="tertiary"
+    >
+      {{ $t("component.experiment.factor-level-add") }}
+    </n-button>
+  </n-space>
+  </n-button-group>
+  <n-alert
           v-if="props.showFactorLevelsWarning"
           type="error"
           :show-icon="false"
@@ -64,21 +64,13 @@
       >
         {{ t("component.factorLevel.errors.minimum-factor-level") }}
       </n-alert>
-      <b-row>
-        <b-col cols="10">
-          <div ref="table" class="tab"></div>
-        </b-col>
-      </b-row>
-      <!-- <span class="error-message alert alert-info"> Number of factor{{this.factorLevels.length}}</span> -->
-    </b-col>
-  </b-row>
+          <div ref="table" id="table" class="tab"></div>
 </template>
 
 
 <script setup lang="ts">
 
-import Vue, {computed, inject, onMounted, onBeforeUnmount, ref, watch, useTemplateRef} from "vue";
-// @ts-ignore
+import {computed, inject, onMounted, onBeforeUnmount, ref, watch, useTemplateRef} from "vue";
 import HttpResponse from "../../../lib/HttpResponse";
 import {ColumnDefinition, TabulatorFull as Tabulator} from "tabulator-tables";
 import 'tabulator-tables/dist/css/tabulator.min.css';
@@ -87,18 +79,34 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {FactorLevelGetDTO} from "opensilex-core/model/factorLevelGetDTO";
 import Papa from 'papaparse'
-import {useDialog} from "naive-ui";
+import {NButtonGroup, useDialog} from "naive-ui";
 import {NAlert} from "naive-ui";
+import {NSpace} from "naive-ui";
+import {FactorsService} from "opensilex-core/api/factors.service";
 
+//#region Public
+
+const props = defineProps<{
+  editMode?: boolean;
+  showFactorLevelsWarning?: boolean;
+}>();
+
+//#endregion
+
+//#region Private
+
+//#region Data and computed
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 const {t} = useI18n()
 const table = useTemplateRef<HTMLDivElement>('table')
 const dialog = useDialog()
-
 const factorLevels = defineModel<FactorLevelGetDTO[]>('factorLevels', {
   default: []
 })
+const tabulator = ref<Tabulator | null>(null);
+const service = opensilex.getService<FactorsService>("opensilex.FactorsService");
+const langUnwatcher = ref<(() => void) | null>(null);
 
 const tableColumns = computed<ColumnDefinition[]>(() => {
   return [
@@ -135,17 +143,7 @@ const tableColumns = computed<ColumnDefinition[]>(() => {
   ];
 });
 
-interface Props {
-  editMode?: boolean;
-  showFactorLevelsWarning?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  editMode: false,
-  showFactorLevelsWarning: false,
-});
-
-const tabulator = ref<Tabulator | null>(null);
+//#endregion
 
 watch(
     factorLevels,
@@ -153,10 +151,6 @@ watch(
       tabulator.value?.replaceData(value);
     }
 );
-
-const service = opensilex.getService("opensilex.FactorsService");
-
-const langUnwatcher = ref<(() => void) | null>(null);
 
 onMounted(() => {
   langUnwatcher.value = store.watch(
@@ -212,48 +206,6 @@ function remove_blanks_factors(
       (factor) => factor.name !== null && factor.name !== ""
   );
 }
-
-
-const langs = {
-  fr: {
-    pagination: {
-      first: "Premier",
-      first_title: "Premier Page",
-      last: "Dernier",
-      last_title: "Dernier Page",
-      prev: "Précédent",
-      prev_title: "Précédent Page",
-      next: "Prochain",
-      next_title: "Prochain Page",
-    },
-  },
-  en: {
-    pagination: {
-      first: "First", //text for the first page button
-      first_title: "First Page", //tooltip text for the first page button
-      last: "Last",
-      last_title: "Last Page",
-      prev: "Prev",
-      prev_title: "Prev Page",
-      next: "Next",
-      next_title: "Next Page",
-    },
-  },
-};
-
-const options = ref<any>(
-    {
-      layout: "fitColumns",
-      cellHozAlign: "center",
-      clipboard: true,
-      columns: tableColumns.value,
-      maxHeight: "100%", //do not let table get bigger than the height of its parent element
-      // pagination: "local", //enable local pagination.
-      // paginationSize: 5, // this option can take any positive integer value (default = 10)
-      langs,
-    }
-)
-
 
 function cellActions(evt: any, clickedCell: any): void {
   console.debug(evt, clickedCell);
@@ -368,8 +320,8 @@ function hasEmptyValue(): boolean {
 }
 
 function deleteFactorLevel(uri: string): any {
-  console.debug("delete Factor Level" + uri);
-  return service.value.deleteFactorLevel(uri);
+  console.debug("delete Factor Level", uri);
+  return service.deleteFactorLevel(uri);
 }
 
 function resetTable(): void {
@@ -401,10 +353,19 @@ function addEmptyRow(): void {
   }
 }
 
+
 function csvExport(): void {
-  let arrData = [{name: "", description: ""}];
-  Papa.download(Papa.unparse(arrData), "factorLevelTemplate");
+  const csv = Papa.unparse([{ name: "", description: "" }]);
+  const blob = new Blob([csv], { type: "text/csv" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "factorLevelTemplate.csv";
+  link.click();
+
+  URL.revokeObjectURL(link.href);
 }
+
 
 function instanciateTabulator() {
   tabulator.value = new Tabulator(table.value, {
@@ -424,6 +385,7 @@ function instanciateTabulator() {
     cellActions(e, cell);
   });
 }
+//#endregion
 
 </script>
 
@@ -480,6 +442,12 @@ function instanciateTabulator() {
   --n-border: #212529;
   --n-border-hover: 1px solid #212529!important;
   --n-border-pressed: 1px solid #212529 !important;
+}
+
+// add padding 0, for respect the width table in factorForm
+#table{
+  padding: 0;
+  margin-top: 10px; // The margin, so the error message isn't right up against the table.
 }
 </style>
 

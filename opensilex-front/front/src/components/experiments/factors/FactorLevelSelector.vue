@@ -19,8 +19,6 @@
 import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type HttpResponse from 'opensilex-security/HttpResponse'
-import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {FactorsService} from "opensilex-core/api/factors.service";

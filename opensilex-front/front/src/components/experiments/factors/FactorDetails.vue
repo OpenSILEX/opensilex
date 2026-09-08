@@ -3,11 +3,10 @@
     class="container-fluid"
     v-if="factor.uri"
   >
-    <b-row>
-      <b-col md="5">
         <Card label="component.common.description">
           <template v-slot:rightHeader>
             <div class="ml-3">
+              <n-button-group size="small" class="btn-group btn-group-sm">
               <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
                 :small="true"
@@ -27,6 +26,7 @@
                 label="component.common.list.buttons.delete"
                 @click="$emit('onDelete')"
               ></DeleteButton>
+              </n-button-group>
             </div>
           </template>
 
@@ -68,9 +68,6 @@
             ></ExternalReferencesDetails>
           </template>
         </Card>
-      </b-col>
-
-      <b-col>
         <Card
           label="component.menu.experimentalDesign.associated-level-factor"
           icon="fa#list"
@@ -104,8 +101,6 @@
             </p>
           </template>
         </Card>
-      </b-col>
-    </b-row>
     <FactorForm
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
       ref="factorForm"
@@ -127,8 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import Vue, { computed, inject, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
-// @ts-ignore
+import {computed, inject, onMounted, useTemplateRef} from "vue";
 import { FactorsService } from 'opensilex-core/index';
 import Card from '@/components/common/views/Card.vue';
 import EditButton from '@/components/common/buttons/EditButton.vue';
@@ -142,89 +136,10 @@ import ExternalReferencesModalForm from '@/components/common/external-references
 import FactorForm from '@/components/experiments/factors/FactorForm.vue';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { NButton } from 'naive-ui';
 import UriLink from '@/components/common/views/UriLink.vue';
 import InteroperabilityButton from '@/components/common/buttons/InteroperabilityButton.vue';
-
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex');
-const store = useStore();
-const route = useRoute();
-const { t } = useI18n();
-const service = opensilex.getService<FactorsService>('opensilex.FactorsService');
-const categoryName = ref<string>('');
-
-const skosReferences =
-  useTemplateRef<InstanceType<typeof ExternalReferencesModalForm>>('skosReferences');
-const factorForm = useTemplateRef<any>('factorForm');
-
-const user = computed(() => {
-  return store.state.user;
-});
-
-const credentials = computed(() => {
-  return store.state.credentials;
-});
-
-function beforeDestroy() {
-  langUnwatcher();
-}
-
-function exportFactorLevels() {
-  // Format levels in array
-  let levels = props.factor.levels;
-  let rows: any = [['uri', 'name', 'description']];
-  levels.forEach((level) => {
-    rows.push([
-      level.uri,
-      level.name,
-      level.description == null || undefined ? '' : level.description,
-    ]);
-  });
-
-  // Create csv content
-  let csvContent = rows.map((e) => e.join(',')).join('\n');
-  // download
-  let fileLink = document.createElement('a');
-  var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  fileLink.href = url;
-  fileLink.setAttribute('download', 'export_' + props.factor.name + '_factors_levels');
-  fileLink.click();
-}
-
-const emit = defineEmits([
-  'onReload',
-  'update:experiment',
-  'onUpdate',
-  'onUpdateReferences',
-  'onDelete',
-]);
-
-let langUnwatcher: (() => void) | undefined;
-
-onMounted(() => {
-  langUnwatcher = store.watch(
-    () => store.getters.language,
-    async () => {
-      await opensilex.loadFactorCategories();
-      emit('onReload', props.factor.uri);
-    }
-  );
-});
-
-onUnmounted(() => {
-  langUnwatcher?.();
-});
-
-function getCategoryLabel() {
-  return opensilex.getFactorCategoryName(props.factor.category);
-}
-
-function created() {
-  const service = opensilex.getService<FactorsService>('opensilex.FactorsService');
-}
 
 const props = defineProps({
   factor: {
@@ -248,6 +163,73 @@ const props = defineProps({
     type: String,
     default: null,
   },
+});
+
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex');
+const store = useStore();
+const { t } = useI18n();
+const skosReferences = useTemplateRef<InstanceType<typeof ExternalReferencesModalForm>>('skosReferences');
+const factorForm = useTemplateRef<any>('factorForm');
+const user = computed(() => {
+  return store.state.user;
+});
+
+const credentials = computed(() => {
+  return store.state.credentials;
+});
+
+const emit = defineEmits([
+  'onReload',
+  'update:experiment',
+  'onUpdate',
+  'onUpdateReferences',
+  'onDelete',
+]);
+
+function exportFactorLevels() {
+  // Format levels in array
+  let levels = props.factor.levels;
+  let rows: any = [['uri', 'name', 'description']];
+  levels.forEach((level) => {
+    rows.push([
+      level.uri,
+      level.name,
+      level.description == null || undefined ? '' : level.description,
+    ]);
+  });
+  // Create csv content
+  let csvContent = rows.map((e) => e.join(',')).join('\n');
+  // download
+  let fileLink = document.createElement('a');
+  var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  fileLink.href = url;
+  fileLink.setAttribute('download', 'export_' + props.factor.name + '_factors_levels');
+  fileLink.click();
+}
+
+let langUnwatcher: (() => void) | undefined;
+
+onMounted(() => {
+  langUnwatcher = store.watch(
+    () => store.getters.language,
+    async () => {
+      await opensilex.loadFactorCategories();
+      emit('onReload', props.factor.uri);
+    }
+  );
+});
+
+function getCategoryLabel() {
+  return opensilex.getFactorCategoryName(props.factor.category);
+}
+
+let service: FactorsService;
+
+onMounted(() => {
+  service = opensilex.getService<FactorsService>(
+      'opensilex.FactorsService'
+  );
 });
 
 const xpUri = computed({

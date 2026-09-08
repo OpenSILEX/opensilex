@@ -23,23 +23,21 @@ import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {I18nN, useI18n} from "vue-i18n";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
-const { t } = useI18n()
-
-const formSelector = useTemplateRef<InstanceType<typeof TypeForm>>('formSelector')
-
-const category = defineModel('category')
 interface Props {
   label?: string;
   multiple?: boolean;
   helpMessage?: string;
 }
 
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+const { t } = useI18n()
+const formSelector = useTemplateRef<InstanceType<typeof TypeForm>>('formSelector')
+const category = defineModel('category')
+const emit = defineEmits(['select', 'deselect', 'handlingEnterKey', 'clear'])
+
 const props = withDefaults(defineProps<Props>(), {
   label: "component.factors.category",
 });
-
-const emit = defineEmits(['select', 'deselect', 'handlingEnterKey', 'clear'])
 
   function select(value) {
     emit("select", value);

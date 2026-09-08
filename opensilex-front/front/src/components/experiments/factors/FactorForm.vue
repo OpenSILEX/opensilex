@@ -1,7 +1,9 @@
 <template>
   <Modal ref="modal">
     <template #header>
-      <FormHeader :title="formTitle"/>
+      <FormHeader
+           icon="fa#fa-gear"
+          :title="formTitle"/>
     </template>
     <div>
       <Tutorial
@@ -126,7 +128,6 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import {computed, inject, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
@@ -139,20 +140,10 @@ import {NFormItem} from "naive-ui";
 import Modal from "@/components/common/views/Modal.vue";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
-import {NAlert} from "naive-ui";
-
+const showFactorLevelsWarning = ref(false);
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex')
-const store = useStore()
 const {t} = useI18n()
-
-const user = computed(() => {
-  return store.state.user;
-})
-
-const factorTutorial = useTemplateRef<InstanceType<typeof Tutorial>>('factorTutorial')
-const factorCategorySelector = useTemplateRef<InstanceType<typeof FactorCategorySelector>>('factorCategorySelector')
-const factorLevelTable = useTemplateRef<InstanceType<typeof FactorLevelTable>>('factorLevelTable')
 
 const uriGenerated = ref(true);
 
@@ -173,26 +164,6 @@ const {form, formTitle, isEditMode, exposed, submit, hide} = useModalFormLogic<F
 })
 
 let savedForm: Partial<FactorCreationDTO> = {};
-
-function reset(uriGenerated) {
-  uriGenerated = true;
-  if (!isEditMode) {
-    factorTutorial.value.stop();
-  }
-}
-
-function addEmptyRow(form) {
-  console.debug("add row");
-  form.value.levels.unshift({
-    uri: null,
-    name: null,
-    description: null,
-  });
-}
-
-function saveForm() {
-  savedForm = structuredClone(form.value);
-}
 
 function getEmptyForm(): FactorCreationDTO {
   return {
@@ -267,8 +238,6 @@ const rules = {
 }
 
 function continueFormEditing() {
-  console.debug('Reinitialise form')
-
   form.value.uri = savedForm.uri
   form.value.name = savedForm.name
   form.value.category = savedForm.category
@@ -280,12 +249,7 @@ function setUri(uri: string) {
   form.value.uri = uri;
 }
 
-function afterCreate(uri: string) {
-  setUri(uri);
-}
-
 function create(form) {
-  console.debug("factor", form);
   return opensilex
       .getService<FactorsService>("opensilex.FactorsService")
       .createFactor(form)
@@ -320,33 +284,7 @@ function update(form) {
       .catch(opensilex.errorHandler);
 }
 
-const languageCode = computed(() => {
-  return opensilex.getLocalLangCode();
-})
-
-
-function tutorial() {
-  form.value.name = t("component.factor.example.name");
-  form.value.category = t("component.factor.example.category");
-
-  form.value.description = t(
-      "component.factor.example.description"
-  );
-  let levels = [];
-  for (const [key, value] of Object.entries(
-      t("component.factor.example.factorLevels")
-  )) {
-    levels.push(value);
-  }
-  form.value.levels = levels;
-  factorTutorial.value.start();
-}
-
-const showFactorLevelsWarning = ref(false);
-
 function validateAndSubmit() {
-  console.log("validateAndSubmit appelée");
-
   const levels = form.value.levels ?? [];
 
   showFactorLevelsWarning.value =
@@ -354,9 +292,6 @@ function validateAndSubmit() {
       levels.some(
           (level) => level.name === null || level.name === ""
       );
-
-  console.log("levels:", levels);
-  console.log("showFactorLevelsWarning:", showFactorLevelsWarning.value);
 
   if (showFactorLevelsWarning.value) {
     return;

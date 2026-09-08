@@ -1,5 +1,5 @@
 <template>
-  <n-space class="container-fluid">
+  <div class="container-fluid">
 
     <PageActions
       v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
@@ -182,7 +182,7 @@
       :targets="selectedUris"
       :isMove="true"
     ></EventCsvForm>
-  </n-space>
+  </div>
 </template>
 
 <script setup lang="ts">

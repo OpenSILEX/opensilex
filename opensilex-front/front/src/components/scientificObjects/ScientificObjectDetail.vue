@@ -86,6 +86,7 @@ import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scien
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
+import PageActions from "@/components/layout/PageActions.vue";
 
 export interface Tab {
   key: string;
@@ -158,7 +159,7 @@ const tabs = computed<Tab[]>(() => {
     },
     {
       key: 'visualization',
-      label: t('ScientificObjectVisualizationTab.visualization'),
+      label: t('component.menu.data.visualization'),
       to: {
         name: 'ScientificObjectVisualization',
         params: {
@@ -168,21 +169,10 @@ const tabs = computed<Tab[]>(() => {
       }
     },
     {
-      key: 'documents',
-      label: t('DocumentTabList.documents'),
+      key: 'datafiles',
+      label: t('component.datafile.list-title'),
       to: {
-        name: 'ScientificObjectDocuments',
-        params: {
-          uri: uri.value,
-          experiment: props.experiment
-        }
-      }
-    },
-    {
-      key: 'annotations',
-      label: t('Annotation.list-title'),
-      to: {
-        name: 'ScientificObjectAnnotations',
+        name: SCIENTIFIC_OBJECT_DATAFILES_PATHNAME,
         params: {
           uri: uri.value,
           experiment: props.experiment
@@ -191,7 +181,7 @@ const tabs = computed<Tab[]>(() => {
     },
     {
       key: 'events',
-      label: t('Event.list-title'),
+      label: t('component.menu.events'),
       to: {
         name: 'ScientificObjectEvents',
         params: {
@@ -212,10 +202,21 @@ const tabs = computed<Tab[]>(() => {
       }
     },
     {
-      key: 'datafiles',
-      label: t('ScientificObjectDataFiles.datafiles'),
+      key: 'annotations',
+      label: t('component.annotation.list-title'),
       to: {
-        name: SCIENTIFIC_OBJECT_DATAFILES_PATHNAME,
+        name: 'ScientificObjectAnnotations',
+        params: {
+          uri: uri.value,
+          experiment: props.experiment
+        }
+      }
+    },
+    {
+      key: 'documents',
+      label: t('component.common.details.document'),
+      to: {
+        name: 'ScientificObjectDocuments',
         params: {
           uri: uri.value,
           experiment: props.experiment

@@ -730,7 +730,8 @@
             "lastUpdateDate": "Modifié",
             "specific-properties": "Propriétés spécifiques",
             "multiple-insert": "événement(s) enregistré(s)",
-            "move-multiple-insert": "déplacement(s) enregistré(s)"
+            "move-multiple-insert": "déplacement(s) enregistré(s)",
+            "move" : "Déplacer"
         },
         "sharedResourceInstances": {
             "selector-placeholder": "Choisir une source",
@@ -1156,7 +1157,8 @@
             "filters": {
                 "rdfType-placeholder": "Sélectionner le type de fichier",
                 "provenance": "Provenance"
-            }
+            },
+            "list-title": "Fichiers de données"
         },
         "custom-properties": {
             "linked-resources": "Ressources liée(s)"

@@ -914,8 +914,8 @@ const dropdownOptions = computed(() => {
 
   if (hasCredential(credentials.value?.CREDENTIAL_EVENT_MODIFICATION_ID)) {
     options.push(
-      { label: t('Event.add-multiple'), key: 'createEvents' },
-      { label: t('Move.add'), key: 'createMoves' }
+      { label: t('component.events.add-multiple'), key: 'createEvents' },
+      { label: t('component.events.move'), key: 'createMoves' }
     )
   }
 

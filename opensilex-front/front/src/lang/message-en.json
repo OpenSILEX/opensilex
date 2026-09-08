@@ -596,7 +596,8 @@
                 "description": "Grain yield obtained after harvesting an experimental microplot",
                 "species": "Rice"
             },
-            "no-enviromental-variable": "No environnemental variables found"
+            "no-enviromental-variable": "No environnemental variables found",
+            "search-variables": "Search variables"
         },
         "profile": {
             "description": "Manage and configure profiles",
@@ -685,7 +686,8 @@
                     "in-progress": "In-progress",
                     "public": "Public"
                 }
-            }
+            },
+            "search-projects": "Search Projects"
         },
         "events": {
             "details": "View event details",
@@ -1079,7 +1081,8 @@
         },
         "provenance": {
             "description": "Describe data provenance",
-            "all_provenances": "All Provenances"
+            "all_provenances": "All Provenances",
+            "search-provenances": "Search provenances"
         },
         "data": {
             "lastMedianData": "Last median value",

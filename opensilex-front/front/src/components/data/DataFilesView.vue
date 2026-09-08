@@ -13,6 +13,7 @@
         <n-layout has-sider class="datafiles-layout">
           <SearchFiltersSidebar
             :activeFiltersCount="activeFiltersCount"
+            :filtersCollapsed="filtersCollapsed"
             @refresh="refresh"
             @reset="reset"
           >
@@ -181,12 +182,9 @@ import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import {
   NLayout,
-  NLayoutSider,
   NLayoutContent,
-  NForm,
   NFormItem,
   NInput,
-  NButton,
   NSpace,
   NSwitch,
 } from 'naive-ui'

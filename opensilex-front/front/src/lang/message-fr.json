@@ -599,7 +599,8 @@
                 "description": "Rendement du grain obtenu après récolte d'une microparcelle expérimentale.",
                 "species": "Riz"
             },
-            "no-enviromental-variable": "Aucune variable environnementale trouvée"
+            "no-enviromental-variable": "Aucune variable environnementale trouvée",
+            "search-variables": "Chercher une variable"
         },
         "profile": {
             "description": "Gérer et configurer les profils",
@@ -688,7 +689,8 @@
                     "in-progress": "Actif",
                     "public": "Données publiques"
                 }
-            }
+            },
+            "search-projects": "Rechercher des projets"
         },
         "events": {
             "details": "Voir les détails de l'évènement",
@@ -1135,7 +1137,8 @@
         },
         "provenance": {
             "description": "Décrire la provenance de données",
-            "all_provenances": "Toutes les provenances"
+            "all_provenances": "Toutes les provenances",
+            "search-provenances": "Rechercher des provenances"
         },
         "data": {
             "lastMedianData": "Dernière valeur médiane",

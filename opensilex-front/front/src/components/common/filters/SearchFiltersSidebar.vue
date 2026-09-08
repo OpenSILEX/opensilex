@@ -7,7 +7,7 @@
       quaternary
       circle
       @click="filtersCollapsed = !filtersCollapsed"
-      :title="t('searchfilter.label')"
+      :title="t(searchButtonLabelTranslationKey)"
       :class="{ greenThemeColor: filtersCollapsed }"
       class="globalFiltersSearchButton"
     >
@@ -68,10 +68,14 @@ const filtersCollapsed = defineModel<boolean>("filtersCollapsed");
 
 //Applied Filter quantity depends on parent filter object so we just pass as a prop
 interface Props{
-  activeFiltersCount: number
+  activeFiltersCount: number,
+  searchButtonLabelTranslationKey?: string
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(
+  defineProps<Props>(),
+  {searchButtonLabelTranslationKey: "searchfilter.label"}
+);
 
 //Refresh should trigger a re-search with the current filter values, and reset should reset all the filters, handled in caller of this component
 const emit = defineEmits(['refresh', 'reset']);

@@ -63,174 +63,131 @@
 
   <!-- Layout -->
   <n-layout has-sider class="device-layout">
-    <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="start">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="searchFiltersPanel"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div
-          v-show="filtersCollapsed && activeFiltersCount > 0"
-          class="filters-count-badge"
-        >
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <!-- Sidebar / Filtres -->
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
-      class="device-sider"
+    <!-- Sidebar / Filters -->
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      @refresh="refresh"
+      @reset="resetFilters"
     >
-      <n-space class="p-3" vertical>
-        <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
-          <!-- Name -->
-          <n-form-item :label="t('DeviceList.filter.namePattern')"  class="compact-form-item">
-            <StringFilter
-              v-model:filter="filter.name"
-              :placeholder="t('DeviceList.filter.namePattern-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Name -->
+      <n-form-item :label="t('DeviceList.filter.namePattern')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.name"
+          :placeholder="t('DeviceList.filter.namePattern-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Type -->
-          <n-form-item  class="compact-form-item">
-            <TypeForm
-              v-model:type="filter.rdf_type"
-              :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
-              :placeholder="t('DeviceList.filter.rdfTypes-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Type -->
+      <n-form-item  class="compact-form-item">
+        <TypeForm
+          v-model:type="filter.rdf_type"
+          :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+          :placeholder="t('DeviceList.filter.rdfTypes-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Dynamic selected type properties -->
-          <n-collapse
-            :accordion="false"
-            class="advancedFiltersSearch"
-            v-if="dynamicTypeProperties.length"
+      <!-- Dynamic selected type properties -->
+      <n-collapse
+        :accordion="false"
+        class="advancedFiltersSearch"
+        v-if="dynamicTypeProperties.length"
+      >
+        <n-collapse-item :title="$t('component.common.type-properties')" name="adv">
+          <n-form-item
+            v-for="property in dynamicTypeProperties"
+            :key="property.uri"
+            :label="property.name ?? property.uri"
+            class="compact-form-item"
           >
-            <n-collapse-item :title="$t('component.common.type-properties')" name="adv">
-              <n-form-item
-                v-for="property in dynamicTypeProperties"
-                :key="property.uri"
-                :label="property.name ?? property.uri"
-                class="compact-form-item"
-              >
-                <StringFilter
-                  v-model:filter="dynamicPropertyFilters[property.uri]"
-                  :placeholder="property.name ?? property.uri"
-                  class="searchFilter"
-                  @handlingEnterKey="refresh"
-                />
-              </n-form-item>
-            </n-collapse-item>
-          </n-collapse>
-
-          <!-- Variables -->
-          <n-form-item :label="t('DeviceList.filter.variable')">
-            <VariableSelectorWithFilter
-              v-model:variables="filter.variable"
-              :placeholder="t('DeviceList.filter.variable-placeholder')"
-              maximumSelectedRows="1"
-              class="searchFilter"
-            />
-          </n-form-item>
-
-          <!-- Start up -->
-          <n-form-item :label="t('DeviceList.filter.start_up')" class="compact-form-item">
             <StringFilter
-              v-model:filter="filter.start_up"
-              :placeholder="t('DeviceList.filter.start_up-placeholder')"
-              type="number"
+              v-model:filter="dynamicPropertyFilters[property.uri]"
+              :placeholder="property.name ?? property.uri"
               class="searchFilter"
               @handlingEnterKey="refresh"
             />
           </n-form-item>
+        </n-collapse-item>
+      </n-collapse>
 
-          <!-- Facility -->
-          <n-form-item  class="compact-form-item">
-            <FormSelector
-              :label="t('DeviceList.filter.facility')"
-              :placeholder="t('DeviceList.filter.facility-placeholder')"
-              :multiple="false"
-              v-model:selected="filter.facility"
-              :options="facilities"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Variables -->
+      <n-form-item :label="t('DeviceList.filter.variable')">
+        <VariableSelectorWithFilter
+          v-model:variables="filter.variable"
+          :placeholder="t('DeviceList.filter.variable-placeholder')"
+          maximumSelectedRows="1"
+          class="searchFilter"
+        />
+      </n-form-item>
 
-          <!-- Brand -->
-          <n-form-item :label="t('DeviceList.filter.brand')"  class="compact-form-item">
-            <StringFilter
-              v-model:filter="filter.brand"
-              :placeholder="t('DeviceList.filter.brand-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Start up -->
+      <n-form-item :label="t('DeviceList.filter.start_up')" class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.start_up"
+          :placeholder="t('DeviceList.filter.start_up-placeholder')"
+          type="number"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Model -->
-          <n-form-item :label="t('DeviceList.filter.model')"  class="compact-form-item">
-            <StringFilter
-              v-model:filter="filter.model"
-              :placeholder="t('DeviceList.filter.model-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Facility -->
+      <n-form-item  class="compact-form-item">
+        <FormSelector
+          :label="t('DeviceList.filter.facility')"
+          :placeholder="t('DeviceList.filter.facility-placeholder')"
+          :multiple="false"
+          v-model:selected="filter.facility"
+          :options="facilities"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Metadata key -->
-          <n-form-item :label="t('DeviceList.filter.metadataKey')"  class="compact-form-item">
-            <StringFilter
-              v-model:filter="filter.metadataKey"
-              :placeholder="t('DeviceList.filter.metadataKey-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Brand -->
+      <n-form-item :label="t('DeviceList.filter.brand')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.brand"
+          :placeholder="t('DeviceList.filter.brand-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Metadata value -->
-          <n-form-item :label="t('DeviceList.filter.metadataValue')"  class="compact-form-item">
-            <StringFilter
-              v-model:filter="filter.metadataValue"
-              :placeholder="t('DeviceList.filter.metadataValue-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Model -->
+      <n-form-item :label="t('DeviceList.filter.model')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.model"
+          :placeholder="t('DeviceList.filter.model-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-space justify="end" class="mt-2">
-            <Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="reset"
-            />
-            <Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="refresh"
-            />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+      <!-- Metadata key -->
+      <n-form-item :label="t('DeviceList.filter.metadataKey')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.metadataKey"
+          :placeholder="t('DeviceList.filter.metadataKey-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
+
+      <!-- Metadata value -->
+      <n-form-item :label="t('DeviceList.filter.metadataValue')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.metadataValue"
+          :placeholder="t('DeviceList.filter.metadataValue-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
+    </SearchFiltersSidebar>
 
     <!-- Contenu Liste -->
     <n-layout-content class="device-content">
@@ -324,11 +281,9 @@ import {
   NCollapse,
   NCollapseItem,
   NDropdown,
-  NForm,
   NFormItem,
   NLayout,
   NLayoutContent,
-  NLayoutSider,
   NSpace
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
@@ -349,6 +304,7 @@ import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
 import {TableField} from "@/components/common/views/TableField";
 import DeviceForm from "@/components/devices/form/DeviceForm.vue";
 import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
@@ -469,8 +425,6 @@ const activeFiltersCount = computed(() => {
 })
 
 const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-
-const searchFiltersPanel = computed(() => t('searchfilter.label'))
 
 const displayDropdownOptions = computed(() => [
   {

@@ -34,153 +34,122 @@
       class="pagecontent"
     >
       <n-layout has-sider class="so-layout">
-        <n-space class="mb-2 me-1" align="start">
-          <n-button
-            quaternary
-            circle
-            @click="searchFiltersToggle = !searchFiltersToggle"
-            :title="searchFiltersPannelTitle()"
-            :class="{ greenThemeColor: searchFiltersToggle }"
-            class="globalFiltersSearchButton"
-          >
-            <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-            <div
-              v-show="searchFiltersToggle && activeFiltersCount > 0"
-              class="filters-count-badge"
-            >
-              ( {{ activeFiltersCount }} )
-            </div>
-          </n-button>
-        </n-space>
-
-        <!-- FILTERS -->
-        <n-layout-sider
-          v-model:collapsed="searchFiltersToggle"
-          :collapsed-width="0"
-          :width="360"
-          collapse-mode="width"
-          show-trigger
-          bordered
-          class="device-sider"
+        <SearchFiltersSidebar
+          :activeFiltersCount="activeFiltersCount"
+          :filtersCollapsed="searchFiltersToggle"
+          @refresh="soList.refresh()"
+          @reset="reset"
         >
-          <n-space class="p-3" vertical>
+          <!-- Name -->
+          <n-form-item :label="t('component.common.name')"  class="compact-form-item">
+            <StringFilter
+              id="name"
+              v-model:filter="filter.name"
+              :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
+              @handlingEnterKey="soList.refresh()"
+              class="searchFilter"
+            />
+          </n-form-item>
 
-            <n-form size="small" @submit.prevent.stop="soList.refresh()">
+          <!-- Experiments -->
+          <n-form-item class="compact-form-item">
+            <ExperimentSelector
+              :label="t('component.experiment.view.title')"
+              v-model:experiments="filter.experiment"
+              :multiple="true"
+              class="searchFilter"
+              @handlingEnterKey="soList.refresh()"
+              :key="resetExperimentSelectorKey"
+            />
+          </n-form-item>
 
-                <!-- Name -->
-              <n-form-item :label="t('component.common.name')"  class="compact-form-item">
-                <StringFilter
-                  id="name"
-                  v-model:filter="filter.name"
-                  :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
-                  @handlingEnterKey="soList.refresh()"
+          <!-- Types -->
+          <n-form-item
+            :label="t('component.common.type')"
+            :show-feedback="false"
+            class="compact-form-item"
+          >
+            <ScientificObjectTypeSelector
+              id="type"
+              v-model:types="filter.types"
+              :multiple="true"
+              class="searchFilter"
+            />
+          </n-form-item>
+
+          <!-- ADVANCED SEARCH STARTS HERE -->
+
+          <n-collapse
+            v-model:expanded-names="expandedNCollapseNames"
+            :accordion="false"
+            @update:expanded-names="onCollapseUpdate"
+            class="advancedFiltersSearch"
+          >
+            <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
+              <!-- Germplasm -->
+              <n-form-item :show-feedback="false" class="compact-form-item">
+                <GermplasmSelector
+                  :multiple="false"
+                  :germplasm="filter.germplasm"
+                  :experiment="filter.experiment"
                   class="searchFilter"
+                  @update:germplasm="filter.germplasm = $event"
+                  @handlingEnterKey="soList.refresh()"
                 />
               </n-form-item>
 
-                <!-- Experiments -->
-              <n-form-item class="compact-form-item">
-                <ExperimentSelector
-                  :label="t('component.experiment.view.title')"
-                  v-model:experiments="filter.experiment"
+              <!-- Factor levels -->
+              <n-form-item :show-feedback="false" class="compact-form-item">
+                <FactorLevelSelector
+                  :factorLevels="filter.factorLevels"
                   :multiple="true"
+                  :required="false"
                   class="searchFilter"
+                  @update:factorLevels="filter.factorLevels = $event"
                   @handlingEnterKey="soList.refresh()"
-                  :key="resetExperimentSelectorKey"
                 />
               </n-form-item>
 
-                <!-- Types -->
+              <!-- Existence date -->
               <n-form-item
-                :label="t('component.common.type')"
+                :label="t('component.scientificObjects.filters.existenceDate')"
                 :show-feedback="false"
-                class="compact-form-item"
               >
-                <ScientificObjectTypeSelector
-                  id="type"
-                  v-model:types="filter.types"
-                  :multiple="true"
+                <DateForm
+                  :value="filter.existenceDate"
                   class="searchFilter"
+                  @update:value="filter.existenceDate = $event"
                 />
               </n-form-item>
 
-              <!-- ADVANCED SEARCH STARTS HERE -->
+              <br />
 
-              <n-collapse
-                v-model:expanded-names="expandedNCollapseNames"
-                :accordion="false"
-                @update:expanded-names="onCollapseUpdate"
-                class="advancedFiltersSearch"
+              <!-- Creation date -->
+              <n-form-item
+                :label="t('component.common.date-time.creationDate')"
+                :show-feedback="false"
               >
-                <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
-                  <!-- Germplasm -->
-                  <n-form-item :show-feedback="false" class="compact-form-item">
-                    <GermplasmSelector
-                      :multiple="false"
-                      :germplasm="filter.germplasm"
-                      :experiment="filter.experiment"
-                      class="searchFilter"
-                      @update:germplasm="filter.germplasm = $event"
-                      @handlingEnterKey="soList.refresh()"
-                    />
-                  </n-form-item>
+                <DateForm
+                  :value="filter.creationDate"
+                  class="searchFilter"
+                  @update:value="filter.creationDate = $event"
+                />
+              </n-form-item>
 
-                  <!-- Factor levels -->
-                  <n-form-item :show-feedback="false" class="compact-form-item">
-                    <FactorLevelSelector
-                      :factorLevels="filter.factorLevels"
-                      :multiple="true"
-                      :required="false"
-                      class="searchFilter"
-                      @update:factorLevels="filter.factorLevels = $event"
-                      @handlingEnterKey="soList.refresh()"
-                    />
-                  </n-form-item>
-
-                  <!-- Existence date -->
-                  <n-form-item
-                    :label="t('component.scientificObjects.filters.existenceDate')"
-                    :show-feedback="false"
-                  >
-                    <DateForm
-                      :value="filter.existenceDate"
-                      class="searchFilter"
-                      @update:value="filter.existenceDate = $event"
-                    />
-                  </n-form-item>
-
-                  <br />
-
-                  <!-- Creation date -->
-                  <n-form-item
-                    :label="t('component.common.date-time.creationDate')"
-                    :show-feedback="false"
-                  >
-                    <DateForm
-                      :value="filter.creationDate"
-                      class="searchFilter"
-                      @update:value="filter.creationDate = $event"
-                    />
-                  </n-form-item>
-
-                  <!-- Criteria search -->
-                  <n-form-item :show-feedback="false">
-                    <CriteriaSearchModalCreator
-                      ref="criteriaSearchCreateModal"
-                      class="searchFilter"
-                      :criteria_dto="filter.criteriaDto"
-                      :required="false"
-                      :requiredBlue="false"
-                      @update:criteria_dto="filter.criteriaDto = $event"
-                    />
-                  </n-form-item>
-                </n-collapse-item>
-              </n-collapse>
-
-            </n-form>
-          </n-space>
-        </n-layout-sider>
+              <!-- Criteria search -->
+              <n-form-item :show-feedback="false">
+                <CriteriaSearchModalCreator
+                  ref="criteriaSearchCreateModal"
+                  class="searchFilter"
+                  :criteria_dto="filter.criteriaDto"
+                  :required="false"
+                  :requiredBlue="false"
+                  @update:criteria_dto="filter.criteriaDto = $event"
+                />
+              </n-form-item>
+            </n-collapse-item>
+          </n-collapse>
+        </SearchFiltersSidebar>
 
         <n-layout-content class="so-content">
           <ScientificObjectList
@@ -248,6 +217,7 @@ import {
   NSpace
 } from "naive-ui";
 import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 //#region Constant values
 const $store = useStore();

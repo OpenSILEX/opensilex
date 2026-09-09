@@ -272,14 +272,14 @@
         @onUpdate="updateSelectedEvent"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="renderCsvForm"
         ref="csvFormRef"
         :targets="[target]"
         @csvImported="onImport"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="renderMoveCsvForm"
         ref="moveCsvFormRef"
         :targets="[target]"
@@ -324,6 +324,7 @@ import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
 import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
+import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
 
 type EventFilter = {
   target: string | undefined

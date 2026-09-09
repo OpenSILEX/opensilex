@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-OntologyCsvImporter
+    <OntologyCsvImporter
       ref="importForm"
       :baseType="baseType"
       :validateCSV="validateCSV"
@@ -33,7 +33,7 @@
           />
         </div>
       </template>
-    </opensilex-OntologyCsvImporter>
+    </OntologyCsvImporter>
   </div>
 </template>
 
@@ -41,6 +41,7 @@
 import { computed, inject, ref } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
+import OntologyCsvImporter from "@/components/ontology/csv/OntologyCsvImporter.vue";
 
 const props = withDefaults(defineProps<{
   targets?: string[]

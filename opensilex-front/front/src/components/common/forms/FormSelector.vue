@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, inject } from 'vue'
+import {computed, nextTick, onMounted, ref, watch, inject, useTemplateRef} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NFormItem } from 'naive-ui'
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
@@ -148,7 +148,7 @@ const totalCount = ref(0)
 const resultCount = ref(0)
 const resultLimit = ref(10)
 
-const customTreeselectRef = ref<InstanceType<typeof CustomTreeselect> | null>(null)
+const customTreeselectRef = useTemplateRef<InstanceType<typeof CustomTreeselect>>('customTreeselect')
 const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {

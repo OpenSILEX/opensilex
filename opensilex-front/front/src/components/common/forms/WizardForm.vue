@@ -131,11 +131,14 @@ export type WizardStep = {
   props?: Record<string, any>
 }
 
-function currentTitle(i) {
-  const title = props.steps[i]?.title
-  return title ? t(title) : ''
-}
+const emit = defineEmits<{
+  (e: 'agroportalTermSelected', payload: any): void
+  (e: 'agroportalTermUnselected'): void
+  (e: 'onCreate', payload: any): void
+  (e: 'onUpdate', payload: any): void
+}>()
 
+//#region Private
 const props = defineProps<{
   steps: WizardStep[]
   editTitle: string
@@ -151,14 +154,6 @@ const props = defineProps<{
   validateAction?: (form: any) => boolean
 }>()
 
-const emit = defineEmits<{
-  (e: 'agroportalTermSelected', payload: any): void
-  (e: 'agroportalTermUnselected'): void
-  (e: 'onCreate', payload: any): void
-  (e: 'onUpdate', payload: any): void
-}>()
-//#region Private
-
 const { t } = useI18n()
 const opensilex = inject<OpenSilexVuePlugin>('opensilex')!
 
@@ -167,6 +162,7 @@ const editMode = ref(false)
 const currentStepIndex = ref(0)
 const form = ref<any>(null)
 const stepComponent = ref<any>()
+const geometryNotSaved = ref(false)
 
 const modalWidth = computed(() => props.modalWidth ?? '900px')
 const isLastStep = computed(() => currentStepIndex.value === props.steps.length - 1)
@@ -175,8 +171,12 @@ const translatedTitle = computed(() => {
   const key = editMode.value ? props.editTitle : props.createTitle
   return t(key)
 })
-//#endregion
-const geometryNotSaved = ref(false)
+
+function currentTitle(i) {
+  const title = props.steps[i]?.title
+  return title ? t(title) : ''
+}
+
 
 function geometryIsNotSaved() {
   geometryNotSaved.value = true
@@ -313,6 +313,7 @@ const doneText = computed(() => {
 
 
 defineExpose({ showCreateForm, showEditForm, close, getStepRef })
+//#endregion
 </script>
 
 

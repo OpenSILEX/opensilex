@@ -1,149 +1,101 @@
 <template>
   <n-layout has-sider class="document-layout">
-    
-    <n-space class="mb-2 me-1" align="top">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="t('searchfilter.label')"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div
-          v-show="filtersCollapsed && activeFiltersCount > 0"
-          class="filters-count-badge"
-        >
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      @refresh="applyFilters()"
+      @reset="resetFilters()"
     >
-      <n-space class="p-3" vertical>
-        <n-form
-          label-placement="top"
-          size="small"
-          @submit.prevent.stop="applyFilters"
-        >
+      <!-- Title -->
+      <n-form-item class="compact-form-item">
+        <n-input
+          v-model:value="filter.multiple"
+          clearable
+          :placeholder="t('component.document.searchAll-placeholder')"
+          @keydown.enter.prevent.stop="applyFilters"
+          class="searchFilter"
+        />
+      </n-form-item>
+
+      <!-- Advanced -->
+      <n-collapse
+        v-model:expanded-names="expandedNames"
+        :accordion="false"
+        @update:expanded-names="onCollapseUpdate"
+        class="advancedFiltersSearch"
+      >
+        <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
 
           <!-- Title -->
-          <n-form-item class="compact-form-item">
+          <n-form-item class="compact-form-item" :label="t('component.common.title')">
             <n-input
-              v-model:value="filter.multiple"
-              clearable
-              :placeholder="t('component.document.searchAll-placeholder')"
+              v-model:value="filter.title"
+              :placeholder="t('component.document.filter-title-placeholder')"
               @keydown.enter.prevent.stop="applyFilters"
               class="searchFilter"
             />
           </n-form-item>
 
-           <!-- Advanced -->
-          <n-collapse
-            v-model:expanded-names="expandedNames"
-            :accordion="false"
-            @update:expanded-names="onCollapseUpdate"
-            class="advancedFiltersSearch"
-          >
-          <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
-
-            <!-- Title -->
-            <n-form-item class="compact-form-item" :label="t('component.common.title')">
-              <n-input
-                v-model:value="filter.title"
-                :placeholder="t('component.document.filter-title-placeholder')"
-                @keydown.enter.prevent.stop="applyFilters"
-                class="searchFilter"
-              />
-            </n-form-item>
-
-            <!-- Type -->
-            <n-form-item  class="compact-form-item">
-              <opensilex-TypeForm
-                v-model:type="filter.rdf_type"
-                :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
-                @keydown.enter.prevent.stop="applyFilters"
-                class="searchFilter"
-              />
-            </n-form-item> 
-
-            <!-- date -->   
-            <n-form-item class="compact-form-item" :label="t('component.document.date')">
-              <n-input
-                v-model:value="filter.date"
-                :placeholder="t('component.document.filter-date-placeholder')"
-                @keydown.enter.prevent.stop="applyFilters"
-                class="searchFilter"
-              />
-            </n-form-item>
-
-            <!-- targets -->
-            <n-form-item class="compact-form-item" :label="t('component.document.targets')">
-              <n-input
-                v-model:value="filter.targets"
-                :placeholder="t('component.document.targets-placeholder')"
-                @keydown.enter.prevent.stop="applyFilters"
-                class="searchFilter"
-              />
-            </n-form-item>
-
-            <!-- author -->
-            <n-form-item class="compact-form-item" :label="t('component.document.author')">
-              <n-input
-                v-model:value="filter.authors"
-                :placeholder="t('component.document.filter-author-placeholder')"
-                @handlingEnterKey="applyFilters"
-                class="searchFilter"
-              />
-            </n-form-item>
-
-            <!-- keywords -->
-            <n-form-item class="compact-form-item" :label="t('component.document.keywords')">
-              <n-input
-                v-model:value="filter.keywords"
-                :placeholder="t('component.document.filter-keywords-placeholder')"
-                @keydown.enter.prevent.stop="applyFilters"
-                class="searchFilter"
-              />
-            </n-form-item>
-
-            <!-- Deprecated -->
-            <n-form-item class="compact-form-item" :label="t('component.document.deprecated')">
-              <n-switch
-                v-model:value="filter.deprecated" 
-              ></n-switch>
-            </n-form-item> 
-
-          </n-collapse-item>
-        </n-collapse>
-
-
-          <n-space justify="end" class="mt-2">
-            <opensilex-Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="resetFilters"
+          <!-- Type -->
+          <n-form-item  class="compact-form-item">
+            <opensilex-TypeForm
+              v-model:type="filter.rdf_type"
+              :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
+              @keydown.enter.prevent.stop="applyFilters"
+              class="searchFilter"
             />
-            <opensilex-Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="applyFilters"
+          </n-form-item>
+
+          <!-- date -->
+          <n-form-item class="compact-form-item" :label="t('component.document.date')">
+            <n-input
+              v-model:value="filter.date"
+              :placeholder="t('component.document.filter-date-placeholder')"
+              @keydown.enter.prevent.stop="applyFilters"
+              class="searchFilter"
             />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+          </n-form-item>
+
+          <!-- targets -->
+          <n-form-item class="compact-form-item" :label="t('component.document.targets')">
+            <n-input
+              v-model:value="filter.targets"
+              :placeholder="t('component.document.targets-placeholder')"
+              @keydown.enter.prevent.stop="applyFilters"
+              class="searchFilter"
+            />
+          </n-form-item>
+
+          <!-- author -->
+          <n-form-item class="compact-form-item" :label="t('component.document.author')">
+            <n-input
+              v-model:value="filter.authors"
+              :placeholder="t('component.document.filter-author-placeholder')"
+              @handlingEnterKey="applyFilters"
+              class="searchFilter"
+            />
+          </n-form-item>
+
+          <!-- keywords -->
+          <n-form-item class="compact-form-item" :label="t('component.document.keywords')">
+            <n-input
+              v-model:value="filter.keywords"
+              :placeholder="t('component.document.filter-keywords-placeholder')"
+              @keydown.enter.prevent.stop="applyFilters"
+              class="searchFilter"
+            />
+          </n-form-item>
+
+          <!-- Deprecated -->
+          <n-form-item class="compact-form-item" :label="t('component.document.deprecated')">
+            <n-switch
+              v-model:value="filter.deprecated"
+            ></n-switch>
+          </n-form-item>
+
+        </n-collapse-item>
+      </n-collapse>
+    </SearchFiltersSidebar>
 
     <n-layout-content class="document-content">
       <div class="pageActionsBtns">
@@ -266,6 +218,7 @@ import {
   NCollapseItem,
   NSwitch
 } from "naive-ui";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', document: any): void

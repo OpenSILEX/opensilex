@@ -43,8 +43,8 @@ export interface SingleCriteriaAttributesUsedInFront {
   criteria_rules: string
 }
 
-interface CriteriaDTO {
-  criteria_list: Array<SingleCriteriaDTO>
+export interface CriteriaDTO {
+  criteria_list?: Array<SingleCriteriaDTO>
 }
 
 type ModalListBuilderExposed = {

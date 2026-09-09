@@ -27,7 +27,7 @@
                 "coordinates": "Coordinates",
                 "from-help": "Starting facility URI (The facility must exist, and the 'to' field must be filled).",
                 "to-help": "Arrival facility URI (The facility must exist).",
-                "x-help": "1th dimension of a custom coordinate system",
+                "x-help": "1st dimension of a custom coordinate system",
                 "y-help": "2nd dimension of a custom coordinate system",
                 "z-help": "3rd dimension of a custom coordinate system",
                 "textual-position-help": "Description of the position with text",
@@ -54,6 +54,7 @@
                 "end":"End",
                 "period":"Period",
                 "year":"Year",
+                "creationDate": "Creation date",
                 "period-descriptions":{
                     "day": "Last hours",
                     "week": "Last week",
@@ -66,6 +67,7 @@
             "yes": "yes",
             "no": "no",
             "ok": "OK",
+            "or": "or",
             "clear": "Clear",
             "close": "Close",
             "delete": "Delete",
@@ -161,7 +163,20 @@
             "import-files": {
                 "csv-file": " Load CSV",
                 "csv-template": "Download template",
-                "select-button": "Select"
+                "select-button": "Select",
+                "generate-template": "Generate template",
+                "csv-import": "CSV Import",
+                "expected-format": "Expected format",
+                "help-text-common": {
+                    "line-1": "You can insert or update your data from this row.",
+                    "line-2": "First two rows of CSV content will be ignored.",
+                    "accepted_separators": "Accepted CSV separators:",
+                    "decimal-separator": "Decimal separator is {decimalSeparator}",
+                    "timezone-help": "If you don't specify offsets of date, the system will use the default timezone of the system.",
+                    "blank-values-help": "Blank and unknown column identifier values will be ignored.",
+                    "order-no-matter": "Column order doesn't matter.",
+                    "multiple-values": "If a property has multiple values, add a column for each with the same URI."
+                }
             },
             "tabulator": {
                 "reset-table": "Reset table",
@@ -232,6 +247,12 @@
                 "display_by": "Display by",
                 "filter": "Filter selection",
                 "help": "Uncheck to use the below selector"
+            },
+            "forms-generic-placeholders": {
+                "uri-label": "Object URI",
+                "name-placeholder": "Enter name",
+                "form-name-placeholder": "Enter object name",
+                "form-type-placeholder": "Select object type"
             }
         },
         "copyToClipboard": {
@@ -582,7 +603,8 @@
                 "description": "Grain yield obtained after harvesting an experimental microplot",
                 "species": "Rice"
             },
-            "no-enviromental-variable": "No environnemental variables found"
+            "no-enviromental-variable": "No environnemental variables found",
+            "search-variables": "Search variables"
         },
         "profile": {
             "description": "Manage and configure profiles",
@@ -671,7 +693,8 @@
                     "in-progress": "In-progress",
                     "public": "Public"
                 }
-            }
+            },
+            "search-projects": "Search Projects"
         },
         "events": {
             "details": "View event details",
@@ -711,7 +734,8 @@
             "lastUpdateDate": "Modified",
             "specific-properties": "Specific properties",
             "multiple-insert": "event(s) registered.",
-            "move-multiple-insert": "move(s) registered."
+            "move-multiple-insert": "move(s) registered.",
+            "move" : "Move"
 
         },
         "sharedResourceInstances": {
@@ -800,6 +824,7 @@
             },
             "view": {
                 "title": "Experiment",
+                "experiment-experiments": "Experiment(s)",
                 "list": {
                     "previous": "Consult the previous experiment",
                     "next": "Consult the next experiment",
@@ -891,6 +916,8 @@
             }
         },
         "scientificObjects": {
+            "scientificObjects": "Scientific object(s)",
+            "scientificObjects-placeholder": "Select scientific objects",
             "error" : {
                 "delete" : {
                     "associated-data" : "The object {scientific_object} can't be deleted since there are some associated data. You must delete them first",
@@ -898,6 +925,41 @@
                     "used-in-experiment" :"The object {scientific_object} can't be deleted since it's involved in some experiments. You must delete the object from the experiment first",
                     "has-child" :"The object {scientific_object} can't be deleted since it has some child. You must delete them first (It may sound cruel but it has to be)"
                 }
+            },
+            "geometry" : {
+                "startHelp" : "The moment where this object began to have this position.",
+                "endHelp" : "The moment where this object no longer had this position.\nREQUIRED IF any location field's are filled."
+            },
+            "import" : {
+                "success-message": "scientific object(s) imported",
+                "import-scientific-objects": "Import scientific objets",
+                "help-column-headers": {
+                    "hasCreationDate-help": "Creation date (format: YYYY-MM-DD)",
+                    "hasDestructionDate-help": "Destruction date (format: YYYY-MM-DD)",
+                    "isPartOf-help": "Parent URI or name",
+                    "properties-help": "Custom properties for scientific object type..."
+                },
+                "help-text": {
+                    "custom-properties": "You can add new columns corresponding to custom properties of scientific objet types",
+                    "geospatial-line-1": "It is now possible to import an initial position by using the new columns.",
+                    "geospatial-line-2": "You can also update this initial position completely if it is the only existing Position, or partially with dates that match up if multiple positions exist.",
+                    "geospatial-line-3": "If the location headers are present, but all the location values are empty for a line, then the system considers it to be a deletion of Location.",
+                    "geospatial-line-4": "If the location headers and columns are completely absent, then no operations will be performed on Locations."
+                }
+            },
+            "help-messages": {
+                "uri-help": "Scientific object URI (autogenerated if empty)",
+                "type-help": "URI of the object type",
+                "name-help" : "Scientific object name"
+            },
+            "filters": {
+                "existenceDate": "Object exists"
+            },
+            "actions": {
+                "add": "Add scientific object",
+                "update": "Update scientific object",
+                "edit": "Edit scientific object",
+                "delete": "Delete scientific object"
             }
         },
         "skos": {
@@ -992,7 +1054,30 @@
             "all_devices": "All Devices",
             "select_devices": "Select Devices",
             "add": "Add device",
-            "update": "Update device"
+            "update": "Update device",
+            "import" : {
+                "success-message": "device(s) imported",
+                "title": "Import device(s)",
+                "help-text": {
+                    "custom-properties": "You can add new columns corresponding to custom properties of device types.",
+                    "measures-help": "Only SensingDevice or Device with property vocabulary:measures can have a variable.",
+                    "brand-help": "A brand of the device",
+                    "constructor_model-help": "A constructor model of the device",
+                    "serial_number-help": "A serial number of the device",
+                    "removal-help": "Date of removal",
+                    "start_up-help": "Date of start up",
+                    "person_in_charge-help": "Person in charge of the device",
+                    "properties-help": "Custom properties for device type..."
+                }
+            },
+            "help-messages": {
+                "uri-help": "Device URI (autogenerated if empty)",
+                "type-help": "URI of the device type",
+                "name-help": "Device name"
+            },
+            "form-placeholders": {
+                "rdfTypes-placeholder": "Select a device type"
+            }
         },
         "site": {
             "title": "Sites",
@@ -1027,7 +1112,8 @@
         },
         "provenance": {
             "description": "Describe data provenance",
-            "all_provenances": "All Provenances"
+            "all_provenances": "All Provenances",
+            "search-provenances": "Search provenances"
         },
         "data": {
             "lastMedianData": "Last median value",
@@ -1038,7 +1124,15 @@
             "create": "Add data file",
             "update": "Update data file",
             "description": "View datafiles",
-            "download-image" : "Download image"
+            "download-image" : "Download image",
+            "fileName" : "File Name",
+            "fileName-placeholder": "Enter file name",
+            "imagesView": "View",
+            "filters": {
+                "rdfType-placeholder": "Select the datafile type",
+                "provenance": "Provenance"
+            },
+            "list-title": "Datafiles"
         },
         "custom-properties" : {
             "linked-resources" : "Linked resources"
@@ -1123,7 +1217,8 @@
                         "instance-exists" : "Some objects use the property {property} You must delete these relations first",
                         "has-children" : "The property {property} has sub-properties. You must delete them first"
                     }
-                }
+                },
+                "properties-targeting-someName": "Properties targeting {name}"
             },
             "externalOntologies" : {
                 "agroportal": "AgroPortal project is based on five driving agronomic use cases which participate in the design and orientation of the platform. AgroPortal already offers a robust and stable reference repository highly valuable for the agronomic domain.",

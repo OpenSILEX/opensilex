@@ -82,13 +82,13 @@
 
     <!-- Entité -->
     <n-form-item :label="t('component.variable.entity.entity')" :show-feedback="false">
-      <opensilex-EntitySelector
+      <EntitySelector
         v-model:selected="filter.entity"
         @handlingEnterKey="applyFilters"
         :placeholder="$t('component.variable.entity.entity-placeholder')"
       />
     </n-form-item>
-
+    <br>
     <!-- Caractéristique -->
     <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
       <opensilex-CharacteristicSelector
@@ -240,6 +240,7 @@ import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import EntitySelector from "@/components/variables/form/EntitySelector.vue";
 
 /** Refs UI */
 const groupVariableSelection = ref()

@@ -12,7 +12,7 @@
         }
     },
     "scripts": {
-        "serve": "vite build --config vite.config.ts --watch",
+        "dev:build": "vite build --config vite.config.ts --watch",
         "build": "vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
         "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",

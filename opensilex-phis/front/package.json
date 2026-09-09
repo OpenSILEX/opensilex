@@ -4,7 +4,7 @@
     "license":"AGPL-3.0-only", 
     "type": "module",
     "private": true,
-    "main": "./dist/mopensilex-phis.umd.min.js",
+    "main": "./dist/opensilex-phis.umd.min.js",
     "module": "./dist/opensilex-phis.umd.min.js",
     "exports": {
         ".": {

@@ -155,19 +155,6 @@ public class StartServerWithFront {
         FileAlterationMonitor monitor = new FileAlterationMonitor(200);
         FileAlterationListener listener = new FileAlterationListenerAdaptor() {
             @Override
-            public void onStart(FileAlterationObserver observer){
-                File file = observer.getDirectory();
-                if (file.getName().equals(filename)) {
-                    LOGGER.debug("File exist: " + file.getName());
-                    try {
-                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
-                    } catch (IOException ex) {
-                        LOGGER.error("Error while copying lib file: " + filename, ex);
-                    }
-                    countDownLatch.countDown();
-                }
-            }
-            @Override
             public void onFileCreate(File file) {
                 if (file.getName().equals(filename)) {
                     LOGGER.debug("File created: " + file.getName());
@@ -179,12 +166,6 @@ public class StartServerWithFront {
                     countDownLatch.countDown();
                 }
             }
-
-
-            @Override
-            public void onFileDelete(File file) {
-            }
-
             @Override
             public void onFileChange(File file) {
                 if (file.getName().equals(filename)) {

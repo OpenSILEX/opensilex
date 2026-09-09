@@ -132,7 +132,7 @@ public class StartServerWithFront {
         List<String> args = new ArrayList<>();
         args.add(nodeDirectory.resolve("npm").toFile().getCanonicalPath());
         args.add("run");
-        args.add("serve");
+        args.add("dev:build");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
         addNodePathToEnv(frontBuilder);
 

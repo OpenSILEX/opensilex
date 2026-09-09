@@ -90,7 +90,7 @@
       <n-space class="p-3" vertical>
         <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
           <n-form-item class="compact-form-item">
-            <opensilex-TypeForm
+            <TypeForm
               v-model:type="filter.type"
               :baseType="baseType"
               :ignoreRoot="false"
@@ -105,7 +105,7 @@
             :label="t('EventList.targets')"
             class="compact-form-item"
           >
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.target"
               :placeholder="t('EventList.target-filter-placeholder')"
               class="searchFilter"
@@ -117,7 +117,7 @@
             :label="t('component.common.description')"
             class="compact-form-item"
           >
-            <opensilex-StringFilter
+            <StringFilter
               v-model:filter="filter.description"
               :placeholder="t('EventList.filter-label-placeholder')"
               class="searchFilter"
@@ -126,7 +126,7 @@
           </n-form-item>
 
           <n-form-item :label="t('EventList.start')" class="compact-form-item">
-            <opensilex-DateTimeForm
+            <DateTimeForm
               v-model:value="filter.start"
               :max-date="filter.end ? filter.end : undefined"
               :required="false"
@@ -135,7 +135,7 @@
           </n-form-item>
 
           <n-form-item :label="t('EventList.end')" class="compact-form-item">
-            <opensilex-DateTimeForm
+            <DateTimeForm
               v-model:value="filter.end"
               :min-date="filter.start ? filter.start : undefined"
               :minDate="filter.start"
@@ -146,13 +146,13 @@
           </n-form-item>
 
           <n-space justify="end" class="mt-2">
-            <opensilex-Button
+            <Button
               class="resetButton"
               :label="t('component.common.search.clear-button')"
               icon="bi-x-lg"
               @click="reset"
             />
-            <opensilex-Button
+            <Button
               class="greenThemeColor"
               :label="t('component.common.search.search-button')"
               icon="bi-search"
@@ -165,7 +165,7 @@
 
     <!-- Contenu -->
     <n-layout-content class="event-content">
-      <opensilex-TableAsyncView
+      <TableAsyncView
         v-if="renderComponent"
         ref="tableRef"
         :searchMethod="search"
@@ -178,7 +178,7 @@
         iconNumberOfSelectedRow="bi#bi-layers"
       >
         <template #cell(rdf_type_name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             v-if="data.item.rdf_type_name"
             :uri="$opensilex.getShortUri(data.item.rdf_type)"
             :value="data.item.rdf_type_name"
@@ -186,14 +186,14 @@
         </template>
 
         <template #cell(start)="{ data }">
-          <opensilex-TextView
+          <TextView
             v-if="data.item.start && data.item.start.length > 0"
             :value="new Date(data.item.start).toLocaleString()"
           />
         </template>
 
         <template #cell(end)="{ data }">
-          <opensilex-TextView
+          <TextView
             v-if="data.item.end"
             :value="new Date(data.item.end).toLocaleString()"
           />
@@ -205,7 +205,7 @@
             :key="index"
           >
             <template v-if="index < 2">
-              <opensilex-UriLink
+              <UriLink
                 :uri="uri"
                 :value="objectsLabels[uri]"
                 :to="{
@@ -221,24 +221,24 @@
         </template>
 
         <template #cell(description)="{ data }">
-          <opensilex-TextView :value="data.item.description" />
+          <TextView :value="data.item.description" />
         </template>
 
         <template #cell(actions)="{ data }">
           <n-button-group size="small">
-            <opensilex-DetailButton
+            <DetailButton
               v-if="user.hasCredential(modificationCredentialId)"
               @click="showEventView(data.item)"
               label="component.events.details"
               :small="true"
             />
-            <opensilex-EditButton
+            <EditButton
               v-if="user.hasCredential(modificationCredentialId)"
               @click="editEvent(data.item)"
               label="component.common.list.buttons.update"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(deleteCredentialId)"
               @click="deleteEvent(data.item.uri)"
               label="component.common.list.buttons.delete"
@@ -246,9 +246,9 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
-      <opensilex-EventModalView
+      <EventModalView
         ref="eventModalViewRef"
         modalSize="lg"
         v-model:dto="selectedEvent"
@@ -310,7 +310,6 @@ import {
   NForm,
   NFormItem,
   NButton,
-  NDropdown,
   NSpace,
   NButtonGroup
 } from 'naive-ui'
@@ -321,10 +320,20 @@ import type { EventDetailsDTO } from 'opensilex-core/index'
 import { EventsService } from 'opensilex-core/api/events.service'
 import { OntologyService } from 'opensilex-core/api/ontology.service'
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
-import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
 import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import TextView from "@/components/common/views/TextView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import EventModalView from "@/components/events/view/EventModalView.vue";
 
 type EventFilter = {
   target: string | undefined

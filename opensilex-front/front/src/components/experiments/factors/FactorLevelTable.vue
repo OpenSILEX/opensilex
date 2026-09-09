@@ -14,26 +14,19 @@
   <n-space>
     <n-button
         ghost
-        class="mb-2 csv-button"
+        class="mb-2 csv-button//Button load csv"
         @click="csvExport"
         type="primary"
     >
       {{ $t("component.common.import-files.csv-template") }}
     </n-button>
 
-    <n-button
-        ghost
-        class="mb-2 load-csv-button"
-        @click="uploaded"
-        type="primary"
-    >
       <CSVInputFile
           :headersExactMatch="['name', 'description']"
           v-on:updated="uploaded"
-      >
-        {{ $t("component.common.tabulator.load-csv") }}
+       button-label="component.common.tabulator.load-csv">
       </CSVInputFile>
-    </n-button>
+
 
     <n-button
         ghost
@@ -83,6 +76,7 @@ import {NButtonGroup, useDialog} from "naive-ui";
 import {NAlert} from "naive-ui";
 import {NSpace} from "naive-ui";
 import {FactorsService} from "opensilex-core/api/factors.service";
+import CSVInputFile from "@/components/common/forms/CSVInputFile.vue";
 
 //#region Public
 
@@ -391,18 +385,6 @@ function instanciateTabulator() {
 
 <style scoped lang="scss">
 
-//Button load csv
-.load-csv-button{
-   color: #28A745;
-   border-color: #28A745;
-   --n-border: 1px solid #28A745 !important;
- }
-
-.load-csv-button:hover{
-  color: #ffffff;
-  background-color: #28A745;
-  border-color: #28A745;
-}
 // Button reset
 .reset-button {
   color: #808080;

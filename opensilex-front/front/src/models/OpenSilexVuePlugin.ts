@@ -430,22 +430,32 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    /**
+     * merge local I18n scopes (declared in components) with global.
+     * Thanks to this method modules like phis can have acces to component's local translations.
+     */
     public loadComponentTranslations(component) {
-        // console.log("VuePlugin - loadComponentTranslations - component : ", component)
+        const target = component?.__vccOpts ?? component;
+        const blocks = target?.__i18nGlobal ?? target?.__i18n;
 
-        // @todo : trouver une methode de remplacement, component n'a pas d'options
-        // if (component.options.__i18n) {
-        //     let componentTranslations = JSON.parse(component.options.__i18n);
-        //     this.loadTranslations(componentTranslations);
-        // }
+        if (!Array.isArray(blocks)) {
+            return;
+        }
+
+        for (let block of blocks) {
+            if (typeof block === "string") {
+                this.loadTranslations(JSON.parse(block));
+            } else if (block?.resource) {
+                if (block.locale) {
+                    this.$i18n.mergeLocaleMessage(block.locale, block.resource);
+                } else {
+                    this.loadTranslations(block.resource);
+                }
+            }
+        }
     }
 
     public loadModule(name) {
-        // Le cache de chargement est tenu dans this.loadingModules et NON dans window[name] :
-        // window[name] est le slot dans lequel le bundle UMD publie son export. Confondre les
-        // deux fait que, si le bundle échoue à s'évaluer (global externe manquant par exemple),
-        // window[name] contient encore notre propre promesse, et resolve() sur elle-même
-        // produit un "Chaining cycle detected for promise" impossible à diagnostiquer.
         if (this.loadingModules[name]) {
             return this.loadingModules[name];
         }
@@ -468,14 +478,9 @@ export default class OpenSilexVuePlugin {
             script.async = true;
             script.src = url;
             script.addEventListener('load', () => {
-                // Le bundle expose son contenu sous window[name], soit directement (export
-                // default, cas de opensilex-phis), soit sous window[name].default selon le
-                // bundler.
                 const exported = window[name];
                 const plugin = exported?.default ?? exported;
 
-                // L'événement "load" est aussi émis quand le script a levé une exception
-                // pendant son évaluation : dans ce cas window[name] n'a pas été écrasé.
                 if (!plugin || plugin === modulePromise || typeof plugin.then === "function") {
                     self.hideLoader();
                     console.error(
@@ -489,10 +494,7 @@ export default class OpenSilexVuePlugin {
 
                 self.loadedModules.push(name);
 
-                // Certains modules n'exposent que des services d'API (opensilex-core,
-                // opensilex-security) et ne sont pas des plugins Vue : on évite l'avertissement
-                // de Vue en ne les installant pas.
-                if (typeof plugin === "function" || typeof plugin.install === "function") {
+               if (typeof plugin === "function" || typeof plugin.install === "function") {
                     self.app.use(plugin);
                 }
 
@@ -506,9 +508,7 @@ export default class OpenSilexVuePlugin {
                     }
                 }
 
-                // Enregistre les composants du module sur l'application : install() ne le fait
-                // pas, c'est bien initAsyncComponents() qui appelle app.component().
-                self.initAsyncComponents(plugin.components)
+             self.initAsyncComponents(plugin.components)
                     .then(() => {
                         self.hideLoader();
                         resolve(plugin);

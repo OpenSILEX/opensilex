@@ -15,13 +15,7 @@
             :label="t('component.common.informations')"
         >
           <template v-slot:rightHeader>
-            <b-button-group
-                v-if="
-                user.hasCredential(
-                  credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-                )
-              "
-            >
+            <n-button-group size="large" class="btn-group btn-group-md">
               <FavoriteButton
                   :uri="experiment.uri"
               ></FavoriteButton>
@@ -32,10 +26,10 @@
                     credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
                   )
                 "
+                  :small="true"
                   @click="showEditForm()"
                   label="component.experiment.update"
               ></EditButton>
-
               <DeleteButton
                   v-if="
                   user.hasCredential(
@@ -45,7 +39,7 @@
                   @click="deleteExperiment(experiment.uri)"
                   label="component.experiment.delete"
                   small></DeleteButton>
-            </b-button-group>
+            </n-button-group>
           </template>
 
           <template v-slot:body>
@@ -222,6 +216,7 @@ import {ExperimentGetDTO} from "opensilex-core/model/experimentGetDTO";
 import {FactorGetDTO} from "opensilex-core/model/factorGetDTO";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
+import {NButtonGroup} from "naive-ui";
 
 //#region Private
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')

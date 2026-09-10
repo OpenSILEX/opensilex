@@ -5,12 +5,11 @@
         @click="helpModal.show()"
         label="component.common.help-button"
         class="helpButton"
+        :small="true"
       ></HelpButton>
 
       <CreateButton
-        v-if="
-          user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
-        "
+        v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
         @click="factorForm.showCreateForm()"
         :label="t('component.experiment.add-factor')"
         class="createButton"
@@ -254,7 +253,7 @@ onMounted(()  => {
   font-size: 1.2em;
   border: none;
 }
-  
+
 .helpButton:hover {
   background-color: #00A28C;
   color: #f1f1f1;
@@ -263,6 +262,10 @@ onMounted(()  => {
 
 .createButton {
   margin-left: 5px;
+}
+
+.createButton, .helpButton{
+  margin: 5px 15px 5px -10px;
 }
 
 </style>

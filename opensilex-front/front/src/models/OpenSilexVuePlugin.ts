@@ -441,7 +441,15 @@ export default class OpenSilexVuePlugin {
     }
 
     public loadModule(name) {
-        if (window[name]) return window[name];
+        // Le cache de chargement est tenu dans this.loadingModules et NON dans window[name] :
+        // window[name] est le slot dans lequel le bundle UMD publie son export. Confondre les
+        // deux fait que, si le bundle échoue à s'évaluer (global externe manquant par exemple),
+        // window[name] contient encore notre propre promesse, et resolve() sur elle-même
+        // produit un "Chaining cycle detected for promise" impossible à diagnostiquer.
+        if (this.loadingModules[name]) {
+            return this.loadingModules[name];
+        }
+
         console.debug("Load module", name);
         this.showLoader();
         let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
@@ -455,54 +463,72 @@ export default class OpenSilexVuePlugin {
         link.setAttribute("href", cssURI);
         document.getElementsByTagName("head")[0].appendChild(link);
 
-        window[name] = new Promise((resolve, reject) => {
+        const modulePromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.async = true;
             script.src = url;
             script.addEventListener('load', () => {
-                // console.debug(`module ${name} chargé`);
+                // Le bundle expose son contenu sous window[name], soit directement (export
+                // default, cas de opensilex-phis), soit sous window[name].default selon le
+                // bundler.
+                const exported = window[name];
+                const plugin = exported?.default ?? exported;
+
+                // L'événement "load" est aussi émis quand le script a levé une exception
+                // pendant son évaluation : dans ce cas window[name] n'a pas été écrasé.
+                if (!plugin || plugin === modulePromise || typeof plugin.then === "function") {
+                    self.hideLoader();
+                    console.error(
+                        `Le module "${name}" n'a pas publié son export global (window["${name}"]).`
+                        + " Regardez l'erreur d'évaluation du bundle juste au-dessus dans la console"
+                        + " (dépendance externe non exposée en global ?)."
+                    );
+                    reject(new Error(`Le module "${name}" n'a pas publié son export global`));
+                    return;
+                }
 
                 self.loadedModules.push(name);
 
-                //@todo on doit trouver comment obtenir l'export par défaut du module importé par le script (HtmlScriptElement)
-                // Vincent utilise une façon bizarre d'importer le code JS des autres modules. D'après ce que j'ai compris :
-                // - Les modules (par exemple le fichier index.ts de opensilex-security) a un export par défaut sous forme d'un plugin Vue (avec une méthode install())
-                // - Dans la méthode loadModule(), donc ici, on crée une balise <script> qui a comme attribut src le lien vers le fichier JS du module
-                // - Lors de l'événement load, on récupère `window[name].default` qui est censé correspondre à l'export par défaut du composant
-
-                // const plugin = window[name]?.default;
-                const plugin = window[name];
-
-                // Vue.use(plugin);
-
-
-                // Vérification si le plugin est valide pour Vue 3
-                // if (plugin && (typeof plugin.install === 'function')) {
-                if (plugin) {
-
-                    this.app.use(plugin);
-                    self.hideLoader();
-                    resolve(plugin);
-                } else {
-                    console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
-                    self.hideLoader();
-                    reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
+                // Certains modules n'exposent que des services d'API (opensilex-core,
+                // opensilex-security) et ne sont pas des plugins Vue : on évite l'avertissement
+                // de Vue en ne les installant pas.
+                if (typeof plugin === "function" || typeof plugin.install === "function") {
+                    self.app.use(plugin);
                 }
 
+                if (plugin.lang) {
+                    self.loadTranslations(plugin.lang);
+                }
 
+                if (plugin.components) {
+                    for (let componentId in plugin.components) {
+                        self.loadComponentTranslations(plugin.components[componentId]);
+                    }
+                }
+
+                // Enregistre les composants du module sur l'application : install() ne le fait
+                // pas, c'est bien initAsyncComponents() qui appelle app.component().
+                self.initAsyncComponents(plugin.components)
+                    .then(() => {
+                        self.hideLoader();
+                        resolve(plugin);
+                    })
+                    .catch((error) => {
+                        self.hideLoader();
+                        reject(error);
+                    });
             });
             script.addEventListener('error', () => {
                 self.hideLoader();
-                // reject(new Error(`Error loading ${url}`));
                 console.error(`Échec du chargement du module "${name}".`);
                 reject(new Error(`Impossible de charger le module "${name}"`));
             });
-            // script.src = url;
-            // document.head.appendChild(script);
             document.body.appendChild(script);
         });
 
-        return window[name];
+        this.loadingModules[name] = modulePromise;
+
+        return modulePromise;
     }
 
     public initAsyncComponents(components) {

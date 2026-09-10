@@ -280,6 +280,8 @@ const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
     );
   }
 
+  defineExpose({ refresh, getSelected, onItemSelected, onItemUnselected })
+
 </script>
 
 <style scoped lang="scss">

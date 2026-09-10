@@ -12,7 +12,7 @@
           user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
         "
         @click="factorForm.showCreateForm()"
-        :label="t('component.factor.add-button')"
+        :label="t('component.experiment.add-factor')"
         class="createButton"
       ></CreateButton>
     </PageActions>
@@ -29,8 +29,8 @@
       :tutorial="true"
       :successMessage="successMessage"
       component="FactorForm"
-      :createTitle="t('component.factor.add')"
-      :editTitle="t('component.factor.update')"
+      :createTitle="t('component.experiment.add-factor')"
+      :editTitle="t('component.experiment.update-factor')"
       icon="fa#sun"
       :initForm="initForm"
       @onCreate="showFactorDetails"
@@ -65,9 +65,7 @@
 
 <script setup lang="ts">
 
-import Vue, {computed, inject, onMounted, ref, useTemplateRef} from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-// @ts-ignore
+import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
 import { FactorsService, FactorDetailsGetDTO, FactorUpdateDTO } from "opensilex-core/index";
 import PageActions from "@/components/layout/PageActions.vue";
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
@@ -80,15 +78,26 @@ import {useI18n} from "vue-i18n";
 import {useRoute, useRouter} from "vue-router";
 import FactorList from "@/components/experiments/factors/FactorList.vue";
 import FactorForm from "@/components/experiments/factors/FactorForm.vue";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
+//#region Private
+
+//#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 let service = opensilex.getService<FactorsService>('opensilex.FactorsService')
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
-const uri = ref<string>()
+//#endregion
 
+//#region Template refs
+const factorForm = useTemplateRef<InstanceType<typeof FactorForm>>('factorForm')
+const factorList = useTemplateRef<InstanceType<typeof FactorList>>('factorList')
+const skosReferences = useTemplateRef<InstanceType<typeof ExternalReferencesModalForm>>('skosReferences')
+
+const uri = ref<string>()
+const helpModal = ref<any>()
 const selectedFactor = ref<any>({
   uri: null,
   name: null,
@@ -100,34 +109,26 @@ const selectedFactor = ref<any>({
   broader: [],
   narrower: [],
 })
-
-  function initForm(form) {
-    form.experiment = uri.value
-
-    return form;
-  }
-
-  const user = computed(() => {
-    return store.state.user;
-  })
+//#endregion
+//#region Data and computed
+const user = computed(() => {
+  return store.state.user;
+})
 
 const credentials = computed(() => {
   return store.state.credentials;
 })
+//#endregion
+//#region Hooks
+onMounted(()  => {
+  console.debug("Loading ExperimentFactors view...");
+  uri.value = decodeURIComponent(route.params.uri as string);
+})
+//#endregion
+  function initForm(form) {
+    form.experiment = uri.value
 
-const factorForm = useTemplateRef<InstanceType<typeof FactorForm>>('factorForm')
-const factorList = useTemplateRef<InstanceType<typeof FactorList>>('factorList')
-const skosReferences = useTemplateRef<InstanceType<typeof ExternalReferencesModalForm>>('skosReferences')
-const modalRef = ref<any>()
-const helpModal = ref<any>()
-
-  onMounted(()  => {
-    console.debug("Loading ExperimentFactors view...");
-    uri.value = decodeURIComponent(route.params.uri as string);
-  })
-
- function showCreateForm() {
-    factorForm.value.showCreateForm();
+    return form;
   }
 
   function callUpdateFactorService(form: FactorUpdateDTO, done) {
@@ -237,6 +238,7 @@ const helpModal = ref<any>()
     helpModal.value.hide();
   }
 
+//#endregion
 </script>
 
 <style scoped lang="scss">
@@ -265,81 +267,3 @@ const helpModal = ref<any>()
 
 </style>
 
-
-<i18n>
-en:
-  component:
-    factor :
-      description-title-help: Manage experimental factors
-      label: Factor
-      uri: URI
-      uri-help: Unique factor identifier
-      alias-placeholder: Enter factor alias
-      factors: factor
-      add: Add factor
-      add-button: Add factor
-      update-button: Update factor
-      update: Update factor
-      name: Name
-      name-help: Usual name which describes a factor in an experiment
-      name-placeholder: Irrigation, Shading, Planting year, etc.
-      category: Category
-      category-help: General category used to classify factors
-      category-placeholder: Environnement-Irrigation, Field management, etc ...
-      description: description
-      description-help: Description associated with this factor (protocol, amount of component)
-      description-error: Must contain at least 10 characters
-      description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
-      errors:
-        user-already-exists: A factor already exists with this URI.
-      select:
-        other: Other
-        fieldManagement: Field management
-        lightManagement: Light management
-        waterManagement: Water management
-        chemical: Chemical
-        bioticStress: Biotic stress
-        soil: Soil
-        nutrient: Nutrient
-        atmospheric: Atmospheric
-        temperature: Temperature
-      isAssociatedTo : This factor is associated with one or more experiments and can not be removed
-
-fr:
-  component:
-    factor:
-      description-title-help: Gestion des facteurs expérimentaux
-      label: Facteur
-      uri: URI
-      uri-help: Identifiant unique du facteur
-      filter-placeholder: Utiliser ce filter pour filter les facteurs
-      factors: facteur
-      add: Ajouter facteur
-      add-button: Ajouter facteur
-      update-button: Modifier facteur
-      update: Mettre à jour un facteur
-      name: Nom
-      name-en: Nom
-      name-help: Nom qui décrit un facteur dans une expérimentation
-      name-placeholder: Irrigation, Ombrage, Année de plantation, etc.
-      category: Catégorie
-      category-help: Grandes catégories servant à classifier les facteurs
-      category-placeholder: Irrigation-Environnement, Conduite au champ , etc.
-      description: Description
-      description-help: Description associée à ce facteur (protocole, apport de composé)
-      form-description-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
-      errors:
-        user-already-exists: URI du facteur déjà existante.
-      select:
-        other: Autre
-        fieldManagement: Conduite culturale
-        lightManagement: Gestion de la lumière
-        waterManagement: Gestion de l'eau
-        chemical: Chimique
-        bioticStress: Stress biotique
-        soil: Sol
-        nutrient: Nutriments
-        atmospheric: Atmosphérique
-        temperature: Température
-      isAssociatedTo : Ce facteur est associé à une ou plusieurs expérimentations et ne peut être supprimé
-</i18n>

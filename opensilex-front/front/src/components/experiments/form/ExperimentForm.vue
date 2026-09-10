@@ -15,8 +15,7 @@
 
 <script setup lang="ts">
 
-import Vue, {inject, useTemplateRef} from "vue";
-// @ts-ignore
+import {inject, useTemplateRef} from "vue";
 import HttpResponse, { OpenSilexResponse } from "core/HttpResponse";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
@@ -38,6 +37,11 @@ const  steps: WizardStep[] = [
       component: ExperimentForm2,
     },
   ];
+
+
+const emit = defineEmits<{
+  (e: string, form: any): void
+}>()
 
   function getEmptyForm() {
     return {
@@ -112,11 +116,6 @@ async function create(form) {
     return false;
   }
 }
-
-
-const emit = defineEmits<{
-  (e: string, form: any): void
-}>()
 
 async function update(form: any) {
   opensilex

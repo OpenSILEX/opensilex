@@ -303,7 +303,6 @@ import { SpeciesDTO, SpeciesService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { User } from '../../models/User';
 import { OrganizationsService } from 'opensilex-core/api/organizations.service';
-import { FacilityGetDTO } from 'opensilex-core/index';
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
 import { ExperimentsService } from 'opensilex-core/api/experiments.service';
 import { useI18n } from 'vue-i18n';
@@ -311,7 +310,6 @@ import { useStore } from 'vuex';
 import DocumentForm from '../documents/DocumentForm.vue';
 import TableAsyncView from '../common/views/TableAsyncView.vue';
 import ModalFormSelector from '../variables/form/ModalFormSelector.vue';
-import { validEmail } from '@/models/FormFieldsFormatter';
 import { NamedResourceDTO } from 'opensilex-core';
 import DateView from '../common/views/DateView.vue';
 import UriLink from '../common/views/UriLink.vue';
@@ -320,16 +318,10 @@ import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
-import WizardForm from "@/components/common/forms/WizardForm.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
 
-const opensilex = inject<OpenSilexVuePlugin>('opensilex');
-const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');
-const { t } = useI18n();
-const store = useStore();
-const searchFilterToggle = false;
-
+//#region Public
 interface Props {
   isSelectable?: boolean;
   noActions?: boolean;
@@ -339,6 +331,14 @@ const props = withDefaults(defineProps<Props>(), {
   isSelectable: false,
   noActions: false,
 });
+
+//#endregion
+
+//#region Private
+const opensilex = inject<OpenSilexVuePlugin>('opensilex');
+const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');
+const { t } = useI18n();
+const store = useStore();
 
 const user = computed<User>(() => store.state.user);
 const onlySelected = computed(() => store.state.onlySelected);
@@ -353,11 +353,10 @@ const species = [];
 
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef');
 const projectSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>('projectSelector');
-const fundingSelector = useTemplateRef<InstanceType<typeof FundingSelector>>('fundingSelector');
-const wizardForm = useTemplateRef<InstanceType<typeof WizardForm>>('wizardForm')
 
 const speciesByUri = ref(new Map<string, SpeciesDTO>());
 
+//#endregion
 function onItemUnselected(row) {
   tableRef.value?.onItemUnselected(row);
 }
@@ -381,6 +380,22 @@ const filter = ref({
   funding: [],
 });
 
+const experimentStates = computed(() => [
+  {
+    id: 'in-progress',
+    label: t('component.experiment.common.status.in-progress'),
+  },
+  {
+    id: 'finished',
+    label: t('component.experiment.common.status.finished'),
+  },
+  {
+    id: 'public',
+    label: t('component.experiment.common.status.public'),
+  },
+]);
+
+//#region Event handlers
 function reset() {
   filter.value = {
     name: '',
@@ -450,6 +465,7 @@ function searchExperiments(options: any) {
 
 let langUnwatcher: (() => void) | undefined;
 
+//#region Hooks
 onMounted(() => {
   langUnwatcher = store.watch(
     (state, getters) => getters.language,
@@ -465,25 +481,12 @@ onMounted(() => {
 onUnmounted(() => {
   langUnwatcher?.();
 });
+//#endregion
 
 function beforeDestroy() {
   langUnwatcher();
 }
 
-const experimentStates = computed(() => [
-  {
-    id: 'in-progress',
-    label: t('component.experiment.common.status.in-progress'),
-  },
-  {
-    id: 'finished',
-    label: t('component.experiment.common.status.finished'),
-  },
-  {
-    id: 'public',
-    label: t('component.experiment.common.status.public'),
-  },
-]);
 
 function loadSpecies() {
   let service: SpeciesService = opensilex.getService('opensilex.SpeciesService');
@@ -641,6 +644,8 @@ defineExpose({
   refresh,
   updateSelectedExperiment
 })
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

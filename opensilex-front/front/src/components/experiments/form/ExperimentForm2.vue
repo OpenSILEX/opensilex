@@ -58,9 +58,8 @@
 </template>
 
 <script setup lang="ts">
-import Vue, {computed, inject, useTemplateRef} from "vue";
-// @ts-ignore
-import {ExperimentCreationDTO} from "core/index";
+import {computed, inject, useTemplateRef} from "vue";
+import {ExperimentCreationDTO} from "opensilex-core/index";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import ProjectSelector from "@/components/projects/ProjectSelector.vue";
 import OrganizationSelector from "@/components/organizations/OrganizationSelector.vue";
@@ -78,10 +77,6 @@ const validatorRef = useTemplateRef<InstanceType<typeof NForm>>('refValidator')
 const rules = computed<FormRules>(() => ({}))
 
 const experiment = defineModel<ExperimentCreationDTO>("form");
-
-function reset() {
-  return this.validatorRef.reset();
-}
 
 function validate() {
   return validatorRef.value.validate();

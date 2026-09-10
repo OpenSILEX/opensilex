@@ -17,13 +17,13 @@
     >
       <template v-slot>
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isDetailsTab"
           :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
           >{{ $t('component.common.description') }}
         </router-link>
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isFactorsTab"
           :to="{ path: '/experiment/factors/' + encodeURIComponent(uri) }"
           >{{ $t('component.menu.experimentalDesign.factors') }}
@@ -35,7 +35,7 @@
           </span>
         </router-link>
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isScientificObjectsTab"
           :to="{ path: '/experiment/scientific-objects/' + encodeURIComponent(uri) }"
           >{{ $t('component.menu.scientificObjectTypes') }}
@@ -47,7 +47,7 @@
           </span>
         </router-link>
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isDataTab"
           :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
           >{{ $t('component.menu.data.label') }}
@@ -60,7 +60,7 @@
         </router-link>
 
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isDatafilesTab"
           :to="{ path: '/experiment/datafiles/' + encodeURIComponent(uri) }"
           >{{ $t('component.menu.data.datafiles') }}
@@ -73,20 +73,20 @@
         </router-link>
 
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isDataVisualisation"
           :to="{ path: '/experiment/data-visualisation/' + encodeURIComponent(uri) }"
           >{{ $t('component.menu.data.visualization') }}
         </router-link>
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isMap"
           :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
           >{{ $t('component.menu.spatial.map') }}
         </router-link>
 
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isAnnotationTab"PageHeader
           :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
           >{{ $t('component.annotation.list-title') }}
@@ -99,7 +99,7 @@
         </router-link>
 
         <router-link
-            class="tab"
+            class="nav-link ml-3, tab"
           :active="isDocumentTab"
           :to="{ path: '/experiment/document/' + encodeURIComponent(uri) }"
           >{{ $t('component.project.documents') }}
@@ -176,11 +176,6 @@ import { useStore } from 'vuex';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import AnnotationList from '@/components/annotations/list/AnnotationList.vue';
-import { AnnotationsService } from 'opensilex-core/api/annotations.service';
-import { DocumentsService } from 'opensilex-core/api/documents.service';
-import { FactorsService } from 'opensilex-core/api/factors.service';
-import { DataService } from 'opensilex-core/api/data.service';
-import { ScientificObjectsService } from 'opensilex-core/index';
 import { ExperimentsService } from 'opensilex-core';
 import type { ExperimentGetDTO } from 'opensilex-core';
 import ExperimentDetail from "@/components/experiments/views/ExperimentDetail.vue";
@@ -194,16 +189,8 @@ import ExperimentFactors from "@/components/experiments/views/ExperimentFactors.
 const route = useRoute();
 const store = useStore();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
-const annotationList = useTemplateRef<InstanceType<typeof AnnotationList>>('annotationList');
 
 const service = opensilex.getService<ExperimentsService>('opensilex.ExperimentsService');
-const annotationsService = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService');
-const documentsService = opensilex.getService<DocumentsService>('opensilex.DocumentsService');
-const dataService = opensilex.getService<DataService>('opensilex.DataService');
-const factorsService = opensilex.getService<FactorsService>('opensilex.FactorsService');
-const scientificObjectsService = opensilex.getService<ScientificObjectsService>(
-  'opensilex.ScientificObjectsService'
-);
 
 const uri = ref<string | null>(null);
 const name = ref('');
@@ -235,7 +222,6 @@ onMounted(() => {
   }
 });
 
-const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 
 const isDetailsTab = computed(() => route.path.startsWith('/experiment/details/'));
@@ -252,133 +238,7 @@ const isDataVisualisation = computed(() =>
 const isDocumentTab = computed(() => route.path.startsWith('/experiment/document/'));
 const isAnnotationTab = computed(() => route.path.startsWith('/experiment/annotations/'));
 
-function searchAnnotations() {
-  return annotationsService
-    .countAnnotations(uri.value, undefined, undefined)
-    .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if (http && http.response) {
-        annotations.value = http.response.result as number;
-        annotationsCountIsLoading.value = false;
-        return annotations.value;
-      }
-    })
-    .catch(opensilex.errorHandler);
-}
-
-function searchDocuments() {
-  return documentsService
-    .countDocuments(uri.value, undefined, undefined)
-    .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if (http && http.response) {
-        documents.value = http.response.result as number;
-        documentsCountIsLoading.value = false;
-        return documents.value;
-      }
-    })
-    .catch(opensilex.errorHandler);
-}
-
-function searchData() {
-  // Limit count of data for performance reasons
-  return dataService
-    .countData(
-      undefined,
-      undefined,
-      undefined,
-      [uri.value],
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      1000,
-      undefined,
-      undefined
-    )
-    .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if (http && http.response) {
-        dataCount.value = http.response.result as number;
-        dataCountIsLoading.value = false;
-        return dataCount.value;
-      }
-    })
-    .catch(opensilex.errorHandler);
-}
-
-function searchDatafiles() {
-  return dataService
-    .countDatafiles(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      [uri.value],
-      undefined,
-      undefined
-    )
-    .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if (http && http.response) {
-        datafiles.value = http.response.result as number;
-        datafilesCountIsLoading.value = false;
-        return datafiles.value;
-      }
-    })
-    .catch(opensilex.errorHandler);
-}
-
-function searchFactors() {
-  return factorsService
-    .countFactors(uri.value, undefined, undefined)
-    .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if (http && http.response) {
-        factors.value = http.response.result as number;
-        factorsCountIsLoading.value = false;
-        return factors.value;
-      }
-    })
-    .catch(opensilex.errorHandler);
-}
-
-function searchScientificObjects() {
-  return scientificObjectsService
-    .countScientificObjects(uri.value)
-    .then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if (http && http.response) {
-        scientificObjects.value = http.response.result as number;
-        scientificObjectsCountIsLoading.value = false;
-        return scientificObjects.value;
-      }
-    })
-    .catch(opensilex.errorHandler);
-}
 </script>
 
 <style scoped lang="scss"></style>
 
-<i18n>
-en:
-    ExperimentView:
-        description: Description
-        scientific-objects: Scientific objects
-        data: Data
-        document: Documents
-        factors: Factors
-        map: Map
-        data-visualisation: Visualization
-fr:
-    ExperimentView:
-        description: Description
-        scientific-objects: Objets scientifiques
-        data: Données
-        document: Documents
-        factors: Facteurs
-        map: Carte
-        data-visualisation: Visualisation
-</i18n>

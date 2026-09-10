@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-StringFilter
+    <StringFilter
       v-model:filter="nameFilter"
       :lazy="false"
       placeholder="component.experiment.filter-label-placeholder"
@@ -39,7 +39,7 @@
         <tbody>
           <tr v-for="exp in displayableExperiments" :key="exp.uri">
             <td>
-              <opensilex-UriLink
+              <UriLink
                 :uri="exp.uri"
                 :value="exp.name"
                 :to="{ path: '/experiment/details/' + encodeURIComponent(exp.uri) }"
@@ -47,7 +47,7 @@
             </td>
 
             <td>
-              <opensilex-DateView :value="exp.start_date" />
+              <DateView :value="exp.start_date" />
             </td>
           </tr>
 

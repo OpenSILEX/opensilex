@@ -13,33 +13,29 @@
     >
       <template v-slot>
         <router-link
-          class="nav-link ml-3, tab"
-          :class="{ active: isDetailsTab() }"
-          :to="{
-            path: '/' + encodeURIComponent(xpUri) + '/factor/details/' + encodeURIComponent(uri),
-          }"
-          >{{ $t('component.common.details-label') }}
+            class="nav-link ml-3 tab"
+            :class="{ active: isFactorTab(FactorTab.DETAILS) }"
+            :to="factorTabPath(FactorTab.DETAILS)"
+        >
+          {{ $t('component.common.details-label') }}
         </router-link>
         <router-link
-            class="nav-link ml-3, tab"
-          :class="{ active: isDocumentTab() }"
-          :to="{
-            path: '/' + encodeURIComponent(xpUri) + '/factor/document/' + encodeURIComponent(uri),
-          }"
-          >{{ $t('component.common.details.document') }}
+            class="nav-link ml-3 tab"
+            :class="{ active: isFactorTab(FactorTab.DOCUMENT) }"
+            :to="factorTabPath(FactorTab.DOCUMENT)"
+        >
+          {{ $t('component.common.details.document') }}
         </router-link>
         <router-link
-            class="nav-link ml-3, tab"
-          :class="{ active: isAnnotationTab() }"
-          :to="{
-            path:
-              '/' + encodeURIComponent(xpUri) + '/factor/annotations/' + encodeURIComponent(uri),
-          }"
-          >{{ $t('component.annotation.list-title') }}
+            class="nav-link ml-3 tab"
+            :class="{ active: isFactorTab(FactorTab.ANNOTATIONS) }"
+            :to="factorTabPath(FactorTab.ANNOTATIONS)"
+        >
+          {{ $t('component.annotation.list-title') }}
         </router-link>
         <AnnotationModalForm
           v-if="
-            isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
+            isFactorTab(FactorTab.ANNOTATIONS) && user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
           "
           ref="annotationModalForm"
           :target="uri"
@@ -51,7 +47,7 @@
     <PageContent>
       <template v-slot>
         <FactorDetails
-          v-if="isDetailsTab()"
+          v-if="isFactorTab(FactorTab.DETAILS)"
           @onUpdate="loadFactor(uri)"
           @onUpdateReferences="callUpdateFactorService"
           @onDelete="deleteFactor(uri)"
@@ -61,7 +57,7 @@
         ></FactorDetails>
 
         <AnnotationList
-          v-else-if="isAnnotationTab()"
+          v-else-if="isFactorTab(FactorTab.ANNOTATIONS)"
           ref="annotationList"
           :target="uri"
           :displayTargetColumn="false"
@@ -72,7 +68,7 @@
         ></AnnotationList>
 
         <DocumentTabList
-          v-else-if="isDocumentTab()"
+          v-else-if="isFactorTab(FactorTab.DOCUMENT)"
           :uri="uri"
           :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
         ></DocumentTabList>
@@ -180,32 +176,44 @@ function deleteFactor(uri: any) {
     });
 }
 
+enum FactorTab {
+  DETAILS = 'details',
+  ANNOTATIONS = 'annotations',
+  DOCUMENT = 'document',
+}
+
+function loadFactor(uri: string) {
+  service
+      .getFactorByURI(uri)
+      .then(
+          (
+              http: HttpResponse<
+                  OpenSilexResponse<FactorDetailsGetDTO>
+              >
+          ) => {
+            factor.value = http.response.result;
+          }
+      )
+      .catch(opensilex.errorHandler);
+}
+
+function isFactorTab(tab: FactorTab): boolean {
+  return route.path.startsWith(
+      `/${encodeURIComponent(xpUri.value)}/factor/${tab}/`
+  );
+}
+
+function factorTabPath(tab: FactorTab) {
+  return {
+    path: `/${encodeURIComponent(xpUri.value)}/factor/${tab}/${encodeURIComponent(uri.value)}`,
+  };
+}
+
 onMounted(() => {
   uri.value = decodeURIComponent(route.params.uri as string);
   xpUri.value = decodeURIComponent(route.params.xpUri as string);
   loadFactor(uri.value);
 });
-
-function loadFactor(uri: string) {
-  service
-    .getFactorByURI(uri)
-    .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-      factor.value = http.response.result;
-    })
-    .catch(opensilex.errorHandler);
-}
-
-function isDetailsTab() {
-  return route.path.startsWith('/' + encodeURIComponent(xpUri.value) + '/factor/details/');
-}
-
-function isAnnotationTab() {
-  return route.path.startsWith('/' + encodeURIComponent(xpUri.value) + '/factor/annotations/');
-}
-
-function isDocumentTab() {
-  return route.path.startsWith('/' + encodeURIComponent(xpUri.value) + '/factor/document/');
-}
 
 function updateAnnotations() {
   nextTick(() => {

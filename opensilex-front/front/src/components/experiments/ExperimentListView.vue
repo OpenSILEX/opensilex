@@ -51,10 +51,6 @@ const experiment = ref<ExperimentCreationDTO>({} as ExperimentCreationDTO);
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);
 
-function refresh() {
-  experimentList.value?.refresh();
-}
-
 function showEditForm(uri: string) {
   opensilex
     .getService<ExperimentsService>('opensilex.ExperimentsService')
@@ -83,21 +79,3 @@ function redirectToCreatedExperiment(experiment) {
   margin-right: 5px;
 }
 </style>
-
-<i18n>
-en:
-  ExperimentList:
-    filter-label: Search by name
-    label-filter-placeholder: Enter a name
-    filter-year: Search by year
-    year-filter-placeholder: Enter a year
-    filter-species: Search by species
-
-fr:
-  ExperimentList:
-    filter-label: Filtrer par nom
-    label-filter-placeholder: Saisir un nom
-    filter-year: Filtrer par année
-    year-filter-placeholder: Saisir une année
-    filter-species: Filtrer par espèces
-</i18n>

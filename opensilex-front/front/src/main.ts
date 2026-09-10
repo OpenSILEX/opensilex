@@ -11,7 +11,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 
 import { createApp, ref, reactive, computed } from "vue";
+import * as VueRuntime from "vue";
 import { createI18n } from 'vue-i18n';
+import * as VueI18nRuntime from 'vue-i18n';
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -85,14 +87,18 @@ declare var document: any;
 // import VueMatomo from 'vue-matomo';
 declare var window: any;
 // Attach Vue APIs to window
-window.Vue = { createApp, ref, reactive, computed };
+// The whole runtime namespaces must be exposed here : module bundles (ex: opensilex-phis)
+// externalize "vue" and "vue-i18n" and resolve them through these globals. They need every
+// helper (defineComponent, openBlock, createBlock, withCtx, useI18n, ...) and, above all,
+// the very same instances as the host application, otherwise inject()/useI18n() would break.
+// The names must match the "globals" mapping of each module rollup configuration.
+window.Vue = { ...VueRuntime };
+window.VueI18n = { ...VueI18nRuntime };
 
 // Vue.config.productionTip = false;
 
-// Import and assignation to enable auto rebuild on ws library change
-// @todo je sais pas ce que c'est
-// import * as LATEST_UPDATE from "./opensilex.dev";
-// Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
+// Import and assignation to enable auto rebuild on ws library change (hot reload forced by server on module change ex: phis)
+import * as LATEST_UPDATE from "./opensilex.dev";
 
 // import AsyncComputed from 'vue-async-computed'
 // Vue.use(AsyncComputed)

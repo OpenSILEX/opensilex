@@ -16,9 +16,13 @@
       ></CreateButton>
     </PageActions>
   
-    <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+    <Modal
+        ref="helpModal"
+        modalSize="lg"
+        hide-header
+        hide-footer>
       <FactorsHelp @hideBtnIsClicked="hide()"></FactorsHelp>
-    </b-modal>
+    </Modal>
 
     <FactorForm
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
@@ -78,6 +82,8 @@ import {useRoute, useRouter} from "vue-router";
 import FactorList from "@/components/experiments/factors/FactorList.vue";
 import FactorForm from "@/components/experiments/factors/FactorForm.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import Modal from "@/components/common/views/Modal.vue";
+import FactorsHelp from "@/components/experiments/factors/FactorsHelp.vue";
 
 //#region Private
 
@@ -94,9 +100,9 @@ const route = useRoute()
 const factorForm = useTemplateRef<InstanceType<typeof FactorForm>>('factorForm')
 const factorList = useTemplateRef<InstanceType<typeof FactorList>>('factorList')
 const skosReferences = useTemplateRef<InstanceType<typeof ExternalReferencesModalForm>>('skosReferences')
+const helpModal = useTemplateRef<InstanceType<typeof Modal>>('helpModal')
 
 const uri = ref<string>()
-const helpModal = ref<any>()
 const selectedFactor = ref<any>({
   uri: null,
   name: null,

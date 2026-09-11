@@ -83,7 +83,6 @@ import FactorList from "@/components/experiments/factors/FactorList.vue";
 import FactorForm from "@/components/experiments/factors/FactorForm.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import Modal from "@/components/common/views/Modal.vue";
-import FactorsHelp from "@/components/experiments/factors/FactorsHelp.vue";
 
 //#region Private
 

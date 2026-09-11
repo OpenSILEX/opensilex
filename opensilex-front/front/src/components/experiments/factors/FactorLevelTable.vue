@@ -14,7 +14,7 @@
   <n-space>
     <n-button
         ghost
-        class="mb-2 csv-button//Button load csv"
+        class="mb-2 csv-button"
         @click="csvExport"
         type="primary"
     >

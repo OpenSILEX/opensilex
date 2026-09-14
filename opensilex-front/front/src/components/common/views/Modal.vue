@@ -1,51 +1,67 @@
 <template>
- <teleport to="body">
-  <div
-    class="modal fade"
-    :class="{ show: visible }"
-    :style="{ display: visible ? 'block' : 'none', backgroundColor: visible ? 'rgba(0,0,0,0.5)' : 'transparent' }"
-    tabindex="-1"
-    role="dialog"
-    aria-modal="true"
-  >
+  <teleport to="body">
     <div
-      class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-      :class="'modal-' + modalSize"
+        class="modal fade"
+        :class="{ show: visible }"
+        :style="{ display: visible ? 'block' : 'none', backgroundColor: visible ? 'rgba(0,0,0,0.5)' : 'transparent' }"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
     >
-      <div class="modal-content">
-        <div class="modal-header">
-          <slot name="header"></slot>
-          <button type="button" class="btn-close" @click="hide" aria-label="Close"></button>
-        </div>
+      <div
+          class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+          :class="'modal-' + modalSize"
+      >
+        <div class="modal-content">
+          <div
+              v-if="!hideHeader"
+              class="modal-header">
+            <slot name="header"></slot>
+            <button
+                type="button"
+                class="btn-close"
+                @click="hide"
+                aria-label="Close"></button>
+          </div>
 
-        <div class="modal-body">
-          <slot></slot>
-        </div>
+          <div
+              class="modal-body">
+            <slot></slot>
+          </div>
 
-        <div class="modal-footer">
-          <slot name="footer">
-            <button type="button" class="btn greenThemeColor" @click="hide">
-              {{ t('component.common.close') }}
-            </button>
-          </slot>
+          <div
+              v-if="!hideFooter"
+              class="modal-footer">
+            <slot name="footer">
+              <button
+                  type="button"
+                  class="btn greenThemeColor"
+                  @click="hide">
+                {{ t('component.common.close') }}
+              </button>
+            </slot>
+          </div>
         </div>
       </div>
     </div>
-  </div>
- </teleport>
+  </teleport>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import {ref} from 'vue';
+import {useI18n} from 'vue-i18n';
 
 withDefaults(defineProps<{
   modalSize?: 'sm' | 'lg' | 'xl';
+  hideHeader?: boolean;
+  hideFooter?: boolean;
 }>(), {
-  modalSize: 'lg'
+  modalSize: 'lg',
+  hideHeader: false,
+  hideFooter: false
 });
 
-const { t } = useI18n();
+const {t} = useI18n();
 
 const visible = ref(false);
 
@@ -53,6 +69,7 @@ function show() {
   visible.value = true;
   document.body.classList.add('modal-open');
 }
+
 function hide() {
   visible.value = false;
   document.body.classList.remove('modal-open');

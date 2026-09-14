@@ -2,42 +2,43 @@
   <div>
     <PageActions class="pageActionsBtns">
       <HelpButton
-        @click="helpModal.show()"
-        label="component.common.help-button"
-        class="helpButton"
-        :small="true"
+          @click="helpModal.show()"
+          label="component.common.help-button"
+          class="helpButton"
+          :small="true"
       ></HelpButton>
 
       <CreateButton
-        v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
-        @click="factorForm.showCreateForm()"
-        :label="t('component.experiment.add-factor')"
-        class="createButton"
+          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+          @click="factorForm.showCreateForm()"
+          :label="t('component.experiment.add-factor')"
+          class="createButton"
       ></CreateButton>
     </PageActions>
-  
+
     <Modal
         ref="helpModal"
-        modalSize="lg"
+        modal-size="lg"
         hide-header
-        hide-footer>
-      <FactorsHelp @hideBtnIsClicked="hide()"></FactorsHelp>
+        hide-footer
+    >
+      <FactorsHelp @close="helpModal?.hide()" />
     </Modal>
 
     <FactorForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
-      :experiment="uri"
-      ref="factorForm"
-      modalSize="lg"
-      :tutorial="true"
-      :successMessage="successMessage"
-      component="FactorForm"
-      :createTitle="t('component.experiment.add-factor')"
-      :editTitle="t('component.experiment.update-factor')"
-      icon="fa#sun"
-      :initForm="initForm"
-      @onCreate="showFactorDetails"
-      @onUpdate="factorList.refresh()"
+        v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+        :experiment="uri"
+        ref="factorForm"
+        modalSize="lg"
+        :tutorial="true"
+        :successMessage="successMessage"
+        component="FactorForm"
+        :createTitle="t('component.experiment.add-factor')"
+        :editTitle="t('component.experiment.update-factor')"
+        icon="fa#sun"
+        :initForm="initForm"
+        @onCreate="showFactorDetails"
+        @onUpdate="factorList.refresh()"
     ></FactorForm>
 
     <PageContent>
@@ -45,31 +46,31 @@
         <div class="card">
           <div class="card-body">
             <FactorList
-              ref="factorList"
-              :experiment="uri"
-              @onEdit="editFactor"
-              @onDetails="showFactorDetails"
-              @onInteroperability="showSkosReferences"
-              @onDelete="deleteFactor"
+                ref="factorList"
+                :experiment="uri"
+                @onEdit="editFactor"
+                @onDetails="showFactorDetails"
+                @onInteroperability="showSkosReferences"
+                @onDelete="deleteFactor"
             ></FactorList>
           </div>
         </div>
       </template>
     </PageContent>
-    
+
     <ExternalReferencesModalForm
-      ref="skosReferences"
-      :references.sync="selectedFactor"
-      @onUpdate="callUpdateFactorService"
+        ref="skosReferences"
+        :references.sync="selectedFactor"
+        @onUpdate="callUpdateFactorService"
     ></ExternalReferencesModalForm>
   </div>
- 
+
 </template>
 
 <script setup lang="ts">
 
 import {computed, inject, onMounted, ref, useTemplateRef} from "vue";
-import { FactorsService, FactorDetailsGetDTO, FactorUpdateDTO } from "opensilex-core/index";
+import {FactorsService, FactorDetailsGetDTO, FactorUpdateDTO} from "opensilex-core/index";
 import PageActions from "@/components/layout/PageActions.vue";
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
@@ -83,6 +84,7 @@ import FactorList from "@/components/experiments/factors/FactorList.vue";
 import FactorForm from "@/components/experiments/factors/FactorForm.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import Modal from "@/components/common/views/Modal.vue";
+import FactorsHelp from "@/components/experiments/factors/FactorsHelp.vue";
 
 //#region Private
 
@@ -90,7 +92,7 @@ import Modal from "@/components/common/views/Modal.vue";
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
 let service = opensilex.getService<FactorsService>('opensilex.FactorsService')
-const { t } = useI18n()
+const {t} = useI18n()
 const router = useRouter()
 const route = useRoute()
 //#endregion
@@ -124,58 +126,60 @@ const credentials = computed(() => {
 })
 //#endregion
 //#region Hooks
-onMounted(()  => {
+onMounted(() => {
   console.debug("Loading ExperimentFactors view...");
   uri.value = decodeURIComponent(route.params.uri as string);
 })
+
 //#endregion
-  function initForm(form) {
-    form.experiment = uri.value
+function initForm(form) {
+  form.experiment = uri.value
 
-    return form;
-  }
+  return form;
+}
 
-  function callUpdateFactorService(form: FactorUpdateDTO, done) {
-    done(
+function callUpdateFactorService(form: FactorUpdateDTO, done) {
+  done(
       service
-        .updateFactor(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("Updated factor", uri);
-          factorList.value.refresh();
-        })
-    );
-  }
-  function showFactorDetails(factorUriResult: any) {
-    if (factorUriResult instanceof Promise) {
-      console.log(factorUriResult);
-      factorUriResult.then((factorUri) => {
-        console.debug("showFactorDetails", factorUri);
-        store.commit("storeReturnPage", router);
-        router.push({
-          path:
+          .updateFactor(form)
+          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+            let uri = http.response.result;
+            console.debug("Updated factor", uri);
+            factorList.value.refresh();
+          })
+  );
+}
+
+function showFactorDetails(factorUriResult: any) {
+  if (factorUriResult instanceof Promise) {
+    console.log(factorUriResult);
+    factorUriResult.then((factorUri) => {
+      console.debug("showFactorDetails", factorUri);
+      store.commit("storeReturnPage", router);
+      router.push({
+        path:
             "/" +
             encodeURIComponent(uri.value) +
             "/factor/details/" +
             encodeURIComponent(factorUri),
-        });
       });
-    } else {
-      console.debug("showFactorDetails", factorUriResult);
-      store.commit("storeReturnPage", router);
-      router.push({
-        path:
+    });
+  } else {
+    console.debug("showFactorDetails", factorUriResult);
+    store.commit("storeReturnPage", router);
+    router.push({
+      path:
           "/" +
           encodeURIComponent(uri.value) +
           "/factor/details/" +
           encodeURIComponent(factorUriResult),
-      });
-    }
+    });
   }
+}
 
-  function showSkosReferences(uri: string) {
-    console.debug("showSkosReferences" + uri);
-    service
+function showSkosReferences(uri: string) {
+  console.debug("showSkosReferences" + uri);
+  service
       .getFactorByURI(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         let result = http.response.result;
@@ -190,57 +194,58 @@ onMounted(()  => {
         }
       })
       .catch(opensilex.errorHandler);
-  }
+}
 
-  function editFactor(uri: any) {
-    console.debug("editFactor" + uri);
-    service
+function editFactor(uri: any) {
+  console.debug("editFactor" + uri);
+  service
       .getFactorByURI(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         console.debug(http.response.result);
         factorForm.value.showEditForm(http.response.result);
       })
       .catch(opensilex.errorHandler);
-  }
+}
 
-  function deleteFactor(factor: any) {
-    console.debug("check Associated factor " + factor.uri);
-    let isAssociated = opensilex
+function deleteFactor(factor: any) {
+  console.debug("check Associated factor " + factor.uri);
+  let isAssociated = opensilex
       .getService<FactorsService>("opensilex.FactorsService")
       .getFactorAssociatedExperiments(factor.uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         if (
-          http.response.metadata.pagination.totalCount > 0 &&
-          factor.experiment != uri.value
+            http.response.metadata.pagination.totalCount > 0 &&
+            factor.experiment != uri.value
         ) {
           opensilex.showErrorToast(
-            t("component.factor.isAssociatedTo")
+              t("component.factor.isAssociatedTo")
           );
         } else {
           console.debug("deleteFactor " + factor.uri);
           service
-            .deleteFactor(factor.uri)
-            .then(() => {
-              let message =
-                t("component.factor.label") +
-                " " +
-                factor.uri +
-                " " +
-                t("component.common.success.delete-success-message");
-              opensilex.showSuccessToast(message);
-              factorList.value.refresh();
-            })
-            .catch(opensilex.errorHandler);
+              .deleteFactor(factor.uri)
+              .then(() => {
+                let message =
+                    t("component.factor.label") +
+                    " " +
+                    factor.uri +
+                    " " +
+                    t("component.common.success.delete-success-message");
+                opensilex.showSuccessToast(message);
+                factorList.value.refresh();
+              })
+              .catch(opensilex.errorHandler);
         }
       });
-  }
+}
 
-  function successMessage(factor) {
-    return t("component.factor.label") + " " + factor.name;
-  }
-  function hide() {
-    helpModal.value.hide();
-  }
+function successMessage(factor) {
+  return t("component.factor.label") + " " + factor.name;
+}
+
+function hide() {
+  helpModal.value.hide();
+}
 
 //#endregion
 </script>
@@ -269,7 +274,7 @@ onMounted(()  => {
   margin-left: 5px;
 }
 
-.createButton, .helpButton{
+.createButton, .helpButton {
   margin: 5px 15px 5px -10px;
 }
 

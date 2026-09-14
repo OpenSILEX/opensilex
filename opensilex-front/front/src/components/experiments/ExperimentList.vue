@@ -267,7 +267,7 @@ export function refresh() {
         </template>
 
         <template v-slot:cell(actions)="{ data }">
-          <b-button-group size="sm">
+          <n-button-group size="small" class="btn-group btn-group-sm">
             <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
               @click="$emit('onEdit', data.item.uri)"
@@ -280,7 +280,7 @@ export function refresh() {
               label="component.experiment.delete"
               :small="true"
             ></DeleteButton>
-          </b-button-group>
+          </n-button-group>
         </template>
       </TableAsyncView>
       <DocumentForm
@@ -320,6 +320,7 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
+import {NButtonGroup} from "naive-ui";
 
 //#region Public
 interface Props {

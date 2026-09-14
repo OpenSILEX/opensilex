@@ -29,6 +29,8 @@ import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodDetailsDTO;
 import org.opensilex.core.variable.api.unit.UnitAPI;
 import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
+import org.opensilex.core.variable.bll.VariableCopyLogic;
+import org.opensilex.core.variable.bll.VariableCopyResult;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -615,85 +617,19 @@ public class VariableAPI {
     public Response copyFromSharedResourceInstance(
             @ApiParam(value = "List of variable URI to copy", required = true) CopyResourceDTO dto
     ) throws Exception {
-        SharedResourceInstanceService service = new SharedResourceInstanceService(
-                coreModule.getSharedResourceInstanceConfiguration(dto.getSharedResourceInstance()), currentUser.getLanguage());
-
-        Set<URI> variableSetToCopy = sparql.getExistingUris(VariableModel.class, dto.getUris(), false);
-
-        if (CollectionUtils.isEmpty(variableSetToCopy)) {
-            return new SingleObjectResponse<>(new VariableCopyResponseDTO()).getResponse();
-        }
-
-        ListWithPagination<VariableDetailsDTO> variableDetailsList = service.getListByURI(Paths.get(PATH, GET_BY_URIS_PATH).toString(),
-                GET_BY_URIS_URI_PARAM, variableSetToCopy, VariableDetailsDTO.class);
-
-        List<URI> entityUris = new ArrayList<>();
-        List<URI> entityOfInterestUris = new ArrayList<>();
-        List<URI> characteristicUris = new ArrayList<>();
-        List<URI> methodUris = new ArrayList<>();
-        List<URI> unitUris = new ArrayList<>();
-
-        for (VariableDetailsDTO variable : variableDetailsList.getList()) {
-            entityUris.add(variable.getEntity().getUri());
-            if (variable.getEntityOfInterest() != null) {
-                entityOfInterestUris.add(variable.getEntityOfInterest().getUri());
-            }
-            characteristicUris.add(variable.getCharacteristic().getUri());
-            methodUris.add(variable.getMethod().getUri());
-            unitUris.add(variable.getUnit().getUri());
-        }
+        VariableCopyResult copied = new VariableCopyLogic(sparql, coreModule, currentUser)
+                .copy(dto.getSharedResourceInstance(), dto.getUris());
 
         VariableCopyResponseDTO resultDto = new VariableCopyResponseDTO();
+        resultDto.setVariableUris(copied.getVariableUris());
+        resultDto.setEntityUris(copied.getEntityUris());
+        resultDto.setInterestEntityUris(copied.getInterestEntityUris());
+        resultDto.setCharacteristicUris(copied.getCharacteristicUris());
+        resultDto.setMethodUris(copied.getMethodUris());
+        resultDto.setUnitUris(copied.getUnitUris());
 
-        try {
-            sparql.startTransaction();
-
-            resultDto.setEntityUris(new ArrayList<>(
-                    createIfMissing(EntityModel.class, EntityDetailsDTO.class, entityUris, service, EntityAPI.PATH)));
-            resultDto.setInterestEntityUris(new ArrayList<>(
-                    createIfMissing(InterestEntityModel.class, InterestEntityDetailsDTO.class, entityOfInterestUris, service, InterestEntityAPI.PATH)));
-            resultDto.setCharacteristicUris(new ArrayList<>(
-                    createIfMissing(CharacteristicModel.class, CharacteristicDetailsDTO.class, characteristicUris, service, CharacteristicAPI.PATH)));
-            resultDto.setMethodUris(new ArrayList<>(
-                    createIfMissing(MethodModel.class, MethodDetailsDTO.class, methodUris, service, MethodAPI.PATH)));
-            resultDto.setUnitUris(new ArrayList<>(
-                    createIfMissing(UnitModel.class, UnitDetailsDTO.class, unitUris, service, UnitAPI.PATH)));
-
-            createBaseVariable(VariableModel.class, variableDetailsList.getList(), service);
-
-            resultDto.setVariableUris(new ArrayList<>(variableSetToCopy));
-
-            sparql.commitTransaction();
-
-            return new SingleObjectResponse<>(resultDto).getResponse();
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-            throw e;
-        }
+        return new SingleObjectResponse<>(resultDto).getResponse();
     }
 
-    private <T extends BaseVariableModel<T>, U extends BaseVariableDetailsDTO<T>> Set<URI> createIfMissing(Class<T> modelClass, Class<U> detailsClass, Collection<URI> uriCollection, SharedResourceInstanceService service, String apiPath) throws Exception {
-        Set<URI> missingUriSet = sparql.getExistingUris(modelClass, uriCollection, false);
 
-        List<U> detailsList = service.getListByURI(Paths.get(apiPath, GET_BY_URIS_PATH).toString(),
-                        GET_BY_URIS_URI_PARAM, missingUriSet, detailsClass)
-                .getList();
-
-        createBaseVariable(modelClass, detailsList, service);
-
-        return missingUriSet;
-    }
-
-    private <T extends BaseVariableModel<T>, U extends BaseVariableDetailsDTO<T>> void createBaseVariable(Class<T> modelClass, Collection<U> detailsCollection, SharedResourceInstanceService service) throws Exception {
-        BaseVariableDAO<T> dao = new BaseVariableDAO<>(modelClass, sparql);
-
-        List<T> modelList = detailsCollection.stream().map(detailsDto -> {
-            T model = detailsDto.toModel();
-            model.setPublisher(currentUser.getUri());
-            model.setFromSharedResourceInstance(service.getSharedResourceInstanceURI());
-            return model;
-        }).collect(Collectors.toList());
-
-        dao.createList(modelList);
-    }
 }

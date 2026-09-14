@@ -72,6 +72,10 @@
         <module>opensilex-doc</module>
         <module>opensilex-migration</module>
         <module>opensilex-graphql</module>
+
+        <!-- LLM-assisted import module -->
+        <module>opensilex-ai-import</module>
+ 
     </modules>
     
     <dependencies>
@@ -157,6 +161,13 @@
             <artifactId>opensilex-graphql</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <!-- LLM-assisted import dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-ai-import</artifactId>
+            <version>${revision}</version>
+        </dependency> 
 
         
         <!--Other extension modules must be declared as dependencies-->

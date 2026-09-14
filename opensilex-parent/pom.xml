@@ -88,6 +88,7 @@
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
         <apache.tika.version>2.9.2</apache.tika.version>
         <jfree.version>1.5.4</jfree.version>
+        <poi.version>5.4.1</poi.version>
 
         <!-- test only dependencies version -->
         <junit.version>4.13.2</junit.version>

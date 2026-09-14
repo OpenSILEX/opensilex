@@ -466,7 +466,6 @@ export default class OpenSilexVuePlugin {
         this.showLoader();
         let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
         let cssURI = this.baseApi + "/vuejs/extension/css/" + name + ".css";
-        let self = this;
         console.debug("Load module", url);
 
         const link = document.createElement('link');
@@ -484,7 +483,7 @@ export default class OpenSilexVuePlugin {
                 const plugin = exported?.default ?? exported;
 
                 if (!plugin || plugin === modulePromise || typeof plugin.then === "function") {
-                    self.hideLoader();
+                    this.hideLoader();
                     console.error(
                         `Le module "${name}" n'a pas publié son export global (window["${name}"]).`
                         + " Regardez l'erreur d'évaluation du bundle juste au-dessus dans la console"
@@ -494,34 +493,34 @@ export default class OpenSilexVuePlugin {
                     return;
                 }
 
-                self.loadedModules.push(name);
+                this.loadedModules.push(name);
 
                if (typeof plugin === "function" || typeof plugin.install === "function") {
-                    self.app.use(plugin);
+                    this.app.use(plugin);
                 }
 
                 if (plugin.lang) {
-                    self.loadTranslations(plugin.lang);
+                    this.loadTranslations(plugin.lang);
                 }
 
                 if (plugin.components) {
                     for (let componentId in plugin.components) {
-                        self.loadComponentTranslations(plugin.components[componentId]);
+                        this.loadComponentTranslations(plugin.components[componentId]);
                     }
                 }
 
-             self.initAsyncComponents(plugin.components)
+             this.initAsyncComponents(plugin.components)
                     .then(() => {
-                        self.hideLoader();
+                        this.hideLoader();
                         resolve(plugin);
                     })
                     .catch((error) => {
-                        self.hideLoader();
+                        this.hideLoader();
                         reject(error);
                     });
             });
             script.addEventListener('error', () => {
-                self.hideLoader();
+                this.hideLoader();
                 console.error(`Échec du chargement du module "${name}".`);
                 reject(new Error(`Impossible de charger le module "${name}"`));
             });

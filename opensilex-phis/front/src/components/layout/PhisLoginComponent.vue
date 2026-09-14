@@ -16,9 +16,9 @@
 
     <template v-slot:loginFooter>   
         <p>
-          {{ $t("LoginComponent.copyright.1" ) }}
+          {{ t("LoginComponent.copyright.1" ) }}
           <br />
-          {{ $t("LoginComponent.copyright.2", {
+          {{ t("LoginComponent.copyright.2", {
           version: getPHISModuleVersion()
           }) }}
           <br />
@@ -27,7 +27,7 @@
           }) }}
           <br />
           {{
-          $t("LoginComponent.copyright.4", {
+          t("LoginComponent.copyright.4", {
           version: opensilex.versionInfo.version
           })
           }}
@@ -58,9 +58,3 @@ const {t} = useI18n();
   }
 
 </script>
-
-<style scoped lang="scss">
-</style>
-
-<i18n>
-</i18n>

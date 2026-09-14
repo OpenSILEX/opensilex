@@ -1,0 +1,9 @@
+menu:
+  - id: ai-import
+    label: AiImport.menu
+    route:
+      path: /ai-import
+      component: opensilex-ai-import-AiImportView
+      icon: bi#bi-robot
+      title: AiImport.menu
+      description: AiImport.description

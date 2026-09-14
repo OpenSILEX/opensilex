@@ -97,3 +97,23 @@ front:
 #     datasetMetadataLanguages:
 #         - en
 #         - fr
+# LLM-assisted import assistant. Disabled until an endpoint is configured.
+# Any OpenAI-compatible /chat/completions endpoint works, including one hosted on your own
+# network (vLLM, Ollama, LiteLLM), which is how the uploaded file's metadata stays in-house.
+# Only the headers, a bounded sample of rows and the text of instruction sheets ever leave.
+ai-import:
+    enabled: true
+    llm:
+        baseUrl: "https://chatbot.argo.inrae.fr/openai"
+        model: "Mistral-Small-4-119B-2603"
+        apiKey: "sk-3ce7d97009e84b7f847d68986673ce15"
+        maxTokens: 2048
+        temperature: 0.2
+        timeoutMs: 120000
+        maxToolIterations: 6
+    maxFileSizeMb: 20
+    sampleRowsPerSheet: 5
+    sessionTtlMinutes: 60
+    searchSharedResourceInstances: false
+
+ 

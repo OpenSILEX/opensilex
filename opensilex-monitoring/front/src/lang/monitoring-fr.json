@@ -1,0 +1,113 @@
+{
+  "Monitoring": {
+    "menu": "Supervision",
+    "title": "Supervision de l'instance",
+    "description": "État des bases, personnes connectées et activité de la plateforme.",
+    "refresh": "Actualiser",
+    "lastUpdated": "Mis à jour à {time}",
+    "errors": {
+      "adminOnly": "Cette page est réservée aux administrateurs.",
+      "statusUnavailable": "Impossible de lire l'état de l'instance.",
+      "activityUnavailable": "Impossible de lire le rapport d'activité."
+    },
+    "banner": {
+      "rdf4j": "Base de triplets",
+      "mongodb": "MongoDB",
+      "latency": "répond en {ms} ms",
+      "state": {
+        "up": "en service",
+        "degraded": "dégradée",
+        "down": "injoignable",
+        "unknown": "indéterminé"
+      },
+      "tripleCount": "Triplets",
+      "namedGraphs": "Graphes nommés",
+      "documents": "Documents",
+      "dataSize": "Données",
+      "storageSize": "Stockage",
+      "indexSize": "Index",
+      "logPaused": "L'écriture du journal d'accès est suspendue après des échecs répétés. Les chiffres d'activité sont incomplets.",
+      "logDropped": "{count} entrées du journal d'accès ont été abandonnées, la file d'écriture étant pleine. Les chiffres d'activité sont incomplets."
+    },
+    "users": {
+      "title": "Personnes",
+      "connected": "connectées",
+      "active": "actives depuis {minutes} min",
+      "upperBound": "Les connexions multiples sont autorisées : le nombre de connectés n'est qu'une borne supérieure.",
+      "none": "Personne n'est connecté.",
+      "more": "+{count}",
+      "showList": "Voir la liste",
+      "hideList": "Masquer la liste",
+      "column": {
+        "name": "Nom",
+        "email": "Courriel"
+      }
+    },
+    "period": {
+      "label": "Période",
+      "granularity": "Pas",
+      "presets": {
+        "24h": "24 h",
+        "7d": "7 jours",
+        "30d": "30 jours",
+        "6m": "6 mois",
+        "1y": "1 an",
+        "custom": "Libre"
+      },
+      "granularities": {
+        "hour": "Horaire",
+        "day": "Journalier",
+        "week": "Hebdomadaire",
+        "month": "Mensuel"
+      },
+      "tooManyBuckets": "Ce pas demanderait {count} points sur cette période, au-delà des {max} que le graphique peut afficher.",
+      "granularityAdjusted": "Pas basculé en {granularity} pour que le graphique reste lisible.",
+      "truncated": "La période était trop longue pour le pas demandé ; le pas {granularity} a été appliqué."
+    },
+    "chart": {
+      "title": "Activité de la plateforme",
+      "series": {
+        "users": "Utilisateurs",
+        "requests": "Requêtes",
+        "errors": "Erreurs"
+      },
+      "averageErrors": "moy.",
+      "errorRate": "Taux d'erreur",
+      "noData": "Aucune activité enregistrée sur cette période.",
+      "exportPng": "Exporter"
+    },
+    "failure": {
+      "title": "Requêtes en échec",
+      "ratio": "{failed} sur {total} requêtes",
+      "noTraffic": "Aucun trafic sur cette période.",
+      "clientErrors": "Erreurs client (4xx)",
+      "serverErrors": "Erreurs serveur (5xx)"
+    },
+    "tabs": {
+      "overview": "Vue d'ensemble",
+      "requests": "Requêtes détaillées"
+    },
+    "requests": {
+      "pathPlaceholder": "Rechercher un chemin, par exemple core/data",
+      "anyMethod": "Toutes les méthodes",
+      "anyOutcome": "Tous les résultats",
+      "successOnly": "Succès uniquement",
+      "failuresOnly": "Échecs uniquement",
+      "anonymous": "anonyme",
+      "count": "{count} requêtes",
+      "none": "Aucune requête ne correspond à ces critères sur la période choisie.",
+      "unavailable": "Impossible de lire les requêtes enregistrées.",
+      "page": "Page {page}",
+      "perPage": "{count} par page",
+      "column": {
+        "date": "Date",
+        "account": "Compte",
+        "method": "Méthode",
+        "path": "Chemin",
+        "service": "Service",
+        "status": "Statut",
+        "duration": "Durée"
+      }
+    }
+  }
+}

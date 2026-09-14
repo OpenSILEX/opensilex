@@ -97,3 +97,28 @@ front:
 #     datasetMetadataLanguages:
 #         - en
 #         - fr
+
+# Instance monitoring: health check, web service access log and activity report.
+# The access log writes to its own collection (monitoringRequestLog) and is entirely independent
+# from core.enableLogs, which keeps writing to the 'log' collection as before.
+monitoring:
+    enabled: true
+    health:
+        # A dead triple store must not freeze the health endpoint: RDF4J is reached over HTTP with
+        # no socket timeout of its own, so this deadline is the only thing bounding a probe.
+        checkTimeoutMs: 2000
+        # Statistics are cached because a monitoring page gets polled, and a triple count computed
+        # on every poll would make the dashboard a load source on the instance it is watching.
+        tripleCountRefreshMinutes: 15
+        # One HTTP round trip per named graph, and a mature instance has hundreds of them.
+        tripleCountPerGraph: false
+    requestLog:
+        enabled: true
+        recordDuration: true
+        recordQueryParameters: true
+        # An IP is personal data and a health dashboard does not need one.
+        recordClientIp: false
+        # Six months, applied as a MongoDB TTL index.
+        retentionDays: 183
+    activity:
+        activeUserWindowMinutes: 15

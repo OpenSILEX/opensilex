@@ -1,0 +1,113 @@
+{
+  "Monitoring": {
+    "menu": "Supervision",
+    "title": "Instance supervision",
+    "description": "Database health, connected people and platform activity.",
+    "refresh": "Refresh",
+    "lastUpdated": "Updated at {time}",
+    "errors": {
+      "adminOnly": "This page is reserved to administrators.",
+      "statusUnavailable": "Could not read the instance status.",
+      "activityUnavailable": "Could not read the activity report."
+    },
+    "banner": {
+      "rdf4j": "Triple store",
+      "mongodb": "MongoDB",
+      "latency": "answered in {ms} ms",
+      "state": {
+        "up": "up",
+        "degraded": "degraded",
+        "down": "down",
+        "unknown": "unknown"
+      },
+      "tripleCount": "Triples",
+      "namedGraphs": "Named graphs",
+      "documents": "Documents",
+      "dataSize": "Data",
+      "storageSize": "Storage",
+      "indexSize": "Indexes",
+      "logPaused": "The access log writer is paused after repeated write failures. Activity figures are incomplete.",
+      "logDropped": "{count} access log entries were dropped because the write queue filled up. Activity figures are incomplete."
+    },
+    "users": {
+      "title": "People",
+      "connected": "connected",
+      "active": "active in the last {minutes} min",
+      "upperBound": "Multiple connections are allowed, so the connected count is an upper bound.",
+      "none": "Nobody is connected.",
+      "more": "+{count}",
+      "showList": "See the list",
+      "hideList": "Hide the list",
+      "column": {
+        "name": "Name",
+        "email": "Email"
+      }
+    },
+    "period": {
+      "label": "Period",
+      "granularity": "Step",
+      "presets": {
+        "24h": "24 h",
+        "7d": "7 days",
+        "30d": "30 days",
+        "6m": "6 months",
+        "1y": "1 year",
+        "custom": "Custom"
+      },
+      "granularities": {
+        "hour": "Hourly",
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      },
+      "tooManyBuckets": "This step would need {count} points over this period, more than the {max} the chart can show.",
+      "granularityAdjusted": "Step switched to {granularity} so the chart stays readable.",
+      "truncated": "The period was too long for the requested step; {granularity} was applied instead."
+    },
+    "chart": {
+      "title": "Platform activity",
+      "series": {
+        "users": "Users",
+        "requests": "Requests",
+        "errors": "Errors"
+      },
+      "averageErrors": "avg",
+      "errorRate": "Error rate",
+      "noData": "No recorded activity over this period.",
+      "exportPng": "Export"
+    },
+    "failure": {
+      "title": "Failed requests",
+      "ratio": "{failed} of {total} requests",
+      "noTraffic": "No traffic over this period.",
+      "clientErrors": "Client errors (4xx)",
+      "serverErrors": "Server errors (5xx)"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "requests": "Detailed requests"
+    },
+    "requests": {
+      "pathPlaceholder": "Search a path, for instance core/data",
+      "anyMethod": "Any method",
+      "anyOutcome": "Any outcome",
+      "successOnly": "Successful only",
+      "failuresOnly": "Failed only",
+      "anonymous": "anonymous",
+      "count": "{count} requests",
+      "none": "No request matches these criteria over the chosen period.",
+      "unavailable": "Could not read the recorded requests.",
+      "page": "Page {page}",
+      "perPage": "{count} per page",
+      "column": {
+        "date": "Date",
+        "account": "Account",
+        "method": "Method",
+        "path": "Path",
+        "service": "Service",
+        "status": "Status",
+        "duration": "Duration"
+      }
+    }
+  }
+}

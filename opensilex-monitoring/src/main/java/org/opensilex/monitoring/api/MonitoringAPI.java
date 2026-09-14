@@ -408,7 +408,7 @@ public class MonitoringAPI {
         return dto;
     }
 
-    private static TripleStoreStatsDTO toDto(TripleStoreVolumetry volumetry, boolean cached) {
+    private static TripleStoreStatsDTO fromModel(TripleStoreVolumetry volumetry, boolean cached) {
         TripleStoreStatsDTO dto = new TripleStoreStatsDTO();
         dto.setTripleCount(volumetry.tripleCount());
         dto.setGraphCount(volumetry.graphCount());

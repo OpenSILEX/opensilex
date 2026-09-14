@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Button
+  <Button
     @click="$emit('click')"
     variant="outline-info"
     :small="small"
@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import Button from "@/components/common/buttons/Button.vue";
+
 defineProps<{
   label: string;
   small?: boolean;

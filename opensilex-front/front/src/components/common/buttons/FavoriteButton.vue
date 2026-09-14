@@ -1,15 +1,12 @@
 <template>
-  <n-button
-    @click.prevent="handleClick"
-    :title="toggleTitle()"
-    secondary
-    type="warning"
-    :class="{ favoriteActive: favoriteState }"
-  >
-    <slot name="icon">
-      <opensilex-Icon icon="fa#star" />
-    </slot>
-  </n-button>
+  <Button
+      @click="handleClick"
+      variant="outline-warning"
+      :small="true"
+      :label="toggleTitle()"
+      icon="fa#star"
+      :class="{ favoriteActive: favoriteState }"
+  />
 </template>
 
 <script setup lang="ts">
@@ -23,6 +20,7 @@ import type { SecurityService } from 'opensilex-security/api/security.service'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import { FAVORITE_TYPES } from '../../home/dashboard/Favorites.vue'
+import Button from "@/components/common/buttons/Button.vue";
 
 const props = defineProps<{
   uri: string

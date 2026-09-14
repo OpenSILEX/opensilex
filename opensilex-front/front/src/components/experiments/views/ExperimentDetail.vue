@@ -15,7 +15,7 @@
             :label="t('component.common.informations')"
         >
           <template v-slot:rightHeader>
-            <n-button-group size="large" class="btn-group btn-group-md">
+            <n-button-group class="btn-group btn-group-sm">
               <FavoriteButton
                   :uri="experiment.uri"
               ></FavoriteButton>

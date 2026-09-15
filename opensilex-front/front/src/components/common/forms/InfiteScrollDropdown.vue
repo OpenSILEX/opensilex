@@ -6,53 +6,78 @@
     :helpMessage="helpMessage"
   >
     <template #field="{ id }">
-      <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
+      <!-- NFormItem handles the asterisk, the red border and the message, through the parent NForm rules -->
       <n-form-item :path="path" :show-label="false">
-        <n-select
-          v-model:value="selectedValue"
-          :id="id"
-          filterable
-          clearable
-          remote
-          :options="displayedOptions"
-          :loading="isLoading"
-          :placeholder="placeholder"
-          :consistent-menu-width="false"
-          :resetMenuOnOptionsChange="false"
-          :multiple="multiple"
-          @search="onSearch"
-          @scroll="onDropdownScroll"
-          @update:value="emit('selectionChange')"
-          @keydown.enter.prevent="emit('handlingEnterKey')"
-        >
-          <template #action>
-            <div class="infinite-scroll-selector-footer" :class="{ greenThemeColor: hasMoreResults }">
-              <span v-if="isLoading">
-                {{ t('component.common.loading') }}
-                <template v-if="totalCount > 0">
-                  —
+        <div class="select-button-container">
+          <n-select
+            v-model:value="selectedValue"
+            :id="id"
+            class="select-main"
+            filterable
+            clearable
+            remote
+            :options="displayedOptions"
+            :loading="isLoading"
+            :placeholder="placeholder"
+            :disabled="disabled"
+            :consistent-menu-width="false"
+            :resetMenuOnOptionsChange="false"
+            :multiple="multiple"
+            @search="onSearch"
+            @scroll="onDropdownScroll"
+            @update:value="onSelectionChange"
+            @keydown.enter.prevent="emit('handlingEnterKey')"
+          >
+            <template #action>
+              <div class="infinite-scroll-selector-footer" :class="{ greenThemeColor: hasMoreResults }">
+                <span v-if="isLoading">
+                  {{ t('component.common.loading') }}
+                  <template v-if="totalCount > 0">
+                    —
+                    {{ displayedCount }} / {{ totalCount }}
+                  </template>
+                </span>
+
+                <span v-else-if="hasMoreResults && totalCount > 0">
                   {{ displayedCount }} / {{ totalCount }}
-                </template>
-              </span>
+                  —
+                  {{ t('component.common.scroll-to-load-more') }}
+                </span>
 
-              <span v-else-if="hasMoreResults && totalCount > 0">
-                {{ displayedCount }} / {{ totalCount }}
-                —
-                {{ t('component.common.scroll-to-load-more') }}
-              </span>
+                <span v-else-if="totalCount > 0">
+                  {{ displayedCount }} / {{ totalCount }}
+                  —
+                  {{ t('component.common.no-more-results') }}
+                </span>
 
-              <span v-else-if="totalCount > 0">
-                {{ displayedCount }} / {{ totalCount }}
-                —
-                {{ t('component.common.no-more-results') }}
-              </span>
+                <span v-else>
+                  {{ t('component.common.no-results') }}
+                </span>
+              </div>
+            </template>
+          </n-select>
 
-              <span v-else>
-                {{ t('component.common.no-results') }}
-              </span>
-            </div>
-          </template>
-        </n-select>
+          <div v-if="!actionHandler && viewHandler" class="select-side-button">
+            <DetailButton
+              @click="viewHandler"
+              :label="viewHandlerDetailsVisible ? t('component.common.hide-details') : t('component.common.show-details')"
+              :detailVisible="viewHandlerDetailsVisible"
+              :small="true"
+              class="greenThemeColor"
+            />
+          </div>
+
+          <div v-else-if="actionHandler" class="select-side-button">
+            <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
+            <DetailButton
+              v-if="viewHandler"
+              @click="viewHandler"
+              :label="viewHandlerDetailsVisible ? t('component.common.hide-details') : t('component.common.show-details')"
+              :detailVisible="viewHandlerDetailsVisible"
+              :small="true"
+            />
+          </div>
+        </div>
       </n-form-item>
     </template>
   </FormField>
@@ -62,11 +87,12 @@
 import {computed, inject, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import type {NamedResourceDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
-import {NFormItem, NSelect, SelectOption} from "naive-ui";
+import {NButton, NFormItem, NSelect, SelectOption} from "naive-ui";
 import useInfiniteScrollSearch from "@/composables/useInfiniteScrollSearch";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import FormField from "@/components/common/forms/FormField.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
 
 //#region PUBLIC
 const selectedValue = defineModel<string | string[] | null>('selected');
@@ -79,16 +105,26 @@ interface Props{
   resultLimit?: number,
   placeholder?: string,
   multiple?: boolean,
-  /** Chemin du champ dans le modèle du NForm parent, utilisé pour la validation */
+  /** Path of the field in the parent NForm model, used for validation */
   path?: string,
   label?: string,
   helpMessage?: string,
-  /** Astérisque rouge */
+  /** Red asterisk */
   required?: boolean,
-  /** Étoile bleue */
+  /** Blue star */
   requiredBlue?: boolean,
-  /** Method to load pre-selected elements, example for some update Form */
-  itemLoadingMethod?: (uris: string[]) => Promise<NamedResourceDTO[] | undefined>
+  disabled?: boolean,
+  /**
+   * Method to load pre-selected elements, example for some update Form. May return synchronously,
+   * some existing loaders do.
+   */
+  itemLoadingMethod?: (uris: string[]) => Promise<NamedResourceDTO[] | undefined> | NamedResourceDTO[] | undefined
+  /** Called by the "+" button, to create a new element (usually opens a creation form) */
+  actionHandler?: Function,
+  /** Called by the details button, to show or hide the details of the selected element */
+  viewHandler?: Function,
+  /** Whether the details handled by `viewHandler` are currently visible, drives the button label */
+  viewHandlerDetailsVisible?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {multiple: false});
 
@@ -187,6 +223,24 @@ const displayedOptions = computed<SelectOption[]>(() => {
 });
 //#endregion
 
+//#region Event handlers
+/**
+ * Emits the selected option(s) rather than the bare value: callers generally need the label, as the
+ * treeselect's `select` event used to provide.
+ */
+function onSelectionChange(value: string | string[] | null) {
+  const optionFor = (uri: string | number) =>
+    displayedOptions.value.find(option => uriKey(option.value) === uriKey(uri));
+
+  if (Array.isArray(value)) {
+    emit('selectionChange', value.map(optionFor).filter(option => option !== undefined));
+    return;
+  }
+
+  emit('selectionChange', value !== null && value !== undefined ? optionFor(value) : undefined);
+}
+//#endregion
+
 //#region Watchers
 /**
  * Resolves labels for values that are selected but missing from the loaded options. Watched rather
@@ -263,6 +317,9 @@ onBeforeUnmount(() => {
   dispose()
 })
 //#endregion
+
+/** `refresh` re-runs the search from page 0, for callers that must reload on an external change. */
+defineExpose({ refresh: reload });
 </script>
 
 <style scoped lang="scss">
@@ -270,7 +327,35 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-/* Le composant sélection prend toute la largeur dispo */
+.select-button-container {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
+  flex-wrap: nowrap;
+}
+
+.select-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.select-side-button {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  margin-left: 8px;
+}
+
+.select-side-button > * {
+  height: 100%;
+}
+
+.greenThemeColor {
+  color: #fff;
+}
+
+/* The selection component takes all the available width */
 :deep(.n-base-selection) {
   width: 100%;
 }

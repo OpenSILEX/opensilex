@@ -22,6 +22,9 @@
     :conversionMethod="facilityToSelectNode"
     :itemLoadingMethod="loadFacilities"
     :multiple="multiple"
+    :label="label"
+    :helpMessage="helpMessage"
+    :required="required"
     @selectionChange="emit('selectionChange')"
   ></InfiteScrollDropdown>
 </template>

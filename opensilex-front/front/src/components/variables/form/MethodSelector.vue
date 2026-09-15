@@ -1,100 +1,99 @@
 <template>
-  <FormSelector
-    ref="formSelector"
+  <InfiteScrollDropdown
+    ref="dropdown"
+    v-model:selected="modelSelected"
+    :fetchPage="searchMethods"
+    :itemLoadingMethod="loadMethods"
+    :conversionMethod="methodToSelectOption"
     :path="path"
     :label="label"
-    v-model:selected="methodURI"
-    :multiple="multiple"
-    :searchMethod="searchMethods"
-    :itemLoadingMethod="loadMethods"
-    :conversionMethod="conversionMethod"
-    :placeholder="placeholder"
-    :actionHandler="actionHandler"
-    :required="required"
     :helpMessage="helpMessage"
-    noResultsText="component.method.form.selector.filter-search-no-result"
-    @clear="$emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @enterKey="onEnter"
+    :multiple="multiple"
+    :required="required"
+    :disabled="disabled"
+    :actionHandler="actionHandler"
+    :placeholder="resolvedPlaceholder"
+    @selectionChange="(option) => emit('selectionChange', option)"
+    @handlingEnterKey="emit('handlingEnterKey')"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue'
-import FormSelector from '../../common/forms/FormSelector.vue'
+import { computed, inject, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
 import type { MethodGetDTO } from 'opensilex-core/index'
 import type OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type HttpResponse from 'opensilex-security/HttpResponse'
+import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
 
-// Props
 const props = defineProps<{
+  /** Path of the field in the parent NForm model, used for validation */
   path?: string
-  selected: string | string[]
+  selected: string | string[] | undefined
   label?: string
   multiple?: boolean
   helpMessage?: string
-  required?: boolean
+  /** Called by the "+" button, to create a new method */
   actionHandler?: Function
-  conversionMethod?: Function
+  required?: boolean
+  disabled?: boolean
   sharedResourceInstance?: string
+  placeholder?: string
 }>()
 
 const emit = defineEmits<{
   (e: 'update:selected', value: any): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
-  (e: 'clear'): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'handlingEnterKey'): void
 }>()
 
-const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
+const { t } = useI18n()
+const $opensilex = inject<OpenSilexVuePlugin>('opensilex')!
 
-// const methodURI = ref(props.selected)
-const methodURI = computed({
+// v-model proxy
+const modelSelected = computed({
   get: () => props.selected,
   set: (v) => emit('update:selected', v)
 })
-const formSelector = ref<InstanceType<typeof FormSelector>>()
 
-const pageSize = ref(10)
+// InfiteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
+// read. Only `refresh` is needed here, so the exposed shape is declared directly.
+const dropdown = ref<{ refresh: () => Promise<void> } | null>(null)
 
+// Results depend on the shared resource instance, so the search is re-run whenever it changes.
 watch(() => props.sharedResourceInstance, () => {
-  formSelector.value?.refresh()
+  dropdown.value?.refresh()
 })
 
-const placeholder = computed(() =>
-  props.multiple
-    ? 'component.method.form.selector.placeholder-multiple'
-    : 'component.method.form.selector.placeholder'
-)
+const resolvedPlaceholder = computed(() => {
+  if (props.placeholder) {
+    return props.placeholder
+  }
+  return t(props.multiple ? 'component.method.form.selector.placeholder-multiple' : 'component.method.form.selector.placeholder')
+})
 
-const loadMethods = (methods: string[]): Promise<MethodGetDTO[]> => {
-  return $opensilex!.getService<VariablesService>('opensilex.VariablesService')
-    .getMethodsByURIs(methods, props.sharedResourceInstance)
+/** Loads the already selected elements (update form), so that their name can be displayed. */
+const loadMethods = (uris: string[]): Promise<MethodGetDTO[]> => {
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
+    .getMethodsByURIs(uris, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<MethodGetDTO[]>>) => http.response.result)
-    .catch($opensilex!.errorHandler)
+    .catch($opensilex.errorHandler)
 }
 
+/** Loads one page of results. `page` is zero-based. */
 const searchMethods = (name: string, page: number, pageSize: number): Promise<HttpResponse<OpenSilexResponse<MethodGetDTO[]>>> => {
-  return $opensilex!.getService<VariablesService>('opensilex.VariablesService')
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
     .searchMethods(name, ['name=asc'], page, pageSize, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<MethodGetDTO[]>>) => http)
 }
 
-const select = (value: any) => {
-  emit('select', value)
-}
-
-const deselect = (value: any) => {
-  emit('deselect', value)
-}
-
-const onEnter = () => {
-  emit('handlingEnterKey')
-}
+const methodToSelectOption = (dto: MethodGetDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
+})
 </script>
 
 <style scoped lang="scss">

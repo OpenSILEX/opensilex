@@ -5,8 +5,8 @@ export interface UseInfiniteScrollSearchOptions<TRaw, TOption, TKey> {
   pageSize: number | (() => number)
   debounceMs?: number
   /**
-   * Renvoie la page demandée. `hasNext` est facultatif : s'il est fourni (l'API le connaît),
-   * il fait autorité pour savoir s'il reste des pages. Sinon on retombe sur une heuristique.
+   * Returns the requested page. `hasNext` is optional: when the API provides it, it is
+   * authoritative for knowing whether pages remain. Otherwise a heuristic is used instead.
    */
   fetchPage: (query: string, pageIndex: number, pageSize: number) => Promise<{ result: TRaw[]; total: number; hasNext?: boolean }>
   mapItem: (raw: TRaw) => TOption
@@ -80,8 +80,8 @@ export default function useInfiniteScrollSearch<TRaw, TOption, TKey>(
       items.value = reset && options.afterReset ? options.afterReset(nextItems) : nextItems
 
       // pageSize <= 0 is a "load everything at once" request: never ask for a next page.
-      // Sinon on préfère le hasNext de l'API ; l'heuristique ne sert que s'il est absent
-      // (?? et non || : un hasNext explicitement false doit être respecté).
+      // Otherwise the API's hasNext wins; the heuristic only applies when it is absent
+      // (?? and not ||: an explicitly false hasNext must be respected).
       hasMoreResults.value =
         pageSize > 0 &&
         (hasNext ?? (

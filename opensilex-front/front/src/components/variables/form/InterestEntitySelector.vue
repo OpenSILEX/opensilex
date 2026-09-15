@@ -1,107 +1,97 @@
 <template>
-  <FormSelector
-    ref="formSelector"
+  <InfiteScrollDropdown
+    ref="dropdown"
+    v-model:selected="modelSelected"
+    :fetchPage="searchInterestEntities"
+    :itemLoadingMethod="loadInterestEntities"
+    :conversionMethod="interestEntityToSelectOption"
     :path="path"
     :label="label"
-    v-model:selected="interestEntityURI"
-    :multiple="multiple"
-    :searchMethod="searchInterestEntities"
-    :itemLoadingMethod="loadInterestEntities"
-    :placeholder="placeholder"
     :helpMessage="helpMessage"
+    :multiple="multiple"
+    :disabled="disabled"
     :actionHandler="actionHandler"
-    :conversionMethod="conversionMethod"
-    noResultsText="component.interestEntity.form.selector.filter-search-no-result"
-    @clear="$emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @enterKey="onEnter"
-    @loadMoreItems="loadMoreItems"
+    :placeholder="resolvedPlaceholder"
+    @selectionChange="(option) => emit('selectionChange', option)"
+    @handlingEnterKey="emit('handlingEnterKey')"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch, nextTick } from 'vue'
-import FormSelector from '../../common/forms/FormSelector.vue'
+import { computed, inject, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
 import type { InterestEntityGetDTO } from 'opensilex-core/index'
 import type OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type HttpResponse from 'opensilex-security/HttpResponse'
+import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
 
-// Props
 const props = defineProps<{
+  /** Path of the field in the parent NForm model, used for validation */
   path?: string
-  selected: string | string[]
+  selected: string | string[] | undefined
   label?: string
   multiple?: boolean
   helpMessage?: string
+  /** Called by the "+" button, to create a new interest entity */
   actionHandler?: Function
-  conversionMethod?: Function
+  disabled?: boolean
   sharedResourceInstance?: string
+  placeholder?: string
 }>()
 
 const emit = defineEmits<{
   (e: 'update:selected', value: any): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
-  (e: 'clear'): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'handlingEnterKey'): void
 }>()
 
-const $opensilex = inject<OpenSilexVuePlugin>('opensilex')
+const { t } = useI18n()
+const $opensilex = inject<OpenSilexVuePlugin>('opensilex')!
 
-// const interestEntityURI = ref(props.selected)
-const interestEntityURI = computed({
+// v-model proxy
+const modelSelected = computed({
   get: () => props.selected,
   set: (v) => emit('update:selected', v)
 })
 
-const formSelector = ref<InstanceType<typeof FormSelector>>()
-const pageSize = ref(10)
+// InfiteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
+// read. Only `refresh` is needed here, so the exposed shape is declared directly.
+const dropdown = ref<{ refresh: () => Promise<void> } | null>(null)
 
+// Results depend on the shared resource instance, so the search is re-run whenever it changes.
 watch(() => props.sharedResourceInstance, () => {
-  formSelector.value?.refresh()
+  dropdown.value?.refresh()
 })
 
-const placeholder = computed(() =>
-  props.multiple
-    ? 'component.interestEntity.form.selector.placeholder-multiple'
-    : 'component.interestEntity.form.selector.placeholder'
-)
+const resolvedPlaceholder = computed(() => {
+  if (props.placeholder) {
+    return props.placeholder
+  }
+  return t(props.multiple ? 'component.interestEntity.form.selector.placeholder-multiple' : 'component.interestEntity.form.selector.placeholder')
+})
 
-const loadInterestEntities = (interestEntities: string[]): Promise<InterestEntityGetDTO[]> => {
-  return $opensilex!.getService<VariablesService>('opensilex.VariablesService')
-    .getInterestEntitiesByURIs(interestEntities, props.sharedResourceInstance)
+/** Loads the already selected elements (update form), so that their name can be displayed. */
+const loadInterestEntities = (uris: string[]): Promise<InterestEntityGetDTO[]> => {
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
+    .getInterestEntitiesByURIs(uris, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<InterestEntityGetDTO[]>>) => http.response.result)
-    .catch($opensilex!.errorHandler)
+    .catch($opensilex.errorHandler)
 }
 
-const searchInterestEntities = (name: string): Promise<HttpResponse<OpenSilexResponse<InterestEntityGetDTO[]>>> => {
-  return $opensilex!.getService<VariablesService>('opensilex.VariablesService')
-    .searchInterestEntity(name, ['name=asc'], 0, pageSize.value, props.sharedResourceInstance)
+/** Loads one page of results. `page` is zero-based. */
+const searchInterestEntities = (name: string, page: number, pageSize: number): Promise<HttpResponse<OpenSilexResponse<InterestEntityGetDTO[]>>> => {
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
+    .searchInterestEntity(name, ['name=asc'], page, pageSize, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<InterestEntityGetDTO[]>>) => http)
 }
 
-const select = (value: any) => {
-  emit('select', value)
-}
-
-const deselect = (value: any) => {
-  emit('deselect', value)
-}
-
-const onEnter = () => {
-  emit('handlingEnterKey')
-}
-
-const loadMoreItems = () => {
-  pageSize.value = 0
-  formSelector.value?.refresh()
-  nextTick(() => {
-    formSelector.value?.openTreeselect()
-  })
-}
+const interestEntityToSelectOption = (dto: InterestEntityGetDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
+})
 </script>
 
 <style scoped lang="scss">

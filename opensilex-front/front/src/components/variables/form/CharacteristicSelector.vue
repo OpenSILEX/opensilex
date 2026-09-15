@@ -1,92 +1,99 @@
 <template>
-  <FormSelector
-    ref="formSelector"
+  <InfiteScrollDropdown
+    ref="dropdown"
+    v-model:selected="modelSelected"
+    :fetchPage="searchCharacteristics"
+    :itemLoadingMethod="loadCharacteristics"
+    :conversionMethod="characteristicToSelectOption"
     :path="path"
     :label="label"
-    v-model:selected="modelSelected"
-    :multiple="multiple"
-    :searchMethod="searchCharacteristics"
-    :itemLoadingMethod="loadCharacteristics"
-    :placeholder="resolvedPlaceholder"
-    :actionHandler="actionHandler"
-    :required="required"
     :helpMessage="helpMessage"
-    :conversionMethod="conversionMethod"
-    noResultsText="component.characteristic.form.selector.filter-search-no-result"
-    @clear="$emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @enterKey="onEnter"
+    :multiple="multiple"
+    :required="required"
+    :disabled="disabled"
+    :actionHandler="actionHandler"
+    :placeholder="resolvedPlaceholder"
+    @selectionChange="(option) => emit('selectionChange', option)"
+    @handlingEnterKey="emit('handlingEnterKey')"
   />
 </template>
 
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue'
-import FormSelector from '../../common/forms/FormSelector.vue'
+import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
 import type { CharacteristicGetDTO } from 'opensilex-core'
 import type OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type HttpResponse from 'opensilex-security/HttpResponse'
+import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
 
 const props = defineProps<{
+  /** Path of the field in the parent NForm model, used for validation */
   path?: string
   selected: string | string[] | undefined
   label?: string
   multiple?: boolean
   helpMessage?: string
+  /** Called by the "+" button, to create a new characteristic */
   actionHandler?: Function
   required?: boolean
+  disabled?: boolean
   sharedResourceInstance?: string
-  conversionMethod?: Function
   placeholder?: string
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:selected', value: any): void     // necesaire  pour v-model
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
-  (e: 'clear'): void
+  (e: 'update:selected', value: any): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'handlingEnterKey'): void
 }>()
 
+const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('opensilex')!
-const service = $opensilex.getService<VariablesService>('opensilex.VariablesService')
 
-// v-model proxy (plutôt que ref local)
+// v-model proxy
 const modelSelected = computed({
   get: () => props.selected,
   set: (v) => emit('update:selected', v)
 })
 
-const formSelector = ref<InstanceType<typeof FormSelector>>()
+// InfiteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
+// read. Only `refresh` is needed here, so the exposed shape is declared directly.
+const dropdown = ref<{ refresh: () => Promise<void> } | null>(null)
 
+// Results depend on the shared resource instance, so the search is re-run whenever it changes.
 watch(() => props.sharedResourceInstance, () => {
-  formSelector.value?.refresh?.()
+  dropdown.value?.refresh()
 })
 
 const resolvedPlaceholder = computed(() => {
-  if (props.placeholder) return props.placeholder
-  return props.multiple
-    ? 'component.characteristic.form.selector.placeholder-multiple'
-    : 'component.characteristic.form.selector.placeholder'
+  if (props.placeholder) {
+    return props.placeholder
+  }
+  return t(props.multiple ? 'component.characteristic.form.selector.placeholder-multiple' : 'component.characteristic.form.selector.placeholder')
 })
 
-const loadCharacteristics = (characteristics: string[]): Promise<CharacteristicGetDTO[]> => {
-  return $opensilex
-    .getService<VariablesService>('opensilex.VariablesService')
-    .getCharacteristicsByURIs(characteristics, props.sharedResourceInstance)
+/** Loads the already selected elements (update form), so that their name can be displayed. */
+const loadCharacteristics = (uris: string[]): Promise<CharacteristicGetDTO[]> => {
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
+    .getCharacteristicsByURIs(uris, props.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<CharacteristicGetDTO[]>>) => http.response.result)
     .catch($opensilex.errorHandler)
 }
 
-function searchCharacteristics(name: string, page: number, pageSize: number) {
-  return service.searchCharacteristics(name, ['name=asc'], page, pageSize)
+/** Loads one page of results. `page` is zero-based. */
+const searchCharacteristics = (name: string, page: number, pageSize: number): Promise<HttpResponse<OpenSilexResponse<CharacteristicGetDTO[]>>> => {
+  return $opensilex.getService<VariablesService>('opensilex.VariablesService')
+    .searchCharacteristics(name, ['name=asc'], page, pageSize)
+    .then((http: HttpResponse<OpenSilexResponse<CharacteristicGetDTO[]>>) => http)
 }
 
-const select = (value: any) => emit('select', value)
-const deselect = (value: any) => emit('deselect', value)
-const onEnter = () => emit('handlingEnterKey')
+const characteristicToSelectOption = (dto: CharacteristicGetDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
+})
 </script>
 
 <style scoped lang="scss">

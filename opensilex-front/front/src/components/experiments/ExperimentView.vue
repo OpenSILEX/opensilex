@@ -144,7 +144,7 @@ import {useStore} from 'vuex';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse';
 import AnnotationList from '@/components/annotations/list/AnnotationList.vue';
-import {ExperimentsService} from 'opensilex-core';
+import {ExperimentsService, ScientificObjectsService} from 'opensilex-core';
 import type {ExperimentGetDTO} from 'opensilex-core';
 import ExperimentDetail from "@/components/experiments/views/ExperimentDetail.vue";
 import PageContent from "@/components/layout/PageContent.vue";
@@ -159,6 +159,7 @@ const store = useStore();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 
 const service = opensilex.getService<ExperimentsService>('opensilex.ExperimentsService');
+const scientificObjectsService = opensilex.getService<ScientificObjectsService>('opensilex.ScientificObjectsService');
 
 const uri = ref<string | null>(null);
 const name = ref('');
@@ -205,6 +206,16 @@ onMounted(() => {
         .getExperiment(uri.value)
         .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
           name.value = http.response.result.name;
+        })
+        .catch((error) => {
+          opensilex.errorHandler(error);
+        });
+
+    scientificObjectsService
+        .countScientificObjects(uri.value)
+        .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+          scientificObjects.value = http.response.result;
+          scientificObjectsCountIsLoading.value = false;
         })
         .catch((error) => {
           opensilex.errorHandler(error);

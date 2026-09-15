@@ -3,7 +3,7 @@
     <p v-if="skosReferences">
       {{ t('component.skos.addTo') }}
       <em>
-        <strong class="text-primary">{{ skosReferences.uri}}</strong>
+        <strong class="text-primary">{{ skosReferences.uri }}</strong>
       </em>
     </p>
 
@@ -124,39 +124,14 @@
     </div>
 
     <div>
-      <n-table
+      <n-data-table
           v-if="relations.length !== 0"
-          class="os-table"
-          striped
-      >
-        <thead>
-          <tr>
-            <th>{{ t('component.skos.relation') }}</th>
-            <th>{{ t('component.skos.uri') }}</th>
-            <th>{{ t('component.common.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-              v-for="(row, index) in relations"
-              :key="index"
-          >
-            <td>{{ t(row.relation) }}</td>
-            <td>
-              <a :href="row.relationURI" target="_blank">
-                {{ row.relationURI }}
-              </a>
-            </td>
-            <td class="text-center">
-              <DeleteButton
-                  label="component.common.delete"
-                  :small="true"
-                  @click="removeRelationsToSkosReferences(row)"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </n-table>
+          :columns="columns"
+          :data="relations"
+          :pagination="false"
+          size="small"
+          bordered
+      />
 
       <p v-else>
         <strong>
@@ -168,17 +143,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRef, useTemplateRef } from "vue";
-import { useStore } from "vuex";
-import { useI18n } from "vue-i18n";
-import { NForm, NFormItem, NInput, NTable } from "naive-ui";
-import { required } from "@/models/FormFieldsFormatter";
+import {computed, h, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRef, useTemplateRef} from "vue";
+import {useStore} from "vuex";
+import {useI18n} from "vue-i18n";
+import {NDataTable, NForm, NFormItem, NInput} from "naive-ui";
+import {required} from "@/models/FormFieldsFormatter";
 
 import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
-import { ExternalOntologies } from "../../../models/ExternalOntologies";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import { AgroportalAPIService } from "opensilex-core/api/agroportalAPI.service";
-import { AgroportalTermDTO } from "opensilex-core/model/agroportalTermDTO";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
 import HttpResponse from "../../../lib/HttpResponse";
 
 import AgroportalSearch from "@/components/common/external-references/agroportal/AgroportalSearch.vue";
@@ -191,7 +166,7 @@ import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
-const { t } = useI18n();
+const {t} = useI18n();
 
 const props = withDefaults(
     defineProps<{
@@ -233,10 +208,10 @@ const rules = computed(() => ({
   externalUri: {
     validator: (_rule: any, value: string) => {
       if (!value || value.trim().length === 0) {
-        return new Error(t("validations.required_if", { _field_: t("component.skos.uri") }));
+        return new Error(t("validations.required_if", {_field_: t("component.skos.uri")}));
       }
       if (!EXTERNAL_URI_REGEX.test(value.trim())) {
-        return new Error(t("validations.url", { _field_: t("component.skos.uri") }));
+        return new Error(t("validations.url", {_field_: t("component.skos.uri")}));
       }
       return true;
     },
@@ -368,11 +343,34 @@ function addRelation(
 
   if (skosRelation) {
     relationsInternal.value.push({
-      relation: skosRelation.label,
+      relation: t(skosRelation.label),
       relationURI: externalUri
     });
   }
 }
+
+const columns = [
+  {
+    title: t('component.skos.relation'),
+    key: 'relation'
+  },
+  {
+    title: t('component.skos.uri'),
+    key: 'relationURI',
+    render: (row: any) => h('a', {href: row.relationURI, target: '_blank'}, row.relationURI)
+  },
+  {
+    title: t('component.common.actions'),
+    key: 'actions',
+    align: 'center' as const,
+    render: (row: any) =>
+        h(DeleteButton, {
+          label: 'component.common.delete',
+          small: true,
+          onClick: () => removeRelationsToSkosReferences(row)
+        })
+  }
+];
 
 function validateForm() {
   return nFormRef.value.validate()
@@ -436,7 +434,7 @@ function removeRelationsToSkosReferences(row: any) {
   for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
     skosReferences.value[skosRelation.dtoKey] =
         skosReferences.value[skosRelation.dtoKey].filter(
-            function(value, index, arr) {
+            function (value, index, arr) {
               return value != row.relationURI;
             }
         );

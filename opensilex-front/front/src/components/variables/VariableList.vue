@@ -87,6 +87,7 @@
         @handlingEnterKey="applyFilters"
         :placeholder="$t('component.variable.entity.entity-placeholder')"
       />
+
     </n-form-item>
     <br>
     <!-- Caractéristique -->

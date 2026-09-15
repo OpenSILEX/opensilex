@@ -165,6 +165,8 @@ function updateResultCount (n: number) { resultCount.value = n }
 onMounted(() => {
   console.debug('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
 })
+
+defineExpose({ refresh, openTreeselect })
 </script>
 
 

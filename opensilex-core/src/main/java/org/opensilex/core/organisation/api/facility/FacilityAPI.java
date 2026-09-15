@@ -308,9 +308,9 @@ public class FacilityAPI {
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.search(filter);
 
-        List<FacilityGetDTO> dtoList = facilities.getList().stream()
-                .map(facilityModel -> FacilityGetDTO.getDTOFromModel(facilityModel, true))
-                .collect(Collectors.toList());
+        ListWithPagination<FacilityGetDTO> dtoList = facilities.convert(
+                FacilityGetDTO.class,
+                facilityModel -> FacilityGetDTO.getDTOFromModel(facilityModel, true));
 
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
@@ -336,9 +336,9 @@ public class FacilityAPI {
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.minimalSearch(filter);
 
-        List<NamedResourceDTO> dtoList = facilities.getList().stream()
-                .map(NamedResourceDTO::getDTOFromModel)
-                .collect(Collectors.toList());
+        ListWithPagination<NamedResourceDTO> dtoList = facilities.convert(
+                NamedResourceDTO.class,
+                NamedResourceDTO::getDTOFromModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();
     }

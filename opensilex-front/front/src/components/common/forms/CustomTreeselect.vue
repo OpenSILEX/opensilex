@@ -193,10 +193,10 @@ function normalizeSelectedToIds(selectedElements: string | string[] | undefined)
 
 // sélection initiale
 async function loadSelectedValues() {
-const sel = props.selected
-const ids = normalizeSelectedToIds(sel)
-// si aucune sélection réelle, on ne call pas itemLoadingMethod
-if (ids.length === 0) {
+  const sel = props.selected
+  const ids = normalizeSelectedToIds(sel)
+  // si aucune sélection réelle, on ne call pas itemLoadingMethod
+  if (ids.length === 0) {
     value.value = null
     return
   }
@@ -208,7 +208,7 @@ if (ids.length === 0) {
   //    .map(toTreeSelectOption)
 
 
-const opts = dtos
+  const opts = dtos
      .map((dto, i) => {
        const o = fromDTO(dto)
        o.id = ids[i] ?? o.id

@@ -1,199 +1,162 @@
 <template>
   <div>
-    <ValidationObserver ref="validatorRef">
-      <b-form>
-        <p v-if="skosReferences">
-          {{ t('component.skos.addTo') }}
-          <em>
-            <strong class="text-primary">{{ skosReferences.uri}}</strong>
-          </em>
-        </p>
+    <p v-if="skosReferences">
+      {{ t('component.skos.addTo') }}
+      <em>
+        <strong class="text-primary">{{ skosReferences.uri}}</strong>
+      </em>
+    </p>
 
-        <div
-            class="row"
-            v-if="includeAgroportalSearch && isAgroportalReachable"
-        >
+    <div
+        class="row"
+        v-if="includeAgroportalSearch && isAgroportalReachable"
+    >
+      <div class="col">
+        <AgroportalSearch
+            label="component.common.name"
+            type="text"
+            placeholder="search"
+            v-model:selected="ontologies"
+            v-model:isAllOntologies="isAllOntologies"
+            @change="onSearchTextChange"
+        />
+
+        <AgroportalResults
+            ref="searchResults"
+            v-model:text="text"
+            :isMappingMode="true"
+            :mappingOptions="options"
+            :importMapping="onImportMapping"
+        />
+      </div>
+    </div>
+
+    <Card noHeader :noFooter="true">
+      <template #body>
+        <div class="row">
           <div class="col">
-            <AgroportalSearch
-                label="component.common.name"
-                type="text"
-                placeholder="search"
-                v-model:selected="ontologies"
-                v-model:isAllOntologies="isAllOntologies"
-                @change="onSearchTextChange"
-            />
+            <h5 class="font-weight-bold mb-0">
+              {{ t('component.skos.ontologies-references-label') }}
+            </h5>
 
-            <AgroportalResults
-                ref="searchResults"
-                v-model:text="text"
-                :isMappingMode="true"
-                :mappingOptions="options"
-                :importMapping="onImportMapping"
-            />
-          </div>
-        </div>
-
-        <b-card bg-variant="light">
-          <div class="row">
-            <div class="col">
-              <b-form-group
-                  label="component.skos.ontologies-references-label"
-                  label-size="lg"
-                  label-class="font-weight-bold pt-0"
-                  class="mb-0"
-              >
-                <template v-slot:label>
-                  {{ t('component.skos.ontologies-references-label') }}
-                </template>
-              </b-form-group>
-
-              <b-card-text>
-                <ul>
-                  <li
-                      v-for="externalOntologyRef in externalOntologiesRefs"
-                      :key="externalOntologyRef.name"
+            <div>
+              <ul>
+                <li
+                    v-for="externalOntologyRef in externalOntologiesRefs"
+                    :key="externalOntologyRef.name"
+                >
+                  <a
+                      target="_blank"
+                      :title="`${externalOntologyRef.name}: ${externalOntologyRef.description}`"
+                      :href="externalOntologyRef.link"
                   >
-                    <a
-                        target="_blank"
-                        :title="externalOntologyRef.name"
-                        :href="externalOntologyRef.link"
-                        v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
-                    >
-                      {{ externalOntologyRef.name }}
-                    </a>
-                  </li>
-                </ul>
-              </b-card-text>
+                    {{ externalOntologyRef.name }}
+                  </a>
+                </li>
+              </ul>
             </div>
+          </div>
 
-            <div class="col">
-              <FilterField :fullWidth="true">
-                <FormSelector
-                    label="component.skos.relation"
-                    helpMessage="component.skos.relation-help"
-                    placeholder="component.skos.no-relation"
-                    v-model:selected="currentRelation"
-                    :options="options"
-                    :requiredBlue="true"
-                />
-              </FilterField>
+          <div class="col">
+            <n-form
+                ref="nFormRef"
+                :model="form"
+                :rules="rules"
+                label-placement="top"
+                :show-require-mark="true"
+            >
+              <FormSelector
+                  label="component.skos.relation"
+                  helpMessage="component.skos.relation-help"
+                  placeholder="component.skos.no-relation"
+                  path="relation"
+                  v-model:selected="currentRelation"
+                  :options="options"
+                  :required="true"
+              />
 
               <!-- URI -->
-              <FilterField :fullWidth="true">
-<!--                <b-form-group>-->
-<!--                  <div class="helperAndBlueStar">-->
-<!--                    <FormInputLabelHelper-->
-<!--                        label="component.skos.uri"-->
-<!--                        helpMessage="component.skos.uri-help"-->
-<!--                    />-->
-<!--                    <pre class="blueStar"> *</pre>-->
-<!--                  </div>-->
+              <n-form-item path="externalUri" :show-label="false">
+                <FormField
+                    label="component.skos.uri"
+                    helpMessage="component.skos.uri-help"
+                    :required="true"
+                >
+                  <template #field="{ id }">
+                    <span
+                        class="error-message alert alert-danger"
+                        v-if="isIncludedInRelations()"
+                    >
+                      {{ t('component.skos.external-already-existing') }}
+                    </span>
 
-<!--                  <ValidationProvider-->
-<!--                      :name="t('component.skos.uri')"-->
-<!--                      :rules="{-->
-<!--                      required: true,-->
-<!--                      regex: /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/-->
-<!--                    }"-->
-<!--                      v-slot="{ errors }"-->
-<!--                  >-->
-<!--                    <span-->
-<!--                        class="error-message alert alert-danger"-->
-<!--                        v-if="isIncludedInRelations()"-->
-<!--                    >-->
-<!--                      {{ t('component.skos.external-already-existing') }}-->
-<!--                    </span>-->
+                    <n-input
+                        :id="id"
+                        v-model:value="form.externalUri"
+                        type="text"
+                        :placeholder="t('component.skos.uri-placeholder')"
+                    />
+                  </template>
+                </FormField>
+              </n-form-item>
 
-<!--                    <b-form-input-->
-<!--                        id="externalUri"-->
-<!--                        v-model.trim="currentExternalUri"-->
-<!--                        type="text"-->
-<!--                        required-->
-<!--                        :placeholder="t('component.skos.uri-placeholder')"-->
-<!--                        debounce="300"-->
-<!--                    />-->
-
-<!--                    <div class="error-message alert alert-danger">-->
-<!--                      {{ errors[0] }}-->
-<!--                    </div>-->
-<!--                  </ValidationProvider>-->
-<!--                </b-form-group>-->
-
-                <b-form-group label-align-sm="right">
-                  <b-button
-                      @click="addRelationsToSkosReferences"
-                      class="greenThemeColor"
-                  >
-                    {{ t('component.skos.add') }}
-                  </b-button>
-                </b-form-group>
-              </FilterField>
-            </div>
+              <div class="text-end">
+                <Button
+                    label="component.skos.add"
+                    @click="addRelationsToSkosReferences"
+                    class="greenThemeColor"
+                />
+              </div>
+            </n-form>
           </div>
-        </b-card>
+        </div>
+      </template>
+    </Card>
 
-        <b-form-group
-            v-if="displayInsertButton"
-            label-align-sm="right"
-        >
-          <b-button
-              class="float-right"
-              @click="update"
-          >
-            {{ t("component.skos.update") }}
-          </b-button>
-        </b-form-group>
-      </b-form>
-    </ValidationObserver>
+    <div
+        v-if="displayInsertButton"
+        class="text-end mt-2"
+    >
+      <Button
+          label="component.skos.update"
+          @click="update"
+      />
+    </div>
 
     <div>
-      <b-table
+      <n-table
           v-if="relations.length !== 0"
+          class="os-table"
           striped
-          hover
-          small
-          responsive
-          sort-icon-left
-          bordered
-          :items="relations"
-          :fields="fields"
       >
-        <template v-slot:head(relation)="data">
-          {{ t(data.label) }}
-        </template>
-
-        <template v-slot:cell(relation)="data">
-          {{ t(data.value) }}
-        </template>
-
-        <template v-slot:head(relationURI)="data">
-          {{ t(data.label) }}
-        </template>
-
-        <template v-slot:cell(relationURI)="data">
-          <a :href="data.value" target="_blank">
-            {{ data.value }}
-          </a>
-        </template>
-
-        <template v-slot:head(actions)="data">
-          {{ t(data.label) }}
-        </template>
-
-        <template v-slot:cell(actions)="data">
-          <div class="text-center">
-            <b-button-group size="md">
-              <b-button
-                  size="md"
-                  @click="removeRelationsToSkosReferences(data.item)"
-                  variant="danger"
-              >
-                <Icon icon="fa#trash-alt" />
-              </b-button>
-            </b-button-group>
-          </div>
-        </template>
-      </b-table>
+        <thead>
+          <tr>
+            <th>{{ t('component.skos.relation') }}</th>
+            <th>{{ t('component.skos.uri') }}</th>
+            <th>{{ t('component.common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+              v-for="(row, index) in relations"
+              :key="index"
+          >
+            <td>{{ t(row.relation) }}</td>
+            <td>
+              <a :href="row.relationURI" target="_blank">
+                {{ row.relationURI }}
+              </a>
+            </td>
+            <td class="text-center">
+              <DeleteButton
+                  label="component.common.delete"
+                  :small="true"
+                  @click="removeRelationsToSkosReferences(row)"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </n-table>
 
       <p v-else>
         <strong>
@@ -205,9 +168,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRef, useTemplateRef } from "vue";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
+import { NForm, NFormItem, NInput, NTable } from "naive-ui";
+import { required } from "@/models/FormFieldsFormatter";
 
 import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
 import { ExternalOntologies } from "../../../models/ExternalOntologies";
@@ -219,8 +184,10 @@ import HttpResponse from "../../../lib/HttpResponse";
 import AgroportalSearch from "@/components/common/external-references/agroportal/AgroportalSearch.vue";
 import AgroportalResults from "@/components/common/external-references/agroportal/AgroportalResults.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
-import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import FormField from "@/components/common/forms/FormField.vue";
+import Card from "@/components/common/views/Card.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();
@@ -249,13 +216,37 @@ const skosReferences = defineModel('references')
 
 const agroportalAPIService = ref<AgroportalAPIService>();
 
-const currentRelation = ref<string>("");
-const currentExternalUri = ref<string>("");
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>("nFormRef");
+
+const form = reactive({
+  relation: "",
+  externalUri: ""
+});
+
+const currentRelation = toRef(form, "relation");
+const currentExternalUri = toRef(form, "externalUri");
+
+const EXTERNAL_URI_REGEX = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
+
+const rules = computed(() => ({
+  relation: required(t('component.skos.relation')),
+  externalUri: {
+    validator: (_rule: any, value: string) => {
+      if (!value || value.trim().length === 0) {
+        return new Error(t("validations.required_if", { _field_: t("component.skos.uri") }));
+      }
+      if (!EXTERNAL_URI_REGEX.test(value.trim())) {
+        return new Error(t("validations.url", { _field_: t("component.skos.uri") }));
+      }
+      return true;
+    },
+    trigger: ["blur", "change"]
+  }
+}));
+
 const text = ref<string>("");
 const ontologies = ref<string[]>([]);
 const isAllOntologies = ref<boolean>(false);
-
-const validatorRef = ref<any>();
 
 const externalOntologiesRefs = computed<any[]>(() => {
   if (!props.ontologiesToSelect) {
@@ -339,26 +330,9 @@ function resetExternalUriForm() {
   currentExternalUri.value = "";
 
   nextTick(() => {
-    validatorRef.value.reset();
+    nFormRef.value?.restoreValidation();
   });
 }
-
-const fields = [
-  {
-    key: "relation",
-    label: "component.skos.relation",
-    sortable: true
-  },
-  {
-    key: "relationURI",
-    label: "component.skos.uri",
-    sortable: false
-  },
-  {
-    key: "actions",
-    label: "component.common.actions"
-  }
-];
 
 const relations = computed(() => {
   relationsInternal.value = [];
@@ -401,8 +375,9 @@ function addRelation(
 }
 
 function validateForm() {
-  const validator = validatorRef.value;
-  return validator.validate();
+  return nFormRef.value.validate()
+      .then(() => true)
+      .catch(() => false);
 }
 
 function addRelationsToSkosReferences() {
@@ -505,14 +480,6 @@ function onImportMapping(
 
 <style scoped lang="scss">
 a {
-  color: #007bff;
-}
-
-.helperAndBlueStar {
-  display: flex;
-}
-
-.blueStar {
   color: #007bff;
 }
 </style>

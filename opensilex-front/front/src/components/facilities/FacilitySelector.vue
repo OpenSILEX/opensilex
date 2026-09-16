@@ -1,24 +1,9 @@
 <template>
-<!--  <div>
-    <opensilex-FormSelector
-      :label="label"
-      v-model:selected="facilitiesURI"
-      :multiple="multiple"
-      :helpMessage="helpMessage"
-      :placeholder="t(placeholder)"
-      :searchMethod="searchFacilities"
-      :itemLoadingMethod="loadFacilities"
-      :conversionMethod="facilityToSelectNode"
-      noResultsText="FacilitySelector.no-result"
-      @select="(v) => emit('select', v)"
-      @deselect="(v) => emit('deselect', v)"
-      @clear="onClear"
-    />
-  </div>-->
   <InfiteScrollDropdown
     v-model:selected="facilitiesURIs"
     :fetchPage="searchFacilities"
     :placeholder="t(placeholder)"
+    :noResultsText="t('FacilitySelector.no-result')"
     :conversionMethod="facilityToSelectNode"
     :itemLoadingMethod="loadFacilities"
     :multiple="multiple"
@@ -30,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import { inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { OrganizationsService } from 'opensilex-core/api/organizations.service'
@@ -56,12 +41,6 @@ const props = withDefaults(
   }
 )
 
-//TODO MAX old emits , do we need to make a clearall ?
-/*const emit = defineEmits<{
-  (e: 'select', v: any): void
-  (e: 'deselect', v: any): void
-  (e: 'clear'): void
-}>()*/
 const emit = defineEmits(['selectionChange'])
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
@@ -99,10 +78,6 @@ function facilityToSelectNode(dto: NamedResourceDTO) {
     // shortUri needed to avoid auto deselection problem on selectors with both short and long URIs
     value: $opensilex.getShortUri(dto.uri)
   }
-}
-
-function onClear() {
-  emit('clear')
 }
 </script>
 

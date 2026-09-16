@@ -7,6 +7,7 @@
     :label="label"
     :multiple="multiple"
     :placeholder="placeholder"
+    :noResultsText="t('VariableSelector.filter-search-no-result')"
     :required="required"
     @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"

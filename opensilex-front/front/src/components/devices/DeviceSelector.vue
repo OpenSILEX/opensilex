@@ -7,6 +7,7 @@
       :conversionMethod="deviceToSelectOption"
       :label="label"
       :placeholder="t('DeviceSelector.placeholder')"
+    :noResultsText="t('DeviceSelector.no-results-text')"
       :multiple="multiple"
       :required="required"
       :key="lang"

@@ -52,7 +52,7 @@
                 </span>
 
                 <span v-else>
-                  {{ t('component.common.no-results') }}
+                  {{ noResultsText ?? t('component.common.no-results') }}
                 </span>
               </div>
             </template>
@@ -106,6 +106,8 @@ interface Props{
   /** Blue star */
   requiredBlue?: boolean,
   disabled?: boolean,
+  /** Message shown when the search returns nothing. Falls back to a generic one. */
+  noResultsText?: string,
   /**
    * Method to load pre-selected elements, example for some update Form. May return synchronously,
    * some existing loaders do.

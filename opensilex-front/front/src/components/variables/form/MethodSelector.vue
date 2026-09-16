@@ -13,6 +13,7 @@
     :disabled="disabled"
     :actionHandler="actionHandler"
     :placeholder="resolvedPlaceholder"
+    :noResultsText="t('component.method.form.selector.filter-search-no-result')"
     @selectionChange="(option) => emit('selectionChange', option)"
     @handlingEnterKey="emit('handlingEnterKey')"
   />

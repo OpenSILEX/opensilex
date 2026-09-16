@@ -14,6 +14,7 @@
     :disabled="disabled"
     :actionHandler="actionHandler"
     :placeholder="resolvedPlaceholder"
+    :noResultsText="t('component.entity.form.selector.filter-search-no-result')"
     @selectionChange="(option) => emit('selectionChange', option)"
     @handlingEnterKey="emit('handlingEnterKey')"
   />

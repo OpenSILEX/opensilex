@@ -9,6 +9,7 @@
       :multiple="multiple"
       :helpMessage="helpMessage"
       :placeholder="t(placeholder)"
+    :noResultsText="t('SiteSelector.no-result')"
       :disabled="disabled"
       @selectionChange="(option) => emit('selectionChange', option)"
       @clear="emit('clear')"

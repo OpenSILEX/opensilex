@@ -9,6 +9,7 @@
     :label="label"
     :multiple="multiple"
     :placeholder="placeholder"
+    :noResultsText="t('component.experiment.form.selector.filter-search-no-result')"
     @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"
     @handlingEnterKey="emit('handlingEnterKey')"

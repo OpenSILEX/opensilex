@@ -11,6 +11,7 @@
       :label="label"
       :multiple="multiple"
       :placeholder="placeholder"
+    :noResultsText="t('groupVariableSelector.form.selector.filter-search-no-result')"
       @selectionChange="(option) => emit('selectionChange', option)"
       @clear="emit('clear')"
     />

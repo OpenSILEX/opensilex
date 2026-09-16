@@ -12,6 +12,7 @@
     :viewHandler="viewHandler"
     :viewHandlerDetailsVisible="viewHandlerDetailsVisible"
     :placeholder="resolvedPlaceholder"
+    :noResultsText="t('component.data.form.selector.filter-search-no-result')"
     @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"
   />

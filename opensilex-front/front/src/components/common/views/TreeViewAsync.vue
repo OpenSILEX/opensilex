@@ -1,30 +1,25 @@
 <template>
   <Overlay :show="isSearching && !isGlobalLoaderVisible">
     <n-tree
+        class="async-tree"
         :data="nodeList"
         key-field="key"
         label-field="title"
         block-line
-        :checkable="enableSelection"
-        v-model:checked-keys="multiSelect"
-        v-model:expanded-keys="expandedKeys"
+        :expanded-keys="expandedKeys"
+        @update:expanded-keys="(keys) => (expandedKeys = keys)"
         :on-load="onLoad"
         :render-label="renderLabel"
         :render-switcher-icon="renderSwitcherIcon"
     />
-    <div v-if="hasMoreRoots" class="async-tree-action root-load-more">
-      <a href="#" @click.prevent="loadMoreRoots()">
-        {{ isLoadingMoreRoots ? t("TreeViewAsync.loading-more") : t("TreeViewAsync.load-more") }}
-      </a>
-    </div>
   </Overlay>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, VNodeChild, h } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, VNodeChild, h } from "vue";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
-import { NTree } from "naive-ui";
+import { NCheckbox, NTree } from "naive-ui";
 import Icon from "@/components/common/views/Icon.vue";
 import Overlay from "@/components/layout/Overlay.vue";
 
@@ -67,12 +62,9 @@ const nodeList = ref<any[]>([]);
 const expandedKeys = ref<string[]>([]);
 const isSearching = ref(false);
 
-const rootPage = ref(0);
-const rootTotalCount = ref(0);
-const isLoadingMoreRoots = ref(false);
-const hasMoreRoots = computed(() => nodeList.value.length < rootTotalCount.value);
-
 const isGlobalLoaderVisible = computed(() => store.state.loaderVisible);
+
+const ROOT_LOADING_NODE_KEY = "__root_loading_more__";
 
 function buildNode(soDTO: any, isRoot: boolean): any {
   const hasChildCount = "child_count" in soDTO;
@@ -85,30 +77,40 @@ function buildNode(soDTO: any, isRoot: boolean): any {
   };
 }
 
+function buildRootLoadingNode(): any {
+  return {
+    key: ROOT_LOADING_NODE_KEY,
+    title: t("TreeViewAsync.loading-more"),
+    isLeaf: true,
+    data: null,
+  };
+}
+
+let rootPage = 0;
+
+function appendRootNodes(nodes: any[], totalCount: number) {
+  nodeList.value = nodeList.value.concat(nodes);
+  if (nodeList.value.length < totalCount) {
+    nodeList.value.push(buildRootLoadingNode());
+  }
+}
+
 async function refresh() {
   isSearching.value = true;
-  rootPage.value = 0;
+  rootPage = 0;
   const method = props.searchMethodRoot ?? props.searchMethod;
   const http = await method(undefined, 0, props.pageSize);
-  nodeList.value = (http.response.result || []).map((dto: any) => buildNode(dto, true));
-  rootTotalCount.value = http.response.metadata.pagination.totalCount;
+  nodeList.value = [];
+  appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
   isSearching.value = false;
 }
 
 async function loadMoreRoots() {
-  if (isLoadingMoreRoots.value) {
-    return;
-  }
-  isLoadingMoreRoots.value = true;
-  try {
-    rootPage.value += 1;
-    const method = props.searchMethodRoot ?? props.searchMethod;
-    const http = await method(undefined, rootPage.value, props.pageSize);
-    const newNodes = (http.response.result || []).map((dto: any) => buildNode(dto, true));
-    nodeList.value = [...nodeList.value, ...newNodes];
-  } finally {
-    isLoadingMoreRoots.value = false;
-  }
+  rootPage += 1;
+  const method = props.searchMethodRoot ?? props.searchMethod;
+  const http = await method(undefined, rootPage, props.pageSize);
+  nodeList.value.pop(); // remove the loading sentinel
+  appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
 }
 
 async function onLoad(node: any) {
@@ -134,17 +136,72 @@ async function loadMoreChildren(node: any) {
   }
 }
 
+function getSelection(uri: string): boolean {
+  return multiSelect.value.indexOf(uri) >= 0;
+}
+
+function onSelectionChange(uri: string) {
+  const current = multiSelect.value;
+  const index = current.indexOf(uri);
+  if (index >= 0) {
+    emit("update:selection", [...current.slice(0, index), ...current.slice(index + 1)]);
+  } else {
+    emit("update:selection", [...current, uri]);
+  }
+}
+
 function renderSwitcherIcon(info: { expanded: boolean }): VNodeChild {
   return h(Icon, { icon: info.expanded ? "fa#chevron-down" : "fa#chevron-right" });
 }
 
+let rootLoadingSentinelEl: Element | null = null;
+let observer: IntersectionObserver;
+
+onMounted(() => {
+  observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      loadMoreRoots();
+    }
+  });
+  refresh();
+});
+
+onUpdated(() => {
+  nextTick(() => {
+    observer.disconnect();
+    if (rootLoadingSentinelEl) {
+      observer.observe(rootLoadingSentinelEl);
+    }
+  });
+});
+
+onBeforeUnmount(() => {
+  observer.disconnect();
+});
+
 function renderLabel(info: { option: any }): VNodeChild {
   const node = info.option;
+
+  if (node.data == null) {
+    return h(
+        "span",
+        { ref: (el: Element | null) => (rootLoadingSentinelEl = el) },
+        t("TreeViewAsync.loading-more")
+    );
+  }
+
   const childCount = node.data?.child_count;
   const loadedCount = Array.isArray(node.children) ? node.children.length : 0;
   const hasMoreChildren = typeof childCount === "number" && childCount > loadedCount;
 
-  return h("div", { class: "d-flex align-items-center async-tree-node" }, [
+  return h("span", { class: "async-tree-node" }, [
+    props.enableSelection
+        ? h(NCheckbox, {
+          class: "selection-box",
+          checked: getSelection(node.data.uri),
+          "onUpdate:checked": () => onSelectionChange(node.data.uri),
+        })
+        : null,
     h(
         "span",
         { class: "async-tree-title", onClick: () => emit("select", node) },
@@ -156,7 +213,7 @@ function renderLabel(info: { option: any }): VNodeChild {
             { class: "async-tree-action" },
             hasMoreChildren
                 ? [
-                  ` (${node.data.rdf_type_name} - ${loadedCount}/${childCount} - `,
+                  ` (${node.data.rdf_type_name} - ${loadedCount}/${childCount} - `,
                   h(
                       "a",
                       {
@@ -170,7 +227,7 @@ function renderLabel(info: { option: any }): VNodeChild {
                   ),
                   ")",
                 ]
-                : ` (${node.data.rdf_type_name})`
+                : ` (${node.data.rdf_type_name})`
         )
         : null,
     !props.noButtons && slots.buttons
@@ -187,6 +244,35 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+:deep(.async-tree) {
+  border: 1px solid #dee2e6;
+  background-color: white;
+  color: #545454;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+:deep(.n-tree-node-content) {
+  padding-right: 0.3rem;
+  padding-left: 0.3rem;
+}
+
+:deep(.n-tree-node-content:hover) {
+  color: #545454;
+  cursor: pointer;
+  background-color: #f3f3f3;
+}
+
+:deep(.n-tree-node--selected .n-tree-node-content) {
+  color: #545454;
+  background-color: #e9e9e9;
+}
+
+.selection-box {
+  display: inline-block;
+  margin-right: 6px;
+}
+
 .async-tree-title {
   cursor: pointer;
 }
@@ -201,11 +287,7 @@ defineExpose({
 }
 
 .tree-button-group {
-  margin-left: 8px;
-}
-
-.root-load-more {
-  padding: 5px 10px;
+  float: right;
 }
 </style>
 

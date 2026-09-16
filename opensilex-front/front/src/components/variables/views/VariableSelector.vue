@@ -1,57 +1,50 @@
 <template>
-  <opensilex-FormSelector
-    ref="formSelector"
-    :label="label"
+  <InfiteScrollDropdown
     v-model:selected="variablesURI"
-    :multiple="multiple"
-    :searchMethod="searchVariables"
+    :fetchPage="searchVariables"
     :itemLoadingMethod="load"
-    :conversionMethod="variableToSelectNode"
-    :clearable="clearable"
+    :conversionMethod="variableToSelectOption"
+    :label="label"
+    :multiple="multiple"
     :placeholder="placeholder"
     :required="required"
-    :defaultSelectedValue="defaultSelectedValue"
-    noResultsText="VariableSelector.filter-search-no-result"
+    @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"
-    @select="select"
-    @deselect="deselect"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
+import type { SelectOption } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { NamedResourceDTO, VariableDetailsDTO } from 'opensilex-core/index'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import { useI18n } from 'vue-i18n'
+import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
 
 const props = withDefaults(defineProps<{
   variables?: string | string[]
   label?: string
-  defaultSelectedValue?: string
   multiple?: boolean
   required?: boolean
-  clearable?: boolean
 }>(), {
   required: false
 })
 
 const emit = defineEmits<{
   (e: 'update:variables', value: string | string[] | undefined): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'clear'): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
 }>()
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const formSelector = ref<any>(null)
 const { t } = useI18n()
 
 const service = $opensilex.getService<VariablesService>('opensilex.VariablesService')
-const filterLabel = ref<string | undefined>('')
 
+// v-model proxy
 const variablesURI = computed({
   get: () => props.variables,
   set: (value) => emit('update:variables', value)
@@ -59,19 +52,17 @@ const variablesURI = computed({
 
 const placeholder = computed(() => {
   return props.multiple
-    ? 'VariableSelector.placeholder-multiple'
+    ? t('VariableSelector.placeholder-multiple')
     : t('VariableSelector.placeholder')
 })
 
+/** Loads one page of results. `page` is zero-based. */
 function searchVariables(query: string, page: number, pageSize: number) {
-  filterLabel.value = query
-
-  if (filterLabel.value === '.*') {
-    filterLabel.value = undefined
-  }
+  // The treeselect used to send ".*" to mean "everything"; the API expects no name filter for that.
+  const name = (!query || query === '.*') ? undefined : query
 
   return service.searchVariables(
-    filterLabel.value, // name
+    name, // name
     undefined, // entity
     undefined, // entity of interest
     undefined, // characteristic
@@ -92,21 +83,7 @@ function searchVariables(query: string, page: number, pageSize: number) {
   ).catch($opensilex.errorHandler)
 }
 
-function variableToSelectNode(dto: NamedResourceDTO) {
-  return {
-    id: dto.uri,
-    label: dto.name
-  }
-}
-
-function select(value: any) {
-  emit('select', value)
-}
-
-function deselect(value: any) {
-  emit('deselect', value)
-}
-
+/** Loads the already selected elements (update form), so that their name can be displayed. */
 async function load(variables: string[]) {
   try {
     const http: HttpResponse<OpenSilexResponse<VariableDetailsDTO[]>> =
@@ -118,6 +95,11 @@ async function load(variables: string[]) {
     return undefined
   }
 }
+
+const variableToSelectOption = (dto: NamedResourceDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
+})
 </script>
 
 <style scoped>

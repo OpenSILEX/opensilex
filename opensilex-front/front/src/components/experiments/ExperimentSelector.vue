@@ -1,37 +1,36 @@
 <template>
-  <FormSelector
-    ref="experimentSelector"
+  <InfiteScrollDropdown
+    v-model:selected="experimentsURI"
+    :fetchPage="searchExperiments"
+    :itemLoadingMethod="loadExperiments"
+    :conversionMethod="experimentToSelectOption"
     :path="path"
     :required="required"
     :label="label"
-    v-model:selected="experimentsURI"
     :multiple="multiple"
-    :searchMethod="searchExperiments"
     :placeholder="placeholder"
-    :noResultsText="t('component.experiment.form.selector.filter-search-no-result')"
+    @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @keyup.enter="onEnter"
+    @handlingEnterKey="emit('handlingEnterKey')"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
+import type { SelectOption } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { ExperimentGetListDTO } from 'opensilex-core/index'
 import { useI18n } from 'vue-i18n'
-import FormSelector from "@/components/common/forms/FormSelector.vue";
+import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
 
 const emit = defineEmits<{
   (e: 'update:experiments', value: any): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'clear'): void
   (e: 'handlingEnterKey'): void
 }>()
@@ -41,6 +40,7 @@ const props = withDefaults(defineProps<{
   label?: string
   multiple?: boolean
   required?: boolean
+  /** Path of the field in the parent NForm model, used for validation */
   path?: string
 }>(), {
   label: 'component.experiment.experiment',
@@ -48,12 +48,7 @@ const props = withDefaults(defineProps<{
   required: false
 })
 
-const experimentSelector = ref<any>(null)
-const pageSize = ref(10)
-const page = ref(0)
-
-const experimentsByUriCache = ref<Map<string, ExperimentGetListDTO>>(new Map())
-
+// v-model proxy
 const experimentsURI = computed({
   get: () => props.experiments,
   set: (value) => emit('update:experiments', value)
@@ -65,56 +60,42 @@ const placeholder = computed(() => {
     : t('component.experiment.form.selector.placeholder')
 })
 
+/** Loads one page of results. `page` is zero-based. */
 function searchExperiments(name: string, page: number, pageSize: number) {
   return $opensilex
     .getService('opensilex.ExperimentsService')
     .searchExperiments(
       name,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      undefined,       // year
+      undefined,       // is_ended
+      undefined,       // species
+      undefined,       // factors
+      undefined,       // projects
+      undefined,       // is_public
+      undefined,       // facilities
+      undefined,       // funding
+      ['name=asc'],    // order_by
       page,
       pageSize
     )
-    .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {
-      if (http?.response?.result) {
-        experimentsByUriCache.value.clear()
-        http.response.result.forEach((dto) => {
-          experimentsByUriCache.value.set(dto.uri, dto)
-        })
-      }
-      return http
-    })
+    .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => http)
 }
 
-function select(value: any) {
-  emit('select', value)
+/**
+ * Loads the already selected elements, so that their name can be displayed. Needed whenever an
+ * experiment arrives without a label: an update form, or a filter restored from the URL.
+ */
+function loadExperiments(uris: string[]) {
+  return $opensilex
+    .getService('opensilex.ExperimentsService')
+    .getExperimentsByURIs(uris)
+    .then((http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => http.response.result)
+    .catch($opensilex.errorHandler)
 }
 
-function deselect(value: any) {
-  emit('deselect', value)
-}
-
-function onEnter() {
-  emit('handlingEnterKey')
-}
-
-function loadMoreItems() {
-  pageSize.value = 0
-  experimentSelector.value?.refresh?.()
-  Promise.resolve().then(() => {
-    experimentSelector.value?.openTreeselect?.()
-  })
-}
-
-defineExpose({
-  loadMoreItems
+const experimentToSelectOption = (dto: ExperimentGetListDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
 })
 </script>
 

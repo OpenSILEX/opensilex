@@ -1,30 +1,29 @@
 <template>
-  <!-- IMPORTANT: en Vue 3, @keyup/@keydown sur un composant enfant
-       ne s’attache plus “nativement”. On capture donc Enter sur un wrapper. -->
+  <!-- IMPORTANT: in Vue 3, @keyup/@keydown on a child component is no longer attached natively.
+       Enter is therefore captured on a wrapper. -->
   <div @keydown.enter.prevent.stop="onEnter">
-    <opensilex-FormSelector
-      ref="formSelector"
-      :label="label"
+    <InfiteScrollDropdown
+      ref="dropdown"
       v-model:selected="variableGroupURI"
-      :multiple="multiple"
-      :searchMethod="searchVariablesGroups"
+      :fetchPage="searchVariablesGroups"
       :itemLoadingMethod="loadVariablesGroups"
+      :conversionMethod="variablesGroupToSelectOption"
+      :label="label"
+      :multiple="multiple"
       :placeholder="placeholder"
-      noResultsText="component.groupVariable.form.selector.filter-search-no-result"
-      @clear="$emit('clear')"
-      @select="select"
-      @deselect="deselect"
-      @loadMoreItems="loadMoreItems"
+      @selectionChange="(option) => emit('selectionChange', option)"
+      @clear="emit('clear')"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, watch } from 'vue';
+import { computed, inject, ref, watch } from 'vue';
+import type { SelectOption } from 'naive-ui';
 import type { VariablesGroupGetDTO, VariablesService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-security/HttpResponse';
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
-import FormSelector from '@/components/common/forms/FormSelector.vue';
+import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue';
 import { useI18n } from 'vue-i18n'
 
 type VgModel = string | string[] | null | undefined;
@@ -38,23 +37,24 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:variableGroup', v: VgModel): void;
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void;
   (e: 'clear'): void;
-  (e: 'select', v: any): void;
-  (e: 'deselect', v: any): void;
   (e: 'handlingEnterKey'): void;
 }>();
 
 const { t } = useI18n()
 
+// v-model proxy
 const variableGroupURI = computed({
   get: () => props.variableGroup,
   set: (v) => emit('update:variableGroup', v)
 });
 
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
-const formSelector = ref<InstanceType<typeof FormSelector> | null>(null);
 
-const pageSize = ref(10);
+// InfiteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
+// read. Only `refresh` is needed here, so the exposed shape is declared directly.
+const dropdown = ref<{ refresh: () => Promise<void> } | null>(null);
 
 const placeholder = computed(() =>
   props.multiple
@@ -62,11 +62,12 @@ const placeholder = computed(() =>
     : t('groupVariableSelector.form.selector.placeholder')
 );
 
+// Results depend on the shared resource instance, so the search is re-run whenever it changes.
 watch(() => props.sharedResourceInstance, () => {
-  formSelector.value?.refresh?.();
+  dropdown.value?.refresh();
 });
 
-// charge un lot par URIs
+/** Loads the already selected elements (update form), so that their name can be displayed. */
 function loadVariablesGroups(variableGroupURIs: string[]): Promise<Array<VariablesGroupGetDTO>> {
   const service = $opensilex.getService<VariablesService>('opensilex.VariablesService');
   return service
@@ -75,11 +76,11 @@ function loadVariablesGroups(variableGroupURIs: string[]): Promise<Array<Variabl
     .catch($opensilex.errorHandler);
 }
 
-// recherche paginée
+/** Loads one page of results. `page` is zero-based. */
 function searchVariablesGroups(
   searchQuery: string,
   page: number,
-  _pageSize: number
+  pageSize: number
 ): Promise<HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>> {
   const service = $opensilex.getService<VariablesService>('opensilex.VariablesService');
   return service.searchVariablesGroups(
@@ -87,27 +88,20 @@ function searchVariablesGroups(
       undefined,
       ['name=asc'],
       page,
-      pageSize.value,
+      pageSize,
       props.sharedResourceInstance
     )
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => http);
 }
 
-// relayer les events simples
-function select(value: any)   { emit('select', value); }
-function deselect(value: any) { emit('deselect', value); }
+const variablesGroupToSelectOption = (dto: VariablesGroupGetDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
+});
 
-// event touche Entrée (capturée sur le wrapper div)
+// Enter key event (captured on the wrapper div)
 function onEnter() {
   emit('handlingEnterKey');
-}
-
-// charger plus (ouvre le treeselect après refresh)
-async function loadMoreItems() {
-  pageSize.value = 0;
-  formSelector.value?.refresh?.();
-  await nextTick();
-  formSelector.value?.openTreeselect?.();
 }
 </script>
 

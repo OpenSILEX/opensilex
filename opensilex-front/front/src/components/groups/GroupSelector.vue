@@ -1,37 +1,36 @@
 <template>
-  <FormSelector
-    :label="label"
+  <InfiteScrollDropdown
     v-model:selected="groupsURI"
-    :multiple="multiple"
+    :fetchPage="searchGroups"
     :itemLoadingMethod="loadGroups"
-    :searchMethod="searchGroups"
-    :conversionMethod="groupToSelectNode"
+    :conversionMethod="groupToSelectOption"
+    :label="label"
+    :multiple="multiple"
     :placeholder="t(placeholder)"
-    :noResultsText="noResultsText"
     :helpMessage="helpMessage"
     :disabled="disabled"
-    @select="(v) => emit('select', v)"
-    @deselect="(v) => emit('deselect', v)"
+    @selectionChange="(option) => emit('selectionChange', option)"
+    @clear="emit('clear')"
   />
 </template>
 
 <script setup lang="ts">
-import { inject, ref, watch } from 'vue'
+import { computed, inject } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
 import type { SecurityService, GroupDTO } from 'opensilex-security/index'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
-import FormSelector from "@/components/common/forms/FormSelector.vue";
+import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
 
 const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
-    groups?: any // string | string[] selon multiple
+    groups?: any // string | string[] depending on `multiple`
     label?: string
     placeholder?: string
-    noResultsText?: string
     multiple?: boolean
     disabled?: boolean
     helpMessage?: string
@@ -46,35 +45,25 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:groups', v: any): void
-  (e: 'select', v: any): void
-  (e: 'deselect', v: any): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
+  (e: 'clear'): void
 }>()
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const service = $opensilex.getService<SecurityService>('opensilex.SecurityService')
 
-// v-model replacement of PropSync("groups")
-const groupsURI = ref<any>(props.groups)
+// v-model proxy
+const groupsURI = computed({
+  get: () => props.groups,
+  set: (v) => emit('update:groups', v)
+})
 
-watch(
-  () => props.groups,
-  (v) => {
-    groupsURI.value = v
-  },
-  { deep: true }
-)
-
-watch(
-  groupsURI,
-  (v) => emit('update:groups', v),
-  { deep: true }
-)
-
-function searchGroups(searchQuery: string, page?: number, pageSize?: number) {
-  // on garde  la signature searchMethod attendue par FormSelector
-  return service.searchGroups(searchQuery, undefined, page, pageSize)
+/** Loads one page of results. `page` is zero-based. */
+function searchGroups(searchQuery: string, page: number, pageSize: number) {
+  return service.searchGroups(searchQuery, ['name=asc'], page, pageSize)
 }
 
+/** Loads the already selected elements (update form), so that their name can be displayed. */
 async function loadGroups(groupsUris: string[]) {
   if (!groupsUris || groupsUris.length === 0) return undefined
   const http = await service.getGroupsByURI(groupsUris) as unknown as HttpResponse<
@@ -83,14 +72,11 @@ async function loadGroups(groupsUris: string[]) {
   return (http as any).response.result
 }
 
-function groupToSelectNode(dto: GroupDTO) {
-  if (!dto) return undefined
-  return {
-    label: (dto as any).name,
-    // shortUri needed to avoid auto deselection problem on selectors with both shorts and long URIs
-    id: $opensilex.getShortUri((dto as any).uri)
-  }
-}
+const groupToSelectOption = (dto: GroupDTO): SelectOption => ({
+  label: (dto as any).name,
+  // shortUri needed to avoid auto deselection problem on selectors with both shorts and long URIs
+  value: $opensilex.getShortUri((dto as any).uri)
+})
 </script>
 
 <style scoped lang="scss"></style>

@@ -1,38 +1,37 @@
 <template>
-  <opensilex-FormSelector
-    ref="formSelector"
-    :label="computedLabel"
+  <InfiteScrollDropdown
     v-model:selected="germplasmURI"
+    :fetchPage="search"
+    :itemLoadingMethod="load"
+    :conversionMethod="germplasmToSelectOption"
+    :label="computedLabel"
     :multiple="multiple"
     :required="required"
-    :searchMethod="search"
-    :itemLoadingMethod="load"
-    :conversionMethod="convertGermplasmDTO"
     :placeholder="computedPlaceholder"
+    @selectionChange="(option) => emit('selectionChange', option)"
     @clear="emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @enterKey="onEnter"
+    @handlingEnterKey="emit('handlingEnterKey')"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { GermplasmService } from 'opensilex-core/api/germplasm.service'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { GermplasmGetAllDTO } from 'opensilex-core/model/germplasmGetAllDTO'
+import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const germplasmURI = defineModel<string[] | undefined>('germplasm')
 
 const emit = defineEmits<{
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'clear'): void
   (e: 'handlingEnterKey'): void
 }>()
@@ -50,13 +49,12 @@ const props = withDefaults(defineProps<{
   multiple: false
 })
 
-const formSelector = ref<any>(null)
-
 const germplasmService = $opensilex.getService<GermplasmService>('opensilex.GermplasmService')
 
 const computedLabel = computed(() => t(props.label))
 const computedPlaceholder = computed(() => t(props.placeholder))
 
+/** Loads one page of results. `page` is zero-based. */
 function search(query: string, page: number, pageSize: number) {
   return germplasmService.searchGermplasm(
     undefined, // uri
@@ -75,12 +73,13 @@ function search(query: string, page: number, pageSize: number) {
     [],
     undefined, // metadata
     undefined, // is_public
-    [], // orderBy
+    ['name=asc'], // orderBy
     page,
     pageSize
   )
 }
 
+/** Loads the already selected elements (update form), so that their name can be displayed. */
 async function load(uris: string[]): Promise<GermplasmGetAllDTO[]> {
   try {
     const http: HttpResponse<OpenSilexResponse<GermplasmGetAllDTO[]>> =
@@ -93,7 +92,7 @@ async function load(uris: string[]): Promise<GermplasmGetAllDTO[]> {
   }
 }
 
-function convertGermplasmDTO(germplasm: GermplasmGetAllDTO) {
+const germplasmToSelectOption = (germplasm: GermplasmGetAllDTO): SelectOption => {
   let label = `${germplasm.name} (${germplasm.rdf_type_name}`
 
   if (germplasm.species != null) {
@@ -103,26 +102,10 @@ function convertGermplasmDTO(germplasm: GermplasmGetAllDTO) {
   label += ')'
 
   return {
-    id: germplasm.uri,
-    label
+    label,
+    value: germplasm.uri
   }
 }
-
-function select(value: any) {
-  emit('select', value)
-}
-
-function deselect(value: any) {
-  emit('deselect', value)
-}
-
-function onEnter() {
-  emit('handlingEnterKey')
-}
-
-defineExpose({
-  formSelector
-})
 </script>
 
 <style scoped>

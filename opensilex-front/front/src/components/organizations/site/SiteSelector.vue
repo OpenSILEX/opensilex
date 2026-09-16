@@ -1,37 +1,39 @@
 <template>
   <div>
-    <opensilex-FormSelector
-      :label="label"
+    <InfiteScrollDropdown
       v-model:selected="siteURIsProxy"
+      :fetchPage="searchSites"
+      :itemLoadingMethod="loadSites"
+      :conversionMethod="siteToSelectOption"
+      :label="label"
       :multiple="multiple"
       :helpMessage="helpMessage"
-      :placeholder="placeholder"
-      :searchMethod="searchSites"
-      :itemLoadingMethod="loadSites"
-      :conversionMethod="siteToSelectNode"
+      :placeholder="t(placeholder)"
       :disabled="disabled"
-      noResultsText="SiteSelector.no-result"
-      @select="select"
-      @deselect="deselect"
-    ></opensilex-FormSelector>
+      @selectionChange="(option) => emit('selectionChange', option)"
+      @clear="emit('clear')"
+    />
   </div>
-
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref} from "vue";
+import {computed, inject} from "vue";
+import {useI18n} from "vue-i18n";
+import type {SelectOption} from "naive-ui";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {NamedResourceDTOSiteModel} from 'opensilex-core/index';
 import {SiteGetListDTO} from "opensilex-core/model/siteGetListDTO";
+import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
 
 //#region Constant values & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const organizationsService = $opensilex.getService<OrganizationsService>('opensilex.OrganizationsService');
+const { t } = useI18n();
 //#endregion
-//#region Props
 
+//#region Props
 interface Props{
   siteURIs?: string[],
   label?: string,
@@ -46,24 +48,16 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: "SiteSelector.placeholder"
 });
 //#endregion
+
 //#region Emits & EventHandling
 const emit = defineEmits<{
   (e: 'update:siteURIs', value: string[]): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
+  (e: 'clear'): void
 }>();
-
-function select(value: any) {
-  emit("select", value);
-}
-
-function deselect(value: any) {
-  emit("deselect", value);
-}
 //#endregion
 
 //#region Computed
-
 //This allows updating of siteURIs in parent component (instead of the old PropSync way)
 const siteURIsProxy = computed({
   get: () => props.siteURIs,
@@ -71,69 +65,36 @@ const siteURIsProxy = computed({
 });
 //#endregion
 
-//#region  Refs
-const siteByUriCache = ref<Map<string, NamedResourceDTOSiteModel>>(new Map<string, NamedResourceDTOSiteModel>());
-//#endregion
-
 //#region Functions & webservice calls
+/** Loads one page of results. `page` is zero-based. */
 function searchSites(searchQuery: string, page: number, pageSize: number) {
   return organizationsService.searchSites(
-    searchQuery, //name
-    undefined,
-    undefined,
+    searchQuery,     // pattern
+    undefined,       // organizations
+    ['name=asc'],    // order_by
     page,
     pageSize
-  ).then((http: HttpResponse<OpenSilexResponse<Array<SiteGetListDTO>>>) => {
-
-    if (http && http.response) {
-      siteByUriCache.value.clear();
-      http.response.result.forEach(dto => {
-        siteByUriCache.value.set(dto.uri, dto);
-      })
-    }
-    return http;
-  }).catch($opensilex.errorHandler);
+  ).then((http: HttpResponse<OpenSilexResponse<Array<SiteGetListDTO>>>) => http)
+    .catch($opensilex.errorHandler);
 }
 
-function loadSites(siteUris: any[]) {
+/** Loads the already selected elements (update form), so that their name can be displayed. */
+function loadSites(siteUris: string[]) {
   if (!Array.isArray(siteUris) || siteUris.length === 0) {
     return undefined;
   }
 
-  if (siteByUriCache.value.size === 0) {
-    let siteDtos = [];
-
-    siteUris.forEach(site => {
-      if (site.name && site.name.length > 0 && site.uri && site.uri.length > 0) {
-        siteDtos.push(site);
-      }
-    });
-
-    if (siteDtos.length > 0) {
-      return siteDtos;
-    }
-
-    return organizationsService.getSitesByURI(siteUris)
-      .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTOSiteModel>>>) =>
-        (http && http.response) ? http.response.result : undefined
-      );
-  }
-
-  return siteUris.map(siteUri => siteByUriCache.value.get(siteUri));
+  return organizationsService.getSitesByURI(siteUris)
+    .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTOSiteModel>>>) =>
+      (http && http.response) ? http.response.result : undefined
+    );
 }
 
-function siteToSelectNode(siteDto: NamedResourceDTOSiteModel) {
-  if (!siteDto) {
-    return undefined;
-  }
-
-  return {
-    label: siteDto.name,
-    id: siteDto.uri
-  };
-}
+const siteToSelectOption = (dto: NamedResourceDTOSiteModel): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
+});
 //#endregion
-
 </script>
 
 <style scoped>

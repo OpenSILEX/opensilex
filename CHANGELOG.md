@@ -1,5 +1,7 @@
 <!-- TOC -->
 * [Changelog](#changelog)
+  * [[1.5.6]](#156)
+  * [[1.5.5]](#155)
   * [[1.5.4]](#154)
     * [Fixed or optimized](#fixed-or-optimized)
   * [[1.5.3]](#153)

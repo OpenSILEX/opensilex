@@ -38,13 +38,20 @@
         <Transition>
           <div v-show="searchFiltersToggle" class="card-vertical-group">
             <div class="card searchFilterField">
+              <div class="card-header">
+                <h3 class="mr-3">
+                  <Icon class="search-icon" icon="ik#ik-search" />
+                  {{ t('searchfilter.label') }}
+                </h3>
+              </div>
+
               <div class="card-body">
                 <div class="container-full">
                   <div class="row">
 
                     <!-- Name -->
                     <div class="col col-12 col-xl-3 col-sm-6">
-                      <b-form-group>
+                      <div class="form-group">
                         <label for="name">{{ t("component.common.name") }}</label>
                         <StringFilter
                             id="name"
@@ -53,12 +60,12 @@
                             class="searchFilter"
                             @handlingEnterKey="refresh()"
                         ></StringFilter>
-                      </b-form-group>
+                      </div>
                     </div>
 
                     <!-- Object Type -->
                     <div class="col col-12 col-xl-3 col-sm-6">
-                      <b-form-group>
+                      <div class="form-group">
                         <label for="type">{{ t("ExperimentScientificObjects.objectType") }}</label>
                         <ScientificObjectTypeSelector
                             id="type"
@@ -69,12 +76,12 @@
                             class="searchFilter"
                             @handlingEnterKey="refresh()"
                         ></ScientificObjectTypeSelector>
-                      </b-form-group>
+                      </div>
                     </div>
 
                     <!-- Parent -->
                     <div class="col col-12 col-xl-3 col-sm-6">
-                      <b-form-group>
+                      <div class="form-group">
                         <label for="parentFilter">{{ t("ExperimentScientificObjects.parent-label") }}</label>
                         <FormSelector
                             id="parentFilter"
@@ -86,7 +93,7 @@
                             class="searchFilter"
                             @handlingEnterKey="refresh()"
                         ></FormSelector>
-                      </b-form-group>
+                      </div>
                     </div>
 
                     <!-- Germplasm -->
@@ -103,7 +110,7 @@
 
                     <!-- Factor Level -->
                     <div class="col col-12 col-xl-3 col-sm-6">
-                      <b-form-group>
+                      <div class="form-group">
                         <label for="factorLevels">{{ t("FactorLevelSelector.label") }}</label>
                         <FactorLevelSelector
                             id="factorLevels"
@@ -114,7 +121,7 @@
                             class="searchFilter"
                             @handlingEnterKey="refresh()"
                         ></FactorLevelSelector>
-                      </b-form-group>
+                      </div>
                     </div>
 
                     <!-- Criteria search -->
@@ -131,26 +138,26 @@
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="container-fluid button-group">
-                <div class="row">
-                  <div class="col-md-12 text-right">
-                    <Button
-                        label="component.common.search.clear-button"
-                        icon="bi-x-lg"
-                        @click="resetSearch()"
-                        variant="light"
-                        class="mr-3"
-                        :small="false"
-                    ></Button>
-                    <Button
-                        label="component.common.search.search-button"
-                        @click="unselectRefresh()"
-                        icon="bi-search"
-                        class="greenThemeColor createButton"
-                        :small="false"
-                    ></Button>
-                  </div>
+            <div class="container-fluid button-group">
+              <div class="row">
+                <div class="col-md-12 text-right">
+                  <Button
+                      label="component.common.search.clear-button"
+                      icon="bi-x-lg"
+                      @click="resetSearch()"
+                      variant="light"
+                      class="mr-3"
+                      :small="false"
+                  ></Button>
+                  <Button
+                      label="component.common.search.search-button"
+                      @click="unselectRefresh()"
+                      icon="bi-search"
+                      class="greenThemeColor createButton"
+                      :small="false"
+                  ></Button>
                 </div>
               </div>
             </div>
@@ -165,7 +172,7 @@
               v-bind:style='{
           "width":(!searchFiltersToggle?"100%":"100%"),
       }'>
-            <NCard>
+            <n-card>
               <div class="card-header">
                 <h3 class="d-inline">
                   <Icon icon="ik#ik-target" class="title-icon" />
@@ -176,35 +183,16 @@
                     selectedObjects.length
                   }}
             </span>
-                <b-dropdown
-                    dropright
-                    class="mb-2 mr-2"
-                    :small="true"
+                <n-dropdown
+                    :options="dropdownOptions"
+                    trigger="hover"
                     :disabled="selectedObjects.length == 0"
-                    text=actions>
-
-                  <b-dropdown-item-button
-                      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-                      @click="createDocument()" >
-                    {{t('component.common.addDocument')}}
-                  </b-dropdown-item-button>
-                  <b-dropdown-item-button @click="exportCSV(false)">
-                    Export CSV
-                  </b-dropdown-item-button>
-
-                  <b-dropdown-item-button
-                      v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
-                      @click="createEvents()">
-                    {{t('Event.add-multiple')}}
-                  </b-dropdown-item-button>
-
-                  <b-dropdown-item-button
-                      v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
-                      @click="createMoves()">
-                    {{t('Move.add')}}
-                  </b-dropdown-item-button>
-
-                </b-dropdown>
+                    @select="handleDropdownAction"
+                    class="mb-2 mr-2">
+                  <n-button size="small" :disabled="selectedObjects.length == 0">
+                    actions
+                  </n-button>
+                </n-dropdown>
                 <CreateButton
                     class="mb-2 mr-2"
                     @click="exportCSV(true)"
@@ -214,18 +202,17 @@
               </div>
 
               <div>
-                <b-row>
-                  <b-col cols="0">
-                    <b-form-checkbox
-                        class="selection-box custom-control custom-checkbox"
-                        v-model="selectAll"
-                        @change="onSelectAll()"
-                        switches
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <n-checkbox
+                        class="selection-box"
+                        v-model:checked="selectAll"
+                        @update:checked="onSelectAll()"
                     >
-                    </b-form-checkbox>
-                  </b-col>
+                    </n-checkbox>
+                  </div>
                   <span class="ml-1 mt-1 selectLabel"> {{!selectAll ? t('component.common.select-all') : t('component.common.unselect-all')}}</span>
-                </b-row>
+                </div>
               </div>
 
               <TreeViewAsync
@@ -285,7 +272,7 @@
                   @onUpdate="refreshAfterCreateOrUpdate"
                   @onCreate="refreshAfterCreateOrUpdate"
               ></ScientificObjectForm>
-            </NCard>
+            </n-card>
           </div>
 
           <div v-if="selected" class="selectedCard"
@@ -302,11 +289,13 @@
                 :key="selected.name"
                 :selected="selected"
                 :selectedObject="uri"
-
-                class="experimentDetails" global-view/>
+                :tabs="detailTabs"
+                :global-view="false"
+                :experiment="uri"
+                class="experimentDetails"/>
           </div>
-
         </div>
+
       </PageContent>
 
       <DocumentForm
@@ -333,7 +322,7 @@
 
 <script setup lang="ts">
 import { ScientificObjectsService } from "opensilex-core/index";
-import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
+import ScientificObjectDetail, {Tab} from "../../scientificObjects/ScientificObjectDetail.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import PageActions from "@/components/layout/PageActions.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
@@ -358,7 +347,7 @@ import {useRoute} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
-import {NButtonGroup} from "naive-ui";
+import {NButtonGroup, NCard, NCheckbox} from "naive-ui";
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -408,6 +397,19 @@ const credentials = computed(() => {
 
 const lang = computed(() => {
   return store.state.lang;
+})
+
+const dropdownOptions = computed(() => {
+  const options: Array<{ label: string, key: string }> = [];
+  if (user.value.hasCredential(credentials.value.CREDENTIAL_DOCUMENT_MODIFICATION_ID)) {
+    options.push({label: t('component.common.addDocument'), key: 'createDocument'});
+  }
+  options.push({label: 'Export CSV', key: 'exportCSVSelected'});
+  if (user.value.hasCredential(credentials.value.CREDENTIAL_EVENT_MODIFICATION_ID)) {
+    options.push({label: t('Event.add-multiple'), key: 'createEvents'});
+    options.push({label: t('Move.add'), key: 'createMoves'});
+  }
+  return options;
 })
 //#endregion
 
@@ -626,6 +628,60 @@ function exportCSV(exportAll: boolean) {
       exportDto,
       lang.value
   );
+}
+
+function handleDropdownAction(key: string) {
+  switch (key) {
+    case 'createDocument':
+      createDocument();
+      break;
+    case 'exportCSVSelected':
+      exportCSV(false);
+      break;
+    case 'createEvents':
+      createEvents();
+      break;
+    case 'createMoves':
+      createMoves();
+      break;
+  }
+}
+
+function detailTabs(objectUri: string, experimentUri?: string): Tab[] {
+  return [
+    {
+      key: 'documents',
+      label: t('component.common.details.document'),
+      to: {
+        name: 'ScientificObjectDocuments',
+        params: {uri: objectUri, experiment: experimentUri}
+      }
+    },
+    {
+      key: 'annotations',
+      label: t('component.annotation.list-title'),
+      to: {
+        name: 'ScientificObjectAnnotations',
+        params: {uri: objectUri, experiment: experimentUri}
+      }
+    },
+    {
+      key: 'events',
+      label: t('component.menu.events'),
+      to: {
+        name: 'ScientificObjectEvents',
+        params: {uri: objectUri, experiment: experimentUri}
+      }
+    },
+    {
+      key: 'positions',
+      label: t('component.common.geometry.positions'),
+      to: {
+        name: 'ScientificObjectPositions',
+        params: {uri: objectUri, experiment: experimentUri}
+      }
+    },
+  ];
 }
 
 function createDocument() {

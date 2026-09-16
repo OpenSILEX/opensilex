@@ -2,6 +2,7 @@
   <Overlay :show="isSearching && !isGlobalLoaderVisible">
     <n-tree
         class="async-tree"
+        cascade
         :data="nodeList"
         key-field="key"
         label-field="title"

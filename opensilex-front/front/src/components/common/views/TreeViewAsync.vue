@@ -1,6 +1,6 @@
 <template>
   <Overlay :show="isSearching && !isGlobalLoaderVisible">
-  <sl-vue-tree
+  <n-tree-select
     ref="asyncTree"
     v-model="nodeList"
     @nodeclick="selectItem"
@@ -57,7 +57,7 @@
       </span>
       <span ref="load" v-else>{{ $t("TreeViewAsync.loading-more") }}</span>
     </template>
-  </sl-vue-tree>
+  </n-tree-select>
   </Overlay>
 </template>
 
@@ -67,6 +67,7 @@ import { useStore } from "vuex";
 import copyToClipboard from "copy-to-clipboard";
 import Icon from "@/components/common/views/Icon.vue";
 import Overlay from "@/components/layout/Overlay.vue";
+import {NTreeSelect} from "naive-ui";
 
 const store = useStore();
 

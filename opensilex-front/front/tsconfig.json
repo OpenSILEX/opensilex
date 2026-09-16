@@ -18,8 +18,10 @@
         "types": ["node", "vite/client", "vuex/types"],
         "paths": {
             "@/*": [  "src/*" ],
-            "opensilex-security": ["../../opensilex-security/front/src/*"],
-            "opensilex-core": ["../../opensilex-core/front/src/*"]
+            "opensilex-security": ["../../opensilex-security/front/types/index.d.ts"],
+            "opensilex-security/*": ["../../opensilex-security/front/types/*"],
+            "opensilex-core": ["../../opensilex-core/front/types/index.d.ts"],
+            "opensilex-core/*": ["../../opensilex-core/front/types/*"]
         },
         "lib": [
             "esnext",
@@ -43,8 +45,6 @@
         "node_modules"
     ],
     "files": [
-        "./typings.d.ts",
-        "../../opensilex-security/front/types/opensilex-security.d.ts",
-        "../../opensilex-core/front/types/opensilex-core.d.ts"
+        "./typings.d.ts"
     ]
 }

@@ -1,5 +1,3 @@
-/// <reference path="../../../opensilex-security/front/types/opensilex-security.d.ts" />
-/// <reference path="../../../opensilex-core/front/types/opensilex-core.d.ts" />
 /**
  * CHANGE THIS VARIABLE IF NEEDED TO CHANGE API ENDPOINT
  */

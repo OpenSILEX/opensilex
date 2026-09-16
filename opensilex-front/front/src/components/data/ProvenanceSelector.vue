@@ -1,42 +1,33 @@
 <template>
-  <FormSelector
-    ref="formSelector"
+  <InfiteScrollDropdown
+    v-model:selected="provenancesURI"
+    :fetchPage="searchProvenances"
+    :itemLoadingMethod="loadProvenances"
+    :conversionMethod="provenanceToSelectOption"
     :path="path"
     :label="label"
-    v-model:selected="provenancesURI"
     :multiple="multiple"
-    :searchMethod="searchProvenances"
-    :itemLoadingMethod="loadProvenances"
-    :conversionMethod="provenancesToSelectNode"
-    :placeholder="
-      multiple
-        ? t('component.data.form.selector.placeholder-multiple')
-        : t('component.data.form.selector.placeholder')
-    "
-    noResultsText="component.data.form.selector.filter-search-no-result"
-    @clear="emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @loadMoreItems="loadMoreItems"
-    :showCount="true"
+    :required="required"
     :actionHandler="actionHandler"
     :viewHandler="viewHandler"
-    :required="required"
     :viewHandlerDetailsVisible="viewHandlerDetailsVisible"
+    :placeholder="resolvedPlaceholder"
+    @selectionChange="(option) => emit('selectionChange', option)"
+    @clear="emit('clear')"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, ref } from 'vue'
-
-import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type {
   OpenSilexResponse,
   ProvenanceGetDTO
 } from 'opensilex-core/index'
-import FormSelector from "@/components/common/forms/FormSelector.vue";
+import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
 
 const props = withDefaults(defineProps<{
   provenances?: any
@@ -49,6 +40,7 @@ const props = withDefaults(defineProps<{
   viewHandlerDetailsVisible?: boolean
   scientificObject?: string
   device?: string
+  /** Path of the field in the parent NForm model, used for validation */
   path?: string
 }>(), {
   provenances: undefined,
@@ -65,19 +57,14 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:provenances', value: any): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'clear'): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
 }>()
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
 
-const formSelector = ref<any>(null)
-
-const pageSize = ref(10)
-const filterLabel = ref<string | undefined>(undefined)
-
+// v-model proxy
 const provenancesURI = computed({
   get() {
     return props.provenances
@@ -87,77 +74,49 @@ const provenancesURI = computed({
   }
 })
 
-function refresh() {
-  formSelector.value?.refresh?.()
-}
+const resolvedPlaceholder = computed(() =>
+  props.multiple
+    ? t('component.data.form.selector.placeholder-multiple')
+    : t('component.data.form.selector.placeholder')
+)
 
-function loadProvenances(provenancesURI: any) {
+/** Loads the already selected elements (update form), so that their name can be displayed. */
+function loadProvenances(uris: string[]): Promise<ProvenanceGetDTO[]> {
   return $opensilex
     .getService('opensilex.DataService')
-    .getProvenancesByURIs(provenancesURI)
+    .getProvenancesByURIs(uris)
     .then(
       (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
         http.response.result
     )
 }
 
-function searchProvenances(label: string, page: number, requestedPageSize: number) {
-  filterLabel.value = label
-
-  if (filterLabel.value === '.*') {
-    filterLabel.value = undefined
-  }
+/** Loads one page of results. `page` is zero-based. */
+function searchProvenances(label: string, page: number, pageSize: number) {
+  // The treeselect used to send ".*" to mean "everything"; the API expects no name filter for that.
+  const name = (!label || label === '.*') ? undefined : label
 
   return $opensilex
     .getService('opensilex.DataService')
     .searchProvenance(
-      filterLabel.value,
+      name,
       undefined,
       undefined,
       undefined,
       undefined,
       undefined,
-      undefined,
-      undefined,
-      pageSize.value
+      ['name=asc'],
+      page,
+      pageSize
     )
     .then(
       (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => http
     )
 }
 
-function provenancesToSelectNode(dto: ProvenanceGetDTO) {
-  return {
-    id: dto.uri,
-    label: dto.name
-  }
-}
-
-function select(value: any) {
-  emit('select', value)
-}
-
-function deselect(value: any) {
-  emit('deselect', value)
-}
-
-function loadMoreItems() {
-  pageSize.value = 0
-  formSelector.value?.refresh?.()
-
-  nextTick(() => {
-    formSelector.value?.openTreeselect?.()
-  })
-}
-
-defineExpose({
-  refresh,
-  loadProvenances,
-  searchProvenances,
-  provenancesToSelectNode,
-  select,
-  deselect,
-  loadMoreItems
+const provenanceToSelectOption = (dto: ProvenanceGetDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
 })
 </script>
 

@@ -1,22 +1,18 @@
 <template>
   <div v-if="renderComponent">
-    <opensilex-FormSelector
-      ref="deviceSelector"
+    <InfiteScrollDropdown
+      v-model:selected="deviceURIs"
+      :fetchPage="search"
+      :itemLoadingMethod="load"
+      :conversionMethod="deviceToSelectOption"
       :label="label"
       :placeholder="t('DeviceSelector.placeholder')"
-      :noResultsText="t('DeviceSelector.no-results-text')"
-      v-model:selected="deviceURIs"
       :multiple="multiple"
       :required="required"
-      :searchMethod="search"
-      :itemLoadingMethod="load"
-      :conversionMethod="dtoToSelectNode"
       :key="lang"
-      :showCount="true"
+      @selectionChange="(option) => emit('selectionChange', option)"
       @clear="emit('clear')"
-      @select="emit('select', $event)"
-      @deselect="emit('deselect', $event)"
-      @keyup.enter="onEnter"
+      @handlingEnterKey="emit('handlingEnterKey')"
     />
   </div>
 </template>
@@ -25,8 +21,10 @@
 import { computed, inject, nextTick, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import { useI18n } from 'vue-i18n'
+import type { SelectOption } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { DeviceGetDTO } from 'opensilex-core/index'
+import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
 
 const props = withDefaults(defineProps<{
   value?: string | string[] | null
@@ -42,9 +40,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:value', value: string | string[] | null): void
+  (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'clear'): void
-  (e: 'select', value?: any): void
-  (e: 'deselect', value?: any): void
   (e: 'handlingEnterKey'): void
 }>()
 
@@ -54,20 +51,17 @@ const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const service = $opensilex.getService<any>('opensilex.DevicesService')
 
-const pageSize = 10
-const page = 0
-
 const renderComponent = ref(true)
-const dtoByUriCache = ref<Map<string, DeviceGetDTO>>(new Map())
-const deviceSelector = ref<any>(null)
 
 const lang = computed(() => store.getters.language)
 
+// v-model proxy
 const deviceURIs = computed({
   get: () => props.value ?? (props.multiple ? [] : null),
   set: (value) => emit('update:value', value)
 })
 
+// The device type filters the search, so the selector is remounted to drop the loaded results.
 watch(
   () => props.type,
   async () => {
@@ -77,9 +71,10 @@ watch(
   }
 )
 
-async function search(query: string, pageArg: number, pageSizeArg: number) {
+/** Loads one page of results. `page` is zero-based. */
+async function search(query: string, page: number, pageSize: number) {
   try {
-    const http = await service.searchDevices(
+    return await service.searchDevices(
       props.type,      // rdf_type
       true,            // include_subtypes
       query,           // name
@@ -91,55 +86,29 @@ async function search(query: string, pageArg: number, pageSizeArg: number) {
       undefined,       // model
       undefined,       // serial_number
       undefined,       // metadata
+      undefined,       // Relations
       ['name=asc'],
-      pageArg,
-      pageSizeArg
+      page,
+      pageSize
     )
-
-    if (http?.response?.result) {
-      dtoByUriCache.value.clear()
-      for (const dto of http.response.result) {
-        dtoByUriCache.value.set(dto.uri, dto)
-      }
-    }
-
-    return http
   } catch (error) {
     $opensilex.errorHandler(error)
   }
 }
 
-async function load(devices: string[]) {
+/** Loads the already selected elements (update form), so that their name can be displayed. */
+async function load(uris: string[]) {
   try {
-    const http = await service.getDeviceByUris(devices)
+    const http = await service.getDeviceByUris(uris)
     return http?.response?.result
   } catch (error) {
     $opensilex.errorHandler(error)
   }
 }
 
-function dtoToSelectNode(dto: DeviceGetDTO) {
-  if (!dto) {
-    return undefined
-  }
-
-  return {
-    label: dto.name,
-    id: dto.uri
-  }
-}
-
-function onEnter() {
-  emit('handlingEnterKey')
-}
-
-defineExpose({
-  search,
-  load,
-  dtoToSelectNode,
-  deviceSelector,
-  pageSize,
-  page
+const deviceToSelectOption = (dto: DeviceGetDTO): SelectOption => ({
+  label: dto.name,
+  value: dto.uri
 })
 </script>
 

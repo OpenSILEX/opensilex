@@ -26,6 +26,7 @@
             @search="onSearch"
             @scroll="onDropdownScroll"
             @update:value="onSelectionChange"
+            @clear="emit('clear')"
             @keydown.enter.prevent="emit('handlingEnterKey')"
           >
             <template #action>
@@ -58,24 +59,16 @@
           </n-select>
 
           <div v-if="!actionHandler && viewHandler" class="select-side-button">
-            <DetailButton
-              @click="viewHandler"
-              :label="viewHandlerDetailsVisible ? t('component.common.hide-details') : t('component.common.show-details')"
-              :detailVisible="viewHandlerDetailsVisible"
-              :small="true"
-              class="greenThemeColor"
-            />
+            <n-button class="greenThemeColor" :title="detailsButtonLabel" @click="viewHandler">
+              <opensilex-Icon :icon="viewHandlerDetailsVisible ? 'fa#eye-slash' : 'fa#eye'" />
+            </n-button>
           </div>
 
           <div v-else-if="actionHandler" class="select-side-button">
             <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
-            <DetailButton
-              v-if="viewHandler"
-              @click="viewHandler"
-              :label="viewHandlerDetailsVisible ? t('component.common.hide-details') : t('component.common.show-details')"
-              :detailVisible="viewHandlerDetailsVisible"
-              :small="true"
-            />
+            <n-button v-if="viewHandler" :title="detailsButtonLabel" @click="viewHandler">
+              <opensilex-Icon :icon="viewHandlerDetailsVisible ? 'fa#eye-slash' : 'fa#eye'" />
+            </n-button>
           </div>
         </div>
       </n-form-item>
@@ -92,7 +85,6 @@ import useInfiniteScrollSearch from "@/composables/useInfiniteScrollSearch";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import FormField from "@/components/common/forms/FormField.vue";
-import DetailButton from "@/components/common/buttons/DetailButton.vue";
 
 //#region PUBLIC
 const selectedValue = defineModel<string | string[] | null>('selected');
@@ -128,7 +120,7 @@ interface Props{
 }
 const props = withDefaults(defineProps<Props>(), {multiple: false});
 
-const emit = defineEmits(['handlingEnterKey', 'selectionChange']);
+const emit = defineEmits(['handlingEnterKey', 'selectionChange', 'clear']);
 //#endregion
 
 //#region Constants
@@ -221,6 +213,13 @@ const displayedOptions = computed<SelectOption[]>(() => {
 
   return merged;
 });
+//#endregion
+
+//#region Computed
+/** Tooltip of the details button, which toggles with the details it controls. */
+const detailsButtonLabel = computed(() => props.viewHandlerDetailsVisible
+  ? t('component.common.hide-details')
+  : t('component.common.show-details'));
 //#endregion
 
 //#region Event handlers
@@ -329,7 +328,7 @@ defineExpose({ refresh: reload });
 
 .select-button-container {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   width: 100%;
   gap: 0;
   flex-wrap: nowrap;
@@ -343,12 +342,12 @@ defineExpose({ refresh: reload });
 .select-side-button {
   flex: 0 0 auto;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   margin-left: 8px;
 }
 
-.select-side-button > * {
-  height: 100%;
+.select-side-button > * + * {
+  margin-left: 4px;
 }
 
 .greenThemeColor {

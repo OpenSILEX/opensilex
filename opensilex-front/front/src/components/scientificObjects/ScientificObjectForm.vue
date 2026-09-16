@@ -7,6 +7,10 @@
     :base-type="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
     :create-action="callScientificObjectCreation"
     :update-action="callScientificObjectUpdate"
+    :context="context"
+    @onUpdate="(payload) => emit('onUpdate', payload)"
+    @onCreate="(payload) => emit('onCreate', payload)"
+    @onSuccess="() => emit('onSuccess')"
   ></OntologyObjectForm>
 </template>
 
@@ -43,12 +47,18 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const emit = defineEmits<{
+  onUpdate: [payload: any];
+  onCreate: [payload: any];
+  onSuccess: [];
+}>();
+
 //endregion
 
 
 //#region reactive data
 //Data to track what type of OS is being created or updated
-const currentType = ref<string>(null);
+const currentType = ref<string | null>(null);
 //#endregion
 
 //#region Template refs

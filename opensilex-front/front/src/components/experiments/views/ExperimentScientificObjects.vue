@@ -40,7 +40,7 @@
             <div class="card searchFilterField">
               <div class="card-header">
                 <h3 class="mr-3">
-                  <Icon class="search-icon" icon="ik#ik-search" />
+                  <Icon class="search-icon" icon="bi#bi-search" />
                   {{ t('searchfilter.label') }}
                 </h3>
               </div>
@@ -175,7 +175,7 @@
             <n-card>
               <div class="card-header">
                 <h3 class="d-inline">
-                  <Icon icon="ik#ik-target" class="title-icon" />
+                  <Icon icon="bi#bi-bullseye" class="title-icon" />
                   {{ t("ScientificObjectList.selected") }}
                 </h3>&nbsp;
                 <span class="badge badge-pill greenThemeColor" style="margin: 5px">
@@ -288,7 +288,7 @@
           "width":(!searchFiltersToggle? "100%" : "100%")
       }'>
             <h5>
-              <Icon icon="ik#ik-target" class="title-icon" />
+              <Icon icon="bi#bi-bullseye" class="title-icon" />
               <slot name="name">&nbsp;{{ t(selected.name) }}</slot>
             </h5>
             <ScientificObjectDetail

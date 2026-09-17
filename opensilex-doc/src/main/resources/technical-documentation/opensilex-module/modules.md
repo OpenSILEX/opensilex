@@ -38,7 +38,8 @@ This could be useful for:
 - extending the core ontologie, see [ontology-module-extension-system.md](ontology-module-extension-system.md)
 - extending the API, see [module-api-and-interface-extension.md](module-api-and-interface-extension.md)
 - extending the front-end by adding new pages, see [module-front-end-extension.md](module-api-and-interface-extension.md)
-- modifying the front-end by overloading the default theme or overriding default components, see [module-front-end-extension.md](module-api-and-interface-extension.md)
+- modifying the front-end style by overloading the default theme, see [module-theme-personalization.md](module-theme-personalization.md)
+- modifying some frontend pages by overriding default components, see [module-front-end-extension.md](module-api-and-interface-extension.md)
 
 ## Create a new module for opensilex 
 
@@ -106,7 +107,7 @@ Notes : *We use these naming conventions as examples, but **they are not mandato
 │       │       └── {module_name}Module.java
 │       └── resources
 ```
-See [Theme subject](theme.md) for more details.
+See [Theme subject](module-theme-personalization.md) for more details.
 
 ### 3. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
 

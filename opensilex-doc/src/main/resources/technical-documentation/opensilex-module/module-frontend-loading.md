@@ -6,13 +6,12 @@
 |------------|-------------------------|---------------------|-------------------|
 | 17/09/2026 | yvan.roux@opensilex.fr  | 1.5.0 Freaky Fossil | Document creation |
 
-
 ## Table of contents
 
 <!-- TOC -->
 * [Technical documentation : [module front-end] How OpenSILEX load front-end modules.](#technical-documentation--module-front-end-how-opensilex-load-front-end-modules)
   * [Table of contents](#table-of-contents)
-  * [Context](#context)
+  * [Context and links to other documents](#context-and-links-to-other-documents)
   * [Building the front-end](#building-the-front-end)
     * [general workflow](#general-workflow)
     * [development startup and hot reload](#development-startup-and-hot-reload)
@@ -42,9 +41,15 @@ Below is the simplified directory structure of the front-end of an OpenSILEX mod
 │   │   └── (new components, pages, layout or typescript files)
 ```
 
-When running mvn clean install, Maven should build the front-end. Meaning that all the files in the src directory are
-transpiled into a single JavaScript file named {module_name}.umd.min.js, placed in the dist directory.
-Maven includes this build file in the final jar file at `target/classes/front`.
+When running `mvn clean install`, Maven builds the front-end using the `frontend-maven-plugin` which runs
+`npm run build` (which in turn invokes Vite). The TypeScript/JavaScript sources in the `src` directory are
+transpiled and bundled into a single JavaScript file named `{module_name}.umd.min.js`, placed in the `dist` directory.
+
+Maven then includes this build file in the final JAR at `target/classes/front` via the `maven-resources-plugin`
+(copy from `front/dist` to `target/classes/front`).
+
+The build is activated by the Maven profile `with-vue-app`, which is auto-activated when a `front/package.json`
+file exists in the module.
 
 When launching the front-end, the `OpenSilexVuePlugin.ts` modify the main build (opensilex-front/front) to add into it
 a `<script>` balise for each module to load.
@@ -53,18 +58,20 @@ Each script balise has a src attribute that calls the `/vuejs/extension/js/{modu
 `FrontAPI#getExtension` method which returns the module.umd.min.js file.
 
 for exemple, the phis module will generate the following script balise on a local instance:
-`<script src="http://localhost:8666/rest/vuejs/extension/js/opensilex-phis.umd.min.js"></script>`
+`<script src="http://localhost:8666/rest/vuejs/extension/js/opensilex-phis.js"></script>`
 
 ### development startup and hot reload
 
 When running the front-end in development mode, the `StartServerWithFront.java` class builds each front-end module
-with hot reload enabled and copy and paste the resulting files into `target/classes/front`.
+using `npm run dev:build` (which runs `vite build --watch`). This produces the bundle file `{module_name}.umd.min.js`
+in the module's `front/dist/` directory.
 
-Each build file is watched by the `StartServerWithFront.java` class just so when a front-end module is modified, the
-build is changed by the hot reload, the watcher is notified and triggers the hot reload of the main front-end process.
+A `FileAlterationMonitor` watches the `dist/` directory. when a front-end module is modified, the bundle file (the build)
+is modified thanks to Vite's native HMR (Hot Module Replacement). When the bundle file is created or modified, it is copied
+to `{module}/target/classes/front/` by the `StartServerWithFront.java` class that will trigger the hot reload of the main front-end process.
 
-To trigger the general hot reload, `StartServerWithFront.java` class modify the `opensilex.dev.ts` file.
-This file is in the `opensilex-front/front/src` directory so its changes automatically trigger the hot reload of the
-main front-end process.
+To trigger hot reload of the main front-end, `StartServerWithFront.java` writes a timestamp to
+`opensilex-front/front/src/opensilex.dev.ts`. This file is imported in `main.ts` so that
+any change to it triggers Vite's native HMR (Hot Module Replacement) in the main app.
 
 The way the main front-end process includes the front-end modules is the same as the general workflow described above.

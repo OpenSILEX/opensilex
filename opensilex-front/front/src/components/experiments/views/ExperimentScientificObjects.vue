@@ -189,16 +189,22 @@
                     :disabled="selectedObjects.length == 0"
                     @select="handleDropdownAction"
                     class="mb-2 mr-2">
-                  <n-button size="small" :disabled="selectedObjects.length == 0">
+                  <n-button
+                      size="small"
+                      :disabled="selectedObjects.length == 0"
+                      :class="selectedObjects.length == 0 ? 'btn-disabled' : 'greenThemeColor'"
+                  >
                     actions
                   </n-button>
                 </n-dropdown>
-                <CreateButton
-                    class="mb-2 mr-2"
-                    @click="exportCSV(true)"
+                <n-button
+                    size="small"
+                    class="greenThemeColor mb-2 mr-2"
                     :disabled="soTree && soTree.nodeList.length === 0"
-                    label="ScientificObjectList.export-all"
-                ></CreateButton>
+                    @click="exportCSV(true)"
+                >
+                  {{ t('ScientificObjectList.export-all') }}
+                </n-button>
               </div>
 
               <div>
@@ -347,7 +353,7 @@ import {useRoute} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
-import {NButtonGroup, NCard, NCheckbox} from "naive-ui";
+import {NButtonGroup, NCard, NCheckbox, NSpace} from "naive-ui";
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -780,6 +786,13 @@ function onSelectAll() {
   margin-left: 5px;
 }
 
+.btn-disabled {
+  background-color: #e0e0e0 !important;
+  color: #2e2e2e !important;
+  border: none !important;
+  cursor: not-allowed;
+}
+
 .createButton, .helpButton{
   margin-top: 1px;
   margin-left: 0;
@@ -803,6 +816,13 @@ function onSelectAll() {
 .selectedCard {
   background-color: #fff;
   padding: 15px 15px 0 15px;
+}
+
+.listActionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 </style>

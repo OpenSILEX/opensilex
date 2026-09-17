@@ -185,9 +185,6 @@
                   @select="displayScientificObjectDetailsIfNew($event.data.uri)"
               >
                 <template v-slot:node="{ node }">
-              <span class="item-icon">
-                <Icon :icon="opensilex.getRDFIcon(node.data.rdf_type)" />
-              </span>&nbsp;
                   <span>{{ node.title }}</span>
                 </template>
 

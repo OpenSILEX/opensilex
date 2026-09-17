@@ -78,52 +78,41 @@
             ></FormSelector>
           </n-form-item>
 
-          <!-- ADVANCED SEARCH STARTS HERE -->
+          <!-- Germplasm -->
+          <n-form-item :show-feedback="false" class="compact-form-item">
+            <GermplasmSelector
+                :multiple="false"
+                :germplasm="filters.germplasm"
+                :experiment="uri"
+                class="searchFilter"
+                @update:germplasm="filters.germplasm = $event"
+                @handlingEnterKey="unselectRefresh()"
+            ></GermplasmSelector>
+          </n-form-item>
 
-          <n-collapse
-              v-model:expanded-names="expandedNCollapseNames"
-              :accordion="false"
-              @update:expanded-names="onCollapseUpdate"
-              class="advancedFiltersSearch"
-          >
-            <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
-              <!-- Germplasm -->
-              <n-form-item :show-feedback="false" class="compact-form-item">
-                <GermplasmSelector
-                    :multiple="false"
-                    :germplasm="filters.germplasm"
-                    :experiment="uri"
-                    class="searchFilter"
-                    @update:germplasm="filters.germplasm = $event"
-                    @handlingEnterKey="unselectRefresh()"
-                ></GermplasmSelector>
-              </n-form-item>
+          <!-- Factor Level -->
+          <n-form-item :show-feedback="false" class="compact-form-item">
+            <FactorLevelSelector
+                id="factorLevels"
+                v-model:factorLevels="filters.factorLevels"
+                :multiple="true"
+                :required="false"
+                :experimentURI="uri"
+                class="searchFilter"
+                @handlingEnterKey="unselectRefresh()"
+            ></FactorLevelSelector>
+          </n-form-item>
 
-              <!-- Factor Level -->
-              <n-form-item :show-feedback="false" class="compact-form-item">
-                <FactorLevelSelector
-                    id="factorLevels"
-                    v-model:factorLevels="filters.factorLevels"
-                    :multiple="true"
-                    :required="false"
-                    :experimentURI="uri"
-                    class="searchFilter"
-                    @handlingEnterKey="unselectRefresh()"
-                ></FactorLevelSelector>
-              </n-form-item>
-
-              <!-- Criteria search -->
-              <n-form-item :show-feedback="false">
-                <CriteriaSearchModalCreator
-                    class="searchFilter"
-                    ref="criteriaSearchCreateModal"
-                    v-model:criteria_dto="filters.criteriaDto"
-                    :required="false"
-                    :requiredBlue="false"
-                ></CriteriaSearchModalCreator>
-              </n-form-item>
-            </n-collapse-item>
-          </n-collapse>
+          <!-- Criteria search -->
+          <n-form-item :show-feedback="false">
+            <CriteriaSearchModalCreator
+                class="searchFilter"
+                ref="criteriaSearchCreateModal"
+                v-model:criteria_dto="filters.criteriaDto"
+                :required="false"
+                :requiredBlue="false"
+            ></CriteriaSearchModalCreator>
+          </n-form-item>
         </SearchFiltersSidebar>
 
         <n-layout-content class="so-content">
@@ -304,8 +293,6 @@ import {
   NButtonGroup,
   NCard,
   NCheckbox,
-  NCollapse,
-  NCollapseItem,
   NFormItem,
   NLayout,
   NLayoutContent
@@ -332,8 +319,6 @@ const criteriaSearchCreateModal = useTemplateRef<InstanceType<typeof CriteriaSea
 //#region Data and computed
 const uri = ref<string>('');
 const searchFiltersToggle = ref<boolean>(false)
-const loadAdvancedSearchFilters = ref<boolean>(false)
-const expandedNCollapseNames = ref<string[]>([])
 const refreshKey = ref(0)
 
 const filters = ref({
@@ -425,13 +410,6 @@ function refreshTypeSelectorComponent() {
 function resetSearch() {
   resetFilters();
   refresh();
-}
-
-function onCollapseUpdate(names: string[]) {
-  expandedNCollapseNames.value = names
-  if (names.includes('adv')) {
-    loadAdvancedSearchFilters.value = true
-  }
 }
 
 function unselectRefresh() {
@@ -828,10 +806,6 @@ function onSelectAll() {
 
 .globalFiltersSearchButton span {
   display: block !important;
-}
-
-.advancedFiltersSearch {
-  margin-top: 10px;
 }
 
 </style>

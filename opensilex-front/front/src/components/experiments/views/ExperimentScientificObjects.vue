@@ -104,7 +104,7 @@
           </n-form-item>
 
           <!-- Criteria search -->
-          <n-form-item :show-feedback="false">
+          <n-form-item :show-feedback="false" class="compact-form-item">
             <CriteriaSearchModalCreator
                 class="searchFilter"
                 ref="criteriaSearchCreateModal"
@@ -806,6 +806,34 @@ function onSelectAll() {
 
 .globalFiltersSearchButton span {
   display: block !important;
+}
+
+/* Filtre "critères par données" : même gabarit que les autres inputs de la sidebar
+   (selecteurs naive-ui, 34px) et bouton collé au bord droit de l'input */
+:deep(.summary-box) {
+  min-height: 34px;
+  height: 34px;
+  padding: 0 0 0 12px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+:deep(.summary-box .summary-content) {
+  overflow: hidden;
+}
+
+:deep(.summary-box .summary-actions) {
+  align-self: stretch;
+}
+
+:deep(.summary-box .summary-actions .createButton) {
+  height: 100%;
+  margin: 0;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
 }
 
 </style>

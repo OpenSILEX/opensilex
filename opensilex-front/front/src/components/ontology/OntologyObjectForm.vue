@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, useTemplateRef, watch} from "vue";
+import {computed, nextTick, ref, useTemplateRef, watch} from "vue";
 import OntologyRelationsForm from "./OntologyRelationsForm.vue";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import Rdfs from "../../ontologies/Rdfs";
@@ -188,6 +188,13 @@ async function typeSwitch(type: string, initialLoad: boolean) {
     await ontologyRelationsForm.value.typeSwitch(type, initialLoad);
   }
 }
+
+// The relations form is never unmounted (the modal only toggles its display), so its properties
+// have to be reloaded on every opening, as the Vue 2 setBaseType did.
+async function reloadRelations() {
+  await nextTick();
+  await typeSwitch(props.currentType, true);
+}
 //#endregion
 
 //#region Computed
@@ -211,6 +218,7 @@ const {form, isEditMode, exposed, hide, submit} = useModalFormLogic<OntologyObje
   getEmptyForm,
   create: props.createAction,
   update: props.updateAction,
+  reset: reloadRelations,
   props,
   emit
 })

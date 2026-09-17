@@ -26,13 +26,18 @@
 
     <PageContent class="pagecontent">
         <!-- Toggle Sidebar-->
-        <div class="searchMenuContainer"
-             v-on:click="searchFiltersToggle = !searchFiltersToggle"
-             :title="t('searchfilter.label')">
-          <div class="searchMenuIcon">
-            <i class="icon ik ik-search"></i>
-          </div>
-        </div>
+        <n-space class="mb-2 me-1" align="start">
+          <n-button
+            quaternary
+            circle
+            @click="searchFiltersToggle = !searchFiltersToggle"
+            :title="t('searchfilter.label')"
+            :class="{ greenThemeColor: searchFiltersToggle }"
+            class="globalFiltersSearchButton"
+          >
+            <i class="bi bi-search filtersGlobalSearchIcon"></i>
+          </n-button>
+        </n-space>
 
         <!-- FILTERS -->
         <Transition>
@@ -353,7 +358,7 @@ import {useRoute} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
-import {NButtonGroup, NCard, NCheckbox, NSpace} from "naive-ui";
+import {NButton, NButtonGroup, NCard, NCheckbox, NSpace} from "naive-ui";
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -823,6 +828,19 @@ function onSelectAll() {
   gap: 8px;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.filtersGlobalSearchIcon {
+  font-size: 1.2em;
+}
+
+.globalFiltersSearchButton {
+  width: 40px;
+  height: 55px;
+}
+
+.globalFiltersSearchButton span {
+  display: block !important;
 }
 
 </style>

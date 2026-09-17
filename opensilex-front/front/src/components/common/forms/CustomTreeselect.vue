@@ -99,6 +99,7 @@ function refresh(newLimit?: number) {
     runSearch(lastQuery.value, newLimit)
   }
 }
+console.log('Début')
 function openTreeselect() {
   nextTick(() => {
     (treeref.value as any)?.focus?.();
@@ -241,7 +242,6 @@ watch(
 
 // recherche
 const lastQuery = ref<string | null>(null)
-
 async function runSearch(rawQuery: string, overrideLimit?: number) {
   if (!props.searchMethod) return
   const query = rawQuery === '' ? '.*' : rawQuery
@@ -263,7 +263,6 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
    }
  }
 
-
   // options.value = list.map(fromDTO).map(toTreeSelectOption)
   options.value = newOptions
   totalCount.value = resp.response.metadata.pagination.totalCount
@@ -276,7 +275,6 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   emit('resultCount', resultCount.value)
 }
 const debounceSearch = debounce(runSearch, 250)
-
 // si pas de searchMethod: Naive filtre localement -> ne rien faire
 function onSearchChange(q: string) {
   if (props.searchMethod) debounceSearch(q)
@@ -311,6 +309,7 @@ function handleUpdateValue(v: string | string[] | null) {
     if (v == null) {
       emit('deselect', null)
     } else {
+      console.debug("zmiting select in customTree");
       const obj = keysToObjects(v)      // { id, label }
       emit('select', obj)
     }

@@ -68,6 +68,8 @@ const modalForm = useTemplateRef<OntologyObjectFormInstance>('modalForm')
 //#region Public methods & Expose
 function createScientificObject(parentURI?) {
 
+  currentType.value = null;
+
   let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
   initOntologyObjectForm(ontologyObjectForm);
 

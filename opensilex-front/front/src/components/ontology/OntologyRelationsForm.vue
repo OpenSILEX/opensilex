@@ -102,7 +102,6 @@ function getHandledProperties(): Array<VueRDFTypePropertyDTO> {
 
   const properties = typeModel.value.data_properties
       .concat(typeModel.value.object_properties)
-      .filter(property => property.inherited === false)
       .filter(property => !shortExcludedProperties.has(opensilex.getShortUri(property.uri)))
       .filter(property => !!getInputComponent(property))
 
@@ -161,11 +160,13 @@ function getCustomPropsForComponent(property: string): any {
 }
 
 async function typeSwitch(type: string, initialLoad: boolean) {
+
   /**
    * Charge les propriétés du type RDF sélectionné, initialise le modèle interne,
    * puis prépare les relations affichées dans le formulaire
    */
   if (!type || type.length === 0 || !props.baseType) {
+    console.debug("detected empty type");
     typeModel.value = null
     internalRelations.value = []
     propertiesByDomainHierarchy.value = []
@@ -180,13 +181,14 @@ async function typeSwitch(type: string, initialLoad: boolean) {
         )
     propertiesByDomainHierarchy.value = propertiesByDomainHttpResponse.response.result
 
-    propertiesByDomainHierarchy.value =
-        propertiesByDomainHttpResponse.response.result
-
     const vueRdfTypeResponse =
         await vueOntologyService.getRDFTypeProperties(type, props.baseType)
 
     typeModel.value = vueRdfTypeResponse.response.result
+    console.log(typeModel.value.data_properties.concat(typeModel.value.object_properties)
+        .map(p => ({uri: p.uri, inherited: p.inherited, input: p.input_component})))
+
+    console.debug("We are in ORF.typeSwitch", propertiesByDomainHierarchy.value, typeModel.value);
 
     internalRelations.value.splice(0)
 
@@ -355,7 +357,8 @@ watch(
       // `initialLoad` is true when we are called from the parent after a base‑type change
       await typeSwitch(newType, true);
     }
-  }
+  },
+{}
 );
 
 defineExpose({typeSwitch, updateRelation});

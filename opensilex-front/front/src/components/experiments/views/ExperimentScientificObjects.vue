@@ -178,7 +178,7 @@
                   <Icon icon="ik#ik-target" class="title-icon" />
                   {{ t("ScientificObjectList.selected") }}
                 </h3>&nbsp;
-                <span class="badge badge-pill greenThemeColor">
+                <span class="badge badge-pill greenThemeColor" style="margin: 5px">
               {{
                     selectedObjects.length
                   }}
@@ -214,10 +214,10 @@
                         class="selection-box"
                         v-model:checked="selectAll"
                         @update:checked="onSelectAll()"
+                        label="test selection à traduire"
                     >
                     </n-checkbox>
                   </div>
-                  <span class="ml-1 mt-1 selectLabel"> {{!selectAll ? t('component.common.select-all') : t('component.common.unselect-all')}}</span>
                 </div>
               </div>
 

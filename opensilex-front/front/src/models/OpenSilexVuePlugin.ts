@@ -35,8 +35,8 @@ import NumberFormatter from "./NumberFormatter";
 import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
-import { useI18n } from 'vue-i18n'
 import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
+import {OpensilexModuleComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();
 
@@ -530,22 +530,10 @@ export default class OpenSilexVuePlugin {
         return modulePromise;
     }
 
-    public initAsyncComponents(components) {
+    public initAsyncComponents(components: OpensilexModuleComponentMap) {
         let promises: Array<Promise<any>> = [];
         if (components) {
             for (let componentId in components) {
-                let component = components[componentId];
-                if (component.asyncInit) {
-                    try {
-                        console.debug("Start component async init...", componentId);
-                        promises.push(component.asyncInit(this));
-                    } catch (error) {
-                        promises.push(Promise.reject(error));
-                    }
-                }
-                // console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
-
-                //@todo trouver comment faire en vue 3 (peut-être avec defineComponent)
                 this.app.component(componentId, components[componentId]);
             }
         }
@@ -558,7 +546,6 @@ export default class OpenSilexVuePlugin {
                 })
                 .catch(reject);
         });
-
     }
 
     public getServiceContainer() {

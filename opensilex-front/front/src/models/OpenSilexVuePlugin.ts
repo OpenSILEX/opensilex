@@ -36,7 +36,7 @@ import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
-import {OpensilexModuleComponentMap} from "@/models/OpensilexModulePlugin";
+import {isOpensilexModulePlugin, OpensilexModuleComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();
 
@@ -491,11 +491,19 @@ export default class OpenSilexVuePlugin {
                     return;
                 }
 
+                if (!isOpensilexModulePlugin(plugin)) {
+                    this.hideLoader();
+                    console.error(
+                        `L'export global du module "${name}" n'est pas un plugin Vue valide :`
+                        + " il doit être une fonction d'installation ou un objet exposant install()."
+                    );
+                    reject(new Error(`Le module "${name}" n'expose pas un OpensilexModulePlugin valide`));
+                    return;
+                }
+
                 this.loadedModules.push(name);
 
-               if (typeof plugin === "function" || typeof plugin.install === "function") {
-                    this.app.use(plugin);
-                }
+                this.app.use(plugin);
 
                 if (plugin.lang) {
                     this.loadTranslations(plugin.lang);
@@ -507,7 +515,7 @@ export default class OpenSilexVuePlugin {
                     }
                 }
 
-             this.initAsyncComponents(plugin.components)
+                this.initAsyncComponents(plugin.components)
                     .then(() => {
                         this.hideLoader();
                         resolve(plugin);

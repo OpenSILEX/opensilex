@@ -5,6 +5,10 @@
 | Date       | Editor(s)               | OpenSILEX version   | Comment           |
 |------------|-------------------------|---------------------|-------------------|
 | 17/09/2026 | yvan.roux@opensilex.fr  | 1.5.0 Freaky Fossil | Document creation |
+> ⚠️ _WARNING_ : This document is only about technical explanation.
+>
+> If you want to know how to create the front-end par of a module, see [interface-personalization-how-to.md](interface-personalization-how-to.md)
+>
 
 ## Table of contents
 
@@ -24,10 +28,10 @@
 This document only describes the technical part of the front-end module loading.
 
 Further steps could be to :
-- create a new module from zero, see [modules.md](modules.md)
-- extending the front-end by adding new pages, see [module-front-end-extension.md](module-api-and-interface-extension.md)
-- modifying the front-end style by overloading the default theme, see [module-theme-personalization.md](module-theme-personalization.md)
-- modifying some frontend pages by overriding default components, see [overriding-defaults-components.md](overriding-defaults-components.md)
+- create a new module from zero. See [modules.md](modules.md)
+- extending the front-end by adding new pages. See [module-front-end-extension.md](module-api-and-interface-extension.md)
+- modifying the front-end style by overloading the default theme. See [module-theme-personalization.md](module-theme-personalization.md)
+- modifying some frontend pages by overriding default components. See [overriding-defaults-components.md](overriding-defaults-components.md)
 
 ## Building the front-end
 

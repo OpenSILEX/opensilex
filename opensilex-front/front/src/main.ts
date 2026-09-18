@@ -274,7 +274,7 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
 $opensilex.loadModules([
   "opensilex-security",
   "opensilex-core",
-  // "opensilex-dataverse"
+  "opensilex-dataverse"
 ]).then(() => {
   // Not seems mandatory in vue 3, need to test when component are loaded from other modules
   // Get OpenSilex configuration

@@ -35,10 +35,8 @@ import NumberFormatter from "./NumberFormatter";
 import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
-import { useI18n } from 'vue-i18n'
 import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
-import {AuthenticationService} from "opensilex-security/api/authentication.service";
-import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
+import {OpensilexModuleComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();
 
@@ -532,22 +530,10 @@ export default class OpenSilexVuePlugin {
         return modulePromise;
     }
 
-    public initAsyncComponents(components) {
+    public initAsyncComponents(components: OpensilexModuleComponentMap) {
         let promises: Array<Promise<any>> = [];
         if (components) {
             for (let componentId in components) {
-                let component = components[componentId];
-                if (component.asyncInit) {
-                    try {
-                        console.debug("Start component async init...", componentId);
-                        promises.push(component.asyncInit(this));
-                    } catch (error) {
-                        promises.push(Promise.reject(error));
-                    }
-                }
-                // console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
-
-                //@todo trouver comment faire en vue 3 (peut-être avec defineComponent)
                 this.app.component(componentId, components[componentId]);
             }
         }
@@ -560,7 +546,6 @@ export default class OpenSilexVuePlugin {
                 })
                 .catch(reject);
         });
-
     }
 
     public getServiceContainer() {
@@ -958,26 +943,30 @@ export default class OpenSilexVuePlugin {
         }
     }
 
-    private credentials: Array<CredentialsGroupDTO> | Promise<Array<CredentialsGroupDTO>> = null;
 
-    public getCredentials(): Promise<Array<CredentialsGroupDTO>> {
-        if (this.credentials instanceof Promise) {
+    private credentials = null;
+
+    public getCredentials() {
+        if (this.credentials == null) {
+            this.credentials = new Promise((resolve, reject) => {
+                console.debug("Loading credentials list...");
+                this.getService<any>(
+                    "opensilex-security.AuthenticationService"
+                ).getCredentialsGroups().then((http) => {
+                    this.credentials = http.response.result;
+                    console.debug("Credentials list loaded !", this.credentials);
+                    resolve(http.response.result);
+                }).catch(this.errorHandler)
+
+            })
             return this.credentials;
-        }
-
-        if (Array.isArray(this.credentials)) {
+        } else if (this.credentials instanceof Promise) {
+            console.log("credentials2 list ", this.credentials)
+            return this.credentials;
+        } else {
+            console.log("credentials3 ", this.credentials)
             return Promise.resolve(this.credentials);
         }
-
-        this.credentials = new Promise((resolve, reject) => {
-            this.getService<AuthenticationService>(
-                "opensilex-security.AuthenticationService"
-            ).getCredentialsGroups().then((http) => {
-                this.credentials = http.response.result;
-                resolve(http.response.result);
-            }).catch(this.errorHandler)
-        })
-        return this.credentials;
     }
 
     public fromToken(token: string) {

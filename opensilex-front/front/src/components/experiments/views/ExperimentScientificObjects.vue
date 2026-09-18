@@ -4,14 +4,14 @@
       <CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
           @click="soForm.createScientificObject()"
-          label="ExperimentScientificObjects.create-scientific-object"
+          label="component.scientificObjects.actions.add"
           class="createButton"
       ></CreateButton>&nbsp;
 
       <CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
           @click="importForm.show()"
-          label="OntologyCsvImporter.import"
+          label="component.common.import-files.csv-import"
           class="createButton"
       ></CreateButton>
 
@@ -26,7 +26,7 @@
       <n-layout has-sider class="so-layout">
         <SearchFiltersSidebar
             :activeFiltersCount="activeFiltersCount"
-            :filtersCollapsed="searchFiltersToggle"
+            v-model:filtersCollapsed="searchFiltersToggle"
             @refresh="unselectRefresh()"
             @reset="resetSearch()"
         >
@@ -114,110 +114,113 @@
         </SearchFiltersSidebar>
 
         <n-layout-content class="so-content">
-          <n-card>
-            <div class="card-header">
-              <h3 class="d-inline">
-                <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
-                {{ t("ScientificObjectList.selected") }}
-              </h3>&nbsp;
-              <span class="badge badge-pill greenThemeColor">{{ selectedObjects.length }}</span>
+          <div class="so-panels" :class="{ 'so-panels--row': searchFiltersToggle }">
+            <n-card class="treePanel">
+              <div class="card-header">
+                <h3 class="d-inline">
+                  <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
+                  {{ t("component.experiment.selected-scientific-object" +
+                    "") }}
+                </h3>&nbsp;
+                <span class="badge badge-pill greenThemeColor">{{ selectedObjects.length }}</span>
 
-              <n-dropdown
-                  :options="dropdownOptions"
-                  :disabled="selectedObjects.length === 0"
-                  trigger="hover"
-                  class="mb-2 mr-2"
-                  @select="handleDropdownAction"
-              >
+                <n-dropdown
+                    :options="dropdownOptions"
+                    :disabled="selectedObjects.length === 0"
+                    trigger="hover"
+                    class="mb-2 mr-2"
+                    @select="handleDropdownAction"
+                >
+                  <n-button
+                      size="small"
+                      :disabled="selectedObjects.length === 0"
+                      :class="selectedObjects.length === 0 ? 'btn-disabled' : 'greenThemeColor'"
+                  >
+                    {{ t('component.common.actions') }}
+                  </n-button>
+                </n-dropdown>
+
                 <n-button
                     size="small"
-                    :disabled="selectedObjects.length === 0"
-                    :class="selectedObjects.length === 0 ? 'btn-disabled' : 'greenThemeColor'"
+                    :disabled="soTree && soTree.nodeList.length === 0"
+                    class="greenThemeColor mb-2 mr-2"
+                    @click="exportCSV(true)"
                 >
-                  {{ t('component.common.actions') }}
+                  {{ t('component.menu.experimentalDesign.btn-exportAll') }}
                 </n-button>
-              </n-dropdown>
-
-              <n-button
-                  size="small"
-                  :disabled="soTree && soTree.nodeList.length === 0"
-                  class="greenThemeColor mb-2 mr-2"
-                  @click="exportCSV(true)"
-              >
-                {{ t('ScientificObjectList.export-all') }}
-              </n-button>
-            </div>
-
-            <div class="row align-items-center">
-              <div class="col-auto">
-                <n-checkbox
-                    v-model:checked="selectAll"
-                    :label="t('ExperimentScientificObjects.select-all')"
-                    class="selection-box"
-                    @update:checked="onSelectAll()"
-                ></n-checkbox>
               </div>
+
+              <div class="row align-items-center">
+                <div class="col-auto">
+                  <n-checkbox
+                      v-model:checked="selectAll"
+                      :label="t('component.common.import-files.select-all')"
+                      class="selection-box"
+                      @update:checked="onSelectAll()"
+                  ></n-checkbox>
+                </div>
+              </div>
+
+              <TreeViewAsync
+                  ref="soTree"
+                  v-model:selection="selectedObjects"
+                  :searchMethod="searchMethod"
+                  :searchMethodRootChildren="loadAllChildren"
+                  :enableSelection="true"
+                  @select="displayScientificObjectDetailsIfNew($event.data.uri)"
+              >
+                <template v-slot:node="{ node }">
+                  <span>{{ node.title }}</span>
+                </template>
+
+                <template v-slot:buttons="{ node }">
+                  <n-button-group size="small" class="btn-group btn-group-sm">
+                    <EditButton
+                        v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+                        :small="true"
+                        @click="soForm.editScientificObject(node.data.uri)"
+                        label="ExperimentScientificObjects.edit-scientific-object"
+                    ></EditButton>
+                    <AddChildButton
+                        v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+                        :small="true"
+                        @click="soForm.createScientificObject(node.data.uri)"
+                        label="ExperimentScientificObjects.add-scientific-object-child"
+                    ></AddChildButton>
+                    <DeleteButton
+                        v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
+                        :small="true"
+                        @click="deleteScientificObject(node)"
+                        label="ExperimentScientificObjects.delete-scientific-object"
+                    ></DeleteButton>
+                  </n-button-group>
+                </template>
+              </TreeViewAsync>
+
+              <ScientificObjectForm
+                  v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+                  ref="soForm"
+                  :context="uri"
+                  @onUpdate="refreshAfterCreateOrUpdate"
+                  @onCreate="refreshAfterCreateOrUpdate"
+              ></ScientificObjectForm>
+            </n-card>
+
+            <div v-if="selected" class="selectedCard">
+              <h5>
+                <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
+                <slot name="name">&nbsp;{{ t(selected.name) }}</slot>
+              </h5>
+              <ScientificObjectDetail
+                  :key="selected.name"
+                  :selected="selected"
+                  :selectedObject="uri"
+                  :tabs="detailTabs"
+                  :global-view="false"
+                  :experiment="uri"
+                  class="experimentDetails"
+              ></ScientificObjectDetail>
             </div>
-
-            <TreeViewAsync
-                ref="soTree"
-                v-model:selection="selectedObjects"
-                :searchMethod="searchMethod"
-                :searchMethodRootChildren="loadAllChildren"
-                :enableSelection="true"
-                @select="displayScientificObjectDetailsIfNew($event.data.uri)"
-            >
-              <template v-slot:node="{ node }">
-                <span>{{ node.title }}</span>
-              </template>
-
-              <template v-slot:buttons="{ node }">
-                <n-button-group size="small" class="btn-group btn-group-sm">
-                  <EditButton
-                      v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-                      :small="true"
-                      @click="soForm.editScientificObject(node.data.uri)"
-                      label="ExperimentScientificObjects.edit-scientific-object"
-                  ></EditButton>
-                  <AddChildButton
-                      v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-                      :small="true"
-                      @click="soForm.createScientificObject(node.data.uri)"
-                      label="ExperimentScientificObjects.add-scientific-object-child"
-                  ></AddChildButton>
-                  <DeleteButton
-                      v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
-                      :small="true"
-                      @click="deleteScientificObject(node)"
-                      label="ExperimentScientificObjects.delete-scientific-object"
-                  ></DeleteButton>
-                </n-button-group>
-              </template>
-            </TreeViewAsync>
-
-            <ScientificObjectForm
-                v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-                ref="soForm"
-                :context="uri"
-                @onUpdate="refreshAfterCreateOrUpdate"
-                @onCreate="refreshAfterCreateOrUpdate"
-            ></ScientificObjectForm>
-          </n-card>
-
-          <div v-if="selected" class="selectedCard">
-            <h5>
-              <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
-              <slot name="name">&nbsp;{{ t(selected.name) }}</slot>
-            </h5>
-            <ScientificObjectDetail
-                :key="selected.name"
-                :selected="selected"
-                :selectedObject="uri"
-                :tabs="detailTabs"
-                :global-view="false"
-                :experiment="uri"
-                class="experimentDetails"
-            ></ScientificObjectDetail>
           </div>
         </n-layout-content>
       </n-layout>
@@ -753,6 +756,25 @@ function onSelectAll() {
 .selection-box {
   margin-top: 1px;
   margin-left: 24px;
+}
+
+/* Detail placed under the tree when the filters sidebar is open,
+   and on its right when the sidebar is collapsed */
+.so-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.so-panels--row {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.so-panels--row > .treePanel,
+.so-panels--row > .selectedCard {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .selectedCard {

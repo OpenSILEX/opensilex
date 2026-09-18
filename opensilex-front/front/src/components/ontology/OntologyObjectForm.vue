@@ -27,7 +27,7 @@
           label="component.common.name"
           type="text"
           :required="true"
-          placeholder="component.common.forms-generic-placeholders.form-name-placeholder"
+          :placeholder="t('component.common.forms-generic-placeholders.form-name-placeholder')"
         ></InputForm>
       </n-form-item>
 

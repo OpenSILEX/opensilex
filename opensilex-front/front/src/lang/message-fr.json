@@ -167,6 +167,7 @@
                 "generate-template": "Générer un gabarit",
                 "csv-import": "Import CSV",
                 "expected-format": "Format attendu",
+                "select-all": "Tout sélectionner",
                 "help-text-common": {
                     "line-1": "Vous pouvez insérer ou mettre à jour vos données à partir de cette ligne.",
                     "line-2": "Les deux premières lignes de contenu CSV seront ignorées.",
@@ -792,6 +793,7 @@
             "delete": "Supprimer l'expérimentation",
             "all": "Toutes les expérimentations",
             "selected": "Expérementations sélectionnées",
+            "selected-scientific-object": "Objects Scientifiques Sélectionnés",
             "category": "Categorie",
             "funding-placeholder": "Select an experiment funding",
             "factors-categories-placeholder": "Select one or more categories",

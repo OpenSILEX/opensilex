@@ -167,6 +167,7 @@
                 "generate-template": "Generate template",
                 "csv-import": "CSV Import",
                 "expected-format": "Expected format",
+                "select-all": "Select all",
                 "help-text-common": {
                     "line-1": "You can insert or update your data from this row.",
                     "line-2": "First two rows of CSV content will be ignored.",
@@ -795,6 +796,7 @@
             "delete": "Delete experiment",
             "all": "All experiments",
             "selected": "Selected experiments",
+            "selected-scientific-object": "Objects Scientifiques Sélectionnés",
             "category": "Category",
             "funding-placeholder": "Sélectionner un financeur",
             "factors-categories-placeholder": "Sélectionner une ou plusieurs categories",

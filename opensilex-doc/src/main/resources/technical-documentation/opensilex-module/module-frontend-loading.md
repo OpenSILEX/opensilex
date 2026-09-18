@@ -25,7 +25,7 @@ Further steps could be to :
 - create a new module from zero, see [modules.md](modules.md)
 - extending the front-end by adding new pages, see [module-front-end-extension.md](module-api-and-interface-extension.md)
 - modifying the front-end style by overloading the default theme, see [module-theme-personalization.md](module-theme-personalization.md)
-- modifying some frontend pages by overriding default components, see [module-front-end-extension.md](module-api-and-interface-extension.md)
+- modifying some frontend pages by overriding default components, see [overriding-defaults-components.md](overriding-defaults-components.md)
 
 ## Building the front-end
 

@@ -37,9 +37,7 @@ Creating a new module allow personalizing OpenSILEX's ontology, API and front-en
 This could be useful for:
 - extending the core ontologie, see [ontology-module-extension-system.md](ontology-module-extension-system.md)
 - extending the API, see [module-api-and-interface-extension.md](module-api-and-interface-extension.md)
-- extending the front-end by adding new pages, see [module-front-end-extension.md](module-api-and-interface-extension.md)
-- modifying the front-end style by overloading the default theme, see [module-theme-personalization.md](module-theme-personalization.md)
-- modifying some frontend pages by overriding default components, see [module-front-end-extension.md](module-api-and-interface-extension.md)
+- personalizing the front-end, see [module-interface-personalization.md](module-interface-personalization.md)
 
 ## Create a new module for opensilex 
 

@@ -15,6 +15,8 @@
   * [Building the front-end](#building-the-front-end)
     * [general workflow](#general-workflow)
     * [development startup and hot reload](#development-startup-and-hot-reload)
+  * [Modules are Vue plugins](#modules-are-vue-plugins)
+  * [Loading the components of a module](#loading-the-components-of-a-module)
 <!-- TOC -->
 
 ## Context and links to other documents
@@ -75,3 +77,57 @@ To trigger hot reload of the main front-end, `StartServerWithFront.java` writes 
 any change to it triggers Vite's native HMR (Hot Module Replacement) in the main app.
 
 The way the main front-end process includes the front-end modules is the same as the general workflow described above.
+
+## Modules are Vue plugins
+
+A front-end module is not just a bundle of files: it is built as a **Vue plugin**. The file used as the Vite
+library entry point (`front/src/index.ts`, declared under `build.lib.entry` in the module's `vite.config.ts`)
+default-exports that plugin, and the UMD bundle exposes it as a global variable named after the module, for
+example `window["opensilex-phis"]`.
+
+That export is described by the `OpensilexModulePlugin` type, declared in
+`opensilex-front/front/src/models/OpensilexModulePlugin.ts`. It is Vue's own `Plugin` type extended with two
+optional properties, `components` and `lang`. Being a Vue plugin means the export must be either an install
+function or an object exposing an `install()` method, which is what Vue requires to register it.
+
+Here is an exemple of how the phis module could export its plugin:
+
+```typescript
+export default {
+    install(Vue, options) {
+    },
+    components : {
+        "opensilex-phis-PhisLoginComponent" : PhisLoginComponent,
+        "opensilex-phis-PhisHeaderComponent" : PhisHeaderComponent
+    }
+} as OpensilexModulePlugin;
+```
+
+Once the `<script>` tag described above has been evaluated, the `loadModule` method of `OpenSilexVuePlugin.ts`
+reads the global variable and unwraps its `default` export.
+
+Then, `loadModule` hands the plugin over to Vue with `app.use(plugin)`, which runs the module's
+`install()` method. This is where a module can enrich the application on its own, for instance, by binding
+services into the dependency injection container.
+
+Note that `install()` can be empty, as it is for phis: a module that only ships components does not need it,
+because components are registered separately, as described in the next section.
+
+## Loading the components of a module
+
+A module that provides Vue components declares them in the `components` property of the plugin it exports (the
+`components` map of the phis example above). The map associates a component identifier with the imported Vue
+component. By convention, the identifier is prefixed with the module name, which keeps it unique across the whole
+application: `opensilex-phis-PhisLoginComponent`.
+
+Right after `app.use(plugin)`, the `loadModule` method of `OpenSilexVuePlugin.ts` goes through that map twice:
+
+- it calls `loadComponentTranslations` on each component, so that the translations defined in the component's
+  `<i18n>` block are merged into the locale messages of the application;
+- it passes the whole map to `initAsyncComponents`, which registers every entry with Vue's `app.component()`.
+
+Because `app.component()` registers them globally, the components of a module become available in any template
+of the application, referenced by their identifier only. 
+
+For a better understanding of why and how to override default components with custom module ones, see
+[overriding-defaults-components.md](overriding-defaults-components.md).

@@ -2,7 +2,7 @@
   <!-- IMPORTANT: in Vue 3, @keyup/@keydown on a child component is no longer attached natively.
        Enter is therefore captured on a wrapper. -->
   <div @keydown.enter.prevent.stop="onEnter">
-    <InfiteScrollDropdown
+    <InfiniteScrollDropdown
       ref="dropdown"
       v-model:selected="variableGroupURI"
       :fetchPage="searchVariablesGroups"
@@ -24,7 +24,7 @@ import type { SelectOption } from 'naive-ui';
 import type { VariablesGroupGetDTO, VariablesService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-security/HttpResponse';
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
-import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue';
+import InfiniteScrollDropdown from '@/components/common/forms/InfiniteScrollDropdown.vue';
 import { useI18n } from 'vue-i18n'
 
 type VgModel = string | string[] | null | undefined;
@@ -53,7 +53,7 @@ const variableGroupURI = computed({
 
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex")!;
 
-// InfiteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
+// InfiniteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
 // read. Only `refresh` is needed here, so the exposed shape is declared directly.
 const dropdown = ref<{ refresh: () => Promise<void> } | null>(null);
 

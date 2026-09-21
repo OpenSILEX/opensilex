@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="variablesURI"
     :fetchPage="searchVariables"
     :itemLoadingMethod="load"
@@ -23,7 +23,7 @@ import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { NamedResourceDTO, VariableDetailsDTO } from 'opensilex-core/index'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import { useI18n } from 'vue-i18n'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 const props = withDefaults(defineProps<{
   variables?: string | string[]

@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="germplasmURI"
     :fetchPage="search"
     :itemLoadingMethod="load"
@@ -23,7 +23,7 @@ import type { GermplasmService } from 'opensilex-core/api/germplasm.service'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { GermplasmGetAllDTO } from 'opensilex-core/model/germplasmGetAllDTO'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()

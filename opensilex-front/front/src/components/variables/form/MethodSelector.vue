@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     ref="dropdown"
     v-model:selected="modelSelected"
     :fetchPage="searchMethods"
@@ -28,7 +28,7 @@ import type OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type HttpResponse from 'opensilex-security/HttpResponse'
-import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
+import InfiniteScrollDropdown from '@/components/common/forms/InfiniteScrollDropdown.vue'
 
 const props = defineProps<{
   /** Path of the field in the parent NForm model, used for validation */
@@ -60,7 +60,7 @@ const modelSelected = computed({
   set: (v) => emit('update:selected', v)
 })
 
-// InfiteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
+// InfiniteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
 // read. Only `refresh` is needed here, so the exposed shape is declared directly.
 const dropdown = ref<{ refresh: () => Promise<void> } | null>(null)
 

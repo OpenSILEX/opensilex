@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="projectsProxy"
     :fetchPage="searchProjects"
     :itemLoadingMethod="loadProjects"
@@ -21,7 +21,7 @@ import type { ProjectGetDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import { useI18n } from 'vue-i18n'
-import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
+import InfiniteScrollDropdown from '@/components/common/forms/InfiniteScrollDropdown.vue'
 
 const props = withDefaults(defineProps<{
   projects?: string[] | string | null

@@ -1,6 +1,6 @@
 <template>
   <div v-if="renderComponent">
-    <InfiteScrollDropdown
+    <InfiniteScrollDropdown
       v-model:selected="deviceURIs"
       :fetchPage="search"
       :itemLoadingMethod="load"
@@ -25,7 +25,7 @@ import { useI18n } from 'vue-i18n'
 import type { SelectOption } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { DeviceGetDTO } from 'opensilex-core/index'
-import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
+import InfiniteScrollDropdown from '@/components/common/forms/InfiniteScrollDropdown.vue'
 
 const props = withDefaults(defineProps<{
   value?: string | string[] | null

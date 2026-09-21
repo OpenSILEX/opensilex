@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="facilitiesURIs"
     :fetchPage="searchFacilities"
     :placeholder="t(placeholder)"
@@ -10,8 +10,8 @@
     :label="label"
     :helpMessage="helpMessage"
     :required="required"
-    @selectionChange="emit('selectionChange')"
-  ></InfiteScrollDropdown>
+    @selectionChange="(option) => emit('selectionChange', option)"
+  ></InfiniteScrollDropdown>
 </template>
 
 <script setup lang="ts">
@@ -22,7 +22,7 @@ import type { OrganizationsService } from 'opensilex-core/api/organizations.serv
 import type { NamedResourceDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 const { t } = useI18n()
 

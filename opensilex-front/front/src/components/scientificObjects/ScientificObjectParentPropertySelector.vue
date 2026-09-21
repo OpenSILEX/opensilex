@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="internalValue"
     :fetchPage="searchParents"
     :itemLoadingMethod="getParentsByURI"
@@ -18,7 +18,7 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { ScientificObjectsService } from 'opensilex-core/api/scientificObjects.service'
 import type { VueRDFTypePropertyDTO } from '@/lib'
 import { useI18n } from 'vue-i18n'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 
 const props = withDefaults(defineProps<{

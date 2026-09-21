@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="groupsURI"
     :fetchPage="searchGroups"
     :itemLoadingMethod="loadGroups"
@@ -22,7 +22,7 @@ import type { SelectOption } from 'naive-ui'
 import type { SecurityService, GroupDTO } from 'opensilex-security/index'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 const { t } = useI18n()
 

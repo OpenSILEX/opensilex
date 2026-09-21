@@ -1,6 +1,6 @@
 <template>
   <div>
-    <InfiteScrollDropdown
+    <InfiniteScrollDropdown
       ref="dropdown"
       v-model:selected="personsProxy"
       :fetchPage="searchPersons"
@@ -37,7 +37,7 @@ import type { SecurityService, PersonDTO } from 'opensilex-security/index'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import { useI18n } from 'vue-i18n'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue"
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue"
 import PersonForm from "@/components/persons/PersonForm.vue"
 
 const props = withDefaults(defineProps<{

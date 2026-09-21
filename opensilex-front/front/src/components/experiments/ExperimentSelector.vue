@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="experimentsURI"
     :fetchPage="searchExperiments"
     :itemLoadingMethod="loadExperiments"
@@ -24,7 +24,7 @@ import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { ExperimentGetListDTO } from 'opensilex-core/index'
 import { useI18n } from 'vue-i18n'
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()

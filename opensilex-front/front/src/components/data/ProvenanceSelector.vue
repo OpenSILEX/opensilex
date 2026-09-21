@@ -1,5 +1,5 @@
 <template>
-  <InfiteScrollDropdown
+  <InfiniteScrollDropdown
     v-model:selected="provenancesURI"
     :fetchPage="searchProvenances"
     :itemLoadingMethod="loadProvenances"
@@ -28,7 +28,7 @@ import type {
   OpenSilexResponse,
   ProvenanceGetDTO
 } from 'opensilex-core/index'
-import InfiteScrollDropdown from '@/components/common/forms/InfiteScrollDropdown.vue'
+import InfiniteScrollDropdown from '@/components/common/forms/InfiniteScrollDropdown.vue'
 
 const props = withDefaults(defineProps<{
   provenances?: any

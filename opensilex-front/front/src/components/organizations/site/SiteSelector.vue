@@ -1,6 +1,6 @@
 <template>
   <div>
-    <InfiteScrollDropdown
+    <InfiniteScrollDropdown
       v-model:selected="siteURIsProxy"
       :fetchPage="searchSites"
       :itemLoadingMethod="loadSites"
@@ -26,7 +26,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {NamedResourceDTOSiteModel} from 'opensilex-core/index';
 import {SiteGetListDTO} from "opensilex-core/model/siteGetListDTO";
-import InfiteScrollDropdown from "@/components/common/forms/InfiteScrollDropdown.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 //#region Constant values & Services
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

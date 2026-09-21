@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     :label="label"
     v-model:selected="groupsURI"
     :multiple="multiple"
@@ -22,6 +22,7 @@ import { useI18n } from 'vue-i18n'
 import type { SecurityService, GroupDTO } from 'opensilex-security/index'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
 const { t } = useI18n()
 

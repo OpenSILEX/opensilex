@@ -86,29 +86,23 @@
 
 
     <!-- Formulaire création/édition groupe -->
-    <opensilex-ModalForm
-      v-if="showForm"
+    <GroupVariablesForm
       ref="groupFormRef"
-      component="opensilex-GroupVariablesForm"
-      :createTitle="'component.variable.groupVariable.add-groupVariable'"
-      :editTitle="'component.variable.groupVariable.edit'"
-      :editData="editData"
-      :create-action="createGroup"
-      :update-action="updateGroup"
-      @onCreate="onFormSuccess"
-      @onUpdate="onFormSuccess"
-      @onClose="closeForm"
+      createTitle="component.variable.groupVariable.add-groupVariable"
+      editTitle="component.variable.groupVariable.edit"
+      @onSuccess="onFormSuccess"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeMount, resolveComponent, onMounted, inject, defineExpose, nextTick, watch, h} from 'vue';
-import { useI18n } from 'vue-i18n';
-import { VariablesService, NamedResourceDTO } from 'opensilex-core/index';
-import HttpResponse, { OpenSilexResponse } from '../../../lib/HttpResponse';
+import {computed, h, inject, nextTick, onBeforeMount, onMounted, ref, resolveComponent, watch} from 'vue';
+import {useI18n} from 'vue-i18n';
+import {NamedResourceDTO, VariablesService} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { NInput, NList, NListItem, NSpace } from 'naive-ui';
+import {NInput, NList, NListItem, NSpace} from 'naive-ui';
+import GroupVariablesForm from './GroupVariablesForm.vue';
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
 const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -117,9 +111,7 @@ const props = defineProps<{ elementType: string }>();
 console.log("elementType reçu dans GroupVariablesView:", props.elementType);
 
 const selected = ref<any | null>(null);
-const editData = ref(null);
-const showForm = ref(false);
-const groupFormRef = ref(null);
+const groupFormRef = ref<InstanceType<typeof GroupVariablesForm> | null>(null);
 
 const groups = ref<any[]>([]);
 const search = ref('');
@@ -196,21 +188,6 @@ async function fetchGroupDetails(uri: string) {
   }
 }
 
-async function createGroup(group: any) {
-  const http = await service.createVariablesGroup(group)
-  const createdUri = http?.response?.result?.toString?.() ?? http?.response?.result
-  return { ...group, uri: createdUri }
-}
-
-async function updateGroup(group: any) {
-  const http = await service.updateVariablesGroup(group)
-  const updatedUri = http?.response?.result?.toString?.() ?? http?.response?.result
-  const msg = `${group.name} ${t('component.common.success.update-success-message')}`
-    opensilex?.showSuccessToast(msg)
-  return { ...group, uri: updatedUri ?? group.uri }
-}
-
-
 // Supprime un groupe côté serveur puis resynchronise la liste
 async function onDeleteGroup(group: any) {
   try {
@@ -230,21 +207,11 @@ async function onDeleteGroup(group: any) {
 
 // Formulaire crea
 function showCreateForm() {
-  editData.value = null;
-  showForm.value = true;
+    groupFormRef.value.showCreateForm()
 }
 
 // Formulaire édit
 
-
-
-// function showEditForm(group: any) {
-//   editData.value = group;
-//   showForm.value = true;
-//   nextTick(() => {
-//     groupFormRef.value?.showEditForm?.(group);
-//   });
-// }
 
  async function showEditForm(group: any) {
    const details = await fetchGroupDetails(group.uri);
@@ -262,11 +229,7 @@ function showCreateForm() {
      }))
    };
 
-   editData.value = formData;
-   showForm.value = true;
-   nextTick(() => {
-     groupFormRef.value?.showEditForm?.(formData);
-   });
+   groupFormRef.value?.showEditForm?.(formData);
  }
 
 async function onFormSuccess(form?: any) {
@@ -279,11 +242,7 @@ async function onFormSuccess(form?: any) {
 
   console.log('[GroupVariablesView] previousUri =', previousUri, 'targetUri =', targetUri)
 
-  // 2) On ferme le formulaire
-  showForm.value = false
-  editData.value = null
-
-  // 3) On recharge la liste des groupes depuis l’API
+  // 2) On recharge la liste des groupes depuis l’API
   await fetchGroups()
   await nextTick()
 
@@ -292,23 +251,17 @@ async function onFormSuccess(form?: any) {
     return
   }
 
-  // 4) On essaie de retrouver le groupe dans la liste rechargée
+  // 3) On essaie de retrouver le groupe dans la liste rechargée
   let selectedGroup = groups.value.find(g => g.uri === targetUri)
   console.log('[GroupVariablesView] group trouvé dans la liste =', selectedGroup)
 
-  // 5) Si pas trouvé, on construit juste avec l’URI
+  // 4) Si pas trouvé, on construit juste avec l’URI
   if (!selectedGroup) {
     selectedGroup = { uri: targetUri }
   }
 
-  // 6) On recharge les détails complets du groupe (publisher, variables, etc.)
+  // 5) On recharge les détails complets du groupe (publisher, variables, etc.)
   await updateSelected(selectedGroup)
-}
-
-
-function closeForm() {
-  showForm.value = false;
-  editData.value = null;
 }
 
 // Requête de recherche

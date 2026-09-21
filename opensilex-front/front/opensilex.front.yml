@@ -70,8 +70,8 @@ menu:
           credentials:
             - person-access
           icon: bi#bi-person
-          title: PersonView.title
-          description: PersonView.description
+          title: component.menu.security.persons
+          description: component.person.description
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -143,11 +143,11 @@ menu:
         route:
           path: /events
           component: opensilex-EventsView
+          icon: bi#bi-activity
+          title: component.menu.events
+          description: "component.events.list-description"
           credentials:
             - event-access
-          icon: bi#bi -activity
-          title: Event.list-title
-          description: EventsView.description
       - id: documents
         label: Documents
         route:
@@ -244,9 +244,9 @@ menu:
           component: opensilex-AccountView
           credentials:
             - account-access
-          icon: bi#bi-user
-          title: AccountView.title
-          description: AccountView.description
+          icon: bi#bi-person-lock
+          title: component.menu.security.accounts
+          description: component.account.description
       - id: groups
         label: component.menu.security.groups
         route:
@@ -279,7 +279,7 @@ menu:
             - is-admin
           icon: bi#bi-layers
           title: component.system.title
-          description: component.system.description
+          description: component.system.title-description
       - id: gdpr
         label: component.menu.about.gdpr
         route:
@@ -433,25 +433,36 @@ routes:
   #   component: opensilex-AreaDetails
 
   # Optional <experiment> path
-  # - path: /scientific-objects/details/:uri/:experiment?
-  #   component: opensilex-ScientificObjectDetailView
-  #   credentials: [ ]
-  #   icon: ik#ik-target
-  #   title: component.menu.scientificObjects
-  #   description: ScientificObjectList.description
-  #   rdfType: vocabulary:ScientificObject
-  # - path: /scientific-objects/visualization/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/datafiles/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/events/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/positions/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/annotations/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/documents/:uri
-  #   component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/details/:uri/:experiment?
+    component: opensilex-ScientificObjectDetailView
+    name: ScientificObjectDetails
+    credentials: [ ]
+    icon: ik#ik-target
+    title: component.menu.scientificObjects
+    description: ScientificObjectList.description
+    rdfType: vocabulary:ScientificObject
+    children:
+      - path: ''
+        component: opensilex-ScientificObjectDetailProperties
+        name: ScientificObjectDetailProperties
+      - path: visualization
+        component: opensilex-ScientificObjectVisualizationTab
+        name: ScientificObjectVisualization
+      - path: datafiles
+        component: opensilex-ScientificObjectDataFiles
+        name: ScientificObjectDatafiles
+      - path: events
+        component: opensilex-EventList
+        name: ScientificObjectEvents
+      - path: positions
+        component: opensilex-PositionList
+        name: ScientificObjectPositions
+      - path: annotations
+        component: opensilex-AnnotationList
+        name: ScientificObjectAnnotations
+      - path: documents
+        component: opensilex-DocumentTabList
+        name: ScientificObjectDocuments
 
   - path: /organizations/details/:uri
     component: opensilex-OrganizationDetailView

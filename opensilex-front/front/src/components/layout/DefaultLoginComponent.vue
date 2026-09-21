@@ -419,7 +419,7 @@ en:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}
       3: Based on OpenSILEX version {version}
-      4: Copyright ©2021 INRAE
+      4: Copyright © 2021 INRAE
 fr:
   LoginComponent:
     selectLoginMethod: Choisir la méthode de connexion
@@ -439,5 +439,5 @@ fr:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}
       3: Basé sur OpenSILEX version {version}
-      4: Copyright ©2021 INRAE
+      4: Copyright © 2021 INRAE
 </i18n>

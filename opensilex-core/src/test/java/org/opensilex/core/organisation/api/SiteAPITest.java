@@ -232,6 +232,31 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testUpdateWithExistingAddress() throws Exception {
+        URI uri = new UserCallBuilder(create)
+                .setBody(getCreationDTOWithAddress("test", getSiteAddressDTO(
+                        "France", "Montpellier", "34000", "Occitanie", "2 place Pierre Viala"
+                ))).buildAdmin().executeCallAndReturnURI();
+
+        SiteUpdateDTO updateDto = getUpdateDTOWithAddress(uri, getSiteAddressDTO(
+                "France",
+                "Paris",
+                "75008",
+                "Île-de-France",
+                "55 rue du Faubourg Saint-Honoré"
+        ));
+        new UserCallBuilder(update).setBody(updateDto).buildAdmin().executeCallAndAssertStatus(Response.Status.OK);
+
+        SingleObjectResponse<SiteGetDTO> singleObjectResponse = new UserCallBuilder(getByUri)
+                .setUriInPath(uri)
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<SiteGetDTO>>() {
+                })
+                .getDeserializedResponse();
+        assertNotNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
     public void testDelete() throws Exception {
         // create object and check if URI exists
         URI uri = new UserCallBuilder(create).setBody(getCreationDTO(1)).buildAdmin().executeCallAndReturnURI();

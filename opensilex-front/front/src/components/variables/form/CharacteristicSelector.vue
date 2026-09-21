@@ -1,6 +1,7 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="formSelector"
+    :path="path"
     :label="label"
     v-model:selected="modelSelected"
     :multiple="multiple"
@@ -29,6 +30,7 @@ import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type HttpResponse from 'opensilex-security/HttpResponse'
 
 const props = defineProps<{
+  path?: string
   selected: string | string[] | undefined
   label?: string
   multiple?: boolean
@@ -102,7 +104,7 @@ en:
 fr:
   component: 
     characteristic: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une caractéristique
           placeholder-multiple : Sélectionner une ou plusieurs caractéristiques

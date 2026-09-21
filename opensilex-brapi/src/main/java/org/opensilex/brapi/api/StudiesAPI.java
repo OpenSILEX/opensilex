@@ -76,7 +76,7 @@ public class StudiesAPI extends BrapiCall {
 
     protected Response standardGetStudies(URI studyDbId, String active, String sortBy, String sortOrder, int page, int pageSize) throws Exception {
 
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ArrayList<OrderBy> orderByList = new ArrayList<>();
@@ -200,11 +200,11 @@ public class StudiesAPI extends BrapiCall {
     public Response getStudyDetails(
             @ApiParam(value = "Search by studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
         OrganizationDAO organisationDAO = new OrganizationDAO(sparql);
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         ExperimentModel model = xpDao.get(studyDbId, currentUser);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
@@ -234,7 +234,7 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
         ExperimentModel experimentModel = xpDao.get(studyDbId, currentUser);
@@ -272,7 +272,7 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
         DataLogic dataBLL = new DataLogic(sparql, nosql, fs, currentUser);
@@ -307,7 +307,7 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql, fs);
         validateExperimentRightsAndURI(studyDbId, xpDao);
 
         List<URI> rdfTypes = new ArrayList<>();
@@ -317,10 +317,10 @@ public class StudiesAPI extends BrapiCall {
         }
 
         ScientificObjectLogic soLogic = new ScientificObjectLogic(sparql, nosql, fs);
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()

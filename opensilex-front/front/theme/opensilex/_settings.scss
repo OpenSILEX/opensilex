@@ -3,6 +3,10 @@ html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
   -webkit-text-size-adjust: 100%; /* 2 */
+
+  //global colors
+  --color-dark: #212121;
+  --color-gray: #9aa0ac;
 }
 body {
   margin: 0;
@@ -245,14 +249,14 @@ textarea {
     outline: none !important;
 }
 a {
-    color: #212121;
-    @include transition(color .2s);
-    &:hover, &:focus, &:active {
-        outline: 0;
-        text-decoration: none;
-        color: #212121;
-    }
+  text-decoration: none;
+  transition: color .2s;
+  &:hover, &:focus, &:active {
+    text-decoration: underline;
+    color: var(--color-dark);
+  }
 }
+
 $empty: transparent;
 $default: #d6d6d6;
 $primary: #007bff;
@@ -265,8 +269,8 @@ $inverse: #4c5667;
 $purple: #BF55EC;
 $pink: #f76397;
 $white: #ffffff;
-$dark: #212121;
-$grey: #9aa0ac;
+$dark: var(--color-dark);
+$grey: var(--color-gray);
 $aqua: #3ec5d6;
 $blue: #19B5FE;
 $light-blue: #89CFF0;

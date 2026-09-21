@@ -25,14 +25,14 @@
     </n-tooltip>
 
     <!-- Images list -->
-    <opensilex-ImageGrid
+    <ImageGrid
       :images="images"
       @click="onImageClicked"
       @annotate="onImageAnnotate"
     />
 
     <!-- Enlarged image view -->
-    <opensilex-ImageLightBox
+    <ImageLightBox
       :key="key"
       ref="imageLightBox"
       :images="images"
@@ -42,8 +42,10 @@
       {{ t('DataFilesImagesList.scroll-to-display') }}
     </strong>
 
-    <opensilex-AnnotationModalForm
-      ref="annotationModalForm"
+    <AnnotationForm
+        ref="annotationFormRef"
+        :createTitle="t('component.annotation.add')"
+        :editTitle="t('component.annotation.edit')"
     />
 
     <div v-if="showScrollSpinner" class="d-flex align-items-center">
@@ -58,19 +60,17 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { NButton, NTooltip } from 'naive-ui'
+import {inject, onMounted, onUnmounted, ref, useTemplateRef} from 'vue'
+import {useRoute} from 'vue-router'
+import {useI18n} from 'vue-i18n'
+import {NButton, NTooltip} from 'naive-ui'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type HttpResponse from '@/lib/HttpResponse'
-import type {
-  DataFileGetDTO,
-  DataService,
-  OpenSilexResponse
-} from 'opensilex-core/index'
-import type { DataFileImageDTO } from './DataFileImageDTO'
+import HttpResponse, {OpenSilexResponse} from '@/lib/HttpResponse'
+import type {DataFileGetDTO, DataService} from 'opensilex-core/index'
+import type {DataFileImageDTO} from './DataFileImageDTO'
+import ImageGrid from "@/components/visualization/ImageGrid.vue";
+import AnnotationForm from "@/components/annotations/list/form/AnnotationForm.vue";
 
 const props = withDefaults(defineProps<{
   filter?: {
@@ -117,7 +117,7 @@ const paused = ref(false)
 const key = ref(0)
 
 const imageLightBox = ref<any>(null)
-const annotationModalForm = ref<any>(null)
+const annotationFormRef = useTemplateRef<InstanceType<typeof AnnotationForm>>('annotationFormRef');
 
 function normalizeDates() {
   if (props.filter.start_date === '') {
@@ -163,7 +163,7 @@ function onImageClicked(index: number) {
 }
 
 function onImageAnnotate(target: any) {
-  annotationModalForm.value?.showCreateForm?.([target])
+  annotationFormRef.value?.showCreateForm?.([target])
 }
 
 function refresh() {

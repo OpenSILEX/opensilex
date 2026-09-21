@@ -11,6 +11,7 @@ package org.opensilex.migration.experiment;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -52,7 +53,9 @@ public class UpdateExperimentSpecies implements OpenSilexModuleUpdate {
 
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb);
+        FileStorageService fs = opensilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, mongodb, fs);
 
         try {
             List<URI> experimentUriList = sparql.searchURIs(ExperimentModel.class, "");

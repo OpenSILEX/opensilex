@@ -80,21 +80,6 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
     @JsonProperty(hasParentFGermplasmFieldName)
     protected List<GermplasmGetAllDTO> hasParentGermplasmF;
 
-
-    @JsonProperty("is_public")
-    protected boolean isPublic;
-
-    @JsonProperty("groups")
-    protected List<URI> groups = new ArrayList<>();
-
-    public List<URI> setGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<URI> groups) {
-        this.groups = groups;
-    }
-
     /**
      * description
      */
@@ -190,11 +175,6 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
     public void setHasParentGermplasm(List<GermplasmGetAllDTO> hasParentGermplasm) {
         this.hasParentGermplasm = hasParentGermplasm;
-    }
-
-    public Boolean getIsPublic(){ return isPublic; }
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
     }
 
     public List<GermplasmGetAllDTO> getHasParentGermplasmM() {

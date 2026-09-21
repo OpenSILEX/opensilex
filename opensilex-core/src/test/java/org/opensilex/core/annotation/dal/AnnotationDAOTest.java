@@ -48,7 +48,7 @@ public class AnnotationDAOTest extends AbstractMongoIntegrationTest {
         user.setLanguage("en");
         user.setAdmin(true);
 
-        dao = new AnnotationDAO(sparql, nosql);
+        dao = new AnnotationDAO(sparql, nosql, getFs());
     }
 
     private static AnnotationModel getAnnotationModel(int i) {

@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /**
@@ -13,7 +14,13 @@ import java.util.function.BiConsumer;
  */
 public interface SPARQLResult {
 
-    public String getStringValue(String key);
+    String getStringValue(String key);
+
+    Optional<SPARQLLiteral> getLiteralValue(String key);
+
+    boolean isURI(String key);
+
+    boolean isLiteral(String key);
     
-    public void forEach(BiConsumer<? super String, ? super String> action);
+    void forEach(BiConsumer<? super String, ? super String> action);
 }

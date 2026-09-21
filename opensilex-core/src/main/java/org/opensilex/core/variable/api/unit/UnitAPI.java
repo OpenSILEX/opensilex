@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.opensilex.core.utils.GetByUrisWithSharedResourceInstanceDTO;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
@@ -131,6 +132,14 @@ public class UnitAPI {
         }
     }
 
+    /**
+     * Return a list of units corresponding to the given URIs
+     *
+     * @param uris list of units uri
+     * @return Corresponding list of units
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path(UnitAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed units by uris")
@@ -140,12 +149,66 @@ public class UnitAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return units", response = UnitDetailsDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getUnitsByURIs(
             @ApiParam(value = "Units URIs", required = true) @QueryParam(UnitAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
             @ApiParam(value = "Shared resource instance") @QueryParam(UnitAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
+
+            try {
+                List<UnitDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(UnitDetailsDTO::new)
+                        .collect(Collectors.toList());
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Units not found", e.getStrUris()).getResponse();
+            }
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<UnitDetailsDTO> detailsList = service.getListByURI(Paths.get(UnitAPI.PATH, UnitAPI.GET_BY_URIS_PATH).toString(),
+                UnitAPI.GET_BY_URIS_URI_PARAM,
+                uris, UnitDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
+    }
+
+    /**
+     * Return a list of units corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     *
+     * @param dto DTO containing the list of URIs
+     * @return Corresponding list of units
+     */
+    @POST
+    @Path(UnitAPI.GET_BY_URIS_PATH)
+    @ApiOperation("Get detailed units by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return units", response = UnitDetailsDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchUnitsByURIs(
+            @ApiParam(value = "Units URIs and optional shared resource instance", required = true) GetByUrisWithSharedResourceInstanceDTO dto
+    ) throws Exception {
+        List<URI> uris = dto == null ? null : dto.getUris();
+        URI sharedResourceInstance = dto == null ? null : dto.getSharedResourceInstance();
+        
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         if (sharedResourceInstance == null) {
             BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
 

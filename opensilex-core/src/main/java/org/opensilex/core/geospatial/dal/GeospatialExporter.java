@@ -8,24 +8,21 @@ import org.apache.jena.vocabulary.RDFS;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.Transaction;
+import org.geotools.api.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.type.AttributeDescriptor;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -54,10 +51,14 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
         public String getLabel() {return this.label;}
     }
 
-    public static final Class<Polygon> POLY = Polygon.class;
-    public static final Class<LineString> LINE = LineString.class;
-    public static final Class<Point> POINT = Point.class;
-    public static final List<Class<? extends Geometry>> typeList = Arrays.asList(POLY,LINE,POINT);
+    public static final List<Class<? extends Geometry>> typeList = Arrays.asList(
+            Polygon.class,
+            LineString.class,
+            Point.class,
+            MultiPolygon.class,
+            MultiLineString.class,
+            MultiPoint.class
+    );
     public static final URI COMMENT= URI.create(SPARQLDeserializers.getShortURI(RDFS.comment.getURI()));
     private static final Logger LOGGER = LoggerFactory.getLogger(GeospatialExporter.class);
 

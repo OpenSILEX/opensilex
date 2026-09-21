@@ -18,6 +18,7 @@ import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDaoV2;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -87,6 +88,9 @@ public class ProvenanceAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private FileStorageService fs;
 
     @POST
     @ApiOperation("Add a provenance")
@@ -227,7 +231,7 @@ public class ProvenanceAPI {
         provenances.add(uri);
 
         DataDaoV2 dataDAO = new DataDaoV2(sparql, nosql, null);
-        DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dataFileDaoV2 = new DataFileDaoV2(nosql, sparql, fs);
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(currentUser).setProvenances(provenances);
 
@@ -292,12 +296,12 @@ public class ProvenanceAPI {
     }
 
     /**
-     * * Return a list of provenancess corresponding to the given URIs
+     * @return  a list of provenances corresponding to the given URIs
      *
      * @param uris list of provenancess uri
-     * @return Corresponding list of provenancess
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get a list of provenances by their URIs")
@@ -307,11 +311,43 @@ public class ProvenanceAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
+        List<ProvenanceModel> models = dao.findByUris(uris.stream(), uris.size());
+
+        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
+        models.forEach(result -> resultDTOList.add(ProvenanceGetDTO.fromModel(result)));
+
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    /**
+     * @return  a list of provenances corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get a list of provenances by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchProvenancesByURIs(
+            @ApiParam(value = "Provenance URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         ProvenanceDaoV2 dao = new ProvenanceDaoV2(nosql.getServiceV2());
         List<ProvenanceModel> models = dao.findByUris(uris.stream(), uris.size());
 

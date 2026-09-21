@@ -94,6 +94,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.apache.commons.io.FilenameUtils;
 
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
 import static org.opensilex.core.data.dal.DataFileDaoV2.FS_FILE_PREFIX;
@@ -164,7 +166,7 @@ public class DataFilesAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
         if (file.length() == 0 || file.length() >= DATAFILE_MAX_SIZE) {
             return new ErrorResponse(
@@ -244,7 +246,7 @@ public class DataFilesAPI {
             @Context HttpServletRequest context
     ) throws Exception {  
         
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
         try {
             if (dtoList.size()> DataAPI.SIZE_MAX) {
@@ -320,7 +322,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
     ) throws  Exception {
 
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
         DataFileSearchFilter filter = null;
 
@@ -375,7 +377,7 @@ public class DataFilesAPI {
             @Context HttpServletResponse response
     ) throws NotFoundURIException, IOException, URISyntaxException {
         try {
-            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
             DataFileModel description = dao.get(uri);
 
@@ -429,7 +431,7 @@ public class DataFilesAPI {
     public Response getDataFileDescription(
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
         
         try {
             DataFileModel description = dao.get(uri);
@@ -466,7 +468,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Thumbnail height") @QueryParam("scaled_height") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
             @Context HttpServletResponse response) throws Exception {
 
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
         
         try {
             DataFileModel description = dao.get(uri);
@@ -630,7 +632,7 @@ public class DataFilesAPI {
             int pageSize
 
     ) throws Exception {
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
         DataFileSearchFilter filter = null;
 
@@ -799,7 +801,7 @@ public class DataFilesAPI {
             List<URI> devices
     ){
 
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
         DataFileSearchFilter filter = new DataFileSearchFilter();
         filter.setUser(user);
@@ -1006,7 +1008,7 @@ public class DataFilesAPI {
         @Context HttpServletResponse response
         ) throws Exception {
             StringBuilder combinedContent = new StringBuilder();
-            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
             String firstFileExtension = null;
             boolean isFirstFile = true;
             List<String> firstFileHeader = null;
@@ -1135,7 +1137,7 @@ public class DataFilesAPI {
     public Response deleteDatafile(
             @ApiParam(value = "Datafile URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+        DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
 
         DataFileModel description = dao.get(uri);
         java.nio.file.Path filePath = Paths.get(description.getPath());
@@ -1165,7 +1167,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         try {
-            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql);
+            DataFileDaoV2 dao = new DataFileDaoV2(nosql, sparql, fs);
             DataFileModel description = dao.get(uri);
 
             java.nio.file.Path filePath = Paths.get(description.getPath());

@@ -3,7 +3,7 @@
     <opensilex-PageContent>
       <div class="row">
         <div class="col-lg-6">
-          <opensilex-Card
+          <Card
             label="component.common.informations"
             icon="bi-clipboard"
           >
@@ -158,7 +158,7 @@
                     />
                 </div>
             </template>
-          </opensilex-Card>
+          </Card>
         </div>
 
         <div class="col-lg-6">
@@ -216,9 +216,13 @@
     </opensilex-PageContent>
 
     <!-- Formulaire Modal -->
-    <opensilex-DeviceModalForm
+    <DeviceForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
       ref="deviceForm"
+      :createTitle="t('component.device.add')"
+      :editTitle="t('component.device.update')"
       @onUpdate="refresh"
+      @onHide="refresh"
     />
   </div>
 </template>
@@ -228,31 +232,26 @@ import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { VueJsOntologyExtensionService, VueRDFTypeDTO } from '@/lib'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse } from '@/lib/HttpResponse'
-
 import Oeev from "../../ontologies/Oeev";
-
 import type {
   DeviceGetDetailsDTO,
   DevicesService,
   RDFObjectRelationDTO,
   VariableDetailsDTO
 } from 'opensilex-core/index'
-
 import type { EventGetDTO } from 'opensilex-core/model/eventGetDTO'
 import type { PositionGetDTO } from 'opensilex-core/model/positionGetDTO'
 import type { LocationObservationDTO } from 'opensilex-core/model/locationObservationDTO'
 import type { EventsService } from 'opensilex-core/api/events.service'
 import type { PositionsService } from 'opensilex-core/api/positions.service'
 import type { VariablesService } from 'opensilex-core/api/variables.service'
-
 import type { SecurityService, PersonDTO } from 'opensilex-security/index'
-
-import DeviceModalForm from '../form/DeviceModalForm.vue'
+import DeviceForm from "@/components/devices/form/DeviceForm.vue";
+import Card from "@/components/common/views/Card.vue";
 
 const store = useStore()
 const route = useRoute()
@@ -507,7 +506,7 @@ async function deleteDevice(deviceUri: string) {
 }
 
 function editForm() {
-  deviceForm.value?.showEditForm?.(device.value.uri)
+  deviceForm.value?.showEditForm?.(device.value)
 }
 
 function isVariableRelation(relation: RDFObjectRelationDTO): boolean {
@@ -570,14 +569,6 @@ watch(
   }
 )
 </script>
-
-<style scoped lang="scss">
-.detailsCard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-</style>
 
 <i18n>
 en:

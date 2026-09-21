@@ -1,6 +1,7 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="formSelector"
+    :path="path"
     :label="label"
     v-model:selected="unitURI"
     :multiple="multiple"
@@ -29,6 +30,7 @@ import type HttpResponse from 'opensilex-security/HttpResponse'
 
 // Props
 const props = defineProps<{
+  path?: string
   selected: string | string[]
   label?: string
   multiple?: boolean
@@ -107,7 +109,7 @@ en:
 fr:
   component: 
     unit: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une unité
           placeholder-multiple : Sélectionner une ou plusieurs unités

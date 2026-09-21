@@ -56,112 +56,67 @@
 
   <!-- Layout -->
   <n-layout has-sider class="event-layout">
-    <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="top">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="searchFiltersPanel"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div
-          v-show="filtersCollapsed && activeFiltersCount > 0"
-          class="filters-count-badge"
-        >
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <!-- Sidebar filtres -->
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
-      class="event-sider"
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      @refresh="refresh"
+      @reset="reset"
     >
-      <n-space class="p-3" vertical>
-        <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
-          <n-form-item class="compact-form-item">
-            <opensilex-TypeForm
-              v-model:type="filter.type"
-              :baseType="baseType"
-              :ignoreRoot="false"
-              :placeholder="t('EventList.type-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <n-form-item class="compact-form-item">
+        <opensilex-TypeForm
+          v-model:type="filter.type"
+          :baseType="baseType"
+          :ignoreRoot="false"
+          :placeholder="t('EventList.type-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-form-item
-            v-if="displayTargetFilter"
-            :label="t('EventList.targets')"
-            class="compact-form-item"
-          >
-            <opensilex-StringFilter
-              v-model:filter="filter.target"
-              :placeholder="t('EventList.target-filter-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <n-form-item
+        v-if="displayTargetFilter"
+        :label="t('EventList.targets')"
+        class="compact-form-item"
+      >
+        <opensilex-StringFilter
+          v-model:filter="filter.target"
+          :placeholder="t('EventList.target-filter-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-form-item
-            :label="t('component.common.description')"
-            class="compact-form-item"
-          >
-            <opensilex-StringFilter
-              v-model:filter="filter.description"
-              :placeholder="t('EventList.filter-label-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <n-form-item
+        :label="t('component.common.description')"
+        class="compact-form-item"
+      >
+        <opensilex-StringFilter
+          v-model:filter="filter.description"
+          :placeholder="t('EventList.filter-label-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('EventList.start')" class="compact-form-item">
-            <opensilex-DateTimeForm
-              v-model:value="filter.start"
-              :max-date="filter.end ? filter.end : undefined"
-              :required="false"
-              class="searchFilter"
-            />
-          </n-form-item>
+      <n-form-item :label="t('EventList.start')" class="compact-form-item">
+        <opensilex-DateTimeForm
+          v-model:value="filter.start"
+          :max-date="filter.end ? filter.end : undefined"
+          :required="false"
+          class="searchFilter"
+        />
+      </n-form-item>
 
-          <n-form-item :label="t('EventList.end')" class="compact-form-item">
-            <opensilex-DateTimeForm
-              v-model:value="filter.end"
-              :min-date="filter.start ? filter.start : undefined"
-              :minDate="filter.start"
-              :maxDate="filter.end"
-              :required="false"
-              class="searchFilter"
-            />
-          </n-form-item>
-
-          <n-space justify="end" class="mt-2">
-            <opensilex-Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="reset"
-            />
-            <opensilex-Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="refresh"
-            />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+      <n-form-item :label="t('EventList.end')" class="compact-form-item">
+        <opensilex-DateTimeForm
+          v-model:value="filter.end"
+          :min-date="filter.start ? filter.start : undefined"
+          :maxDate="filter.end"
+          :required="false"
+          class="searchFilter"
+        />
+      </n-form-item>
+    </SearchFiltersSidebar>
 
     <!-- Contenu -->
     <n-layout-content class="event-content">
@@ -261,11 +216,13 @@
         :positionsUriPaths="positionsUriPaths"
       />
 
-      <opensilex-EventModalForm
+      <EventForm
         v-if="renderModalForm"
         ref="modalFormRef"
         :target="target"
         :context="context"
+        createTitle="Event.add"
+        editTitle="Event.edit"
         @onCreate="displayAfterCreation"
         @onUpdate="updateSelectedEvent"
       />
@@ -285,21 +242,19 @@
         @csvImported="onImport"
       />
 
-      <opensilex-ModalForm
+      <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="bi#bi-file-text"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.editDocument')"
+        @onSuccess="refresh"
       />
     </n-layout-content>
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
@@ -320,6 +275,11 @@ import type { OpenSilexResponse } from '@/lib/HttpResponse'
 import type { EventDetailsDTO } from 'opensilex-core/index'
 import { EventsService } from 'opensilex-core/api/events.service'
 import { OntologyService } from 'opensilex-core/api/ontology.service'
+import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import EventForm from '../form/EventForm.vue';
+import DocumentForm from '@/components/documents/DocumentForm.vue';
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 type EventFilter = {
   target: string | undefined
@@ -368,7 +328,7 @@ const eventModalViewRef = ref<any>(null)
 const modalFormRef = ref<any>(null)
 const csvFormRef = ref<any>(null)
 const moveCsvFormRef = ref<any>(null)
-const documentFormRef = ref<any>(null)
+const documentFormRef = useTemplateRef<InstanceType<typeof DocumentForm>>('documentFormRef')
 
 const uriLabels = ref<Record<string, string>>({})
 const uriPaths = ref<Record<string, string>>({})
@@ -648,7 +608,7 @@ function isMove(event: any) {
   )
 }
 
-function getEventPromise(event: any): Promise<HttpResponse<OpenSilexResponse<any>>> {
+function getEventPromise(event: EventGetDTO): Promise<HttpResponse<OpenSilexResponse>> {
   if (isMove(event)) {
     // return eventService.getEventDetails(event.uri)
     return eventService.getMoveEvent(event.uri)
@@ -656,8 +616,8 @@ function getEventPromise(event: any): Promise<HttpResponse<OpenSilexResponse<any
   return eventService.getEventDetails(event.uri)
 }
 
-async function showEventView(event: any) {
-  const http = await getEventPromise(event)
+async function showEventView(event: RowWithData<EventGetDTO>) {
+  const http = await getEventPromise(event.item)
   await eventModalViewRef.value?.show?.(http)
 }
 
@@ -693,7 +653,7 @@ function getSelected() {
 }
 
 function createDocument() {
-  documentFormRef.value?.showCreateForm?.(initForm())
+  documentFormRef.value?.showCreateForm(initForm())
 }
 
 function initForm() {

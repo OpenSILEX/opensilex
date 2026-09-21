@@ -11,14 +11,13 @@
       @click="handleUriLinkClicked"
     >
       <span v-html="value || uri"></span>
-      &nbsp;
       <button
         v-if="allowCopy"
         @click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="bi#bi-clipboard" />
+        <Icon icon="bi#bi-clipboard" />
       </button>
     </router-link>
 
@@ -38,7 +37,7 @@
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUrl')"
       >
-        <opensilex-Icon icon="bi#bi-clipboard" />
+        <Icon icon="bi#bi-clipboard" />
       </button>
     </a>
 
@@ -57,7 +56,7 @@
         class="uri-copy-visible"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="bi#bi-clipboard" />
+        <Icon icon="bi#bi-clipboard" />
       </button>
     </span>
 
@@ -77,7 +76,7 @@
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <opensilex-Icon icon="bi#bi-clipboard" />
+        <Icon icon="bi#bi-clipboard" />
       </button>
     </a>
   </span>
@@ -87,7 +86,9 @@
 import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import copy from "copy-to-clipboard";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+
+import Icon from "@/components/common/views/Icon.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 export type UriLinkDestination = string | { path: string };
 
@@ -103,7 +104,9 @@ type Props = {
   inTable?: boolean;
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  allowCopy: true
+});
 
 const { t } = useI18n();
 const $opensilex = inject<OpenSilexVuePlugin | undefined>("$opensilex");
@@ -184,7 +187,6 @@ const handleUriLinkClicked = () => {
   display: none;
   border: 1px solid #d8dde5;
   border-radius: 5px;
-  color: #212121;
   padding: 3px 5px 0;
   position: absolute;
   right: 0;
@@ -194,11 +196,10 @@ const handleUriLinkClicked = () => {
 .uri .uri-copy-visible {
   border: 1px solid #d8dde5;
   border-radius: 5px;
-  color: #212121;
-  padding: 5px 6px 3px;
+  padding: 3px 5px 0 5px;
   position: absolute;
   right: 0;
-  // top: -3px;
+  top: -4px;
 }
 
 .uri:hover .uri-copy,
@@ -209,7 +210,6 @@ const handleUriLinkClicked = () => {
 }
 
 .uri:hover {
-  color: #212121;
   text-decoration: underline;
 }
 

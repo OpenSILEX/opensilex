@@ -26,10 +26,6 @@ OpenSilex Vue.JS components
     * [Tags input form field](#tags-input-form-field-)
     * [Datetime input form field](#datetime-input-form-field-)
   * [Forms containers](#forms-containers)
-    * [Modal form](#modal-form)
-      * [Properties](#properties)
-      * [Events](#events)
-      * [Typing](#typing)
     * [Wizard form](#wizard-form)
   * [View component](#view-component)
     * [Uri link](#uri-link)
@@ -568,66 +564,6 @@ Overloaded properties of vue-datetime
 
 
 ## Forms containers
-
-### Modal form
-
-Identifier: **opensilex-ModalForm**
-
-Description: 
-
-Component used to display a validated form component in a modal box for creation and update.
-
-Form component should implement the following properties:
-
-- editMode: boolean flag to define if form is displayed in create or update mode
-- form: synchronized form object
-
-Form component must implement the following methods:
-
-- getEmptyForm: Returns an empty form corresponding to form component fields
-- reset: Resets form to its initial values (for both creation and update)
-
-Form component can also implement the following methods:
-
-- create: Method taking "form" object as parameter to realize an action when form is validated and edit mode is false.
-  Only called if the `createAction` prop is not defined.
-- update: Method taking "form" object as parameter to realize an action when form is validated and edit mode is true.
-- Only called if the `updateAction` prop is not defined.
-
-If these methods are not defined "createAction" and/or "updateAction" properties must be defined.
-
-To interact with ModalForm component, use "showCreateForm()" and "showEditForm(form)" methods.
-
-To put a ModalForm A into a ModalForm B, you should put the "static" prop of B to false 
-
-#### Properties
-
-| ID            | Type     | Default value | Description                                                                                                                                                            |
-|---------------|----------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **component** | string   | *-*           | Form component to display in modal for edition and creation.                                                                                                           |
-| createTitle   | string   | *-*           | Translation key for modal creation form title                                                                                                                          |
-| editTitle     | string   | *-*           | Translation key for modal edition form title                                                                                                                           |
-| icon          | string   | *-*           | Icon identifier for modal title, see [IconForm](#Icons) form more information                                                                                          |
-| modalSize     | string   | *md*          | Bootstrap vue modal size ('sm', 'md', 'lg', or 'xl')                                                                                                                   |
-| createAction  | function | *-*           | Optional method reference taking "form" object as parameter to realize action when form is validated and edit mode is false, use component "create" method by default. |
-| updateAction  | function | *-*           | Method reference taking "form" object as parameter to realize action when form is validated and edit mode is true, use component "update" method by default.           |
-| initForm      | function | *identity()*  | Optional method reference taking "form" object as parameter to correctly initialize this object on form creation if needed (add constant values by example)            |
-
-#### Events
-
-| ID       | Parameter | Description                                   |
-|----------|-----------|-----------------------------------------------|
-| onCreate | *form*    | Event called after successfully create action |
-| onUpdate | *form*    | Event called after successfully update action |
-
-#### Typing
-
-When using a modal form in another component, you must specify three generic types : `InnerFormType`, `CreationDTOType`
-and `UpdateDTOType`. For example, a Modal Form reference could look like this :
-
-```typescript
-@Ref("facilityForm") readonly facilityForm!: ModalForm<FacilityForm, FacilityCreationDTO, FacilityUpdateDTO>;
-```
 
 ### Wizard form
 

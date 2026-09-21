@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Button
+  <Button
     @click=" () => emit('click')"
     :label="label"
     class="helpButton"
@@ -11,14 +11,20 @@
 </template>
 
 <script setup lang="ts">
- 
 
-defineProps<{
-  label?: string;
-  small?: boolean;
-  disabled?: boolean;
-  variant: { type: String, default: "outline-info" }
-}>();
+import Button from "@/components/common/buttons/Button.vue";
+
+withDefaults(
+    defineProps<{
+      label?: string;
+      small?: boolean;
+      disabled?: boolean;
+      variant?: string
+    }>(),
+    {
+      variant: "outline-info"
+    }
+)
 
 const emit = defineEmits(["click"]);
 

@@ -13,12 +13,12 @@ package org.opensilex.faidare.api;
 import io.swagger.annotations.*;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.faidare.builder.Faidarev1LocationDTOBuilder;
 import org.opensilex.faidare.model.Faidarev1LocationDTO;
 import org.opensilex.faidare.responses.Faidarev1LocationListResponse;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -51,6 +51,8 @@ public class LocationsAPI extends FaidareCall {
     private SPARQLService sparql;
     @Inject
     private MongoDBService nosql;
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -71,7 +73,7 @@ public class LocationsAPI extends FaidareCall {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql);
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql.getServiceV2());
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         Faidarev1LocationDTOBuilder locationDTOBuilder = new Faidarev1LocationDTOBuilder(facilityLogic, organizationDAO);
         if (locationDbId != null && facilityLogic.get(locationDbId, currentUser) == null) {

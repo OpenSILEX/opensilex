@@ -6,9 +6,9 @@ import { Observable } from "rxjs/Observable";
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 {{/usePromise}}
-import IHttpClient from "../IHttpClient";
+import type { IHttpClient } from "../IHttpClient";
 import { inject, injectable } from "inversify";
-import { IAPIConfiguration } from "../IAPIConfiguration";
+import type { IAPIConfiguration } from "../IAPIConfiguration";
 import { Headers } from "../Headers";
 import HttpResponse, { OpenSilexResponse } from "../HttpResponse";
 

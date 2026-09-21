@@ -28,7 +28,7 @@
       >
         {{ t('component.common.actions') }}
       </n-button>
-    </n-dropdown> 
+    </n-dropdown>
 
 
     <!-- Affichage Counts  -->
@@ -63,179 +63,132 @@
 
 
 <n-layout has-sider class="vars-layout">
-  <n-space class="mb-2 me-1" align="top">
-    <n-button 
-      quaternary 
-      circle 
-      @click="filtersCollapsed = !filtersCollapsed" 
-      :title="t('VariableList.label-filter')"
-      :class="{ 'greenThemeColor' : (filtersCollapsed)}"
-      class="globalFiltersSearchButton"
-    >
-      <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-      <div v-show="filtersCollapsed && activeFilters > 0" class="filters-count-badge"
-        >
-        ( {{ activeFilters }} )
-      </div>
-
-    </n-button>
-  </n-space>
-  
-  <!-- SIDEBAR / FILTRES -->
-  <n-layout-sider
-    v-model:collapsed="filtersCollapsed"
-    :collapsed-width="0"
-    :width="360"
-    collapse-mode="width"
-    show-trigger
-    bordered
-    class="vars-sider"
+  <SearchFiltersSidebar
+    :activeFiltersCount="activeFilters"
+    :filtersCollapsed="filtersCollapsed"
+    searchButtonLabelTranslationKey="component.variable.search-variables"
+    @refresh="applyFilters"
+    @reset="resetFilters"
   >
+    <!-- Nom -->
+    <n-form-item :label="t('component.common.name')">
+      <n-input
+        v-model:value="filter.name"
+        :placeholder="t('VariableList.name-placeholder')"
+        @keydown.enter.prevent.stop="applyFilters"
+        clearable
+      />
+    </n-form-item>
 
-    <n-space class="p-3" vertical>
+    <!-- Entité -->
+    <n-form-item :label="t('component.variable.entity.entity')" :show-feedback="false">
+      <opensilex-EntitySelector
+        v-model:selected="filter.entity"
+        @handlingEnterKey="applyFilters"
+        :placeholder="$t('component.variable.entity.entity-placeholder')"
+      />
+    </n-form-item>
 
-      <n-form label-placement="top" size="small" @submit.prevent="applyFilters">
-        <!-- Nom -->
-        <n-form-item :label="t('component.common.name')">
-          <n-input
-            v-model:value="filter.name"
-            :placeholder="t('VariableList.name-placeholder')"
-            @keydown.enter.prevent.stop="applyFilters"
-            clearable
+    <!-- Caractéristique -->
+    <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
+      <opensilex-CharacteristicSelector
+        v-model:selected="filter.characteristic"
+        @handlingEnterKey="applyFilters"
+        :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
+      />
+    </n-form-item>
+
+    <!-- Group of variables -->
+    <n-form-item :label="t('component.variable.groupVariable.groupVariable')" :show-feedback="false">
+      <opensilex-GroupVariablesSelector
+        v-if="!withoutGroup"
+        v-model:variableGroup="filter.includedGroup"
+        :sharedResourceInstance="filter.sharedResourceInstance"
+        class="searchFilter"
+        @handlingEnterKey="applyFilters"
+      />
+      <opensilex-GroupVariablesSelector
+        v-else
+        v-model:variableGroup="filter.notIncludedGroup"
+        :sharedResourceInstance="filter.sharedResourceInstance"
+        class="searchFilter"
+        @handlingEnterKey="applyFilters"
+      />
+    </n-form-item>
+
+    <!-- <n-form-item :show-feedback="false"> -->
+    <opensilex-CheckboxForm
+      :title="t('VariableList.withoutGroup')"
+      :helpMessage="t('VariableList.withoutGroup-info')"
+      v-model:value="withoutGroup"
+      class="searchFilter"
+    />
+    <!-- </n-form-item> -->
+
+    <!-- Advanced -->
+    <n-collapse
+      v-model:expanded-names="expandedNames"
+      :accordion="false"
+      @update:expanded-names="onCollapseUpdate"
+      class="advancedFiltersSearch"
+    >
+      <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
+        <n-form-item :label="t('component.variable.entityOfInterest.entityOfInterest')" :show-feedback="false">
+          <opensilex-InterestEntitySelector
+            v-model:selected="filter.entityOfInterest"
+            @handlingEnterKey="applyFilters"
+            :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
           />
         </n-form-item>
 
-        <!-- Entité -->
-        <n-form-item :label="t('component.variable.entity.entity')" :show-feedback="false">
-          <opensilex-EntitySelector
-            v-model:selected="filter.entity"
+        <n-form-item :label="t('component.variable.method.method')" :show-feedback="false">
+          <opensilex-MethodSelector
+            v-model:selected="filter.method"
             @handlingEnterKey="applyFilters"
-            :placeholder="$t('component.variable.entity.entity-placeholder')"
+            :placeholder="$t('component.variable.method.method-placeholder')"
           />
         </n-form-item>
 
-        <!-- Caractéristique -->
-        <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
-          <opensilex-CharacteristicSelector
-            v-model:selected="filter.characteristic"
+        <n-form-item :label="t('component.variable.unit.unit')" :show-feedback="false">
+          <opensilex-UnitSelector
+            v-model:selected="filter.unit"
             @handlingEnterKey="applyFilters"
-            :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
+            :placeholder="$t('component.variable.unit.unit-placeholder')"
           />
         </n-form-item>
 
-        
-
-        <!-- Group of variables -->
-        <n-form-item :label="t('component.variable.groupVariable.groupVariable')" :show-feedback="false">
-          <opensilex-GroupVariablesSelector
-            v-if="!withoutGroup"
-            v-model:variableGroup="filter.includedGroup"
-            :sharedResourceInstance="filter.sharedResourceInstance"
-            class="searchFilter"
+        <n-form-item :label="t('component.variable.dataType.data-type')" :show-feedback="false">
+          <opensilex-VariableDataTypeSelector
+            v-model:selected="filter.dataType"
             @handlingEnterKey="applyFilters"
-          />
-          <opensilex-GroupVariablesSelector
-            v-else
-            v-model:variableGroup="filter.notIncludedGroup"
-            :sharedResourceInstance="filter.sharedResourceInstance"
-            class="searchFilter"
-            @handlingEnterKey="applyFilters"
+            :placeholder="$t('component.variable.dataType.datatype-placeholder')"
           />
         </n-form-item>
 
-        <!-- <n-form-item :show-feedback="false"> -->
-          <opensilex-CheckboxForm
-            :title="t('VariableList.withoutGroup')"
-            :helpMessage="t('VariableList.withoutGroup-info')"
-            v-model:value="withoutGroup"
-            class="searchFilter"
+        <n-form-item :label="t('component.variable.timeInterval.time-interval')" :show-feedback="false">
+          <opensilex-VariableTimeIntervalSelector
+            v-model:selected="filter.timeInterval"
+            @handlingEnterKey="applyFilters"
+            :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
           />
-        <!-- </n-form-item> -->
+        </n-form-item>
 
-        <!-- Advanced -->
-        <n-collapse
-          v-model:expanded-names="expandedNames"
-          :accordion="false"
-          @update:expanded-names="onCollapseUpdate"
-          class="advancedFiltersSearch"
-        >
-          <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
-            <n-form-item :label="t('component.variable.entityOfInterest.entityOfInterest')" :show-feedback="false">
-              <opensilex-InterestEntitySelector
-                v-model:selected="filter.entityOfInterest"
-                @handlingEnterKey="applyFilters"
-                :placeholder="$t('component.variable.entityOfInterest.entityOfInterest-placeholder')"
-              />
-            </n-form-item>
-
-            <n-form-item :label="t('component.variable.method.method')" :show-feedback="false">
-              <opensilex-MethodSelector
-                v-model:selected="filter.method"
-                @handlingEnterKey="applyFilters"
-                :placeholder="$t('component.variable.method.method-placeholder')"
-              />
-            </n-form-item>
-
-            <n-form-item :label="t('component.variable.unit.unit')" :show-feedback="false">
-              <opensilex-UnitSelector
-                v-model:selected="filter.unit"
-                @handlingEnterKey="applyFilters"
-                :placeholder="$t('component.variable.unit.unit-placeholder')"
-              />
-            </n-form-item>
-
-            <n-form-item :label="t('component.variable.dataType.data-type')" :show-feedback="false">
-              <opensilex-VariableDataTypeSelector
-                v-model:selected="filter.dataType"
-                @handlingEnterKey="applyFilters"
-                :placeholder="$t('component.variable.dataType.datatype-placeholder')"
-              />
-            </n-form-item>
-
-            <n-form-item :label="t('component.variable.timeInterval.time-interval')" :show-feedback="false">
-              <opensilex-VariableTimeIntervalSelector
-                v-model:selected="filter.timeInterval"
-                @handlingEnterKey="applyFilters"
-                :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
-              />
-            </n-form-item>
-
-            <n-form-item :label="t('component.variable.species.species')">
-              <opensilex-SpeciesSelector
-                v-model:selected="filter.species"
-                :multiple="true"
-                :placeholder="$t('component.variable.species.select-multiple-placeholder')"
-              />
-            </n-form-item>
-          </n-collapse-item>
-        </n-collapse>
-
-        <n-space justify="end" class="mt-2">
-          <!-- Boutons Filtres Recherche  -->
-          <opensilex-Button
-          class="resetButton"
-            :label="t('component.common.search.clear-button')"
-            icon="bi-x-lg"
-            @click="resetFilters"
+        <n-form-item :label="t('component.variable.species.species')">
+          <opensilex-SpeciesSelector
+            v-model:selected="filter.species"
+            :multiple="true"
+            :placeholder="$t('component.variable.species.select-multiple-placeholder')"
           />
-          <opensilex-Button 
-            class="greenThemeColor"
-            :label="t('component.common.search.search-button')"
-            icon="bi-search"
-            @click="applyFilters"
-          >
-          </opensilex-Button>
-        </n-space>
-      </n-form>
-    </n-space>
-  </n-layout-sider>
+        </n-form-item>
+      </n-collapse-item>
+    </n-collapse>
+  </SearchFiltersSidebar>
 
   <!-- CONTENU : barre d’actions + table -->
   <n-layout-content class="vars-content">
 
   <n-data-table
-    :remote="!onlySelected"                
+    :remote="!onlySelected"
     :columns="columns"
     :data="tableData"
     :row-key="rowKey"
@@ -245,8 +198,8 @@
     @update:expanded-row-keys="handleExpandedRowChange"
     @update:page="onPageChange"
     @update:page-size="onPageSizeChange"
-    v-model:sorter="sorterState"       
-    @update:sorter="onSortChange"        
+    v-model:sorter="sorterState"
+    @update:sorter="onSortChange"
   />
     </n-layout-content>
 </n-layout>
@@ -259,32 +212,38 @@
     @onValidateEmpty="$opensilex?.showWarningToast($t('component.group.no-group-selected'))"
   />
 
-  <opensilex-ModalForm
+  <GroupVariablesForm
     ref="groupVariablesForm"
-    :component="formComponent"
-    :createTitle="'component.variable.groupVariable.add-groupVariable'"
-    :editTitle="'component.variable.groupVariable.edit'"
-    :create-action="create"
-    :update-action="update"
-    :success-message="successMessage"
+    createTitle="component.variable.groupVariable.add-groupVariable"
+    editTitle="component.variable.groupVariable.edit"
     v-if="loadGroupVariablesForm"
   />
 </template>
 
 <script lang="ts" setup>
-import { ref, h, inject, reactive, onMounted, resolveComponent, computed, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { NButton, NTag, NDataTable, DataTableRowKey, NInput, NForm, NFormItem, NSelect, NCheckbox, NCollapse, NCollapseItem, NLayout, NLayoutSider, NLayoutContent, NSpace } from 'naive-ui'
-import { VariablesService } from 'opensilex-core'
-import { VariableGetDTO } from 'opensilex-core/model/variableGetDTO'
+import {computed, h, inject, nextTick, onMounted, reactive, ref, resolveComponent, useTemplateRef, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {
+  DataTableRowKey,
+  NButton,
+  NCollapse,
+  NCollapseItem,
+  NDataTable,
+  NFormItem,
+  NInput,
+  NLayout,
+  NLayoutContent,
+  NSpace
+} from 'naive-ui'
+import {VariablesService} from 'opensilex-core'
+import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import ModalForm from '@/components/common/forms/ModalForm.vue'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 /** Refs UI */
 const groupVariableSelection = ref()
-const groupVariablesForm = ref<InstanceType<typeof ModalForm>>()
-const formComponent = groupVariablesForm
+const groupVariablesForm = useTemplateRef<InstanceType<typeof GroupVariablesForm>>("groupVariablesForm")
 
 /** Services & i18n */
 const { t, n } = useI18n()
@@ -431,7 +390,7 @@ watch(checkedRowKeys, (now) => {
   for (const key of nowSet) {
     if (!prevPageChecked.has(key)) {
        emit('select', { uri: String(key), name: variables.value.find(row => row.item.uri === key)?.item.name })
-    
+
       if (allSelected.value) {
         unselectedSet.value.delete(key)
       } else {
@@ -650,6 +609,7 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
     {
       title: t('component.common.actions'),
       key: 'actions',
+      width: 100,
       render(row) {
         return h('div', { class: 'btn-group btn-group-sm', role: 'group' }, [
           h(DetailButton, {
@@ -802,11 +762,10 @@ function showGroupVariablesCreateForm() {
     const labelMap = new Map(variables.value.map(variable => [variable.item.uri, variable.item.name]))
     const selected = selectedUris.map(uri => ({ uri, name: labelMap.get(uri) || uri }))
 
-    const form = GroupVariablesForm.getEmptyForm()
-    form.variables = selectedUris
-
-    groupVariablesForm.value?.setSelectorsToFirstTimeOpenAndSetLabels(selected)
-    groupVariablesForm.value?.showCreateForm(form)
+    groupVariablesForm.value?.showCreateForm({
+      variables: selectedUris,
+      __variablesWithLabels: selected
+    })
   })
 }
 
@@ -937,9 +896,6 @@ async function updateVariableGroup(form: any) {
 }
 
 
-function create() {/* no-op */}
-function update() {/* no-op */}
-function successMessage() { return '' }
 const loadGroupVariablesForm = ref(false)
 
 // ---------------------------------------------------------------------------
@@ -1026,10 +982,10 @@ async function applySelectionToPage() {
   await nextTick()
 
 
-  console.log("applySelectionToPage:", { 
-  pageKeys, 
-  checkedRowKeys: checkedRowKeys.value, 
-  selectedSet: Array.from(selectedSet.value) 
+  console.log("applySelectionToPage:", {
+  pageKeys,
+  checkedRowKeys: checkedRowKeys.value,
+  selectedSet: Array.from(selectedSet.value)
 })
 
 }
@@ -1204,7 +1160,7 @@ defineExpose({
   }
 
 
-.listActionButtons{ 
+.listActionButtons{
   position: relative;
   display: flex;
   gap: 0 !important; /* espace entre boutons */
@@ -1224,8 +1180,8 @@ defineExpose({
 }
 
 .globalFiltersSearchButton {
-  width: 40px;  
-  height: 55px;  
+  width: 40px;
+  height: 55px;
 }
 
 .globalFiltersSearchButton span{
@@ -1246,7 +1202,6 @@ defineExpose({
 en:
   VariableList:
     name-placeholder: Enter variable name
-    label-filter: Search variables
     label-filter-placeholder: "Search variables, plant height, plant, humidity, image processing, percentage, air.*humidity, etc.
             This filter apply on variable name."
     selected: Selected Variables
@@ -1266,7 +1221,6 @@ en:
 fr:
   VariableList:
     name-placeholder: Entrer un nom de variable
-    label-filter: Chercher une variable
     label-filter-placeholder: "Rechercher des variables : Hauteur de plante, plante, humidité, analyse d'image, pourcentage, air.*humidité, etc.
             Ce filtre s'applique au nom d'une variable."
     selected: Variables Sélectionnées

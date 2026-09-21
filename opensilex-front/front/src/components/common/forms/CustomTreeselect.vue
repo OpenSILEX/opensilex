@@ -20,15 +20,9 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, nextTick, useAttrs } from 'vue'
-import { NTreeSelect } from 'naive-ui'
+import {NTreeSelect, TreeSelectOption} from 'naive-ui'
 import { debounce } from 'lodash-es'
 
-interface TreeOpt {
-  key: string
-  label: string
-  disabled?: boolean
-  children?: TreeOpt[]
-}
 
 type InputOpt = {
   id: string
@@ -63,7 +57,6 @@ const props = defineProps<{
   disabled?: boolean
   conversionMethod?: (dto: NamedResourceDTO) => { id: string; label: string; isDisabled?: boolean }
   disableBranchNodes?: boolean
-  checkStrategy?: 'all' | 'parent' | 'child'
 }>()
 
 const emit = defineEmits<{
@@ -91,12 +84,12 @@ const isFilterable = computed(() => {
 
 // state
 const treeref = ref<InstanceType<typeof NTreeSelect> | null>(null)
-const options = ref<TreeOpt[]>([])                 // options Naive {key,label}
+const options = ref<TreeSelectOption[]>([])                 // options Naive {key,label}
 const value = ref<string | string[] | null>(null)  // keys
 const totalCount = ref(-1)
 const resultCount = ref(0)
 
-const selectedCache = new Map<string, TreeOpt>()  // key -> option (label)
+const selectedCache = new Map<string | number, TreeSelectOption>()  // key -> option (label)
 
 // expose pour FormSelector
 function refresh(newLimit?: number) {
@@ -124,7 +117,7 @@ const treeSelectBindings = computed(() => ({
   disabled: props.disabled,
   placeholder: props.placeholder,
   value: value.value,
-  'check-strategy': props.checkStrategy ?? 'child',
+  'check-strategy': props.disableBranchNodes ? 'child' : 'all',
   'default-expanded-keys': defaultExpandedKeys.value,   // <— optionnel
   'default-expand-all': true
 }))
@@ -135,17 +128,15 @@ const wrapperClass = computed(() => ({
 }))
 
 // map helpers
-// --- helpers : conversion récursive -> TreeOpt (on garde l’arbre !)
-function toTreeOpt(el: InputOpt): TreeOpt {
-  const node: TreeOpt = {
+// --- helpers : conversion récursive -> TreeSelectOption (on garde l’arbre !)
+function toTreeSelectOption(el: InputOpt): TreeSelectOption {
+  const node: TreeSelectOption = {
     key: el.id,
     label: el.label,
     disabled: el.isDisabled
   }
   if (Array.isArray(el.children) && el.children.length) {
-    node.children = el.children.map(toTreeOpt)
-    // si on veut empêcher la sélection des parents :
-    if (props.disableBranchNodes) node.disabled = true
+    node.children = el.children.map(toTreeSelectOption)
   }
   return node
 }
@@ -155,8 +146,8 @@ function fromDTO(dto: NamedResourceDTO): { id: string; label: string; isDisabled
   return { id: dto.uri, label: dto.name, isDisabled: dto.isDisabled }
 }
 
-// retrouver un TreeOpt par key
-function findOptionByKey(key: string, list: TreeOpt[] = options.value): TreeOpt | undefined {
+// retrouver un TreeSelectOption par key
+function findOptionByKey(key: string | number, list: TreeSelectOption[] = options.value): TreeSelectOption | undefined {
   for (const n of list) {
     if (n.key === key) return n
     if (n.children?.length) {
@@ -167,7 +158,7 @@ function findOptionByKey(key: string, list: TreeOpt[] = options.value): TreeOpt 
   return undefined
 }
 
- function cacheSelectedOption(opt: TreeOpt | undefined) {
+ function cacheSelectedOption(opt: TreeSelectOption | undefined) {
    if (opt) selectedCache.set(opt.key, opt)
  }
  function cacheSelectedKeys(keys: string | string[] | null) {
@@ -214,7 +205,7 @@ if (ids.length === 0) {
   //  const opts = dtos
   //    .map(fromDTO)
   //    .filter((object): object is { id: string; label: string; isDisabled?: boolean } => !!object)
-  //    .map(toTreeOpt)
+  //    .map(toTreeSelectOption)
 
 
 const opts = dtos
@@ -224,7 +215,7 @@ const opts = dtos
        return o
      })
      .filter(Boolean)
-     .map(toTreeOpt)
+     .map(toTreeSelectOption)
 
       opts.forEach(object => {
         const exists = !!findOptionByKey(object.key, options.value)
@@ -243,7 +234,7 @@ watch(() => props.selected, loadSelectedValues, { immediate: true })
 watch(
   () => props.options,
   (opts) => {
-    options.value = (opts ?? []).map(toTreeOpt)
+    options.value = (opts ?? []).map(toTreeSelectOption)
   },
   { immediate: true }
 )
@@ -258,7 +249,7 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   const limit = overrideLimit ?? props.resultLimit ?? 10
   const resp = await props.searchMethod(query, 0, limit)
   const list = resp.response.result as NamedResourceDTO[]
-  const newOptions = list.map(fromDTO).map(toTreeOpt)
+  const newOptions = list.map(fromDTO).map(toTreeSelectOption)
 
   // Conserver les options actuellement sélectionnées si elles ne sont pas dans les résultats
  const selectedKeys = new Set(
@@ -273,7 +264,7 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
  }
 
 
-  // options.value = list.map(fromDTO).map(toTreeOpt)
+  // options.value = list.map(fromDTO).map(toTreeSelectOption)
   options.value = newOptions
   totalCount.value = resp.response.metadata.pagination.totalCount
 
@@ -361,11 +352,11 @@ function emitClose() { emit('close') }
 
 onMounted(async () => {
   if (props.options?.length) {
-    options.value = props.options.map(toTreeOpt)
+    options.value = props.options.map(toTreeSelectOption)
   }
   if (props.optionsLoadingMethod && !props.searchMethod) {
     const dtos = await props.optionsLoadingMethod()
-    options.value = dtos.map(fromDTO).map(toTreeOpt)
+    options.value = dtos.map(fromDTO).map(toTreeSelectOption)
     if (props.defaultSelectedValue) {
       emit('select', options.value.map(object => ({ id: object.key, label: object.label })))
     }

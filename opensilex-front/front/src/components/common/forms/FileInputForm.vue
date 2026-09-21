@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :rules="rules"
     :required="required"
     :label="label"
@@ -54,12 +54,13 @@
         </div>
       </div>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import FormField from "@/components/common/forms/FormField.vue";
 
 type Rules = string | ((val: any) => true | string)
 

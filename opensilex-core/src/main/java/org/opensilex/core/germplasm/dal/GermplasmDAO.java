@@ -211,7 +211,6 @@ public class GermplasmDAO {
             GermplasmSearchFilter searchFilter,
             boolean fetchMetadata,
             boolean fetchNestedObjects) throws Exception {
-
         final Set<URI> filteredUris;
         if (searchFilter.getMetadata() != null) {
             MetadataSearchFilter metadataSearchFilter = new MetadataSearchFilter();

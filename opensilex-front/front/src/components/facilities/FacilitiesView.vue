@@ -70,7 +70,7 @@
         </template>
 
         <template v-if="withActions" #cell(actions)="{ data }">
-          <n-button-group size="small">
+          <n-button-group size="small" class="btn-group btn-group-sm">
             <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
               @click="editFacility(data.item)"
@@ -124,6 +124,7 @@ import ExperimentsModalList from "@/components/experiments/ExperimentsModalList.
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import FacilityModalForm from "@/components/facilities/FacilityModalForm.vue";
+import {TableField} from "@/components/common/views/TableField";
 
 type FacilityModelWithExperimentCount = NamedResourceDTOFacilityModel & { experiment_count: number }
 
@@ -206,18 +207,17 @@ const displayableFacilities = computed<(NamedResourceDTOFacilityModel | Facility
 })
 
 const fields = computed(() => {
-  const f: any[] = [
-    { key: 'name', label: t('component.common.name'), sortable: true, resizable: true,}
+  const f: TableField[] = [
+    { key: 'name', label: t('component.common.name'), sortable: true},
+    { key: 'rdf_type_name', label: t('component.common.type'), sortable: true },
   ]
 
   if (props.fetchAndShowCurrentExperiments) {
     f.push({ key: 'experiment_count', label: t('FacilitiesView.experiment_count'), sortable: true })
   }
 
-  f.push({ key: 'rdf_type_name', label: t('component.common.type'), sortable: true })
-
   if (props.withActions) {
-    f.push({ key: 'actions', label: t('component.common.actions'), sortable: false })
+    f.push({ key: 'actions', label: t('component.common.actions'), sortable: false, resizable: false, naiveProps: {width: 100} })
   }
   return f
 })

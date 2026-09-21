@@ -4,12 +4,14 @@
       defaultExpandAll
       @select="displayPropertyNodeDetail($event[0])">
     <template #buttons="{ node }">
-      <AddChildButton
-          v-if="user.isAdmin()"
-          @click="emit('createChildProperty' ,node.data.uri)"
-          :label="t('OntologyPropertyTreeView.add-child')"
-          :small="true"
-      ></AddChildButton>
+      <n-button-group size="small" class="btn-group btn-group-sm">
+        <AddChildButton
+            v-if="user.isAdmin()"
+            @click="emit('createChildProperty' ,node.data.uri)"
+            :label="t('OntologyPropertyTreeView.add-child')"
+            :small="true"
+        ></AddChildButton>
+      </n-button-group>
     </template>
   </TreeView>
 </template>

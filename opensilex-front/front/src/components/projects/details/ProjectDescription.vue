@@ -320,11 +320,6 @@ watch(
 </script>
 
 <style lang="scss">
-.detailsCard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 
 .badge-info-phis {
   color: black

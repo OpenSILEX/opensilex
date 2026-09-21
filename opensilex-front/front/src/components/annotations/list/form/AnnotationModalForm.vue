@@ -1,131 +1,34 @@
 <template>
-  <opensilex-ModalForm
-    ref="modalForm"
-    modal-size="lg"
-    :tutorial="false"
-    :component="formComponent"
-    :createTitle="t('AnnotationModalForm.add')"
-    :editTitle="t('AnnotationModalForm.edit')"
-    icon="fa#vials"
-    :create-action="create"
-    :update-action="update"
+  <AnnotationForm
+    ref="formRef"
+    :createTitle="'component.annotation.add'"
+    :editTitle="'component.annotation.edit'"
+    @onCreate="emit('onCreate', $event)"
+    @onUpdate="emit('onUpdate', $event)"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, inject, withDefaults, defineProps, defineEmits, nextTick } from 'vue';
-import { useStore } from 'vuex';
-import { useI18n } from 'vue-i18n';
-
-import type { OpenSilexVuePlugin } from '@/models/OpenSilexVuePlugin';
-import AnnotationForm from './AnnotationForm.vue';
-
-
-
-import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
-import type {
-  AnnotationsService
-} from 'opensilex-core/api/annotations.service';
-import type {
-  AnnotationCreationDTO,
-  AnnotationUpdateDTO
-} from 'opensilex-core/index';
-
-// ----- props / emits
-const props = withDefaults(defineProps<{
-  editMode?: boolean;
-}>(), {
-  editMode: false
-});
+import { ref } from 'vue'
+import AnnotationForm from './AnnotationForm.vue'
 
 const emit = defineEmits<{
-  (e:'onCreate', uri: string): void;
-  (e:'onUpdate', uri: string): void;
-}>();
+  (e: 'onCreate', uri: any): void
+  (e: 'onUpdate', uri: any): void
+}>()
 
-// ----- services / env
-const store = useStore();
-const { t } = useI18n();
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
-const service = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService');
-
-// ----- refs
-const modalForm = ref<any>(null);
-const formComponent = AnnotationForm;
-const targets = ref<string[]>([]);
+const formRef = ref<InstanceType<typeof AnnotationForm> | null>(null)
 
 function showCreateForm(targetsArg: string[] = []) {
-  targets.value = targetsArg ?? [];
-  modalForm.value?.showCreateForm?.();
+  formRef.value?.showCreateForm(targetsArg)
 }
 
-// function showEditForm(form: AnnotationUpdateDTO) {
-//   modalForm.value?.showEditForm?.(form);
-// }
 function showEditForm(form: any) {
-  const normalized = JSON.parse(JSON.stringify(form))
-
-  // Normalisation motivation : object -> string URI
-  if (normalized?.motivation && typeof normalized.motivation === 'object') {
-    normalized.motivation = normalized.motivation.uri
-  }
-
-  modalForm.value?.showEditForm?.(normalized)
+  formRef.value?.showEditForm(form)
 }
 
-// ----- actions
-async function create(annotation: AnnotationCreationDTO) {
-  try {
-    annotation.targets = targets.value;
-
-    const http = await service.createAnnotation(annotation) as HttpResponse<OpenSilexResponse<string>>;
-    const createdUri = http.response.result?.toString?.() ?? (http.response.result as any);
-
-    const msg = `${t('AnnotationModalForm.name')} ${createdUri} ${t('component.common.success.creation-success-message')}`;
-    opensilex.showSuccessToast(msg);
-
-    emit('onCreate', String(createdUri));
-    return annotation; // renvoyer truthy au ModalForm
-  } catch (error: any) {
-    if (error?.status === 409) {
-      opensilex.errorHandler(error, `Annotation ${annotation.uri} : ${t('Annotation.already-exist')}`);
-    } else {
-      opensilex.errorHandler(error);
-    }
-    return false;
-  }
-}
-
-async function update(annotation: AnnotationUpdateDTO) {
-  try {
-    await service.updateAnnotation(annotation);
-    const msg = `${t('AnnotationModalForm.name')} ${annotation.uri} ${t('component.common.success.update-success-message')}`;
-    opensilex.showSuccessToast(msg);
-    emit('onUpdate', String(annotation.uri));
-    return annotation; // truthy
-  } catch (error: any) {
-    opensilex.errorHandler(error);
-    return false;
-  }
-}
-
-// Expose pour le parent (AnnotationList.vue)
 defineExpose({
   showCreateForm,
   showEditForm
-});
+})
 </script>
-
-<i18n>
-en:
-    AnnotationModalForm:
-        add: Add annotation
-        edit: Edit annotation
-        name: The annotation
-
-fr:
-    AnnotationModalForm:
-        add: Ajouter une annotation
-        edit: Éditer l'annotation
-        name: L'annotation
-</i18n>

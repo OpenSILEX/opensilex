@@ -101,11 +101,13 @@
         ref="eventModalView"
       />
 
-      <opensilex-EventModalForm
+      <EventForm
         v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="modalForm"
         :target="target"
-        defaultEventType="oeev:Move"
+        :defaultEventType="'oeev:Move'"
+        createTitle="Event.add"
+        editTitle="Event.edit"
         @onCreate="refresh"
         @onUpdate="refresh"
       />
@@ -131,6 +133,7 @@ import type { PositionsService } from 'opensilex-core/api/positions.service';
 import type { EventsService } from 'opensilex-core/api/events.service';
 import type { LocationObservationDTO } from 'opensilex-core/model/locationObservationDTO';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
+import EventForm from '@/components/events/form/EventForm.vue';
 
 const props = withDefaults(defineProps<{
   isSelectable?: boolean;

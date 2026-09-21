@@ -13,30 +13,24 @@
             <CreateButton
                 v-if="user.isAdmin()"
                 @click="showCreateForm()"
-                :label="t('OntologyClassView.add')"
+                :label="t('component.ontology.class.add')"
                 class="createButton">
             </CreateButton>
 
-            <ModalForm
+            <OntologyClassForm
                 ref="classForm"
-                component="opensilex-OntologyClassForm"
-                :createTitle="t('OntologyClassView.add')"
-                :editTitle="t('OntologyClassView.update')"
-                :initForm="initForm"
-                @onCreate="refresh()"
-                @onUpdate="refresh()"
-                successMessage="OntologyClassView.the-type"
-                :icon="icon"
-                :data="{
-                  parentUri: rdfType
-                }"
-            ></ModalForm>
+                :createTitle="t('component.ontology.class.add')"
+                :editTitle="t('component.ontology.class.update')"
+                :parentUri="rdfType"
+                @onCreate="refresh"
+                @onUpdate="refresh"
+            ></OntologyClassForm>
           </div>
 
           <StringFilter
               v-model:filter="nameFilter"
               @update="updateFilter()"
-              :placeholder="t('OntologyClassView.search')"
+              :placeholder="t('component.ontology.class.search')"
               :debounce="300"
               :lazy="false"
           ></StringFilter>
@@ -75,11 +69,11 @@ import {useStore} from "vuex";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
 import OntologyClassTreeView from "@/components/ontology/class/OntologyClassTreeView.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import OntologyClassDetail from "@/components/ontology/class/OntologyClassDetail.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import Card from "@/components/common/views/Card.vue";
+import OntologyClassForm from "@/components/ontology/class/OntologyClassForm.vue";
 
 //#region Public
 const props = defineProps<{
@@ -96,12 +90,11 @@ const {t} = useI18n();
 
 const service = ref<VueJsOntologyExtensionService>();
 const nameFilter = ref<string>("");
-const parentURI = ref<string>("");
 const selected = ref<VueRDFTypeDTO | undefined>();
 
 const user = computed(() => store.state.user);
 
-const classForm = useTemplateRef<InstanceType<typeof ModalForm>>("classForm");
+const classForm = useTemplateRef<InstanceType<typeof OntologyClassForm>>("classForm");
 const classesTree = useTemplateRef<InstanceType<typeof OntologyClassTreeView>>("classesTree");
 
 const unwatchLang = store.watch(
@@ -117,14 +110,8 @@ onBeforeUnmount(() => {
   unwatchLang();
 })
 
-function initForm(form): any {
-  form.parent = parentURI.value;
-  return form;
-}
-
 function showCreateForm(parentTypeURI?: string) {
-  parentURI.value = parentTypeURI;
-  classForm.value.showCreateForm();
+  classForm.value.showCreateForm(parentTypeURI);
 }
 
 function showEditForm(data) {
@@ -139,7 +126,7 @@ function deleteRDFType(data) {
   service.value
       .deleteRDFType(data.uri)
       .then(_ => {
-        let message = t("OntologyClassView.the-type") + " " + data.name + t("component.common.success.delete-success-message");
+        let message = t("component.common.success.delete-success-message-with-template", {uri: data.name});
         opensilex.showSuccessToast(message);
         selected.value = undefined;
         refresh();

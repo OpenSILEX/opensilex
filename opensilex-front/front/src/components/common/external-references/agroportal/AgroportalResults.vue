@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Overlay :show="isDataLoading">
+  <LoadingOverlay :show="isDataLoading">
     <div
       id="agroportal-results"
       class="container-fluid scrollable"
@@ -37,7 +37,7 @@
         </opensilex-AgroportalResultItem>
       </div>
     </div>
-  </opensilex-Overlay>
+  </LoadingOverlay>
 </template>
 
 <script setup lang="ts">
@@ -48,6 +48,7 @@ import type { AgroportalAPIService } from 'opensilex-core/api/agroportalAPI.serv
 import type { AgroportalTermDTO } from 'opensilex-core/model/agroportalTermDTO'
 import type { UriSkosRelation } from './../../../../models/SkosRelations'
 import { CLOSE_MATCH } from './../../../../models/SkosRelations'
+import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 /** Props */
 const props = withDefaults(defineProps<{

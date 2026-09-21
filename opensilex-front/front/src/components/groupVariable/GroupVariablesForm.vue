@@ -1,174 +1,177 @@
 <template>
-  <n-form
-    v-if="props.form"
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-placement="top"
-    :show-require-mark="true"
-  >
-    <!-- URI -->
-    <opensilex-UriForm
-      :key="(form?.uri ?? '') + (editMode ? '-edit' : '-create')"
-      v-model:uri="form.uri"
-      :generated="uriGenerated"
-      @update:generated="val => (uriGenerated = val)"
-      :editMode="editMode"
-      :helpMessage="$t('component.common.uri-help-message')"
-      label="component.group.group-uri"
-    />
+  <Modal ref="modalRef">
+    <template #header>
+      <FormHeader :title="modalFormLogic.formTitle.value" icon="fa#layer-group" />
+    </template>
 
-    <!-- Name -->
-    <n-form-item :label="$t('component.common.name')" path="name">
-      <opensilex-InputForm
-        v-model:value="form.name"
-        type="text"
-        :required="true"
-        :placeholder="$t('component.group.form-name-placeholder')"
+    <n-form
+      ref="formRef"
+      :model="modalFormLogic.form.value"
+      :rules="rules"
+      label-placement="top"
+      :show-require-mark="true"
+      size="large"
+    >
+      <!-- URI -->
+      <n-form-item>
+        <UriForm
+          v-model:uri="modalFormLogic.form.value.uri"
+          :generated="uriGenerated"
+          @update:generated="val => uriGenerated = val"
+          :editMode="modalFormLogic.isEditMode.value"
+          :helpMessage="t('component.common.uri-help-message')"
+          label="component.group.group-uri"
+        />
+      </n-form-item>
+
+      <!-- Name -->
+      <n-form-item path="name">
+        <InputForm
+          v-model:value="modalFormLogic.form.value.name"
+          :label="t('component.common.name')"
+          type="text"
+          :required="true"
+          :placeholder="t('component.group.form-name-placeholder')"
+        />
+      </n-form-item>
+
+      <!-- Description -->
+      <n-form-item path="description">
+        <TextAreaForm
+          v-model:value="modalFormLogic.form.value.description"
+          label="component.common.description"
+          :placeholder="t('component.group.form-description-placeholder')"
+          @keydown.enter.stop
+        />
+      </n-form-item>
+
+      <!-- Variables -->
+      <VariableSelectorWithFilter
+        ref="variablesSelectorRef"
+        v-model:variables-with-labels="variablesWithLabels"
+        v-model:variables="modalFormLogic.form.value.variables"
+        :editMode="modalFormLogic.isEditMode.value"
+        :label="t('component.variable.title')"
+        :placeholder="t('component.variable.placeholder-multiple')"
       />
-    </n-form-item>
+    </n-form>
 
-    <!-- Description -->
-    <opensilex-TextAreaForm
-      v-model:value="form.description"
-      label="component.common.description"
-      :placeholder="$t('component.group.form-description-placeholder')"
-      @keydown.enter.stop
-    />
-
-    <br/>
-    <!-- Variables -->
-    <opensilex-VariableSelectorWithFilter
-      ref="variablesSelectorRef"
-      v-model:variables-with-labels="variablesWithLabels"
-      v-model:variables="form.variables"
-      :editMode="editMode"
-      :label="$t('component.variable.title')"
-      :placeholder="$t('component.variable.placeholder-multiple')"
-      @hideSelector="$emit('hideSelector')"
-      @shownSelector="$emit('shownSelector')"
-    />
-  </n-form>
+    <template #footer>
+      <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { FormInst } from 'naive-ui'
-import { NForm, NFormItem } from 'naive-ui'
+import {computed, inject, ref, useTemplateRef} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {NForm, NFormItem} from 'naive-ui'
+import {requiredTrimmed} from '@/models/FormFieldsFormatter'
 
-import { requiredTrimmed } from  "../../models/FormFieldsFormatter"
+import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import type {VariablesService} from 'opensilex-core'
+import type {VariablesGroupCreationDTO} from 'opensilex-core/model/variablesGroupCreationDTO'
+import HttpResponse, {OpenSilexResponse} from '@/lib/HttpResponse'
 
-// ---- Props / Emits ----
-const props = withDefaults(defineProps<{
-    editMode?: boolean
-    uriGenerated?: boolean,
-    form: {
-      uri?: string | null
-      name?: string | null
-      description?: string | null
-      variables: string[]
-      __variablesWithLabels?: Array<{ id: string; label: string }>
-    }
-  }>(),
-  {
-    uriGenerated: true
-  }
-);
+import Modal from '@/components/common/views/Modal.vue'
+import FormHeader from '@/components/common/forms/FormHeader.vue'
+import FormFooter from '@/components/common/forms/FormFooter.vue'
+import UriForm from '@/components/common/forms/UriForm.vue'
+import InputForm from '@/components/common/forms/InputForm.vue'
+import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
+import VariableSelectorWithFilter from '@/components/variables/views/VariableSelectorWithFilter.vue'
+import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 
-const emit = defineEmits<{
-  (e: 'hideSelector'): void
-  (e: 'shownSelector'): void
-  (e: 'hide'): void
-}>()
+//#region Public
+const emit = defineEmits<ModalFormEmits>();
+const props = defineProps<ModalFormProps>();
+//#endregion
 
+//#region Private
+
+//#region Plugin and services
 const { t } = useI18n()
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
+const service = opensilex.getService<VariablesService>('opensilex-core.VariablesService')
+//#endregion
 
-// ---- Form / Refs ----
-const formRef = ref<FormInst | null>(null)
-const variablesSelectorRef = ref<any>()
-const uriGenerated = ref(props.uriGenerated ?? true)
+const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
+const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
+const variablesSelectorRef = ref<InstanceType<typeof VariableSelectorWithFilter> | null>(null)
 
-// Liste de labels passée au sélecteur
+//#region Datas
+const uriGenerated = ref(true)
 const variablesWithLabels = ref<Array<{ id: string; label: string }>>([])
+//#endregion
 
-// ---- Règles Naive UI ----
+//#region Computed
 const rules = computed(() => ({
   name: requiredTrimmed('component.common.name')
-  // autres règles si nécessaire, ex :
-  // variables: { type: 'array', required: true, message: t('...'), trigger: 'change' }
 }))
+//#endregion
 
-// ---- API attendue par ModalForm.vue ----
-// - getEmptyForm() : utilisé par showCreateForm()
-// - reset() : si on veut remettre à zéro l'état du form
-function getEmptyForm () {
+//#region modalFormLogic composable
+const modalFormLogic = useModalFormLogic<VariablesGroupCreationDTO>({
+  modalRef,
+  nFormRef: formRef,
+  getEmptyForm,
+  create,
+  update,
+  reset,
+  props,
+  emit
+})
+//#endregion
+
+//#region Methods
+
+function getEmptyForm(): VariablesGroupCreationDTO {
   return {
     uri: null,
     name: null,
     description: null,
-    variables: [] as string[],
-    __variablesWithLabels: [] as Array<{ id: string; label: string }>
+    variables: []
   }
 }
 
-function reset () {
-  // Remettre à zéro le sélecteur si nécessaire
-  variablesWithLabels.value = []
-  // Si le composant enfant expose une API de reset :
+function reset(): void {
+  uriGenerated.value = true
   variablesSelectorRef.value?.setVariableSelectorToFirstTimeOpen?.()
 }
 
-// Compat utilitaire : positionner “à la première ouverture” + labels sélectionnés
-function setSelectorsToFirstTimeOpenAndSetLabels (list: Array<{ id: string; label: string }>) {
-  variablesSelectorRef.value?.setVariableSelectorToFirstTimeOpen?.()
-  variablesWithLabels.value = list ?? []
+async function create(formData: VariablesGroupCreationDTO) {
+  return await service.createVariablesGroup(formData)
 }
 
-// Quand le parent injecte le form en édition, pré-remplir les champs
-watch(
-  () => props.form,
-  async (form) => {
-    const list = form?.__variablesWithLabels
-    if (Array.isArray(list) && list.length) {
-      await nextTick()
-      setSelectorsToFirstTimeOpenAndSetLabels(list)
-    }
-  },
-  { immediate: true }
-)
+async function update(formData: VariablesGroupUpdateDTO) {
+  return await service.updateVariablesGroup(formData)
+}
 
-// Optionnel : méthode de validation utilisée en amont si besoin
-async function validate () {
-  console.log("validate ??")
-  try {
-    await formRef.value?.validate()
-    return true
-  } catch {
-    return false
+function showCreateForm(initialData?: VariablesGroupCreationDTO & { __variablesWithLabels?: Array<{ id: string; label: string }> }) {
+  if (initialData?.__variablesWithLabels) {
+    variablesWithLabels.value = initialData.__variablesWithLabels
   }
+  modalFormLogic.showCreateForm(initialData)
 }
 
+function showEditForm(formData: any) {
+  if (formData?.__variablesWithLabels) {
+    variablesSelectorRef.value?.setVariableSelectorToFirstTimeOpen?.()
+    variablesWithLabels.value = formData.__variablesWithLabels  ?? []
+  }
+  modalFormLogic.showEditForm(formData)
+}
 
-// Expose pour le parent (ModalForm l’appelle)
+//#endregion
+
+//#endregion
+
 defineExpose({
-  getEmptyForm,
-  reset,
-  setSelectorsToFirstTimeOpenAndSetLabels,
-  validate
+  showCreateForm,
+  showEditForm
 })
 </script>
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  GroupVariablesForm:
-    add: Add variable group
-    edit: Edit variable group
-fr:
-  GroupVariablesForm:
-    add: Ajouter un groupe de variables
-    edit: Éditer un groupe de variables
-</i18n>

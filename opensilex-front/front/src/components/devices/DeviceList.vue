@@ -63,178 +63,135 @@
 
   <!-- Layout -->
   <n-layout has-sider class="device-layout">
-    <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="top">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="searchFiltersPanel"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div
-          v-show="filtersCollapsed && activeFiltersCount > 0"
-          class="filters-count-badge"
-        >
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <!-- Sidebar / Filtres -->
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
-      class="device-sider"
+    <!-- Sidebar / Filters -->
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      @refresh="refresh"
+      @reset="resetFilters"
     >
-      <n-space class="p-3" vertical>
-        <n-form label-placement="top" size="small" @submit.prevent.stop="refresh">
-          <!-- Name -->
-          <n-form-item :label="t('DeviceList.filter.namePattern')"  class="compact-form-item">
-            <opensilex-StringFilter
-              v-model:filter="filter.name"
-              :placeholder="t('DeviceList.filter.namePattern-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Name -->
+      <n-form-item :label="t('DeviceList.filter.namePattern')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.name"
+          :placeholder="t('DeviceList.filter.namePattern-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Type -->
-          <n-form-item  class="compact-form-item">
-            <opensilex-TypeForm
-              v-model:type="filter.rdf_type"
-              :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
-              :placeholder="t('DeviceList.filter.rdfTypes-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Type -->
+      <n-form-item  class="compact-form-item">
+        <TypeForm
+          v-model:type="filter.rdf_type"
+          :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+          :placeholder="t('DeviceList.filter.rdfTypes-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Dynamic selected type properties -->
-          <n-collapse
-            :accordion="false"
-            class="advancedFiltersSearch"
-            v-if="dynamicTypeProperties.length"
+      <!-- Dynamic selected type properties -->
+      <n-collapse
+        :accordion="false"
+        class="advancedFiltersSearch"
+        v-if="dynamicTypeProperties.length"
+      >
+        <n-collapse-item :title="$t('component.common.type-properties')" name="adv">
+          <n-form-item
+            v-for="property in dynamicTypeProperties"
+            :key="property.uri"
+            :label="property.name ?? property.uri"
+            class="compact-form-item"
           >
-            <n-collapse-item :title="$t('component.common.type-properties')" name="adv">
-              <n-form-item
-                v-for="property in dynamicTypeProperties"
-                :key="property.uri"
-                :label="property.name ?? property.uri"
-                class="compact-form-item"
-              >
-                <opensilex-StringFilter
-                  v-model:filter="dynamicPropertyFilters[property.uri]"
-                  :placeholder="property.name ?? property.uri"
-                  class="searchFilter"
-                  @handlingEnterKey="refresh"
-                />
-              </n-form-item>
-            </n-collapse-item>
-          </n-collapse>
-
-          <!-- Variables -->
-          <n-form-item :label="t('DeviceList.filter.variable')">
-            <opensilex-VariableSelectorWithFilter
-              v-model:variables="filter.variable"
-              :placeholder="t('DeviceList.filter.variable-placeholder')"
-              maximumSelectedRows="1"
-              class="searchFilter"
-            />
-          </n-form-item>
-
-          <!-- Start up -->
-          <n-form-item :label="t('DeviceList.filter.start_up')" class="compact-form-item">
-            <opensilex-StringFilter
-              v-model:filter="filter.start_up"
-              :placeholder="t('DeviceList.filter.start_up-placeholder')"
-              type="number"
+            <StringFilter
+              v-model:filter="dynamicPropertyFilters[property.uri]"
+              :placeholder="property.name ?? property.uri"
               class="searchFilter"
               @handlingEnterKey="refresh"
             />
           </n-form-item>
+        </n-collapse-item>
+      </n-collapse>
 
-          <!-- Facility -->
-          <n-form-item  class="compact-form-item">
-            <opensilex-FormSelector
-              :label="t('DeviceList.filter.facility')"
-              :placeholder="t('DeviceList.filter.facility-placeholder')"
-              :multiple="false"
-              v-model:selected="filter.facility"
-              :options="facilities"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Variables -->
+      <n-form-item :label="t('DeviceList.filter.variable')">
+        <VariableSelectorWithFilter
+          v-model:variables="filter.variable"
+          :placeholder="t('DeviceList.filter.variable-placeholder')"
+          maximumSelectedRows="1"
+          class="searchFilter"
+        />
+      </n-form-item>
 
-          <!-- Brand -->
-          <n-form-item :label="t('DeviceList.filter.brand')"  class="compact-form-item">
-            <opensilex-StringFilter
-              v-model:filter="filter.brand"
-              :placeholder="t('DeviceList.filter.brand-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Start up -->
+      <n-form-item :label="t('DeviceList.filter.start_up')" class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.start_up"
+          :placeholder="t('DeviceList.filter.start_up-placeholder')"
+          type="number"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Model -->
-          <n-form-item :label="t('DeviceList.filter.model')"  class="compact-form-item">
-            <opensilex-StringFilter
-              v-model:filter="filter.model"
-              :placeholder="t('DeviceList.filter.model-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Facility -->
+      <n-form-item  class="compact-form-item">
+        <FormSelector
+          :label="t('DeviceList.filter.facility')"
+          :placeholder="t('DeviceList.filter.facility-placeholder')"
+          :multiple="false"
+          v-model:selected="filter.facility"
+          :options="facilities"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Metadata key -->
-          <n-form-item :label="t('DeviceList.filter.metadataKey')"  class="compact-form-item">
-            <opensilex-StringFilter
-              v-model:filter="filter.metadataKey"
-              :placeholder="t('DeviceList.filter.metadataKey-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Brand -->
+      <n-form-item :label="t('DeviceList.filter.brand')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.brand"
+          :placeholder="t('DeviceList.filter.brand-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <!-- Metadata value -->
-          <n-form-item :label="t('DeviceList.filter.metadataValue')"  class="compact-form-item">
-            <opensilex-StringFilter
-              v-model:filter="filter.metadataValue"
-              :placeholder="t('DeviceList.filter.metadataValue-placeholder')"
-              class="searchFilter"
-              @handlingEnterKey="refresh"
-            />
-          </n-form-item>
+      <!-- Model -->
+      <n-form-item :label="t('DeviceList.filter.model')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.model"
+          :placeholder="t('DeviceList.filter.model-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
 
-          <n-space justify="end" class="mt-2">
-            <opensilex-Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="reset"
-            />
-            <opensilex-Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="refresh"
-            />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+      <!-- Metadata key -->
+      <n-form-item :label="t('DeviceList.filter.metadataKey')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.metadataKey"
+          :placeholder="t('DeviceList.filter.metadataKey-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
+
+      <!-- Metadata value -->
+      <n-form-item :label="t('DeviceList.filter.metadataValue')"  class="compact-form-item">
+        <StringFilter
+          v-model:filter="filter.metadataValue"
+          :placeholder="t('DeviceList.filter.metadataValue-placeholder')"
+          class="searchFilter"
+          @handlingEnterKey="refresh"
+        />
+      </n-form-item>
+    </SearchFiltersSidebar>
 
     <!-- Contenu Liste -->
     <n-layout-content class="device-content">
-      <opensilex-TableAsyncView
+      <TableAsyncView
         ref="tableRef"
         :searchMethod="searchDevices"
         :fields="fields"
@@ -246,7 +203,7 @@
         @refreshed="onRefreshed"
       >
         <template #cell(name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.name"
             :to="{ path: '/device/details/' + encodeURIComponent(data.item.uri) }"
@@ -254,14 +211,14 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group size="small">
-            <opensilex-EditButton
+          <n-button-group size="small" class="btn-group btn-group-sm">
+            <EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              @click="editDevice(data.item.uri)"
-              label="DeviceList.update"
+              @click="editDevice(data)"
+              :label="t('component.device.update')"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
               label="DeviceList.delete"
               :small="true"
@@ -269,24 +226,25 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
-      <opensilex-ModalForm
+      <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="bi#bi-file-earmark-text"
+        :createTitle="t('component.common.addDocument')"
+        :editTitle="t('component.common.editDocument')"
+        @onSuccess="refresh"
       />
 
-      <opensilex-DeviceModalForm
+      <DeviceForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
         ref="deviceFormRef"
+        :createTitle="t('component.device.add')"
+        :editTitle="t('component.device.update')"
         @onUpdate="updateSelectedDevice"
       />
 
-      <opensilex-VariableModalList
+      <VariableModalList
         v-if="showVariableForm"
         ref="variableSelectionRef"
         label="label"
@@ -295,13 +253,13 @@
         @onValidate="editDeviceVar"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="showEventForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="eventCsvFormRef"
         :targets="selectedUris"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="showMoveForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="moveCsvFormRef"
         :targets="selectedUris"
@@ -312,32 +270,41 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, ref, watch } from 'vue'
-import type { VueJsOntologyExtensionService, VueRDFTypePropertyDTO } from 'opensilex-core'
-import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import {computed, inject, nextTick, onMounted, ref, useTemplateRef, watch} from 'vue'
+import type {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from 'opensilex-core'
+import {useI18n} from 'vue-i18n'
+import {useRoute} from 'vue-router'
+import {useStore} from 'vuex'
 import {
-  NLayout,
-  NLayoutSider,
-  NLayoutContent,
-  NForm,
-  NFormItem,
   NButton,
-  NDropdown,
-  NSpace,
   NButtonGroup,
-  NCollapse, 
+  NCollapse,
   NCollapseItem,
-  NP
+  NDropdown,
+  NFormItem,
+  NLayout,
+  NLayoutContent,
+  NSpace
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import {
-  DevicesService,
-  type DeviceGetDetailsDTO,
-  type FacilityGetDTO
-} from 'opensilex-core/index'
-import { OrganizationsService } from 'opensilex-core/api/organizations.service'
+import {type DeviceGetDetailsDTO, DevicesService, type FacilityGetDTO} from 'opensilex-core/index'
+import {OrganizationsService} from 'opensilex-core/api/organizations.service'
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import DocumentForm from "@/components/documents/DocumentForm.vue";
+import VariableModalList from "@/components/variables/VariableModalList.vue";
+import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
+import {TableField} from "@/components/common/views/TableField";
+import DeviceForm from "@/components/devices/form/DeviceForm.vue";
+import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
@@ -354,7 +321,7 @@ const organizationService = $opensilex.getService<OrganizationsService>('opensil
 const vueOntologyService = $opensilex.getService<VueJsOntologyExtensionService>('opensilex-front.VueJsOntologyExtensionService')
 
 const tableRef = ref<any>(null)
-const documentFormRef = ref<any>(null)
+const documentFormRef = useTemplateRef<any>('documentFormRef')
 const deviceFormRef = ref<any>(null)
 const variableSelectionRef = ref<any>(null)
 const eventCsvFormRef = ref<any>(null)
@@ -393,7 +360,7 @@ const dynamicTypeProperties = ref<VueRDFTypePropertyDTO[]>([])
 // valeurs saisies par l’utilisateur, indexées par URI de propriété
 const dynamicPropertyFilters = ref<Record<string, string | undefined>>({})
 
-const fields = [
+const fields: Array<TableField> = [
   {
     key: 'name',
     label: t('DeviceList.name'),
@@ -411,7 +378,11 @@ const fields = [
   },
   {
     key: 'actions',
-    label: 'component.common.actions'
+    label: 'component.common.actions',
+    resizable: false,
+    naiveProps: {
+      width: 100
+    }
   }
 ]
 
@@ -454,8 +425,6 @@ const activeFiltersCount = computed(() => {
 })
 
 const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-
-const searchFiltersPanel = computed(() => t('searchfilter.label'))
 
 const displayDropdownOptions = computed(() => [
   {
@@ -544,8 +513,8 @@ function updateSelectedDevice() {
   }
 }
 
-function editDevice(uri: string) {
-  deviceFormRef.value?.showEditForm?.(uri)
+function editDevice(rowData: RowWithData<DeviceCreationDTO>) {
+  deviceFormRef.value?.showEditForm?.(rowData.item)
 }
 
 function addMetadataFilter() {
@@ -640,7 +609,7 @@ function initForm() {
  * avec les URI des devices actuellement sélectionnés
  */
 function createDocument() {
-  documentFormRef.value?.showCreateForm?.(initForm())
+  documentFormRef.value?.showCreateForm(initForm())
 }
 
 function exportDevices() {
@@ -981,7 +950,6 @@ en:
     alertSelectSize: The selection has too many lines, 1000 lines maximum
     addEvent: Add event
     add-multiple: Add events
-    addAnnotation: Add annotation
     addMove: Move
     showMap: Show in a map
     alertBadDeviceType: The selected type doesn't match with add variable
@@ -1027,7 +995,6 @@ fr:
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
     addEvent: Ajouter un évènement
-    addAnnotation: Ajouter une annotation
     addMove: Déplacement
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable

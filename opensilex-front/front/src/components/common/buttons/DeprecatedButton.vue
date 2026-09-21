@@ -6,8 +6,8 @@
     :label="label"
     :disabled="disabled"
   >
-    <template #icon>
-    <span style="margin-right: 0">
+    <template v-slot:icon>
+    <span>
         <opensilex-Icon v-if="!deprecated" icon="bi#bi-dash-circle" />
         <opensilex-Icon v-else icon="bi#bi-plus-circle" />
     </span>

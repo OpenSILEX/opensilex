@@ -2,7 +2,7 @@
   <div class="static-field">
     <span :class="['field-view-title', customClass]">{{ $t(title) }}</span>
     <span class="static-field-line">
-      <opensilex-UriLink
+      <UriLink
         :uri="uri"
         :value="value"
         :url="url"
@@ -15,9 +15,9 @@
 </template>
 
 <script setup lang="ts">
-import { }  from 'vue';
+import UriLink from "@/components/common/views/UriLink.vue";
 
-// props
+//#region Public
 const props = withDefaults(defineProps<{
   uri: string;
   value?: string;
@@ -27,18 +27,16 @@ const props = withDefaults(defineProps<{
   customClass?: string;
   allowCopy?: boolean;
 }>(), {
+  title: 'component.common.uri',
+  customClass: '',
   allowCopy: true
 });
 
-// default value
-const title = props.title || 'component.common.uri';
-const customClass = props.customClass || '';
-
-//  events
 const emit = defineEmits<{
   (e: 'linkClicked'): void;
 }>();
 </script>
+//#endregion
 
 <style scoped lang="scss">
 .static-field-line {

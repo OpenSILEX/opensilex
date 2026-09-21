@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-3">
+  <div class="uri-form">
     <!-- Toggle auto-génération -->
     <div v-if="!editMode" class="form-check">
       <input
@@ -138,3 +138,9 @@ watch(uriGenerated, (v) => {
    if (isEdit) uriGenerated.value = true
  })
 </script>
+
+<style scoped lang="scss">
+.uri-form {
+  width: 100%;
+}
+</style>

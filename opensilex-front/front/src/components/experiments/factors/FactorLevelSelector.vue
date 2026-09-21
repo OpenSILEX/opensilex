@@ -43,12 +43,12 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'update:factorLevels', value: string | string[] | undefined): void
+  (e: 'update:factorLevels', value: string[] | undefined): void
   (e: 'handlingEnterKey'): void
 }>()
 
 const props = withDefaults(defineProps<{
-  factorLevels?: string | string[]
+  factorLevels?:  string[]
   experimentURI?: string
   label?: string
   required?: boolean

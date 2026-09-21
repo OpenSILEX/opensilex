@@ -9,9 +9,6 @@ export default defineConfig({
       vue: resolve(__dirname, 'node_modules/vue')
     }
   },
-  optimizeDeps: {
-    include: ['vue']
-  },
   build: {
     outDir: 'dist', // Dossier de sortie,
     minify: true,

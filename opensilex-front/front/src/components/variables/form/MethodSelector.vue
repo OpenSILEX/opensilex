@@ -1,6 +1,7 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="formSelector"
+    :path="path"
     :label="label"
     v-model:selected="methodURI"
     :multiple="multiple"
@@ -30,6 +31,7 @@ import type HttpResponse from 'opensilex-security/HttpResponse'
 
 // Props
 const props = defineProps<{
+  path?: string
   selected: string | string[]
   label?: string
   multiple?: boolean
@@ -110,7 +112,7 @@ en:
 fr:
   component: 
     method: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une méthode
           placeholder-multiple : Sélectionner une ou plusieurs méthodes

@@ -202,7 +202,9 @@ public class LocationObservationDAO extends MongoReadWriteDao<LocationObservatio
 
         Document filter = new Document();
         filter.put(LocationObservationModel.OBSERVATION_COLLECTION_FIELD, collectionURI);
-        filter.put(LocationObservationModel.END_DATE_FIELD, end);
+        if (Objects.nonNull(end)) {
+            filter.put(LocationObservationModel.END_DATE_FIELD, end);
+        }
         if (Objects.nonNull(start)) {
             filter.put(LocationObservationModel.START_DATE_FIELD, start);
         }

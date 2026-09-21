@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Overlay :show="isSearching">
+  <LoadingOverlay :show="isSearching">
     <opensilex-Card
       class="stats-card"
       :no-footer="true"
@@ -92,7 +92,7 @@
         </div>
       </template>
     </opensilex-Card>
-  </opensilex-Overlay>
+  </LoadingOverlay>
 </template>
 
 <script lang="ts">
@@ -104,8 +104,10 @@ import { MetricPeriodDTO } from "opensilex-core/model/metricPeriodDTO";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
+import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 export default {
+  components: {LoadingOverlay},
   setup() {
     const instance = getCurrentInstance();
     const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");

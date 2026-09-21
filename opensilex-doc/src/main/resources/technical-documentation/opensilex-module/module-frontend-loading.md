@@ -135,3 +135,9 @@ of the application, referenced by their identifier only.
 
 For a better understanding of why and how to override default components with custom module ones, see
 [overriding-defaults-components.md](overriding-defaults-components.md).
+
+## When are vue plugins loaded ?
+
+There are two ways to load your module's vue plugin in the main application :
+- by overriding some existing components with your own. See [overriding-defaults-components.md](overriding-defaults-components.md)
+- by hardcoding the module's name in the `modulesToLoad` variable of `opensilex-front/front/src/main.ts`.

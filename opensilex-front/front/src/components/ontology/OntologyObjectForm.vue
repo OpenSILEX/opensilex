@@ -122,8 +122,8 @@ const excludedProperties = ref<Set<string>>(new Set<string>([
 
 const customComponentProps = ref<Map<string, Map<string, any>>>(new Map());
 
-const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => void>(
-  (relation: MultiValuedRDFObjectRelation) => {}
+const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation>(
+  (relation) => relation
 );
 
 const loadCustomProperties = ref<boolean>(true);
@@ -163,7 +163,7 @@ function getEmptyForm(): OntologyObjectFormModel {
   }
 }
 
-function setInitHandler(handler) {
+function setInitHandler(handler: (relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation) {
   initHandler.value = handler;
 }
 
@@ -180,7 +180,7 @@ function setLoadCustomProperties(loadCustomPropertiess: boolean){
 }
 
 function updateRelations() {
-  ontologyRelationsForm.value.updateRelation(null, null);
+  ontologyRelationsForm.value.updateRelation();
 }
 
 async function typeSwitch(type: string, initialLoad: boolean) {

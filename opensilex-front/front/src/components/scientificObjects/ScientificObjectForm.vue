@@ -67,18 +67,17 @@ const modalForm = useTemplateRef<OntologyObjectFormInstance>('modalForm')
 
 //#region Public methods & Expose
 function createScientificObject(parentURI?) {
-
   currentType.value = null;
 
   let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
   initOntologyObjectForm(ontologyObjectForm);
 
   // if parentURI property is set, then use this value as default isPartOf relation value
-  ontologyObjectForm.setInitHandler((relation: Ref<MultiValuedRDFObjectRelation>) => {
+  ontologyObjectForm.setInitHandler((relation: MultiValuedRDFObjectRelation) => {
     if (parentURI) {
-      if ($opensilex.Oeso.checkURIs(relation.value.property.uri, $opensilex.Oeso.IS_PART_OF)) {
-        relation.value.value = parentURI;
-        ontologyObjectForm.updateRelations();
+      if ($opensilex.Oeso.checkURIs(relation.property.uri, $opensilex.Oeso.IS_PART_OF)) {
+        relation.value = parentURI;
+        return relation
       }
     }
   });

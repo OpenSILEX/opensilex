@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     :label="property?.name ?? property?.uri"
     v-model:selected="internalValue"
     :multiple="property?.is_list"
@@ -13,9 +13,10 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type { ScientificObjectsService } from 'opensilex-core/api/scientificObjects.service'
 import type { VueRDFTypePropertyDTO } from '@/lib'
 import { useI18n } from 'vue-i18n'
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import {ScientificObjectsService} from "../../../../../opensilex-core/front/src/lib";
 
 
 const props = withDefaults(defineProps<{
@@ -85,17 +86,9 @@ function getSearchTypes() {
   return [props.property.target_property]
 }
 
-function mapScientificObjectToOption(so: any) {
-  return {
-    id: so.uri,
-    label: `${so.name ?? so.uri} (${so.rdf_type_name ?? so.rdf_type ?? ''})`
-  }
-}
-
 async function searchParents(query: string, page: number, pageSize: number) {
   const types = getSearchTypes()
-
-  const http: any = await service.searchScientificObjects(
+  const http = await service.searchScientificObjects(
     getExperimentURI(),
     types,
     query,
@@ -115,7 +108,6 @@ async function searchParents(query: string, page: number, pageSize: number) {
 
   http.response.result = http.response.result
     .filter((so: any) => !props.excluded?.has(so.uri))
-    .map(mapScientificObjectToOption)
 
   return http
 }
@@ -131,12 +123,12 @@ async function getParentsByURI(soURIs: string[] | string) {
     return []
   }
 
-  const http: any = await service.getScientificObjectsListByUris(
+  const http = await service.searchScientificObjectsListByUris(
     getExperimentURI(),
     uris
   )
 
-  return http.response.result.map(mapScientificObjectToOption)
+  return http.response.result
 }
 </script>
 

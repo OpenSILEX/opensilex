@@ -13,24 +13,24 @@
             ref="customTreeselect"
             v-bind="$attrs"
             v-model:selected="selectedProxy"
-            @searchMethod="searchMethod"
+            :searchMethod="searchMethod"
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
             :placeholder="placeholder"
             :disabled="disabled"
-            @optionsLoadingMethod="optionsLoadingMethod"
+            :optionsLoadingMethod="optionsLoadingMethod"
             :options="options"
             :viewHandler="viewHandler"
-            @conversionMethod="conversionMethod"
+            :conversionMethod="conversionMethod"
             :defaultSelectedValue="defaultSelectedValue"
             :showCount="showCount"
             :actionHandler="actionHandler"
             :disableBranchNodes="disableBranchNodes"
-            @itemLoadingMethod="itemLoadingMethod || undefined"
+            :itemLoadingMethod="itemLoadingMethod || undefined"
             class="select-main"
-            @totalCount="updateTotalCount"
-            @resultCount="updateResultCount"
+            :totalCount="updateTotalCount"
+            :resultCount="updateResultCount"
             @close="onBlur"
             @select="(v) => emit('select', v)"
             @deselect="(v) => emit('deselect', v)"
@@ -152,6 +152,7 @@ const customTreeselectRef = useTemplateRef<InstanceType<typeof CustomTreeselect>
 const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {
+  console.debug("loadMoreItems")
   resultLimit.value = 0
   showAllResults.value = true
   customTreeselectRef.value?.refresh(resultLimit.value)

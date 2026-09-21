@@ -99,7 +99,6 @@ function refresh(newLimit?: number) {
     runSearch(lastQuery.value, newLimit)
   }
 }
-console.log('Début')
 function openTreeselect() {
   nextTick(() => {
     (treeref.value as any)?.focus?.();
@@ -194,37 +193,32 @@ function normalizeSelectedToIds(selectedElements: string | string[] | undefined)
 
 // sélection initiale
 async function loadSelectedValues() {
-const sel = props.selected
-const ids = normalizeSelectedToIds(sel)
+  const sel = props.selected
+  const ids = normalizeSelectedToIds(sel)
 // si aucune sélection réelle, on ne call pas itemLoadingMethod
-if (ids.length === 0) {
+  if (ids.length === 0) {
     value.value = null
     return
   }
   if (props.itemLoadingMethod) {
     const dtos = await props.itemLoadingMethod(ids)
-  //  const opts = dtos
-  //    .map(fromDTO)
-  //    .filter((object): object is { id: string; label: string; isDisabled?: boolean } => !!object)
-  //    .map(toTreeSelectOption)
 
+    const opts = dtos
+        .map((dto, i) => {
+          const o = fromDTO(dto)
+          o.id = ids[i] ?? o.id
+          return o
+        })
+        .filter(Boolean)
+        .map(toTreeSelectOption)
 
-const opts = dtos
-     .map((dto, i) => {
-       const o = fromDTO(dto)
-       o.id = ids[i] ?? o.id
-       return o
-     })
-     .filter(Boolean)
-     .map(toTreeSelectOption)
-
-      opts.forEach(object => {
-        const exists = !!findOptionByKey(object.key, options.value)
-        if (!exists) options.value.push(object)
-        cacheSelectedOption(object)
-      })
+    opts.forEach(object => {
+      const exists = !!findOptionByKey(object.key, options.value)
+      if (!exists) options.value.push(object)
+      cacheSelectedOption(object)
+    })
   }
-   // on répercute la sélection normalisée
+  // on répercute la sélection normalisée
   value.value = props.multiple ? ids : ids[0]
 }
 
@@ -243,6 +237,7 @@ watch(
 // recherche
 const lastQuery = ref<string | null>(null)
 async function runSearch(rawQuery: string, overrideLimit?: number) {
+  console.debug("run search")
   if (!props.searchMethod) return
   const query = rawQuery === '' ? '.*' : rawQuery
   lastQuery.value = query

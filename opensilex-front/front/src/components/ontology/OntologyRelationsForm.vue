@@ -33,14 +33,13 @@ const props = withDefaults(defineProps<{
   typeToLoad?: string | null, //This is a way to avoid directly calling typeSwitch in the cases where we were using nextTick
   excludedProperties?: Set<string>,
   context?: { experimentURI: string } | string,
-  initHandler?: (relation: MultiValuedRDFObjectRelation) => void,
+  initHandler?: (relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation,
   customComponentProps?: Map<string, Map<string, any>>
 }>(), {
   relations: () => [],
   excludedProperties: () => new Set<string>(),
   customComponentProps: () => new Map<string, Map<string, any>>(),
-  initHandler: () => {
-  }
+  initHandler: (relation) => relation
 })
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
@@ -204,9 +203,12 @@ async function typeSwitch(type: string, initialLoad: boolean) {
     }
 
     if (props.initHandler) {
-      internalRelations.value.forEach(relation => {
-        props.initHandler?.(relation)
-      })
+      internalRelations.value = internalRelations.value.map(relation => {
+        return props.initHandler?.(relation) || relation
+      });
+      // I don't exactly know if this does something or not. If you have trouble with updating the relations form try
+      // uncommenting this line
+      // updateRelation()
     }
   } catch (error) {
     opensilex.errorHandler(error)
@@ -217,10 +219,7 @@ async function typeSwitch(type: string, initialLoad: boolean) {
  * Synchronise la prop relations avec les relations internes,
  * en reconvertissant les valeurs multiples en relations mono-valuées.
  */
-function updateRelation(
-    _newValue: string | Array<string>,
-    _property: VueRDFTypePropertyDTO
-) {
+function updateRelation() {
   props.relations.splice(0)
   props.relations.push(...toMultipleMonoValuedRelations(internalRelations.value))
 }

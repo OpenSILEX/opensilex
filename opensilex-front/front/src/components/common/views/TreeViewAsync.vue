@@ -195,17 +195,21 @@ function renderLabel(info: { option: any }): VNodeChild {
   const loadedCount = Array.isArray(node.children) ? node.children.length : 0;
   const hasMoreChildren = typeof childCount === "number" && childCount > loadedCount;
 
-  return h("span", { class: "async-tree-node" }, [
+  // The whole node line selects the object. Controls that have their own action
+  // (checkbox, "load more", action buttons) stop the propagation.
+  return h("span", { class: "async-tree-node", onClick: () => emit("select", node) }, [
     props.enableSelection
-        ? h(NCheckbox, {
-          class: "selection-box",
-          checked: getSelection(node.data.uri),
-          "onUpdate:checked": () => onSelectionChange(node.data.uri),
-        })
+        ? h("span", { onClick: (e: Event) => e.stopPropagation() }, [
+          h(NCheckbox, {
+            class: "selection-box",
+            checked: getSelection(node.data.uri),
+            "onUpdate:checked": () => onSelectionChange(node.data.uri),
+          }),
+        ])
         : null,
     h(
         "span",
-        { class: "async-tree-title", onClick: () => emit("select", node) },
+        { class: "async-tree-title" },
         [slots.node ? slots.node({ node }) : node.title]
     ),
     typeof childCount === "number"
@@ -221,6 +225,7 @@ function renderLabel(info: { option: any }): VNodeChild {
                         href: "#",
                         onClick: (e: Event) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           loadMoreChildren(node);
                         },
                       },
@@ -232,7 +237,11 @@ function renderLabel(info: { option: any }): VNodeChild {
         )
         : null,
     !props.noButtons && slots.buttons
-        ? h("span", { class: "tree-button-group" }, [slots.buttons({ node })])
+        ? h(
+            "span",
+            { class: "tree-button-group", onClick: (e: Event) => e.stopPropagation() },
+            [slots.buttons({ node })]
+        )
         : null,
   ]);
 }
@@ -274,7 +283,9 @@ defineExpose({
   margin-right: 6px;
 }
 
-.async-tree-title {
+.async-tree-node {
+  /* Fills the node line so the whole row, not only the label, selects the object */
+  display: block;
   cursor: pointer;
 }
 

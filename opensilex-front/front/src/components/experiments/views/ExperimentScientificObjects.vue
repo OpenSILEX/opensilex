@@ -31,7 +31,8 @@
             @reset="resetSearch()"
         >
           <!-- Name -->
-          <n-form-item :label="t('component.common.name')" class="compact-form-item">
+          <n-form-item
+              :label="t('component.common.name')" class="compact-form-item">
             <StringFilter
                 id="name"
                 v-model:filter="filters.name"
@@ -209,17 +210,15 @@
             <div v-if="selected" class="selectedCard">
               <h5>
                 <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
-                <slot name="name">&nbsp;{{ t(selected.name) }}</slot>
+                <slot name="name">&nbsp;{{ selected.name }}</slot>
               </h5>
-              <ScientificObjectDetail
-                  :key="selected.name"
+              <ScientificObjectDetailProperties
+                  :key="selected.uri"
                   :selected="selected"
-                  :selectedObject="uri"
-                  :tabs="detailTabs"
-                  :global-view="false"
                   :experiment="uri"
+                  :global-view="false"
                   class="experimentDetails"
-              ></ScientificObjectDetail>
+              ></ScientificObjectDetailProperties>
             </div>
           </div>
         </n-layout-content>
@@ -267,7 +266,6 @@ import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
-import ScientificObjectDetail, {Tab} from "@/components/scientificObjects/ScientificObjectDetail.vue";
 import ScientificObjectForm from "@/components/scientificObjects/ScientificObjectForm.vue";
 import ScientificObjectCSVImporter from "@/components/scientificObjects/ScientificObjectCSVImporter.vue";
 import ScientificObjectTypeSelector from "@/components/scientificObjects/ScientificObjectTypeSelector.vue";
@@ -276,6 +274,7 @@ import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSel
 import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
 import DocumentForm, {DocumentFormModel} from "@/components/documents/DocumentForm.vue";
 import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
+import ScientificObjectDetailProperties from "@/components/scientificObjects/scientificObjectDetailTabs/ScientificObjectDetailProperties.vue";
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -534,58 +533,23 @@ function displayScientificObjectDetailsIfNew(nodeUri: string) {
 
 function displayScientificObjectDetails(nodeUri: string) {
   opensilex.disableLoader();
-  soService.getScientificObjectDetail(nodeUri, uri.value).then(http => {
-    selected.value = http.response.result;
-    opensilex.enableLoader();
-  });
+  soService.getScientificObjectDetail(nodeUri, uri.value)
+      .then(http => {
+        selected.value = http.response.result;
+      })
+      .catch(opensilex.errorHandler)
+      .finally(() => opensilex.enableLoader());
 }
 
 function deleteScientificObject(node) {
   soService.deleteScientificObject(node.data.uri, uri.value)
       .then(http => {
-        if (selected.value.uri == http.response.result) {
+        if (selected.value?.uri == http.response.result) {
           selected.value = null;
           soTree.value.refresh();
           refreshTypeSelectorComponent();
         }
       }).catch(opensilex.errorHandler);
-}
-
-function detailTabs(objectUri: string, experimentUri?: string): Tab[] {
-  return [
-    {
-      key: 'documents',
-      label: t('component.common.details.document'),
-      to: {
-        name: 'ScientificObjectDocuments',
-        params: {uri: objectUri, experiment: experimentUri}
-      }
-    },
-    {
-      key: 'annotations',
-      label: t('component.annotation.list-title'),
-      to: {
-        name: 'ScientificObjectAnnotations',
-        params: {uri: objectUri, experiment: experimentUri}
-      }
-    },
-    {
-      key: 'events',
-      label: t('component.menu.events'),
-      to: {
-        name: 'ScientificObjectEvents',
-        params: {uri: objectUri, experiment: experimentUri}
-      }
-    },
-    {
-      key: 'positions',
-      label: t('component.common.geometry.positions'),
-      to: {
-        name: 'ScientificObjectPositions',
-        params: {uri: objectUri, experiment: experimentUri}
-      }
-    },
-  ];
 }
 
 function handleDropdownAction(key: string) {

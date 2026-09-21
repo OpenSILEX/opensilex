@@ -4,11 +4,6 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [vue()], // Utilisez le plugin Vue pour Vite
-  resolve: {
-    alias: {
-      vue: resolve(__dirname, 'node_modules/vue')
-    }
-  },
   build: {
     outDir: 'dist', // Dossier de sortie,
     minify: true,
@@ -16,7 +11,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'), // Point d'entrée
       name: 'opensilex-core', // Nom de la bibliothèque
       fileName: (format) => `opensilex-core.${format}.min.js`, // Nom du fichier de sortie
-      formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
+      formats: ['umd'], // Formats de sortie (ES Module et UMD)
     },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)

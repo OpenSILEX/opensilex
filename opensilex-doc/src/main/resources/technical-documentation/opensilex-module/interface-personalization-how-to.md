@@ -54,7 +54,7 @@ The front-end of a module is built by Vite as a library. The simplest way to sta
 - `build.lib.entry` must point to `src/index.ts`, the file that exports your module as a plugin (described in a section below);
 - `build.lib.name` must be the module name, for example `opensilex-phis`, because it becomes the name of the
   global variable through which the main application picks up your module;
-- `build.lib.fileName` must produce `{module_name}.{format}.min.js`, with `formats: ['es', 'umd']` and
+- `build.lib.fileName` must produce `{module_name}.{format}.min.js`, with `formats: ['umd']` and
   `minify: true`. The back-end serves the UMD file under that exact name, so a different naming scheme simply
   results in a module that is never found.
 

@@ -18,9 +18,11 @@
   * [Table of contents](#table-of-contents)
   * [Context and links to other documents](#context-and-links-to-other-documents)
   * [Creating the front-end part of a new module](#creating-the-front-end-part-of-a-new-module)
-    * [Vite config and dependencies](#vite-config-and-dependencies)
+    * [Vite config](#vite-config)
+    * [Dependencies and package.json](#dependencies-and-packagejson)
     * [Create your first components](#create-your-first-components)
     * [index.ts : export your module as a plugin](#indexts--export-your-module-as-a-plugin)
+  * [Loading the module's front-end in the main application](#loading-the-modules-front-end-in-the-main-application)
 <!-- TOC -->
 
 ## Context and links to other documents
@@ -149,3 +151,11 @@ what lets an instance select your components from its YAML configuration.
 
 For the details of how this plugin is then loaded and how its components are registered, see
 [module-frontend-loading.md](module-frontend-loading.md).
+
+## Loading the module's front-end in the main application
+
+> ⚠️ _WARNING_ : Your module's front-end (your vue plugin) will be loaded only if it is used in the main application.
+
+To use your module's front-end in the main application, you can either:
+- override some existing components with your own. See [overriding-defaults-components.md](overriding-defaults-components.md)
+- hardcode the module's name in the `modulesToLoad` variable of `opensilex-front/front/src/main.ts`.

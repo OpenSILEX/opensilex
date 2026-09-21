@@ -207,7 +207,7 @@
               ></ScientificObjectForm>
             </n-card>
 
-            <div v-if="selected" class="selectedCard">
+            <n-card v-if="selected" class="selectedCard">
               <h5>
                 <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
                 <slot name="name">&nbsp;{{ selected.name }}</slot>
@@ -234,7 +234,7 @@
                   v-bind="currentDetailTabProps"
                   v-on="currentDetailTabListeners"
               ></component>
-            </div>
+            </n-card>
           </div>
         </n-layout-content>
       </n-layout>
@@ -950,11 +950,6 @@ function onSelectAll() {
 .so-panels--row > .selectedCard {
   flex: 1 1 0;
   min-width: 0;
-}
-
-.selectedCard {
-  background-color: #fff;
-  padding: 15px 15px 0 15px;
 }
 
 /* "Criteria on data" filter: same template as the other sidebar inputs (naive-ui selectors, 34px),

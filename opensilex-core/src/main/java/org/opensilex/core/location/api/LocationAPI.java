@@ -20,7 +20,8 @@ import org.opensilex.core.location.bll.LocationObservationCollectionLogic;
 import org.opensilex.core.location.bll.LocationObservationLogic;
 import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationModel;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -68,7 +69,10 @@ public class LocationAPI {
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBServiceV2 nosql;
+    private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -91,7 +95,7 @@ public class LocationAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
         List<LocationObservationDTO> results = new ArrayList<>();
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollectionURI(featureOfInterest);
@@ -129,7 +133,7 @@ public class LocationAPI {
     ) throws Exception {
         try {
             LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
             List<LocationObservationDTO> locationObservationDTOList = new ArrayList<>();
 
             Map<SPARQLNamedResourceModel, LocationObservationCollectionModel> modelCollectionMap = observationCollectionLogic.getLocationObservationCollectionListByType(targetType);
@@ -180,7 +184,7 @@ public class LocationAPI {
     public Response countLocations(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI featureOfInterest) {
         LocationObservationCollectionLogic observationCollectionLogic = new LocationObservationCollectionLogic(sparql);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
 
         URI collectionURI = observationCollectionLogic.getLocationObservationCollectionURI(featureOfInterest);
         int locationsCount = locationObservationLogic.countLocationsForCollectionURI(collectionURI);

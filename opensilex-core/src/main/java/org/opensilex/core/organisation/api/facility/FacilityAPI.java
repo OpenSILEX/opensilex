@@ -23,7 +23,8 @@ import org.opensilex.core.location.dal.LocationObservationModel;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -51,7 +52,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
@@ -81,7 +85,10 @@ public class FacilityAPI {
     private SPARQLService sparql;
 
     @Inject
-    private MongoDBServiceV2 nosql;
+    private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     AccountModel currentUser;
@@ -103,7 +110,7 @@ public class FacilityAPI {
             @ApiParam("Facility description") @Valid FacilityCreationDTO dto
     ) throws Exception {
         try {
-            FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+            FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
             FacilityModel facility = dto.newModel();
 
             List<LocationObservationModel> locations = new ArrayList<>();
@@ -131,6 +138,7 @@ public class FacilityAPI {
             facility = facilityLogic.create(
                     facility,
                     locations.isEmpty() ? null : locations,
+                    dto.getRelations(),
                     currentUser
             );
 
@@ -160,7 +168,7 @@ public class FacilityAPI {
             @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response getAllFacilities() throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         FacilitySearchFilter searchFilter = new FacilitySearchFilter();
         searchFilter.setPageSize(0);
@@ -185,7 +193,7 @@ public class FacilityAPI {
     public Response getFacility(
             @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         FacilityModel model = facilityLogic.get(uri, currentUser);
         FacilityGetDTO facilityGetDTO = FacilityGetDTO.getDTOFromModel(
                 model,
@@ -208,6 +216,13 @@ public class FacilityAPI {
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();
     }
 
+    /**
+     * @return  a list of facilities corresponding to the given URIs
+     *
+     * @param uris list of facilities uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get facilities by their URIs")
@@ -217,11 +232,48 @@ public class FacilityAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getFacilitiesByURI(
             @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
+
+        List<FacilityModel> facilities = facilityLogic.getList(uris, currentUser);
+
+        if (facilities.isEmpty()) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Facilities not found", "Unknown facilities URIs").getResponse();
+        }
+
+        List<FacilityNamedDTO> dtoList = facilities.stream()
+                .map(FacilityNamedDTO::new)
+                .collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    /**
+     * @return  a list of facilities corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get facilities by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchFacilitiesByURIs(
+            @ApiParam(value = "Facility URIs") List<URI> uris) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         List<FacilityModel> facilities = facilityLogic.getList(uris, currentUser);
 
@@ -251,7 +303,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.search(filter);
@@ -279,7 +331,7 @@ public class FacilityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         FacilitySearchFilter filter = createSearchFilter(pattern, organizations, page, pageSize, orderByList);
 
         ListWithPagination<FacilityModel> facilities = facilityLogic.minimalSearch(filter);
@@ -308,7 +360,7 @@ public class FacilityAPI {
     public Response deleteFacility(
             @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         facilityLogic.delete(uri, currentUser);
 
@@ -332,7 +384,7 @@ public class FacilityAPI {
             @ApiParam("Facility description")
             @Valid FacilityUpdateDTO dto
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
 
         FacilityModel facility = dto.newModel();
 
@@ -350,6 +402,7 @@ public class FacilityAPI {
             facility = facilityLogic.update(
                     facility,
                     locations.isEmpty() ? null : locations,
+                    dto.getRelations(),
                     currentUser
             );
 
@@ -378,7 +431,7 @@ public class FacilityAPI {
     public Response getFacilitiesWithGeometry(
             @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") String endDate
     ) throws Exception {
-        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+        FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
         List<FacilityGetWithGeometryDTO> facilityDTOList = new ArrayList<>();
 
         Map<FacilityModel, LocationObservationModel> facilitesAndLocationsMap = facilityLogic.getFacilitiesWithPosition(

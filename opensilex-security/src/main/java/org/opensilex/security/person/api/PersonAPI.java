@@ -18,7 +18,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
-import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.ServiceUnavailableException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.response.CreatedUriResponse;
@@ -35,7 +34,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * <pre>
@@ -286,13 +288,12 @@ public class PersonAPI {
     }
 
     /**
-     * *
-     * Return a list of persons corresponding to the given URIs
+     * @return  a list of persons corresponding to the given URIs
      *
      * @param uris list of persons uri
-     * @return Corresponding list of persons
-     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
      */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get persons by their URIs")
@@ -307,6 +308,46 @@ public class PersonAPI {
     public Response getPersonsByURI(
             @ApiParam(value = "Persons URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+
+        PersonDAO dao = new PersonDAO(sparql);
+        List<PersonModel> models = dao.getList(uris);
+
+        if (!models.isEmpty()) {
+            List<PersonDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> resultDTOList.add(PersonDTO.fromModel(result)));
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Persons not found",
+                    "Unknown person URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * @return a list of persons corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get persons by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return persons", response = PersonDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Persons not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchPersonsByURIs(
+            @ApiParam(value = "Person URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
 
         PersonDAO dao = new PersonDAO(sparql);
         List<PersonModel> models = dao.getList(uris);

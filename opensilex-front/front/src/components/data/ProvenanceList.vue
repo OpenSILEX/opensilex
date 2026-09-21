@@ -69,118 +69,76 @@
       </n-space>
 
       <n-layout has-sider class="provenance-layout">
-        <!-- Bouton loupe -->
-        <n-space class="mb-2 me-1" align="top">
-          <n-button
-            quaternary
-            circle
-            @click="filtersCollapsed = !filtersCollapsed"
-            :title="t('ProvenanceList.label-filter')"
-            :class="{ greenThemeColor: filtersCollapsed }"
-            class="globalFiltersSearchButton"
-          >
-            <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-            <div
-              v-show="filtersCollapsed && activeFiltersCount > 0"
-              class="filters-count-badge"
-            >
-              ( {{ activeFiltersCount }} )
-            </div>
-          </n-button>
-        </n-space>
-
-        <!-- Sidebar / Filtres -->
-        <n-layout-sider
-          v-model:collapsed="filtersCollapsed"
-          :collapsed-width="0"
-          :width="360"
-          collapse-mode="width"
-          show-trigger
-          bordered
-          class="provenance-sider"
+        <!-- Sidebar / Filters -->
+        <SearchFiltersSidebar
+          :activeFiltersCount="activeFiltersCount"
+          :filtersCollapsed="filtersCollapsed"
+          searchButtonLabelTranslationKey="component.provenance.search-provenances"
+          @refresh="applyFilters"
+          @reset="resetFilters"
         >
-          <n-space class="p-3" vertical>
-            <n-form label-placement="top" size="small" @submit.prevent.stop="applyFilters">
-              <!-- Name -->
-              <n-form-item :label="t('ProvenanceList.name')" class="compact-form-item">
-                <n-input
-                  v-model:value="filter.name"
-                  clearable
-                  :placeholder="t('ProvenanceList.name-placeholder')"
-                  @keydown.enter.prevent.stop="applyFilters"
-                />
-              </n-form-item>
+          <!-- Name -->
+          <n-form-item :label="t('ProvenanceList.name')" class="compact-form-item">
+            <n-input
+              v-model:value="filter.name"
+              clearable
+              :placeholder="t('ProvenanceList.name-placeholder')"
+              @keydown.enter.prevent.stop="applyFilters"
+            />
+          </n-form-item>
 
-              <!-- Activity type -->
-              <n-form-item class="compact-form-item">
-                <opensilex-TypeForm
-                  v-model:type="filter.activity_type"
-                  :baseType="Prov.ACTIVITY_TYPE_URI"
-                  :label="t('ProvenanceList.activity_type')"
-                  :placeholder="t('ProvenanceList.activity_type-placeholder')"
-                  class="searchFilter"
-                  @handlingEnterKey="applyFilters"
-                />
-              </n-form-item>
+          <!-- Activity type -->
+          <n-form-item class="compact-form-item">
+            <opensilex-TypeForm
+              v-model:type="filter.activity_type"
+              :baseType="Prov.ACTIVITY_TYPE_URI"
+              :label="t('ProvenanceList.activity_type')"
+              :placeholder="t('ProvenanceList.activity_type-placeholder')"
+              class="searchFilter"
+              @handlingEnterKey="applyFilters"
+            />
+          </n-form-item>
 
-              <!-- Agent type -->
-              <n-form-item class="compact-form-item">
-                <opensilex-AgentTypeSelector
-                  v-model:selected="filter.agent_type"
-                  :multiple="false"
-                  :key="lang"
-                  class="searchFilter"
-                  @clear="clearAgents"
-                  @select="clearAgents"
-                  @handlingEnterKey="applyFilters"
-                />
-              </n-form-item>
+          <!-- Agent type -->
+          <n-form-item class="compact-form-item">
+            <opensilex-AgentTypeSelector
+              v-model:selected="filter.agent_type"
+              :multiple="false"
+              :key="lang"
+              class="searchFilter"
+              @clear="clearAgents"
+              @select="clearAgents"
+              @handlingEnterKey="applyFilters"
+            />
+          </n-form-item>
 
-              <!-- Agents -->
-              <n-form-item
-                v-if="filter.agent_type === 'vocabulary:Operator'"
-                label='Agent'
-              >
-                <PersonSelector
-                  v-model:persons="filter.agents"
-                  :multiple="true"
-                  class="searchFilter"
-                  @handlingEnterKey="applyFilters"
-                />
-              </n-form-item>
+          <!-- Agents -->
+          <n-form-item
+            v-if="filter.agent_type === 'vocabulary:Operator'"
+            label='Agent'
+          >
+            <PersonSelector
+              v-model:persons="filter.agents"
+              :multiple="true"
+              class="searchFilter"
+              @handlingEnterKey="applyFilters"
+            />
+          </n-form-item>
 
-              <n-form-item
-                v-else-if="filter.agent_type"
-                label='Agent'
-              >
-                <DeviceSelector
-                  ref="deviceSelector"
-                  v-model:value="filter.agents"
-                  :multiple="true"
-                  :type="filter.agent_type"
-                  class="searchFilter"
-                  @handlingEnterKey="applyFilters"
-                />
-              </n-form-item>
-
-              <n-space justify="end" class="mt-2">
-                <Button
-                  class="resetButton"
-                  :label="t('component.common.search.clear-button')"
-                  icon="bi-x-lg"
-                  @click="resetFilters"
-                />
-                <Button
-                  class="greenThemeColor"
-                  :label="t('component.common.search.search-button')"
-                  icon="bi-search"
-                  @click="applyFilters"
-                />
-              </n-space>
-            </n-form>
-          </n-space>
-        </n-layout-sider>
+          <n-form-item
+            v-else-if="filter.agent_type"
+            label='Agent'
+          >
+            <DeviceSelector
+              ref="deviceSelector"
+              v-model:value="filter.agents"
+              :multiple="true"
+              :type="filter.agent_type"
+              class="searchFilter"
+              @handlingEnterKey="applyFilters"
+            />
+          </n-form-item>
+        </SearchFiltersSidebar>
 
         <!-- Contenu Liste -->
         <n-layout-content class="provenance-content">
@@ -275,9 +233,7 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import {
   NLayout,
-  NLayoutSider,
   NLayoutContent,
-  NForm,
   NFormItem,
   NInput,
   NButton,
@@ -297,6 +253,7 @@ import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', uri: string): void

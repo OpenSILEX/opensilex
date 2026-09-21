@@ -98,6 +98,7 @@ let store = createStore({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
+    uriSearchBoxVisible: false,
     openSilexRouter: null,
     config: defaultConfig,
     userConfig: defaultUserConfig,

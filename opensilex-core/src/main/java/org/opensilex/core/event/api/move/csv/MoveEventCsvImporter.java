@@ -6,6 +6,7 @@ import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.bll.MoveLogic;
 import org.opensilex.core.location.bll.LocationLogic;
 import org.opensilex.core.location.dal.LocationModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
@@ -48,10 +49,11 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
             InputStream file,
             AccountModel user,
             MongoDBService mongo,
-            ClientSession session
+            ClientSession session,
+            FileStorageService fs
     ) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql,ontologyDAO,file, user, mongo);
-        moveLogic = new MoveLogic(sparql, mongo, user, session);
+        moveLogic = new MoveLogic(sparql, mongo, user, session, fs);
     }
 
     @Override

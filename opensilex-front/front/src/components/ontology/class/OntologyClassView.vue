@@ -69,7 +69,6 @@ import {useStore} from "vuex";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
 import OntologyClassTreeView from "@/components/ontology/class/OntologyClassTreeView.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import OntologyClassDetail from "@/components/ontology/class/OntologyClassDetail.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
@@ -95,7 +94,7 @@ const selected = ref<VueRDFTypeDTO | undefined>();
 
 const user = computed(() => store.state.user);
 
-const classForm = useTemplateRef<InstanceType<typeof ModalForm>>("classForm");
+const classForm = useTemplateRef<InstanceType<typeof OntologyClassForm>>("classForm");
 const classesTree = useTemplateRef<InstanceType<typeof OntologyClassTreeView>>("classesTree");
 
 const unwatchLang = store.watch(

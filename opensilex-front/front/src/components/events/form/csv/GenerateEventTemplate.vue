@@ -69,6 +69,8 @@ import type {
   VueJsOntologyExtensionService,
   VueRDFTypePropertyDTO
 } from '../../../../lib'
+import GenerateEventTemplate from "@/components/events/form/csv/GenerateEventTemplate.vue";
+import { MOVE_DESCRIPTION_GENERATOR_BY_HEADER } from "./EventTemplateConstants"
 
 interface DescriptionGeneratorInformation {
   propertyTranslationKey: string
@@ -96,16 +98,6 @@ const showModal = ref(false)
 const requiredField = ref(false)
 const separator = ref(',')
 const types = ref<string[]>([])
-
-const MOVE_DESCRIPTION_GENERATOR_BY_HEADER = new Map<string, DescriptionGeneratorInformation>([
-  ['from', { propertyTranslationKey: 'component.common.geometry.from-help', required: false, example: 'component.common.geometry.from-placeholder' }],
-  ['to', { propertyTranslationKey: 'component.common.geometry.to-help', required: false, example: 'component.common.geometry.to-placeholder' }],
-  ['coordinates', { propertyTranslationKey: 'component.common.geometry.geometry-help', required: false, example: 'component.common.geometry.coordinates-placeholder' }],
-  ['x', { propertyTranslationKey: 'component.common.geometry.x-help', required: false, example: 'component.common.geometry.x-placeholder' }],
-  ['y', { propertyTranslationKey: 'component.common.geometry.y-help', required: false, example: 'component.common.geometry.y-placeholder' }],
-  ['z', { propertyTranslationKey: 'component.common.geometry.z-help', required: false, example: 'component.common.geometry.z-placeholder' }],
-  ['textualPosition', { propertyTranslationKey: 'component.common.geometry.textual-position-help', required: false, example: 'component.common.geometry.textual-position-placeholder' }]
-])
 
 const orderedHeaders = ['uri', 'rdfType', 'isInstant', 'start', 'end', 'targets', 'description']
 
@@ -197,7 +189,7 @@ function getTypesPromises() {
 }
 
 function generateCSV(typeModels: any[]) {
-  const headers = generateMoveTemplate()
+  const headers: string[] = generateMoveTemplate()
     ? [...orderedHeaders]
     : orderedHeaders.map((e) => moveFormatToEventFormatMapping[e as keyof typeof moveFormatToEventFormatMapping])
 
@@ -379,7 +371,8 @@ defineExpose({
   show,
   hide,
   reset,
-  validateTemplate
+  validateTemplate,
+  MOVE_DESCRIPTION_GENERATOR_BY_HEADER
 })
 </script>
 

@@ -20,7 +20,8 @@ import java.util.List;
 public class RouteDTO {
 
     public static RouteDTO fromModel(Route route) {
-        if (route.path().isEmpty() || route.component().isEmpty()) {
+        //In vue3 with vue router child routes can have a length of 0, so we only need to check for null
+        if (route.path() == null || route.component().isEmpty()) {
             return null;
         }
 
@@ -34,6 +35,7 @@ public class RouteDTO {
         routeDTO.setDescription(route.description());
         routeDTO.setRdfType(route.rdfType());
         routeDTO.setName(route.name());
+        routeDTO.setChildren(route.children().stream().map(RouteDTO::fromModel).toList());
 
         return routeDTO;
     }
@@ -55,6 +57,8 @@ public class RouteDTO {
     public String rdfType;
 
     private String name;
+
+    private List<RouteDTO> children;
 
     @ApiModelProperty(value = "Route path", example = "/users")
     public String getPath() {
@@ -128,5 +132,14 @@ public class RouteDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @ApiModelProperty(value = "Nested routes", example = "some child")
+    public List<RouteDTO> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<RouteDTO> children) {
+        this.children = children;
     }
 }

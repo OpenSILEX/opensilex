@@ -46,7 +46,7 @@ After following the steps in [modules.md](modules.md), you should have a new mod
 ```
 We will work only in the front folder of the module.
 
-### Vite config and dependencies
+### Vite config
 
 The front-end of a module is built by Vite as a library. The simplest way to start is to copy the
 `vite.config.ts` of the phis module and adapt it. Three things matter:
@@ -79,10 +79,14 @@ what gives your components access to the translation keys already loaded by open
 omitting a mapping is not harmless: rollup then falls back to a guessed global name that does not exist, and
 the UMD bundle throws while being evaluated, before your module can be registered.
 
+### Dependencies and package.json
+
 On the dependency side, the `package.json` of the module mainly needs its `name`, and the `build` and
 `dev:build` scripts that run Vite, as they are the ones called by Maven and by `StartServerWithFront.java`.
 Keep the libraries provided by the main application (Vue, vue-i18n) out of `dependencies`, since they are
 external at runtime.
+
+the `package.json` also need to declare a `check:outdated` script that Maven will call at build time.
 
 ### Create your first components
 

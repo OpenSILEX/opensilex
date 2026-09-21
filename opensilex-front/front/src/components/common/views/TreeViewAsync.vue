@@ -99,11 +99,15 @@ function appendRootNodes(nodes: any[], totalCount: number) {
 async function refresh() {
   isSearching.value = true;
   rootPage = 0;
-  const method = props.searchMethodRoot ?? props.searchMethod;
-  const http = await method(undefined, 0, props.pageSize);
-  nodeList.value = [];
-  appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
-  isSearching.value = false;
+  try {
+    const method = props.searchMethodRoot ?? props.searchMethod;
+    const http = await method(undefined, 0, props.pageSize);
+    nodeList.value = [];
+    appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
+  } finally {
+    // Without this the loading overlay would stay forever when the search fails.
+    isSearching.value = false;
+  }
 }
 
 async function loadMoreRoots() {

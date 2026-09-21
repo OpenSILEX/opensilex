@@ -212,13 +212,28 @@
                 <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
                 <slot name="name">&nbsp;{{ selected.name }}</slot>
               </h5>
-              <ScientificObjectDetailProperties
+
+              <nav class="tabs mb-3">
+                <button
+                    v-for="tab in detailTabs"
+                    :key="tab.key"
+                    type="button"
+                    :class="['tab', { active: currentDetailTab === tab.key }]"
+                    @click="currentDetailTab = tab.key"
+                >
+                  {{ tab.label }}
+                  <span v-if="tab.count > 0" class="tabBadge">
+                    {{ opensilex.$numberFormatter.formateResponse(tab.count) }}
+                  </span>
+                </button>
+              </nav>
+
+              <component
+                  :is="currentDetailTabComponent"
                   :key="selected.uri"
-                  :selected="selected"
-                  :experiment="uri"
-                  :global-view="false"
-                  class="experimentDetails"
-              ></ScientificObjectDetailProperties>
+                  v-bind="currentDetailTabProps"
+                  v-on="currentDetailTabListeners"
+              ></component>
             </div>
           </div>
         </n-layout-content>
@@ -248,12 +263,16 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
+import {computed, defineAsyncComponent, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
 import {useRoute} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {NButton, NButtonGroup, NCard, NCheckbox, NFormItem, NLayout, NLayoutContent} from "naive-ui";
 import {ScientificObjectsService} from "opensilex-core/index";
+import {EventsService} from "opensilex-core/api/events.service";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {DocumentsService} from "opensilex-core/api/documents.service";
+import {PositionsService} from "opensilex-core/api/positions.service";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
@@ -282,6 +301,10 @@ const route = useRoute()
 const store = useStore()
 const {t} = useI18n()
 const soService = opensilex.getService<ScientificObjectsService>('opensilex.ScientificObjectsService')
+const eventsService = opensilex.getService<EventsService>('opensilex.EventsService')
+const annotationsService = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService')
+const documentsService = opensilex.getService<DocumentsService>('opensilex.DocumentsService')
+const positionsService = opensilex.getService<PositionsService>('opensilex.PositionsService')
 //#endregion
 
 //#region Template refs
@@ -316,7 +339,7 @@ function defaultFilters(): ScientificObjectFilters {
 }
 
 const uri = ref<string>('')
-const searchFiltersToggle = ref<boolean>(false)
+const searchFiltersToggle = ref<boolean>(true)
 const refreshKey = ref<number>(0)
 const filters = ref<ScientificObjectFilters>(defaultFilters())
 
@@ -364,6 +387,120 @@ const dropdownOptions = computed(() => {
     options.push({label: t('Move.add'), key: 'createMoves'});
   }
   return options;
+})
+
+/**
+ * Tabs of the inline detail panel, mirroring the Vue 2 behaviour: they are purely local, so selecting a tab never
+ * leaves the experiment page and the tree stays visible. The routed tabs of ScientificObjectDetail cannot be reused
+ * here, as they would navigate to the global scientific object detail page.
+ */
+const detailTabComponents = {
+  details: ScientificObjectDetailProperties,
+  events: defineAsyncComponent(() => import("@/components/events/list/EventList.vue")),
+  positions: defineAsyncComponent(() => import("@/components/positions/list/PositionList.vue")),
+  annotations: defineAsyncComponent(() => import("@/components/annotations/list/AnnotationList.vue")),
+  documents: defineAsyncComponent(() => import("@/components/documents/DocumentTabList.vue"))
+}
+
+type DetailTabKey = keyof typeof detailTabComponents
+
+const detailTabDefinitions: Array<{ key: DetailTabKey, labelKey: string }> = [
+  {key: 'details', labelKey: 'component.common.details-label'},
+  {key: 'events', labelKey: 'component.menu.events'},
+  {key: 'positions', labelKey: 'component.common.geometry.positions'},
+  {key: 'annotations', labelKey: 'component.annotation.list-title'},
+  {key: 'documents', labelKey: 'component.common.details.document'}
+]
+
+const currentDetailTab = ref<DetailTabKey>('details')
+
+const eventQuantity = ref<number>(0)
+const positionQuantity = ref<number>(0)
+const annotationQuantity = ref<number>(0)
+const documentQuantity = ref<number>(0)
+
+const detailTabs = computed(() => {
+  const counts: Record<DetailTabKey, number> = {
+    details: 0,
+    events: eventQuantity.value,
+    positions: positionQuantity.value,
+    annotations: annotationQuantity.value,
+    documents: documentQuantity.value
+  }
+
+  return detailTabDefinitions.map(({key, labelKey}) => ({
+    key,
+    label: t(labelKey),
+    count: counts[key]
+  }))
+})
+
+const currentDetailTabComponent = computed(() => detailTabComponents[currentDetailTab.value])
+
+const currentDetailTabProps = computed(() => {
+  const objectUri = selected.value?.uri;
+  if (!objectUri) {
+    return {};
+  }
+
+  switch (currentDetailTab.value) {
+    case 'details':
+      return {
+        selected: selected.value,
+        experiment: uri.value,
+        globalView: false
+      };
+    case 'events':
+      return {
+        target: objectUri,
+        context: uri.value,
+        columnsToDisplay: new Set(['type', 'start', 'end', 'description']),
+        displayTargetFilter: false,
+        maximizeFilterSize: true,
+        enableActions: true,
+        modificationCredentialId: credentials.value.CREDENTIAL_EVENT_MODIFICATION_ID,
+        deleteCredentialId: credentials.value.CREDENTIAL_EVENT_DELETE_ID
+      };
+    case 'positions':
+      return {
+        target: objectUri,
+        columnsToDisplay: new Set(['end']),
+        enableActions: true,
+        modificationCredentialId: credentials.value.CREDENTIAL_EVENT_MODIFICATION_ID,
+        deleteCredentialId: credentials.value.CREDENTIAL_EVENT_DELETE_ID
+      };
+    case 'annotations':
+      return {
+        target: objectUri,
+        displayTargetColumn: false,
+        enableActions: true,
+        modificationCredentialId: credentials.value.CREDENTIAL_ANNOTATION_MODIFICATION_ID,
+        deleteCredentialId: credentials.value.CREDENTIAL_ANNOTATION_DELETE_ID
+      };
+    case 'documents':
+      return {
+        uri: objectUri,
+        modificationCredentialId: credentials.value.CREDENTIAL_DOCUMENT_MODIFICATION_ID
+      };
+    default:
+      return {};
+  }
+})
+
+const currentDetailTabListeners = computed(() => {
+  switch (currentDetailTab.value) {
+    case 'events':
+      // EventList only emits onDelete for now, so the badge is refreshed on deletion.
+      return {onDelete: countEvents};
+    case 'positions':
+      return {changed: countPositions, onDelete: countPositions};
+    case 'annotations':
+      return {changed: countAnnotations, onDelete: countAnnotations};
+    case 'documents':
+      return {changed: countDocuments};
+    default:
+      return {};
+  }
 })
 //#endregion
 
@@ -532,24 +669,98 @@ function displayScientificObjectDetailsIfNew(nodeUri: string) {
 }
 
 function displayScientificObjectDetails(nodeUri: string) {
+  // Switching to another object restarts the detail panel on its first tab, as the Vue 2 version did by remounting it.
+  if (selected.value?.uri !== nodeUri) {
+    currentDetailTab.value = 'details';
+  }
+
   opensilex.disableLoader();
   soService.getScientificObjectDetail(nodeUri, uri.value)
       .then(http => {
         selected.value = http.response.result;
+        refreshDetailCounts();
       })
       .catch(opensilex.errorHandler)
       .finally(() => opensilex.enableLoader());
 }
 
-function deleteScientificObject(node) {
-  soService.deleteScientificObject(node.data.uri, uri.value)
+/**
+ * Reloads the badge counts of the detail panel tabs for the currently selected object.
+ */
+function refreshDetailCounts() {
+  eventQuantity.value = 0;
+  positionQuantity.value = 0;
+  annotationQuantity.value = 0;
+  documentQuantity.value = 0;
+
+  countEvents();
+  countPositions();
+  countAnnotations();
+  countDocuments();
+}
+
+function countEvents() {
+  const objectUri = selected.value?.uri;
+  if (!objectUri) {
+    return;
+  }
+  return eventsService.countEvents([objectUri], undefined, undefined)
       .then(http => {
-        if (selected.value?.uri == http.response.result) {
+        eventQuantity.value = http.response.result as number;
+      })
+      .catch(opensilex.errorHandler);
+}
+
+function countPositions() {
+  const objectUri = selected.value?.uri;
+  if (!objectUri) {
+    return;
+  }
+  return positionsService.countMoves(objectUri, undefined, undefined)
+      .then(http => {
+        positionQuantity.value = http.response.result as number;
+      })
+      .catch(opensilex.errorHandler);
+}
+
+function countAnnotations() {
+  const objectUri = selected.value?.uri;
+  if (!objectUri) {
+    return;
+  }
+  return annotationsService.countAnnotations(objectUri, undefined, undefined)
+      .then(http => {
+        annotationQuantity.value = http.response.result as number;
+      })
+      .catch(opensilex.errorHandler);
+}
+
+function countDocuments() {
+  const objectUri = selected.value?.uri;
+  if (!objectUri) {
+    return;
+  }
+  return documentsService.countDocuments(objectUri, undefined, undefined)
+      .then(http => {
+        documentQuantity.value = http.response.result as number;
+      })
+      .catch(opensilex.errorHandler);
+}
+
+function deleteScientificObject(node) {
+  const deletedUri = node.data.uri;
+
+  soService.deleteScientificObject(deletedUri, uri.value)
+      .then(() => {
+        // The detail panel only closes when it was showing the deleted object.
+        if (selected.value?.uri === deletedUri) {
           selected.value = null;
-          soTree.value.refresh();
-          refreshTypeSelectorComponent();
         }
-      }).catch(opensilex.errorHandler);
+        selectedObjects.value = selectedObjects.value.filter(soUri => soUri !== deletedUri);
+        soTree.value?.refresh();
+        refreshTypeSelectorComponent();
+      })
+      .catch(opensilex.errorHandler);
 }
 
 function handleDropdownAction(key: string) {

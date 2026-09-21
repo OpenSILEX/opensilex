@@ -45,16 +45,10 @@
         <tr v-for="credentialsGroup in credentialsGroups" :key="credentialsGroup.group_id">
           <td>{{$t(credentialsGroup.group_key_name)}}</td>
           <td>
-            <n-checkbox-group
+            <SwitchGroup
+                :options="credentialsGroup.credentials"
                 v-model:value="selectedCredentials[credentialsGroup.group_id]"
-            >
-              <n-checkbox
-                  v-for="credential in credentialsGroup.credentials"
-                  :key="credential.id"
-                  :value="credential.id"
-                  :label="t(credential.name)"
-              ></n-checkbox>
-            </n-checkbox-group>
+            ></SwitchGroup>
           </td>
         </tr>
         </tbody>
@@ -74,7 +68,7 @@ import {SecurityService} from "opensilex-security/index";
 import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
-import {NCheckbox, NCheckboxGroup, NForm, NFormItem, NTable} from "naive-ui";
+import {NForm, NFormItem, NTable} from "naive-ui";
 import {requiredTrimmed} from "@/models/FormFieldsFormatter";
 import FormHeader from "@/components/common/forms/FormHeader.vue";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
@@ -82,6 +76,7 @@ import useModalFormLogic, {ModalFormEmits, ModalFormProps} from "@/composables/u
 import Modal from "@/components/common/views/Modal.vue";
 import {ProfileUpdateDTO} from "opensilex-security/model/profileUpdateDTO";
 import {useI18n} from "vue-i18n";
+import SwitchGroup from "@/components/common/forms/SwitchGroup.vue";
 
 //#region Public
 const emit = defineEmits<ModalFormEmits>();

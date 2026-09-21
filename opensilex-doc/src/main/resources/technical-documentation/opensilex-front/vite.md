@@ -98,10 +98,10 @@ lib: {
   entry: resolve(__dirname, 'src/lib/index.ts'),
   name: 'opensilex-core',
   fileName: (format) => `opensilex-core.${format}.min.js`,
-  formats: ['es', 'umd']
+  formats: ['umd']
 }
 ```
-📦 Génère une bibliothèque compatible avec ES Modules et UMD.
+📦 Génère une bibliothèque compatible avec UMD.
 
 
 ### 🔗 Alias
@@ -164,7 +164,7 @@ lib: {
   entry: resolve(__dirname, 'src/lib/index.ts'),
   name: 'opensilex-front',
   fileName: (format) => `opensilex-front.${format}.js`,
-  formats: ['es', 'umd']
+  formats: ['umd']
 }
 ```
 Et ajoute un `export` explicite dans `src/lib/index.ts`.

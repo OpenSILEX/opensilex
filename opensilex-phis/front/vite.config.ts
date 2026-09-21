@@ -11,7 +11,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'), // Point d'entrée
       name: 'opensilex-phis', // Nom de la bibliothèque
       fileName: (format) => `opensilex-phis.${format}.min.js`, // Nom du fichier de sortie
-      formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
+      formats: ['umd'], // Formats de sortie (ES Module et UMD)
     },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)

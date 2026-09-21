@@ -155,6 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > If you are upgrading from 1.5.1 or higher, there's nothing to do.
 
 - (!1562) [Modules] Fixed images acquisition in modules that overload the default opensilex theme.
+- (!1566) [Person] The list of countries available in the phone number field is now configurable through the `front.phoneCountryList` option, which defaults to `["FR"]`. See the [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/phone-number.md).
 
 ## [1.5.6]
 

@@ -83,26 +83,14 @@ import "reflect-metadata"
 // Allow access to global "document" variable
 declare var document: any;
 
-// Import Vue as a global window variable 
-// import VueMatomo from 'vue-matomo';
 declare var window: any;
 // Attach Vue APIs to window
-// The whole runtime namespaces must be exposed here : module bundles (ex: opensilex-phis)
-// externalize "vue" and "vue-i18n" and resolve them through these globals. They need every
-// helper (defineComponent, openBlock, createBlock, withCtx, useI18n, ...) and, above all,
-// the very same instances as the host application, otherwise inject()/useI18n() would break.
-// The names must match the "globals" mapping of each module rollup configuration.
 window.Vue = { ...VueRuntime };
 window.VueI18n = { ...VueI18nRuntime };
-
-// Vue.config.productionTip = false;
 
 // Import and assignation to enable auto rebuild on ws library change (hot reload forced by server on module change ex: phis)
 import * as LATEST_UPDATE from "./opensilex.dev";
 const randomNumberForHMRTrigger = LATEST_UPDATE.default
-
-// import AsyncComputed from 'vue-async-computed'
-// Vue.use(AsyncComputed)
 
 let urlParams = new URLSearchParams(window.location.search);
 
@@ -116,7 +104,6 @@ if (import.meta.env.DEV) {
 } else {
   isDebug = urlParams.has("debug");
 }
-// console.debug("URL parameters", urlParams);
 
 // Initialize logger
 console.log = console.log || function () { };

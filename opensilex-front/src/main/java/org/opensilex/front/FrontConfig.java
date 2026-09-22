@@ -79,6 +79,12 @@ public interface FrontConfig {
     List<CustomMenuItem> customMenu();
 
     @ConfigDescription(
+            value = "List of country codes (ISO 3166-1 alpha-2) selectable in phone number fields, the first one being the default",
+            defaultList = {"FR"}
+    )
+    List<String> phoneCountryList();
+
+    @ConfigDescription(
             value = "Geocoding service to autocomplete the address",
             defaultString = "Photon"
     )

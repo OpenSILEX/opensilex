@@ -1,5 +1,11 @@
 <template>
   <Modal ref="modalRef">
+    <template #header>
+      <FormHeader
+          :title="formTitle"
+          icon="bi#bi-bullseye"
+      />
+    </template>
     <n-form
       ref="formRef"
       v-if="form"
@@ -91,6 +97,7 @@ import Modal from "@/components/common/views/Modal.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {RDFObjectRelationDTO} from "../../../../../opensilex-core/front/src/lib";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
 import {UserGetDTO} from "@/lib";
 
 /*
@@ -212,7 +219,7 @@ const rules = computed<FormRules>(() => ({
 }))
 //#endregion
 
-const {form, isEditMode, exposed, hide, submit} = useModalFormLogic<OntologyObjectFormModel>({
+const {form, isEditMode, exposed, hide, submit, formTitle} = useModalFormLogic<OntologyObjectFormModel>({
   modalRef,
   nFormRef: formRef,
   getEmptyForm,

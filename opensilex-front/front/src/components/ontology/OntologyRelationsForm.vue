@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="(relation, index) in typeRelations" :key="index">
+    <n-form-item v-for="(relation, index) in typeRelations" :key="index">
       <component
           v-if="getInputComponent(relation.property)"
           :is="getInputComponent(relation.property)"
@@ -13,12 +13,13 @@
           :context="context"
           v-bind="getCustomPropsForComponent(relation.property.uri)"
       />
-    </div>
+    </n-form-item>
   </div>
 </template>
 
 <script setup lang="ts">
 import {computed, inject, ref, watch} from 'vue'
+import {NFormItem} from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type {OntologyService} from 'opensilex-core/api/ontology.service'
 import type {PropertiesByDomainDTO, RDFObjectRelationDTO} from 'opensilex-core/index'

@@ -179,8 +179,9 @@ onMounted(() => {
 }
 
 .select-main {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
+  width: 0;
 }
 
 .select-side-button {

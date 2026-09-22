@@ -110,7 +110,7 @@
                 :required="false"
                 :requiredBlue="false"
                 class="searchFilter"
-            ></CriteriaSearchModalCreator>
+          ></CriteriaSearchModalCreator>
           </n-form-item>
         </SearchFiltersSidebar>
 

@@ -60,6 +60,8 @@ public class FrontConfigDTO {
 
     List<String> menuExclusions;
 
+    List<String> phoneCountryList;
+
     VersionLabel versionLabel;
 
     String applicationName;
@@ -227,6 +229,15 @@ public class FrontConfigDTO {
 
     public void setMenuExclusions(List<String> menuExclusions) {
         this.menuExclusions = menuExclusions;
+    }
+
+    @ApiModelProperty(value = "Countries selectable in phone number fields")
+    public List<String> getPhoneCountryList() {
+        return phoneCountryList;
+    }
+
+    public void setPhoneCountryList(List<String> phoneCountryList) {
+        this.phoneCountryList = phoneCountryList;
     }
 
     @ApiModelProperty(value = "Version label to use in the header")

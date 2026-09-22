@@ -86,8 +86,8 @@
       <template v-slot:field="field">
         <vue-tel-input
             v-model="phone_number"
-            defaultCountry="FR"
-            :onlyCountries="['FR']"
+            :defaultCountry="defaultPhoneCountry"
+            :onlyCountries="phoneCountryList"
             validCharactersOnly
             @validate="validatePhone"
             @input="updatePhoneNumber"
@@ -155,6 +155,14 @@ export default class PersonForm extends Vue {
   }
   set phone_number(number: string){
     this.formattedPhoneNumber = number != '' ? number : null
+  }
+
+  get phoneCountryList(): Array<string> {
+    return this.$opensilex.getConfig().phoneCountryList;
+  }
+
+  get defaultPhoneCountry(): string {
+    return this.phoneCountryList?.[0];
   }
 
   getEmptyForm() {

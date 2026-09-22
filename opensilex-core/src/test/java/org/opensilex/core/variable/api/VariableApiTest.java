@@ -17,7 +17,10 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.characteristic.CharacteristicUpdateDTO;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
+import org.opensilex.core.variable.api.method.MethodUpdateDTO;
+import org.opensilex.core.variable.api.unit.UnitUpdateDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ErrorResponse;
@@ -51,6 +54,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
     private static final ServiceDescription delete;
     private static final ServiceDescription create;
+    private static final ServiceDescription getByUri;
 
     static {
         try {
@@ -61,6 +65,10 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
             create = new ServiceDescription(
                     VariableAPI.class.getMethod("createVariable", VariableCreationDTO.class),
                     path
+            );
+            getByUri = new ServiceDescription(
+                    VariableAPI.class.getMethod("getVariable", URI.class, URI.class),
+                    uriPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -230,6 +238,97 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertEquals(dto.getDescription(), dtoFromApi.getDescription());
         assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(dto.getTrait(), dtoFromApi.getTrait()));
+    }
+
+    @Test
+    /**
+     * Test that a variable keeps its links to its characteristic, method and unit when these objects are updated.
+     * Regression test : the delete part of an update query used to remove every triple having the updated object as subject or object,
+     * including the hasCharacteristic, hasMethod and hasUnit relations owned by the variables.
+     */
+    public void testVariableLinksUnchangedAfterLinkedModelUpdate() throws Exception {
+
+        VariableCreationDTO dto = getCreationDto();
+        dto.setUri(new UserCallBuilder(create)
+                .setBody(dto)
+                .buildAdmin()
+                .executeCallAndReturnURI());
+
+        // update the characteristic of the variable
+        CharacteristicUpdateDTO characteristicUpdate = new CharacteristicUpdateDTO();
+        characteristicUpdate.setUri(dto.getCharacteristic());
+        characteristicUpdate.setName("new characteristic name");
+        characteristicUpdate.setDescription("new characteristic comment");
+
+        new UserCallBuilder(CharacteristicApiTest.update)
+                .setBody(characteristicUpdate)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.OK);
+
+        // ensure that the variable is still linked to the updated characteristic, and to all its other components
+        VariableDetailsDTO dtoFromApi = assertVariableComponentsUnchanged(dto);
+        assertEquals(characteristicUpdate.getName(), dtoFromApi.getCharacteristic().getName());
+
+        // update the method of the variable
+        MethodUpdateDTO methodUpdate = new MethodUpdateDTO();
+        methodUpdate.setUri(dto.getMethod());
+        methodUpdate.setName("new method name");
+        methodUpdate.setDescription("new method comment");
+
+        new UserCallBuilder(MethodApiTest.update)
+                .setBody(methodUpdate)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.OK);
+
+        // ensure that the variable is still linked to the updated method, and to all its other components
+        dtoFromApi = assertVariableComponentsUnchanged(dto);
+        assertEquals(methodUpdate.getName(), dtoFromApi.getMethod().getName());
+
+        // update the unit of the variable
+        UnitUpdateDTO unitUpdate = new UnitUpdateDTO();
+        unitUpdate.setUri(dto.getUnit());
+        unitUpdate.setName("new unit name");
+        unitUpdate.setDescription("new unit comment");
+        unitUpdate.setSymbol("nm");
+        unitUpdate.setAlternativeSymbol("n_mn");
+
+        new UserCallBuilder(UnitApiTest.update)
+                .setBody(unitUpdate)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Response.Status.OK);
+
+        // ensure that the variable is still linked to the updated unit, and to all its other components
+        dtoFromApi = assertVariableComponentsUnchanged(dto);
+        assertEquals(unitUpdate.getName(), dtoFromApi.getUnit().getName());
+    }
+
+    /**
+     * Fetch the variable described by the given dto and ensure that it is still linked to the entity, characteristic, method and unit
+     * of this dto.
+     *
+     * @param dto the dto used to create the variable, its uri must be set
+     * @return the variable fetched from the API, in order to run additional checks on it
+     */
+    private VariableDetailsDTO assertVariableComponentsUnchanged(VariableCreationDTO dto) throws Exception {
+
+        VariableDetailsDTO dtoFromApi = new UserCallBuilder(getByUri)
+                .setUriInPath(dto.getUri())
+                .buildAdmin()
+                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {})
+                .getDeserializedResponse()
+                .getResult();
+
+        assertNotNull("the variable should still be linked to an entity", dtoFromApi.getEntity());
+        assertNotNull("the variable should still be linked to a characteristic", dtoFromApi.getCharacteristic());
+        assertNotNull("the variable should still be linked to a method", dtoFromApi.getMethod());
+        assertNotNull("the variable should still be linked to an unit", dtoFromApi.getUnit());
+
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getCharacteristic(), dtoFromApi.getCharacteristic().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getMethod(), dtoFromApi.getMethod().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getUnit(), dtoFromApi.getUnit().getUri()));
+
+        return dtoFromApi;
     }
 
     @Test

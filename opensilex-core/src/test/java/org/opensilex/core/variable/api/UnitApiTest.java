@@ -14,7 +14,9 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.unit.UnitAPI;
 import org.opensilex.core.variable.api.unit.UnitCreationDTO;
 import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
+import org.opensilex.core.variable.api.unit.UnitUpdateDTO;
 import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -39,8 +41,20 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
     public static String createPath = path;
     public static String updatePath = path;
     public static String deletePath = path + "/{uri}";
-    
-    
+
+    public static final ServiceDescription update;
+
+    static {
+        try {
+            update = new ServiceDescription(
+                    UnitAPI.class.getMethod("updateUnit", UnitUpdateDTO.class),
+                    updatePath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private UnitCreationDTO getCreationDto() {
         UnitCreationDTO dto = new UnitCreationDTO();
         dto.setName("minute");

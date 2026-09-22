@@ -72,6 +72,11 @@
         <module>opensilex-doc</module>
         <module>opensilex-migration</module>
         <module>opensilex-graphql</module>
+
+     
+
+        <!-- Instance monitoring module -->
+        <module>opensilex-monitoring</module>
     </modules>
     
     <dependencies>
@@ -155,6 +160,14 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-graphql</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
+        <!-- Instance monitoring dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-monitoring</artifactId>
             <version>${revision}</version>
         </dependency>
 

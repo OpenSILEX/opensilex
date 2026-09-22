@@ -539,6 +539,33 @@ public class AuthenticationService extends BaseService implements Service {
         return userRegistry.get(userURI);
     }
 
+    /**
+     * Return every account holding a live, non-expired token.
+     *
+     * <p>Read-only view over the registry, added for the monitoring module. No synchronisation is
+     * needed: {@code userRegistry} is a {@link java.util.concurrent.ConcurrentHashMap}, so this
+     * cannot contend with or deadlock against the synchronized mutators above.</p>
+     *
+     * <p><b>Caveat the caller must surface.</b> When {@code SecurityConfig.allowMultiConnection()}
+     * is true, {@link #removeUserByURI(URI)} is a no-op and the auto-logout thread cannot evict
+     * either, so the registry then grows monotonically for the lifetime of the process and this
+     * degrades into "distinct accounts seen since startup". It is also per-JVM: behind a load
+     * balancer, each instance only knows about its own sessions.</p>
+     *
+     * @return an unmodifiable snapshot of the currently registered accounts
+     */
+    public Collection<AccountModel> getConnectedAccounts() {
+        return List.copyOf(userRegistry.values());
+    }
+
+    /**
+     * @return how many accounts hold a live token, with the same caveats as
+     *         {@link #getConnectedAccounts()}
+     */
+    public int getConnectedAccountCount() {
+        return userRegistry.size();
+    }
+
     public boolean authenticate(AccountModel user, String password, List<String> accessList) throws Exception {
         if ((user != null && user.getIsEnabled() &&checkPassword(password, user.getPasswordHash()))) {
             generateToken(user, accessList);

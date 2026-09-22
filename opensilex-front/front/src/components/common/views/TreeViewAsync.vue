@@ -742,15 +742,4 @@ defineExpose({
 }
 </style>
 
-<i18n>
-en:
-  TreeViewAsync:
-    load-more: Load more...
-    loading-more: Loading more elements...
-
-fr:
-  TreeViewAsync:
-    load-more: Charger plus...
-    loading-more: Chargement en cours ...
-</i18n>
 ```

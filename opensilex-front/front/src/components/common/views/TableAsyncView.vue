@@ -156,20 +156,16 @@ const tableRef = ref(); // lié avec ref="tableRef" dans le template
 
 // States
 const currentPage = ref(1);
-const tabPage = ref(1);
 const pageSize = ref(20);
 const totalRow = ref(0);
 const sortBy = ref(props.defaultSortBy ?? 'name');
 const sortDesc = ref(props.defaultSortDesc ?? false);
 const isSearching = ref(false);
-const selectAll = ref(false);
 const onlySelected = ref(false);
 const numberOfSelectedRows = ref(0);
 const selectedItems = ref<Array<NamedResourceDTO>>([]);
 const selectedItem = ref();
 const badgeHelpMessage = 'component.common.search.badgeHelpMessage';
-const currentStartPath = ref('');
-const currentTabPath = ref('');
 const selectedRowIndex = ref<number | null>(null);
 const checkedRowKeys = ref<DataTableRowKey[]>([]);
 const selectedUriSet = ref<Set<string>>(new Set());
@@ -312,7 +308,6 @@ const start = computed(() => paginationInfo.value.start);
 const end = computed(() => paginationInfo.value.end);
 const total = computed(() => paginationInfo.value.total);
 // const hasResults = computed(() => paginationInfo.value.hasResults);
-const hasResults = computed(() => totalRow.value > 0);
 
 async function refresh() {
   isSearching.value = true;

@@ -179,6 +179,10 @@
                     "multiple-values": "Si une propriété peut avoir plusieurs valeurs, ajoutez une colonne pour chaque avec la même URI."
                 }
             },
+            "treeViewAsync":{
+                "load-more": "Charger plus...",
+                "loading-more": "Chargement en cours ..."
+            },
             "tabulator": {
                 "reset-table": "Vider la table",
                 "add-one": "Ajouter un par un",

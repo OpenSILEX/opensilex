@@ -73,14 +73,14 @@ function createScientificObject(parentURI?) {
   initOntologyObjectForm(ontologyObjectForm);
 
   // if parentURI property is set, then use this value as default isPartOf relation value
-  ontologyObjectForm.setInitHandler((relation: MultiValuedRDFObjectRelation) => {
-    if (parentURI) {
+  ontologyObjectForm.setInitHandler(parentURI
+    ? (relation: MultiValuedRDFObjectRelation) => {
       if ($opensilex.Oeso.checkURIs(relation.property.uri, $opensilex.Oeso.IS_PART_OF)) {
         relation.value = parentURI;
         return relation
       }
     }
-  });
+    : null);
   modalForm.value.showCreateForm();
 }
 
@@ -91,6 +91,8 @@ function editScientificObject(objectURI: string) {
       let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
       let os: ScientificObjectDetailDTO = http.response.result;
 
+      // Drop any handler left by a previous "add child": it would overwrite the real parent.
+      ontologyObjectForm.setInitHandler(null);
       currentType.value = os.rdf_type;
       initOntologyObjectForm(ontologyObjectForm);
       excludeCurrentURIFromParentSelector(objectURI, ontologyObjectForm);

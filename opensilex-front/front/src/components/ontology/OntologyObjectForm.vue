@@ -122,9 +122,9 @@ const excludedProperties = ref<Set<string>>(new Set<string>([
 
 const customComponentProps = ref<Map<string, Map<string, any>>>(new Map());
 
-const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation>(
-  (relation) => relation
-);
+// Null by default: the relations form only synchronises pre-filled values when a handler is set,
+// and the handler must be reset between two openings of the form (see setInitHandler).
+const initHandler = ref<((relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation) | null>(null);
 
 const loadCustomProperties = ref<boolean>(true);
 //#endregion
@@ -163,7 +163,7 @@ function getEmptyForm(): OntologyObjectFormModel {
   }
 }
 
-function setInitHandler(handler: (relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation) {
+function setInitHandler(handler: ((relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation) | null) {
   initHandler.value = handler;
 }
 

@@ -3,6 +3,8 @@
     <card
       label="component.common.informations"
       icon="bi-clipboard"
+      :noHeader="!globalView"
+      :noFooter="true"
     >
       <template #rightHeader v-if="globalView">
 
@@ -101,20 +103,18 @@
       </template>
     </card>
 
-    <card v-for="(value, index) in objectByContext" :key="index">
-      <template #header>
-        <h3>
-          {{ $t("component.experiment.view.title") }}:
-          <UriLink
-            :uri="value.uri"
-            :allowCopy="false"
-            :to="{
-              path:
-                '/experiment/details/' + encodeURIComponent(value.experiment),
-            }"
-            :value="value.experiment_name"
-          ></UriLink>
-        </h3>
+    <card v-for="(value, index) in objectByContext" :key="index" :noFooter="true">
+      <template #title>
+        {{ $t("component.experiment.view.title") }}:
+        <UriLink
+          :uri="value.uri"
+          :allowCopy="false"
+          :to="{
+            path:
+              '/experiment/details/' + encodeURIComponent(value.experiment),
+          }"
+          :value="value.experiment_name"
+        ></UriLink>
       </template>
       <template #body>
         <div class="detailsCard">
@@ -232,7 +232,7 @@ const scientificObjectForm = useTemplateRef<InstanceType<typeof ScientificObject
  * Watcher to fetch details and OS positions upon OS selection change
  */
 watch(
-   props.selected,
+   () => props.selected,
    (newSelectedValue) => {
      $opensilex.disableLoader();
      if (props.globalView) {

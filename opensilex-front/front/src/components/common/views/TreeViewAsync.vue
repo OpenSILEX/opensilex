@@ -32,7 +32,6 @@ const props = withDefaults(
       noButtons?: boolean;
       searchMethod?: Function;
       searchMethodRoot?: Function;
-      searchMethodRootChildren?: Function;
       pageSize?: number;
       enableSelection?: boolean;
       selection?: string[];
@@ -67,12 +66,16 @@ const isGlobalLoaderVisible = computed(() => store.state.loaderVisible);
 
 const ROOT_LOADING_NODE_KEY = "__root_loading_more__";
 
+const loadingMoreKeys = new Set<string>();
+
 function buildNode(soDTO: any, isRoot: boolean): any {
   const hasChildCount = "child_count" in soDTO;
   return {
     key: soDTO.uri,
     title: soDTO.name,
-    isLeaf: hasChildCount ? soDTO.child_count === 0 : true,
+    // Without a child count (a filtered search does not return one) the node is assumed to have
+    // children, so it stays expandable and onLoad can fetch them.
+    isLeaf: hasChildCount ? soDTO.child_count === 0 : false,
     data: soDTO,
     isRoot,
   };
@@ -99,6 +102,9 @@ function appendRootNodes(nodes: any[], totalCount: number) {
 async function refresh() {
   isSearching.value = true;
   rootPage = 0;
+  // Stale expanded keys would make naive-ui reload nodes that no longer exist in the new results.
+  expandedKeys.value = [];
+  loadingMoreKeys.clear();
   try {
     const method = props.searchMethodRoot ?? props.searchMethod;
     const http = await method(undefined, 0, props.pageSize);
@@ -110,21 +116,79 @@ async function refresh() {
   }
 }
 
+let isLoadingMoreRoots = false;
+
 async function loadMoreRoots() {
-  rootPage += 1;
-  const method = props.searchMethodRoot ?? props.searchMethod;
-  const http = await method(undefined, rootPage, props.pageSize);
-  nodeList.value.pop(); // remove the loading sentinel
-  appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
+  // The IntersectionObserver can fire again before the previous page is appended.
+  if (isLoadingMoreRoots) {
+    return;
+  }
+  isLoadingMoreRoots = true;
+  try {
+    rootPage += 1;
+    const method = props.searchMethodRoot ?? props.searchMethod;
+    const http = await method(undefined, rootPage, props.pageSize);
+    if (nodeList.value[nodeList.value.length - 1]?.key === ROOT_LOADING_NODE_KEY) {
+      nodeList.value.pop(); // remove the loading sentinel
+    }
+    appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
+  } finally {
+    isLoadingMoreRoots = false;
+  }
 }
 
+/**
+ * Loads the direct children of a node, at any depth: searchMethod always returns the children of
+ * the given URI, so the same call works for a root and for a node deep in the tree.
+ */
 async function onLoad(node: any) {
-  const method = node.isRoot && props.searchMethodRootChildren ? props.searchMethodRootChildren : props.searchMethod;
-  const http = await method(node.data.uri, 0, props.pageSize);
-  node.children = (http.response.result || []).map((dto: any) => buildNode(dto, false));
+  const http = await props.searchMethod(node.data.uri, 0, props.pageSize);
+  const children = (http.response.result || []).map((dto: any) => buildNode(dto, false));
+
+  // Nodes coming from a filtered search have no child_count; the total is only known once their
+  // children are loaded, and the label needs it to offer "load more".
+  node.data.child_count = http.response.metadata.pagination.totalCount;
+  node.children = children;
+  node.isLeaf = children.length === 0;
 }
 
-const loadingMoreKeys = new Set<string>();
+function findNode(key: string, nodes: any[] = nodeList.value): any | undefined {
+  for (const node of nodes) {
+    if (node.key === key) {
+      return node;
+    }
+    if (Array.isArray(node.children)) {
+      const found = findNode(key, node.children);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Reloads the children of a single node and expands it, so that an object created under it becomes
+ * visible without collapsing the whole tree as refresh() would.
+ */
+async function reloadNodeChildren(key: string) {
+  const node = findNode(key);
+  if (!node) {
+    await refresh();
+    return;
+  }
+
+  const http = await props.searchMethod(node.data.uri, 0, props.pageSize);
+  const children = (http.response.result || []).map((dto: any) => buildNode(dto, false));
+
+  node.data.child_count = http.response.metadata.pagination.totalCount;
+  node.children = children;
+  node.isLeaf = children.length === 0;
+
+  if (!node.isLeaf && !expandedKeys.value.includes(key)) {
+    expandedKeys.value = [...expandedKeys.value, key];
+  }
+}
 
 async function loadMoreChildren(node: any) {
   if (loadingMoreKeys.has(node.key)) {
@@ -132,7 +196,7 @@ async function loadMoreChildren(node: any) {
   }
   loadingMoreKeys.add(node.key);
   try {
-    const page = Math.round((node.children?.length || 0) / props.pageSize);
+    const page = Math.floor((node.children?.length || 0) / props.pageSize);
     const http = await props.searchMethod(node.data.uri, page, props.pageSize);
     const newChildren = (http.response.result || []).map((dto: any) => buildNode(dto, false));
     node.children = [...(node.children || []), ...newChildren];
@@ -196,8 +260,11 @@ function renderLabel(info: { option: any }): VNodeChild {
   }
 
   const childCount = node.data?.child_count;
-  const loadedCount = Array.isArray(node.children) ? node.children.length : 0;
-  const hasMoreChildren = typeof childCount === "number" && childCount > loadedCount;
+  const childrenLoaded = Array.isArray(node.children);
+  const loadedCount = childrenLoaded ? node.children.length : 0;
+  // "Load more" is only offered once the children are loaded: setting children on a collapsed node
+  // would mark it as loaded and onLoad would never run on it.
+  const hasMoreChildren = childrenLoaded && typeof childCount === "number" && childCount > loadedCount;
 
   // The whole node line selects the object. Controls that have their own action
   // (checkbox, "load more", action buttons) stop the propagation.
@@ -216,30 +283,28 @@ function renderLabel(info: { option: any }): VNodeChild {
         { class: "async-tree-title" },
         [slots.node ? slots.node({ node }) : node.title]
     ),
-    typeof childCount === "number"
-        ? h(
-            "span",
-            { class: "async-tree-action" },
-            hasMoreChildren
-                ? [
-                  ` (${node.data.rdf_type_name} - ${loadedCount}/${childCount} - `,
-                  h(
-                      "a",
-                      {
-                        href: "#",
-                        onClick: (e: Event) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          loadMoreChildren(node);
-                        },
-                      },
-                      t("TreeViewAsync.load-more")
-                  ),
-                  ")",
-                ]
-                : ` (${node.data.rdf_type_name})`
-        )
-        : null,
+    h(
+        "span",
+        { class: "async-tree-action" },
+        hasMoreChildren
+            ? [
+              ` (${node.data.rdf_type_name} - ${loadedCount}/${childCount} - `,
+              h(
+                  "a",
+                  {
+                    href: "#",
+                    onClick: (e: Event) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      loadMoreChildren(node);
+                    },
+                  },
+                  t("TreeViewAsync.load-more")
+              ),
+              ")",
+            ]
+            : ` (${node.data.rdf_type_name})`
+    ),
     !props.noButtons && slots.buttons
         ? h(
             "span",
@@ -254,6 +319,7 @@ defineExpose({
   nodeList,
   isSearching,
   refresh,
+  reloadNodeChildren,
 });
 </script>
 

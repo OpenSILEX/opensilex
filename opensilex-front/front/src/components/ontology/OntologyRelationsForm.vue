@@ -38,8 +38,9 @@ const props = withDefaults(defineProps<{
 }>(), {
   relations: () => [],
   excludedProperties: () => new Set<string>(),
-  customComponentProps: () => new Map<string, Map<string, any>>(),
-  initHandler: (relation) => relation
+  customComponentProps: () => new Map<string, Map<string, any>>()
+  // No default initHandler on purpose: its presence is what triggers the synchronisation of the
+  // pre-filled values in typeSwitch, and only the forms that pre-fill relations need it.
 })
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
@@ -206,9 +207,10 @@ async function typeSwitch(type: string, initialLoad: boolean) {
       internalRelations.value = internalRelations.value.map(relation => {
         return props.initHandler?.(relation) || relation
       });
-      // I don't exactly know if this does something or not. If you have trouble with updating the relations form try
-      // uncommenting this line
-      // updateRelation()
+      // Synchronise les valeurs pré-remplies par initHandler (par exemple isPartOf lors de l'ajout
+      // d'un enfant) avec les relations exposées au parent : sans cela elles restent internes au
+      // formulaire et ne sont jamais envoyées à l'API.
+      updateRelation()
     }
   } catch (error) {
     opensilex.errorHandler(error)

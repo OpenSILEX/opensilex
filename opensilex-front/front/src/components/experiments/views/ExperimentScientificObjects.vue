@@ -3,7 +3,7 @@
     <PageActions class="pageActionsBtns">
       <CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-          @click="soForm.createScientificObject()"
+          @click="createRootScientificObject()"
           label="component.scientificObjects.actions.add"
           class="createButton"
       ></CreateButton>&nbsp;
@@ -165,8 +165,8 @@
               <TreeViewAsync
                   ref="soTree"
                   v-model:selection="selectedObjects"
-                  :searchMethod="searchMethod"
-                  :searchMethodRootChildren="loadAllChildren"
+                  :searchMethod="loadChildren"
+                  :searchMethodRoot="searchRoots"
                   :enableSelection="true"
                   @select="displayScientificObjectDetailsIfNew($event.data.uri)"
               >
@@ -179,13 +179,13 @@
                     <EditButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                         :small="true"
-                        @click="soForm.editScientificObject(node.data.uri)"
+                        @click="editScientificObject(node.data.uri)"
                         label="ExperimentScientificObjects.edit-scientific-object"
                     ></EditButton>
                     <AddChildButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                         :small="true"
-                        @click="soForm.createScientificObject(node.data.uri)"
+                        @click="createChildScientificObject(node.data.uri)"
                         label="ExperimentScientificObjects.add-scientific-object-child"
                     ></AddChildButton>
                     <DeleteButton
@@ -344,6 +344,8 @@ const refreshKey = ref<number>(0)
 const filters = ref<ScientificObjectFilters>(defaultFilters())
 
 const selected = ref(null)
+// URI of the node a child is being created under, so that only that branch is reloaded afterwards.
+const pendingParentUri = ref<string | undefined>(undefined)
 const selectedObjects = ref<Array<string>>([])
 const selectAll = ref<boolean>(false)
 const selectAllLimit = ref<number>(10000)
@@ -564,8 +566,38 @@ function resetFilters() {
   criteriaSearchCreateModal.value.resetCriteriaListAndSave();
 }
 
+/**
+ * Opens the creation form for a root object: the whole tree is refreshed afterwards.
+ */
+function createRootScientificObject() {
+  pendingParentUri.value = undefined;
+  soForm.value.createScientificObject();
+}
+
+/**
+ * Opens the creation form for a child of the given node. The parent URI is kept so that only that
+ * branch is reloaded afterwards, instead of collapsing the whole tree.
+ */
+function createChildScientificObject(parentUri: string) {
+  pendingParentUri.value = parentUri;
+  soForm.value.createScientificObject(parentUri);
+}
+
+function editScientificObject(objectUri: string) {
+  pendingParentUri.value = undefined;
+  soForm.value.editScientificObject(objectUri);
+}
+
 function refreshAfterCreateOrUpdate(result) {
-  refresh();
+  const parentUri = pendingParentUri.value;
+  pendingParentUri.value = undefined;
+
+  if (parentUri && soTree.value) {
+    // Reload only the parent branch, so the newly created child stays visible in place.
+    soTree.value.reloadNodeChildren(parentUri);
+  } else {
+    refresh();
+  }
   refreshTypeSelectorComponent();
   if (!result || !result.response.result) {
     return;
@@ -573,7 +605,13 @@ function refreshAfterCreateOrUpdate(result) {
   displayScientificObjectDetailsIfNew(result.response.result);
 }
 
-function loadAllChildren(nodeURI: string, page: number, pageSize: number) {
+/**
+ * Loads the direct children of a node, whatever its depth. The children endpoint is the only one
+ * returning `child_count`, which the tree needs to know whether a node can be expanded, and it
+ * returns direct children only - unlike the filtered search, which flattens the whole subtree.
+ * Children are deliberately never filtered: the filters select the roots that are displayed.
+ */
+function loadChildren(nodeURI: string, page: number, pageSize: number) {
   return soService.getScientificObjectsChildren(
       nodeURI,
       uri.value,
@@ -581,13 +619,16 @@ function loadAllChildren(nodeURI: string, page: number, pageSize: number) {
       undefined,
       undefined,
       undefined,
-      undefined,
+      ["name=asc"],
       page,
       pageSize
   );
 }
 
-function searchMethod(nodeURI: string, page: number, pageSize: number) {
+/**
+ * Loads the root nodes of the tree, applying the current filters.
+ */
+function searchRoots(_nodeURI: string, page: number, pageSize: number) {
   const orderBy = ["name=asc"];
   const hasAnyCriterion = filters.value.criteriaDto.criteria_list.length > 0;
   const hasAnyFilter = filters.value.parent
@@ -598,24 +639,14 @@ function searchMethod(nodeURI: string, page: number, pageSize: number) {
       || hasAnyCriterion;
 
   if (!hasAnyFilter) {
-    return soService.getScientificObjectsChildren(
-        nodeURI,
-        uri.value,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        orderBy,
-        page,
-        pageSize
-    );
+    return loadChildren(undefined, page, pageSize);
   }
 
   return soService.searchScientificObjects(
       uri.value, // experiment?: string,
       filters.value.types, // rdfTypes?: Array<string>,
       filters.value.name, // pattern?: string,
-      filters.value.parent ? filters.value.parent : nodeURI, // parentURI?: string,
+      filters.value.parent, // parentURI?: string,
       filters.value.germplasm ? [filters.value.germplasm] : [], // germplasm?: Array<string>,
       filters.value.factorLevels, // factorLevels?: Array<string>,
       undefined, // facility?: string,

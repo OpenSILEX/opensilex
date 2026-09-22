@@ -6,7 +6,7 @@ import en from "./lang/dataverse-en.json";
 export default {
   install(App, options) {
     // Accès au service container via les options, si nécessaire
-    const serviceContainer = options?.opensilex?.getServiceContainer?.();
+    const serviceContainer = options.opensilexInstance.getServiceContainer?.();
     if (serviceContainer) {
       ApiServiceBinder.with(serviceContainer);
     }

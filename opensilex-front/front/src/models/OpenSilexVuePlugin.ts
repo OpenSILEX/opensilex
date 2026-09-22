@@ -38,7 +38,7 @@ import { App } from 'vue';
 import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
 import {AuthenticationService} from "opensilex-security/api/authentication.service";
 import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
-import {isOpensilexModulePlugin, OpensilexModuleComponentMap} from "@/models/OpensilexModulePlugin";
+import {isOpensilexModulePlugin, OpensilexPluginComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();
 
@@ -505,7 +505,7 @@ export default class OpenSilexVuePlugin {
 
                 this.loadedModules.push(name);
 
-                this.app.use(plugin);
+                this.app.use(plugin, {opensilexInstance: this});
 
                 if (plugin.lang) {
                     this.loadTranslations(plugin.lang);
@@ -542,7 +542,7 @@ export default class OpenSilexVuePlugin {
         return modulePromise;
     }
 
-    public initAsyncComponents(components: OpensilexModuleComponentMap) {
+    public initAsyncComponents(components: OpensilexPluginComponentMap) {
         let promises: Array<Promise<any>> = [];
         if (components) {
             for (let componentId in components) {

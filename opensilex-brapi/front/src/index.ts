@@ -2,6 +2,6 @@ import {OpensilexModulePlugin} from "../../../opensilex-front/front/src/models/O
 import { ApiServiceBinder } from './lib';
 export default {
     install(App, options) {
-        ApiServiceBinder.with(options.opensilex.getServiceContainer());
+        ApiServiceBinder.with(options.opensilexInstance.getServiceContainer());
     }
 } as OpensilexModulePlugin;

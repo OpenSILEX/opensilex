@@ -1,15 +1,17 @@
 import type { Plugin, ObjectPlugin, Component } from 'vue';
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 /**
  * Type for OpenSILEX's module.
  * Each module should have an index.ts file exporting an OpensilexModulePlugin (Vue plugin with map components).
  */
-export type OpensilexModulePlugin = Plugin & {
-  components?: OpensilexModuleComponentMap,
+export type OpensilexModulePlugin = Plugin<OpensilexPluginOptions> & {
+  components?: OpensilexPluginComponentMap,
   lang?: Record<string, any>
 };
 
-export type OpensilexModuleComponentMap = Record<string, Component>;
+export type OpensilexPluginOptions = {opensilexInstance: OpenSilexVuePlugin}
+export type OpensilexPluginComponentMap = Record<string, Component>;
 
 /**
  * Runtime type guard for {@link OpensilexModulePlugin}: a module export is a valid plugin if it is

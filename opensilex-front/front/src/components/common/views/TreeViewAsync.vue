@@ -1,3 +1,4 @@
+```vue
 <template>
   <Overlay :show="isSearching && !isGlobalLoaderVisible">
     <n-tree
@@ -8,7 +9,9 @@
         label-field="title"
         block-line
         :expanded-keys="expandedKeys"
+        :selected-keys="selectedKeys"
         @update:expanded-keys="(keys) => (expandedKeys = keys)"
+        @update:selected-keys="handleSelectedKeys"
         :on-load="onLoad"
         :render-label="renderLabel"
         :render-switcher-icon="renderSwitcherIcon"
@@ -17,15 +20,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, VNodeChild, h } from "vue";
-import { useStore } from "vuex";
-import { useI18n } from "vue-i18n";
-import { NCheckbox, NTree } from "naive-ui";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  onUpdated,
+  ref,
+  VNodeChild,
+  h,
+} from "vue";
+import {useStore} from "vuex";
+import {useI18n} from "vue-i18n";
+import {NCheckbox, NTree} from "naive-ui";
+
 import Icon from "@/components/common/views/Icon.vue";
 import Overlay from "@/components/layout/Overlay.vue";
 
 const store = useStore();
-const { t } = useI18n();
+const {t} = useI18n();
 
 const props = withDefaults(
     defineProps<{
@@ -53,16 +66,29 @@ const slots = defineSlots<{
   buttons: (props: { node: any }) => VNodeChild;
 }>();
 
+/**
+ * Sélection des checkboxes.
+ */
 const multiSelect = computed({
   get: () => props.selection ?? [],
   set: (value) => emit("update:selection", value),
 });
 
+/**
+ * Sélection interne du NTree.
+ *
+ * Cette sélection sert uniquement à permettre à NTree
+ * de gérer le clic sur toute la ligne.
+ */
+const selectedKeys = ref<string[]>([]);
+
 const nodeList = ref<any[]>([]);
 const expandedKeys = ref<string[]>([]);
 const isSearching = ref(false);
 
-const isGlobalLoaderVisible = computed(() => store.state.loaderVisible);
+const isGlobalLoaderVisible = computed(
+    () => store.state.loaderVisible
+);
 
 const ROOT_LOADING_NODE_KEY = "__root_loading_more__";
 
@@ -70,12 +96,16 @@ const loadingMoreKeys = new Set<string>();
 
 function buildNode(soDTO: any, isRoot: boolean): any {
   const hasChildCount = "child_count" in soDTO;
+
   return {
     key: soDTO.uri,
     title: soDTO.name,
-    // Without a child count (a filtered search does not return one) the node is assumed to have
-    // children, so it stays expandable and onLoad can fetch them.
-    isLeaf: hasChildCount ? soDTO.child_count === 0 : false,
+
+    // Sans child_count, on considère que le nœud peut avoir des enfants.
+    isLeaf: hasChildCount
+        ? soDTO.child_count === 0
+        : false,
+
     data: soDTO,
     isRoot,
   };
@@ -92,227 +122,516 @@ function buildRootLoadingNode(): any {
 
 let rootPage = 0;
 
-function appendRootNodes(nodes: any[], totalCount: number) {
+function appendRootNodes(
+    nodes: any[],
+    totalCount: number
+) {
   nodeList.value = nodeList.value.concat(nodes);
+
   if (nodeList.value.length < totalCount) {
-    nodeList.value.push(buildRootLoadingNode());
+    nodeList.value.push(
+        buildRootLoadingNode()
+    );
   }
 }
 
+/**
+ * Rafraîchit l'arbre.
+ */
 async function refresh() {
   isSearching.value = true;
   rootPage = 0;
-  // Stale expanded keys would make naive-ui reload nodes that no longer exist in the new results.
+
+  // Les anciens nœuds sélectionnés ne doivent pas rester actifs.
+  selectedKeys.value = [];
+
+  // Les anciennes expansions deviennent invalides
+  // lorsque les résultats changent.
   expandedKeys.value = [];
+
   loadingMoreKeys.clear();
+
   try {
-    const method = props.searchMethodRoot ?? props.searchMethod;
-    const http = await method(undefined, 0, props.pageSize);
+    const method =
+        props.searchMethodRoot ??
+        props.searchMethod;
+
+    const http = await method(
+        undefined,
+        0,
+        props.pageSize
+    );
+
     nodeList.value = [];
-    appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
+
+    appendRootNodes(
+        (http.response.result || []).map(
+            (dto: any) => buildNode(dto, true)
+        ),
+        http.response.metadata.pagination.totalCount
+    );
   } finally {
-    // Without this the loading overlay would stay forever when the search fails.
     isSearching.value = false;
   }
 }
 
 let isLoadingMoreRoots = false;
 
+/**
+ * Charge la page suivante des nœuds racine.
+ */
 async function loadMoreRoots() {
-  // The IntersectionObserver can fire again before the previous page is appended.
   if (isLoadingMoreRoots) {
     return;
   }
+
   isLoadingMoreRoots = true;
+
   try {
     rootPage += 1;
-    const method = props.searchMethodRoot ?? props.searchMethod;
-    const http = await method(undefined, rootPage, props.pageSize);
-    if (nodeList.value[nodeList.value.length - 1]?.key === ROOT_LOADING_NODE_KEY) {
-      nodeList.value.pop(); // remove the loading sentinel
+
+    const method =
+        props.searchMethodRoot ??
+        props.searchMethod;
+
+    const http = await method(
+        undefined,
+        rootPage,
+        props.pageSize
+    );
+
+    if (
+        nodeList.value[
+        nodeList.value.length - 1
+            ]?.key === ROOT_LOADING_NODE_KEY
+    ) {
+      nodeList.value.pop();
     }
-    appendRootNodes((http.response.result || []).map((dto: any) => buildNode(dto, true)), http.response.metadata.pagination.totalCount);
+
+    appendRootNodes(
+        (http.response.result || []).map(
+            (dto: any) => buildNode(dto, true)
+        ),
+        http.response.metadata.pagination.totalCount
+    );
   } finally {
     isLoadingMoreRoots = false;
   }
 }
 
 /**
- * Loads the direct children of a node, at any depth: searchMethod always returns the children of
- * the given URI, so the same call works for a root and for a node deep in the tree.
+ * Charge les enfants directs d'un nœud.
  */
 async function onLoad(node: any) {
-  const http = await props.searchMethod(node.data.uri, 0, props.pageSize);
-  const children = (http.response.result || []).map((dto: any) => buildNode(dto, false));
+  const http = await props.searchMethod(
+      node.data.uri,
+      0,
+      props.pageSize
+  );
 
-  // Nodes coming from a filtered search have no child_count; the total is only known once their
-  // children are loaded, and the label needs it to offer "load more".
-  node.data.child_count = http.response.metadata.pagination.totalCount;
+  const children =
+      (http.response.result || []).map(
+          (dto: any) => buildNode(dto, false)
+      );
+
+  node.data.child_count =
+      http.response.metadata.pagination.totalCount;
+
   node.children = children;
-  node.isLeaf = children.length === 0;
+
+  node.isLeaf =
+      children.length === 0;
 }
 
-function findNode(key: string, nodes: any[] = nodeList.value): any | undefined {
+/**
+ * Recherche récursive d'un nœud.
+ */
+function findNode(
+    key: string,
+    nodes: any[] = nodeList.value
+): any | undefined {
   for (const node of nodes) {
     if (node.key === key) {
       return node;
     }
+
     if (Array.isArray(node.children)) {
-      const found = findNode(key, node.children);
+      const found = findNode(
+          key,
+          node.children
+      );
+
       if (found) {
         return found;
       }
     }
   }
+
   return undefined;
 }
 
 /**
- * Reloads the children of a single node and expands it, so that an object created under it becomes
- * visible without collapsing the whole tree as refresh() would.
+ * Recharge les enfants d'un nœud.
  */
-async function reloadNodeChildren(key: string) {
+async function reloadNodeChildren(
+    key: string
+) {
   const node = findNode(key);
+
   if (!node) {
     await refresh();
     return;
   }
 
-  const http = await props.searchMethod(node.data.uri, 0, props.pageSize);
-  const children = (http.response.result || []).map((dto: any) => buildNode(dto, false));
+  const http = await props.searchMethod(
+      node.data.uri,
+      0,
+      props.pageSize
+  );
 
-  node.data.child_count = http.response.metadata.pagination.totalCount;
+  const children =
+      (http.response.result || []).map(
+          (dto: any) => buildNode(dto, false)
+      );
+
+  node.data.child_count =
+      http.response.metadata.pagination.totalCount;
+
   node.children = children;
-  node.isLeaf = children.length === 0;
 
-  if (!node.isLeaf && !expandedKeys.value.includes(key)) {
-    expandedKeys.value = [...expandedKeys.value, key];
+  node.isLeaf =
+      children.length === 0;
+
+  if (
+      !node.isLeaf &&
+      !expandedKeys.value.includes(key)
+  ) {
+    expandedKeys.value = [
+      ...expandedKeys.value,
+      key,
+    ];
   }
 }
 
-async function loadMoreChildren(node: any) {
+/**
+ * Charge davantage d'enfants.
+ */
+async function loadMoreChildren(
+    node: any
+) {
   if (loadingMoreKeys.has(node.key)) {
     return;
   }
+
   loadingMoreKeys.add(node.key);
+
   try {
-    const page = Math.floor((node.children?.length || 0) / props.pageSize);
-    const http = await props.searchMethod(node.data.uri, page, props.pageSize);
-    const newChildren = (http.response.result || []).map((dto: any) => buildNode(dto, false));
-    node.children = [...(node.children || []), ...newChildren];
+    const page = Math.floor(
+        (node.children?.length || 0) /
+        props.pageSize
+    );
+
+    const http = await props.searchMethod(
+        node.data.uri,
+        page,
+        props.pageSize
+    );
+
+    const newChildren =
+        (http.response.result || []).map(
+            (dto: any) => buildNode(dto, false)
+        );
+
+    node.children = [
+      ...(node.children || []),
+      ...newChildren,
+    ];
   } finally {
     loadingMoreKeys.delete(node.key);
   }
 }
 
-function getSelection(uri: string): boolean {
-  return multiSelect.value.indexOf(uri) >= 0;
+/**
+ * Vérifie si une URI est sélectionnée
+ * via les checkbox.
+ */
+function getSelection(
+    uri: string
+): boolean {
+  return (
+      multiSelect.value.indexOf(uri) >= 0
+  );
 }
 
-function onSelectionChange(uri: string) {
+/**
+ * Modifie la sélection des checkbox.
+ */
+function onSelectionChange(
+    uri: string
+) {
   const current = multiSelect.value;
-  const index = current.indexOf(uri);
+
+  const index =
+      current.indexOf(uri);
+
   if (index >= 0) {
-    emit("update:selection", [...current.slice(0, index), ...current.slice(index + 1)]);
+    emit(
+        "update:selection",
+        [
+          ...current.slice(0, index),
+          ...current.slice(index + 1),
+        ]
+    );
   } else {
-    emit("update:selection", [...current, uri]);
+    emit(
+        "update:selection",
+        [...current, uri]
+    );
   }
 }
 
-function renderSwitcherIcon(info: { expanded: boolean }): VNodeChild {
-  return h(Icon, { icon: info.expanded ? "fa#chevron-down" : "fa#chevron-right" });
+/**
+ * Clic/sélection d'une ligne entière.
+ *
+ * C'est maintenant NTree qui déclenche cet événement.
+ * On ne dépend plus du clic sur le texte du label.
+ */
+function handleSelectedKeys(
+    keys: string[]
+) {
+  selectedKeys.value = keys;
+
+  const key = keys[0];
+
+  if (
+      !key ||
+      key === ROOT_LOADING_NODE_KEY
+  ) {
+    return;
+  }
+
+  const node = findNode(key);
+
+  if (node) {
+    emit("select", node);
+  }
 }
 
-let rootLoadingSentinelEl: Element | null = null;
+function renderSwitcherIcon(
+    info: { expanded: boolean }
+): VNodeChild {
+  return h(Icon, {
+    icon: info.expanded
+        ? "fa#chevron-down"
+        : "fa#chevron-right",
+  });
+}
+
+let rootLoadingSentinelEl: Element | null =
+    null;
+
 let observer: IntersectionObserver;
 
 onMounted(() => {
-  observer = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      loadMoreRoots();
-    }
-  });
+  observer =
+      new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              loadMoreRoots();
+            }
+          }
+      );
+
   refresh();
 });
 
 onUpdated(() => {
   nextTick(() => {
     observer.disconnect();
+
     if (rootLoadingSentinelEl) {
-      observer.observe(rootLoadingSentinelEl);
+      observer.observe(
+          rootLoadingSentinelEl
+      );
     }
   });
 });
 
 onBeforeUnmount(() => {
-  observer.disconnect();
+  observer?.disconnect();
 });
 
-function renderLabel(info: { option: any }): VNodeChild {
+/**
+ * Génère uniquement le contenu visuel de la ligne.
+ *
+ * IMPORTANT :
+ * Il n'y a plus de onClick ici.
+ * Le clic sur la ligne est maintenant géré par NTree.
+ */
+function renderLabel(
+    info: { option: any }
+): VNodeChild {
   const node = info.option;
 
+  /**
+   * Sentinel "load more" des racines.
+   */
   if (node.data == null) {
     return h(
         "span",
-        { ref: (el: Element | null) => (rootLoadingSentinelEl = el) },
-        t("TreeViewAsync.loading-more")
+        {
+          ref: (
+              el: Element | null
+          ) => {
+            rootLoadingSentinelEl = el;
+          },
+        },
+        t(
+            "TreeViewAsync.loading-more"
+        )
     );
   }
 
-  const childCount = node.data?.child_count;
-  const childrenLoaded = Array.isArray(node.children);
-  const loadedCount = childrenLoaded ? node.children.length : 0;
-  // "Load more" is only offered once the children are loaded: setting children on a collapsed node
-  // would mark it as loaded and onLoad would never run on it.
-  const hasMoreChildren = childrenLoaded && typeof childCount === "number" && childCount > loadedCount;
+  const childCount =
+      node.data?.child_count;
 
-  // The whole node line selects the object. Controls that have their own action
-  // (checkbox, "load more", action buttons) stop the propagation.
-  return h("span", { class: "async-tree-node", onClick: () => emit("select", node) }, [
-    props.enableSelection
-        ? h("span", { onClick: (e: Event) => e.stopPropagation() }, [
-          h(NCheckbox, {
-            class: "selection-box",
-            checked: getSelection(node.data.uri),
-            "onUpdate:checked": () => onSelectionChange(node.data.uri),
-          }),
-        ])
-        : null,
-    h(
-        "span",
-        { class: "async-tree-title" },
-        [slots.node ? slots.node({ node }) : node.title]
-    ),
-    h(
-        "span",
-        { class: "async-tree-action" },
-        hasMoreChildren
-            ? [
-              ` (${node.data.rdf_type_name} - ${loadedCount}/${childCount} - `,
-              h(
-                  "a",
-                  {
-                    href: "#",
-                    onClick: (e: Event) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      loadMoreChildren(node);
-                    },
-                  },
-                  t("TreeViewAsync.load-more")
-              ),
-              ")",
-            ]
-            : ` (${node.data.rdf_type_name})`
-    ),
-    !props.noButtons && slots.buttons
-        ? h(
+  const childrenLoaded =
+      Array.isArray(node.children);
+
+  const loadedCount =
+      childrenLoaded
+          ? node.children.length
+          : 0;
+
+  const hasMoreChildren =
+      childrenLoaded &&
+      typeof childCount === "number" &&
+      childCount > loadedCount;
+
+  return h(
+      "span",
+      {
+        class: "async-tree-node",
+      },
+      [
+        /**
+         * Checkbox.
+         *
+         * Elle arrête la propagation afin de ne pas
+         * déclencher le clic de sélection du nœud.
+         */
+        props.enableSelection
+            ? h(
+                "span",
+                {
+                  class:
+                      "async-tree-checkbox",
+                  onClick: (
+                      e: Event
+                  ) =>
+                      e.stopPropagation(),
+                },
+                [
+                  h(NCheckbox, {
+                    class:
+                        "selection-box",
+
+                    checked:
+                        getSelection(
+                            node.data.uri
+                        ),
+
+                    "onUpdate:checked":
+                        () =>
+                            onSelectionChange(
+                                node.data.uri
+                            ),
+                  }),
+                ]
+            )
+            : null,
+
+        /**
+         * Titre.
+         */
+        h(
             "span",
-            { class: "tree-button-group", onClick: (e: Event) => e.stopPropagation() },
-            [slots.buttons({ node })]
-        )
-        : null,
-  ]);
+            {
+              class:
+                  "async-tree-title",
+            },
+            [
+              slots.node
+                  ? slots.node({node})
+                  : node.title,
+            ]
+        ),
+
+        /**
+         * Informations complémentaires.
+         */
+        h(
+            "span",
+            {
+              class:
+                  "async-tree-action",
+            },
+            hasMoreChildren
+                ? [
+                  ` (${node.data.rdf_type_name} - ${loadedCount}/${childCount} - `,
+
+                  h(
+                      "a",
+                      {
+                        href: "#",
+
+                        onClick: (
+                            e: Event
+                        ) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          loadMoreChildren(
+                              node
+                          );
+                        },
+                      },
+
+                      t(
+                          "TreeViewAsync.load-more"
+                      )
+                  ),
+
+                  ")",
+                ]
+                : ` (${node.data.rdf_type_name})`
+        ),
+
+        /**
+         * Boutons d'action.
+         */
+        !props.noButtons &&
+        slots.buttons
+            ? h(
+                "span",
+                {
+                  class:
+                      "tree-button-group",
+
+                  onClick: (
+                      e: Event
+                  ) =>
+                      e.stopPropagation(),
+                },
+                [
+                  slots.buttons({
+                    node,
+                  }),
+                ]
+            )
+            : null,
+      ]
+  );
 }
 
 defineExpose({
@@ -332,20 +651,56 @@ defineExpose({
   overflow-y: auto;
 }
 
+/*
+ * NTree doit occuper toute la largeur.
+ */
 :deep(.n-tree-node-content) {
+  width: 100%;
   padding-right: 0.3rem;
   padding-left: 0.3rem;
 }
 
-:deep(.n-tree-node-content:hover) {
-  color: #545454;
-  cursor: pointer;
-  background-color: #f3f3f3;
+/*
+ * Le contenu du label prend tout l'espace
+ * disponible dans la ligne.
+ */
+:deep(.n-tree-node-content__text) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
 }
 
-:deep(.n-tree-node--selected .n-tree-node-content) {
-  color: #545454;
-  background-color: #e9e9e9;
+/*
+ * Notre contenu de label prend toute la largeur
+ * qui lui est donnée par NTree.
+ */
+.async-tree-node {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  cursor: pointer;
+}
+
+/*
+ * Titre flexible.
+ */
+.async-tree-title {
+  min-width: 0;
+}
+
+/*
+ * Partie informative.
+ */
+.async-tree-action {
+  font-style: italic;
+}
+
+/*
+ * Checkbox.
+ */
+.async-tree-checkbox {
+  flex: 0 0 auto;
 }
 
 .selection-box {
@@ -353,23 +708,37 @@ defineExpose({
   margin-right: 6px;
 }
 
-.async-tree-node {
-  /* Fills the node line so the whole row, not only the label, selects the object */
-  display: block;
+/*
+ * Boutons à droite.
+ */
+.tree-button-group {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/*
+ * Hover de toute la ligne.
+ */
+:deep(.n-tree-node-content:hover) {
+  color: #545454;
   cursor: pointer;
+  background-color: #f3f3f3;
 }
 
-.async-tree-action {
-  font-style: italic;
+/*
+ * Ligne sélectionnée.
+ */
+:deep(.n-tree-node--selected .n-tree-node-content) {
+  color: #545454;
+  background-color: #e9e9e9;
 }
 
+/*
+ * Lien "Load more".
+ */
 .async-tree-action a:hover {
   text-decoration: underline;
   cursor: pointer;
-}
-
-.tree-button-group {
-  float: right;
 }
 </style>
 
@@ -384,3 +753,4 @@ fr:
     load-more: Charger plus...
     loading-more: Chargement en cours ...
 </i18n>
+```

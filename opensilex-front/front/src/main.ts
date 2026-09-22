@@ -99,6 +99,7 @@ window.VueI18n = { ...VueI18nRuntime };
 
 // Import and assignation to enable auto rebuild on ws library change (hot reload forced by server on module change ex: phis)
 import * as LATEST_UPDATE from "./opensilex.dev";
+const randomNumberForHMRTrigger = LATEST_UPDATE.default
 
 // import AsyncComputed from 'vue-async-computed'
 // Vue.use(AsyncComputed)

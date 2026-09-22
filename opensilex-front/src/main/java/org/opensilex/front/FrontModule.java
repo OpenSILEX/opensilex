@@ -114,6 +114,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setNotificationMessage(frontConfig.notificationMessage());
             config.setNotificationEndDate(frontConfig.notificationEndDate());
             config.setNotificationColorTheme(frontConfig.notificationColorTheme());
+            config.setPhoneCountryList(frontConfig.phoneCountryList());
 
             if (frontConfig.matomo() != null) {
                 try {

@@ -36,7 +36,9 @@ import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
 import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
 import { App } from 'vue';
 import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
-import {isOpensilexModulePlugin, OpensilexModuleComponentMap} from "@/models/OpensilexModulePlugin";
+import {AuthenticationService} from "opensilex-security/api/authentication.service";
+import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
+import {isOpensilexModulePlugin, OpensilexPluginComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();
 
@@ -503,7 +505,7 @@ export default class OpenSilexVuePlugin {
 
                 this.loadedModules.push(name);
 
-                this.app.use(plugin);
+                this.app.use(plugin, {opensilexInstance: this});
 
                 if (plugin.lang) {
                     this.loadTranslations(plugin.lang);
@@ -540,7 +542,7 @@ export default class OpenSilexVuePlugin {
         return modulePromise;
     }
 
-    public initAsyncComponents(components: OpensilexModuleComponentMap) {
+    public initAsyncComponents(components: OpensilexPluginComponentMap) {
         let promises: Array<Promise<any>> = [];
         if (components) {
             for (let componentId in components) {
@@ -953,30 +955,26 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    private credentials: Array<CredentialsGroupDTO> | Promise<Array<CredentialsGroupDTO>> = null;
 
-    private credentials = null;
-
-    public getCredentials() {
-        if (this.credentials == null) {
-            this.credentials = new Promise((resolve, reject) => {
-                console.debug("Loading credentials list...");
-                this.getService<any>(
-                    "opensilex-security.AuthenticationService"
-                ).getCredentialsGroups().then((http) => {
-                    this.credentials = http.response.result;
-                    console.debug("Credentials list loaded !", this.credentials);
-                    resolve(http.response.result);
-                }).catch(this.errorHandler)
-
-            })
+    public getCredentials(): Promise<Array<CredentialsGroupDTO>> {
+        if (this.credentials instanceof Promise) {
             return this.credentials;
-        } else if (this.credentials instanceof Promise) {
-            console.log("credentials2 list ", this.credentials)
-            return this.credentials;
-        } else {
-            console.log("credentials3 ", this.credentials)
+        }
+
+        if (Array.isArray(this.credentials)) {
             return Promise.resolve(this.credentials);
         }
+
+        this.credentials = new Promise((resolve, reject) => {
+            this.getService<AuthenticationService>(
+                "opensilex-security.AuthenticationService"
+            ).getCredentialsGroups().then((http) => {
+                this.credentials = http.response.result;
+                resolve(http.response.result);
+            }).catch(this.errorHandler)
+        })
+        return this.credentials;
     }
 
     public fromToken(token: string) {

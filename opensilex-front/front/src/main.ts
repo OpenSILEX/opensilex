@@ -84,7 +84,8 @@ import "reflect-metadata"
 declare var document: any;
 
 declare var window: any;
-// Attach Vue APIs to window
+// Attach Vue APIs and i18n to the window. This will allow plugins (modules like phis) to use these instances of
+// Vue and I18n rather than their own instances.
 window.Vue = { ...VueRuntime };
 window.VueI18n = { ...VueI18nRuntime };
 

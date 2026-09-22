@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 
 import { createApp, ref, reactive, computed } from "vue";
+import * as VueRuntime from 'vue';
 import { createI18n } from 'vue-i18n';
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';
@@ -37,8 +38,16 @@ if (lang && lang.length > 2) {
   lang = lang.substring(0, 2);
 }
 
+// Registered globally so any component, including one shipped by an extension module, can use
+// them by tag. Every one of these was already imported and therefore already bundled; only the
+// first four were reachable from a template, which left the rest as dead imports.
 const naive = create({
-  components: [NButton, NDataTable, NDropdown, NTree]
+  components: [
+    NButton, NDataTable, NDropdown, NTree,
+    NList, NListItem, NInput, NSpace, NTag,
+    NDrawer, NDrawerContent, NForm, NFormItem,
+    NSwitch, NCheckbox, NCollapse, NCollapseItem, NDivider
+  ]
 });
 
 const i18n = createI18n({
@@ -84,8 +93,13 @@ declare var document: any;
 // Import Vue as a global window variable 
 // import VueMatomo from 'vue-matomo';
 declare var window: any;
-// Attach Vue APIs to window
-window.Vue = { createApp, ref, reactive, computed };
+// Attach Vue APIs to window.
+// The whole namespace, not a hand-picked few: extension modules are built as UMD bundles with
+// `vue` marked external and mapped to this global, so a component shipped by a module reaches for
+// whatever it needs — onMounted, watch, defineComponent — and a partial namespace makes it fail at
+// load time. Exposing one namespace also keeps a single Vue instance in the page, which is what
+// provide/inject across the module boundary depends on.
+window.Vue = VueRuntime;
 
 // Vue.config.productionTip = false;
 

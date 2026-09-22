@@ -1,0 +1,14 @@
+menu:
+  - id: monitoring
+    label: Monitoring.menu
+    route:
+      path: /monitoring
+      component: opensilex-monitoring-MonitoringView
+      # 'is-admin' is a sentinel, not a real credential: UserConfigService passes null credentials
+      # for an admin, and no credential anywhere in the platform is named this, so the entry is
+      # filtered out server-side for everyone else and the route is never even registered.
+      credentials:
+        - is-admin
+      icon: bi#bi-activity
+      title: Monitoring.title
+      description: Monitoring.description

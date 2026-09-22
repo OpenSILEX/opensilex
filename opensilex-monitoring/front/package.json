@@ -1,0 +1,29 @@
+{
+    "name": "opensilex-monitoring",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "license": "AGPL-3.0-only",
+    "main": "./dist/opensilex-monitoring.umd.min.js",
+    "module": "./dist/opensilex-monitoring.umd.min.js",
+    "exports": {
+        ".": {
+            "import": "./dist/opensilex-monitoring.umd.min.js"
+        }
+    },
+    "scripts": {
+        "serve": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts --watch",
+        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
+        "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
+        "check:outdated": "npm outdated || cd .",
+        "check:security": "npm audit || cd ."
+    },
+    "devDependencies": {},
+    "dependencies": {
+        "echarts": "^6.1.0"
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ]
+}

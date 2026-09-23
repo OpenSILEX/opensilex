@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.nimbusds.oauth2.sdk.util.CollectionUtils;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +27,9 @@ import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -35,9 +38,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.SHACL;
+import org.opensilex.sparql.utils.StringUriSet;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -387,7 +393,7 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Build a query which delete all triples, that correspond to a defined field in the model, and related to the given urisToDelete, except dc:publisher and dc:issued.
+     * Build a query which delete all triples, that correspond to a defined field in the model or a custom relation, and related to the given urisToDelete, except dc:publisher and dc:issued.
      * Useful for update operations where dc:publisher and dc:issued should not be updated.
      * By including only triples who have a corresponding definition in the Model, we ensure that non defined relations don't get unwantedly deleted,
      * example : when we update a Variable we do not want to delete any UnitModels or CharacteristicModels who are hasUnit or hasCharacteristic of this variable.
@@ -396,7 +402,7 @@ class SPARQLClassQueryBuilder {
      * Filter will be : FILTER (?p NOT IN (dc:publisher, dc:issued))
      * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, URI, List, List, Map, Map)  to see the generated query example
      */
-    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilderForUpdateCases(List<T> modelsToDelete, URI graph) throws IllegalAccessException {
+    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilderForUpdateCases(List<T> modelsToDelete, URI graph, SPARQLService sparql) throws IllegalAccessException, SPARQLException {
         List<URI> excludedPredicates = List.of(
                 URI.create("http://purl.org/dc/terms/publisher"),
                 URI.create("http://purl.org/dc/terms/issued")
@@ -420,9 +426,47 @@ class SPARQLClassQueryBuilder {
             }
         }
 
+        //Start by allowing the deletion of the basic fields defined in the java class model (analyzer)
+        StringUriSet includeOnlyPredicates = new StringUriSet(analyzer.getManagedPropertiesUris().stream().map(URI::create).toList());
+
+        //Now we also need to include any custom relations, do this by looking at restrictions
+        includeOnlyPredicates.addAll(getPossibleCustomRelationPredicatesForInstances(modelsToDelete, sparql));
+
         List<URI> urisToDelete = modelsToDelete.stream().map(SPARQLResourceModel::getUri).toList();
-        List<URI> includeOnlyPredicates = analyzer.getManagedPropertiesUris().stream().map(URI::create).toList();
-        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, includeOnlyPredicates, predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
+        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, new ArrayList<>(includeOnlyPredicates.getSetAsURIs()), predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
+    }
+
+    /**
+     *
+     * @param instances for whom we want to get every custom property predicate URI that their type's can use
+     * @param sparql the SPARQLservice needed to call getCustomRelationsForType
+     * @return Every custom property predicate URI that can exist on the rdfTypes of our instances
+     * @param <T> Root type of our instances
+     * @throws SPARQLException if sparql.getCustomRelationsForType throws this
+     */
+    private <T extends SPARQLResourceModel> Set<URI> getPossibleCustomRelationPredicatesForInstances(List<T> instances, SPARQLService sparql) throws SPARQLException {
+        Set<URI> result = new HashSet<>();
+
+        //Leave if this class doesnt handle custom properties
+        if(!analyzer.isHandleCustomProperties()){
+            return result;
+        }
+        StringUriSet uniqueRdfTypes = new StringUriSet();
+        //Still have to try and add each type of Model in case we miss any properties specific to a sub-type
+        instances.forEach(e-> {
+            if(e.getType() != null){
+                uniqueRdfTypes.add(e.getType());
+            }
+        });
+
+        //Leave if the models didn't have type information
+        if(CollectionUtils.isEmpty(uniqueRdfTypes.getSet())){
+            return result;
+        }
+        for(URI type : uniqueRdfTypes.getSetAsURIs()){
+            result.addAll(sparql.getCustomRelationsForType(analyzer.getRdfTypeURI(), type, analyzer));
+        }
+        return result;
     }
 
 

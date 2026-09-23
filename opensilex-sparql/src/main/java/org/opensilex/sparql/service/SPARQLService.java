@@ -1428,6 +1428,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         // try to retrieve associated ClassModel
         URI rootType = analyzer.getRdfTypeURI();
         ClassModel classModel;
+        //TODO MAX replace? WARNING my method returns empty set so check that
         try {
             classModel = new OntologyDAO(this).getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
         } catch (SPARQLInvalidURIException e) {
@@ -1447,10 +1448,36 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 .map(OwlRestrictionModel::getOnProperty)
                 .filter(property -> ! managedPropUris.contains(property.toString()))
                 .collect(Collectors.toSet());
-
+//TODO MAX end of replace ?
         if(! customProperties.isEmpty()){
             deleteRelations(graph, instance.getUri(), customProperties);
         }
+    }
+
+    /**
+     *
+     * @param type The rdfType for whom we want to fetch custom relations
+     * @param analyzer , needed to get the root type, and to fetch managed properties (a custom property is: Restrictions - analyzer.getManagedPropertiesUris())
+     * @return Any custom relations predicate URIs that can be applied on this type
+     * @throws SPARQLException if the getClassModel call fails with passed type.
+     */
+    public Set<URI> getCustomRelationsForType(URI type, SPARQLClassAnalyzer analyzer) throws SPARQLException {
+
+        ClassModel classModel = new OntologyDAO(this).getClassModel(type, analyzer.getRdfTypeURI(), OpenSilex.DEFAULT_LANGUAGE);
+
+        if(MapUtils.isEmpty(classModel.getRestrictionsByProperties())){
+            return Collections.emptySet();
+        }
+
+        Set<String> managedPropUris = analyzer.getManagedPropertiesUris();
+
+        // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
+        return classModel.getRestrictionsByProperties()
+                .values()
+                .stream()
+                .map(OwlRestrictionModel::getOnProperty)
+                .filter(property -> ! managedPropUris.contains(property.toString()))
+                .collect(Collectors.toSet());
     }
 
     public <T extends SPARQLResourceModel> void update(Node graph, T instance) throws Exception {
@@ -1548,7 +1575,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URI graphUri = graph == null ? null : URI.create(graph.toString()) ;
 
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(modelsToDelete, graphUri);
+        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(modelsToDelete, graphUri, this);
         executeDeleteQuery(query);
     }
 

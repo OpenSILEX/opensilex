@@ -81,13 +81,6 @@ what gives your components access to the translation keys already loaded by open
 omitting a mapping is not harmless: rollup then falls back to a guessed global name that does not exist, and
 the UMD bundle throws while being evaluated, before your module can be registered.
 
-#### Aliases in vite and typescript config
-
-You can set aliases in the `vite.config.ts` to make easier your imports. Just **Make sure to add the alias in
-both the `tsconfig.json` and the `vite.config.ts`**
-
-For an example, see both files from `opensilex-front/front/tsconfig.json` and `opensilex-front/front/vite.config.ts` where some useful aliases are set.
-
 ### Dependencies and package.json
 
 On the dependency side, the `package.json` of the module mainly needs its `name`, and the `build` and

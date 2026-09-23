@@ -16,13 +16,11 @@
         "sourceMap": true,
         "baseUrl": ".",
         "typeRoots": ["node_modules"],
-   
+
         "paths": {
-            "opensilex-security": ["../../opensilex-security/front/src"],
-            "opensilex-core": ["../../opensilex-core/front/src"],
-            "@/*": [
-                "src/*"
-            ]
+            "@/*": [  "src/*" ],
+            "opensilex-security/*": ["../../opensilex-security/front/src/*"],
+            "opensilex-core/*": ["../../opensilex-core/front/src/*"]
         },
         "lib": [
             "esnext",

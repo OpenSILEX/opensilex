@@ -464,7 +464,7 @@ class SPARQLClassQueryBuilder {
             return result;
         }
         for(URI type : uniqueRdfTypes.getSetAsURIs()){
-            result.addAll(sparql.getCustomRelationsForType(analyzer.getRdfTypeURI(), type, analyzer));
+            result.addAll(sparql.getCustomRelationsForType(type, analyzer));
         }
         return result;
     }

@@ -23,12 +23,5 @@ export default defineConfig({
       },
     },
   },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-      'opensilex-core': resolve(__dirname, '../../opensilex-core/front/src'),
-      'opensilex-security': resolve(__dirname, '../../opensilex-security/front/src')
-    },
-  },
   base: '/lib/', // Chemin de base pour les ressources
 });

@@ -135,7 +135,7 @@
         <template #cell(rdf_type_name)="{ data }">
           <UriLink
             v-if="data.item.rdf_type_name"
-            :uri="$opensilex.getShortUri(data.item.rdf_type)"
+            :uri="opensilex.getShortUri(data.item.rdf_type)"
             :value="data.item.rdf_type_name"
           />
         </template>
@@ -164,7 +164,7 @@
                 :uri="uri"
                 :value="objectsLabels[uri]"
                 :to="{
-                  path: $opensilex.getTargetPath(uri, context, objectsPath[uri])
+                  path: opensilex.getTargetPath(uri, context, objectsPath[uri])
                 }"
               />
               <span v-if="index < Math.min((data.item.targets?.length || 0), 2) - 1"> </span>
@@ -329,9 +329,9 @@ const { t, n } = useI18n()
 const route = useRoute()
 const store = useStore()
 
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const eventService = $opensilex.getService<EventsService>('opensilex.EventsService')
-const ontologyService = $opensilex.getService<OntologyService>('opensilex.OntologyService')
+const opensilex = inject<OpenSilexVuePlugin>('opensilex')!
+const eventService = opensilex.getService<EventsService>('opensilex.EventsService')
+const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
 
 const tableRef = ref<any>(null)
 const eventModalViewRef = ref<any>(null)
@@ -357,7 +357,7 @@ const renderCsvForm = ref(false)
 const renderMoveCsvForm = ref(false)
 
 const selectedEvent = ref<EventDetailsDTO>({})
-const baseType = ref<string>($opensilex.Oeev.EVENT_TYPE_URI)
+const baseType = ref<string>(opensilex.Oeev.EVENT_TYPE_URI)
 
 const filter = ref<EventFilter>({
   target: undefined,
@@ -466,7 +466,7 @@ const fields = computed(() => {
 })
 
 onMounted(() => {
-  $opensilex.updateFiltersFromURL(route.query, filter.value)
+  opensilex.updateFiltersFromURL(route.query, filter.value)
   if (props.target) {
     filter.value.target = props.target
   }
@@ -520,14 +520,14 @@ function cleanFilter() {
 
 function refresh() {
   cleanFilter()
-  $opensilex.updateURLParameters(filter.value)
+  opensilex.updateURLParameters(filter.value)
   tableRef.value?.setPage?.(1)
   nextTick(() => tableRef.value?.refresh?.())
   filtersCollapsed.value = true
 }
 
 function updateSelectedEvent() {
-  $opensilex.updateURLParameters(filter.value)
+  opensilex.updateURLParameters(filter.value)
   nextTick(() => tableRef.value?.refresh?.())
 }
 
@@ -580,11 +580,11 @@ async function search(options: any) {
   if (targetUris.length > 0) {
     ontologyService.getURITypes(targetUris).then((httpObj: any) => {
       for (const obj of httpObj.response.result) {
-        objectsPath.value[obj.uri] = $opensilex.getPathFromUriTypes(obj.rdf_types)
+        objectsPath.value[obj.uri] = opensilex.getPathFromUriTypes(obj.rdf_types)
       }
     })
 
-    $opensilex.loadOntologyLabelsWithType(
+    opensilex.loadOntologyLabelsWithType(
       targetUris,
       props.context,
       objectsLabels.value,
@@ -601,10 +601,10 @@ function deleteEvent(uri: string) {
       refresh()
       const message =
         `${t('component.events.name')} ${uri} ${t('component.common.success.delete-success-message')}`
-      $opensilex.showSuccessToast(message)
+      opensilex.showSuccessToast(message)
       emit('onDelete', uri)
     })
-    .catch($opensilex.errorHandler)
+    .catch(opensilex.errorHandler)
 }
 
 function isMove(event: any) {
@@ -612,9 +612,9 @@ function isMove(event: any) {
     return false
   }
 
-  return $opensilex.Oeev.checkURIs(
+  return opensilex.Oeev.checkURIs(
     event.rdf_type,
-    $opensilex.Oeev.MOVE_TYPE_URI
+    opensilex.Oeev.MOVE_TYPE_URI
   )
 }
 
@@ -627,9 +627,10 @@ function getEventPromise(event: EventGetDTO): Promise<HttpResponse<OpenSilexResp
 }
 
 async function showEventView(event: RowWithData<EventGetDTO>) {
-  const http = await getEventPromise(event.item)
+  const http = await getEventPromise(event)
   await eventModalViewRef.value?.show?.(http)
 }
+
 
 function editEvent(item: any) {
   renderModalForm.value = true

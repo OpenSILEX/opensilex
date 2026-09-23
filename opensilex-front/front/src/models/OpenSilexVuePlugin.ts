@@ -1,43 +1,49 @@
-import { Container } from 'inversify';
-import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
-import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
-import { useCookies } from 'vue3-cookies';
-import { Composer } from 'vue-i18n';
-import { Store } from 'vuex';
+import {Container} from 'inversify';
+import {useCookies} from 'vue3-cookies';
+import {Composer} from 'vue-i18n';
+import {Store} from 'vuex';
 import {
     ApiServiceBinder,
     FrontConfigDTO,
     IAPIConfiguration,
+    IHttpClient,
+    ResourceDagDTO,
     ThemeConfigDTO,
     VueDataTypeDTO,
+    VueJsOntologyExtensionService,
     VueObjectTypeDTO
-} from '../lib';
-import { ApiServiceBinder as SecurityApiServiceBinder } from './../../../../opensilex-security/front/src/lib';
-import { ApiServiceBinder as CoreApiServiceBinder } from './../../../../opensilex-core/front/src/lib';
+} from '@/lib';
+import {
+    ApiServiceBinder as SecurityApiServiceBinder,
+    AuthenticationService,
+    CredentialsGroupDTO
+} from 'opensilex-security/lib';
+import {
+    ApiServiceBinder as CoreApiServiceBinder,
+    NamedResourceDTO,
+    OntologyService,
+    SystemService,
+    VariableDatatypeDTO,
+    VariablesService,
+    VersionInfoDTO
+} from 'opensilex-core/lib';
 
-import IHttpClient from '../lib/IHttpClient';
-import Oeso from '../ontologies/Oeso';
-import Foaf from '../ontologies/Foaf';
-import Org from '../ontologies/Org';
-import Oeev from '../ontologies/Oeev';
-import Time from '../ontologies/Time';
-import Rdfs from '../ontologies/Rdfs';
+import Oeso from '@/ontologies/Oeso';
+import Foaf from '@/ontologies/Foaf';
+import Org from '@/ontologies/Org';
+import Oeev from '@/ontologies/Oeev';
+import Time from '@/ontologies/Time';
+import Rdfs from '@/ontologies/Rdfs';
 
-import { ModuleComponentDefinition } from './ModuleComponentDefinition';
+import {ModuleComponentDefinition} from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
-import { UploadFileBody } from './UploadFileBody';
-import { User } from './User';
-import { ResourceDagDTO } from "opensilex-core/model/resourceDagDTO";
-import { ServiceBinder } from "../services/ServiceBinder";
-import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
+import {UploadFileBody} from './UploadFileBody';
+import {User} from './User';
+import {ServiceBinder} from "@/services/ServiceBinder";
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
-import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
-import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
-import { App } from 'vue';
-import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
-import {AuthenticationService} from "opensilex-security/api/authentication.service";
-import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import {App} from 'vue';
 import {isOpensilexModulePlugin, OpensilexPluginComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();

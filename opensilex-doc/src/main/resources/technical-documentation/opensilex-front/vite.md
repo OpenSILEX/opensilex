@@ -40,11 +40,13 @@ plugins: [
 ```ts
 resolve: {
   alias: {
-    '~bootstrap': resolve(__dirname, 'node_modules/bootstrap')
+    '@': resolve(__dirname, 'src'),
+    'opensilex-core': resolve(__dirname, '../../opensilex-core/front/src'),
+    'opensilex-security': resolve(__dirname, '../../opensilex-security/front/src')
   }
 }
 ```
-Permet d'importer Bootstrap plus facilement dans les composants.
+Permet de simplifier les imports dans les fichiers vue et typescript. **Attention** à mirrorer cette configuration dans la partie paths du `tsconfig.json`.
 
 
 ### 📦 Build

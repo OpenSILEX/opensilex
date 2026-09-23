@@ -7,8 +7,9 @@ import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
-      '~bootstrap': resolve(__dirname, 'node_modules/bootstrap'),
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      'opensilex-core': resolve(__dirname, '../../opensilex-core/front/src'),
+      'opensilex-security': resolve(__dirname, '../../opensilex-security/front/src')
     },
   },
 

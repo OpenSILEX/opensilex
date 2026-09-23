@@ -18,8 +18,8 @@
         "types": ["node", "vite/client", "vuex/types"],
         "paths": {
             "@/*": [  "src/*" ],
-            "opensilex-security": ["../../opensilex-security/front/src/*"],
-            "opensilex-core": ["../../opensilex-core/front/src/*"]
+            "opensilex-security/*": ["../../opensilex-security/front/src/*"],
+            "opensilex-core/*": ["../../opensilex-core/front/src/*"]
         },
         "lib": [
             "esnext",

@@ -1,4 +1,4 @@
-# Technical documentation : [module front-end] Why and how to extend and modify OpenSILEX's front-end
+# Technical documentation : [module front-end] Why and how to extend and modify OpenSILEX's front-end by creating a new module
 
 **Document history (please add a line when you edit the document)**
 
@@ -80,6 +80,13 @@ rollupOptions: {
 what gives your components access to the translation keys already loaded by opensilex-front. Beware that
 omitting a mapping is not harmless: rollup then falls back to a guessed global name that does not exist, and
 the UMD bundle throws while being evaluated, before your module can be registered.
+
+#### Aliases in vite and typescript config
+
+You can set aliases in the `vite.config.ts` to make easier your imports. Just **Make sure to add the alias in
+both the `tsconfig.json` and the `vite.config.ts`**
+
+For an example, see both files from `opensilex-front/front/tsconfig.json` and `opensilex-front/front/vite.config.ts` where some useful aliases are set.
 
 ### Dependencies and package.json
 

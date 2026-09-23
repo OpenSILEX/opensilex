@@ -3,7 +3,7 @@
     <br>
 
     <p class="h5">
-      {{ t('Move.location') }}
+      {{ t('MoveView.location') }}
     </p>
     <hr>
 
@@ -99,12 +99,14 @@ const positionObjectFromLocation = computed<PositionFormObject>(() => {
 en:
   MoveView:
     from: From
+    location: Location
     to: To
     positionTitle: Position
 
 fr:
   MoveView:
     from: De
+    location: Localisation
     to: Vers
     positionTitle: Position
 </i18n>

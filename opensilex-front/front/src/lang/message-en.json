@@ -230,6 +230,7 @@
                 }
             },
             "addDocument": "Add document",
+            "editDocument": "Edit document",
             "warningInstruction" : "Experimental feature",
             "organization": {
                 "description": "Manage and configure organizations",

@@ -16,6 +16,7 @@
             },
             "geometry": {
                 "geometry": "Coordonnées géospatiales",
+                "geometry-title": "Coordonnées géospatiales",
                 "geometry-help": "Coordonnées géospatiales au format WKT",
                 "geometry-address-warning": "Les coordonnées spatiales de cette adresse n'ont pas été trouvées. Essayer de mettre à jour avec une autre adresse",
                 "x": "X",
@@ -230,6 +231,7 @@
                 }
             },
             "addDocument": "Ajouter un document",
+            "editDocument": "Éditer le document",
             "warningInstruction": "Fonctionnalité expérimentale",
             "organization": {
                 "description": "Gérer et configurer les organisations",
@@ -700,7 +702,7 @@
             "name": "L'événement",
             "add": "Ajouter un événement",
             "add-multiple": "Ajouter des événements",
-            "edit": "Éditer un événement",
+            "edit": " Modifier un événement",
             "uri-help": "URI de l'évenement (auto-générée si vide)",
             "uri-example": "os-event:trouble1",
             "type-placeholder": "Selectionner un type d'événement",
@@ -720,7 +722,7 @@
             "uri-error": "Création annulée, URI non trouvée - {error}",
             "end-help": "Fin de l'événement, requis si celui-ci est instantané",
             "list-title": "Événements",
-            "list-description": "description: Gérer et configurer les événements",
+            "list-description": "Gérer et configurer les événements",
             "is-instant-help": "Indique si l'évenement est instantané ou non",
             "is-instant-example": "vrai ou faux",
             "event": "Évenement",

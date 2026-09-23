@@ -63,7 +63,7 @@
       @reset="reset"
     >
       <n-form-item class="compact-form-item">
-        <opensilex-TypeForm
+        <TypeForm
           v-model:type="filter.type"
           :baseType="baseType"
           :ignoreRoot="false"
@@ -78,7 +78,7 @@
         :label="t('EventList.targets')"
         class="compact-form-item"
       >
-        <opensilex-StringFilter
+        <StringFilter
           v-model:filter="filter.target"
           :placeholder="t('EventList.target-filter-placeholder')"
           class="searchFilter"
@@ -90,7 +90,7 @@
         :label="t('component.common.description')"
         class="compact-form-item"
       >
-        <opensilex-StringFilter
+        <StringFilter
           v-model:filter="filter.description"
           :placeholder="t('EventList.filter-label-placeholder')"
           class="searchFilter"
@@ -99,7 +99,7 @@
       </n-form-item>
 
       <n-form-item :label="t('EventList.start')" class="compact-form-item">
-        <opensilex-DateTimeForm
+        <DateTimeForm
           v-model:value="filter.start"
           :max-date="filter.end ? filter.end : undefined"
           :required="false"
@@ -108,7 +108,7 @@
       </n-form-item>
 
       <n-form-item :label="t('EventList.end')" class="compact-form-item">
-        <opensilex-DateTimeForm
+        <DateTimeForm
           v-model:value="filter.end"
           :min-date="filter.start ? filter.start : undefined"
           :maxDate="filter.end"
@@ -120,7 +120,7 @@
 
     <!-- Contenu -->
     <n-layout-content class="event-content">
-      <opensilex-TableAsyncView
+      <TableAsyncView
         v-if="renderComponent"
         ref="tableRef"
         :searchMethod="search"
@@ -133,7 +133,7 @@
         iconNumberOfSelectedRow="bi#bi-layers"
       >
         <template #cell(rdf_type_name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             v-if="data.item.rdf_type_name"
             :uri="$opensilex.getShortUri(data.item.rdf_type)"
             :value="data.item.rdf_type_name"
@@ -141,14 +141,14 @@
         </template>
 
         <template #cell(start)="{ data }">
-          <opensilex-TextView
+          <TextView
             v-if="data.item.start && data.item.start.length > 0"
             :value="new Date(data.item.start).toLocaleString()"
           />
         </template>
 
         <template #cell(end)="{ data }">
-          <opensilex-TextView
+          <TextView
             v-if="data.item.end"
             :value="new Date(data.item.end).toLocaleString()"
           />
@@ -160,7 +160,7 @@
             :key="index"
           >
             <template v-if="index < 2">
-              <opensilex-UriLink
+              <UriLink
                 :uri="uri"
                 :value="objectsLabels[uri]"
                 :to="{
@@ -180,20 +180,20 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group size="small">
-            <opensilex-DetailButton
+          <n-button-group class="btn-group btn-group-sm">
+            <DetailButton
               v-if="user.hasCredential(modificationCredentialId)"
               @click="showEventView(data.item)"
               label="component.events.details"
               :small="true"
             />
-            <opensilex-EditButton
+            <EditButton
               v-if="user.hasCredential(modificationCredentialId)"
               @click="editEvent(data.item)"
               label="component.common.list.buttons.update"
               :small="true"
             />
-            <opensilex-DeleteButton
+            <DeleteButton
               v-if="user.hasCredential(deleteCredentialId)"
               @click="deleteEvent(data.item.uri)"
               label="component.common.list.buttons.delete"
@@ -201,9 +201,9 @@
             />
           </n-button-group>
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
 
-      <opensilex-EventModalView
+      <EventModalView
         ref="eventModalViewRef"
         modalSize="lg"
         v-model:dto="selectedEvent"
@@ -221,20 +221,20 @@
         ref="modalFormRef"
         :target="target"
         :context="context"
-        createTitle="Event.add"
-        editTitle="Event.edit"
+        createTitle="component.events.add"
+        editTitle="component.events.edit"
         @onCreate="displayAfterCreation"
         @onUpdate="updateSelectedEvent"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="renderCsvForm"
         ref="csvFormRef"
         :targets="[target]"
         @csvImported="onImport"
       />
 
-      <opensilex-EventCsvForm
+      <EventCsvForm
         v-if="renderMoveCsvForm"
         ref="moveCsvFormRef"
         :targets="[target]"
@@ -245,8 +245,8 @@
       <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
-        :createTitle="t('component.common.addDocument')"
-        :editTitle="t('component.common.editDocument')"
+        createTitle="component.common.addDocument"
+        editTitle="component.common.editDocument"
         @onSuccess="refresh"
       />
     </n-layout-content>
@@ -276,10 +276,20 @@ import type { EventDetailsDTO } from 'opensilex-core/index'
 import { EventsService } from 'opensilex-core/api/events.service'
 import { OntologyService } from 'opensilex-core/api/ontology.service'
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
-import {RowWithData} from "@/components/common/views/TableAsyncView.vue";
+import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncView.vue";
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import TextView from "@/components/common/views/TextView.vue";
+import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
+import EventModalView from "@/components/events/view/EventModalView.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
 
 type EventFilter = {
   target: string | undefined
@@ -590,7 +600,7 @@ function deleteEvent(uri: string) {
     .then(() => {
       refresh()
       const message =
-        `${t('Event.name')} ${uri} ${t('component.common.success.delete-success-message')}`
+        `${t('component.events.name')} ${uri} ${t('component.common.success.delete-success-message')}`
       $opensilex.showSuccessToast(message)
       emit('onDelete', uri)
     })

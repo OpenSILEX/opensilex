@@ -1,109 +1,62 @@
 <template>
   <n-layout has-sider class="organization-layout">
-    <!-- Bouton loupe -->
-    <n-space class="mb-2 me-1" align="top">
-      <n-button
-        quaternary
-        circle
-        @click="filtersCollapsed = !filtersCollapsed"
-        :title="t('searchfilter.label')"
-        :class="{ greenThemeColor: filtersCollapsed }"
-        class="globalFiltersSearchButton"
-      >
-        <i class="bi bi-search filtersGlobalSearchIcon"></i>
-
-        <div
-          v-show="filtersCollapsed && activeFiltersCount > 0"
-          class="filters-count-badge"
-        >
-          ( {{ activeFiltersCount }} )
-        </div>
-      </n-button>
-    </n-space>
-
-    <!-- Sidebar / Filtres -->
-    <n-layout-sider
-      v-model:collapsed="filtersCollapsed"
-      :collapsed-width="0"
-      :width="360"
-      collapse-mode="width"
-      show-trigger
-      bordered
+    <SearchFiltersSidebar
+      :activeFiltersCount="activeFiltersCount"
+      :filtersCollapsed="filtersCollapsed"
+      @refresh="applyFilters()"
+      @reset="resetFilters()"
     >
-      <n-space class="p-3" vertical>
-        <n-form
-          label-placement="top"
-          size="small"
-          @submit.prevent.stop="applyFilters"
-        >
-          <!-- Name -->
-          <n-form-item :label="t('component.common.name')">
-            <n-input
-              v-model:value="filter.name"
-              clearable
-              :placeholder="t('OrganizationList.filter.name-placeholder')"
-              @keydown.enter.prevent.stop="applyFilters"
-            />
-          </n-form-item>
+      <!-- Name -->
+      <n-form-item :label="t('component.common.name')">
+        <n-input
+          v-model:value="filter.name"
+          clearable
+          :placeholder="t('OrganizationList.filter.name-placeholder')"
+          @keydown.enter.prevent.stop="applyFilters"
+        />
+      </n-form-item>
 
-          <!-- Type -->
-          <opensilex-TypeForm
-            v-model:type="filter.type_uri"
-            :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
-            :ignoreRoot="false"
-            :placeholder="t('OrganizationList.filter.type-placeholder')"
-            class="searchFilter typeFilter"
-            @handlingEnterKey="applyFilters"
-          />
+      <!-- Type -->
+      <TypeForm
+        v-model:type="filter.type_uri"
+        :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
+        :ignoreRoot="true"
+        :placeholder="t('OrganizationList.filter.type-placeholder')"
+        class="searchFilter typeFilter"
+        @handlingEnterKey="applyFilters"
+      />
 
-          <!-- Parents of -->
-          <opensilex-FormSelector
-            v-model:selected="filter.direct_child_uri"
-            :options="parentOptions"
-            :multiple="false"
-            :label="t('OrganizationList.filter.parent-organizations')"
-            :helpMessage="t('OrganizationList.filter.parent-organizations-help')"
-            :placeholder="t('OrganizationList.parent-placeholder') "
-            class="searchFilter"
-          />
+      <!-- Parents of -->
+      <FormSelector
+        v-model:selected="filter.direct_child_uri"
+        :options="parentOptions"
+        :multiple="false"
+        :label="t('OrganizationList.filter.parent-organizations')"
+        :helpMessage="t('OrganizationList.filter.parent-organizations-help')"
+        :placeholder="t('OrganizationList.child-placeholder') "
+        class="searchFilter"
+      />
 
-          <!-- Children of -->
-          <opensilex-FormSelector
-            v-model:selected="filter.direct_parent_uri"
-            :options="parentOptions"
-            :multiple="false"
-            :label="t('OrganizationList.filter.child-organizations')"
-            :helpMessage="t('OrganizationList.filter.child-organizations-help')"
-            :placeholder="t('OrganizationList.child-placeholder')"
-            class="searchFilter"
-          />
+      <!-- Children of -->
+      <FormSelector
+        v-model:selected="filter.direct_parent_uri"
+        :options="parentOptions"
+        :multiple="false"
+        :label="t('OrganizationList.filter.child-organizations')"
+        :helpMessage="t('OrganizationList.filter.child-organizations-help')"
+        :placeholder="t('OrganizationList.parent-placeholder')"
+        class="searchFilter"
+      />
 
-          <!-- Facility -->
-          <n-form-item :label="t('OrganizationList.facilities-label')">
-            <opensilex-FacilitySelector
-              v-model:facilities="filter.facility"
-              :multiple="false"
-              class="searchFilter"
-            />
-          </n-form-item>
-
-          <n-space justify="end" class="mt-2">
-            <opensilex-Button
-              class="resetButton"
-              :label="t('component.common.search.clear-button')"
-              icon="bi-x-lg"
-              @click="resetFilters"
-            />
-            <opensilex-Button
-              class="greenThemeColor"
-              :label="t('component.common.search.search-button')"
-              icon="bi-search"
-              @click="applyFilters"
-            />
-          </n-space>
-        </n-form>
-      </n-space>
-    </n-layout-sider>
+      <!-- Facility -->
+      <n-form-item :label="t('OrganizationList.facilities-label')">
+        <FacilitySelector
+          v-model:facilities="filter.facility"
+          :multiple="false"
+          class="searchFilter"
+        />
+      </n-form-item>
+    </SearchFiltersSidebar>
 
     <!-- Contenu liste -->
     <n-layout-content class="organization-content">
@@ -183,6 +136,11 @@ import FacilitiesModalList from "@/components/facilities/FacilitiesModalList.vue
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import {TableField} from "@/components/common/views/TableField";
+import TypeForm from "@/components/common/forms/TypeForm.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 interface OrganizationListFilter {
   name: string | undefined;
@@ -403,10 +361,8 @@ en:
         type-placeholder: "Filter by type"
         parent-organizations: "Parents of"
         parent-organizations-help: "Only direct parents of this organization will be displayed"
-        parent-organizations-placeholder: "Filter by child organization"
         child-organizations: "Children of"
         child-organizations-help: "Only direct children of this organization will be displayed"
-        child-organizations-placeholder: "Filter by parent organization"
     facilities: "Facilities"
     facilities-label: Facilities
     parent-placeholder: Select parent organization
@@ -418,10 +374,8 @@ fr:
         type-placeholder: "Filtrer par type"
         parent-organizations: "Parents de"
         parent-organizations-help: "Seuls les parents directs de cette organisation seront affichés"
-        parent-organizations-placeholder: "Filtrer par organisation enfant"
         child-organizations: "Enfants de"
         child-organizations-help: "Seuls les enfants directs de cette organisation seront affichés"
-        child-organizations-placeholder: "Filtrer par organisation parent"
     facilities: "Installations"
     facilities-label: Installations environnementales
     parent-placeholder: Sélectionner l'organisation parente

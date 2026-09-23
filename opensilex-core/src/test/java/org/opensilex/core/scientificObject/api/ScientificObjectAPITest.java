@@ -53,6 +53,7 @@ import org.opensilex.core.location.dal.LocationObservationCollectionModel;
 import org.opensilex.core.location.dal.LocationObservationDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.position.api.PositionAPI;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -86,6 +87,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -109,12 +111,14 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String searchPath = path + "/";
     public static final String searchWithGeometryPath = path + "/geometry";
 
-
+    private static final String positionPath = "/core/positions/{uri}";
 
     public static final ServiceDescription create;
     public static final ServiceDescription update;
     public static final ServiceDescription getDetail;
+    public static final ServiceDescription search;
     public static final ServiceDescription searchWithGeometry;
+    public static final ServiceDescription getPosition;
 
     static {
         try {
@@ -130,9 +134,17 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
                     ScientificObjectAPI.class.getMethod("getScientificObjectDetail", URI.class, URI.class),
                     uriPath
             );
+            search = new ServiceDescription(
+                    ScientificObjectAPI.class.getMethod("searchScientificObjects", URI.class, List.class, String.class, URI.class, List.class, List.class, URI.class, List.class, List.class, LocalDate.class, LocalDate.class, CriteriaDTO.class, List.class, int.class, int.class),
+                    searchPath
+            );
             searchWithGeometry = new ServiceDescription(
                     ScientificObjectAPI.class.getMethod("searchScientificObjectsWithGeometryListByUris", URI.class, String.class, String.class),
                     searchWithGeometryPath
+            );
+            getPosition = new ServiceDescription(
+                    PositionAPI.class.getMethod("getPosition", URI.class, String.class),
+                    positionPath
             );
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -226,11 +238,11 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             list.add(new Position(3.97167246, 43.61328981));
 
             Geometry geometry = new Polygon(list);
-            Instant endInstant = Instant.now();
-            locationObservationDTO.setEndDate(endInstant);
+            var end = OffsetDateTime.now();
+            locationObservationDTO.setEndDate(end);
             locationObservationDTO.setGeojson(LocationLogic.geometryToGeoJson(geometry));
             moveCreationDTO.setLocation(locationObservationDTO);
-            moveCreationDTO.setEnd(endInstant.toString());
+            moveCreationDTO.setEnd(end.toString());
             dto.setMove(moveCreationDTO);
         }
 
@@ -1380,7 +1392,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         var moveDto = new MoveCreationDTO();
         var locationObservationDto = new LocationObservationDTO();
         locationObservationDto.setGeojson(new Point(49, 3));
-        locationObservationDto.setEndDate(Instant.now());
+        locationObservationDto.setEndDate(OffsetDateTime.now());
         moveDto.setLocation(locationObservationDto);
         moveDto.setEnd(locationObservationDto.getEndDate().toString());
         dto.setMove(moveDto);

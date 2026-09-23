@@ -18,8 +18,10 @@ import org.opensilex.core.location.dal.*;
 import org.opensilex.core.organisation.bll.FacilityLogic;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -29,6 +31,8 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotAllowedException;
 import java.net.URI;
@@ -45,14 +49,20 @@ public class LocationObservationLogic {
     private final LocationObservationCollectionLogic collectionLogic;
 
     private final MongoDBServiceV2 nosql;
+    private final MongoDBService nosqlV1;
     private final SPARQLService sparql;
+    private final FileStorageService fs;
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     //#region constructor
-    public LocationObservationLogic(MongoDBServiceV2 nosql, SPARQLService sparql) {
-        this.locationObservationDAO = new LocationObservationDAO(nosql);
+    public LocationObservationLogic(MongoDBService nosqlV1, SPARQLService sparql, FileStorageService fs) {
+        this.locationObservationDAO = new LocationObservationDAO(nosqlV1.getServiceV2());
         this.collectionLogic = new LocationObservationCollectionLogic(sparql);
-        this.nosql = nosql;
+        this.nosqlV1 = nosqlV1;
+        this.nosql = nosqlV1.getServiceV2();
         this.sparql = sparql;
+        this.fs = fs;
     }
     //#endregion
 
@@ -100,7 +110,7 @@ public class LocationObservationLogic {
         //Validate that from/to facilities exist
         for(LocationObservationModel observation : observations) {
             if(observation.getLocation()!=null && (observation.getLocation().getFrom()!=null || observation.getLocation().getTo()!=null)) {
-                FacilityLogic facilityLogic = new FacilityLogic(sparql, nosql);
+                FacilityLogic facilityLogic = new FacilityLogic(sparql, nosqlV1, currentUser, fs);
                 List<URI> facilityUrisToCheck = new ArrayList<>();
                 if(observation.getLocation().getFrom()!=null){
                     facilityUrisToCheck.add(observation.getLocation().getFrom());
@@ -151,11 +161,17 @@ public class LocationObservationLogic {
         return locationObservationDAO.get(uri);
     }
 
-    public LocationObservationModel getASpecificLocationObservation(URI collectionURI, Instant end, Instant start) throws NotAllowedException {
+    public LocationObservationModel getASpecificLocationObservation(URI collectionURI, Instant end, Instant start) {
         List<LocationObservationModel> locations = locationObservationDAO.getSpecificLocation(collectionURI, end, start);
 
         if (locations.size() > 1) {
-            throw new NotAllowedException("A feature of interest can't have 2 locations at the same time.");
+            logger.error("In the function getASpecificLocationObservation of LocationObservationLogic, 2 locations with same date and time were found inside location collection : {}", collectionURI);
+            //We used to throw an error here, but we were getting major issues with 2 locations at same date & time after performing 1.5.0 , 1.5.1 or 1.5.2 migrations
+            //If we have a choice to make, prioritize geospatial over facility
+            return locations.stream()
+                    .filter(LocationObservationModel::isHasGeometry)
+                    .findFirst()
+                    .orElse(locations.get(0));
         }
 
         return locations.get(0);
@@ -514,7 +530,7 @@ public class LocationObservationLogic {
     ) throws NoSuchElementException, SPARQLException {
 
         Map<URI,URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionPerFeatureOfInterest(targetUris);
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosqlV1, sparql, fs);
 
         return locationObservationLogic.getLocationObservationPerModelFromCollectionMap(
                 targetCollectionMap,

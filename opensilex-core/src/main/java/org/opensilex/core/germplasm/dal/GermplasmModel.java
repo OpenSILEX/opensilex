@@ -89,6 +89,18 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     GermplasmModel species;
     public static final String SPECIES_URI_SPARQL_VAR = "species";
 
+    /**
+     * Inverse property defined for ensuring proper update with "ignoreUpdateIfNull".
+     */
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "fromSpecies",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    private List<GermplasmModel> speciesChildren;
+    public static final String SPECIES_CHILDREN_SPARQL_VAR = "speciesChildren";
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "fromVariety"
@@ -96,12 +108,36 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     GermplasmModel variety;
     public static final String VARIETY_URI_SPARQL_VAR = "variety";
 
+    /**
+     * Inverse property defined for ensuring proper update with "ignoreUpdateIfNull".
+     */
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "fromVariety",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    private List<GermplasmModel> varietyChildren;
+    public static final String VARIETY_CHILDREN_SPARQL_VAR = "varietyChildren";
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "fromAccession"
     )
     GermplasmModel accession;
     public static final String ACCESSION_URI_SPARQL_VAR = "accession";
+
+    /**
+     * Inverse property defined for ensuring proper update with "ignoreUpdateIfNull".
+     */
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "fromAccession",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    private List<GermplasmModel> accessionChildren;
+    public static final String ACCESSION_CHILDREN_SPARQL_VAR = "accessionChildren";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -215,12 +251,28 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
         this.species = species;
     }
 
+    public List<GermplasmModel> getSpeciesChildren() {
+        return speciesChildren;
+    }
+
+    public void setSpeciesChildren(List<GermplasmModel> speciesChildren) {
+        this.speciesChildren = speciesChildren;
+    }
+
     public GermplasmModel getVariety() {
         return variety;
     }
 
     public void setVariety(GermplasmModel variety) {
         this.variety = variety;
+    }
+
+    public List<GermplasmModel> getVarietyChildren() {
+        return varietyChildren;
+    }
+
+    public void setVarietyChildren(List<GermplasmModel> varietyChildren) {
+        this.varietyChildren = varietyChildren;
     }
 
     public GermplasmModel getAccession() {
@@ -231,6 +283,13 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
         this.accession = accession;
     }
 
+    public List<GermplasmModel> getAccessionChildren() {
+        return accessionChildren;
+    }
+
+    public void setAccessionChildren(List<GermplasmModel> accessionChildren) {
+        this.accessionChildren = accessionChildren;
+    }
 
     public List<GroupModel> getGroups() {
         return this.groups;

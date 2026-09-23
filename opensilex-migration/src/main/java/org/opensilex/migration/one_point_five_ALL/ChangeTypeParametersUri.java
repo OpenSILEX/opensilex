@@ -19,7 +19,6 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.OpenSilex;
 import org.opensilex.front.vueOwlExtension.VueOwlExtension;
-import org.opensilex.front.vueOwlExtension.api.VueRDFTypeDTO;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -28,6 +27,8 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.update.OpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 import org.opensilex.uri.generation.URIGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -64,6 +65,15 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
 
     public final static String DESCRIPTION = "This migration change the uri of type parameters in order to separate them from their associated type (when manually created a type with ontologie API or interface).";
     private SPARQLService sparql;
+    private final Logger logger;
+
+    public ChangeTypeParametersUri() {
+        this(LoggerFactory.getLogger(ChangeTypeParametersUri.class));
+    }
+
+    public ChangeTypeParametersUri(Logger logger) {
+        this.logger = logger;
+    }
 
     public void setSparql(SPARQLService sparql) {
         this.sparql = sparql;
@@ -90,6 +100,7 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
     @Override
     public void execute() throws OpensilexModuleUpdateException {
         try {
+            logger.debug("Starting migration");
             Node graph = NodeFactory.createURI(
                     sparql.getBaseURI().toString()
                             .concat(SPARQLClassObjectMapper.DEFAULT_GRAPH_KEYWORD)
@@ -98,6 +109,7 @@ public class ChangeTypeParametersUri implements OpenSilexModuleUpdate {
             );
 
             sparql.executeUpdateQuery(generateUpdateRequestForTypeParameters(graph));
+            logger.debug("Migration done");
         } catch (Exception e){
             throw new OpensilexModuleUpdateException("an error occurred while migrating type parameters uris during ChangeTypeParametersUri migration ", e);
         }

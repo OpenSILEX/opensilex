@@ -52,7 +52,6 @@
           v-model:organizations="form.organizations"
           :multiple="true"
           :required="true"
-          checkStrategy="all"
       />
 
       <!-- Facilities -->

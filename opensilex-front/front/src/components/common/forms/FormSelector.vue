@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :required="required"
     :requiredBlue="requiredBlue"
     :label="label"
@@ -9,15 +9,14 @@
       <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
         <div class="select-button-container">
-          <opensilex-CustomTreeselect
-            ref="customTreeselect"
+          <customTreeselect
+            ref="customTreeselectRef"
             v-bind="$attrs"
             v-model:selected="selectedProxy"
             :searchMethod="searchMethod"
             :resultLimit="resultLimit"
             :multiple="multiple"
             :checkable="checkable"
-            :checkStrategy="checkStrategy"
             :placeholder="placeholder"
             :disabled="disabled"
             :optionsLoadingMethod="optionsLoadingMethod"
@@ -48,10 +47,10 @@
                 {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
               </n-button>
             </template>
-          </opensilex-CustomTreeselect>
+          </customTreeselect>
 
           <div v-if="!actionHandler && viewHandler" class="select-side-button">
-            <opensilex-DetailButton
+            <DetailButton
               @click="viewHandler"
               :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
               :small="true"
@@ -61,7 +60,7 @@
 
           <div v-else-if="actionHandler" class="select-side-button">
             <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
-            <opensilex-DetailButton
+            <DetailButton
               v-if="viewHandler"
               @click="viewHandler"
               :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
@@ -71,17 +70,17 @@
         </div>
       </n-form-item>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NFormItem } from 'naive-ui'
-import CustomTreeselect from './CustomTreeselect.vue'
-
-// API interne Naive UI pour accéder au NForm parent
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
+import FormField from "@/components/common/forms/FormField.vue";
 
 const { t } = useI18n()
 
@@ -93,7 +92,6 @@ const props = defineProps<{
   searchMethod?: Function
   multiple?: boolean
   checkable?: boolean
-  checkStrategy?: 'all' | 'child' | 'parent'
   itemLoadingMethod?: Function
   optionsLoadingMethod?: Function
   options?: any[]
@@ -150,14 +148,14 @@ const totalCount = ref(0)
 const resultCount = ref(0)
 const resultLimit = ref(10)
 
-const customTreeselect = ref<InstanceType<typeof CustomTreeselect> | null>(null)
-const refresh = () => customTreeselect.value?.refresh()
-const openTreeselect = () => customTreeselect.value?.openTreeselect()
+const customTreeselectRef = ref<InstanceType<typeof CustomTreeselect> | null>(null)
+const refresh = () => customTreeselectRef.value?.refresh()
+const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {
   resultLimit.value = 0
   showAllResults.value = true
-  customTreeselect.value?.refresh(resultLimit.value)
+  customTreeselectRef.value?.refresh(resultLimit.value)
   nextTick(() => openTreeselect())
 }
 

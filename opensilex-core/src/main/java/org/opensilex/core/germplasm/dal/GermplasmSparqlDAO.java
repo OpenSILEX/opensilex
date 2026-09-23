@@ -122,8 +122,6 @@ public class GermplasmSparqlDAO {
 
         // retrieve information directly from the searchFilter
         Boolean isPublic = searchFilter.isPublic();
-        List<URI> groups = searchFilter.getGroups();
-        boolean admin = searchFilter.getUser() != null && searchFilter.getUser().isAdmin();
 
         final Set<URI> filteredUris = new HashSet<>();
         if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
@@ -155,7 +153,6 @@ public class GermplasmSparqlDAO {
                     appendParentMFilter(select, searchFilter.getParentMGermplasms());
                     appendParentFFilter(select, searchFilter.getParentFGermplasms());
                     appendPublicFilter(select, isPublic);
-                    appendgroupsListFilters(select, admin, groups);
                     appendExperimentFilter(select, finalExperiment);
                     appendUserGermplasmFilter(select, searchFilter.getUser());
 
@@ -577,50 +574,6 @@ public class GermplasmSparqlDAO {
     private void appendPublicFilter(SelectBuilder select, Boolean isPublic) throws Exception {
         if (isPublic != null) {
             select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.IS_PUBLIC_FIELD, isPublic));
-        }
-    }
-
-    /**
-     * Adds SPARQL filters related to the user's groups to the {@link SelectBuilder}.
-     * <p>
-     * - If {@code admin} is true: no filter is applied (full access). <br>
-     * - If the user has no groups: only germplasms without groups (public) are visible. <br>
-     * - Otherwise: visible germplasms are those that are public or linked to one of the user's groups.
-     * </p>
-     *
-     * @param select      SPARQL query being constructed
-     * @param admin       indicates whether the user is an administrator
-     * @param groups list of groups the user belongs to (can be empty)
-     */
-
-    private void appendgroupsListFilters(SelectBuilder select, boolean admin, List<URI> groups) {
-
-        if (admin) {
-            return;
-        }
-
-        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-        Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);
-        Triple groupTriple = Triple.create(makeVar(GermplasmModel.URI_FIELD), SecurityOntology.hasGroup.asNode(), groupVar);
-
-        // resources without a group (i.e., public)
-        Expr publicExpr = exprFactory.notexists(new WhereBuilder().addWhere(groupTriple));
-
-        if (CollectionUtils.isEmpty(groups)) {
-            // user has no groups → can only see public resources
-            select.addFilter(publicExpr);
-        } else {
-            // resources associated with the user's groups
-            Expr groupInExpr = exprFactory.in(groupVar, groups.stream()
-                    .map(uri -> NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString())))
-                    .toArray());
-
-            Expr groupExpr = exprFactory.exists(new WhereBuilder()
-                    .addWhere(groupTriple)
-                    .addFilter(groupInExpr));
-
-            // combined filter: public OR in the user's groups
-            select.addFilter(exprFactory.or(publicExpr, groupExpr));
         }
     }
 

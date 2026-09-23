@@ -207,6 +207,13 @@ public class ProjectAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    /**
+     * @return  a list of projects corresponding to the given URIs
+     *
+     * @param uris list of projects uri
+     * @deprecated Use the POST variant accepting a JSON body with URIs list (see POST method just below)
+     */
+    @Deprecated(forRemoval = true, since = "1.5.2")
     @GET
     @Path("by_uris")
     @ApiOperation("Get projects by their URIs")
@@ -216,11 +223,54 @@ public class ProjectAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return projects", response = ProjectGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found)", response = ErrorDTO.class)
     })
     public Response getProjectsByURI(
             @ApiParam(value = "Projects URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
+        ProjectDAO dao = new ProjectDAO(sparql);
+        List<ProjectModel> models = dao.getList(uris, currentUser);
+
+        if (!models.isEmpty()) {
+            List<ProjectGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(ProjectGetDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Projects not found",
+                    "Unknown project URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
+     * @return  a list of projects corresponding to the given URIs provided in the request body.
+     * This method replaces the deprecated GET variant which used query parameters.
+     */
+    @POST
+    @Path("by_uris")
+    @ApiOperation("Get projects by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return projects", response = ProjectGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Project not found (if any provided URIs is not found)", response = ErrorDTO.class)
+    })
+    public Response searchProjectsByURIs(
+            @ApiParam(value = "Project URIs") List<URI> uris
+    ) throws Exception {
+
+        if (uris == null || uris.isEmpty()) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid parameters", "Missing URIs list").getResponse();
+        }
+
         ProjectDAO dao = new ProjectDAO(sparql);
         List<ProjectModel> models = dao.getList(uris, currentUser);
 

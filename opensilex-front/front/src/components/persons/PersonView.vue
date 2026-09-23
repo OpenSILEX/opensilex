@@ -33,13 +33,12 @@ import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import PersonList from "@/components/persons/PersonList.vue";
 import PersonForm from "@/components/persons/PersonForm.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import {useI18n} from "vue-i18n";
 
 const store = useStore() as OpenSilexStore;
 const { t } = useI18n();
 
-const personForm = useTemplateRef<InstanceType<typeof ModalForm>>('personForm');
+const personForm = useTemplateRef<InstanceType<typeof PersonForm>>('personForm');
 const personList = useTemplateRef<InstanceType<typeof PersonList>>('personList');
 
 const user = computed(() => store.state.user)

@@ -24,7 +24,6 @@
           v-model:selected="form.parent"
           path="parent"
           :options="parentOptions"
-          checkStrategy="parent"
           :required="true"
           label="component.common.parent"
           :filterable="true"
@@ -83,7 +82,6 @@ import {computed, inject, ref, useTemplateRef, watch, watchEffect} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
-import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {FormRules, NForm, NFormItem} from "naive-ui";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import InputForm from "@/components/common/forms/InputForm.vue";

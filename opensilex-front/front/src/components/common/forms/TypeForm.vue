@@ -18,7 +18,6 @@
           :disableBranchNodes="!selectBranchNodes"
           :searchMethod="props.tree ? undefined : searchTypes"
           :resultLimit="20"
-          :checkStrategy="checkStrategy"
           @select="validator?.validate(); $emit('select',$event)"
         />
       </div>
@@ -51,7 +50,6 @@ const props = withDefaults(defineProps<{
   unselectableTypes?: string[]
   tree?: boolean
   selectBranchNodes?: boolean
-  checkStrategy?: 'all' | 'parent' | 'child'
 }>(), {
   type: undefined,
   required: false,
@@ -62,7 +60,6 @@ const props = withDefaults(defineProps<{
   unselectableTypes: () => [],
   tree: false,
   selectBranchNodes: false,
-  checkStrategy: 'child'
 })
 
 const emit = defineEmits<{

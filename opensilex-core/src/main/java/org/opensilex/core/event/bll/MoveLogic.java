@@ -33,6 +33,7 @@ import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.scientificObject.bll.ScientificObjectCsvImporterLogic;
 import org.opensilex.core.utils.ApiUtils;
 import org.opensilex.core.utils.StringUriMap;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
@@ -64,15 +65,18 @@ import java.util.stream.Stream;
 public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     //If client session is null then we know we need to handle transactions
     private final ClientSession clientSession;
+    private final FileStorageService fs;
 
-    public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, ClientSession clientSession) throws SPARQLException, SPARQLDeserializerNotFoundException {
+    public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, ClientSession clientSession, FileStorageService fs) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
         this.clientSession = clientSession;
+        this.fs = fs;
     }
 
-    public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser) throws SPARQLException, SPARQLDeserializerNotFoundException {
+    public MoveLogic(SPARQLService sparql, MongoDBService mongodb, AccountModel currentUser, FileStorageService fs) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb, currentUser, new MoveEventDAO(sparql, mongodb));
         this.clientSession = null;
+        this.fs = fs;
     }
 
     //#region PUBLIC METHODS
@@ -175,7 +179,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
                                 .getList()
                                 .stream()
                                 .map(MoveModel::getUri).toList(),
-                        new LocationObservationLogic(mongodb.getServiceV2(), sparql)
+                        new LocationObservationLogic(mongodb, sparql, fs)
                 );
         //Associate locations to moves
         StringUriMap<LocationObservationModel> locationPerMoveUri = new StringUriMap<>();
@@ -245,7 +249,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
         if(Objects.nonNull(collectionURI)) {
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
             LocationObservationModel locationObservation = observationLogic.getASpecificLocationObservation(
                     collectionURI,
                     model.getEnd().getDateTimeStamp().toInstant(),
@@ -272,7 +276,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         //for each move, get the target collection URI and use move dates to get the specific location
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
 
         Map<URI, URI> targetCollectionMap = collectionLogic.getLocationObservationCollectionPerFeatureOfInterest(modelList.stream().map(model -> model.getTargets().get(0)).collect(Collectors.toList()));
 
@@ -421,7 +425,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         List<LocationObservationModel> locationHistory;
 
         if (Objects.nonNull(collectionURI)) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql, fs);
             locationHistory = locationObservationLogic.getLocationsHistory(
                     collectionURI,
                     start != null ? start.toInstant() : null,
@@ -478,7 +482,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(move.getTargets().get(0));
 
         //Get last location
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(mongodb, sparql, fs);
         return locationObservationLogic.getASpecificLocationObservation(
                 collectionURI,
                 move.getEnd().getDateTimeStamp().toInstant(),
@@ -493,7 +497,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
         if (Objects.nonNull(observation)) {
             LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
 
             realModel.getTargets().forEach(target -> {
                 try {
@@ -733,7 +737,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
     //#region PRIVATE METHODS
     private List<MoveModel> createMoveModelsFromTargetToLocationCollectionMap(List<MoveModel> models, StringUriMap<URI> locCollectionUriPerTarget) throws Exception {
         List<LocationObservationModel> locationObservationList = new ArrayList<>();
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
         for (MoveModel model : models) {
             //Set event move URI
             URI uri = model.getUri();
@@ -780,7 +784,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
 
     private void deleteListNoTransaction(List<URI> uris, ClientSession session) throws Exception{
         //Delete associated Location Observations
-        LocationObservationLogic locObsLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic locObsLogic = new LocationObservationLogic(mongodb, sparql, fs);
         List<LocationObservationModel> allExistingLocObs = getMovesCorrespondingLocationObservationModels(uris, locObsLogic);
         locObsLogic.deleteList(session, allExistingLocObs);
         //Delete actual moves
@@ -791,7 +795,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         //insert into sparql graph and nosql
         dao.create(models);
         if (!locations.isEmpty()) {
-            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+            LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
             observationLogic.createLocationObservations(clientSech, locations, sparql, currentUser);
         }
         return models;
@@ -803,7 +807,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
         observationLogic.deleteASpecificLocationObservation(
                 session,
                 collectionURI,
@@ -855,7 +859,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
      * @throws Exception if some sparql error happens
      */
     private List<MoveModel> updateExistingMovesNoTransaction(List<MoveModel> models, ClientSession session) throws Exception{
-        LocationObservationLogic locObsLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic locObsLogic = new LocationObservationLogic(mongodb, sparql, fs);
         List<LocationObservationModel> allExistingLocObs = getMovesCorrespondingLocationObservationModels(models.stream().map(MoveModel::getUri).toList(), locObsLogic);
 
         StringUriMap<LocationObservationModel> locObsByMoveUri = new StringUriMap<>();
@@ -899,7 +903,7 @@ public class MoveLogic extends EventLogic<MoveModel, MoveSearchFilter> {
         LocationObservationCollectionLogic collectionLogic = new LocationObservationCollectionLogic(sparql);
         URI collectionURI = collectionLogic.getLocationObservationCollectionURI(model.getTargets().get(0));
 
-        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb.getServiceV2(), sparql);
+        LocationObservationLogic observationLogic = new LocationObservationLogic(mongodb, sparql, fs);
         LocationObservationModel observation = observationLogic.getASpecificLocationObservation(collectionURI, model.getLocationObservation().getEndDate(), model.getLocationObservation().getStartDate());
 
         // the new move event has no data model in mongodb, so we need to delete the old if exists

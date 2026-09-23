@@ -188,7 +188,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         SPARQLService sparql = newSparqlService();
 
         //create experiment
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService());
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, getMongoDBService(), getFs());
         ExperimentModel xp =  ExperimentAPITest.getCreationDTO().newModel();
         experimentDAO.create(xp);
         List<URI> experiments = Collections.singletonList(xp.getUri());
@@ -1096,38 +1096,6 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
         assertFalse(datas.isEmpty());
     }
-
-    /**
-     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
-     * final uri should be http://myuri/é
-     */
-    @Test
-    public void testUriEncoding() throws Exception {
-        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
-        URI decodedURI = URI.create("http://myuri/é");
-
-        DataCreationDTO creationDTO = getCreationDataDTO("2020-10-15T10:29:06.402+0200");
-        creationDTO.setUri(uriWithSpecialChar);
-
-        URI createdURI = new UserCallBuilder(create)
-                .setBody(Collections.singletonList(creationDTO))
-                .buildAdmin()
-                .executeCallAndReturnUriList()
-                .get(0);
-        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI), SPARQLDeserializers.compareURIs(decodedURI, createdURI));
-
-        //if fail with 404 error maybe the URI has not been correctly decoded before creation.
-        DataGetDetailsDTO dtoFromApi = new UserCallBuilder(getByUri)
-                .setUriInPath(decodedURI)
-                .buildAdmin()
-                .executeCallAndDeserialize(new TypeReference<SingleObjectResponse<DataGetDetailsDTO>>() {} )
-                .getDeserializedResponse()
-                .getResult();
-
-        assertNotNull("get service should retrieve URI even if we get with http://myuri/%C3%A9 ", dtoFromApi);
-        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()), SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
-    }
-
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

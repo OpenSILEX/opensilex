@@ -99,7 +99,7 @@
             >
               URI
             </opensilex-Button> -->
-            
+
             <opensilex-Button
               label="URI"
               icon="bi-search"
@@ -121,7 +121,7 @@
             <span class="headerMenuIcons">
 <!-- language button -->
 <div class="dropdown btn-group">
-  <opensilex-Button 
+  <opensilex-Button
     class="btn settingsButton dropdown-toggle"
     id="languageDropdown2"
     data-bs-toggle="dropdown"
@@ -151,13 +151,13 @@
               <!-- user button -->
 <!-- user button -->
 <div v-if="user.isLoggedIn()" class="dropdown btn-group">
-  <opensilex-Button 
-    class="btn settingsButton dropdown-toggle" 
-    id="userDropdown2" 
-    data-bs-toggle="dropdown" 
-    aria-expanded="false"  
-    :label="user.getEmail()" 
-    icon="bi-person" 
+  <opensilex-Button
+    class="btn settingsButton dropdown-toggle"
+    id="userDropdown2"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    :label="user.getEmail()"
+    icon="bi-person"
     :small="true">
   </opensilex-Button>
 
@@ -207,7 +207,7 @@ export default defineComponent({
         const icon = ref<any>(undefined);
 
         const user = computed(() => store.state.user);
-       
+
         const store = useStore();
         const i18n = computed(() => store.state.i18n as any);
 
@@ -230,7 +230,7 @@ export default defineComponent({
 
         // const language = computed(() => i18n.value.locale);
 
-        // OU : 
+        // OU :
         // const { locale } = useI18n();
         // const language = computed(() => locale.value);
 
@@ -241,7 +241,7 @@ export default defineComponent({
 
 
         const { messages } = useI18n();
-        const languages = computed(() => Object.keys(messages.value)); 
+        const languages = computed(() => Object.keys(messages.value));
         // const languages = computed(() => Object.keys(i18n.value.messages));
 
         const versionLabel = computed(() => {

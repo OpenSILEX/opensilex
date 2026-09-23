@@ -36,21 +36,6 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     private static final String FACILITY = "facility";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPartOf"
-    )
-    protected FacilityModel parent;
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPartOf",
-            inverse = true,
-            ignoreUpdateIfNull = true,
-            useDefaultGraph = false
-    )
-    protected List<FacilityModel> children;
-
-    @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )

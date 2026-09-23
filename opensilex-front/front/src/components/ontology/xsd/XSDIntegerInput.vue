@@ -1,7 +1,7 @@
 <template>
+  <n-form-item :rule="rule" :show-require-mark="property.is_required">
   <InputForm
     v-model:value="internalValue"
-    :label="property.name"
     type="number"
     rules="integer"
     :disabled="false"
@@ -9,21 +9,32 @@
     :helpMessage="property.comment"
     :placeholder="$t('XSDIntegerInput.placeholder')"
   ></InputForm>
+  </n-form-item>
 </template>
 
 <script setup lang="ts">
 
   import InputForm from "@/components/common/forms/InputForm.vue";
+  import {FormItemRule, NFormItem} from "naive-ui";
+  import {VueRDFTypePropertyDTO} from "@/lib";
+  import {computed} from "vue";
 
   defineProps<{
-  property: {
+    property: VueRDFTypePropertyDTO
     name: string;
     is_required: boolean;
     comment?: string;
-  };
 }>();
 
 const internalValue = defineModel<string>("value");
+
+  const rule = computed<FormItemRule>(() => {
+    return {
+      required: false,
+      message: "A traduire",
+      trigger: ['change', 'blur']
+    }
+  })
 
 </script>
 

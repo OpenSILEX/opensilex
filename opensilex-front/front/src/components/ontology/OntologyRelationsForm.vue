@@ -1,6 +1,6 @@
 <template>
   <div>
-    <n-form-item v-for="(relation, index) in typeRelations" :key="index">
+    <div  v-for="(relation, index) in typeRelations" :key="index">
       <component
           v-if="getInputComponent(relation.property)"
           :is="getInputComponent(relation.property)"
@@ -13,7 +13,7 @@
           :context="context"
           v-bind="getCustomPropsForComponent(relation.property.uri)"
       />
-    </n-form-item>
+    </div>
   </div>
 </template>
 

@@ -93,7 +93,7 @@
             :small="true"
             label="component.common.list.buttons.interoperability"
             @click="$emit('onInteroperability', data.item.uri)"
-           disabled></InteroperabilityButton>
+           ></InteroperabilityButton>
           <DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)"
             :small="true"

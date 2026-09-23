@@ -13,6 +13,7 @@ import org.opensilex.faidare.dal.Faidarev1GermplasmDAO;
 import org.opensilex.faidare.model.Faidarev1GermplasmDTO;
 import org.opensilex.faidare.model.Faidarev1GermplasmModel;
 import org.opensilex.faidare.responses.Faidarev1GermplasmListResponse;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
@@ -52,6 +53,9 @@ public class GermplasmAPI extends FaidareCall {
     
     @Inject
     private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @Inject
     MongoDBServiceV2 nosqlV2;
@@ -94,7 +98,7 @@ public class GermplasmAPI extends FaidareCall {
             uri = germplasmPUI;
         }
 
-        Faidarev1GermplasmDAO germplasmDAO = new Faidarev1GermplasmDAO(sparql, nosqlV2);
+        Faidarev1GermplasmDAO germplasmDAO = new Faidarev1GermplasmDAO(sparql, nosqlV2, fs);
 
         ListWithPagination<Faidarev1GermplasmModel> resultList = germplasmDAO.faidareSearch(
                 currentUser,

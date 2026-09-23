@@ -109,7 +109,7 @@ en:
 fr:
   component: 
     unit: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une unité
           placeholder-multiple : Sélectionner une ou plusieurs unités

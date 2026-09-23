@@ -44,6 +44,7 @@ public class StartServerWithFront {
     private static final Path RELATIVE_NODE_DIRECTORY = Path.of("../.node/node");
     private static String nodeBin = "node";
 
+    /** allow us to wait and know when all front modules are built. */
     private static CountDownLatch countDownLatch;
 
     public static void main(String[] args) throws Exception {
@@ -194,6 +195,7 @@ public class StartServerWithFront {
                     } catch (IOException ex) {
                         LOGGER.error("Error while copying lib file: " + filename, ex);
                     }
+                    countDownLatch.countDown();
                 }
             }
         };

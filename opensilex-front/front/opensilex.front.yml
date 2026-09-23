@@ -433,25 +433,36 @@ routes:
   #   component: opensilex-AreaDetails
 
   # Optional <experiment> path
-  # - path: /scientific-objects/details/:uri/:experiment?
-  #   component: opensilex-ScientificObjectDetailView
-  #   credentials: [ ]
-  #   icon: ik#ik-target
-  #   title: component.menu.scientificObjects
-  #   description: ScientificObjectList.description
-  #   rdfType: vocabulary:ScientificObject
-  # - path: /scientific-objects/visualization/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/datafiles/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/events/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/positions/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/annotations/:uri
-  #   component: opensilex-ScientificObjectDetailView
-  # - path: /scientific-objects/documents/:uri
-  #   component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/details/:uri/:experiment?
+    component: opensilex-ScientificObjectDetailView
+    name: ScientificObjectDetails
+    credentials: [ ]
+    icon: ik#ik-target
+    title: component.menu.scientificObjects
+    description: ScientificObjectList.description
+    rdfType: vocabulary:ScientificObject
+    children:
+      - path: ''
+        component: opensilex-ScientificObjectDetailProperties
+        name: ScientificObjectDetailProperties
+      - path: visualization
+        component: opensilex-ScientificObjectVisualizationTab
+        name: ScientificObjectVisualization
+      - path: datafiles
+        component: opensilex-ScientificObjectDataFiles
+        name: ScientificObjectDatafiles
+      - path: events
+        component: opensilex-EventList
+        name: ScientificObjectEvents
+      - path: positions
+        component: opensilex-PositionList
+        name: ScientificObjectPositions
+      - path: annotations
+        component: opensilex-AnnotationList
+        name: ScientificObjectAnnotations
+      - path: documents
+        component: opensilex-DocumentTabList
+        name: ScientificObjectDocuments
 
   - path: /organizations/details/:uri
     component: opensilex-OrganizationDetailView

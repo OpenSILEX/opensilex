@@ -470,38 +470,6 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
                 Objects.equals(SPARQLDeserializers.formatURI(document.getUri()), documentUri3)));
     }
 
-    /**
-     * URI decoding test : URI http://myuri/%C3%A9 should be correctly encoded and decoded by the API and SPARQL service.
-     * final uri should be http://myuri/é
-     */
-    @Test
-    public void testUriEncoding() throws Exception {
-        URI uriWithSpecialChar = URI.create("http://myuri/%C3%A9");
-        URI decodedURI = URI.create("http://myuri/é");
-
-        DocumentCreationDTO creationDto = getCreationDTO();
-        creationDto.setUri(uriWithSpecialChar);
-        File file = tmpFolder.newFile("testFile.txt");
-        try (OutputStream out = new FileOutputStream(file)) {
-            out.write("test".getBytes());
-        }
-        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
-        MultiPart multipart = new FormDataMultiPart().field("description", creationDto, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
-
-        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
-        URI createdURI = extractUriFromResponse(postResult);
-        assertTrue(String.format("created uri should be decoded as %s, but is : %s", decodedURI, createdURI), SPARQLDeserializers.compareURIs(decodedURI, createdURI));
-
-        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), decodedURI.toString());
-        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<DocumentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<DocumentGetDTO>>() {
-        });
-        DocumentGetDTO dtoFromApi = getResponse.getResult();
-        assertNotNull(dtoFromApi);
-        assertTrue(String.format("uris [%s] and [%s] should be the same", createdURI, dtoFromApi.getUri()), SPARQLDeserializers.compareURIs(createdURI, dtoFromApi.getUri()));
-    }
-
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

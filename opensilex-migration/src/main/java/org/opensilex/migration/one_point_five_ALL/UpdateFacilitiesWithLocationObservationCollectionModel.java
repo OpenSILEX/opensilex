@@ -27,6 +27,7 @@
  import org.apache.jena.vocabulary.RDF;
  import org.apache.jena.vocabulary.RDFS;
  import org.bson.Document;
+ import org.opensilex.OpenSilex;
  import org.opensilex.core.external.geocoding.GeocodingService;
  import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
  import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -41,6 +42,7 @@
  import org.opensilex.core.organisation.dal.OrganizationModel;
  import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
  import org.opensilex.core.organisation.dal.facility.FacilityModel;
+ import org.opensilex.nosql.distributed.SparqlMongoTransaction;
  import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
  import org.opensilex.nosql.mongodb.MongoDBService;
  import org.opensilex.nosql.mongodb.MongoModel;
@@ -51,29 +53,69 @@
  import org.opensilex.sparql.model.SPARQLResourceModel;
  import org.opensilex.sparql.service.SPARQLQueryHelper;
  import org.opensilex.sparql.service.SPARQLService;
+ import org.opensilex.sparql.service.SPARQLServiceFactory;
  import org.opensilex.sparql.utils.Ontology;
+ import org.opensilex.update.OpenSilexModuleUpdate;
  import org.opensilex.update.OpensilexModuleUpdateException;
  import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+
  import java.net.URI;
  import java.net.URISyntaxException;
  import java.time.Instant;
+ import java.time.OffsetDateTime;
  import java.util.*;
  import java.util.stream.Collectors;
 
  import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
- public class UpdateFacilitiesWithLocationObservationCollectionModel {
+ public class UpdateFacilitiesWithLocationObservationCollectionModel implements OpenSilexModuleUpdate {
 
-     private final SPARQLService sparql;
-     private final MongoDBService mongodb;
+     private OpenSilex opensilex;
+     private SPARQLService sparql;
+     private MongoDBService mongodb;
      private final Logger logger;
 
      public static String DESCRIPTION = "In MongoDB, get facilities from the Geospatial Collection to the new Location Collection with the new model and observationCollection URI. In RDF4J, add ObservationCollection properties for each Site with address or with geometry. ";
 
-     public UpdateFacilitiesWithLocationObservationCollectionModel(SPARQLService sparql, MongoDBService mongodb, Logger logger) {
-         this.sparql = sparql;
-         this.mongodb = mongodb;
+     public UpdateFacilitiesWithLocationObservationCollectionModel() {
+         this(LoggerFactory.getLogger(UpdateFacilitiesWithLocationObservationCollectionModel.class));
+     }
+
+     public UpdateFacilitiesWithLocationObservationCollectionModel(Logger logger) {
          this.logger = logger;
+     }
+
+     @Override
+     public OffsetDateTime getDate() {
+         return OffsetDateTime.now();
+     }
+
+     @Override
+     public String getDescription() {
+         return DESCRIPTION;
+     }
+
+     @Override
+     public void execute() throws OpensilexModuleUpdateException {
+         var factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+         var sparql = factory.provide();
+         var mongo = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+
+         try {
+             new SparqlMongoTransaction(sparql, mongo.getServiceV2()).execute(session -> {
+                 executeWithinTransaction(sparql, mongo, session);
+                 return null;
+             });
+         } catch (Exception e) {
+             logger.error("Error during facilities location observations migration", e);
+             throw new OpensilexModuleUpdateException(this, e);
+         }
+     }
+
+     @Override
+     public void setOpensilex(OpenSilex opensilex) {
+        this.opensilex = opensilex;
      }
 
      /**
@@ -94,7 +136,15 @@
          return sparql.executeAskQuery(facilityLocationSelect);
      }
 
-     public void execute(ClientSession session) throws Exception {
+     public void executeWithinTransaction(SPARQLService sparql, MongoDBService mongodb, ClientSession session) throws Exception {
+         this.sparql = sparql;
+         this.mongodb = mongodb;
+
+         if (wasMigrationPreviouslyRun()) {
+             logger.info("The migration seems to have already been performed. Nothing will be done.");
+             return;
+         }
+
          try {
              // 1 - Mongo : get all facilities with geometry or address geometry
              List<GeospatialModel> facilityPositionList = mongoGetFacilitiesFromGeospatial();

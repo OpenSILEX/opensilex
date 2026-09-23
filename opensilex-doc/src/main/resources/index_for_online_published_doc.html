@@ -1,0 +1,21 @@
+<!--
+this file is copied by ci/cd and placed as index.html of the root of the pages server to redirect to functional specifications.
+placing the functinoal specification vite press site at the root will break link between the technical documentation and the functional specifications.
+  -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirection...</title>
+    <script>
+        window.location.replace(window.location.href.replace(/\/?$/, '/') + 'functional-specifications/')
+    </script>
+</head>
+<body>
+<p>Redirection en cours... <a id="fallback-link" href="#">cliquez ici si rien ne se passe</a>.</p>
+<script>
+    document.getElementById('fallback-link').href =
+        window.location.href.replace(/\/?$/, '/') + 'functional-specifications/'
+</script>
+</body>
+</html>

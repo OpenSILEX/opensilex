@@ -3,6 +3,7 @@ package org.opensilex.core.data.dal;
 import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -16,12 +17,12 @@ import java.util.*;
  */
 public class DataFilterBuilder {
 
-    public static void appendExperimentUserAccessFilter(Document filter, AccountModel user, List<URI> experiments, SPARQLService sparql, MongoDBService mongoDBService) throws Exception {
+    public static void appendExperimentUserAccessFilter(Document filter, AccountModel user, List<URI> experiments, SPARQLService sparql, MongoDBService mongoDBService, FileStorageService fs) throws Exception {
         String experimentField = "provenance.experiments";
 
         //user access
         if (!user.isAdmin()) {
-            Set<URI> userExperiments = new ExperimentDAO(sparql, mongoDBService).getUserExperiments(user);
+            Set<URI> userExperiments = new ExperimentDAO(sparql, mongoDBService, fs).getUserExperiments(user);
 
             if (!CollectionUtils.isEmpty(experiments)) {
 

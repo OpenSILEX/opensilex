@@ -107,7 +107,7 @@ en:
 fr:
   component: 
     entity: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une entité
           placeholder-multiple : Sélectionner une ou plusieurs entités

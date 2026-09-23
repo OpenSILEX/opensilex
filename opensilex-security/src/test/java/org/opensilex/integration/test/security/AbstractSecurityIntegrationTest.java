@@ -684,6 +684,8 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return tokenMap.get(userEmail);
     }
 
+    public record User(String mail, String password) {}
+
     public class UserCall extends PublicCall {
 
         private final String userEmail;
@@ -770,6 +772,12 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
         public UserCallBuilder setUserPassword(String userPassword) {
             this.userPassword = userPassword;
+            return self();
+        }
+
+        public UserCallBuilder setUser(User user) {
+            this.userEmail = user.mail;
+            this.userPassword = user.password;
             return self();
         }
 

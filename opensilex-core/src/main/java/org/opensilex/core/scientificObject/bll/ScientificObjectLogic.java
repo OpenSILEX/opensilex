@@ -123,7 +123,7 @@ public class ScientificObjectLogic {
             AccountModel currentUser
     ) throws Exception {
         // Define the graph (global or XP)
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         ExperimentModel experiment;
         boolean globalCopy;
         URI context;
@@ -173,7 +173,7 @@ public class ScientificObjectLogic {
             URI soURI = object.getUri();
             //create a move
            if(Objects.nonNull(move)){
-                MoveLogic moveLogic = new MoveLogic(sparql,nosql,currentUser);
+                MoveLogic moveLogic = new MoveLogic(sparql,nosql,currentUser, fs);
                 move.setTargets(Collections.singletonList(soURI));
                 move.setIsInstant(Objects.isNull(move.getStart()));
                 moveLogic.createNoTransaction(move, session);
@@ -227,7 +227,7 @@ public class ScientificObjectLogic {
 
         List<ScientificObjectModel> soList = searchByURIs(contextURI, objectsURI, currentUser,false);
 
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
 
         //Make a new list of OS's that do have a LocationObservationCollection for fetching of LocationObservations
         List<ScientificObjectModel> sciObjsToFetchLocationsFor = new ArrayList<>();
@@ -303,7 +303,7 @@ public class ScientificObjectLogic {
         Set<URI> graphFilterURIs = new HashSet<>();
 
         if(!currentUser.isAdmin()){
-            ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql, fs);
             graphFilterURIs = xpDO.getUserExperiments(currentUser);
 
             if (CollectionUtils.isEmpty(graphFilterURIs)) {
@@ -382,7 +382,7 @@ public class ScientificObjectLogic {
 
         if (Objects.nonNull(searchFilter.getExperiment())) {
             if (sparql.uriExists(ExperimentModel.class, searchFilter.getExperiment())) {
-                ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+                ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
                 xpDAO.validateExperimentAccess(searchFilter.getExperiment(), currentUser);
             } else {
                 throw new NotFoundURIException("Experiment URI not found:", searchFilter.getExperiment());
@@ -443,12 +443,12 @@ public class ScientificObjectLogic {
         List<ScientificObjectModel> soList = dao.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage());
 
         if(!CollectionUtils.isEmpty(soList)) {
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
 
             //Parse endDate or try to parse experiment's endDate if it was null, use current date if both of those things were null
             Instant end;
             if(endDate == null){
-                ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+                ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
                 ExperimentModel experiment = experimentDAO.get(contextURI, currentUser);
                 end = experiment.getEndDate() != null ? experiment.getEndDate().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC) : Instant.now();
             } else {
@@ -459,7 +459,7 @@ public class ScientificObjectLogic {
                     soList,
                     (ScientificObjectModel model) -> (model.getLocationObservationCollection() == null ? null : model.getLocationObservationCollection().getUri()),
                     end,
-                    null,
+                    true,
                     null
             );
         }
@@ -471,7 +471,7 @@ public class ScientificObjectLogic {
         LocationObservationModel soLastLocation = new LocationObservationModel();
 
         if(Objects.nonNull(model.getLocationObservationCollection())){
-            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+            LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
             List<LocationObservationModel> locationList = locationObservationLogic.getLastLocationObservations(Collections.singletonList(model.getLocationObservationCollection().getUri()),false, Instant.now(),null);
             if(!CollectionUtils.isEmpty(locationList)){
                 soLastLocation = locationList.get(0);
@@ -483,7 +483,7 @@ public class ScientificObjectLogic {
     public Map<URI, LocationObservationModel> getLastLocationByExperiment(Map<ScientificObjectModel, ExperimentModel> soXpMap) {
         //for each XP get last location of the SO with XP date
         Map<URI, LocationObservationModel> xpLocationMap = new HashMap<>();
-        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql.getServiceV2(), sparql);
+        LocationObservationLogic locationObservationLogic = new LocationObservationLogic(nosql, sparql, fs);
 
         List<LocationObservationCollectionModel> collectionModelList = soXpMap.keySet().stream()
                 .map(ScientificObjectModel::getLocationObservationCollection)
@@ -522,7 +522,7 @@ public class ScientificObjectLogic {
             OffsetDateTime publicationDate,
             AccountModel currentUser
     ) throws Exception {
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         boolean hasExperiment = contextURI != null;
         URI context;
 
@@ -607,7 +607,7 @@ public class ScientificObjectLogic {
      * @throws IllegalArgumentException if objectURI is null
      */
     public void deleteScientificObject(URI contextURI, URI objectURI, AccountModel currentUser) throws Exception {
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         DataDAO dataDAO = new DataDAO(nosql,sparql,null);
 
         validateContextAccess(contextURI, currentUser);
@@ -659,7 +659,7 @@ public class ScientificObjectLogic {
             }
 
             //check that no moves are associated
-            MoveLogic moveLogic = new MoveLogic(sparql,nosql,currentUser);
+            MoveLogic moveLogic = new MoveLogic(sparql,nosql,currentUser, fs);
             int moveCount = moveLogic.countForTarget(objectURI);
             if(moveCount > 0){
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated moves",
@@ -704,7 +704,7 @@ public class ScientificObjectLogic {
     }
 
     public byte[] exportScientificObjects(ScientificObjectExportDTO searchFilter, AccountModel currentUser) throws Exception {
-        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser);
+        MoveLogic moveLogic = new MoveLogic(sparql, nosql, currentUser, fs);
 
         validateContextAccess(searchFilter.getExperiment(), currentUser);
 
@@ -801,7 +801,7 @@ public class ScientificObjectLogic {
         if (Objects.isNull(contextURI)) {
             // INFO :  no need to validate with no context defined
         } else if (sparql.uriExists(ExperimentModel.class, contextURI)) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
 
             xpDAO.validateExperimentAccess(contextURI, currentUser);
         } else {
@@ -873,7 +873,7 @@ public class ScientificObjectLogic {
 
     private ExperimentModel getExperiment(URI experimentURI, AccountModel currentUser) throws Exception {
         if (sparql.uriExists(ExperimentModel.class, experimentURI)) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql, fs);
 
             try {
                 return xpDAO.get(experimentURI, currentUser);

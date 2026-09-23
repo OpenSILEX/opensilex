@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class CsvHeader{
 
     private final List<String> columns;
-    private final List<URI> uriColumns;
+    private final Map<Integer, URI> uriColumns;
 
     /**
      * A Map which associates each column index (except uri and type) to the string column title. If the column is a
@@ -43,7 +43,7 @@ public class CsvHeader{
         this.allowExtraStringColumnsRepeat = allowExtraStringColumnsRepeat;
         columnIndexes = new PatriciaTrie<>();
         columns = new ArrayList<>();
-        uriColumns = new ArrayList<>();
+        uriColumns = new HashMap<>();
         realCsvHeaderLength = AbstractCsvImporter.CSV_PROPERTIES_BEGIN_INDEX;
     }
 
@@ -84,7 +84,7 @@ public class CsvHeader{
             URI headerURI = new URI(column);
             URI shortHeader = URIDeserializer.formatURI(headerURI);
             actualUsedHeader = shortHeader.toString();
-            uriColumns.add(shortHeader);
+            uriColumns.put(index, shortHeader);
         }else{
             extraColumns.add(column);
         }
@@ -95,12 +95,17 @@ public class CsvHeader{
         realCsvHeaderLength++;
     }
 
-    public ColumnInfoFromIndex getColumn(int index) {
-        String correspondingColumn =  columns.get(index);
+    /**
+     *
+     * @param realIndexInCsv The actual index of column, so without removing the starting URI and type columns
+     * @param indexFromUniqueColumns The index starting from the column after URI and Type
+     */
+    public ColumnInfoFromIndex getColumn(int realIndexInCsv, int indexFromUniqueColumns) {
+        String correspondingColumn =  columns.get(realIndexInCsv);
         if(extraColumns.contains(correspondingColumn)){
             return new ColumnInfoFromIndex(null, correspondingColumn);
         }else{
-            return new ColumnInfoFromIndex(uriColumns.get(index), correspondingColumn);
+            return new ColumnInfoFromIndex(uriColumns.get(indexFromUniqueColumns), correspondingColumn);
         }
     }
 

@@ -112,7 +112,7 @@ en:
 fr:
   component: 
     method: 
-      form: 
+      form:
         selector:
           placeholder : Sélectionner une méthode
           placeholder-multiple : Sélectionner une ou plusieurs méthodes

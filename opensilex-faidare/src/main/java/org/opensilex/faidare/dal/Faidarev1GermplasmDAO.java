@@ -24,6 +24,7 @@ import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.faidare.model.Faidarev1GermplasmModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
@@ -45,8 +46,11 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * This class was added to answer specific optimization issues with FAIDARE services
  */
 public class Faidarev1GermplasmDAO extends GermplasmDAO {
-    public Faidarev1GermplasmDAO(SPARQLService sparql, MongoDBServiceV2 nosql) {
+    FileStorageService fs;
+
+    public Faidarev1GermplasmDAO(SPARQLService sparql, MongoDBServiceV2 nosql, FileStorageService fs) {
         super(sparql, nosql);
+        this.fs = fs;
     }
 
     //@todo: remove nosql parameter when experimentDAO can be instanciated with MongoDBServiceV2
@@ -87,7 +91,7 @@ public class Faidarev1GermplasmDAO extends GermplasmDAO {
             FILTER ( ! isBlank(?uri) )
         }*/
 
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
         Set<URI> userExperiments = experimentDAO.getUserExperiments(user);
 
         /* Get the varieties and accessions with the experimentations the user has access to that they are used in

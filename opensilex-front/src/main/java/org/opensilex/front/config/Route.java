@@ -33,4 +33,7 @@ public interface Route {
 
     @ConfigDescription("Route name")
     public String name();
+
+    @ConfigDescription("Nested routes")
+    public List<Route> children();
 }

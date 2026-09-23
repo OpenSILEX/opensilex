@@ -1,8 +1,10 @@
 <template>
   <div class="form-footer flex gap-2 justify-end">
     <slot />
-    <button v-if="showCancel" class="btn btn-secondary" @click="$emit('cancel')">{{ t(cancelLabel) }}</button>
-    <button class="btn greenThemeColor" @click="$emit('submit')">{{ t(submitLabel) }}</button>
+    <n-button-group class="btn-group">
+      <button v-if="showCancel" class="btn btn-secondary" @click="$emit('cancel')">{{ t(cancelLabel) }}</button>
+      <button class="btn greenThemeColor" @click="$emit('submit')">{{ t(submitLabel) }}</button>
+    </n-button-group>
   </div>
 </template>
 

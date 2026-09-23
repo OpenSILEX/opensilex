@@ -211,15 +211,6 @@ defineExpose({
 });
 </script>
 
-<style scoped lang="scss">
-.detailsCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-</style>
-
 <i18n>
 en:
   OrganizationDetail:

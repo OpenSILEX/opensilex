@@ -1,5 +1,5 @@
 <template>
-  <opensilex-DefaultLoginComponent>
+  <DefaultLoginComponent>
     <template v-slot:loginMedia>
         <img
             v-bind:src="opensilex.getResourceURI('images/opensilex-login-bg.jpg')"
@@ -33,12 +33,13 @@
           }}
         </p>
     </template>
-  </opensilex-DefaultLoginComponent>
+  </DefaultLoginComponent>
   
 </template>
 
 <script setup lang="ts">
-import OpenSilexVuePlugin from "../../../../../opensilex-front/front/src/models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin from "opensilex-front/models/OpenSilexVuePlugin";
+import DefaultLoginComponent from "opensilex-front/components/layout/DefaultLoginComponent.vue";
 import {inject} from "vue";
 import {useI18n} from "vue-i18n";
 

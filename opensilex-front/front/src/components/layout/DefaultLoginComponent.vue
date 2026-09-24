@@ -175,12 +175,21 @@ import {VersionInfoDTO} from "opensilex-core/lib";
 import {AuthenticationService, TokenGetDTO} from "opensilex-security/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
-// injection des dépendances
+//#region Private
+
+//#region Plugins and services
 const opensilex= inject<OpenSilexVuePlugin>("$opensilex");
+if (!opensilex) {
+  throw new Error("L'instance $opensilex est introuvable ...");
+}
 const store = useStore();
-const isLoggedIn = computed(() => store.state.user.loggedIn);
+const { t, locale, availableLocales } = useI18n({
+  inheritLocale: true,
+  useScope: "local",
+});
+//#endregion
 
-
+//#region Data and computed
 const form = ref({
   email: "",
   password: ""
@@ -188,18 +197,8 @@ const form = ref({
 
 const versionInfo = ref<VersionInfoDTO>({});
 
-
-if (!opensilex) {
-  throw new Error("L'instance $opensilex est introuvable ...");
-}
-
-
-// Gestion des langues
+const isLoggedIn = computed(() => store.state.user.loggedIn);
 const language = ref();
-const { t, locale, availableLocales } = useI18n({
-  inheritLocale: true,
-  useScope: "local",
-});
 
 /**
 * Ability to be logged as guest
@@ -208,8 +207,9 @@ const connectAsGuest = computed(() => {
   const config: FrontConfigDTO = opensilex.getConfig();
   return config.connectAsGuest === true;
 });
+//#endregion
 
-// Gestion du carrousel
+//#region Hooks
 onMounted(() => {
 
   const bootstrapScript = document.createElement("script");
@@ -247,39 +247,11 @@ onMounted(() => {
     }
   });
 });
+//#endregion
 
-// Définition login (call by onLoginAsGuest)
-const login = async () => {
-  opensilex.showLoader();
-  try {
-    const authService = opensilex.getService<AuthenticationService>(
-      "opensilex-security.AuthenticationService"
-    );
-    const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
-      await authService.authenticate({
-        identifier: form.value.email,
-        password: form.value.password,
-      });
-
-    const user = opensilex.fromToken(response.response.result.token);
-    opensilex.setCookieValue(user);
-
-    store.commit("login", user);
-    store.commit("refresh");
-  } catch (error: any) {
-    if (error.status === 403) {
-      opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
-    } else {
-      opensilex.errorHandler(error);
-    }
-  } finally {
-    opensilex.hideLoader();
-  }
-};
-
-
+//#region Event handlers
 // connexion principale
-const onLogin = async () => {
+async function onLogin() {
   opensilex.showLoader();
 
   try {
@@ -309,14 +281,9 @@ const onLogin = async () => {
   } finally {
     opensilex.hideLoader();
   }
-};
+}
 
-const setLanguage = (lang: string) => {
-  locale.value = lang;
-  store.commit("lang", lang);
-};
-
-const onLoginAsGuest = () => {
+function onLoginAsGuest() {
   form.value.email = "guest@opensilex.org";
   form.value.password = "guest";
   console.log("OnLoginAsGuest - this.form", form.value)
@@ -324,12 +291,51 @@ const onLoginAsGuest = () => {
     form.value.email = "";
     form.value.password = "";
   });
-};
+}
 
-const isResetPassword = () => {
+function setLanguage(lang: string) {
+  locale.value = lang;
+  store.commit("lang", lang);
+}
+//#endregion
+
+//#region methods
+// Définition login (call by onLoginAsGuest)
+async function login() {
+  opensilex.showLoader();
+  try {
+    const authService = opensilex.getService<AuthenticationService>(
+      "opensilex-security.AuthenticationService"
+    );
+    const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
+      await authService.authenticate({
+        identifier: form.value.email,
+        password: form.value.password,
+      });
+
+    const user = opensilex.fromToken(response.response.result.token);
+    opensilex.setCookieValue(user);
+
+    store.commit("login", user);
+    store.commit("refresh");
+  } catch (error: any) {
+    if (error.status === 403) {
+      opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
+    } else {
+      opensilex.errorHandler(error);
+    }
+  } finally {
+    opensilex.hideLoader();
+  }
+}
+
+function isResetPassword() {
   const config = opensilex.getConfig();
   return config.activateResetPassword;
-};
+}
+//#endregion
+
+//#endregion
 </script>
 
 <style scoped lang="scss">

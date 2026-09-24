@@ -1414,7 +1414,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * Delete any custom relations that do not apply to the current type of instance. Here a custom relation means a relation
-     * that is defined in the ontology, but is not handled in the model class of instance.
+     * that is defined in the ontology via Restrictions, but is not handled in the model class of instance.
      */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 
@@ -1425,31 +1425,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return;
         }
 
-        // try to retrieve associated ClassModel
         URI rootType = analyzer.getRdfTypeURI();
-        ClassModel classModel;
-        //TODO MAX replace? WARNING my method returns empty set so check that
+
+        // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
+        Set<URI> customProperties;
         try {
-            classModel = new OntologyDAO(this).getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
+            customProperties = getCustomRelationsForType(instance.getType(), analyzer);
         } catch (SPARQLInvalidURIException e) {
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
         }
 
-        if(MapUtils.isEmpty(classModel.getRestrictionsByProperties())){
-            return;
-        }
-
-        Set<String> managedPropUris = mapper.getClassAnalyzer().getManagedPropertiesUris();
-
-        // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
-        Set<URI> customProperties = classModel.getRestrictionsByProperties()
-                .values()
-                .stream()
-                .map(OwlRestrictionModel::getOnProperty)
-                .filter(property -> ! managedPropUris.contains(property.toString()))
-                .collect(Collectors.toSet());
-//TODO MAX end of replace ?
-        if(! customProperties.isEmpty()){
+        if(! CollectionUtils.isEmpty(customProperties)){
             deleteRelations(graph, instance.getUri(), customProperties);
         }
     }

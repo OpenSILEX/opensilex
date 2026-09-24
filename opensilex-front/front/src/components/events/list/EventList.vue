@@ -318,7 +318,7 @@ const props = withDefaults(defineProps<{
   displayTargetFilter: true,
   displayTitle: false,
   maximizeFilterSize: false,
-  columnsToDisplay: () => new Set(['type', 'start', 'end', 'targets', 'description'])
+  columnsToDisplay: () => new Set(['type', 'start', 'end', 'targets', 'description']),
 })
 
 const emit = defineEmits<{
@@ -458,7 +458,11 @@ const fields = computed(() => {
   if (props.enableActions) {
     tableFields.push({
       key: 'actions',
-      label: 'component.common.actions'
+      label: 'component.common.actions',
+      resizable: false,
+      naiveProps: {
+        width: 100
+      }
     })
   }
 

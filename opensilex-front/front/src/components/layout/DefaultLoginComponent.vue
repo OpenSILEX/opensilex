@@ -9,29 +9,24 @@
 
           <div id="loginImagesCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
             <div class="carousel-inner">
-              <div class="carousel-item active">
-                <img :src="opensilex.getResourceURI('images/lac.jpg')" class="d-block w-100 h-100">
-              </div>
-              <div class="carousel-item">
-                <img :src="opensilex.getResourceURI('images/vitioeno.jpg')" class="d-block w-100 h-100" >
-              </div>
-                  <div class="carousel-item">
-                <img :src="opensilex.getResourceURI('images/LBE_Reacteur_de_laboratoire.jpg')" class="d-block w-100 h-100" >
-              </div>
-                  <div class="carousel-item">
-                <img :src="opensilex.getResourceURI('images/phis-login-bg.jpg')" class="d-block w-100 h-100" >
-              </div>
-                  <div class="carousel-item">
-                <img :src="opensilex.getResourceURI('images/opensilex-login-bg.png')" class="d-block w-100 h-100" >
+              <div
+                  v-for="imagePath in carouselImagesPaths"
+                  :class="carouselImagesPaths.indexOf(imagePath) == 0 ? 'carousel-item active' : 'carousel-item'">
+                <img :src="opensilex.getResourceURI(imagePath)" class="d-block w-100 h-100">
               </div>
             </div>
 
-            <button class="carousel-control-prev" type="button" data-bs-target="#loginImagesCarousel" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#loginImagesCarousel" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            </button>
+            <template v-if="carouselImagesPaths.length > 1">
+              <button
+                  class="carousel-control-prev" type="button" data-bs-target="#loginImagesCarousel"
+                  data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#loginImagesCarousel"
+                      data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              </button>
+            </template>
           </div>
         </div>
 
@@ -61,9 +56,7 @@
             <div class="logo-centered d-flex justify-content-center align-items-center">
               <slot name="loginLogo">
                 <img
-                  v-bind:src="
-                    opensilex.getResourceURI('images/logo-opensilex.png')
-                  "
+                  v-bind:src="opensilex.getResourceURI(props.loginLogoPath)"
                   alt="loginLogo"
                 />
               </slot>
@@ -174,6 +167,16 @@ import {useStore} from "vuex";
 import {VersionInfoDTO} from "opensilex-core/lib";
 import {AuthenticationService, TokenGetDTO} from "opensilex-security/lib";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+
+//#region public
+const props = withDefaults(defineProps<{
+  loginLogoPath?: string
+  carouselImagesPaths?: Array<string>
+}>(), {
+  loginLogoPath: 'images/logo-opensilex.png',
+  carouselImagesPaths: () => ['images/lac.jpg', 'images/vitioeno.jpg', 'images/LBE_Reacteur_de_laboratoire.jpg', 'images/phis-login-bg.jpg', 'images/opensilex-login-bg.png']
+})
+//#endregion
 
 //#region Private
 

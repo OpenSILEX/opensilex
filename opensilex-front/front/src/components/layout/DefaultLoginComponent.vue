@@ -94,12 +94,6 @@
                   required
                   :placeholder="t('LoginComponent.email')"
                 />
-                <!--
-                  à reintroduire plus tard :
-                  errors = slot en provenance de validationProvider donc pas dispo tant que probleme avec validation provider...
-                <div v-if="errors.email" class="error-message alert alert-danger">
-                  {{ errors.email }}
-                </div> -->
               </div>
 
               <!-- Password -->
@@ -116,12 +110,6 @@
                   required
                   :placeholder="t('LoginComponent.password')"
                 />
-                <!--
-                  à reintroduire plus tard :
-                  errors = slot en provenance de validationProvider donc pas dispo tant que probleme avec validation provider...
-                  <div v-if="errors.password" class="error-message alert alert-danger">
-                  {{ errors.password }}
-                </div> -->
               </div>
 
 

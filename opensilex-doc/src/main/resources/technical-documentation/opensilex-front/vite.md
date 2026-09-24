@@ -165,7 +165,7 @@ Décommente les lignes suivantes dans `vite.config.ts` :
 lib: {
   entry: resolve(__dirname, 'src/lib/index.ts'),
   name: 'opensilex-front',
-  fileName: (format) => `opensilex-front.${format}.js`,
+  fileName: (format) => `opensilex-front.${format}.min.js`,
   formats: ['umd']
 }
 ```

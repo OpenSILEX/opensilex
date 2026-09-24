@@ -11,7 +11,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'), // Point d'entrée
       name: 'opensilex-security', // Nom de la bibliothèque
       fileName: (format) => `opensilex-security.${format}.min.js`, // Nom du fichier de sortie
-      formats: ['umd'], // Formats de sortie (ES Module et UMD)
+      formats: ['umd'], // Format de sortie (UMD)
     },
     rollupOptions: {
       // Externaliser les dépendances (si nécessaire)

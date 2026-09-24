@@ -41,7 +41,7 @@ This could be useful for:
 
 ## Create a new module for opensilex 
 
-### 1. Create a directory in ``opensilex`` directory with the name of the module, here {module_name} ``Example : inrae-sixtine``.
+### 1. Create a directory in `opensilex` directory with the name of the module, here {module_name} `Example : inrae-sixtine`.
 
 ```
 opensilex
@@ -107,7 +107,7 @@ Notes : *We use these naming conventions as examples, but **they are not mandato
 ```
 See [Theme subject](module-theme-personalization.md) for more details.
 
-### 3. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``
+### 3. Add a pom file to configure the maven project **pom.xml** in module directory `opensilex/{module_name}`
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>

@@ -10,19 +10,19 @@
           <div id="loginImagesCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
             <div class="carousel-inner">
               <div class="carousel-item active">
-                <img :src="$opensilex.getResourceURI('images/lac.jpg')"  class="d-block w-100 h-100">
+                <img :src="opensilex.getResourceURI('images/lac.jpg')" class="d-block w-100 h-100">
               </div>
               <div class="carousel-item">
-                <img :src="$opensilex.getResourceURI('images/vitioeno.jpg')" class="d-block w-100 h-100" >
+                <img :src="opensilex.getResourceURI('images/vitioeno.jpg')" class="d-block w-100 h-100" >
               </div>
                   <div class="carousel-item">
-                <img :src="$opensilex.getResourceURI('images/LBE_Reacteur_de_laboratoire.jpg')" class="d-block w-100 h-100" >
+                <img :src="opensilex.getResourceURI('images/LBE_Reacteur_de_laboratoire.jpg')" class="d-block w-100 h-100" >
               </div>
                   <div class="carousel-item">
-                <img :src="$opensilex.getResourceURI('images/phis-login-bg.jpg')" class="d-block w-100 h-100" >
+                <img :src="opensilex.getResourceURI('images/phis-login-bg.jpg')" class="d-block w-100 h-100" >
               </div>
                   <div class="carousel-item">
-                <img :src="$opensilex.getResourceURI('images/opensilex-login-bg.png')" class="d-block w-100 h-100" >
+                <img :src="opensilex.getResourceURI('images/opensilex-login-bg.png')" class="d-block w-100 h-100" >
               </div>
             </div>
 
@@ -62,7 +62,7 @@
               <slot name="loginLogo">
                 <img
                   v-bind:src="
-                    $opensilex.getResourceURI('images/logo-opensilex.png')
+                    opensilex.getResourceURI('images/logo-opensilex.png')
                   "
                   alt="loginLogo"
                 />
@@ -123,7 +123,7 @@
                   required
                   :placeholder="t('LoginComponent.password')"
                 />
-                <!-- 
+                <!--
                   à reintroduire plus tard :
                   errors = slot en provenance de validationProvider donc pas dispo tant que probleme avec validation provider...
                   <div v-if="errors.password" class="error-message alert alert-danger">
@@ -162,201 +162,174 @@
   </div>
 </template>
 
-<script lang="ts">
-import {computed, defineComponent, inject, nextTick, onMounted, ref} from "vue";
+<script setup lang="ts">
+import {computed, inject, nextTick, onMounted, ref} from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {User} from "../../models/User";
-import type {AuthenticationService, TokenGetDTO} from "opensilex-security/index";
-import type {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import HttpResponse from "opensilex-security/HttpResponse";
+import {User} from "@/models/User";
 
-import {FrontConfigDTO} from "../../lib";
-import {VersionInfoDTO} from "opensilex-core/index";
+import {FrontConfigDTO} from "@/lib";
 import {useI18n} from "vue-i18n";
 import {Carousel, Dropdown} from "bootstrap";
 import {useStore} from "vuex";
-import {useRoute, useRouter} from 'vue-router'
+import {VersionInfoDTO} from "opensilex-core/lib";
+import {AuthenticationService, TokenGetDTO} from "opensilex-security/lib";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 
-export default defineComponent({
-  name: 'defaultLoginComponent',
-  props: {
-    $opensilex: OpenSilexVuePlugin
-  },
-  setup() {
-    // injection des dépendances
-    const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");
-    const router = useRouter();
-    const store = useStore();
-    const user = computed(() => store.state.user);
-    const isLoggedIn = computed(() => store.state.user.loggedIn);
-    const resetPasswordPath = computed(() => router.resolve("/forgot-password").href);
-    const route = useRoute();
-
-    const form = ref({
-      email: "",
-      password: ""
-    });
-
-    const versionInfo = ref<VersionInfoDTO>({});
+// injection des dépendances
+const opensilex= inject<OpenSilexVuePlugin>("$opensilex");
+const store = useStore();
+const isLoggedIn = computed(() => store.state.user.loggedIn);
 
 
-    if (!$opensilex) {
-      throw new Error("L'instance $opensilex est introuvable ...");
-    }
-
-
-    // Gestion des langues
-    const language = ref();
-    const { t, locale, availableLocales } = useI18n({
-      inheritLocale: true,
-      useScope: "local",
-    });
-
-    /**
-    * Ability to be logged as guest
-    */
-    const connectAsGuest = computed(() => {
-      const config: FrontConfigDTO = $opensilex.getConfig();
-      return config.connectAsGuest === true;
-    });
-
-    // Gestion du carrousel
-    onMounted(() => {
-
-      const bootstrapScript = document.createElement("script");
-      bootstrapScript.src =
-        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js";
-      bootstrapScript.onload = () => {
-      };
-      document.head.appendChild(bootstrapScript);
-
-      versionInfo.value = $opensilex.versionInfo;
-
-      nextTick(() => {
-        // Initialisation du carrousel (OK)
-        const carouselElement = document.querySelector("#loginImagesCarousel");
-        if (carouselElement) {
-          new Carousel(carouselElement, {
-            interval: 4000,
-            ride: "carousel",
-          });
-        } else {
-          console.warn("⚠️ Carrousel non trouvé !");
-        }
-
-        // Initialisation du dropdown
-        const dropdownElement = document.querySelector(".dropdown-toggle");
-        if (dropdownElement) {
-
-          const dropdownInstance = new Dropdown(dropdownElement);
-          dropdownElement.addEventListener("click", (event) => {
-            event.preventDefault();
-            dropdownInstance.toggle();
-          });
-        } else {
-          console.warn("⚠️ Dropdown non trouvé !");
-        }
-      });
-    });
-
-    // Définition login (call by onLoginAsGuest)
-    const login = async () => {
-      $opensilex.showLoader();
-      try {
-        const authService = $opensilex.getService<AuthenticationService>(
-          "opensilex-security.AuthenticationService"
-        );
-        const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
-          await authService.authenticate({
-            identifier: form.value.email,
-            password: form.value.password,
-          });
-
-        const user = $opensilex.fromToken(response.response.result.token);
-        $opensilex.setCookieValue(user);
-
-        store.commit("login", user);
-        store.commit("refresh");
-      } catch (error: any) {
-        if (error.status === 403) {
-          $opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
-        } else {
-          $opensilex.errorHandler(error);
-        }
-      } finally {
-        $opensilex.hideLoader();
-      }
-    };
-
-
-    // connexion principale 
-    const onLogin = async () => {
-      $opensilex.showLoader();
-
-      try {
-        const authService = $opensilex.getService<AuthenticationService>(
-          "opensilex-security.AuthenticationService"
-        );
-
-        const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
-          await authService.authenticate({
-            identifier: form.value.email,
-            password: form.value.password
-          });
-
-        const user = User.fromToken(response.response.result.token);
-        $opensilex.setCookieValue(user);
-        store.commit("login", user);
-        store.commit("refresh");
-
-
-      } catch (error: any) {
-        if (error.status === 403) {
-          console.error("onLogin - Invalid credentials", error);
-          $opensilex.showErrorToast(t("LoginComponent.invalidCredentials", error));
-        } else {
-          $opensilex.showErrorToast(error);
-        }
-      } finally {
-        $opensilex.hideLoader();
-      }
-    };
-
-
-    return {
-      t,
-      locale,
-      availableLocales,
-      connectAsGuest,
-      form,
-      versionInfo,
-      isLoggedIn,
-      resetPasswordPath,
-      login,
-      onLogin
-    };
-  },
-
-  methods: {
-    setLanguage(lang: string) {
-      this.$i18n.locale = lang;
-      this.$store.commit("lang", lang);
-    },
-    onLoginAsGuest() {
-      this.form.email = "guest@opensilex.org";
-      this.form.password = "guest";
-      console.log("OnLoginAsGuest - this.form", this.form)
-      this.login().then(() => {
-        this.form.email = "";
-        this.form.password = "";
-      });
-    },
-    isResetPassword() {
-      const config = this.$opensilex.getConfig();
-      return config.activateResetPassword;
-    }
-  },
+const form = ref({
+  email: "",
+  password: ""
 });
+
+const versionInfo = ref<VersionInfoDTO>({});
+
+
+if (!opensilex) {
+  throw new Error("L'instance $opensilex est introuvable ...");
+}
+
+
+// Gestion des langues
+const language = ref();
+const { t, locale, availableLocales } = useI18n({
+  inheritLocale: true,
+  useScope: "local",
+});
+
+/**
+* Ability to be logged as guest
+*/
+const connectAsGuest = computed(() => {
+  const config: FrontConfigDTO = opensilex.getConfig();
+  return config.connectAsGuest === true;
+});
+
+// Gestion du carrousel
+onMounted(() => {
+
+  const bootstrapScript = document.createElement("script");
+  bootstrapScript.src =
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js";
+  bootstrapScript.onload = () => {
+  };
+  document.head.appendChild(bootstrapScript);
+
+  versionInfo.value = opensilex.versionInfo;
+
+  nextTick(() => {
+    // Initialisation du carrousel (OK)
+    const carouselElement = document.querySelector("#loginImagesCarousel");
+    if (carouselElement) {
+      new Carousel(carouselElement, {
+        interval: 4000,
+        ride: "carousel",
+      });
+    } else {
+      console.warn("⚠️ Carrousel non trouvé !");
+    }
+
+    // Initialisation du dropdown
+    const dropdownElement = document.querySelector(".dropdown-toggle");
+    if (dropdownElement) {
+
+      const dropdownInstance = new Dropdown(dropdownElement);
+      dropdownElement.addEventListener("click", (event) => {
+        event.preventDefault();
+        dropdownInstance.toggle();
+      });
+    } else {
+      console.warn("⚠️ Dropdown non trouvé !");
+    }
+  });
+});
+
+// Définition login (call by onLoginAsGuest)
+const login = async () => {
+  opensilex.showLoader();
+  try {
+    const authService = opensilex.getService<AuthenticationService>(
+      "opensilex-security.AuthenticationService"
+    );
+    const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
+      await authService.authenticate({
+        identifier: form.value.email,
+        password: form.value.password,
+      });
+
+    const user = opensilex.fromToken(response.response.result.token);
+    opensilex.setCookieValue(user);
+
+    store.commit("login", user);
+    store.commit("refresh");
+  } catch (error: any) {
+    if (error.status === 403) {
+      opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
+    } else {
+      opensilex.errorHandler(error);
+    }
+  } finally {
+    opensilex.hideLoader();
+  }
+};
+
+
+// connexion principale
+const onLogin = async () => {
+  opensilex.showLoader();
+
+  try {
+    const authService = opensilex.getService<AuthenticationService>(
+      "opensilex-security.AuthenticationService"
+    );
+
+    const response: HttpResponse<OpenSilexResponse<TokenGetDTO>> =
+      await authService.authenticate({
+        identifier: form.value.email,
+        password: form.value.password
+      });
+
+    const user = User.fromToken(response.response.result.token);
+    opensilex.setCookieValue(user);
+    store.commit("login", user);
+    store.commit("refresh");
+
+
+  } catch (error: any) {
+    if (error.status === 403) {
+      console.error("onLogin - Invalid credentials", error);
+      opensilex.showErrorToast(t("LoginComponent.invalidCredentials", error));
+    } else {
+      opensilex.showErrorToast(error);
+    }
+  } finally {
+    opensilex.hideLoader();
+  }
+};
+
+const setLanguage = (lang: string) => {
+  locale.value = lang;
+  store.commit("lang", lang);
+};
+
+const onLoginAsGuest = () => {
+  form.value.email = "guest@opensilex.org";
+  form.value.password = "guest";
+  console.log("OnLoginAsGuest - this.form", form.value)
+  login().then(() => {
+    form.value.email = "";
+    form.value.password = "";
+  });
+};
+
+const isResetPassword = () => {
+  const config = opensilex.getConfig();
+  return config.activateResetPassword;
+};
 </script>
 
 <style scoped lang="scss">
@@ -390,16 +363,16 @@ fr:
     selectLoginMethod: Choisir la méthode de connexion
     passwordConnectionTitle: Connexion par mot de passe
     forgotPassword: Mot de passe oublié ?
-    defaultOpenIDConnectionTitle: Connexion par SSO (OpenID)
-    defaultSAMLConnectionTitle: Connexion par SSO (SAML)
+    defaultOpenIDConnectionTitle: Log in with SSO (OpenID)
+    defaultSAMLConnectionTitle: Log in with SSO (SAML)
     infoGuest: Vous pouvez vous connecter en tant qu'invité
-    loginAsGuest: Connexion en tant qu'invité
+    loginAsGuest: Connect as guest
     email: Email ou URI
     password: Mot de passe
     invalidCredentials: L'utilisateur n'existe pas, est désactivé ou le mot de passe est invalide
     language:
       fr: Français
-      en: Anglais
+      en: English
     copyright:
       1: PHIS - Phenotyping Hybrid Information System
       2: Version {version}

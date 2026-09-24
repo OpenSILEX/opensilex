@@ -24,7 +24,6 @@ import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
@@ -394,8 +393,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classQueryBuilder.getDeleteBuilder(graph, instance);
     }
 
-    public UpdateBuilder getDeleteBuilderForUpdate(List<T> modelsToDelete, URI graph, SPARQLService sparql) throws IllegalAccessException, SPARQLException {
-        return classQueryBuilder.getDeleteBuilderForUpdateCases(modelsToDelete, graph, sparql);
+    public UpdateBuilder getDeleteBuilderForUpdate(List<T> modelsToDelete, URI graph) throws IllegalAccessException {
+        return classQueryBuilder.getDeleteBuilderForUpdateCases(modelsToDelete, graph);
     }
 
     public URI getURI(Object instance) {

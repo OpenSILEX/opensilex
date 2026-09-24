@@ -1561,7 +1561,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URI graphUri = graph == null ? null : URI.create(graph.toString()) ;
 
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(modelsToDelete, graphUri, this);
+        UpdateBuilder query = mapper.getDeleteBuilderForUpdate(modelsToDelete, graphUri);
         executeDeleteQuery(query);
     }
 

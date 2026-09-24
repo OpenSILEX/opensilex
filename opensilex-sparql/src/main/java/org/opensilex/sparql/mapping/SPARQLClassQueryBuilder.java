@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import com.nimbusds.oauth2.sdk.util.CollectionUtils;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,9 +26,7 @@ import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -38,12 +35,9 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
-import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.SHACL;
-import org.opensilex.sparql.utils.StringUriSet;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -393,16 +387,19 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Build a query which delete all triples, that correspond to a defined field in the model or a custom relation, and related to the given urisToDelete, except dc:publisher and dc:issued.
+     * Build a query which delete all triples related to the given urisToDelete, except dc:publisher and dc:issued, and except the inverse
+     * relations which have no corresponding field in the model.
      * Useful for update operations where dc:publisher and dc:issued should not be updated.
-     * By including only triples who have a corresponding definition in the Model, we ensure that non defined relations don't get unwantedly deleted,
-     * example : when we update a Variable we do not want to delete any UnitModels or CharacteristicModels who are hasUnit or hasCharacteristic of this variable.
+     * The triples where the uri to delete is the subject are all deleted, custom relations included, since the resource owns them and they are
+     * rewritten right after. Only the inverse part is restricted to the properties defined in the Model, so that relations owned by other
+     * resources don't get unwantedly deleted, example : when we update an Unit we do not want to delete the hasUnit relations of the Variables
+     * using it.
      * This method handles IgnoreUpdateIfNull SPARQL annotations by not deleting relations for fields with this annotation when the field value is null.
      * Generated query same as getDeleteBuilder with excludedPredicates = [dc:publisher, dc:issued]
      * Filter will be : FILTER (?p NOT IN (dc:publisher, dc:issued))
      * @see SPARQLClassQueryBuilder#getDeleteBuilder(List, URI, List, List, Map, Map)  to see the generated query example
      */
-    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilderForUpdateCases(List<T> modelsToDelete, URI graph, SPARQLService sparql) throws IllegalAccessException, SPARQLException {
+    public <T extends SPARQLResourceModel> UpdateBuilder getDeleteBuilderForUpdateCases(List<T> modelsToDelete, URI graph) throws IllegalAccessException {
         List<URI> excludedPredicates = List.of(
                 URI.create("http://purl.org/dc/terms/publisher"),
                 URI.create("http://purl.org/dc/terms/issued")
@@ -426,56 +423,22 @@ class SPARQLClassQueryBuilder {
             }
         }
 
-        //Start by allowing the deletion of the basic fields defined in the java class model (analyzer)
-        StringUriSet includeOnlyPredicates = new StringUriSet(analyzer.getManagedPropertiesUris().stream().map(URI::create).toList());
-
-        //Now we also need to include any custom relations, do this by looking at restrictions
-        includeOnlyPredicates.addAll(getPossibleCustomRelationPredicatesForInstances(modelsToDelete, sparql));
+        // Only the relations declared as fields may be deleted in the inverse direction, see getDeleteBuilder
+        List<URI> includeOnlyPredicates = analyzer.getManagedPropertiesUris().stream().map(URI::create).toList();
 
         List<URI> urisToDelete = modelsToDelete.stream().map(SPARQLResourceModel::getUri).toList();
-        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, new ArrayList<>(includeOnlyPredicates.getSetAsURIs()), predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
+        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, includeOnlyPredicates, predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
     }
-
-    /**
-     *
-     * @param instances for whom we want to get every custom property predicate URI that their type's can use
-     * @param sparql the SPARQLservice needed to call getCustomRelationsForType
-     * @return Every custom property predicate URI that can exist on the rdfTypes of our instances
-     * @param <T> Root type of our instances
-     * @throws SPARQLException if sparql.getCustomRelationsForType throws this
-     */
-    private <T extends SPARQLResourceModel> Set<URI> getPossibleCustomRelationPredicatesForInstances(List<T> instances, SPARQLService sparql) throws SPARQLException {
-        Set<URI> result = new HashSet<>();
-
-        //Leave if this class doesnt handle custom properties
-        if(!analyzer.isHandleCustomProperties()){
-            return result;
-        }
-        StringUriSet uniqueRdfTypes = new StringUriSet();
-        //Still have to try and add each type of Model in case we miss any properties specific to a sub-type
-        instances.forEach(e-> {
-            if(e.getType() != null){
-                uniqueRdfTypes.add(e.getType());
-            }
-        });
-
-        //Leave if the models didn't have type information
-        if(CollectionUtils.isEmpty(uniqueRdfTypes.getSet())){
-            return result;
-        }
-        for(URI type : uniqueRdfTypes.getSetAsURIs()){
-            result.addAll(sparql.getCustomRelationsForType(type, analyzer));
-        }
-        return result;
-    }
-
 
     /**
      * Delete all triples related to the given urisToDelete, except those specified by excludedPredicates, predicatesToIgnoreByUri or reversePredicatesToIgnoreByUri params.
      * If includeOnlyPredicates is not null then only predicates within that list can be put up for deletion.
      * @param graph could be a URI or null. If null, the graphs clauses are removed and so the query search in default graph only.
      * @param excludedPredicates allows exclusion of some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handles short and long uris.
-     * @param includeOnlyPredicates If not null, then only predicates within this list can be put up for deletion, inverse or nay.
+     * @param includeOnlyPredicates If not empty, restricts the <b>inverse</b> part of the deletion (the triples where the uri to delete is the
+     *                               object) to these predicates. The classic part is left untouched : a resource owns every triple it is the
+     *                               subject of, including the custom relations which are not declared as fields, and those must still be
+     *                               cleared before being rewritten.
      * @param predicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
      * @param reversePredicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
      * @implNote  generated query example : (the filter clause appears only if excludedPredicates is not empty)
@@ -488,7 +451,6 @@ class SPARQLClassQueryBuilder {
      * }
      * WHERE {
      *     FILTER ( ?uriToDelete IN (<uriToDelete1>, <uriToDelete2>) )
-     *     FILTER (?p IN (<includeOnlyPredicate1>, <includeOnlyPredicate2>))
      *
      *     {
      *         GRAPH <graphUri> {
@@ -510,6 +472,7 @@ class SPARQLClassQueryBuilder {
      *     {
      *         GRAPH <graphUri> {
      *             ?s ?p ?uriToDelete .
+     *             FILTER (?p IN (<includeOnlyPredicate1>, <includeOnlyPredicate2>))
      *             FILTER NOT EXISTS {
      *                 GRAPH <graphUri> {
      *                     ?s ?p ?uriToDelete .
@@ -556,9 +519,6 @@ class SPARQLClassQueryBuilder {
         WhereBuilder globalWhere = new WhereBuilder();
 
         globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, urisToDelete));
-        if(!includeOnlyPredicates.isEmpty()){
-            globalWhere.addFilter(SPARQLQueryHelper.inURIFilter(predicateVar, includeOnlyPredicates));
-        }
 
         WhereBuilder classicSubquery = buildWhereClauseForDeleteQuery(
                 uriVar,
@@ -568,6 +528,7 @@ class SPARQLClassQueryBuilder {
                 graph,
                 false,
                 excludedPredicates,
+                null,
                 predicatesToIgnoreByUri
         );
 
@@ -579,6 +540,7 @@ class SPARQLClassQueryBuilder {
                 graph,
                 true,
                 null,
+                includeOnlyPredicates,
                 reversePredicatesToIgnoreByUri
         );
 
@@ -596,6 +558,7 @@ class SPARQLClassQueryBuilder {
      * @param graph could be a URI or null. If null, the graph clause is removed and so the query search in default graph only.
      * @param isInverseRelation should be true if the uriToDelete is the object in the triple. False otherwise.
      * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate.
+     * @param includeOnlyPredicates if not empty, only these predicates are put up for deletion.
      * @param predicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
      * @implNote generated SPARQL query example for isInverseRelation = false, graph = null :
      * <pre>
@@ -622,12 +585,17 @@ class SPARQLClassQueryBuilder {
                                                         URI graph,
                                                         boolean isInverseRelation,
                                                         List<URI> excludedPredicates,
+                                                        List<URI> includeOnlyPredicates,
                                                         Map<URI, List<URI>> predicatesToIgnoreByUri){
         WhereBuilder globalWhere = new WhereBuilder();
         Triple relation = isInverseRelation ? Triple.create(subjectVar, predicateVar, uriToDeleteVar) :
                 Triple.create(uriToDeleteVar, predicateVar, objectVar);
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
+        //only delete the predicates we are allowed to
+        if(CollectionUtils.isNotEmpty(includeOnlyPredicates)) {
+            graphSubquery.addFilter(SPARQLQueryHelper.inURIFilter(predicateVar, includeOnlyPredicates));
+        }
         //do not delete excluded predicates
         if(CollectionUtils.isNotEmpty(excludedPredicates)) {
             Expr predicateFilter = SPARQLQueryHelper.notInUrisFilter(excludedPredicates, predicateVar);

@@ -7,9 +7,6 @@
         <!-- Background image -->
         <div class="col-xl-8 col-lg-6 col-md-5 p-0 d-none d-md-block">
 
-            <!-- low opacity green layout used for phis bg image-->
-            <!-- <div class="lavalite-overlay"></div> -->
-
           <div id="loginImagesCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
             <div class="carousel-inner">
               <div class="carousel-item active">
@@ -363,40 +360,8 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+//for css see auth.css in the theme
 
-.carousel-item {
-  transition: opacity 1.5s ease-in-out !important;
-}
-invalidCredentials
-.fullmodal {
-  display: block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 9998; /*behind global toaster box*/
-}
-
-.authentication-form .error-message {
-  top: 37px;
-}
-
-.authentication-form fieldset {
-  margin-bottom: 25px;
-}
-
-.languagesDropdown {
-  position: fixed;
-  top: 5px;
-  right: 10px;
-}
-// .languagesDropdown > * {
-//  font-weight: bold;
-//  font-size: 1.2em;
-// }
 </style>
 
 <i18n>

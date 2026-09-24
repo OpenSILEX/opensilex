@@ -16,9 +16,9 @@ stylesheets:
     - _rating.scss
     - _range-slider.scss
     - _layout.scss
-    - _auth.scss
     - _main.scss
     - main.css
+    - auth.css
     - fix.css
     - hamburgers.css
     - _helpMessage.scss

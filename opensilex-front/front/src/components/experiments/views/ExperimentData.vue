@@ -33,7 +33,7 @@
 
     <DeleteByBatchModal
         ref="deleteByBatchModal"
-        :experimentUri="this.uri"
+        :experimentUri="uri.value"
         @deleted="refresh"
     ></DeleteByBatchModal>
 

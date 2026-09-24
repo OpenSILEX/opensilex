@@ -1,112 +1,141 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
       ref="formSelector"
-      :label="label"
-      :selected.sync="groupURI"
-      :multiple="multiple"
+      :label="props.label"
+      v-model:selected="groupURI"
+      :multiple="props.multiple"
       :searchMethod="searchGermplasmGroups"
       :itemLoadingMethod="loadGermplasmGroups"
       :placeholder="placeholder"
       noResultsText="component.groupGermplasm.form.selector.filter-search-no-result"
-      @clear="$emit('clear')"
+      @clear="emit('clear')"
       @select="select"
       @deselect="deselect"
-      @keyup.enter.native="onEnter"
+      @keyup.enter="onEnter"
       @loadMoreItems="loadMoreItems"
-  ></opensilex-FormSelector>
+  />
 </template>
 
-<script lang="ts">
-import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
-import Vue from "vue";
+<script setup lang="ts">
+import { computed, inject, nextTick, ref, useTemplateRef } from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {GermplasmGroupGetDTO} from "opensilex-core/index";
+import { GermplasmGroupGetDTO } from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {GermplasmService} from "opensilex-core/api/germplasm.service";
-import FormSelector from "../common/forms/FormSelector.vue";
+import { GermplasmService } from "opensilex-core/api/germplasm.service";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
 
-@Component
-export default class GermplasmGroupSelector extends Vue {
-  $opensilex: OpenSilexVuePlugin;
-  pageSize = 10;
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
-  @PropSync("germplasmGroup")
-  groupURI: string;
+const pageSize = ref<number>(10);
 
-  @Prop()
+const groupURI = defineModel<string>("selected");
+
+const props = defineProps<{
   label: string;
+  multiple: boolean;
+}>();
 
-  @Prop()
-  multiple: string;
+const emit = defineEmits<{
+  clear: [];
+  select: [value: GermplasmGroupGetDTO];
+  deselect: [value: GermplasmGroupGetDTO];
+  handlingEnterKey: [];
+}>();
 
-  @Ref("formSelector") readonly formSelector!: FormSelector;
+const formSelector =
+    useTemplateRef<InstanceType<typeof FormSelector>>("formSelector");
 
-  get placeholder() {
-    return this.multiple
-        ? "component.groupGermplasm.form.selector.placeholder-multiple"
-        : "component.groupGermplasm.form.selector.placeholder";
+const placeholder = computed(() => {
+  return props.multiple
+      ? "component.groupGermplasm.form.selector.placeholder-multiple"
+      : "component.groupGermplasm.form.selector.placeholder";
+});
+
+async function loadGermplasmGroups(
+    group: string | string[]
+): Promise<GermplasmGroupGetDTO[]> {
+  try {
+    const service = opensilex?.getService<GermplasmService>(
+        "opensilex.GermplasmService"
+    );
+
+    if (!service) {
+      throw new Error("OpenSilex service is not available");
+    }
+
+    const http = await service.searchGermplasmGroupByURIs(group);
+
+    return http.response.result;
+  } catch (error) {
+    opensilex?.errorHandler(error);
+    return [];
+  }
+}
+
+async function searchGermplasmGroups(
+    name: string
+): Promise<
+    HttpResponse<OpenSilexResponse<GermplasmGroupGetDTO[]>>
+> {
+  const service = opensilex?.getService<GermplasmService>(
+      "opensilex.GermplasmService"
+  );
+
+  if (!service) {
+    throw new Error("OpenSilex service is not available");
   }
 
-  loadGermplasmGroups(group): Promise<Array<GermplasmGroupGetDTO>> {
-    return this.$opensilex.getService<GermplasmService>("opensilex.GermplasmService")
-        .searchGermplasmGroupByURIs(group)
-        .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGroupGetDTO>>>) => {
-          return http.response.result;
-        })
-        .catch(this.$opensilex.errorHandler);
-  }
+  return await service.searchGermplasmGroups(
+      name,
+      undefined,
+      ["name=asc"],
+      0,
+      pageSize.value
+  );
+}
 
-  searchGermplasmGroups(name): Promise<HttpResponse<OpenSilexResponse<Array<GermplasmGroupGetDTO>>>> {
-    return this.$opensilex.getService<GermplasmService>("opensilex.GermplasmService")
-        .searchGermplasmGroups(name, undefined, ["name=asc"], 0, this.pageSize)
-        .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGroupGetDTO>>>) => {
-          return http;
-        });
-  }
+function select(value: GermplasmGroupGetDTO) {
+  emit("select", value);
+}
 
-  select(value) {
-    this.$emit("select", value);
-  }
+function deselect(value: GermplasmGroupGetDTO) {
+  emit("deselect", value);
+}
 
-  deselect(value) {
-    this.$emit("deselect", value);
-  }
+function onEnter() {
+  emit("handlingEnterKey");
+}
 
-  onEnter() {
-    this.$emit("handlingEnterKey")
-  }
+async function loadMoreItems() {
+  pageSize.value = 0;
 
-  loadMoreItems(){
-    this.pageSize = 0;
-    this.formSelector.refresh();
-    this.$nextTick(() => {
-      this.formSelector.openTreeselect();
-    })
-  }
+  formSelector.value?.refresh();
+
+  await nextTick();
+
+  formSelector.value?.openTreeselect();
 }
 </script>
 
 <style scoped lang="scss">
 </style>
-<i18n>
 
+<i18n>
 en:
   component:
     groupGermplasm:
       form:
         selector:
-          placeholder : Select one germplasm group
-          placeholder-multiple : Select one or more germplasm group
-          filter-search-no-result : No germplasm group found
-
+          placeholder: Select one germplasm group
+          placeholder-multiple: Select one or more germplasm group
+          filter-search-no-result: No germplasm group found
 
 fr:
   component:
     groupGermplasm:
       form:
         selector:
-          placeholder : Sélectionner un groupe de ressources génétiques
-          placeholder-multiple : Sélectionner un ou plusieurs groupes de ressources génétiques
-          filter-search-no-result : Aucun groupe de ressources génétiques trouvé
-
+          placeholder: Sélectionner un groupe de ressources génétiques
+          placeholder-multiple: Sélectionner un ou plusieurs groupes de ressources génétiques
+          filter-search-no-result: Aucun groupe de ressources génétiques trouvé
 </i18n>

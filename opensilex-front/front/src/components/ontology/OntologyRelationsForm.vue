@@ -167,7 +167,6 @@ async function typeSwitch(type: string, initialLoad: boolean) {
    * puis prépare les relations affichées dans le formulaire
    */
   if (!type || type.length === 0 || !props.baseType) {
-    console.debug("detected empty type");
     typeModel.value = null
     internalRelations.value = []
     propertiesByDomainHierarchy.value = []
@@ -186,10 +185,6 @@ async function typeSwitch(type: string, initialLoad: boolean) {
         await vueOntologyService.getRDFTypeProperties(type, props.baseType)
 
     typeModel.value = vueRdfTypeResponse.response.result
-    console.log(typeModel.value.data_properties.concat(typeModel.value.object_properties)
-        .map(p => ({uri: p.uri, inherited: p.inherited, input: p.input_component})))
-
-    console.debug("We are in ORF.typeSwitch", propertiesByDomainHierarchy.value, typeModel.value);
 
     internalRelations.value.splice(0)
 

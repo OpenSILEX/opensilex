@@ -2,14 +2,14 @@
   <b-modal
     @hide="clearModal"
     v-model="modalShow"
-    :title="$t('ResultModalView.title')"
+    :title="t('ResultModalView.title')"
   >
     <template v-slot:modal-header>
       <b-row class="mt-1" style="width: 100%">
         <b-col cols="10">
           <i>
             <h4>
-              <opensilex-Icon icon="fa#list" />
+              <Icon icon="fa#list" />
               {{ $t("ResultModalView.title") }}
             </h4>
           </i>
@@ -32,14 +32,14 @@
         }}
       </p>
       <div class="details-container">
-        <opensilex-ProvenanceDetails
+        <ProvenanceDetails
           label="ResultModalView.provenanceLabel"
           v-if="provenance"
           :provenance="provenance"
           :dataImportResult="true"
         />
 
-        <opensilex-BatchDetails
+        <BatchDetails
           label="ResultModalView.batchLabel"
           v-if="batch"
           :batchUri="batch"
@@ -59,52 +59,65 @@
   </b-modal>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import { Component, Prop } from "vue-property-decorator";
+<script setup lang="ts">
 
-@Component
-export default class ResultModalView extends Vue {
-  $t: any;
-  modalShow: boolean = false;
+  import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
+  import BatchDetails from "@/components/data/BatchDetails.vue";
+  import Icon from "@/components/common/views/Icon.vue";
+  import {useI18n} from "vue-i18n";
+  import {ref} from "vue";
 
-  nbLinesImported: number = null;
-  nbAnnotationsImported: number = null;
+  const { t } = useI18n()
+  const modalShow = ref<boolean>(false)
+  const nbLinesImported = ref<number>(null)
+  const nbAnnotationsImported = ref<number>(null)
+  const provenance = ref<any>(null)
+  const batch = ref<string>(null)
 
-  provenance: any = null;
-  batch: string = null;
+  const emit = defineEmits<{
+    onHide: []
+  }>()
 
-  setNbLinesImported(value: number) {
-    this.nbLinesImported = value;
+  function setNbLinesImported(value: number) {
+    nbLinesImported.value = value;
   }
 
-  setNbAnnotationsImported(value: number) {
-      this.nbAnnotationsImported = value;
+  function setNbAnnotationsImported(value: number) {
+      nbAnnotationsImported.value = value;
   }
 
-  setProvenance(value) {
-    this.provenance = value;
+  function setProvenance(value) {
+    provenance.value = value;
   }
 
-  setBatch(value) {
-    this.batch = value;
+  function setBatch(value) {
+    batch.value = value;
   }
 
-  show() {
-    this.modalShow = true;
+  function show() {
+    modalShow.value = true;
   }
 
-  hide() {
-    this.modalShow = false;
+  function hide() {
+    modalShow.value = false;
   }
 
-  clearModal() {
-    this.nbLinesImported = null;
-    this.nbAnnotationsImported = null;
-    this.provenance = null;
-    this.$emit("onHide");
+
+ function clearModal() {
+    nbLinesImported.value = null;
+    nbAnnotationsImported.value = null;
+    provenance.value = null;
+    emit("onHide");
   }
-}
+
+  defineExpose({
+    setBatch,
+    setNbAnnotationsImported,
+    setNbLinesImported,
+    setProvenance,
+    show
+  })
+
 </script>
 
 <style scoped>

@@ -4,31 +4,31 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {
   Component,
   Prop
 } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, {computed} from "vue";
 
-@Component
-export default class FilterField extends Vue {
-  @Prop({default:"component.search.lab"})
-  label: string;
 
-  @Prop({ default: false })
-  fullWidth: boolean;
-  
-  @Prop({ default: false })
-  halfWidth: boolean;
+const props = withDefaults(defineProps<{
+ label: string
+  fullWidth: boolean
+  halWidth: boolean
+  quarterWidth: boolean
+}>(), {
+  label: "component.search.lab",
+  fullWidth: false,
+  halWidth: false,
+  quarterWidth: false
+})
 
-  @Prop({ default: false })
-  quarterWidth: boolean;
+  const baseWidth = computed(() =>
+  {
+    return !props.fullWidth && !props.halWidth && !props.quarterWidth
+  })
 
-  get baseWidth() {
-    return !this.fullWidth && !this.halfWidth && !this.quarterWidth
-  }
-}
 </script>
 
 

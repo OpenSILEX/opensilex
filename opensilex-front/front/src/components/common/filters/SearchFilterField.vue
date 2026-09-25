@@ -1,10 +1,11 @@
 <template>
   <div class="card-vertical-group">
-    <ValidationObserver ref="validatorRef">
+    <n-form
+        ref="validatorRef">
       <div class="card">
         <div v-if="showTitle" class="card-header">
           <h3 class="mr-3">
-            <opensilex-Icon class="search-icon" icon="ik#ik-search"/>
+            <Icon class="search-icon" icon="ik#ik-search"/>
             {{ $t(label) }}
           </h3>
         </div>
@@ -61,85 +62,73 @@
         <div class="row">
           <div class="col-md-12 text-right">
             <slot name="clear">
-              <opensilex-Button
+              <Button
                 label="component.common.search.clear-button"
                 icon="ik#ik-x"
                 @click="$emit('clear', $event)"
                 variant="light"
                 class="mr-3"
                 :small="false"
-              ></opensilex-Button>
+              ></Button>
             </slot>
             <slot name="search">
-              <opensilex-Button
+              <Button
                 :label="searchButtonLabel"
                 @click="validateAndSearch($event)"
                 icon="ik#ik-search"
                 class="greenThemeColor createButton"
                 :small="false"
-              ></opensilex-Button>
+              ></Button>
             </slot>
           </div>
         </div>
       </div>
-    </ValidationObserver>
+    </n-form>
   </div>
 </template>
 
-<script lang="ts">
-import {
-  Component,
-  Prop,
-  Ref,
-} from "vue-property-decorator";
-import Vue from "vue";
+<script setup lang="ts">
+import Button from "@/components/common/buttons/Button.vue";
+import Icon from "@/components/common/views/Icon.vue";
+import {NForm} from "naive-ui";
+import {ref, useTemplateRef} from "vue";
 
-@Component
-export default class SearchFilterField extends Vue {
-  @Ref("validatorRef") readonly validatorRef!: any;
+const validatorRef = useTemplateRef<InstanceType<typeof NForm>>('validatorRef')
+const advancedSearchOpen = ref<boolean>(false)
 
-  @Prop({ default: "SearchFilter.searchlabel" })
-  label: string;
+const props = withDefaults(defineProps<{
+  label: string
+  searchButtonLabel: string
+  advancedSearchLabel: string
+  withButton: boolean
+  withIcon: boolean
+  showTitle: boolean
+}>(), {
+  label : "SearchFilter.searchlabel",
+  searchButtonLabel: "component.common.search.search-button",
+  advancedSearchLabel: "SearchFilter.advancedSearchLabel",
+  withButton: true,
+  withIcon: true,
+  showTitle: true,
+})
 
-  @Prop({ default: "component.common.search.search-button" })
-  searchButtonLabel: string;
+const emit = defineEmits<{
+  toggleAdvancedSearch: [],
+  search: []
+}>()
 
-  @Prop({ default: "SearchFilter.advancedSearchLabel" })
-  advancedSearchLabel: string;
-
-  @Prop({ default: true })
-  withButton: boolean;
-
-  @Prop({default: true })
-  withIcon: boolean;
-
-  @Prop({
-    default: false,
-  })
-  
-  @Prop({ default: true })
-  showTitle: boolean;
-
-  @Prop({
-    default: false,
-  })
-  showAdvancedSearch;
-
-  advancedSearchOpen = false;
-
-  toggleAdvancedSearch($event) {
-    this.advancedSearchOpen = !this.advancedSearchOpen;
-    this.$emit("toggleAdvancedSearch",$event);
+ function toggleAdvancedSearch($event) {
+    advancedSearchOpen.value = !advancedSearchOpen.value;
+    emit("toggleAdvancedSearch",$event);
   }
 
-  validateAndSearch($event) {
-    this.validatorRef.validate().then((isValid) => {
+  function validateAndSearch($event) {
+    validatorRef.value.validate().then((isValid) => {
       if (isValid) {
-        this.$emit("search", $event);
+        emit("search", $event);
       }
     });
   }
-}
 </script>
 
 

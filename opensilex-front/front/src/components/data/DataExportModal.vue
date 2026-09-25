@@ -1,5 +1,5 @@
 <template>
-  <b-modal
+  <Modal
     ref="modal"
     :title="$t('DataExportModal.title')"
     no-close-on-backdrop
@@ -10,7 +10,7 @@
         <b-col cols="10">
           <i>
             <h4>
-              <opensilex-Icon icon="fa#list" />
+              <Icon icon="fa#list" />
               {{ $t("DataExportModal.title") }}
             </h4>
           </i>
@@ -18,16 +18,16 @@
       </b-row>
     </template>
     <template>
-      <opensilex-FormSelector
+      <FormSelector
         label="DataExportModal.select-format"
-        :selected.sync="format"
+        v-model:selected="format"
         :required="true"
         :multiple="false"
         :clearable="false"
         helpMessage="DataExportModal.select-format-help"
         :options="options"
-      ></opensilex-FormSelector>
-      <opensilex-FormField
+      ></FormSelector>
+      <FormField
         label="DataExportModal.check-raw-data"
         helpMessage="DataExportModal.raw-data-help"
       >
@@ -36,7 +36,7 @@
             {{$t("DataTemplateForm.raw-data")}}
           </b-form-checkbox>
         </template>
-      </opensilex-FormField>
+      </FormField>
 
     </template>
         <template v-slot:modal-footer>
@@ -53,45 +53,54 @@
       >{{ $t('DataExportModal.export') }}</button> 
     </template>
 
-  </b-modal>
+  </Modal>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import { Component, Prop, Ref } from "vue-property-decorator";
+<script setup lang="ts">
+import {computed, inject, ref, useTemplateRef} from "vue";
 import {DataSearchDTO} from "opensilex-core/model/dataSearchDTO";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import FormField from "@/components/common/forms/FormField.vue";
+import Icon from "@/components/common/views/Icon.vue";
+import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+import {useI18n} from "vue-i18n";
+import {useStore} from "vuex";
+import Modal from "@/components/common/views/Modal.vue";
 
-@Component
-export default class DataExportModal extends Vue {
-  $opensilex: any;
-  $t: any;
-  $store: any;
+const props = defineProps<{
+  filter: any
+}>()
 
-  readonly longFormat = "long";
-  readonly wideFormat = "wide";
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+const { t } = useI18n()
+const store = useStore()
+const longFormat = "long";
+const wideFormat = "wide";
+const modal = useTemplateRef<InstanceType<typeof Modal>>('modal')
 
-  withRawData = false;
-  format = this.wideFormat;
+const withRawData = ref(false);
+const format = ref(wideFormat);
 
-  options = [
-    { id: this.longFormat, label: this.$t("DataExportModal.export-long")},
-    {  id: this.wideFormat, label: this.$t("DataExportModal.export-wide")}
-  ]
+const options = computed(() => [
+  {
+    id: longFormat,
+    label: t("DataExportModal.export-long"),
+  },
+  {
+    id: wideFormat,
+    label: t("DataExportModal.export-wide"),
+  },
+]);
 
-  @Ref("modal") readonly modal!: any;
-
-  @Prop()
-  filter;
-
-  show() {
-    this.modal.show();
+  function show() {
+    modal.value.show();
   }
 
-  hide() {
-    this.modal.hide();
+  function hide() {
+    modal.value.hide();
   }
 
-  exportData() {
+  function exportData() {
     let path = "/core/data/export";
     let today = new Date();
     let filename =
@@ -112,11 +121,11 @@ export default class DataExportModal extends Vue {
       with_raw_data: this.withRawData
     }
 
-    this.hide();
-    this.$opensilex.downloadFilefromPostService(path, filename, "csv", exportDto, this.$store.state.lang)
+    hide();
+    opensilex.downloadFilefromPostService(path, filename, "csv", exportDto, store.state.lang)
     
   }
-}
+
 </script>
 
 <style>

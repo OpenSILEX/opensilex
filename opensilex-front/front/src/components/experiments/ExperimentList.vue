@@ -318,6 +318,8 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
 import {NButtonGroup} from "naive-ui";
+import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
+import FilterField from "@/components/common/filters/FilterField.vue";
 
 //#region Public
 interface Props {

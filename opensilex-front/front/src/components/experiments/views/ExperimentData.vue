@@ -203,7 +203,7 @@
           <div class="card-body">
             <DataList
                 ref="dataList"
-                :listFilter.sync="filter"
+                v-model:listFilter="filter"
                 :contextUri="uri"
                 class="dataList">
             </DataList>
@@ -257,7 +257,6 @@ import GermplasmGroupSelector from "@/components/germplasm/GermplasmGroupSelecto
 import FilterField from "@/components/common/filters/FilterField.vue";
 import DataList from "@/components/data/DataList.vue";
 import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
-import {type} from "node:os";
 import {useStore} from "vuex";
 import {DataService, ScientificObjectsService} from "../../../../../../opensilex-core/front/src/lib";
 
@@ -266,7 +265,7 @@ const {t} = useI18n()
 const route = useRoute()
 const store = useStore()
 
-const uri = ref(null)
+const uri = ref<string>(decodeURIComponent(route.params.uri as string))
 const visibleDetails = ref<boolean>(false)
 const searchVisible = ref<boolean>(false)
 const usedVariables = ref<any[]>([])
@@ -276,36 +275,37 @@ const toggleSearchFilters = ref<boolean>(false)
 const loadSearchFilters = ref<boolean>(false)
 const renderImportForm = ref<boolean>(false)
 
-const filter = {
-  germplasm_group: undefined,
-  start_date: null,
-  end_date: null,
-  provenance: null,
-  variables: [],
-  experiments: [uri.value],
-  scientificObjects: [],
-  targets: [],
-  devices: [],
-  facilities: [],
-  operators: [],
-  batch_uri: undefined
-};
-
-const soFilter = {
-  name: "",
-  experiment: uri.value,
-  germplasm: undefined,
-  factorLevels: [],
-  types: [],
-  existenceDate: undefined,
-  creationDate: undefined,
-};
-
-function data() {
+function defaultFilter() {
   return {
-    SearchFiltersToggle: false,
-  }
+    germplasm_group: undefined,
+    start_date: null,
+    end_date: null,
+    provenance: null,
+    variables: [],
+    experiments: [uri.value],
+    scientificObjects: [],
+    targets: [],
+    devices: [],
+    facilities: [],
+    operators: [],
+    batch_uri: undefined
+  };
 }
+
+function defaultSoFilter() {
+  return {
+    name: "",
+    experiment: uri.value,
+    germplasm: undefined,
+    factorLevels: [],
+    types: [],
+    existenceDate: undefined,
+    creationDate: undefined,
+  };
+}
+
+const filter = ref<any>(defaultFilter())
+const soFilter = ref<any>(defaultSoFilter())
 
 const dataList = useTemplateRef<InstanceType<typeof DataList>>('dataList')
 const modalDataForm = useTemplateRef<InstanceType<typeof Modal>>('modalDataForm')
@@ -326,15 +326,7 @@ const credentials = computed(() => {
 
 
 function refreshSoSelector() {
-  const soFilter = ref({
-    name: "",
-    experiment: this.uri,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  });
+  soFilter.value = defaultSoFilter();
   soSelector.value.refreshModalSearch();
   refreshComponent();
 }
@@ -343,37 +335,8 @@ function refreshComponent() {
   refreshKey.value += 1
 }
 
-function created() {
-  uri.value = decodeURIComponent(route.params.uri as string);
-  resetFilters();
-
-
-  const soFilter = ref({
-    name: "",
-    experiment: uri.value,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  });
-}
-
 function resetFilters() {
-  const filter = {
-    germplasm_group: undefined,
-    start_date: null,
-    end_date: null,
-    provenance: null,
-    variables: [],
-    experiments: [this.uri],
-    scientificObjects: [],
-    targets: [],
-    devices: [],
-    facilities: [],
-    operators: [],
-    batch_uri: undefined
-  };
+  filter.value = defaultFilter();
   // Only if search and reset button are use in list
 }
 
@@ -385,7 +348,7 @@ function resetFilters() {
  *
  */
 function toggleFilter() {
-  toggleSearchFilters.value = !this.toggleSearchFilters;
+  toggleSearchFilters.value = !toggleSearchFilters.value;
   if (!loadSearchFilters.value) {
     loadSearchFilters.value = true;
   }
@@ -403,13 +366,12 @@ function successMessage(form) {
 }
 
 const getSelectedProv = computed(() => {
-      return selectedProvenance;
-    }
-)
+  return selectedProvenance.value;
+})
 
 function refreshDataAfterImportation()
 {
-  loadProvenance({id: filter.provenance});
+  loadProvenance({id: filter.value.provenance});
   refresh();
 }
 
@@ -430,7 +392,7 @@ function afterCreateData(results)
       resultModal.value.setBatch(res.validation.dataErrors.batchHistoryUri);
       resultModal.value.show();
       clear();
-      filter.provenance = res.form.provenance.uri;
+      filter.value.provenance = res.form.provenance.uri;
       refreshVariables();
       refreshKey.value += 1;
       loadProvenance({id: res.form.provenance.uri});
@@ -449,7 +411,7 @@ function afterCreateData(results)
     resultModal.value.setBatch(results.validation.dataErrors.batchHistoryUri);
     resultModal.value.show();
     clear();
-    filter.provenance = results.form.provenance.uri;
+    filter.value.provenance = results.form.provenance.uri;
     refreshVariables();
     refreshKey.value += 1;
     loadProvenance({id: results.form.provenance.uri});
@@ -464,7 +426,7 @@ function initFormData(form)
 
 function showProvenanceDetails()
 {
-  if (selectedProvenance != null) {
+  if (selectedProvenance.value != null) {
     visibleDetails.value = !visibleDetails.value;
   }
 }
@@ -487,13 +449,13 @@ function refreshVariables()
 {
   opensilex
       .getService<DataService>("opensilex.DataService")
-      .getUsedVariables([this.uri], null, null, null)
+      .getUsedVariables([uri.value], null, null, null)
       .then((http) => {
         let variables = http.response.result;
-        this.usedVariables = [];
+        usedVariables.value = [];
         for (let i in variables) {
           let variable = variables[i];
-          this.usedVariables.push({
+          usedVariables.value.push({
             id: variable.uri,
             label: variable.name,
           });
@@ -537,7 +499,7 @@ function loadSO(scientificObjectsURIs)
   const sos = scientificObjectsURIs.filter((x, i, a) => a.indexOf(x) == i); // distinct element on array
   return opensilex
       .getService<ScientificObjectsService>("opensilex.ScientificObjectsService")
-      .searchScientificObjectsListByUris(this.uri, sos)
+      .searchScientificObjectsListByUris(uri.value, sos)
       .then(
           (
               http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>

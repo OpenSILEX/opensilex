@@ -1296,7 +1296,11 @@
                 "om": "L’Ontology of Units of Measure (OM) 2.0 modélise les concepts et relations importants pour la recherche scientifique. Elle met particulièrement l’accent sur les unités, les quantités, les mesures et les dimensions.",
                 "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
                 "xsd": "Découvrez les langages de schémas XML.",
-                "placeholder": "Saisir un URI, ex : http://www.opensilex.org/"
+                "placeholder": "Saisir un URI, ex : http://www.opensilex.org/",
+                "XSD-placehorlder": {
+                    "XSDLongStringInput-placeholder": "Saisissez un texte long, ex : OpenSILEX est un système d'information guidé par des ontologies, conçu pour les données issues des sciences de la vie ",
+                    "XSDIntegerInput-placeholder": "Saisir un nombre entier, ex : 8611"
+                }
             },
             "typeView": {
                 "scientificObject": {

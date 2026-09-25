@@ -1,15 +1,18 @@
 <template>
-   <TextAreaForm
+   <n-form
       v-model:value="internalValue"
       :label="property.name"
       :required="property.is_required"
       :helpMessage="property.comment"
-      :placeholder="$t('XSDLongStringInput.placeholder')"
-   ></TextAreaForm>
+      :placeholder="t('component.ontology.externalOntologies.XSD-placehorlder.XSDLongStringInput-placeholder')"
+   ></n-form>
 </template>
 
 <script setup lang="ts">
-import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
+import {NForm} from "naive-ui";
+import {useI18n} from "vue-i18n";
+
+const { t } = useI18n()
 
 defineProps<{
   property: {
@@ -25,13 +28,3 @@ const internalValue = defineModel<string>("value");
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-    XSDLongStringInput:
-        placeholder: "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data."
-fr:
-    XSDLongStringInput:
-        placeholder: "Saisissez un texte long, ex : OpenSILEX est un système d'information guidé par des ontologies, conçu pour les données issues des sciences de la vie "
-</i18n>
-

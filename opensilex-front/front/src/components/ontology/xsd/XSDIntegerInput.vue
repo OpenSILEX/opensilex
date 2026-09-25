@@ -7,7 +7,7 @@
     :disabled="false"
     :required="property.is_required"
     :helpMessage="property.comment"
-    :placeholder="$t('XSDIntegerInput.placeholder')"
+    :placeholder="t('component.ontology.externalOntologies.XSD-placehorlder.XSDIntegerInput-placeholder')"
   ></InputForm>
   </n-form-item>
 </template>
@@ -18,6 +18,9 @@
   import {FormItemRule, NFormItem} from "naive-ui";
   import {VueRDFTypePropertyDTO} from "@/lib";
   import {computed} from "vue";
+  import {useI18n} from "vue-i18n";
+
+  const { t } = useI18n()
 
   defineProps<{
     property: VueRDFTypePropertyDTO
@@ -31,7 +34,7 @@ const internalValue = defineModel<string>("value");
   const rule = computed<FormItemRule>(() => {
     return {
       required: false,
-      message: "A traduire",
+      message: t("component.ontology.externalontologies"),
       trigger: ['change', 'blur']
     }
   })
@@ -40,13 +43,3 @@ const internalValue = defineModel<string>("value");
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-
-en:
-    XSDIntegerInput:
-        placeholder: "Enter an integer number, ex : 8611"
-fr:
-    XSDIntegerInput:
-        placeholder: "Saisir un nombre entier, ex : 8611"
-</i18n>

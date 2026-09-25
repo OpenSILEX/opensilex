@@ -347,7 +347,7 @@
             "devices": "Devices",
             "document": {
                 "label" :"Document",
-                "description": "Manage Document" 
+                "description": "Manage Document"
             },
             "events" : "Events",
             "vocabulary" : "Vocabulary",
@@ -376,7 +376,7 @@
             "button": {
                 "login": "Login"
             },
-            "copyright": { 
+            "copyright": {
                 "1": "PHIS - Phenotyping Hybrid Information System",
                 "2": "Version {version}",
                 "3": "Based on OpenSILEX version {version}",
@@ -685,7 +685,7 @@
             "coordinators":"Coordinators",
             "financialFunding":"Financial funding",
             "scientificContacts":"Scientific supervisors",
-            "administrativeContacts":"Administrative supervisors",           
+            "administrativeContacts":"Administrative supervisors",
             "experiments":"Experiments",
             "relatedProjects":"Related projects",
             "inProgress":"In progress ...",
@@ -1240,7 +1240,11 @@
                 "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
                 "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
                 "xsd": "Discover XML schema languages.",
-                "placeholder": "Enter an URI, ex : http://www.opensilex.org/"
+                "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
+                "XSD-placehorlder": {
+                    "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",
+                    "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611"
+                }
             },
             "typeView": {
                 "scientificObject": {

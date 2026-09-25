@@ -6,13 +6,14 @@ export default defineConfig({
   plugins: [vue()], // Utilisez le plugin Vue pour Vite
   build: {
     outDir: 'dist', // Dossier de sortie
+    minify: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'), // Point d'entrée
-      name: 'opensilex-phis', // Nom de la bibliothèque
-      fileName: (format) => `opensilex-phis.${format}.js`, // Nom du fichier de sortie
-      formats: ['es', 'umd'], // Formats de sortie (ES Module et UMD)
+      entry: resolve(import.meta.dirname, 'src/index.ts'), // Point d'entrée
+      name: 'opensilex-dataverse', // Nom de la bibliothèque
+      fileName: (format) => `opensilex-dataverse.${format}.min.js`, // Nom du fichier de sortie
+      formats: ['umd'], // Formats de sortie (ES Module et UMD)
     },
-    rollupOptions: {
+    rolldownOptions: {
       // Externaliser les dépendances (si nécessaire)
       external: ['vue'],
       output: {

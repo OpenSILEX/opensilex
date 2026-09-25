@@ -1,0 +1,3 @@
+[submodule "opensilex-deref"]
+	path = opensilex-deref
+	url = git@forge.inrae.fr:OpenSILEX/dereferencement/opensilex-deref.git

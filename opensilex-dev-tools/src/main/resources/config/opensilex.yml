@@ -1,31 +1,23 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://localhost:8666/
+    baseURIAlias: local
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            repository: semantics
 
 file-system:
     fs:
         config:
-            defaultFS: local
+            defaultFS: gridfs
             connections:
-                local:
-                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
-                    config:
-                        basePath: ../../opensilex-data
-                #     irods:
-                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-                #         config:
-                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
                 gridfs:
                     implementation: org.opensilex.fs.gridfs.GridFSConnection
                     config:
                         host: localhost
                         port: 8668
-                        database: opensilex
+                        database: semantics
             # customPath:
             #     datafile/: irods
 
@@ -34,7 +26,7 @@ big-data:
         config:
             host: localhost
             port: 8668
-            database: opensilex
+            database: semantics
     #            timezone: Europe/Paris
 
 phisws:

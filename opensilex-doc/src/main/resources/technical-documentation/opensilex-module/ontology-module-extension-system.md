@@ -68,7 +68,7 @@ Once done, you should be able to see your new ontology's concepts and contexts i
 
 Try launching the OpenSILEX server as some error can appear at launch if the ontology file is not well-formed or not compatible with the current version of the ontology.
 
-### Follow your path
+### Try it out in the front-end and API
 
 If you have declared subtypes of concepts as scientific objects, devices, events, etc. you should now be able to create new scientific objects of your new type using the OpenSILEX API and front-end without any further work.
 

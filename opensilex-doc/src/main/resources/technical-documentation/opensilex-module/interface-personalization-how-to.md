@@ -145,8 +145,9 @@ export default {
     }
 } as OpensilexModulePlugin;
 ```
-
-Prefixing each component identifier with the module name keeps it unique across the whole application, and is
+> ⚠️ _WARNING_ : As in the example above, the component identifiers **need** to be prefixed with `{module name}-`. This is the way the
+> application knows which module should be loaded for the component.
+Prefixing each component identifier with the module name also keeps it unique across the whole application, and is
 what lets an instance select your components from its YAML configuration.
 
 For the details of how this plugin is then loaded and how its components are registered, see

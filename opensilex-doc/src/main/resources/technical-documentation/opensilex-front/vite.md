@@ -40,11 +40,13 @@ plugins: [
 ```ts
 resolve: {
   alias: {
-    '~bootstrap': resolve(__dirname, 'node_modules/bootstrap')
+    '@': resolve(__dirname, 'src'),
+    'opensilex-core': resolve(__dirname, '../../opensilex-core/front/src'),
+    'opensilex-security': resolve(__dirname, '../../opensilex-security/front/src')
   }
 }
 ```
-Permet d'importer Bootstrap plus facilement dans les composants.
+Permet de simplifier les imports dans les fichiers vue et typescript. **Attention** à mirrorer cette configuration dans la partie paths du `tsconfig.json`.
 
 
 ### 📦 Build
@@ -52,7 +54,7 @@ Permet d'importer Bootstrap plus facilement dans les composants.
 ```ts
 build: {
   outDir: 'dist',
-  rollupOptions: {
+  rolldownOptions: {
     external: ['vue'],
     output: {
       globals: {
@@ -95,13 +97,13 @@ Pas d’i18n ni de devtools ici : configuration plus légère pour la compilatio
 
 ```ts
 lib: {
-  entry: resolve(__dirname, 'src/lib/index.ts'),
+  entry: resolve(import.meta.dirname, 'src/lib/index.ts'),
   name: 'opensilex-core',
   fileName: (format) => `opensilex-core.${format}.min.js`,
-  formats: ['es', 'umd']
+  formats: ['umd']
 }
 ```
-📦 Génère une bibliothèque compatible avec ES Modules et UMD.
+📦 Génère une bibliothèque compatible avec UMD.
 
 
 ### 🔗 Alias
@@ -161,10 +163,10 @@ Puis :
 Décommente les lignes suivantes dans `vite.config.ts` :
 ```ts
 lib: {
-  entry: resolve(__dirname, 'src/lib/index.ts'),
+  entry: resolve(import.meta.dirname, 'src/lib/index.ts'),
   name: 'opensilex-front',
-  fileName: (format) => `opensilex-front.${format}.js`,
-  formats: ['es', 'umd']
+  fileName: (format) => `opensilex-front.${format}.min.js`,
+  formats: ['umd']
 }
 ```
 Et ajoute un `export` explicite dans `src/lib/index.ts`.

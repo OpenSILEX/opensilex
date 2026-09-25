@@ -61,7 +61,7 @@
 
           <!-- Parent -->
           <n-form-item
-              :label="t('ExperimentScientificObjects.parent-label')"
+              :label="t('component.common.parent')"
               :show-feedback="false"
               class="compact-form-item"
           >
@@ -71,7 +71,7 @@
                 :multiple="false"
                 :required="false"
                 :searchMethod="searchParents"
-                :placeholder="t('ExperimentScientificObjects.parent-placeholder')"
+                :placeholder="t('component.scientificObjects.parent-placeholder')"
                 class="searchFilter"
                 @handlingEnterKey="unselectRefresh()"
             ></FormSelector>
@@ -180,7 +180,7 @@
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                         :small="true"
                         @click="editScientificObject(node.data.uri)"
-                        label="ExperimentScientificObjects.edit-scientific-object"
+                        :label="t('component.scientificObjects.actions.edit')"
                     ></EditButton>
                     <AddChildButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
@@ -192,7 +192,7 @@
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
                         :small="true"
                         @click="deleteScientificObject(node)"
-                        label="ExperimentScientificObjects.delete-scientific-object"
+                        :label="t('component.scientificObjects.actions.delete')"
                     ></DeleteButton>
                   </n-button-group>
                 </template>
@@ -1012,30 +1012,3 @@ function onSelectAll() {
 }
 </style>
 
-<i18n>
-en:
-  ExperimentScientificObjects:
-    create-scientific-object: Add scientific object
-    edit-scientific-object: Edit scientific object
-    delete-scientific-object: Delete scientific object
-    add-scientific-object-child: Add scientific object child
-    parent-label: Parent
-    parent-placeholder: Select a parent
-    objectType: Object type
-    name-placeholder: Enter a name
-    select-all: Select all
-    alertSelectAllLimitSize: The selection has too many lines for this feature, refine your search, maximum=
-
-fr:
-  ExperimentScientificObjects:
-    create-scientific-object: Ajouter un objet scientifique
-    edit-scientific-object:  Mettre à jour l'objet scientifique
-    delete-scientific-object: Supprimer l'objet scientifique
-    add-scientific-object-child: Ajouter un objet scientifique enfant
-    parent-label: Parent
-    parent-placeholder: Sélectionner un parent
-    objectType: Type d'objet
-    name-placeholder: Saisir un nom
-    select-all: Tout sélectionner
-    alertSelectAllLimitSize: La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum=
-</i18n>

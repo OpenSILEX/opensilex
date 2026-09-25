@@ -761,7 +761,6 @@
             "uri": "URI de l'expérimentation",
             "uri-help": "Identifiant unique de l'expérimentation",
             "label": "Nom",
-            "label-placeholder": "Maize_DROPS_Dataset",
             "label-help": "Nom utilisé pour identifier l'expérimentation",
             "objective": "Objectif",
             "objective-required": "Le champs objectif est obligatoire",
@@ -906,6 +905,9 @@
         "scientificObjects": {
             "scientificObjects": "Objet(s) scientifique(s)",
             "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
+            "parent-placeholder": "Sélectionner un parent",
+            "objectType": "Type d'objet",
+            "alertSelectAllLimitSize": "La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum=",
             "error": {
                 "delete": {
                     "associated-data": "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des données associées. Vous devez les supprimer d'abord",

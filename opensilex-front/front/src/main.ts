@@ -168,7 +168,6 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 for (let componentName in components) {
   let component = components[componentName];
   app.component(componentName, component);
-  $opensilex.loadComponentTranslations(component);
 }
 
 

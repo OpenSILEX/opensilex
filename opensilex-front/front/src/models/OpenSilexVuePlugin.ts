@@ -438,30 +438,6 @@ export default class OpenSilexVuePlugin {
         }
     }
 
-    /**
-     * merge local I18n scopes (declared in components) with global.
-     * Thanks to this method modules like phis can have access to component's local translations.
-     */
-    public loadComponentTranslations(component) {
-        const target = component?.__vccOpts ?? component;
-        const blocks = target?.__i18nGlobal ?? target?.__i18n;
-
-        if (!Array.isArray(blocks)) {
-            return;
-        }
-
-        for (let block of blocks) {
-            if (typeof block === "string") {
-                this.loadTranslations(JSON.parse(block));
-            } else if (block?.resource) {
-                if (block.locale) {
-                    this.$i18n.mergeLocaleMessage(block.locale, block.resource);
-                } else {
-                    this.loadTranslations(block.resource);
-                }
-            }
-        }
-    }
 
     public loadModule(name) {
         if (this.loadingModules[name]) {
@@ -515,14 +491,6 @@ export default class OpenSilexVuePlugin {
 
                 if (plugin.lang) {
                     this.loadTranslations(plugin.lang);
-                }
-
-                /**merge I18n translations of module's components in the global scope
-                 * maybe it's not a good practice to allow them using something else than messages files*/
-                if (plugin.components) {
-                    for (let componentId in plugin.components) {
-                        this.loadComponentTranslations(plugin.components[componentId]);
-                    }
                 }
 
                 this.initAsyncComponents(plugin.components)

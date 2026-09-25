@@ -65,7 +65,7 @@
                     <ul class="dropdown-menu" aria-labelledby="languageDropdown">
                       <li v-for="item in languages" :key="`language-${item}`">
                         <a class="dropdown-item" href="#" @click.prevent="setLanguage(item)">
-                          {{ t('component.common.guage.' + item) }}
+                          {{ t('component.common.language.' + item) }}
                         </a>
                       </li>
                     </ul>

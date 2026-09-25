@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "license": "AGPL-3.0-only",
-    "main": "./dist/mopensilex-front.umd.min.js",
+    "main": "./dist/opensilex-front.umd.min.js",
     "module": "./dist/opensilex-front.umd.min.js",
     "exports": {
         ".": {

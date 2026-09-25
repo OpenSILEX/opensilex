@@ -97,8 +97,6 @@ import {NConfigProvider, NSpin, useMessage, NMessageProvider} from 'naive-ui';
 import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 const toastContainer = ref();
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 // Props definitions
 const props = defineProps({

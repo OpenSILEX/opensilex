@@ -1,44 +1,50 @@
-import { Container } from 'inversify';
-import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
-import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
-import { useCookies } from 'vue3-cookies';
-import { Composer } from 'vue-i18n';
-import { Store } from 'vuex';
+import {Container} from 'inversify';
+import {useCookies} from 'vue3-cookies';
+import {Composer} from 'vue-i18n';
+import {Store} from 'vuex';
 import {
     ApiServiceBinder,
     FrontConfigDTO,
     IAPIConfiguration,
+    IHttpClient,
+    ResourceDagDTO,
     ThemeConfigDTO,
     VueDataTypeDTO,
+    VueJsOntologyExtensionService,
     VueObjectTypeDTO
-} from '../lib';
-import { ApiServiceBinder as SecurityApiServiceBinder } from './../../../../opensilex-security/front/src/lib';
-import { ApiServiceBinder as CoreApiServiceBinder } from './../../../../opensilex-core/front/src/lib';
+} from '@/lib';
+import {
+    ApiServiceBinder as SecurityApiServiceBinder,
+    AuthenticationService,
+    CredentialsGroupDTO
+} from 'opensilex-security/lib';
+import {
+    ApiServiceBinder as CoreApiServiceBinder,
+    NamedResourceDTO,
+    OntologyService,
+    SystemService,
+    VariableDatatypeDTO,
+    VariablesService,
+    VersionInfoDTO
+} from 'opensilex-core/lib';
 
-import IHttpClient from '../lib/IHttpClient';
-import Oeso from '../ontologies/Oeso';
-import Foaf from '../ontologies/Foaf';
-import Org from '../ontologies/Org';
-import Oeev from '../ontologies/Oeev';
-import Time from '../ontologies/Time';
-import Rdfs from '../ontologies/Rdfs';
+import Oeso from '@/ontologies/Oeso';
+import Foaf from '@/ontologies/Foaf';
+import Org from '@/ontologies/Org';
+import Oeev from '@/ontologies/Oeev';
+import Time from '@/ontologies/Time';
+import Rdfs from '@/ontologies/Rdfs';
 
-import { ModuleComponentDefinition } from './ModuleComponentDefinition';
+import {ModuleComponentDefinition} from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
-import { UploadFileBody } from './UploadFileBody';
-import { User } from './User';
-import { ResourceDagDTO } from "opensilex-core/model/resourceDagDTO";
-import { ServiceBinder } from "../services/ServiceBinder";
-import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
+import {UploadFileBody} from './UploadFileBody';
+import {User} from './User';
+import {ServiceBinder} from "@/services/ServiceBinder";
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
-import HttpResponse, { OpenSilexResponse } from "../lib/HttpResponse";
-import { NamedResourceDTO } from "opensilex-core/model/namedResourceDTO";
-import { App } from 'vue';
-import { useI18n } from 'vue-i18n'
-import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
-import {AuthenticationService} from "opensilex-security/api/authentication.service";
-import {CredentialsGroupDTO} from "opensilex-security/model/credentialsGroupDTO";
+import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
+import {App} from 'vue';
+import {isOpensilexModulePlugin, OpensilexPluginComponentMap} from "@/models/OpensilexModulePlugin";
 
 const { cookies: $cookies } = useCookies();
 
@@ -432,23 +438,16 @@ export default class OpenSilexVuePlugin {
         }
     }
 
-    public loadComponentTranslations(component) {
-        // console.log("VuePlugin - loadComponentTranslations - component : ", component)
-
-        // @todo : trouver une methode de remplacement, component n'a pas d'options
-        // if (component.options.__i18n) {
-        //     let componentTranslations = JSON.parse(component.options.__i18n);
-        //     this.loadTranslations(componentTranslations);
-        // }
-    }
 
     public loadModule(name) {
-        if (window[name]) return window[name];
+        if (this.loadingModules[name]) {
+            return this.loadingModules[name];
+        }
+
         console.debug("Load module", name);
         this.showLoader();
         let url = this.baseApi + "/vuejs/extension/js/" + name + ".js";
         let cssURI = this.baseApi + "/vuejs/extension/css/" + name + ".css";
-        let self = this;
         console.debug("Load module", url);
 
         const link = document.createElement('link');
@@ -457,72 +456,70 @@ export default class OpenSilexVuePlugin {
         link.setAttribute("href", cssURI);
         document.getElementsByTagName("head")[0].appendChild(link);
 
-        window[name] = new Promise((resolve, reject) => {
+        const modulePromise = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.async = true;
             script.src = url;
             script.addEventListener('load', () => {
-                // console.debug(`module ${name} chargé`);
+                const exported = window[name];
+                const plugin = exported?.default ?? exported;
 
-                self.loadedModules.push(name);
-
-                //@todo on doit trouver comment obtenir l'export par défaut du module importé par le script (HtmlScriptElement)
-                // Vincent utilise une façon bizarre d'importer le code JS des autres modules. D'après ce que j'ai compris :
-                // - Les modules (par exemple le fichier index.ts de opensilex-security) a un export par défaut sous forme d'un plugin Vue (avec une méthode install())
-                // - Dans la méthode loadModule(), donc ici, on crée une balise <script> qui a comme attribut src le lien vers le fichier JS du module
-                // - Lors de l'événement load, on récupère `window[name].default` qui est censé correspondre à l'export par défaut du composant
-
-                // const plugin = window[name]?.default;
-                const plugin = window[name];
-
-                // Vue.use(plugin);
-
-
-                // Vérification si le plugin est valide pour Vue 3
-                // if (plugin && (typeof plugin.install === 'function')) {
-                if (plugin) {
-
-                    this.app.use(plugin);
-                    self.hideLoader();
-                    resolve(plugin);
-                } else {
-                    console.error(`Le module "${name}" n'est pas un plugin Vue valide.`);
-                    self.hideLoader();
-                    reject(new Error(`Le module "${name}" doit être une fonction ou un objet avec 'install()'.`));
+                if (!plugin || plugin === modulePromise || typeof plugin.then === "function") {
+                    this.hideLoader();
+                    console.error(
+                        `Le module "${name}" n'a pas publié son export global (window["${name}"]).`
+                        + " Regardez l'erreur d'évaluation du bundle juste au-dessus dans la console"
+                        + " (dépendance externe non exposée en global ?)."
+                    );
+                    reject(new Error(`Le module "${name}" n'a pas publié son export global`));
+                    return;
                 }
 
+                if (!isOpensilexModulePlugin(plugin)) {
+                    this.hideLoader();
+                    console.error(
+                        `L'export global du module "${name}" n'est pas un plugin Vue valide :`
+                        + " il doit être une fonction d'installation ou un objet exposant install()."
+                    );
+                    reject(new Error(`Le module "${name}" n'expose pas un OpensilexModulePlugin valide`));
+                    return;
+                }
 
+                this.loadedModules.push(name);
+
+                this.app.use(plugin, {opensilexInstance: this});
+
+                if (plugin.lang) {
+                    this.loadTranslations(plugin.lang);
+                }
+
+                this.initAsyncComponents(plugin.components)
+                    .then(() => {
+                        this.hideLoader();
+                        resolve(plugin);
+                    })
+                    .catch((error) => {
+                        this.hideLoader();
+                        reject(error);
+                    });
             });
             script.addEventListener('error', () => {
-                self.hideLoader();
-                // reject(new Error(`Error loading ${url}`));
+                this.hideLoader();
                 console.error(`Échec du chargement du module "${name}".`);
                 reject(new Error(`Impossible de charger le module "${name}"`));
             });
-            // script.src = url;
-            // document.head.appendChild(script);
             document.body.appendChild(script);
         });
 
-        return window[name];
+        this.loadingModules[name] = modulePromise;
+
+        return modulePromise;
     }
 
-    public initAsyncComponents(components) {
+    public initAsyncComponents(components: OpensilexPluginComponentMap) {
         let promises: Array<Promise<any>> = [];
         if (components) {
             for (let componentId in components) {
-                let component = components[componentId];
-                if (component.asyncInit) {
-                    try {
-                        console.debug("Start component async init...", componentId);
-                        promises.push(component.asyncInit(this));
-                    } catch (error) {
-                        promises.push(Promise.reject(error));
-                    }
-                }
-                // console.debug("Register component - componentID : ", componentId, " /// Component : " , component);
-
-                //@todo trouver comment faire en vue 3 (peut-être avec defineComponent)
                 this.app.component(componentId, components[componentId]);
             }
         }
@@ -535,7 +532,6 @@ export default class OpenSilexVuePlugin {
                 })
                 .catch(reject);
         });
-
     }
 
     public getServiceContainer() {

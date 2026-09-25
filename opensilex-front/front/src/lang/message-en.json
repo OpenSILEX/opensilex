@@ -1,6 +1,10 @@
 {
     "component": {
         "common": {
+            "language": {
+                "fr": "French",
+                "en": "English"
+            },
             "actions": "Actions",
             "multiselect": {
                 "label": {
@@ -260,10 +264,6 @@
             "copyText": "Copy text to clipboard"
         },
         "header": {
-            "language": {
-                "fr": "French",
-                "en": "English"
-            },
             "account": {
                 "admin": "Admin",
                 "logout": "Logout"
@@ -352,6 +352,8 @@
             "web-api" : "Web API"
         },
         "login": {
+            "info-guest": "You can log in as a guest",
+            "loginAsGuest": "Connect as guest",
             "input": {
                 "email": "Email or URI",
                 "password": "Password"
@@ -371,7 +373,7 @@
                 "4": "Copyright © 2021 INRAE"
             },
             "errors": {
-                "invalid-credentials": "Invalid credentials"
+                "invalid-credentials": "User does not exists, is disabled or password is invalid"
             }
         },
         "footer": {

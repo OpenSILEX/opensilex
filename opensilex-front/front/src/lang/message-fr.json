@@ -1,6 +1,10 @@
 {
     "component": {
         "common": {
+            "language": {
+                "fr": "Français",
+                "en": "Anglais"
+            },
             "actions": "Actions",
             "multiselect": {
                 "label": {
@@ -260,10 +264,6 @@
             "copyText": "Copier le texte dans le presse papier"
         },
         "header": {
-            "language": {
-                "fr": "Français",
-                "en": "Anglais"
-            },
             "account": {
                 "admin": "Admin",
                 "logout": "Déconnexion"
@@ -352,6 +352,8 @@
             "web-api": "API web"
         },
         "login": {
+            "info-guest": "Vous pouvez vous connecter en tant qu'invité",
+            "loginAsGuest": "Connexion en tant qu'invité",
             "input": {
                 "email": "Email ou URI",
                 "password": "Mot de passe"
@@ -371,7 +373,7 @@
                 "4": "Copyright © 2021 - INRAE"
             },
             "errors": {
-                "invalid-credentials": "Identifiants invalides"
+                "invalid-credentials": "L'utilisateur n'existe pas, est désactivé ou le mot de passe est invalide"
             }
         },
         "footer": {

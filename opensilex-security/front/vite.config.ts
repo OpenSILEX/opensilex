@@ -8,7 +8,7 @@ export default defineConfig({
     outDir: 'dist', // Dossier de sortie
     minify: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'), // Point d'entrée
+      entry: resolve(import.meta.dirname, 'src/index.ts'), // Point d'entrée
       name: 'opensilex-security', // Nom de la bibliothèque
       fileName: (format) => `opensilex-security.${format}.min.js`, // Nom du fichier de sortie
       formats: ['umd'], // Format de sortie (UMD)

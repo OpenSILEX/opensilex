@@ -97,7 +97,7 @@ Pas d’i18n ni de devtools ici : configuration plus légère pour la compilatio
 
 ```ts
 lib: {
-  entry: resolve(__dirname, 'src/lib/index.ts'),
+  entry: resolve(import.meta.dirname, 'src/lib/index.ts'),
   name: 'opensilex-core',
   fileName: (format) => `opensilex-core.${format}.min.js`,
   formats: ['umd']
@@ -163,7 +163,7 @@ Puis :
 Décommente les lignes suivantes dans `vite.config.ts` :
 ```ts
 lib: {
-  entry: resolve(__dirname, 'src/lib/index.ts'),
+  entry: resolve(import.meta.dirname, 'src/lib/index.ts'),
   name: 'opensilex-front',
   fileName: (format) => `opensilex-front.${format}.min.js`,
   formats: ['umd']

@@ -4,7 +4,7 @@
         "module": "esnext",
         "jsx": "preserve",
         "importHelpers": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
@@ -37,7 +37,8 @@
         "src/**/*.vue",
         "tests/**/*.ts",
         "tests/**/*.tsx",
-        "src/**/*.d.ts"
+        "src/**/*.d.ts",
+        "vite.config.ts"
     ],
     "exclude": [
         "node_modules"

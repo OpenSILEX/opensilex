@@ -957,6 +957,7 @@
             "uri": "URI de référence",
             "uri-help": "Identifiant du concept référencé",
             "uri-placeholder": "http://aims.fao.org/aos/agrovoc/c_8332",
+            "uri-field": " Le champs uri est obligatoire",
             "relation": "Relations",
             "relation-help": "Relation entre l'individu décrit et le concept intéropérable lié à cet identifiant",
             "relation-placeholder": "Equivalent",
@@ -1294,7 +1295,8 @@
                 "uo": "Unités de mesure destinées à être utilisées conjointement avec la Phenotype And Trait Ontology (PATO).",
                 "om": "L’Ontology of Units of Measure (OM) 2.0 modélise les concepts et relations importants pour la recherche scientifique. Elle met particulièrement l’accent sur les unités, les quantités, les mesures et les dimensions.",
                 "qudt": "Les modèles Quantities, Units, Dimensions and Data Types (QUDT) sont fondés sur l’analyse dimensionnelle exprimée dans le langage OWL (Web Ontology Language). L’approche dimensionnelle relie chaque unité à un système d’unités de base à l’aide de facteurs numériques et d’un vecteur d’exposants défini sur un ensemble de dimensions fondamentales.",
-                "xsd": "Découvrez les langages de schémas XML."
+                "xsd": "Découvrez les langages de schémas XML.",
+                "placeholder": "Saisir un URI, ex : http://www.opensilex.org/"
             },
             "typeView": {
                 "scientificObject": {

@@ -41,18 +41,9 @@ const internalValue = computed({
 const rule = computed<FormItemRule>(() => {
   return {
     required: false,
-    message: "A traduire",
+    message: t("component.skos.uri-field"),
     trigger: ['change', 'blur']
   }
 })
 
 </script>
-
-<i18n>
-en:
-  XSDUriInput:
-    placeholder: "Enter an URI, ex : http://www.opensilex.org/"
-fr:
-  XSDUriInput:
-    placeholder: "Saisir un URI, ex : http://www.opensilex.org/"
-</i18n>

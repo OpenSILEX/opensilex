@@ -80,80 +80,30 @@
 
     <PageContent>
       <template v-slot>
-        <ExperimentDetail
-            v-if="isExperimentTab(ExperimentTab.DETAILS)"
-            :uri="uri"
-        />
-
-        <ExperimentFactors
-            v-else-if="isExperimentTab(ExperimentTab.FACTORS)"
-            :uri="uri"
-        />
-
-        <ExperimentScientificObjects
-            v-else-if="isExperimentTab(ExperimentTab.SCIENTIFIC_OBJECTS)"
-            :uri="uri"
-        />
-
-        <ExperimentData
-            v-else-if="isExperimentTab(ExperimentTab.DATA)"
-            :uri="uri"
-        />
-
-        <ExperimentDataFiles
-            v-else-if="isExperimentTab(ExperimentTab.DATAFILES)"
-            :modificationCredentialId="credentials.CREDENTIAL_DATA_MODIFICATION_ID"
-            :uri="uri"
-        />
-
-        <ExperimentDataVisualisation
-            v-else-if="isExperimentTab(ExperimentTab.DATA_VISUALISATION)"
-            :uri="uri"
-            :elementName="name"
-        />
-
-        <MapView
-            v-else-if="isExperimentTab(ExperimentTab.MAP)"
-            :uri="uri"
-        />
-
-        <DocumentTabList
-            v-else-if="isExperimentTab(ExperimentTab.DOCUMENT)"
-            :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
-            :uri="uri"
-        />
-
-        <AnnotationList
-            v-else-if="isExperimentTab(ExperimentTab.ANNOTATIONS)"
-            ref="annotationList"
-            :target="uri"
-            :displayTargetColumn="false"
-            :enableActions="true"
-            :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
-            :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
-        />
+        <!-- Each tab is the child route of its experiment route, see opensilex.front.yml -->
+        <router-view v-slot="{ Component }">
+          <component
+              v-if="Component"
+              :is="Component"
+              v-bind="currentTabProps"
+          />
+        </router-view>
       </template>
     </PageContent>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ref, inject, onMounted, useTemplateRef} from 'vue';
+import {computed, ref, inject, onMounted} from 'vue';
 import {useRoute} from 'vue-router';
 import {useStore} from 'vuex';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse';
-import AnnotationList from '@/components/annotations/list/AnnotationList.vue';
 import {ExperimentsService, ScientificObjectsService} from 'opensilex-core';
 import type {ExperimentGetDTO} from 'opensilex-core';
-import ExperimentDetail from "@/components/experiments/views/ExperimentDetail.vue";
 import PageContent from "@/components/layout/PageContent.vue";
-import ExperimentDataVisualisation from "@/components/experiments/ExperimentDataVisualisation.vue";
-import DocumentTabList from "@/components/documents/DocumentTabList.vue";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
-import ExperimentFactors from "@/components/experiments/views/ExperimentFactors.vue";
-import ExperimentScientificObjects from "@/components/experiments/views/ExperimentScientificObjects.vue";
 
 const route = useRoute();
 const store = useStore();
@@ -195,6 +145,42 @@ enum ExperimentTab {
 function isExperimentTab(tab: ExperimentTab): boolean {
   return route.path.startsWith(`/experiment/${tab}/`);
 }
+
+/**
+ * Props given to the component of the current tab, rendered by the router-view.
+ */
+const currentTabProps = computed(() => {
+  switch (Object.values(ExperimentTab).find(isExperimentTab)) {
+    case ExperimentTab.DETAILS:
+    case ExperimentTab.FACTORS:
+    case ExperimentTab.SCIENTIFIC_OBJECTS:
+    case ExperimentTab.DATA:
+    case ExperimentTab.MAP:
+      return {uri: uri.value};
+    case ExperimentTab.DATAFILES:
+      return {
+        uri: uri.value,
+        modificationCredentialId: credentials.value.CREDENTIAL_DATA_MODIFICATION_ID
+      };
+    case ExperimentTab.DATA_VISUALISATION:
+      return {uri: uri.value, elementName: name.value};
+    case ExperimentTab.DOCUMENT:
+      return {
+        uri: uri.value,
+        modificationCredentialId: credentials.value.CREDENTIAL_DOCUMENT_MODIFICATION_ID
+      };
+    case ExperimentTab.ANNOTATIONS:
+      return {
+        target: uri.value,
+        displayTargetColumn: false,
+        enableActions: true,
+        modificationCredentialId: credentials.value.CREDENTIAL_ANNOTATION_MODIFICATION_ID,
+        deleteCredentialId: credentials.value.CREDENTIAL_ANNOTATION_DELETE_ID
+      };
+    default:
+      return {};
+  }
+})
 
 function experimentTabPath(tab: ExperimentTab): string {
   return `/experiment/${tab}/${encodeURIComponent(uri.value!)}`;

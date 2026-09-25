@@ -214,26 +214,31 @@
               </h5>
 
               <nav class="tabs mb-3">
-                <button
+                <router-link
                     v-for="tab in detailTabs"
                     :key="tab.key"
-                    type="button"
-                    :class="['tab', { active: currentDetailTab === tab.key }]"
-                    @click="currentDetailTab = tab.key"
+                    :to="tab.to"
+                    :replace="true"
+                    class="tab"
+                    exact-active-class="active"
                 >
                   {{ tab.label }}
                   <span v-if="tab.count > 0" class="tabBadge">
                     {{ opensilex.$numberFormatter.formateResponse(tab.count) }}
                   </span>
-                </button>
+                </router-link>
               </nav>
 
-              <component
-                  :is="currentDetailTabComponent"
-                  :key="selected.uri"
-                  v-bind="currentDetailTabProps"
-                  v-on="currentDetailTabListeners"
-              ></component>
+              <!-- Each tab is a child route of the experiment scientific objects route, see opensilex.front.yml -->
+              <router-view v-slot="{ Component }">
+                <component
+                    v-if="Component"
+                    :is="Component"
+                    :key="selected.uri"
+                    v-bind="currentDetailTabProps"
+                    v-on="currentDetailTabListeners"
+                ></component>
+              </router-view>
             </n-card>
           </div>
         </n-layout-content>
@@ -263,8 +268,8 @@
 </template>
 
 <script setup lang="ts">
-import {computed, defineAsyncComponent, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
-import {useRoute} from "vue-router";
+import {computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef} from "vue";
+import {useRoute, useRouter} from "vue-router";
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {NButton, NButtonGroup, NCard, NCheckbox, NFormItem, NLayout, NLayoutContent} from "naive-ui";
@@ -293,11 +298,11 @@ import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSel
 import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
 import DocumentForm, {DocumentFormModel} from "@/components/documents/DocumentForm.vue";
 import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
-import ScientificObjectDetailProperties from "@/components/scientificObjects/scientificObjectDetailTabs/ScientificObjectDetailProperties.vue";
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const route = useRoute()
+const router = useRouter()
 const store = useStore()
 const {t} = useI18n()
 const soService = opensilex.getService<ScientificObjectsService>('opensilex.ScientificObjectsService')
@@ -392,29 +397,26 @@ const dropdownOptions = computed(() => {
 })
 
 /**
- * Tabs of the inline detail panel, mirroring the Vue 2 behaviour: they are purely local, so selecting a tab never
- * leaves the experiment page and the tree stays visible. The routed tabs of ScientificObjectDetail cannot be reused
- * here, as they would navigate to the global scientific object detail page.
+ * Tabs of the inline detail panel, mirroring the Vue 2 behaviour: each tab is a child route of the experiment
+ * scientific objects route (see opensilex.front.yml), so selecting a tab never leaves the experiment page and the tree
+ * stays visible. The routed tabs of ScientificObjectDetail cannot be reused here, as they would navigate to the global
+ * scientific object detail page.
  */
-const detailTabComponents = {
-  details: ScientificObjectDetailProperties,
-  events: defineAsyncComponent(() => import("@/components/events/list/EventList.vue")),
-  positions: defineAsyncComponent(() => import("@/components/positions/list/PositionList.vue")),
-  annotations: defineAsyncComponent(() => import("@/components/annotations/list/AnnotationList.vue")),
-  documents: defineAsyncComponent(() => import("@/components/documents/DocumentTabList.vue"))
-}
+type DetailTabKey = 'details' | 'events' | 'positions' | 'annotations' | 'documents'
 
-type DetailTabKey = keyof typeof detailTabComponents
+const DETAILS_ROUTE_NAME = 'ExperimentScientificObjectDetails'
 
-const detailTabDefinitions: Array<{ key: DetailTabKey, labelKey: string }> = [
-  {key: 'details', labelKey: 'component.common.details-label'},
-  {key: 'events', labelKey: 'component.menu.events'},
-  {key: 'positions', labelKey: 'component.common.geometry.positions'},
-  {key: 'annotations', labelKey: 'component.annotation.list-title'},
-  {key: 'documents', labelKey: 'component.common.details.document'}
+const detailTabDefinitions: Array<{ key: DetailTabKey, labelKey: string, routeName: string }> = [
+  {key: 'details', labelKey: 'component.common.details-label', routeName: DETAILS_ROUTE_NAME},
+  {key: 'events', labelKey: 'component.menu.events', routeName: 'ExperimentScientificObjectEvents'},
+  {key: 'positions', labelKey: 'component.common.geometry.positions', routeName: 'ExperimentScientificObjectPositions'},
+  {key: 'annotations', labelKey: 'component.annotation.list-title', routeName: 'ExperimentScientificObjectAnnotations'},
+  {key: 'documents', labelKey: 'component.common.details.document', routeName: 'ExperimentScientificObjectDocuments'}
 ]
 
-const currentDetailTab = ref<DetailTabKey>('details')
+const currentDetailTab = computed<DetailTabKey>(() =>
+    detailTabDefinitions.find(tab => tab.routeName === route.name)?.key ?? 'details'
+)
 
 const eventQuantity = ref<number>(0)
 const positionQuantity = ref<number>(0)
@@ -430,14 +432,13 @@ const detailTabs = computed(() => {
     documents: documentQuantity.value
   }
 
-  return detailTabDefinitions.map(({key, labelKey}) => ({
+  return detailTabDefinitions.map(({key, labelKey, routeName}) => ({
     key,
     label: t(labelKey),
-    count: counts[key]
+    count: counts[key],
+    to: {name: routeName, params: {uri: route.params.uri}}
   }))
 })
-
-const currentDetailTabComponent = computed(() => detailTabComponents[currentDetailTab.value])
 
 const currentDetailTabProps = computed(() => {
   const objectUri = selected.value?.uri;
@@ -701,8 +702,9 @@ function displayScientificObjectDetailsIfNew(nodeUri: string) {
 
 function displayScientificObjectDetails(nodeUri: string) {
   // Switching to another object restarts the detail panel on its first tab, as the Vue 2 version did by remounting it.
-  if (selected.value?.uri !== nodeUri) {
-    currentDetailTab.value = 'details';
+  // The first selection keeps the tab of the URL, so that a shared link opens on the right tab.
+  if (selected.value && selected.value.uri !== nodeUri && route.name !== DETAILS_ROUTE_NAME) {
+    router.replace({name: DETAILS_ROUTE_NAME, params: {uri: route.params.uri}});
   }
 
   opensilex.disableLoader();

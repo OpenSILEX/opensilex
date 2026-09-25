@@ -13,7 +13,7 @@ export default defineConfig({
       fileName: (format) => `opensilex-core.${format}.min.js`, // Nom du fichier de sortie
       formats: ['umd'], // Formats de sortie (ES Module et UMD)
     },
-    rollupOptions: {
+    rolldownOptions: {
       // Externaliser les dépendances (si nécessaire)
       external: ['vue'],
       output: {

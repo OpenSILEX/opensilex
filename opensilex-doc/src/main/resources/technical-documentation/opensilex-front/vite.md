@@ -54,7 +54,7 @@ Permet de simplifier les imports dans les fichiers vue et typescript. **Attentio
 ```ts
 build: {
   outDir: 'dist',
-  rollupOptions: {
+  rolldownOptions: {
     external: ['vue'],
     output: {
       globals: {

@@ -61,10 +61,10 @@ The front-end of a module is built by Vite as a library. The simplest way to sta
   results in a module that is never found.
 
 Your module must **not** bundle its own copy of Vue and vue-i18n: it has to reuse the instances of the main
-application. This is what the `rollupOptions` do:
+application. This is what the `rolldownOptions` do:
 
 ```typescript
-rollupOptions: {
+rolldownOptions: {
   external: ['vue', 'vue-i18n'],
   output: {
     globals: {

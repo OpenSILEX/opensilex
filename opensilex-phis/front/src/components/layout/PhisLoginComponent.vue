@@ -16,18 +16,18 @@
 
     <template v-slot:loginFooter>   
         <p>
-          {{ t("LoginComponent.copyright.1" ) }}
+          {{ t("component.login.copyright.1" ) }}
           <br />
-          {{ t("LoginComponent.copyright.2", {
+          {{ t("component.login.copyright.2", {
           version: getPHISModuleVersion()
           }) }}
           <br />
-          {{ t("LoginComponent.copyright.3", {
+          {{ t("component.login.copyright.3", {
           version: opensilex.versionInfo.version
           }) }}
           <br />
           {{
-          t("LoginComponent.copyright.4", {
+          t("component.login.copyright.4", {
           version: opensilex.versionInfo.version
           })
           }}

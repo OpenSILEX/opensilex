@@ -43,7 +43,7 @@
           <div class="languagesDropdown">
             <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-globe"></i>
-              {{ t("LoginComponent.language." + locale) }}
+              {{ t("component.common.language." + locale) }}
             <i class="bi bi-chevron-down"></i>
             </button>
             <ul class="dropdown-menu">
@@ -53,7 +53,7 @@
                 @click.prevent="setLanguage(lang)"
               >
                 <button class="dropdown-item" @click.prevent="setLanguage(lang)">
-                  {{ t("LoginComponent.language." + lang) }}
+                  {{ t("component.common.language." + lang) }}
                 </button>
               </li>
             </ul>
@@ -77,14 +77,14 @@
               <div class="trademark">
                 <slot name="guestLogin">
                   <p>
-                    {{ t('LoginComponent.infoGuest') }}
+                    {{ t('component.login.info-guest') }}
                   </p>
                 </slot>
                 <button
                   class="btn btn-success greenThemeColor"
                   @click="onLoginAsGuest"
                 >
-                  {{ t('LoginComponent.loginAsGuest') }}
+                  {{ t('component.login.loginAsGuest') }}
                 </button>
               </div>
               <br>
@@ -102,7 +102,7 @@
                   v-model="form.email"
                   class="form-control"
                   required
-                  :placeholder="t('LoginComponent.email')"
+                  :placeholder="t('component.login.input.email')"
                 />
                 <!--
                   à reintroduire plus tard :
@@ -124,7 +124,7 @@
                   v-model="form.password"
                   class="form-control"
                   required
-                  :placeholder="t('LoginComponent.password')"
+                  :placeholder="t('component.login.input.password')"
                 />
                 <!-- 
                   à reintroduire plus tard :
@@ -137,7 +137,7 @@
 
               <!-- Forgot Password Link -->
               <router-link v-if="isResetPassword()" to="/forgot-password">
-                <span>{{ t("LoginComponent.forgotPassword") }}</span>
+                <span>{{ t("component.forgot-password.title") }}</span>
               </router-link>
 
               <!-- Login Button -->
@@ -152,9 +152,9 @@
             <div class="trademark">
               <slot name="loginFooter">
                 <p>
-                  {{ t("LoginComponent.copyright.3", { version: versionInfo.version }) }}
+                  {{ t("component.login.copyright.3", { version: versionInfo.version }) }}
                   <br />
-                  {{ t("LoginComponent.copyright.4", { version: versionInfo.version }) }}
+                  {{ t("component.login.copyright.4", { version: versionInfo.version }) }}
                 </p>
               </slot>
             </div>
@@ -210,10 +210,7 @@ export default defineComponent({
 
     // Gestion des langues
     const language = ref();
-    const { t, locale, availableLocales } = useI18n({
-      inheritLocale: true,
-      useScope: "local",
-    });
+    const { t, locale, availableLocales } = useI18n();
 
     /**
     * Ability to be logged as guest
@@ -282,7 +279,7 @@ export default defineComponent({
         store.commit("refresh");
       } catch (error: any) {
         if (error.status === 403) {
-          $opensilex.errorHandler(error,  t("LoginComponent.invalidCredentials"));
+          $opensilex.errorHandler(error,  t("component.login.errors.invalid-credentials"));
         } else {
           $opensilex.errorHandler(error);
         }
@@ -316,7 +313,7 @@ export default defineComponent({
       } catch (error: any) {
         if (error.status === 403) {
           console.error("onLogin - Invalid credentials", error);
-          $opensilex.showErrorToast(t("LoginComponent.invalidCredentials", error));
+          $opensilex.showErrorToast(t("component.login.errors.invalid-credentials", error));
         } else {
           $opensilex.showErrorToast(error);
         }
@@ -398,46 +395,3 @@ invalidCredentials
 //  font-size: 1.2em;
 // }
 </style>
-
-<i18n>
-en:
-  LoginComponent:
-    selectLoginMethod: Select login method
-    passwordConnectionTitle: Connect with password
-    forgotPassword: Forgot your password ?
-    defaultOpenIDConnectionTitle: Log in with SSO (OpenID)
-    defaultSAMLConnectionTitle: Log in with SSO (SAML)
-    infoGuest: You can connect as guest
-    loginAsGuest: Connect as guest
-    email: Email or URI
-    password: Password
-    invalidCredentials: User does not exists, is disabled or password is invalid
-    language:
-      fr: French
-      en: English
-    copyright:
-      1: PHIS - Phenotyping Hybrid Information System
-      2: Version {version}
-      3: Based on OpenSILEX version {version}
-      4: Copyright © 2021 INRAE
-fr:
-  LoginComponent:
-    selectLoginMethod: Choisir la méthode de connexion
-    passwordConnectionTitle: Connexion par mot de passe
-    forgotPassword: Mot de passe oublié ?
-    defaultOpenIDConnectionTitle: Connexion par SSO (OpenID)
-    defaultSAMLConnectionTitle: Connexion par SSO (SAML)
-    infoGuest: Vous pouvez vous connecter en tant qu'invité
-    loginAsGuest: Connexion en tant qu'invité
-    email: Email ou URI
-    password: Mot de passe
-    invalidCredentials: L'utilisateur n'existe pas, est désactivé ou le mot de passe est invalide
-    language:
-      fr: Français
-      en: Anglais
-    copyright:
-      1: PHIS - Phenotyping Hybrid Information System
-      2: Version {version}
-      3: Basé sur OpenSILEX version {version}
-      4: Copyright © 2021 INRAE
-</i18n>

@@ -424,21 +424,19 @@ class SPARQLClassQueryBuilder {
         }
 
         // Only the relations declared as fields may be deleted in the inverse direction, see getDeleteBuilder
-        List<URI> includeOnlyPredicates = analyzer.getManagedPropertiesUris().stream().map(URI::create).toList();
+        List<URI> permittedLimitedInversePredicates = analyzer.getManagedPropertiesUris().stream().map(URI::create).toList();
 
         List<URI> urisToDelete = modelsToDelete.stream().map(SPARQLResourceModel::getUri).toList();
-        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, includeOnlyPredicates, predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
+        return getDeleteBuilder(urisToDelete, graph, excludedPredicates, permittedLimitedInversePredicates, predicatesToIgnoreByUri, reversePredicatesToIgnoreByUri);
     }
 
     /**
      * Delete all triples related to the given urisToDelete, except those specified by excludedPredicates, predicatesToIgnoreByUri or reversePredicatesToIgnoreByUri params.
-     * If includeOnlyPredicates is not null then only predicates within that list can be put up for deletion.
+     * If permittedLimitedInversePredicates is not null then only predicates within that list can be put up for deletion.
      * @param graph could be a URI or null. If null, the graphs clauses are removed and so the query search in default graph only.
      * @param excludedPredicates allows exclusion of some triples from deletion by specifying their predicate. For now works only for predicates where the uri to delete is the subject. Handles short and long uris.
-     * @param includeOnlyPredicates If not empty, restricts the <b>inverse</b> part of the deletion (the triples where the uri to delete is the
-     *                               object) to these predicates. The classic part is left untouched : a resource owns every triple it is the
-     *                               subject of, including the custom relations which are not declared as fields, and those must still be
-     *                               cleared before being rewritten.
+     * @param permittedLimitedInversePredicates If empty, every reverse relation (triplet containing the uriToDelete as object) will be deleted.
+     *                                          If not empty, only the reverse relations with predicates included in the list will be deleted.
      * @param predicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
      * @param reversePredicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
      * @implNote  generated query example : (the filter clause appears only if excludedPredicates is not empty)
@@ -472,7 +470,7 @@ class SPARQLClassQueryBuilder {
      *     {
      *         GRAPH <graphUri> {
      *             ?s ?p ?uriToDelete .
-     *             FILTER (?p IN (<includeOnlyPredicate1>, <includeOnlyPredicate2>))
+     *             FILTER (?p IN (<permittedLimitedInversePredicate1>, <permittedLimitedInversePredicate2>))
      *             FILTER NOT EXISTS {
      *                 GRAPH <graphUri> {
      *                     ?s ?p ?uriToDelete .
@@ -491,7 +489,7 @@ class SPARQLClassQueryBuilder {
     private UpdateBuilder getDeleteBuilder(List<URI> urisToDelete,
                                            URI graph,
                                            List<URI> excludedPredicates,
-                                           List<URI> includeOnlyPredicates,
+                                           List<URI> permittedLimitedInversePredicates,
                                            Map<URI, List<URI>> predicatesToIgnoreByUri,
                                            Map<URI, List<URI>> reversePredicatesToIgnoreByUri) {
         UpdateBuilder delete = new UpdateBuilder();
@@ -540,7 +538,7 @@ class SPARQLClassQueryBuilder {
                 graph,
                 true,
                 null,
-                includeOnlyPredicates,
+                permittedLimitedInversePredicates,
                 reversePredicatesToIgnoreByUri
         );
 
@@ -558,7 +556,7 @@ class SPARQLClassQueryBuilder {
      * @param graph could be a URI or null. If null, the graph clause is removed and so the query search in default graph only.
      * @param isInverseRelation should be true if the uriToDelete is the object in the triple. False otherwise.
      * @param excludedPredicates allow to exclude some triples from deletion by specifying their predicate.
-     * @param includeOnlyPredicates if not empty, only these predicates are put up for deletion.
+     * @param permittedLimitedInversePredicates if not empty, only these predicates are put up for deletion.
      * @param predicatesToIgnoreByUri for more details see {@link #buildNotExistsFilterForUriAndPredicateCouples(Var, Var, Var, Var, URI, boolean, Map)}
      * @implNote generated SPARQL query example for isInverseRelation = false, graph = null :
      * <pre>
@@ -585,7 +583,7 @@ class SPARQLClassQueryBuilder {
                                                         URI graph,
                                                         boolean isInverseRelation,
                                                         List<URI> excludedPredicates,
-                                                        List<URI> includeOnlyPredicates,
+                                                        List<URI> permittedLimitedInversePredicates,
                                                         Map<URI, List<URI>> predicatesToIgnoreByUri){
         WhereBuilder globalWhere = new WhereBuilder();
         Triple relation = isInverseRelation ? Triple.create(subjectVar, predicateVar, uriToDeleteVar) :
@@ -593,8 +591,8 @@ class SPARQLClassQueryBuilder {
         WhereBuilder graphSubquery = new WhereBuilder();
         graphSubquery.addWhere(relation);
         //only delete the predicates we are allowed to
-        if(CollectionUtils.isNotEmpty(includeOnlyPredicates)) {
-            graphSubquery.addFilter(SPARQLQueryHelper.inURIFilter(predicateVar, includeOnlyPredicates));
+        if(CollectionUtils.isNotEmpty(permittedLimitedInversePredicates)) {
+            graphSubquery.addFilter(SPARQLQueryHelper.inURIFilter(predicateVar, permittedLimitedInversePredicates));
         }
         //do not delete excluded predicates
         if(CollectionUtils.isNotEmpty(excludedPredicates)) {

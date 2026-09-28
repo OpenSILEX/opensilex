@@ -265,9 +265,6 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.OK);
 
-        // ensure that the variable is still linked to the updated characteristic, and to all its other components
-        VariableDetailsDTO dtoFromApi = assertVariableComponentsUnchanged(dto);
-        assertEquals(characteristicUpdate.getName(), dtoFromApi.getCharacteristic().getName());
 
         // update the method of the variable
         MethodUpdateDTO methodUpdate = new MethodUpdateDTO();
@@ -280,9 +277,6 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.OK);
 
-        // ensure that the variable is still linked to the updated method, and to all its other components
-        dtoFromApi = assertVariableComponentsUnchanged(dto);
-        assertEquals(methodUpdate.getName(), dtoFromApi.getMethod().getName());
 
         // update the unit of the variable
         UnitUpdateDTO unitUpdate = new UnitUpdateDTO();
@@ -297,8 +291,10 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
                 .buildAdmin()
                 .executeCallAndAssertStatus(Response.Status.OK);
 
-        // ensure that the variable is still linked to the updated unit, and to all its other components
-        dtoFromApi = assertVariableComponentsUnchanged(dto);
+        // Ensure variable is still correctly linked to Unit, Characteristic and Method
+        VariableDetailsDTO dtoFromApi = assertVariableComponentsUnchanged(dto);
+        assertEquals(characteristicUpdate.getName(), dtoFromApi.getCharacteristic().getName());
+        assertEquals(methodUpdate.getName(), dtoFromApi.getMethod().getName());
         assertEquals(unitUpdate.getName(), dtoFromApi.getUnit().getName());
     }
 

@@ -4,11 +4,11 @@
     :options="options"
     :multiple="multiple"
     :label="label"
-    placeholder="FundingSelector.form.placeholder.funding"
+    placeholder="component.experiment.funding-placeholder"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
-    noResultsText="FundingSelector.form.placeholder.filter-search-no-result"
+    noResultsText="component.experiment.filter-search-no-result"
     :helpMessage="helpMessage"
     @handlingEnterKey="onEnter"
   ></FormSelector>
@@ -76,23 +76,3 @@ function onEnter() {
   emit('handlingEnterKey');
 }
 </script>
-
-<i18n>
-
-en:
-  FundingSelector: 
-    funding : Funding
-    form: 
-        placeholder:
-            funding : Select funding
-            filter-search-no-result : No funding found
-
-fr:
-  FundingSelector: 
-    funding : Financeur
-    form: 
-        placeholder:
-            funding : Selectionner financeurs
-            filter-search-no-result : Aucun financeurs trouvés
-
-</i18n>

@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" >
   <InputForm
     v-model:value="internalValue"
     type="number"
@@ -7,7 +7,7 @@
     :disabled="false"
     :required="property?.is_required"
     :helpMessage="property?.comment"
-    :placeholder="t('XSDDecimalInput.placeholder')"
+    :placeholder="t('component.ontology.externalOntologies.XSD-placehorlder.XSDDecimalInput-placeholder')"
   />
   </n-form-item>
 </template>
@@ -42,17 +42,8 @@ const internalValue = computed({
 const rule = computed<FormItemRule>(() => {
   return {
     required: false,
-    message: "A traduire",
+    message: "validations.champs-input-dec",
     trigger: ['change', 'blur']
   }
 })
 </script>
-
-<i18n>
-en:
-  XSDDecimalInput:
-    placeholder: "Enter a decimal number, ex : 8611.53"
-fr:
-  XSDDecimalInput:
-    placeholder: "Saisir un nombre décimal, ex : 8611.53"
-</i18n>

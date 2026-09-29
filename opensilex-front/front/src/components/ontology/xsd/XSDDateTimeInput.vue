@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" :label="property.name">
   <DateTimeForm
     v-model:value="internalValue"
     :label="property.name"
@@ -16,8 +16,9 @@ import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import {FormItemRule, NFormItem} from "naive-ui";
 import {VueRDFTypePropertyDTO} from "@/lib";
 import {computed} from "vue";
+import {required} from "@/models/FormFieldsFormatter";
 
-defineProps<{
+const props = defineProps<{
   property: VueRDFTypePropertyDTO
     name: string;
     is_required: boolean;
@@ -26,13 +27,7 @@ defineProps<{
 
 const internalValue = defineModel<string>("value");
 
-const rule = computed<FormItemRule>(() => {
-  return {
-    required: false,
-    message: "A traduire",
-    trigger: ['change', 'blur']
-  }
-})
+const rule = computed<FormItemRule>(() => props.property.is_required ? required(props.property.name) : undefined)
 
 </script>
 

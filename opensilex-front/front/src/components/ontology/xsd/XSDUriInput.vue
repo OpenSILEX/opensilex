@@ -6,7 +6,7 @@
         :disabled="false"
         :required="property?.is_required"
         :helpMessage="property?.comment"
-        :placeholder="t('XSDUriInput.placeholder')"
+        :placeholder="t('component.ontology.externalOntologies.XSD-placehorlder.XSDUriInput-placeholder')"
     />
   </n-form-item>
 </template>

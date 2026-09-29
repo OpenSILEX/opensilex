@@ -802,7 +802,8 @@
             "selected": "Selected experiments",
             "selected-scientific-object": "Objects Scientifiques Sélectionnés",
             "category": "Category",
-            "funding-placeholder": "Sélectionner un financeur",
+            "funding-placeholder": "Select funding",
+            "filter-search-no-result": "No funding found",
             "factors-categories-placeholder": "Sélectionner une ou plusieurs categories",
             "add-factor": "Add factor",
             "update-factor": "Update factor",
@@ -1243,7 +1244,9 @@
                 "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
                 "XSD-placehorlder": {
                     "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",
-                    "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611"
+                    "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611",
+                    "XSDDecimalInput-placeholder": "Enter a decimal number, ex : 8611.53",
+                    "XSDUriInput-placeholder": "Enter an URI, ex : http://www.opensilex.org/"
                 }
             },
             "typeView": {

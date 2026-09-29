@@ -20,7 +20,9 @@ import {
   ExperimentsService,
   OrganizationsService
 } from "../../../../../opensilex-core/front/src/lib";
+import {useI18n} from "vue-i18n";
 
+const { t } = useI18n()
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
 const props = defineProps<{
@@ -61,7 +63,7 @@ function loadFacilities() {
         .then(http => {
           return http.response.result.facilities.map(facility => ({
             id: facility.uri,
-            label: facility.name
+            label: t('component.site.facilities')
           }));
         });
   }
@@ -80,15 +82,3 @@ function loadFacilities() {
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  FacilityPropertySelector:
-    label: Facilities
-    placeholder: Select a facility
-
-fr:
-  FacilityPropertySelector:
-    label: Installation environnementale
-    placeholder: Sélectionner une installation environnementale
-</i18n>

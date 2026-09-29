@@ -6,6 +6,7 @@
 |------------|------------------|-------------------|-------------------|
 | 2026-09-11 | Arnaud Charleroy | BUILD-SNAPSHOT    | Document creation |
 | 2026-09-13 | Arnaud Charleroy | BUILD-SNAPSHOT    | Added the related-documents index; corrected the sparql-property-annotation row |
+| 2026-09-29 | Arnaud Charleroy | BUILD-SNAPSHOT    | Added the module-level architecture page to the overview table |
 
 ## Table of contents
 
@@ -51,6 +52,7 @@ common tasks. Every other document below assumes you have read it.
 | Document | What it answers | Read it when |
 |---|---|---|
 | [orm-architecture.md](./orm-architecture.md) | How the whole ORM fits together, from annotation to triple store | Always first |
+| [module-architecture.md](./module-architecture.md) | What the module contains as a Maven and OpenSILEX module: configuration, lifecycle, packages and their dependencies, how other modules use it, tests | You want the module-level picture rather than the ORM internals |
 | [orm-optimizations.md](./orm-optimizations.md) | Which verified optimization opportunities exist, and what each would cost | A request is slow, or you are planning performance work |
 | [orm-bugs-and-memory-leaks.md](./orm-bugs-and-memory-leaks.md) | Verified bugs, resource leaks and memory-retention risks | Behaviour surprises you, or before you assume something is intentional |
 

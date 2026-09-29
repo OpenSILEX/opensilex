@@ -13,9 +13,9 @@
 > It deliberately does **not** repeat how the ORM works. For that, read [orm-architecture.md](./orm-architecture.md) first and
 > the [document index](./README.md).
 >
-> Two companion documents are delivered with the `feat/enhance_documentation` branch and are not on this one, so they are
-> not linked: `architecture/modules-overview.md` (how all modules are loaded and how they depend on each other) and
-> `architecture/java-naming-conventions.md` (Java naming rules for the whole code base).
+> Two companion documents cover the rest of the platform:
+> [modules-overview.md](../architecture/modules-overview.md) (how all modules are loaded and how they depend on each other)
+> and [java-naming-conventions.md](../architecture/java-naming-conventions.md) (Java naming rules for the whole code base).
 
 ## Table of contents
 
@@ -212,7 +212,7 @@ module, about 30 concrete classes extend one of the four base models directly (`
 
 The four-file `opensilex-graphql` module depends on this one and exposes the Staple ontology, built from the files that
 extensions register with `addToStaple`, plus the map from each `rdf:type` to its default graph, read from the mapper index. It
-is described in the module page delivered with `feat/enhance_documentation`.
+is described in [opensilex-graphql/module-architecture.md](../opensilex-graphql/module-architecture.md).
 
 ## Tests
 

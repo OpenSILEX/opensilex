@@ -335,7 +335,7 @@ test-jar. Details are in [tests.md](./tests.md).
 | Module                | Page                                                                                       |
 |-----------------------|--------------------------------------------------------------------------------------------|
 | `opensilex-main`      | [opensilex-main/module-architecture.md](../opensilex-main/module-architecture.md)           |
-| `opensilex-sparql`    | `opensilex-sparql/module-architecture.md` (delivered with the SPARQL ORM documentation set) |
+| `opensilex-sparql`    | [opensilex-sparql/module-architecture.md](../opensilex-sparql/module-architecture.md), and the ORM documentation set in [opensilex-sparql/README.md](../opensilex-sparql/README.md) |
 | `opensilex-nosql`     | [opensilex-nosql/module-architecture.md](../opensilex-nosql/module-architecture.md)         |
 | `opensilex-fs`        | [opensilex-fs/module-architecture.md](../opensilex-fs/module-architecture.md)               |
 | `opensilex-security`  | [opensilex-security/module-architecture.md](../opensilex-security/module-architecture.md)   |

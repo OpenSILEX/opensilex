@@ -1,6 +1,3 @@
-export function refresh() {
-
-}
 <template>
   <div>
     <PageContent class="pagecontent">
@@ -588,12 +585,9 @@ function deleteExperiment(uri: string) {
     .then(() => {
       tableRef.value.checkSelectedItems(uri);
       refresh();
-      let message =
-        t('ExperimentList.name') +
-        ' ' +
-        uri +
-        ' ' +
-        t('component.common.success.delete-success-message');
+      const message = `${t('ExperimentList.name')} ${uri} ${t(
+          'component.common.success.delete-success-message'
+      )}`;
       opensilex.showSuccessToast(message);
     })
     .catch(opensilex.errorHandler);

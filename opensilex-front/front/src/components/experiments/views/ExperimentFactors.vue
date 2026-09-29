@@ -127,7 +127,6 @@ const credentials = computed(() => {
 //#endregion
 //#region Hooks
 onMounted(() => {
-  console.debug("Loading ExperimentFactors view...");
   uri.value = decodeURIComponent(route.params.uri as string);
 })
 
@@ -144,7 +143,6 @@ function callUpdateFactorService(form: FactorUpdateDTO, done) {
           .updateFactor(form)
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
             let uri = http.response.result;
-            console.debug("Updated factor", uri);
             factorList.value.refresh();
           })
   );
@@ -154,7 +152,6 @@ function showFactorDetails(factorUriResult: any) {
   if (factorUriResult instanceof Promise) {
     console.log(factorUriResult);
     factorUriResult.then((factorUri) => {
-      console.debug("showFactorDetails", factorUri);
       store.commit("storeReturnPage", router);
       router.push({
         path:
@@ -165,7 +162,6 @@ function showFactorDetails(factorUriResult: any) {
       });
     });
   } else {
-    console.debug("showFactorDetails", factorUriResult);
     store.commit("storeReturnPage", router);
     router.push({
       path:
@@ -178,7 +174,6 @@ function showFactorDetails(factorUriResult: any) {
 }
 
 function showSkosReferences(uri: string) {
-  console.debug("showSkosReferences" + uri);
   service
       .getFactorByURI(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
@@ -197,18 +192,15 @@ function showSkosReferences(uri: string) {
 }
 
 function editFactor(uri: any) {
-  console.debug("editFactor" + uri);
   service
       .getFactorByURI(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-        console.debug(http.response.result);
         factorForm.value.showEditForm(http.response.result);
       })
       .catch(opensilex.errorHandler);
 }
 
 function deleteFactor(factor: any) {
-  console.debug("check Associated factor " + factor.uri);
   let isAssociated = opensilex
       .getService<FactorsService>("opensilex.FactorsService")
       .getFactorAssociatedExperiments(factor.uri)
@@ -221,7 +213,6 @@ function deleteFactor(factor: any) {
               t("component.factor.isAssociatedTo")
           );
         } else {
-          console.debug("deleteFactor " + factor.uri);
           service
               .deleteFactor(factor.uri)
               .then(() => {

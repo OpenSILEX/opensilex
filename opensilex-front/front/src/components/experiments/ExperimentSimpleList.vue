@@ -66,6 +66,8 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import type { ExperimentGetListDTO } from "opensilex-core/model/experimentGetListDTO";
+import DateView from "@/components/common/views/DateView.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
 
 const { t } = useI18n();
 

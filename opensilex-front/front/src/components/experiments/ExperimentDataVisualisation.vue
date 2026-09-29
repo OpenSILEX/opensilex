@@ -14,30 +14,29 @@
 <script setup lang="ts">
 import {computed, inject, ref} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import {useRouter} from "vue-router";
-
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
-const route = useRouter()
-const uri = ref('')
-const soService = ref<any>()
-const varService = ref<any>()
+import {useRoute} from "vue-router";
 
 defineProps<{
   elementName?: string
 }>()
 
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+const route = useRoute()
+const selectedObjects = ref<string[]>([]);
+const showDataVisuView = ref(false);
+const soService = ref<any>()
+const varService = ref<any>()
+const namedObjectsArray = ref<any>({});
+
  const soFilter = ref({
     name: "",
-    experiment: uri.value,
+    experiment: decodeURIComponent(route.params.uri as string),
     germplasm: undefined,
     factorLevels: [],
     types: [],
     existenceDate: undefined,
     creationDate: undefined,
   });
-
-const selectedObjects = ref<string[]>([]);
-const showDataVisuView = ref(false);
 
   const selectedScientificObjects = computed(() => {
     showDataVisuView.value = true;
@@ -48,20 +47,6 @@ const showDataVisuView = ref(false);
       }
     });
   })
-
-  const namedObjectsArray = ref<any>({});
-
-uri.value = decodeURIComponent(route.params.uri as string);
-
-soFilter.value = {
-  name: "",
-  experiment: uri.value,
-  germplasm: undefined,
-  factorLevels: [],
-  types: [],
-  existenceDate: undefined,
-  creationDate: undefined,
-};
 
 soService.value = opensilex.getService(
     "opensilex.ScientificObjectsService"

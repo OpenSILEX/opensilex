@@ -240,32 +240,10 @@ const organizationsList = ref<any[]>([]);
 
 const recordAuthor = ref<AccountGetDTO | null>(null)
 const routeArr = ref<string[]>(route.path.split("/"))
-let langWatcher: (() => void) | undefined;
 
-
-
-//#region Hooks
 onMounted(() => {
   created();
-  langWatcher = store.watch(
-      () => store.getters.language,
-      () => {
-        loadSpecies();
-
-        if (experiment.value) {
-          period.value = opensilex.$dateTimeFormatter.formatPeriod(
-              experiment.value.start_date,
-              experiment.value.end_date
-          );
-        }
-      }
-  );
 });
-
-onBeforeUnmount(() => {
-  langWatcher?.();
-});
-//#endregion
 
 //#region Data and computed
 const isGermplasmMenuExcluded = computed(() => {

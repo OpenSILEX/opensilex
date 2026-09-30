@@ -1,6 +1,4 @@
 <template>
-
-
   <div class="row">
     <!-- Start Date -->
     <div class="col-lg-6">

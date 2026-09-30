@@ -47,7 +47,6 @@ const props = withDefaults(
       searchMethodRoot?: Function;
       pageSize?: number;
       enableSelection?: boolean;
-      selection?: string[];
     }>(),
     {
       noButtons: false,
@@ -56,35 +55,26 @@ const props = withDefaults(
     }
 );
 
-const emit = defineEmits<{
-  (e: "select", node: any): void;
-  (e: "update:selection", value: string[]): void;
-}>();
+const emit = defineEmits(["select"]);
+
+const selection = defineModel<string[]>("selection", {
+  default: () => [],
+});
 
 const slots = defineSlots<{
   node: (props: { node: any }) => VNodeChild;
   buttons: (props: { node: any }) => VNodeChild;
 }>();
 
-/**
- * Sélection des checkboxes.
- */
-const multiSelect = computed({
-  get: () => props.selection ?? [],
-  set: (value) => emit("update:selection", value),
-});
-
-/**
- * Sélection interne du NTree.
- *
- * Cette sélection sert uniquement à permettre à NTree
- * de gérer le clic sur toute la ligne.
- */
 const selectedKeys = ref<string[]>([]);
 
 const nodeList = ref<any[]>([]);
 const expandedKeys = ref<string[]>([]);
 const isSearching = ref(false);
+const rootPage = ref(0);
+const isLoadingMoreRoots = ref(false);
+const rootLoadingSentinelEl = ref<Element | null>(null);
+const observer = ref<IntersectionObserver | null>(null);
 
 const isGlobalLoaderVisible = computed(
     () => store.state.loaderVisible
@@ -100,8 +90,6 @@ function buildNode(soDTO: any, isRoot: boolean): any {
   return {
     key: soDTO.uri,
     title: soDTO.name,
-
-    // Sans child_count, on considère que le nœud peut avoir des enfants.
     isLeaf: hasChildCount
         ? soDTO.child_count === 0
         : false,
@@ -120,8 +108,6 @@ function buildRootLoadingNode(): any {
   };
 }
 
-let rootPage = 0;
-
 function appendRootNodes(
     nodes: any[],
     totalCount: number
@@ -135,18 +121,12 @@ function appendRootNodes(
   }
 }
 
-/**
- * Rafraîchit l'arbre.
- */
 async function refresh() {
   isSearching.value = true;
-  rootPage = 0;
+  rootPage.value = 0;
 
-  // Les anciens nœuds sélectionnés ne doivent pas rester actifs.
   selectedKeys.value = [];
 
-  // Les anciennes expansions deviennent invalides
-  // lorsque les résultats changent.
   expandedKeys.value = [];
 
   loadingMoreKeys.clear();
@@ -175,20 +155,15 @@ async function refresh() {
   }
 }
 
-let isLoadingMoreRoots = false;
-
-/**
- * Charge la page suivante des nœuds racine.
- */
 async function loadMoreRoots() {
-  if (isLoadingMoreRoots) {
+  if (isLoadingMoreRoots.value) {
     return;
   }
 
-  isLoadingMoreRoots = true;
+  isLoadingMoreRoots.value = true;
 
   try {
-    rootPage += 1;
+    rootPage.value += 1;
 
     const method =
         props.searchMethodRoot ??
@@ -196,7 +171,7 @@ async function loadMoreRoots() {
 
     const http = await method(
         undefined,
-        rootPage,
+        rootPage.value,
         props.pageSize
     );
 
@@ -215,13 +190,10 @@ async function loadMoreRoots() {
         http.response.metadata.pagination.totalCount
     );
   } finally {
-    isLoadingMoreRoots = false;
+    isLoadingMoreRoots.value = false;
   }
 }
 
-/**
- * Charge les enfants directs d'un nœud.
- */
 async function onLoad(node: any) {
   const http = await props.searchMethod(
       node.data.uri,
@@ -243,9 +215,6 @@ async function onLoad(node: any) {
       children.length === 0;
 }
 
-/**
- * Recherche récursive d'un nœud.
- */
 function findNode(
     key: string,
     nodes: any[] = nodeList.value
@@ -270,9 +239,6 @@ function findNode(
   return undefined;
 }
 
-/**
- * Recharge les enfants d'un nœud.
- */
 async function reloadNodeChildren(
     key: string
 ) {
@@ -313,9 +279,6 @@ async function reloadNodeChildren(
   }
 }
 
-/**
- * Charge davantage d'enfants.
- */
 async function loadMoreChildren(
     node: any
 ) {
@@ -351,51 +314,32 @@ async function loadMoreChildren(
   }
 }
 
-/**
- * Vérifie si une URI est sélectionnée
- * via les checkbox.
- */
 function getSelection(
     uri: string
 ): boolean {
   return (
-      multiSelect.value.indexOf(uri) >= 0
+      selection.value.indexOf(uri) >= 0
   );
 }
 
-/**
- * Modifie la sélection des checkbox.
- */
 function onSelectionChange(
     uri: string
 ) {
-  const current = multiSelect.value;
+  const current = selection.value;
 
   const index =
       current.indexOf(uri);
 
   if (index >= 0) {
-    emit(
-        "update:selection",
-        [
-          ...current.slice(0, index),
-          ...current.slice(index + 1),
-        ]
-    );
+    selection.value = [
+      ...current.slice(0, index),
+      ...current.slice(index + 1),
+    ];
   } else {
-    emit(
-        "update:selection",
-        [...current, uri]
-    );
+    selection.value = [...current, uri];
   }
 }
 
-/**
- * Clic/sélection d'une ligne entière.
- *
- * C'est maintenant NTree qui déclenche cet événement.
- * On ne dépend plus du clic sur le texte du label.
- */
 function handleSelectedKeys(
     keys: string[]
 ) {
@@ -427,13 +371,8 @@ function renderSwitcherIcon(
   });
 }
 
-let rootLoadingSentinelEl: Element | null =
-    null;
-
-let observer: IntersectionObserver;
-
 onMounted(() => {
-  observer =
+  observer.value =
       new IntersectionObserver(
           ([entry]) => {
             if (entry.isIntersecting) {
@@ -447,35 +386,25 @@ onMounted(() => {
 
 onUpdated(() => {
   nextTick(() => {
-    observer.disconnect();
+    observer.value?.disconnect();
 
-    if (rootLoadingSentinelEl) {
-      observer.observe(
-          rootLoadingSentinelEl
+    if (rootLoadingSentinelEl.value) {
+      observer.value?.observe(
+          rootLoadingSentinelEl.value
       );
     }
   });
 });
 
 onBeforeUnmount(() => {
-  observer?.disconnect();
+  observer.value?.disconnect();
 });
 
-/**
- * Génère uniquement le contenu visuel de la ligne.
- *
- * IMPORTANT :
- * Il n'y a plus de onClick ici.
- * Le clic sur la ligne est maintenant géré par NTree.
- */
 function renderLabel(
     info: { option: any }
 ): VNodeChild {
   const node = info.option;
 
-  /**
-   * Sentinel "load more" des racines.
-   */
   if (node.data == null) {
     return h(
         "span",
@@ -483,7 +412,7 @@ function renderLabel(
           ref: (
               el: Element | null
           ) => {
-            rootLoadingSentinelEl = el;
+            rootLoadingSentinelEl.value = el;
           },
         },
         t(
@@ -514,12 +443,6 @@ function renderLabel(
         class: "async-tree-node",
       },
       [
-        /**
-         * Checkbox.
-         *
-         * Elle arrête la propagation afin de ne pas
-         * déclencher le clic de sélection du nœud.
-         */
         props.enableSelection
             ? h(
                 "span",

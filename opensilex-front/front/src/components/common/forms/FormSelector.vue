@@ -152,7 +152,6 @@ const customTreeselectRef = useTemplateRef<InstanceType<typeof CustomTreeselect>
 const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {
-  console.debug("loadMoreItems")
   resultLimit.value = 0
   showAllResults.value = true
   customTreeselectRef.value?.refresh(resultLimit.value)
@@ -162,9 +161,6 @@ function loadMoreItems () {
 function updateTotalCount (n: number) { totalCount.value = n }
 function updateResultCount (n: number) { resultCount.value = n }
 
-onMounted(() => {
-  console.debug('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
-})
 </script>
 
 
@@ -179,7 +175,7 @@ onMounted(() => {
 }
 
 .select-main {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-width: 0;
   width: 0;
 }

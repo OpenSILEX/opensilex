@@ -143,8 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, h, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRef, useTemplateRef} from "vue";
-import {useStore} from "vuex";
+import {computed, h, inject, nextTick, onMounted, reactive, ref, toRef, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
 import {NDataTable, NForm, NFormItem, NInput} from "naive-ui";
 import {required} from "@/models/FormFieldsFormatter";
@@ -165,8 +164,10 @@ import Button from "@/components/common/buttons/Button.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
-const store = useStore();
 const {t} = useI18n();
+const text = ref<string>("");
+const ontologies = ref<string[]>([]);
+const isAllOntologies = ref<boolean>(false);
 
 const props = withDefaults(
     defineProps<{
@@ -219,10 +220,6 @@ const rules = computed(() => ({
   }
 }));
 
-const text = ref<string>("");
-const ontologies = ref<string[]>([]);
-const isAllOntologies = ref<boolean>(false);
-
 const externalOntologiesRefs = computed<any[]>(() => {
   if (!props.ontologiesToSelect) {
     return [];
@@ -256,44 +253,27 @@ function checkAgroportalReachable() {
 }
 
 const relationsInternal = ref<any[]>([]);
-const options = ref<any[]>([]);
-
-function setOptions() {
-  options.value = [];
+const options = computed<any[]>(() => {
+  const options: any[] = [];
 
   for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
-    options.value.push({
+    options.push({
       id: skosRelation.dtoKey,
       label: t(skosRelation.label),
       title: t(skosRelation.description)
     });
   }
-}
+
+  return options;
+});
 
 onMounted(() => {
-  setOptions();
-
   agroportalAPIService.value =
       opensilex?.getService<AgroportalAPIService>(
           "opensilex.AgroportalAPIService"
       );
 
   checkAgroportalReachable();
-
-  langUnwatcher = store.watch(
-      () => store.getters.language,
-      () => {
-        setOptions();
-      }
-  );
-});
-
-let langUnwatcher: (() => void) | undefined;
-
-onBeforeUnmount(() => {
-  if (langUnwatcher) {
-    langUnwatcher();
-  }
 });
 
 function resetForm() {

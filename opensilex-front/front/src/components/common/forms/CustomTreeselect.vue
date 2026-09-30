@@ -237,7 +237,6 @@ watch(
 // recherche
 const lastQuery = ref<string | null>(null)
 async function runSearch(rawQuery: string, overrideLimit?: number) {
-  console.debug("run search")
   if (!props.searchMethod) return
   const query = rawQuery === '' ? '.*' : rawQuery
   lastQuery.value = query
@@ -304,7 +303,6 @@ function handleUpdateValue(v: string | string[] | null) {
     if (v == null) {
       emit('deselect', null)
     } else {
-      console.debug("zmiting select in customTree");
       const obj = keysToObjects(v)      // { id, label }
       emit('select', obj)
     }

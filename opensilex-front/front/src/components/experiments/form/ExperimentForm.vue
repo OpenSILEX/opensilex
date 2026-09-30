@@ -16,7 +16,7 @@
 <script setup lang="ts">
 
 import {inject, useTemplateRef} from "vue";
-import HttpResponse, { OpenSilexResponse } from "core/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import WizardForm, {WizardStep} from "@/components/common/forms/WizardForm.vue";
@@ -40,7 +40,7 @@ const  steps: WizardStep[] = [
 
 
 const emit = defineEmits<{
-  (e: string, form: any): void
+  onUpdate: [form: any],
 }>()
 
   function getEmptyForm() {
@@ -90,8 +90,6 @@ async function create(form) {
 
     form.uri = uri;
 
-    console.debug("experiment created", form);
-
     const message =
         t("ExperimentList.name") +
         " " +
@@ -123,8 +121,6 @@ async function update(form: any) {
       .updateExperiment(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         const uri = http.response.resultwizar
-
-        console.debug("experiment updated", uri)
 
         emit("onUpdate", form)
 

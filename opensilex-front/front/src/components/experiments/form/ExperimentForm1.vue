@@ -12,7 +12,7 @@
       label="component.experiment.uri"
       helpMessage="component.experiment.uri-help"
       :editMode="editMode"
-      :generated.sync="uriGenerated"
+      v-model:generated="uriGenerated"
     ></UriForm>
     </n-form-item>
 
@@ -68,32 +68,38 @@
     </n-form-item>
 
     <!-- Comment -->
+    <n-form-item >
     <TextAreaForm
       v-model:value="experiment.description"
       label="component.experiment.comment"
       :placeholder="t('component.experiment.objective-help')"
     ></TextAreaForm>
+    </n-form-item>
   </n-form>
 </template>
 
 <script setup lang="ts">
-import Vue, {computed, inject, ref, useTemplateRef} from "vue";
+import Vue, {computed,ref, useTemplateRef} from "vue";
 // @ts-ignore
 import { ExperimentCreationDTO } from "core/index";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import {useStore} from "vuex";
-import {boolean} from "yup";
 import UriForm from "@/components/common/forms/UriForm.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import DateRangePickerForm from "@/components/common/forms/DateRangePickerForm.vue";
 import TextAreaForm from "@/components/common/forms/TextAreaForm.vue";
 import {FormRules, NForm, NFormItem} from "naive-ui";
 import {useI18n} from "vue-i18n";
-import {required} from "@/models/FormFieldsFormatter";
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
-const store = useStore()
 const { t } = useI18n()
 
+
+const props = withDefaults(
+    defineProps<{
+      editMode?: boolean
+      uriGenerated?: boolean
+    }>(),
+    {
+      uriGenerated: true
+    }
+)
 
 const rules = computed<FormRules>(() => ({
   name: {
@@ -115,20 +121,8 @@ const rules = computed<FormRules>(() => ({
   },
 }));
 
-const props = withDefaults(
-    defineProps<{
-      editMode?: boolean
-      uriGenerated?: boolean
-    }>(),
-    {
-      uriGenerated: true
-    }
-)
-
 const uriGenerated = ref(props.uriGenerated)
 const validatorRef = useTemplateRef<InstanceType<typeof NForm>>("validatorRef")
-
-const user = computed(() => store.state.user)
 
 const experiment = defineModel<ExperimentCreationDTO>('form', {
   required: true

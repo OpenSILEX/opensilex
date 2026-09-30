@@ -624,7 +624,7 @@
             "delete": "Delete profile",
             "details": "Show or hide profile details",
             "filter-placeholder": "Search profiles...",
-            "credentials": "Credentials",The date end is obligatoire
+            "credentials": "Credentials",
             "credential-groups": "Credential groups",
             "credential": "no credentials | 1 credential | {count} credentials",
             "errors": {

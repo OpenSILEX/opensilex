@@ -23,7 +23,7 @@ import {NUpload} from "naive-ui";
 import type {UploadFileInfo} from "naive-ui";
 import {useI18n} from "vue-i18n";
 
-const emit = defineEmits(['updated'])
+const emit = defineEmits<{updated: []}>()
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')

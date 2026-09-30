@@ -649,6 +649,38 @@ test:build:java21:
 ##  BUILD - GITLAB PAGES DOCS
 ########################
 
+pages:site:
+    stage: doc_and_metrics
+    image: maven:$MVN_VERSION-eclipse-temurin-$JAVA_VERSION
+    when: always
+    timeout: 2h
+    <<: *cache_dependencies
+    before_script:
+        - mkdir -p $CI_PROJECT_DIR/.m2
+        - echo "$SONAR_MAVEN_SETTINGS" > $CI_PROJECT_DIR/.m2/settings.xml
+        - more $CI_PROJECT_DIR/.m2/settings.xml
+        - mkdir -p .mvn
+        - echo "-Dorg.slf4j.simpleLogger.defaultLogLevel=error" > .mvn/maven.config
+        - echo "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error" >> .mvn/maven.config
+        - mkdir logs
+    script:
+        - mkdir site_public
+        - |
+            mvn --settings $CI_PROJECT_DIR/.m2/settings.xml \
+                install site $MAVEN_OPTS_SCHUEDULES \
+                -DskipFrontBuild \
+                -DnvdApiKey=$NVD_API_KEY \
+                -pl '!opensilex-dev-tools,!opensilex-doc,!opensilex-release,!opensilex-module'  > $CI_PROJECT_DIR/logs/mvn-install-site.log
+        # -Pwith-security-check \ -Pwith-test-report \
+        - mv $CI_PROJECT_DIR/site/* site_public
+    artifacts:
+        paths:
+            - site_public
+            - logs
+        when: always 
+    rules:
+        - if: $PAGES_GENERATION == "true"
+
 pages:specifications:
     stage: doc_and_metrics
     image: node:20.19.6-alpine3.22
@@ -687,11 +719,15 @@ pages:
     stage: doc_and_metrics
     when: always
     needs:
+        -   job: pages:site
+            artifacts: true
         -   job: pages:specifications
             artifacts: true
         -   job: pages:technical-documentation
             artifacts: true
     script:
+        - mkdir -p public/maven-report
+        - cp -r site_public/* public/maven-report/
         - mkdir -p public/technical-documentation
         - cp -r tech_doc_public/* public/technical-documentation
         - mkdir -p public/functional-specifications

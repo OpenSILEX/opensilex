@@ -1,5 +1,3 @@
-/// <reference path="../../../opensilex-security/front/types/opensilex-security.d.ts" />
-/// <reference path="../../../opensilex-core/front/types/opensilex-core.d.ts" />
 /**
  * CHANGE THIS VARIABLE IF NEEDED TO CHANGE API ENDPOINT
  */
@@ -9,20 +7,37 @@ const DEV_BASE_API_PATH = "http://localhost:8666/rest";
 // Import global de Bootstrap (CSS + JS)
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
-
-import { createApp, ref, reactive, computed } from "vue";
-import { createI18n } from 'vue-i18n';
-import en from './lang/message-en.json';
-import fr from './lang/message-fr.json';
+import * as VueRuntime from "vue";
+import {createApp} from "vue";
+import * as VueI18nRuntime from 'vue-i18n';
+import {createI18n} from 'vue-i18n';
+import en from '@/lang/message-en.json';
+import fr from '@/lang/message-fr.json';
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
-import ToastContainer from './components/common/toastContainer.vue';
-import { create, NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace, NTag, DataTableRowKey, NDrawer, NDrawerContent, NForm, NFormItem, NSwitch, NCheckbox, NCollapse, NCollapseItem, NDivider } from 'naive-ui';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
+import {library} from '@fortawesome/fontawesome-svg-core'
+import {fas} from '@fortawesome/free-solid-svg-icons'
+import {create, NButton, NDataTable, NDropdown, NTree} from 'naive-ui';
 import vue3Tour from 'vue3-tour';
 import 'vue3-tour/dist/vue3-tour.css';
 import 'vue-tel-input/vue-tel-input.css';
+import "reflect-metadata"
+import {Router} from 'vue-router';
+import HighchartsVue from "highcharts-vue";
+// Local imports
+import store from '@/models/Store'
+import {AuthenticationService} from "opensilex-security/lib";
+import {FontConfigDTO, FrontConfigDTO, ThemeConfigDTO, UserFrontConfigDTO, VueJsService} from '@/lib'
+import HttpResponse, {OpenSilexResponse} from '@/lib/HttpResponse'
+import {User} from '@/models/User'
+import {ModuleComponentDefinition} from '@/models/ModuleComponentDefinition'
+import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+// Load default components
+import components from '@/components';
+import App from '@/App.vue';
+// Import and assignation to enable auto rebuild on ws library change (hot reload forced by server on module change ex: phis)
+import * as LATEST_UPDATE from "@/opensilex.dev";
+const randomNumberForHMRTrigger = LATEST_UPDATE.default
 
 // Ajoute toutes les icônes solides à la bibliothèque
 library.add(fas);
@@ -76,26 +91,15 @@ const i18n = createI18n({
 
 });
 
-import "reflect-metadata"
-
 // Allow access to global "document" variable
 declare var document: any;
 
-// Import Vue as a global window variable 
-// import VueMatomo from 'vue-matomo';
 declare var window: any;
-// Attach Vue APIs to window
-window.Vue = { createApp, ref, reactive, computed };
+// Attach Vue APIs and i18n to the window. This will allow plugins (modules like phis) to use these instances of
+// Vue and I18n rather than their own instances.
+window.Vue = { ...VueRuntime };
+window.VueI18n = { ...VueI18nRuntime };
 
-// Vue.config.productionTip = false;
-
-// Import and assignation to enable auto rebuild on ws library change
-// @todo je sais pas ce que c'est
-// import * as LATEST_UPDATE from "./opensilex.dev";
-// Vue.prototype.LATEST_UPDATE = LATEST_UPDATE.default
-
-// import AsyncComputed from 'vue-async-computed'
-// Vue.use(AsyncComputed)
 
 let urlParams = new URLSearchParams(window.location.search);
 
@@ -109,7 +113,6 @@ if (import.meta.env.DEV) {
 } else {
   isDebug = urlParams.has("debug");
 }
-// console.debug("URL parameters", urlParams);
 
 // Initialize logger
 console.log = console.log || function () { };
@@ -134,31 +137,9 @@ if (isDevMode) {
   baseApi = splitURI[0] + "/rest"
 }
 
-// Setup store imports
-import store from './models/Store'
-
-// Local imports
-// console.debug("Import local files...");
-import { FrontConfigDTO, VueJsService, ThemeConfigDTO, FontConfigDTO, UserFrontConfigDTO } from './lib'
-import HttpResponse, { OpenSilexResponse } from './lib/HttpResponse'
-import { User } from './models/User'
-import { ModuleComponentDefinition } from './models/ModuleComponentDefinition'
-import OpenSilexVuePlugin from './models/OpenSilexVuePlugin'
-
 const manageError = function manageError(error) {
   console.error(error);
 }
-
-
-// Load default components
-// console.debug("Load default components...");
-import components from './components';
-import { Router } from 'vue-router';
-// @ts-ignore
-import { AuthenticationService } from "opensilex-security/index";
-import App from './App.vue';
-import HighchartsVue from "highcharts-vue";
-import Highcharts from 'highcharts';
 
 
 const app = createApp(App);
@@ -187,7 +168,6 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 for (let componentName in components) {
   let component = components[componentName];
   app.component(componentName, component);
-  $opensilex.loadComponentTranslations(component);
 }
 
 
@@ -271,11 +251,12 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
   })
 }
 
-$opensilex.loadModules([
+const modulesToLoad: string[] = [
   "opensilex-security",
   "opensilex-core",
   // "opensilex-dataverse"
-]).then(() => {
+];
+$opensilex.loadModules(modulesToLoad).then(() => {
   // Not seems mandatory in vue 3, need to test when component are loaded from other modules
   // Get OpenSilex configuration
   // console.debug("Start loading configuration...");

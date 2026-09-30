@@ -1,30 +1,10 @@
-import { ApiServiceBinder } from './lib';
+import {OpensilexModulePlugin} from "../../../opensilex-front/front/src/models/OpensilexModulePlugin";
 
-const plugin = {
+export default {
     install(app, options) {
-        console.log("Install opensilex-security plugin");
-        ApiServiceBinder.with(app.$opensilex.getServiceContainer());
+        // This module's services are bound statically in the OpenSilexVuePlugin constructor
+        // (opensilex-front/front/src/models/OpenSilexVuePlugin.ts), as opensilex-security is a hard
+        // dependency of the front-end. Calling ApiServiceBinder.with() here would bind them a second
+        // time and make inversify throw "Ambiguous match found for serviceIdentifier".
     }
-};
-
-// Ne pas assigner manuellement à `window`
-//  Garder uniquement l'export
-export default plugin;
-export { ApiServiceBinder };
-
-
-// export default {
-//     install(app, options) {
-//         console.log("Install opensilex-service plugin")
-//         ApiServiceBinder.with(app.$opensilex.getServiceContainer());
-//     }
-// };
-
-// window["opensilex-security"] = {
-//     default: {
-//         install(app) {
-//             console.log("Install opensilex-security plugin");
-//             ApiServiceBinder.with(app.$opensilex.getServiceContainer());
-//         }
-//     }
-// };
+} as OpensilexModulePlugin;

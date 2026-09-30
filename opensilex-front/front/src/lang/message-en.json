@@ -622,7 +622,7 @@
             "delete": "Delete profile",
             "details": "Show or hide profile details",
             "filter-placeholder": "Search profiles...",
-            "credentials": "Credentials",
+            "credentials": "Credentials",The date end is obligatoire
             "credential-groups": "Credential groups",
             "credential": "no credentials | 1 credential | {count} credentials",
             "errors": {
@@ -770,6 +770,7 @@
             "startDate": "Start Date",
             "start-date-required": "Start date is required",
             "endDate": "End date",
+            "end-date-required": "The end date is required",
             "endDate-help": "The end of an experiment, could be empty",
             "campaign": "Campaign",
             "campaign-placeholder": "2020",

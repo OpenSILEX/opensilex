@@ -21,23 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import VariableSelector from "@/components/variables/views/VariableSelector.vue";
 import {VueRDFTypePropertyDTO} from "@/lib";
 
 const props = defineProps<{
   property: VueRDFTypePropertyDTO;
-  value: unknown;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:value", value: unknown): void;
-}>();
-
-const internalValue = computed({
-  get: () => props.value,
-  set: (value) => emit("update:value", value),
-});
+const internalValue = defineModel("value");
 </script>
 
 <style scoped lang="scss">

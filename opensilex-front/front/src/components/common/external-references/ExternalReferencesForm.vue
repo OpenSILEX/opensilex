@@ -145,8 +145,8 @@
 <script setup lang="ts">
 import {computed, h, inject, nextTick, onMounted, reactive, ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
-import {NDataTable, NForm, NFormItem, NInput} from "naive-ui";
-import {required} from "@/models/FormFieldsFormatter";
+import {FormRules, NDataTable, NForm, NFormItem, NInput} from "naive-ui";
+import {required, requiredTrimmed, validUri} from "@/models/FormFieldsFormatter";
 
 import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
 import {ExternalOntologies} from "../../../models/ExternalOntologies";
@@ -185,10 +185,20 @@ const props = withDefaults(
     }
 );
 
+interface SkosReferencesDTO {
+  uri?: string;
+  exact_match?: string[];
+  close_match?: string[];
+  broad_match?: string[];
+  narrow_match?: string[];
+}
+
+type SkosReferencesCallback = (result?: Promise<unknown>) => void;
+
 const emit = defineEmits<{
-  onAdd: [value: any, callback: (result: any) => void];
-  onDelete: [value: any, callback: (result: any) => void];
-  onUpdate: [value: any, callback: (result: any) => void];
+  onAdd: [value: SkosReferencesDTO, callback: SkosReferencesCallback];
+  onDelete: [value: SkosReferencesDTO, callback: SkosReferencesCallback];
+  onUpdate: [value: SkosReferencesDTO, callback: SkosReferencesCallback];
 }>();
 
 const skosReferences = defineModel('references')
@@ -198,22 +208,9 @@ const form = reactive({
   externalUri: ""
 });
 
-const EXTERNAL_URI_REGEX = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
-
-const rules = computed(() => ({
-  relation: required(t('component.skos.relation')),
-  externalUri: {
-    validator: (_rule: any, value: string) => {
-      if (!value || value.trim().length === 0) {
-        return new Error(t("validations.required_if", {_field_: t("component.skos.uri")}));
-      }
-      if (!EXTERNAL_URI_REGEX.test(value.trim())) {
-        return new Error(t("validations.url", {_field_: t("component.skos.uri")}));
-      }
-      return true;
-    },
-    trigger: ["blur", "change"]
-  }
+const rules = computed<FormRules>(() => ({
+  relation: required('component.skos.relation'),
+  externalUri: [validUri(t('validations.url', {_field_: t('component.skos.uri')})), requiredTrimmed('component.skos.uri')]
 }));
 
 const externalOntologiesRefs = computed<any[]>(() => {

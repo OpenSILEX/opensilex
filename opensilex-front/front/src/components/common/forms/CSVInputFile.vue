@@ -23,7 +23,7 @@ import {NUpload} from "naive-ui";
 import type {UploadFileInfo} from "naive-ui";
 import {useI18n} from "vue-i18n";
 
-const emit = defineEmits(['updated'])
+const emit = defineEmits<{updated: []}>()
 
 //#region Plugins and services
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
@@ -43,7 +43,7 @@ const props = withDefaults(defineProps<{
       duplicatableHeaders?: string[]
       // Data's first array will be headers, allows for duplicated headers but this changes the output format.
       returnDataAsArrayOfArrays?: boolean
-      config?: any
+      config?: string
       buttonLabel: string
     }>(), {
       returnDataAsArrayOfArrays: false,

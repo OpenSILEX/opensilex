@@ -84,7 +84,7 @@ const props = defineProps<ModalFormProps>()
 
 //#region Private
 
-//#region Plugin and servicesmigration
+//#region Plugin and services
 const { t } = useI18n()
 const store = useStore()
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!

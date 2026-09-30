@@ -43,7 +43,7 @@ const props = withDefaults(defineProps<{
       duplicatableHeaders?: string[]
       // Data's first array will be headers, allows for duplicated headers but this changes the output format.
       returnDataAsArrayOfArrays?: boolean
-      config?: any
+      config?: string
       buttonLabel: string
     }>(), {
       returnDataAsArrayOfArrays: false,

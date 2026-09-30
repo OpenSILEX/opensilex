@@ -25,7 +25,6 @@
       class="createButton"
     />
 
-
     <div class="displayAndListSelectionCount">
       <div v-if="paginationInfo.hasResults">
           <strong>

@@ -33,6 +33,7 @@ Creating a front-end for your module could be useful for:
 - extending the front-end by adding new pages. See [module-api-and-interface-extension.md](module-api-and-interface-extension.md)
 - modifying the front-end by overloading the default theme. See [module-theme-personalization.md](module-theme-personalization.md)
 - overriding default components to replace them. See [overriding-defaults-components.md](overriding-defaults-components.md)
+- Changing the application name displayed in the browser tab. See [custom-application-name.md](custom-application-name.md)
 
 ## Creating the front-end part of a new module
 

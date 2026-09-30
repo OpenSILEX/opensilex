@@ -4,33 +4,26 @@
     class="listActionButtons"
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
   >
-    <n-button
+    <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
-      size="small"
-      class="greenThemeColor"
       @click="showForm"
-    >
-      {{ t('EventList.add') }}
-    </n-button>
+      :label="t('EventList.add')"
+      class="createButton"
+    />
 
-    <n-button
+    <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
-      size="small"
-      class="greenThemeColor"
       @click="showCsvForm"
-    >
-      {{ t('EventList.import') }}
-    </n-button>
+      :label="t('EventList.import')"
+      class="createButton"
+    />
 
-    <n-button
+    <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
-      size="small"
-      class="greenThemeColor"
       @click="showMoveCsvForm"
-    >
-      {{ t('EventList.move-csv-import-title') }}
-    </n-button>
-
+      :label="t('EventList.move-csv-import-title')"
+      class="createButton"
+    />
 
     <div class="displayAndListSelectionCount">
       <div v-if="paginationInfo.hasResults">
@@ -135,7 +128,7 @@
         <template #cell(rdf_type_name)="{ data }">
           <UriLink
             v-if="data.item.rdf_type_name"
-            :uri="$opensilex.getShortUri(data.item.rdf_type)"
+            :uri="opensilex.getShortUri(data.item.rdf_type)"
             :value="data.item.rdf_type_name"
           />
         </template>
@@ -164,7 +157,7 @@
                 :uri="uri"
                 :value="objectsLabels[uri]"
                 :to="{
-                  path: $opensilex.getTargetPath(uri, context, objectsPath[uri])
+                  path: opensilex.getTargetPath(uri, context, objectsPath[uri])
                 }"
               />
               <span v-if="index < Math.min((data.item.targets?.length || 0), 2) - 1"> </span>
@@ -221,8 +214,8 @@
         ref="modalFormRef"
         :target="target"
         :context="context"
-        createTitle="Event.add"
-        editTitle="Event.edit"
+        createTitle="component.events.add"
+        editTitle="component.events.edit"
         @onCreate="displayAfterCreation"
         @onUpdate="updateSelectedEvent"
       />
@@ -245,8 +238,8 @@
       <DocumentForm
         v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
         ref="documentFormRef"
-        :createTitle="t('component.common.addDocument')"
-        :editTitle="t('component.common.editDocument')"
+        createTitle="component.common.addDocument"
+        editTitle="component.common.editDocument"
         @onSuccess="refresh"
       />
     </n-layout-content>
@@ -280,6 +273,7 @@ import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncV
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
@@ -318,7 +312,7 @@ const props = withDefaults(defineProps<{
   displayTargetFilter: true,
   displayTitle: false,
   maximizeFilterSize: false,
-  columnsToDisplay: () => new Set(['type', 'start', 'end', 'targets', 'description'])
+  columnsToDisplay: () => new Set(['type', 'start', 'end', 'targets', 'description']),
 })
 
 const emit = defineEmits<{
@@ -329,9 +323,9 @@ const { t, n } = useI18n()
 const route = useRoute()
 const store = useStore()
 
-const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
-const eventService = $opensilex.getService<EventsService>('opensilex.EventsService')
-const ontologyService = $opensilex.getService<OntologyService>('opensilex.OntologyService')
+const opensilex = inject<OpenSilexVuePlugin>('opensilex')!
+const eventService = opensilex.getService<EventsService>('opensilex.EventsService')
+const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
 
 const tableRef = ref<any>(null)
 const eventModalViewRef = ref<any>(null)
@@ -357,7 +351,7 @@ const renderCsvForm = ref(false)
 const renderMoveCsvForm = ref(false)
 
 const selectedEvent = ref<EventDetailsDTO>({})
-const baseType = ref<string>($opensilex.Oeev.EVENT_TYPE_URI)
+const baseType = ref<string>(opensilex.Oeev.EVENT_TYPE_URI)
 
 const filter = ref<EventFilter>({
   target: undefined,
@@ -458,7 +452,11 @@ const fields = computed(() => {
   if (props.enableActions) {
     tableFields.push({
       key: 'actions',
-      label: 'component.common.actions'
+      label: 'component.common.actions',
+      resizable: false,
+      naiveProps: {
+        width: 100
+      }
     })
   }
 
@@ -466,7 +464,7 @@ const fields = computed(() => {
 })
 
 onMounted(() => {
-  $opensilex.updateFiltersFromURL(route.query, filter.value)
+  opensilex.updateFiltersFromURL(route.query, filter.value)
   if (props.target) {
     filter.value.target = props.target
   }
@@ -520,14 +518,14 @@ function cleanFilter() {
 
 function refresh() {
   cleanFilter()
-  $opensilex.updateURLParameters(filter.value)
+  opensilex.updateURLParameters(filter.value)
   tableRef.value?.setPage?.(1)
   nextTick(() => tableRef.value?.refresh?.())
   filtersCollapsed.value = true
 }
 
 function updateSelectedEvent() {
-  $opensilex.updateURLParameters(filter.value)
+  opensilex.updateURLParameters(filter.value)
   nextTick(() => tableRef.value?.refresh?.())
 }
 
@@ -580,11 +578,11 @@ async function search(options: any) {
   if (targetUris.length > 0) {
     ontologyService.getURITypes(targetUris).then((httpObj: any) => {
       for (const obj of httpObj.response.result) {
-        objectsPath.value[obj.uri] = $opensilex.getPathFromUriTypes(obj.rdf_types)
+        objectsPath.value[obj.uri] = opensilex.getPathFromUriTypes(obj.rdf_types)
       }
     })
 
-    $opensilex.loadOntologyLabelsWithType(
+    opensilex.loadOntologyLabelsWithType(
       targetUris,
       props.context,
       objectsLabels.value,
@@ -600,11 +598,11 @@ function deleteEvent(uri: string) {
     .then(() => {
       refresh()
       const message =
-        `${t('Event.name')} ${uri} ${t('component.common.success.delete-success-message')}`
-      $opensilex.showSuccessToast(message)
+        `${t('component.events.name')} ${uri} ${t('component.common.success.delete-success-message')}`
+      opensilex.showSuccessToast(message)
       emit('onDelete', uri)
     })
-    .catch($opensilex.errorHandler)
+    .catch(opensilex.errorHandler)
 }
 
 function isMove(event: any) {
@@ -612,9 +610,9 @@ function isMove(event: any) {
     return false
   }
 
-  return $opensilex.Oeev.checkURIs(
+  return opensilex.Oeev.checkURIs(
     event.rdf_type,
-    $opensilex.Oeev.MOVE_TYPE_URI
+    opensilex.Oeev.MOVE_TYPE_URI
   )
 }
 
@@ -627,9 +625,10 @@ function getEventPromise(event: EventGetDTO): Promise<HttpResponse<OpenSilexResp
 }
 
 async function showEventView(event: RowWithData<EventGetDTO>) {
-  const http = await getEventPromise(event.item)
+  const http = await getEventPromise(event)
   await eventModalViewRef.value?.show?.(http)
 }
+
 
 function editEvent(item: any) {
   renderModalForm.value = true

@@ -241,6 +241,7 @@
                 }
             },
             "addDocument": "Add document",
+            "editDocument": "Edit document",
             "warningInstruction" : "Experimental feature",
             "organization": {
                 "description": "Manage and configure organizations",
@@ -831,6 +832,12 @@
                     "in-progress": "In-progress",
                     "public": "Public"
                 }
+            },
+            "moveView": {
+                "from": "From",
+                "location": "Location",
+                "to": "To",
+                "positionTitle": "Position"
             },
             "view": {
                 "title": "Experiment",

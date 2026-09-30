@@ -70,7 +70,7 @@
                   helpMessage="component.skos.relation-help"
                   placeholder="component.skos.no-relation"
                   path="relation"
-                  v-model:selected="currentRelation"
+                  v-model:selected="form.relation"
                   :options="options"
                   :required="true"
               />
@@ -143,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, h, inject, nextTick, onMounted, reactive, ref, toRef, useTemplateRef} from "vue";
+import {computed, h, inject, nextTick, onMounted, reactive, ref, useTemplateRef} from "vue";
 import {useI18n} from "vue-i18n";
 import {NDataTable, NForm, NFormItem, NInput} from "naive-ui";
 import {required} from "@/models/FormFieldsFormatter";
@@ -168,6 +168,9 @@ const {t} = useI18n();
 const text = ref<string>("");
 const ontologies = ref<string[]>([]);
 const isAllOntologies = ref<boolean>(false);
+const isAgroportalReachable = ref<boolean>(false);
+const agroportalAPIService = ref<AgroportalAPIService>();
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>("nFormRef");
 
 const props = withDefaults(
     defineProps<{
@@ -183,24 +186,17 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: "onAdd", value: any, callback: (result: any) => void): void;
-  (e: "onDelete", value: any, callback: (result: any) => void): void;
-  (e: "onUpdate", value: any, callback: (result: any) => void): void;
+  onAdd: [value: any, callback: (result: any) => void];
+  onDelete: [value: any, callback: (result: any) => void];
+  onUpdate: [value: any, callback: (result: any) => void];
 }>();
 
 const skosReferences = defineModel('references')
-
-const agroportalAPIService = ref<AgroportalAPIService>();
-
-const nFormRef = useTemplateRef<InstanceType<typeof NForm>>("nFormRef");
 
 const form = reactive({
   relation: "",
   externalUri: ""
 });
-
-const currentRelation = toRef(form, "relation");
-const currentExternalUri = toRef(form, "externalUri");
 
 const EXTERNAL_URI_REGEX = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
 
@@ -232,8 +228,6 @@ const externalOntologiesRefs = computed<any[]>(() => {
         description: t(ref.description)
       }));
 });
-
-const isAgroportalReachable = ref<boolean>(false);
 
 function checkAgroportalReachable() {
   agroportalAPIService.value.pingAgroportal()
@@ -276,13 +270,8 @@ onMounted(() => {
   checkAgroportalReachable();
 });
 
-function resetForm() {
-  currentRelation.value = "";
-  currentExternalUri.value = "";
-}
-
 function resetExternalUriForm() {
-  currentExternalUri.value = "";
+  form.externalUri = "";
 
   nextTick(() => {
     nFormRef.value?.restoreValidation();
@@ -378,8 +367,8 @@ function addRelationsToSkosReferences() {
 
 function addRelationToSkosReferences() {
   if (!isIncludedInRelations()) {
-    skosReferences.value[currentRelation.value].push(
-        currentExternalUri.value
+    skosReferences.value[form.relation].push(
+        form.externalUri
     );
 
     resetExternalUriForm();
@@ -388,9 +377,9 @@ function addRelationToSkosReferences() {
 
 function isIncludedInRelations(): boolean {
   if (
-      currentExternalUri.value == undefined ||
-      currentExternalUri.value == "" ||
-      currentExternalUri.value.length == 0
+      form.externalUri == undefined ||
+      form.externalUri == "" ||
+      form.externalUri.length == 0
   ) {
     return false;
   }
@@ -400,7 +389,7 @@ function isIncludedInRelations(): boolean {
   for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
     if (
         skosReferences.value[skosRelation.dtoKey]
-            .includes(currentExternalUri.value)
+            .includes(form.externalUri)
     ) {
       includedInRelations = true;
       break;
@@ -451,8 +440,8 @@ function onImportMapping(
     entity: AgroportalTermDTO,
     relation: any
 ) {
-  currentExternalUri.value = entity.id;
-  currentRelation.value = relation.id;
+  form.externalUri = entity.id;
+  form.relation = relation.id;
 }
 </script>
 

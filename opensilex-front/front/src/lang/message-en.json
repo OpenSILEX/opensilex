@@ -793,6 +793,12 @@
                     "public": "Public"
                 }
             },
+            "moveView": {
+                "from": "From",
+                "location": "Location",
+                "to": "To",
+                "positionTitle": "Position"
+            },
             "view": {
                 "title": "Experiment",
                 "experiment-experiments": "Experiment(s)",

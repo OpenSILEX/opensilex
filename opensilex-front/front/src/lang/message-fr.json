@@ -791,6 +791,12 @@
                     "public": "Public"
                 }
             },
+            "moveView": {
+                "from": "De",
+                "location": "Localisation",
+                "to": "Vers",
+                "positionTitle": "Position"
+            },
             "view": {
                 "title": "Expérimentation",
                 "experiment-experiments": "Expérimentation(s)",

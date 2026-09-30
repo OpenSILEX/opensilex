@@ -23,8 +23,7 @@ export default {
         e.stopImmediatePropagation()
         // Retire le premier préfixe rencontré (et tout ce qui précède, y compris un éventuel doublon), puis reconstruit l'url sur le bon host
         const pathAfterPrefix = href.slice(href.indexOf(matchedPrefix) + matchedPrefix.length)
-        const targetUrl = `${NEW_HOST}/${matchedPrefix}/${pathAfterPrefix}`
-        console.log(`Redirecting to ${targetUrl}`)
+        const targetUrl = `${NEW_HOST}${matchedPrefix}${pathAfterPrefix}`
         window.location.href = targetUrl
       }, true)
     }

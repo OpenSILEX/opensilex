@@ -3,7 +3,7 @@ import DefaultTheme from 'vitepress/theme'
 // À renseigner : le nouveau host de destination (sans slash final)
 // ex: 'https://mondomaine.example.com'
 const NEW_HOST = 'https://opensilex.pages-forge.inrae.fr/opensilex-dev'
-const PREFIXES = ['/technical-documentation/', '/functional-specifications/']
+const PREFIXES = ['/technical-documentation/']
 
 export default {
   extends: DefaultTheme,
@@ -24,6 +24,7 @@ export default {
         // Retire le premier préfixe rencontré (et tout ce qui précède, y compris un éventuel doublon), puis reconstruit l'url sur le bon host
         const pathAfterPrefix = href.slice(href.indexOf(matchedPrefix) + matchedPrefix.length)
         const targetUrl = `${NEW_HOST}/${matchedPrefix}/${pathAfterPrefix}`
+        console.log(`Redirecting to ${targetUrl}`)
         window.location.href = targetUrl
       }, true)
     }

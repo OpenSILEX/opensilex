@@ -5,7 +5,7 @@
         "strict": true,
         "jsx": "preserve",
         "importHelpers": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
@@ -36,7 +36,8 @@
         "src/**/*.tsx",
         "src/**/*.vue",
         "tests/**/*.ts",
-        "tests/**/*.tsx"
+        "tests/**/*.tsx",
+        "vite.config.ts"
     ],
     "exclude": [
         "node_modules"

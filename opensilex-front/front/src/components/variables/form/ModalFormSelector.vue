@@ -8,13 +8,13 @@
       <n-spin :show="loading">
         <input :id="id" type="hidden" :value="hiddenValue" />
 
-        <div class="select-button-container">
-          <!-- Zone d’affichage des valeurs sélectionnées -->
-          <div
-            class="selectedItemsArea"
-            :class="{ clickable: openOnClick && !isDisabled }"
-            @click="showModal"
-          >
+        <div
+          class="select-button-container"
+          :class="{ clickable: openOnClick && !isDisabled, 'is-disabled': isDisabled }"
+          @click="showModal"
+        >
+
+          <div class="selectedItemsArea">
             <template v-if="displayedSelectedItems.length">
               <n-tag
                 v-for="item in displayedSelectedItems"
@@ -46,6 +46,16 @@
           >
             <i class="bi bi-x-lg"></i>
           </n-button>
+
+          <!-- Bouton d’ouverture de la modale, collé au bord droit de l’input -->
+          <button
+            type="button"
+            class="btn greenThemeColor openModalButton"
+            :disabled="isDisabled"
+            @click.stop="showModal"
+          >
+            >>
+          </button>
         </div>
       </n-spin>
 
@@ -102,9 +112,7 @@ type SelectedJsonItem = {
 }
 
 const props = defineProps<{
-  /** v-model:selected : tableau d’URIs (multiple=true) ou string (multiple=false) */
   selected: string[] | string | undefined
-  /** liste d’objets { uri, name } (ou { id, label }) pour préremplir les libellés */
   selectedInJsonFormat?: SelectedJsonItem[] | null
 
   multiple?: boolean
@@ -141,13 +149,9 @@ const props = defineProps<{
   resultLimit?: number
   defaultSelectedValue?: any
   maximumSelectedItems?: number
-  /** nb max de tags affichés dans l’input avant “+N” */
+
   limit?: number
 
-  /**
-   * Props spécifiques à certaines modales,
-   * notamment VariablesSelectorWithFilter.
-   */
   withAssociatedData?: boolean
   experiment?: any
   objects?: any
@@ -182,17 +186,14 @@ const searchModal = ref<any>(null)
 const loading = ref(false)
 const firstTimeOpening = ref(false)
 
-/** Sélection côté form : copie (confirmée) & temporaire (dans la modale) */
 const confirmedSelectedItems = ref<SelectableItem[]>([])
 const temporarySelectedItems = ref<SelectableItem[]>([])
 
-/** ----- v-model:selected (URIs) ----- */
 const selectionModel = computed<string[] | string | undefined>({
   get: () => props.selected,
   set: value => emit('update:selected', value)
 })
 
-/** v-model:filter -> v-model:searchFilter (nommage côté modal) */
 const searchModalFilterModel = computed({
   get: () => props.filter,
   set: value => emit('update:filter', value)
@@ -207,18 +208,9 @@ const hiddenValue = computed(() => {
   return (selectionModel.value as string) || ''
 })
 
-/**
- * Liste des éléments réellement affichés en selecteur.
- * Si la sélection contient plus d’éléments que la limite,
- * on affiche seulement les premiers.
- */
+
 const displayedSelectedItems = computed(() => confirmedSelectedItems.value.slice(0, limit.value))
 
-/**
- * Nombre d’éléments non affichés car excedant la limite.
- * Si 7 elements, limit = 4 et remainingSelectedItemsCount = 3
- * On affiche alors "+3".
- */
 const remainingSelectedItemsCount = computed(() => Math.max(0, confirmedSelectedItems.value.length - displayedSelectedItems.value.length))
 
 const hasSelection = computed(() => confirmedSelectedItems.value.length > 0)
@@ -268,11 +260,6 @@ function conversion(dto: any): SelectableItem {
   return dto as SelectableItem
 }
 
-/**
- * Synchronise le v-model:selected du parent à partir d’une liste d’items.
- * En mode multiple : émet un tableau d’ids.
- * En mode simple : émet le premier id trouvé.
- */
 function syncSelectionModelFromItems(items: SelectableItem[]) {
   const ids = items.map(item => item.id)
 
@@ -337,7 +324,6 @@ function preloadFromJson() {
   return normalized.length > 0
 }
 
-/** Optionnel : charger les labels via itemLoadingMethod si on n’a que des URIs */
 async function preloadFromItemLoaderIfNeeded() {
   if (!props.itemLoadingMethod) {
     return
@@ -541,8 +527,7 @@ function onValidate(items?: any[]) {
   }
 
   setSelection(temporarySelectedItems.value)
-  // Laisse Vue propager les update:selected et update:selectedInJsonFormat
-  // avant d’émettre onValidate.
+
   setTimeout(() => {
     emit('onValidate', confirmedSelectedItems.value)
     loading.value = false
@@ -651,20 +636,38 @@ defineExpose({
 .select-button-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  min-height: 34px;
+  border: 1px solid #e5e5e5;
+  border-radius: 3px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.select-button-container.is-disabled {
+  cursor: not-allowed;
+  background-color: #e9ecef;
 }
 
 .selectedItemsArea {
   flex: 1;
   min-width: 0;
-  min-height: 36px;
-  padding: 6px 8px;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
+  padding: 4px 8px 4px 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+
+.openModalButton {
+  flex-shrink: 0;
+  align-self: stretch;
+  margin: 0;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .clickable {

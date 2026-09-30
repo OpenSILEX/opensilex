@@ -104,6 +104,9 @@ import type {ExperimentGetDTO} from 'opensilex-core';
 import PageContent from "@/components/layout/PageContent.vue";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
+import ExperimentFactors from "@/components/experiments/views/ExperimentFactors.vue";
+import ExperimentScientificObjects from "@/components/experiments/views/ExperimentScientificObjects.vue";
+import ExperimentData from "@/components/experiments/views/ExperimentData.vue";
 
 const route = useRoute();
 const store = useStore();

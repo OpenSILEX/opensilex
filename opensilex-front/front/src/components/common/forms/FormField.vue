@@ -11,8 +11,6 @@
       <span v-if="requiredBlue" class="blueStar">*</span>
     </div>
 
-    <!-- Le champ est rendu par le slot.
-         Les composants enfants (ou NFormItem) gèrent la validation/feedback. -->
     <slot name="field" :id="id"></slot>
   </div>
 </template>
@@ -25,9 +23,7 @@ import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper
 const props = defineProps<{
   label?: string
   helpMessage?: string
-  /** Affiche l’astérisque rouge via CSS, ne déclenche pas de validation ici */
   required?: boolean
-  /** Étoile bleue (comportement existant) */
   requiredBlue?: boolean
 }>()
 
@@ -51,19 +47,17 @@ onBeforeMount(() => {
 }
 
 .blueStar {
-  color: #007bff; /* bootstrap primary */
+  color: #007bff;
   margin-left: 4px;
 }
 
-/* On ne colore que l’astérisque */
 :deep(label.form-label) {
   color: black;
 }
 
-/* Asterisk rouge quand prop `required` = true */
 .form-field.required :deep(label.form-label)::after {
   content: ' *';
-  color: #dc3545; /* bootstrap danger */
+  color: #dc3545;
   margin-left: .25rem;
 }
 </style>

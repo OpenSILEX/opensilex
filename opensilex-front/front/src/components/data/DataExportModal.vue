@@ -1,56 +1,47 @@
 <template>
-  <Modal
-    ref="modal"
-    :title="$t('DataExportModal.title')"
-    no-close-on-backdrop
-    no-close-on-esc
-  >
-    <template v-slot:modal-header>
-      <b-row class="mt-1" style="width: 100%">
-        <b-col cols="10">
-          <i>
-            <h4>
-              <Icon icon="fa#list" />
-              {{ $t("DataExportModal.title") }}
-            </h4>
-          </i>
-        </b-col>
-      </b-row>
+  <Modal ref="modal">
+    <template #header>
+      <i>
+        <h4>
+          <Icon icon="fa#list" />
+          {{ t("DataExportModal.title") }}
+        </h4>
+      </i>
     </template>
-    <template>
-      <FormSelector
-        label="DataExportModal.select-format"
-        v-model:selected="format"
-        :required="true"
-        :multiple="false"
-        :clearable="false"
-        helpMessage="DataExportModal.select-format-help"
-        :options="options"
-      ></FormSelector>
-      <FormField
-        label="DataExportModal.check-raw-data"
-        helpMessage="DataExportModal.raw-data-help"
-      >
-        <template v-slot:field="field">
-          <b-form-checkbox v-model="withRawData" switch>
-            {{$t("DataTemplateForm.raw-data")}}
-          </b-form-checkbox>
-        </template>
-      </FormField>
 
-    </template>
-        <template v-slot:modal-footer>
+    <FormSelector
+      label="DataExportModal.select-format"
+      v-model:selected="format"
+      :required="true"
+      :multiple="false"
+      :clearable="false"
+      helpMessage="DataExportModal.select-format-help"
+      :options="options"
+    ></FormSelector>
+    <FormField
+      label="DataExportModal.check-raw-data"
+      helpMessage="DataExportModal.raw-data-help"
+    >
+      <template #field>
+        <div class="switch-field">
+          <n-switch v-model:value="withRawData" :theme-overrides="switchThemeOverrides" />
+          <span class="switch-field__label" @click="withRawData = !withRawData">{{ t("DataTemplateForm.raw-data") }}</span>
+        </div>
+      </template>
+    </FormField>
+
+    <template #footer>
       <button
         type="button"
         class="btn btn-secondary"
-        v-on:click="hide(false)"
-      >{{ $t('component.common.close') }}</button>
+        v-on:click="hide()"
+      >{{ t('component.common.close') }}</button>
 
       <button
         type="button"
         class="btn greenThemeColor"
         v-on:click="exportData()"
-      >{{ $t('DataExportModal.export') }}</button> 
+      >{{ t('DataExportModal.export') }}</button>
     </template>
 
   </Modal>
@@ -61,11 +52,17 @@ import {computed, inject, ref, useTemplateRef} from "vue";
 import {DataSearchDTO} from "opensilex-core/model/dataSearchDTO";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import FormField from "@/components/common/forms/FormField.vue";
+import {NSwitch} from "naive-ui";
 import Icon from "@/components/common/views/Icon.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
 import Modal from "@/components/common/views/Modal.vue";
+
+const switchThemeOverrides = {
+  railColorActive: "#00a38d",
+  boxShadowFocus: "0 0 0 2px rgba(0, 163, 141, 0.2)"
+};
 
 const props = defineProps<{
   filter: any
@@ -110,25 +107,39 @@ const options = computed(() => [
       String(today.getDate()).padStart(2, "0");
 
     let exportDto: DataSearchDTO = {
-      start_date: this.filter.start_date,
-      end_date: this.filter.end_date,
-      targets: this.filter.scientificObjects,
-      devices: this.filter.devices,
-      experiments: this.filter.experiments,
-      variables: this.filter.variables,
-      provenances: this.filter.provenance ? [this.filter.provenance] : null,
-      mode: this.format,
-      with_raw_data: this.withRawData
+      start_date: props.filter.start_date,
+      end_date: props.filter.end_date,
+      targets: props.filter.scientificObjects,
+      devices: props.filter.devices,
+      experiments: props.filter.experiments,
+      variables: props.filter.variables,
+      provenances: props.filter.provenance ? [props.filter.provenance] : null,
+      mode: format.value,
+      with_raw_data: withRawData.value
     }
 
     hide();
     opensilex.downloadFilefromPostService(path, filename, "csv", exportDto, store.state.lang)
-    
   }
+
+  defineExpose({
+    show,
+    hide
+  })
 
 </script>
 
 <style>
+.switch-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch-field__label {
+  cursor: pointer;
+}
+
 .validation-confirm-container {
   color: rgb(40, 167, 69);
   font-weight: bold;
@@ -145,6 +156,8 @@ const options = computed(() => [
       raw-data-help: "If checked, the column \"raw_data\" will be added to the export file"
       export-long: Long format
       export-wide: Wide format
+    DataTemplateForm:
+      raw-data: "Raw data"
 
   fr: 
     DataExportModal:
@@ -156,4 +169,6 @@ const options = computed(() => [
       raw-data-help: "Si coché, la colonne \"raw_data\" sera ajouté au fichier d'export"
       export-long: Format long
       export-wide: Format large
+    DataTemplateForm:
+      raw-data: "Données brutes"
 </i18n>

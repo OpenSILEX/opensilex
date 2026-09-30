@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :required="required"
     :requiredBlue="requiredBlue"
     :label="fieldLabel"
@@ -138,13 +138,14 @@
         </template>
       </n-modal>
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NModal, NSteps, NStep, NButton, NSpace, NTooltip} from 'naive-ui'
 import { useI18n } from 'vue-i18n'
+import FormField from "@/components/common/forms/FormField.vue";
 
 export interface SelectableItem {
   id: string
@@ -343,8 +344,11 @@ defineExpose({
 }
 
 .summary-box {
-  min-height: 38px;
-  padding: 0.375rem 0.75rem;
+  min-height: 34px;
+  height: 34px;
+  padding: 0 0 0 12px;
+  border-radius: 3px;
+  overflow: hidden;
   cursor: pointer;
   background-color: #fff;
 }
@@ -358,13 +362,22 @@ defineExpose({
 .summary-content {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .summary-actions {
   flex-shrink: 0;
+  align-self: stretch;
 }
 
-.createButton {
+.summary-actions .createButton {
+  height: 100%;
+  margin: 0;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
   white-space: nowrap;
 }
 

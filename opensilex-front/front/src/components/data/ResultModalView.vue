@@ -1,62 +1,58 @@
 <template>
-  <b-modal
-    @hide="clearModal"
-    v-model="modalShow"
-    :title="t('ResultModalView.title')"
-  >
-    <template v-slot:modal-header>
-      <b-row class="mt-1" style="width: 100%">
-        <b-col cols="10">
-          <i>
-            <h4>
-              <Icon icon="fa#list" />
-              {{ $t("ResultModalView.title") }}
-            </h4>
-          </i>
-        </b-col>
-      </b-row>
-    </template>
-    <template>
-      <p v-if="nbLinesImported != null" class="validation-confirm-container">
-        {{
-          nbLinesImported > 1
-            ? `${nbLinesImported} ${$t("ResultModalView.data-imported")}`
-            : $t("ResultModalView.datum-imported")
-        }}
-      </p>
-      <p v-if="nbAnnotationsImported != null && nbAnnotationsImported > 0" class="validation-confirm-container">
-        {{
-          nbAnnotationsImported > 1
-            ? `${nbAnnotationsImported} ${$t("ResultModalView.annotations-imported")}`
-            : $t("ResultModalView.annotation-imported")
-        }}
-      </p>
-      <div class="details-container">
-        <ProvenanceDetails
-          label="ResultModalView.provenanceLabel"
-          v-if="provenance"
-          :provenance="provenance"
-          :dataImportResult="true"
-        />
+  <Modal ref="modal" :hideHeader="true">
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <i>
+        <h4>
+          <Icon icon="fa#list" />
+          {{ t("ResultModalView.title") }}
+        </h4>
+      </i>
+      <button
+        type="button"
+        class="btn-close"
+        @click="hide()"
+        aria-label="Close"></button>
+    </div>
 
-        <BatchDetails
-          label="ResultModalView.batchLabel"
-          v-if="batch"
-          :batchUri="batch"
-        />
-      </div>
-    </template>
+    <p v-if="nbLinesImported != null" class="validation-confirm-container">
+      {{
+        nbLinesImported > 1
+          ? `${nbLinesImported} ${t("ResultModalView.data-imported")}`
+          : t("ResultModalView.datum-imported")
+      }}
+    </p>
+    <p v-if="nbAnnotationsImported != null && nbAnnotationsImported > 0" class="validation-confirm-container">
+      {{
+        nbAnnotationsImported > 1
+          ? `${nbAnnotationsImported} ${t("ResultModalView.annotations-imported")}`
+          : t("ResultModalView.annotation-imported")
+      }}
+    </p>
+    <div class="details-container">
+      <ProvenanceDetails
+        label="ResultModalView.provenanceLabel"
+        v-if="provenance"
+        :provenance="provenance"
+        :dataImportResult="true"
+      />
 
-    <template v-slot:modal-footer> 
+      <BatchDetails
+        label="ResultModalView.batchLabel"
+        v-if="batch"
+        :batchUri="batch"
+      />
+    </div>
+
+    <template #footer>
       <button
         type="button"
         class="btn greenThemeColor"
         v-on:click="hide()"
       >
-        {{ $t('component.common.ok') }}
+        {{ t('component.common.ok') }}
       </button>
     </template>
-  </b-modal>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -65,10 +61,11 @@
   import BatchDetails from "@/components/data/BatchDetails.vue";
   import Icon from "@/components/common/views/Icon.vue";
   import {useI18n} from "vue-i18n";
-  import {ref} from "vue";
+  import {ref, useTemplateRef} from "vue";
+  import Modal from "@/components/common/views/Modal.vue";
 
   const { t } = useI18n()
-  const modalShow = ref<boolean>(false)
+  const modal = useTemplateRef<InstanceType<typeof Modal>>('modal')
   const nbLinesImported = ref<number>(null)
   const nbAnnotationsImported = ref<number>(null)
   const provenance = ref<any>(null)
@@ -95,11 +92,12 @@
   }
 
   function show() {
-    modalShow.value = true;
+    modal.value.show();
   }
 
   function hide() {
-    modalShow.value = false;
+    modal.value.hide();
+    clearModal();
   }
 
 
@@ -115,7 +113,8 @@
     setNbAnnotationsImported,
     setNbLinesImported,
     setProvenance,
-    show
+    show,
+    hide
   })
 
 </script>

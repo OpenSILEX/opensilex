@@ -9,8 +9,8 @@
   >
     <template #header>
       <div class="modal-title">
-        <i class="bi bi-search"></i>
-        {{ $t('component.project.filter-description') }}
+        <opensilex-Icon icon="fa#vials" />
+        {{ t('component.variable.modal-title') }}
       </div>
     </template>
 
@@ -19,6 +19,7 @@
         ref="variableSelection"
         :noActions="true"
         :pageSize="5"
+        :filtersInitiallyCollapsed="true"
         :maximumSelectedRows="maximumSelectedRows"
         :withAssociatedData="withAssociatedData"
         :experiment="experiment"
@@ -46,6 +47,9 @@
 <script setup lang="ts">
 import { ref, nextTick} from 'vue'
 import { NModal, NButton, NSpace } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const variableSelection = ref<any>(null)
 const visible = ref(false)

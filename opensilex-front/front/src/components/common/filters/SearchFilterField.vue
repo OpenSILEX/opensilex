@@ -103,6 +103,7 @@ const props = withDefaults(defineProps<{
   withButton: boolean
   withIcon: boolean
   showTitle: boolean
+  showAdvancedSearch?: boolean
 }>(), {
   label : "SearchFilter.searchlabel",
   searchButtonLabel: "component.common.search.search-button",
@@ -110,6 +111,7 @@ const props = withDefaults(defineProps<{
   withButton: true,
   withIcon: true,
   showTitle: true,
+  showAdvancedSearch: false,
 })
 
 const emit = defineEmits<{

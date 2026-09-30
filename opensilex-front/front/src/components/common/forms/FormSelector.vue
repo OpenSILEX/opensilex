@@ -6,9 +6,8 @@
     :helpMessage="helpMessage"
   >
     <template #field="{ id }">
-      <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
-        <div class="select-button-container">
+        <div class="select-button-container" :class="{ 'has-side-button': !!viewHandler || !!actionHandler }">
           <CustomTreeselect
             ref="customTreeselect"
             v-bind="$attrs"
@@ -117,26 +116,21 @@ const emit = defineEmits<{
   (e: 'deselect', value: any): void
 }>()
 
-// v-model proxy
 const selectedProxy = computed<string | string[] | undefined>({
   get: () => props.selected,
   set: (v) => emit('update:selected', v)
 })
 
-// Récupère le NForm parent pour valider explicitement le champ
 const nForm = inject(formInjectionKey, null)
 
-// Valide le champ après propagation du v-model dans le `form`
 watch(
   () => selectedProxy.value,
   async () => {
     await nextTick()
-    // force la validation de ce field (règles & messages du NForm parent)
     nForm?.validateField?.(props.path)
   }
 )
 
-// Valide aussi au blur (si on veut trigger cet evenement)
 function onBlur () {
   nextTick(() => {
     nForm?.validateField?.(props.path)
@@ -189,6 +183,30 @@ function updateResultCount (n: number) { resultCount.value = n }
 
 .select-side-button > * {
   height: 100%;
+}
+
+.has-side-button .select-side-button {
+  margin-left: 0;
+}
+
+.has-side-button :deep(.n-base-selection) {
+  --n-border-radius: 3px 0 0 3px !important;
+}
+
+.has-side-button .select-side-button > * {
+  margin: 0;
+  border-radius: 0;
+  height: auto;
+  min-height: 0;
+  padding: 0 10px;
+  line-height: 1;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.has-side-button .select-side-button > *:last-child {
+  border-radius: 0 3px 3px 0;
 }
 
 .greenThemeColor {

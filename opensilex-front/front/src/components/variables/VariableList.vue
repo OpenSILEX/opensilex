@@ -16,6 +16,7 @@
 
     <!-- Deuxième dropdown (gestion actions) -->
     <n-dropdown
+      v-if="!noActions"
       :options="dropdownOptions"
       trigger="hover"
       :disabled="selectedCount === 0"
@@ -65,7 +66,7 @@
 <n-layout has-sider class="vars-layout">
   <SearchFiltersSidebar
     :activeFiltersCount="activeFilters"
-    :filtersCollapsed="filtersCollapsed"
+    v-model:filtersCollapsed="filtersCollapsed"
     searchButtonLabelTranslationKey="component.variable.search-variables"
     @refresh="applyFilters"
     @reset="resetFilters"
@@ -166,15 +167,15 @@
         </n-form-item>
 
         <n-form-item :label="t('component.variable.timeInterval.time-interval')" :show-feedback="false">
-          <opensilex-VariableTimeIntervalSelector
+          <VariableTimeIntervalSelector
             v-model:selected="filter.timeInterval"
             @handlingEnterKey="applyFilters"
             :placeholder="$t('component.variable.timeInterval.time-interval-placeholder')"
-          />
+           timeinterval=""/>
         </n-form-item>
 
         <n-form-item :label="t('component.variable.species.species')">
-          <opensilex-SpeciesSelector
+          <SpeciesSelector
             v-model:selected="filter.species"
             :multiple="true"
             :placeholder="$t('component.variable.species.select-multiple-placeholder')"
@@ -204,7 +205,7 @@
     </n-layout-content>
 </n-layout>
 
-  <opensilex-GroupVariablesModalList
+  <GroupVariablesModalList
     ref="groupVariableSelection"
     :required="true"
     :multiple="true"
@@ -240,6 +241,8 @@ import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import SpeciesSelector from "@/components/species/SpeciesSelector.vue";
+import GroupVariablesModalList from "@/components/groupVariable/GroupVariablesModalList.vue";
 
 /** Refs UI */
 const groupVariableSelection = ref()
@@ -266,7 +269,6 @@ const allSelected = ref(false)
 const selectedSet = ref<Set<DataTableRowKey>>(new Set())
 const unselectedSet = ref<Set<DataTableRowKey>>(new Set())
 
-const filtersCollapsed = ref(false) // true = replié, false = visible
 
 
 const checkedRowKeys = ref<DataTableRowKey[]>([])
@@ -289,8 +291,14 @@ const tableData = computed(() => {
 
 /** Props */
 const props = defineProps({
-  showCount: { type: Boolean, default: true }
+  showCount: { type: Boolean, default: true },
+  // Hide the search filters sidebar at first render (e.g. when used in a selection modal)
+  filtersInitiallyCollapsed: { type: Boolean, default: false },
+
+  noActions: { type: Boolean, default: false }
 })
+
+const filtersCollapsed = ref(props.filtersInitiallyCollapsed) // true = replié, false = visible
 
 /** Row key */
 const rowKey = (row: { item: VariableGetDTO }) => row.item.uri
@@ -643,7 +651,12 @@ function createColumns(t: Function, emit: Function, loadVariablesGroupFromVariab
   ]
 }
 
-const columns = computed(() => createColumns(t, emit, toggleExpand))
+const columns = computed(() => {
+  const cols = createColumns(t, emit, toggleExpand)
+  return props.noActions
+    ? cols.filter(col => col.type !== 'expand' && col.key !== 'actions')
+    : cols
+})
 
 const dropdownOptions = computed(() => [
   {

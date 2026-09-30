@@ -23,8 +23,10 @@ import { GermplasmGroupGetDTO } from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { GermplasmService } from "opensilex-core/api/germplasm.service";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
+import { useI18n } from "vue-i18n";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const { t } = useI18n();
 
 const pageSize = ref<number>(10);
 
@@ -33,6 +35,7 @@ const groupURI = defineModel<string>("selected");
 const props = defineProps<{
   label: string;
   multiple: boolean;
+  placeholder?: string;
 }>();
 
 const emit = defineEmits<{
@@ -46,9 +49,12 @@ const formSelector =
     useTemplateRef<InstanceType<typeof FormSelector>>("formSelector");
 
 const placeholder = computed(() => {
+  if (props.placeholder) {
+    return props.placeholder;
+  }
   return props.multiple
-      ? "component.groupGermplasm.form.selector.placeholder-multiple"
-      : "component.groupGermplasm.form.selector.placeholder";
+      ? t("component.groupGermplasm.form.selector.placeholder-multiple")
+      : t("component.groupGermplasm.form.selector.placeholder");
 });
 
 async function loadGermplasmGroups(

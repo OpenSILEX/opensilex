@@ -40,14 +40,14 @@
       </template>
 
       <template v-slot:cell(actions)="{data}">
-        <b-button-group size="sm">
+        <n-button-group class="btn-group btn-group-sm">
           <DetailButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               @click="showDataDetailsModal(data.item)"
               label="DataView.list.details"
               :small="true"
           ></DetailButton>
-        </b-button-group>
+        </n-button-group>
       </template>
 
     </TableAsyncView>
@@ -69,6 +69,7 @@ import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {DataService, OntologyService, VariablesService} from "../../../../../opensilex-core/front/src/lib";
+import {NButtonGroup} from "naive-ui";
 
 const props = withDefaults(defineProps<{
   contextUri?: string
@@ -103,18 +104,10 @@ const variablesService = opensilex.getService<VariablesService>("opensilex.Varia
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
 const dataProvenanceModalView = useTemplateRef<InstanceType<typeof DataProvenanceModalView>>('dataProvenanceModalView')
 
-const disabled = ref<boolean>(false)
-const visibleDetails = ref<boolean>(false)
-const usedVariables = ref<any[]>([])
-const selectedProvenance = ref<any>(null)
-const filterProvenanceLabel = ref<string>(null)
 const objects = ref<Record<string, string>>({});
 const objectsPath = ref<Record<string, string>>({});
 const variableNames = ref<Record<string, string>>({});
 const provenances = ref<Record<string, string>>({});
-const devices = ref<Record<string, string>>({});
-const facilities = ref<Record<string, string>>({});
-const operators = ref<Record<string, string>>({});
 
 opensilex.updateFiltersFromURL(route.query, filter.value);
 
@@ -122,37 +115,35 @@ const user = computed(() => store.state.user)
 
 const credentials = computed(() => store.state.credentials)
 
-const getSelectedProv = computed(() => selectedProvenance.value)
-
 const fields = computed(() => {
   let tableFields: any = [
     {
       key: "target",
-      label: "DataView.list.object",
+      label: "component.data.dataTable.target-object",
     },
     {
       key: "date",
-      label: "DataView.list.date",
+      label: "component.data.dataTable.list-data",
       sortable: true,
     },
     {
       key: "variable",
-      label: "DataView.list.variable",
+      label: "component.data.dataTable.list-variable",
       sortable: true,
     },
     {
       key: "value",
-      label: "DataView.list.value",
+      label: "component.data.dataTable.list-value",
       sortable: false,
     },
     {
       key: "provenance",
-      label: "DataView.list.provenance",
+      label: "component.data.dataTable.list-provenance",
       sortable: false
     },
     {
       key: "actions",
-      label: "component.common.actions"
+      label: "component.data.dataTable.list-action"
     }
   ];
   return tableFields;
@@ -167,38 +158,23 @@ function refresh() {
   tableRef.value.changeCurrentPage(1);
 }
 
-function showProvenanceDetails() {
-  if (selectedProvenance.value != null) {
-    visibleDetails.value = !visibleDetails.value;
-  }
-}
-
-function loadProvenance(selectedValue) {
-  if (selectedValue != undefined) {
-    opensilex.getProvenance(selectedValue.id, dataService).then((prov) => {
-      selectedProvenance.value = prov;
-    });
-  }
-}
-
 async function showDataDetailsModal(item: DataGetSearchDTO) {
   opensilex.enableLoader();
   try {
-    const provenanceSearchResult = await opensilex.getProvenance(item.provenance.uri, dataService);
-    const batchSearchResult = await opensilex.getBatch(item.batchUri, dataService);
-    const value = {
-      provenance: provenanceSearchResult,
-      data: item,
-      batch: batchSearchResult
-    };
-    dataProvenanceModalView.value.setProvenanceAndBatch(value);
+    const provenance = (await dataService.getProvenance(item.provenance.uri)).response.result;
+    const batch = item.batchUri
+        ? (await dataService.getBatchHistory(item.batchUri)).response.result
+        : null;
+    dataProvenanceModalView.value.setProvenanceAndBatch({ provenance, data: item, batch });
     dataProvenanceModalView.value.show();
   } catch (error) {
     console.error("Failed to fetch provenance or Batch:", error);
+  } finally {
+    opensilex.disableLoader();
   }
 }
 
-function countDataList(options) {
+function countDataList() {
   let provUris = opensilex.prepareGetParameter(filter.value.provenance);
   if (provUris != undefined) {
     provUris = [provUris];

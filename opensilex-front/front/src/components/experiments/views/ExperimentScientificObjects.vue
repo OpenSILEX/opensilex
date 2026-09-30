@@ -114,7 +114,7 @@
           </n-form-item>
         </SearchFiltersSidebar>
 
-        <n-layout-content class="so-content">
+        <n-layout-content class="event-content">
           <div class="so-panels" :class="{ 'so-panels--row': searchFiltersToggle }">
             <n-card class="treePanel">
               <div class="card-header">
@@ -175,7 +175,8 @@
                 </template>
 
                 <template v-slot:buttons="{ node }">
-                  <n-button-group size="small" class="btn-group btn-group-sm">
+
+                  <n-button-group class="btn-group btn-group-sm">
                     <EditButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                         :small="true"
@@ -983,34 +984,6 @@ function onSelectAll() {
 .so-panels--row > .selectedCard {
   flex: 1 1 0;
   min-width: 0;
-}
-
-/* "Criteria on data" filter: same template as the other sidebar inputs (naive-ui selectors, 34px),
-   with the button stuck to the right edge of the input */
-:deep(.summary-box) {
-  min-height: 34px;
-  height: 34px;
-  padding: 0 0 0 12px;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-:deep(.summary-box .summary-content) {
-  overflow: hidden;
-}
-
-:deep(.summary-box .summary-actions) {
-  align-self: stretch;
-}
-
-:deep(.summary-box .summary-actions .createButton) {
-  height: 100%;
-  margin: 0;
-  padding: 0 12px;
-  border: none;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
 }
 </style>
 

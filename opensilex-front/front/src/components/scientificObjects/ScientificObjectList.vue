@@ -780,8 +780,9 @@ const columns = computed(() => {
     base.push({ type: 'selection' })
   }
 
-  base.push(
-    {
+  // Pas de ligne dépliable (détail des expérimentations) en mode modal / filtre
+  if (!props.noActions) {
+    base.push({
       type: 'expand',
       expandable: () => true,
       renderExpand: (row: ScientificObjectRow) => {
@@ -807,7 +808,10 @@ const columns = computed(() => {
           )
         ])
       }
-    },
+    })
+  }
+
+  base.push(
     {
       title: t('component.common.name'),
       key: 'name',

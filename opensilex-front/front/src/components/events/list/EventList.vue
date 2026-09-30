@@ -4,32 +4,26 @@
     class="listActionButtons"
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
   >
-    <n-button
+    <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
-      size="small"
-      class="greenThemeColor"
       @click="showForm"
-    >
-      {{ t('EventList.add') }}
-    </n-button>
+      :label="t('EventList.add')"
+      class="createButton"
+    />
 
-    <n-button
+    <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
-      size="small"
-      class="greenThemeColor"
       @click="showCsvForm"
-    >
-      {{ t('EventList.import') }}
-    </n-button>
+      :label="t('EventList.import')"
+      class="createButton"
+    />
 
-    <n-button
+    <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
-      size="small"
-      class="greenThemeColor"
       @click="showMoveCsvForm"
-    >
-      {{ t('EventList.move-csv-import-title') }}
-    </n-button>
+      :label="t('EventList.move-csv-import-title')"
+      class="createButton"
+    />
 
 
     <div class="displayAndListSelectionCount">
@@ -290,6 +284,7 @@ import EventModalView from "@/components/events/view/EventModalView.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
 
 type EventFilter = {
   target: string | undefined

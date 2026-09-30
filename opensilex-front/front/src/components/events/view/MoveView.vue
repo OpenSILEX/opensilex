@@ -3,17 +3,17 @@
     <br>
 
     <p class="h5">
-      {{ t('MoveView.location') }}
+      {{ t('component.experiment.moveView.location') }}
     </p>
     <hr>
 
-    <opensilex-StringView
+    <StringView
       :label="t('MoveView.from')"
       :value="fromLabel"
     />
 
-    <opensilex-StringView
-      :label="t('MoveView.to')"
+    <StringView
+      :label="t('component.experiment.moveView.to')"
       :value="toLabel"
     />
 
@@ -21,11 +21,11 @@
       <br>
 
       <p class="h5">
-        {{ t('MoveView.positionTitle') }}
+        {{ t('component.experiment.moveView.positionTitle') }}
       </p>
       <hr>
 
-      <opensilex-PositionView
+      <PositionView
         :positionObject="positionObjectFromLocation"
         :targetUris="event.targets"
         :targetLabelsByUri="targetLabelsByUri"
@@ -41,6 +41,8 @@ import { useI18n } from 'vue-i18n'
 
 import type { MoveDetailsDTO } from 'opensilex-core/index'
 import type { PositionFormObject } from '../../positions/view/PositionView.vue'
+import StringView from "@/components/common/views/StringView.vue";
+import PositionView from "@/components/positions/list/view/PositionView.vue";
 
 const props = withDefaults(defineProps<{
   event?: MoveDetailsDTO
@@ -94,19 +96,3 @@ const positionObjectFromLocation = computed<PositionFormObject>(() => {
   }
 })
 </script>
-
-<i18n>
-en:
-  MoveView:
-    from: From
-    location: Location
-    to: To
-    positionTitle: Position
-
-fr:
-  MoveView:
-    from: De
-    location: Localisation
-    to: Vers
-    positionTitle: Position
-</i18n>

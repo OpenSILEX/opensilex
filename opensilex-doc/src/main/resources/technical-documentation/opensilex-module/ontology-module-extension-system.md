@@ -9,6 +9,9 @@
 > ⚠️ _WARNING_ : This document is about module ontology extension system and does not cover API extension system. ⚠️
 >
 > If you are looking for an explanation about the way you can extend the core ontology using the OpenSILEX API see [ontology API extension system](/src/main/resources/technical-documentation/opensilex-core/ontology/ontology-extension-system-API.md).
+> 
+> > ⚠️ _WARNING_ : You first need to follow the first steps of creating a new module: [create-your-own-module.md](create-your-own-module.md)
+>
 
 ## Table of contents
 

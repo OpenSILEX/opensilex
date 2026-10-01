@@ -42,7 +42,7 @@ front:
     loginComponent: opensilex-phis-PhisLoginComponent
     headerComponent: opensilex-phis-PhisHeaderComponent
 ```
-> Note : the theme key of this exemple is used to load the CSS theme from phis module. This part is better explained in the [module-theme-personalization.md](module-theme-personalization.md)
+> Note : the theme key of this exemple is used to load the CSS theme from phis module. This part is better explained in the [theme-personalization.md](theme-personalization.md)
 
 ## Technical workflow
 

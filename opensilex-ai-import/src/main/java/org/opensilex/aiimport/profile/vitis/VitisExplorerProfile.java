@@ -8,6 +8,9 @@ import org.opensilex.aiimport.mapping.ColumnRole;
 import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
 import org.opensilex.aiimport.profile.ImportProfile;
+import org.opensilex.aiimport.profile.ObjectRow;
+import org.opensilex.aiimport.profile.ObjectSheetDefaults;
+import org.opensilex.aiimport.profile.ObjectTargets;
 import org.opensilex.aiimport.profile.VariableCandidate;
 import org.opensilex.aiimport.report.ReportMessage;
 import org.opensilex.aiimport.workbook.CellValue;
@@ -194,6 +197,48 @@ public class VitisExplorerProfile implements ImportProfile {
             return ColumnRole.DATE;
         }
         return ColumnRole.VARIABLE;
+    }
+
+    /**
+     * The unit plots, one per row of the cartouche, which the template declares complete and
+     * repeats on every stage sheet.
+     */
+    @Override
+    public List<ObjectRow> extractObjectRows(WorkbookStructure structure) {
+        Optional<SheetStructure> found = structure.getSheet(CARTOUCHE_SHEET)
+                .filter(sheet -> sheet.hasHeader(COLUMN_PLOT));
+        if (!found.isPresent()) {
+            return Collections.emptyList();
+        }
+        SheetStructure sheet = found.get();
+        List<ObjectRow> rows = new ArrayList<>();
+        for (int i = 0; i < sheet.getRows().size(); i++) {
+            List<String> row = sheet.getRows().get(i);
+            String name = sheet.cell(row, COLUMN_PLOT);
+            if (!name.isEmpty()) {
+                rows.add(new ObjectRow(sheet.getName(), i + 2, name)
+                        .setGermplasm(sheet.cell(row, COLUMN_GENOTYPE))
+                        .setFactorLevel(sheet.cell(row, COLUMN_STATUS))
+                        .setCells(sheet.getHeaders(), row));
+            }
+        }
+        return rows;
+    }
+
+    /**
+     * The cartouche names each plot, its genotype and the treatment it receives; the other columns
+     * start unmapped.
+     */
+    @Override
+    public ObjectSheetDefaults objectSheetDefaults(WorkbookStructure structure, String sheetName) {
+        if (!CARTOUCHE_SHEET.equalsIgnoreCase(sheetName)) {
+            return ObjectSheetDefaults.none();
+        }
+        Map<String, String> targets = new LinkedHashMap<>();
+        targets.put(COLUMN_PLOT, ObjectTargets.NAME);
+        targets.put(COLUMN_GENOTYPE, ObjectTargets.GERMPLASM);
+        targets.put(COLUMN_STATUS, ObjectTargets.FACTOR_LEVEL);
+        return new ObjectSheetDefaults(COLUMN_PLOT, targets, null);
     }
 
     @Override

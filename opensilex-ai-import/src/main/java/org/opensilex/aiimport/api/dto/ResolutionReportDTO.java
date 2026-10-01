@@ -39,6 +39,8 @@ public class ResolutionReportDTO {
 
     private List<ResolvedItemDTO> persons = new ArrayList<>();
 
+    private List<ResolvedItemDTO> organizations = new ArrayList<>();
+
     private List<String> anomalies = new ArrayList<>();
 
     @JsonProperty("anomaly_messages")
@@ -69,6 +71,7 @@ public class ResolutionReportDTO {
         dto.scientificObjects = convert(model.getScientificObjects());
         dto.facilities = convert(model.getFacilities());
         dto.persons = convert(model.getPersons());
+        dto.organizations = convert(model.getOrganizations());
         dto.anomalies = model.getAnomalies();
         dto.anomalyMessages = ReportMessageDTO.fromModels(model.getAnomalyMessages());
         dto.warnings = model.getWarnings();
@@ -157,6 +160,14 @@ public class ResolutionReportDTO {
 
     public void setPersons(List<ResolvedItemDTO> persons) {
         this.persons = persons;
+    }
+
+    public List<ResolvedItemDTO> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(List<ResolvedItemDTO> organizations) {
+        this.organizations = organizations;
     }
 
     @ApiModelProperty(value = "Inconsistencies found while reading the file")

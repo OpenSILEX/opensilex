@@ -140,6 +140,24 @@ public class AiImportChatService {
     }
 
     /**
+     * Rebuilds a stored session from its file, without asking the assistant anything.
+     * <p>
+     * The conversation, the drafts and the confirmations are put back by the caller first; this
+     * reads the file again and resolves it against the instance as it is now — so the report the
+     * user resumes with is current, not the one they left, and the confirmations they made still
+     * hold.
+     */
+    public void restore(AiImportSession session, File file, String originalFileName,
+                        String profileId) throws WorkbookReadException {
+        WorkbookStructure workbook = new WorkbookReader().read(file, originalFileName);
+        ImportProfile profile = selectProfile(workbook, profileId);
+        session.setFileName(originalFileName)
+                .setWorkbook(workbook)
+                .setProfileId(profile.getId());
+        analyse(session, profile);
+    }
+
+    /**
      * Re-reads the instance and rebuilds the system prompt, without losing the conversation. Called
      * after the user has created what was missing.
      */
@@ -218,7 +236,7 @@ public class AiImportChatService {
     private void analyse(AiImportSession session, ImportProfile profile) {
         ExtractedImportPlan plan = profile.extract(session.getWorkbook());
         ResolutionReport report = new ResolutionService(sparql, nosql, fs, currentUser, sharedResources)
-                .resolve(plan);
+                .resolve(plan, session.getConfirmedMatches());
 
         session.setPlan(plan).setReport(report);
         session.setMappings(mappingService.map(session.getWorkbook(), profile, report));

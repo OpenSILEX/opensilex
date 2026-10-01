@@ -86,6 +86,13 @@ public class AiImportSessionCache {
         return Optional.of(session);
     }
 
+    /**
+     * Puts back a session read from storage, under its own identifier.
+     */
+    public void put(AiImportSession session) {
+        store.put(session.getId(), session);
+    }
+
     public void remove(String id) {
         if (id != null) {
             store.invalidate(id);

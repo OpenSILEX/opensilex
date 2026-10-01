@@ -146,10 +146,13 @@ async function callOrganizationFacilityCreation(form: FacilityCreationDTO) {
   const payload = JSON.parse(JSON.stringify(form))
 
   try {
-    await organizationsService.createFacility(payload as any)
+    const http = await organizationsService.createFacility(payload as any)
     $opensilex.showSuccessToast(
       `${t('OrganizationFacilityForm.name')} ${form.name} ${t('component.common.success.creation-success-message')}`
     )
+    // Handed back so that onCreate carries the URI the server generated, as ProjectForm does.
+    form.uri = http?.response?.result ?? form.uri
+    return form
   } catch (error: any) {
     console.error('CREATE FACILITY ERROR PAYLOAD', payload)
     throw error

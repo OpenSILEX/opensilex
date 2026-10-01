@@ -36,4 +36,48 @@
             <version>${poi.version}</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!--
+          The platform's coverage profile, with one addition for this module only: the build fails
+          below 90 % of lines covered. The parent profile writes target/jacoco.exec (unit and
+          integration tests merged); this execution checks it once the report is made.
+          Run: mvn -pl opensilex-ai-import -Pwith-test-report verify
+        -->
+        <profile>
+            <id>with-test-report</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>check-line-coverage</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                                <limit>
+                                                    <counter>LINE</counter>
+                                                    <value>COVEREDRATIO</value>
+                                                    <minimum>0.90</minimum>
+                                                </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

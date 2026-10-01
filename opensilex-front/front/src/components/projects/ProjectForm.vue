@@ -25,6 +25,13 @@ import type HttpResponse from 'opensilex-security/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { ProjectCreationDTO } from 'opensilex-core/model/projectCreationDTO'
 
+const props = withDefaults(defineProps<{
+  /** Called with the empty form on creation, to prefill it (same contract as FacilityModalForm). */
+  initForm?: (dto: ProjectCreationDTO) => void
+}>(), {
+  initForm: () => {}
+})
+
 const emit = defineEmits<{
   (e: 'onCreate', form: ProjectCreationDTO): void
   (e: 'onUpdate', form: ProjectCreationDTO): void
@@ -40,7 +47,7 @@ const steps = [
 ]
 
 function getEmptyForm(): ProjectCreationDTO {
-  return {
+  const empty: ProjectCreationDTO = {
     uri: null,
     name: '',
     shortname: undefined,
@@ -56,6 +63,8 @@ function getEmptyForm(): ProjectCreationDTO {
     scientific_contacts: [],
     related_projects: []
   }
+  props.initForm?.(empty)
+  return empty
 }
 
 function showCreateForm() {

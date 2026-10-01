@@ -52,8 +52,13 @@ if (lang && lang.length > 2) {
   lang = lang.substring(0, 2);
 }
 
+// Registered globally so that extension modules, which cannot bundle naive-ui a second time, can use
+// these components by tag.
 const naive = create({
-  components: [NButton, NDataTable, NDropdown, NTree]
+  components: [
+    NButton, NDataTable, NDropdown, NTree, NList, NListItem, NInput, NSpace, NTag,
+    NDrawer, NDrawerContent, NForm, NFormItem, NSwitch, NCheckbox, NCollapse, NCollapseItem, NDivider
+  ]
 });
 
 const i18n = createI18n({

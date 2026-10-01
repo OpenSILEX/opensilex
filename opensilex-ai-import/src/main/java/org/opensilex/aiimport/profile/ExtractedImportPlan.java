@@ -40,6 +40,22 @@ public class ExtractedImportPlan {
      * the observer codes that end up on a provenance.
      */
     private final List<PersonCandidate> persons = new ArrayList<>();
+
+    /**
+     * The organisations the file names as running the trial.
+     */
+    private final List<String> organizationNames = new ArrayList<>();
+
+    /**
+     * For a unit, the institution it is part of: both named, as the file writes them.
+     */
+    private final Map<String, String> organizationParents = new LinkedHashMap<>();
+
+    /**
+     * What the file says of each facility besides its name — its commune, its coordinates, how it
+     * is planted — by facility name.
+     */
+    private final Map<String, Map<String, String>> facilityDetails = new LinkedHashMap<>();
     private List<VariableCandidate> variables = new ArrayList<>();
 
     /**
@@ -88,6 +104,18 @@ public class ExtractedImportPlan {
 
     public List<PersonCandidate> getPersons() {
         return persons;
+    }
+
+    public List<String> getOrganizationNames() {
+        return organizationNames;
+    }
+
+    public Map<String, String> getOrganizationParents() {
+        return organizationParents;
+    }
+
+    public Map<String, Map<String, String>> getFacilityDetails() {
+        return facilityDetails;
     }
 
     public List<VariableCandidate> getVariables() {

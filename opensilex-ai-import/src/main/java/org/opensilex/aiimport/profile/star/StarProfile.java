@@ -9,6 +9,10 @@ import org.opensilex.aiimport.mapping.ColumnRole;
 import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.EventCandidate;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
+import org.opensilex.aiimport.profile.FactorLevelCandidate;
+import org.opensilex.aiimport.profile.ObjectRow;
+import org.opensilex.aiimport.profile.ObjectSheetDefaults;
+import org.opensilex.aiimport.profile.ObjectTargets;
 import org.opensilex.aiimport.profile.ImportProfile;
 import org.opensilex.aiimport.profile.VariableCandidate;
 import org.opensilex.aiimport.report.ReportMessage;
@@ -17,15 +21,19 @@ import org.opensilex.aiimport.workbook.ExcelValueParser;
 import org.opensilex.aiimport.workbook.SheetStructure;
 import org.opensilex.aiimport.workbook.WorkbookStructure;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Profile for the STAR data model, a normalised template with one entity per sheet.
@@ -76,9 +84,54 @@ public class StarProfile implements ImportProfile {
     public static final String COLUMN_FIELD = "field_id";
     public static final String COLUMN_FIELD_NAME = "field_name";
     public static final String COLUMN_CULTIVAR = "cultivar_name";
+    public static final String COLUMN_ROW_SPACING = "row_spacing";
+    public static final String COLUMN_PLANT_SPACING = "plant_spacing";
+
+    /**
+     * The commune of the field. Named {@code commune_name} by the earlier revisions; both are read.
+     */
+    public static final String COLUMN_TOWN = "town_name";
+    public static final String COLUMN_COMMUNE = "commune_name";
+    public static final String COLUMN_INSEE = "commune_insee_id";
+
+    /**
+     * The field's centroid, in decimal degrees (WGS84): the facility's location, a WKT point.
+     */
+    public static final String COLUMN_LATITUDE = "field_latitude";
+    public static final String COLUMN_LONGITUDE = "field_longitude";
+
+    /**
+     * The date of a weather reading, which the reference template writes with its time.
+     */
+    public static final String COLUMN_METEO_DATETIME = "meteo_datetime";
 
     public static final String COLUMN_PLOT = "plot_id";
     public static final String COLUMN_TREATMENT = "xp_trt_code";
+    public static final String COLUMN_TREATMENT_NAME = "xp_trt_name";
+    public static final String COLUMN_TREATMENT_DESCRIPTION = "xp_trt_desc";
+
+    /**
+     * Columns an exported workbook adds to a design sheet: the object each one is part of, and the
+     * type of the objects of the sheet — read back as the suggested type.
+     */
+    public static final String COLUMN_PARENT = "parent_id";
+    public static final String COLUMN_OBJECT_TYPE = "object_type";
+
+    /**
+     * The factor a treatment belongs to, which an exported workbook writes beside each level.
+     */
+    public static final String COLUMN_FACTOR = "factor_name";
+
+    /**
+     * The details a field's report row carries, as keys the facility form reads.
+     */
+    public static final String FIELD_TOWN = "town";
+    public static final String FIELD_INSEE = "insee";
+    public static final String FIELD_LATITUDE = "latitude";
+    public static final String FIELD_LONGITUDE = "longitude";
+    public static final String FIELD_ROW_SPACING = "row_spacing";
+    public static final String FIELD_PLANT_SPACING = "plant_spacing";
+
     public static final String COLUMN_BLOCK = "block_code";
     public static final String COLUMN_OBSERVATION_DATE = "observation_date";
 
@@ -101,7 +154,7 @@ public class StarProfile implements ImportProfile {
      * facility, which does not move.
      */
     private static final List<String> LOCATION_COLUMNS = Collections.unmodifiableList(Arrays.asList(
-            "field_latitude", "field_longitude", "commune_name", "commune_insee_id"));
+            COLUMN_LATITUDE, COLUMN_LONGITUDE, COLUMN_TOWN, COLUMN_COMMUNE, COLUMN_INSEE));
 
     /**
      * The plot's coordinates within the field. OpenSILEX records a position as a dated move event,
@@ -117,10 +170,16 @@ public class StarProfile implements ImportProfile {
      * of that object is settled — see {@link #NOTE_OBJECT_TYPE}.
      */
     private static final List<String> OBJECT_PROPERTY_COLUMNS = Collections.unmodifiableList(
-            Arrays.asList("row_spacing", "plant_spacing", "plot_n"));
+            Arrays.asList(COLUMN_ROW_SPACING, COLUMN_PLANT_SPACING, "plot_n"));
 
     private static final List<String> DESCRIPTION_COLUMNS = Collections.unmodifiableList(
             Arrays.asList("plot_desc", "xp_trt_desc", "xp_trt_name", "event_description"));
+
+    /**
+     * Identifiers a data sheet can carry that name no observed object.
+     */
+    private static final Set<String> NOT_OBJECT_IDENTIFIERS = Set.of(
+            COLUMN_FIELD, COLUMN_EXPERIMENT, COLUMN_PROJECT, COLUMN_INSEE);
 
     //#endregion
 
@@ -158,8 +217,11 @@ public class StarProfile implements ImportProfile {
                 "",
                 "- 'expe': the experiment itself — identifier, objective, description, start and end",
                 "  dates, design plan, and the project it belongs to.",
-                "- 'ed_*' (or the same names unprefixed in older files): the experimental design.",
-                "  'ed_parcelle' is the field, 'ed_placette' the unit plots.",
+                "- 'field*': the field, a facility — row and plant spacing, commune ('town_name',",
+                "  'commune_name' in older files), INSEE code, and the latitude and longitude of its",
+                "  centroid. Older files call it 'ed_parcelle' or 'parcelle'.",
+                "- 'ed_*' (or the same names unprefixed in older files): the experimental design,",
+                "  one kind of scientific object per sheet — 'ed_placette' holds the unit plots.",
                 "- 'modalite': the experimental treatments.",
                 "- 'data_*': the observations. Each sheet gives the identifier of what was",
                 "  observed, a date, then one column per variable — in that meaning, not that",
@@ -175,9 +237,10 @@ public class StarProfile implements ImportProfile {
                 "Mapping onto OpenSILEX, settled by the STAR to ELOA alignment:",
                 "- 'expe' becomes the experiment. Unlike most data entry files, STAR states the",
                 "  objective, so an experiment can usually be created without asking for it.",
-                "- 'ed_parcelle' becomes a facility, with its commune as address and its latitude",
+                "- the field sheet becomes a facility, with its commune as address and its latitude",
                 "  and longitude as location.",
-                "- 'ed_placette' becomes the scientific objects.",
+                "- 'meteo' holds weather variables measured on the field: they attach to the facility.",
+                "- each 'ed_*' sheet becomes scientific objects, of a type chosen for that sheet.",
                 "- 'cultivar_name' is the germplasm; 'uri_list' gives its reference URI.",
                 "- 'modalite' describes a factor and its levels.",
                 "- the dictionary's variables become variables, with their unit and data type.",
@@ -290,12 +353,33 @@ public class StarProfile implements ImportProfile {
         note(plan, "design plan", sheet, COLUMN_DESIGN);
         note(plan, "organisation", sheet, COLUMN_ORGANIZATION);
         note(plan, "research unit", sheet, COLUMN_SUBORGANIZATION);
+        readOrganizations(sheet, plan);
         note(plan, "contact", sheet, COLUMN_EMAIL);
 
         experimentDate(sheet, COLUMN_START_DATE).ifPresent(date ->
                 plan.note("declared start date", date.toString()));
         experimentDate(sheet, COLUMN_END_DATE).ifPresent(date ->
                 plan.note("declared end date", date.toString()));
+    }
+
+    /**
+     * The institution and the unit that run the trial, both to be declared in the instance: the
+     * unit as part of the institution named on the same row.
+     */
+    private void readOrganizations(SheetStructure sheet, ExtractedImportPlan plan) {
+        for (List<String> row : sheet.getRows()) {
+            String institution = sheet.hasHeader(COLUMN_ORGANIZATION) ? sheet.cell(row, COLUMN_ORGANIZATION) : "";
+            String unit = sheet.hasHeader(COLUMN_SUBORGANIZATION) ? sheet.cell(row, COLUMN_SUBORGANIZATION) : "";
+            if (!institution.isEmpty() && !plan.getOrganizationNames().contains(institution)) {
+                plan.getOrganizationNames().add(institution);
+            }
+            if (!unit.isEmpty() && !plan.getOrganizationNames().contains(unit)) {
+                plan.getOrganizationNames().add(unit);
+                if (!institution.isEmpty()) {
+                    plan.getOrganizationParents().put(unit, institution);
+                }
+            }
+        }
     }
 
     private void readField(StarSheets sheets, ExtractedImportPlan plan) {
@@ -308,18 +392,55 @@ public class StarProfile implements ImportProfile {
         plan.getGermplasmNames().addAll(sheet.distinctValues(COLUMN_CULTIVAR));
         plan.getFacilityNames().addAll(nonEmpty(sheet, COLUMN_FIELD_NAME, COLUMN_FIELD));
 
-        note(plan, "commune", sheet, "commune_name");
+        note(plan, "commune", sheet, sheet.hasHeader(COLUMN_TOWN) ? COLUMN_TOWN : COLUMN_COMMUNE);
+        readFieldDetails(sheet, plan);
+    }
+
+    /**
+     * What the field sheet says of each field, for the facility form to start from: its commune,
+     * its INSEE code, the coordinates of its centroid — a WKT point once created — and how it is
+     * planted, which no core facility property holds and which is kept in its description.
+     */
+    private void readFieldDetails(SheetStructure sheet, ExtractedImportPlan plan) {
+        String townColumn = sheet.hasHeader(COLUMN_TOWN) ? COLUMN_TOWN : COLUMN_COMMUNE;
+        for (List<String> row : sheet.getRows()) {
+            String name = sheet.hasHeader(COLUMN_FIELD_NAME) ? sheet.cell(row, COLUMN_FIELD_NAME) : "";
+            if (name.isEmpty() && sheet.hasHeader(COLUMN_FIELD)) {
+                name = sheet.cell(row, COLUMN_FIELD);
+            }
+            if (name.isEmpty()) {
+                continue;
+            }
+            Map<String, String> details = new LinkedHashMap<>();
+            for (String[] detail : new String[][]{{FIELD_TOWN, townColumn}, {FIELD_INSEE, COLUMN_INSEE},
+                    {FIELD_LATITUDE, COLUMN_LATITUDE}, {FIELD_LONGITUDE, COLUMN_LONGITUDE},
+                    {FIELD_ROW_SPACING, COLUMN_ROW_SPACING}, {FIELD_PLANT_SPACING, COLUMN_PLANT_SPACING}}) {
+                String value = sheet.hasHeader(detail[1]) ? sheet.cell(row, detail[1]) : "";
+                if (!value.isEmpty()) {
+                    details.put(detail[0], value);
+                }
+            }
+            if (!details.isEmpty()) {
+                plan.getFacilityDetails().put(name, details);
+            }
+        }
     }
 
     private void readPlots(StarSheets sheets, ExtractedImportPlan plan) {
-        Optional<SheetStructure> found = sheets.plots();
-        if (!found.isPresent()) {
+        List<SheetStructure> objectSheets = sheets.objectSheets();
+        if (objectSheets.isEmpty()) {
             plan.addAnomaly(ReportMessage.of(ANOMALY + "plotSheetMissing",
                     "No plot sheet was found, so the observations have nothing to attach to."));
             return;
         }
-        SheetStructure sheet = found.get();
-        plan.getScientificObjectNames().addAll(sheet.distinctValues(COLUMN_PLOT));
+        for (SheetStructure objects : objectSheets) {
+            plan.getScientificObjectNames().addAll(objects.distinctValues(StarSheets.identifierColumn(objects)));
+        }
+        if (objectSheets.size() > 1) {
+            plan.note("object sheets", objectSheets.stream().map(SheetStructure::getName)
+                    .collect(Collectors.joining(", ")));
+        }
+        SheetStructure sheet = sheets.plots().orElse(objectSheets.get(0));
         plan.note("unit plots", String.valueOf(sheet.getDataRowCount()));
 
         askForTheObjectType(sheet, plan);
@@ -612,6 +733,166 @@ public class StarProfile implements ImportProfile {
                 .orElse(null);
     }
 
+    /**
+     * The objects of every design sheet, one per row, hosted by the field — the plots of
+     * {@code ed_placette}, and the objects of any other {@code ed_} sheet, each sheet getting the
+     * type the user chooses for it.
+     * <p>
+     * Names come from the design sheets, which are the reference: the data sheets write the same
+     * plots the other way round and are reconciled to them, never the reverse.
+     */
+    @Override
+    public List<ObjectRow> extractObjectRows(WorkbookStructure structure) {
+        StarSheets sheets = new StarSheets(structure);
+        String field = hostingField(sheets);
+        String fieldCultivar = fieldValue(sheets, COLUMN_CULTIVAR);
+
+        List<ObjectRow> rows = new ArrayList<>();
+        for (SheetStructure sheet : sheets.objectSheets()) {
+            String idColumn = StarSheets.identifierColumn(sheet);
+            String prefix = prefixOf(idColumn);
+            for (int i = 0; i < sheet.getRows().size(); i++) {
+                List<String> row = sheet.getRows().get(i);
+                String name = sheet.cell(row, idColumn);
+                if (name.isEmpty()) {
+                    continue;
+                }
+                String cultivar = sheet.hasHeader(COLUMN_CULTIVAR) ? sheet.cell(row, COLUMN_CULTIVAR) : "";
+                rows.add(new ObjectRow(sheet.getName(), i + 2, name)
+                        .setGermplasm(cultivar.isEmpty() ? fieldCultivar : cultivar)
+                        .setFactorLevel(sheet.cell(row, COLUMN_TREATMENT))
+                        .setFacility(field)
+                        .setPosition(sheet.cell(row, prefix + "_x"), sheet.cell(row, prefix + "_y"))
+                        .setCells(sheet.getHeaders(), row));
+            }
+        }
+        return rows;
+    }
+
+    /**
+     * What the columns STAR names become, and the type an exported workbook states in its
+     * {@code object_type} column. A column the dictionary ties to the full URI of a property — as
+     * an exported workbook does for the type's own properties — starts mapped to it.
+     */
+    @Override
+    public ObjectSheetDefaults objectSheetDefaults(WorkbookStructure structure, String sheetName) {
+        Optional<SheetStructure> found = new StarSheets(structure).objectSheets().stream()
+                .filter(sheet -> sheet.getName().equals(sheetName)).findFirst();
+        if (!found.isPresent()) {
+            return ObjectSheetDefaults.none();
+        }
+        SheetStructure sheet = found.get();
+        String idColumn = StarSheets.identifierColumn(sheet);
+        String prefix = prefixOf(idColumn);
+        StarDictionary dictionary = new StarDictionary(structure);
+
+        Map<String, String> targets = new LinkedHashMap<>();
+        for (String header : sheet.getHeaders()) {
+            if (!header.isEmpty()) {
+                targets.put(header, defaultTarget(header, idColumn, prefix, dictionary));
+            }
+        }
+        List<String> types = sheet.hasHeader(COLUMN_OBJECT_TYPE)
+                ? sheet.distinctValues(COLUMN_OBJECT_TYPE)
+                : Collections.emptyList();
+        URI suggested = types.size() == 1 ? toUri(types.get(0)) : null;
+        return new ObjectSheetDefaults(idColumn, targets, suggested);
+    }
+
+    private String defaultTarget(String header, String idColumn, String prefix, StarDictionary dictionary) {
+        String lower = header.toLowerCase(Locale.ROOT);
+        if (header.equalsIgnoreCase(idColumn)) {
+            return ObjectTargets.NAME;
+        }
+        if (lower.equals(COLUMN_CULTIVAR)) {
+            return ObjectTargets.GERMPLASM;
+        }
+        if (lower.equals(COLUMN_TREATMENT)) {
+            return ObjectTargets.FACTOR_LEVEL;
+        }
+        if (lower.equals(prefix + "_x")) {
+            return ObjectTargets.X;
+        }
+        if (lower.equals(prefix + "_y")) {
+            return ObjectTargets.Y;
+        }
+        if (lower.equals(prefix + "_desc")) {
+            return ObjectTargets.COMMENT;
+        }
+        if (lower.equals(COLUMN_PARENT)) {
+            return ObjectTargets.PARENT;
+        }
+        return dictionary.get(header).map(StarDictionaryEntry::getUri)
+                .filter(uri -> uri != null && (uri.startsWith("http://") || uri.startsWith("https://")))
+                .orElse(ObjectTargets.NONE);
+    }
+
+    /**
+     * The treatments of the {@code modalite} sheet, one per row: the code the plots write, its
+     * short name and its description — and the factor, when an exported workbook names it.
+     */
+    @Override
+    public List<FactorLevelCandidate> extractFactorLevels(WorkbookStructure structure) {
+        Optional<SheetStructure> found = new StarSheets(structure).treatments()
+                .filter(sheet -> sheet.hasHeader(COLUMN_TREATMENT));
+        if (!found.isPresent()) {
+            return Collections.emptyList();
+        }
+        SheetStructure sheet = found.get();
+        List<FactorLevelCandidate> levels = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        for (int i = 0; i < sheet.getRows().size(); i++) {
+            List<String> row = sheet.getRows().get(i);
+            String code = sheet.cell(row, COLUMN_TREATMENT);
+            String factor = sheet.hasHeader(COLUMN_FACTOR) ? sheet.cell(row, COLUMN_FACTOR) : "";
+            if (code.isEmpty() || !seen.add((factor + "|" + code).toLowerCase(Locale.ROOT))) {
+                continue;
+            }
+            levels.add(new FactorLevelCandidate(sheet.getName(), i + 2, factor.isEmpty() ? null : factor, code,
+                    emptyToNull(sheet.cell(row, COLUMN_TREATMENT_NAME)),
+                    emptyToNull(sheet.cell(row, COLUMN_TREATMENT_DESCRIPTION))));
+        }
+        return levels;
+    }
+
+    private static String emptyToNull(String value) {
+        return value == null || value.isEmpty() ? null : value;
+    }
+
+    /**
+     * {@code plot} for {@code plot_id}: the prefix the other columns of the sheet share.
+     */
+    private static String prefixOf(String idColumn) {
+        String lower = idColumn.toLowerCase(Locale.ROOT);
+        return lower.endsWith("_id") ? lower.substring(0, lower.length() - 3) : lower;
+    }
+
+    private static URI toUri(String value) {
+        try {
+            URI uri = URI.create(value.trim());
+            return uri.isAbsolute() ? uri : null;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * The field as the resolution names it — its name when it has one, its identifier otherwise —
+     * so the object and the report look it up the same way.
+     */
+    private String hostingField(StarSheets sheets) {
+        String name = fieldValue(sheets, COLUMN_FIELD_NAME);
+        return name == null ? fieldValue(sheets, COLUMN_FIELD) : name;
+    }
+
+    private String fieldValue(StarSheets sheets, String column) {
+        return sheets.field()
+                .filter(sheet -> sheet.hasHeader(column) && !sheet.getRows().isEmpty())
+                .map(sheet -> sheet.cell(sheet.getRows().get(0), column))
+                .filter(value -> !value.isEmpty())
+                .orElse(null);
+    }
+
     @Override
     public List<DataPoint> extractDataPoints(WorkbookStructure structure) {
         StarSheets sheets = new StarSheets(structure);
@@ -669,8 +950,9 @@ public class StarProfile implements ImportProfile {
             if (target == null || target.isEmpty()) {
                 continue;
             }
-            if (kind == DataPoint.TargetKind.SCIENTIFIC_OBJECT) {
-                // Only plots are written two ways; a field is named the same everywhere.
+            if (COLUMN_PLOT.equalsIgnoreCase(objectColumn)) {
+                // Only plots are written two ways; a field, or any other object, is named the same
+                // everywhere.
                 target = reconciliation.resolve(target);
                 if (target == null) {
                     continue;
@@ -701,16 +983,6 @@ public class StarProfile implements ImportProfile {
     //#region helpers
 
     /**
-     * Finds the column naming what was observed.
-     * <p>
-     * By role rather than by position: {@code data_F1} puts it third and {@code data_G1} first, so
-     * the shape shown by {@code data_template} — identifier, date, variables — describes the
-     * contract, not the column order.
-     *
-     * @return {@code plot_id} for a plot, {@code field_id} for the field, or {@code null} when the
-     * sheet names neither and its rows cannot be attached to anything
-     */
-    /**
      * @return the field's identifier when the workbook declares exactly one, null otherwise. More
      *         than one field and there is nothing to stand in for a missing object column.
      */
@@ -723,9 +995,26 @@ public class StarProfile implements ImportProfile {
                 .orElse(null);
     }
 
+    /**
+     * Finds the column naming what was observed.
+     * <p>
+     * By role rather than by position: {@code data_F1} puts it third and {@code data_G1} first, so
+     * the shape shown by {@code data_template} — identifier, date, variables — describes the
+     * contract, not the column order. An identifier other than a plot's — {@code plant_id}, for
+     * the objects of an {@code ed_plant} sheet — names an object too.
+     *
+     * @return {@code plot_id} or another object identifier for an object, {@code field_id} for the
+     * field, or {@code null} when the sheet names neither and its rows cannot be attached to anything
+     */
     private String objectColumnOf(SheetStructure sheet) {
         if (sheet.hasHeader(COLUMN_PLOT)) {
             return COLUMN_PLOT;
+        }
+        for (String header : sheet.getHeaders()) {
+            String lower = header.toLowerCase(Locale.ROOT);
+            if (lower.endsWith("_id") && !NOT_OBJECT_IDENTIFIERS.contains(lower)) {
+                return header;
+            }
         }
         if (sheet.hasHeader(COLUMN_FIELD)) {
             return COLUMN_FIELD;
@@ -766,9 +1055,14 @@ public class StarProfile implements ImportProfile {
                 .orElse(false);
     }
 
+    /**
+     * A column that places or dates a row rather than measuring anything. An identifier column —
+     * {@code plot_id}, {@code field_id}, or the {@code plant_id} of another type of object — is
+     * never a measurement, whatever the dictionary says of it.
+     */
     private boolean isStructural(String header) {
         String lower = header.toLowerCase(Locale.ROOT);
-        return lower.equals(COLUMN_PLOT) || lower.equals(COLUMN_FIELD)
+        return lower.endsWith("_id") || lower.equals(COLUMN_METEO_DATETIME)
                 || lower.equals(COLUMN_BBCH) || lower.equals(COLUMN_OBSERVATION_DATE)
                 || ExcelValueParser.looksLikeDateColumn(header);
     }

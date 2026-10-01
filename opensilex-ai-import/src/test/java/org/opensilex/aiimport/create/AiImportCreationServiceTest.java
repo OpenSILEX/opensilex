@@ -19,11 +19,9 @@ import org.opensilex.aiimport.resolve.ResourceReference;
 import org.opensilex.aiimport.service.AiImportSession;
 import org.opensilex.aiimport.workbook.WorkbookStructure;
 
-import org.opensilex.core.data.api.DataCreationDTO;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -312,114 +310,10 @@ public class AiImportCreationServiceTest {
 
     //#endregion
 
-    //#region insertion, all or nothing
+    //#region insertion requirements
 
-    /**
-     * The central guarantee of the insertion: one row that cannot be placed stops the whole thing.
-     * <p>
-     * The DAOs are null, so any attempt to write would throw rather than return a refusal. A test
-     * that passes here has proved both halves at once: the refusal happens, and it happens before
-     * anything is written.
-     */
-    @Test
-    public void oneUnresolvedTargetRefusesTheWholeInsertion() throws Exception {
-        AiImportSession session = sessionWithEverythingFound();
-        ResolvedItem plot = session.getReport().getScientificObjects().get(0);
-        plot.setStatus(ResolutionStatus.MISSING).setMatches(List.of());
-
-        DataInsertionResult result = service.insertData(session, insertionValues());
-
-        assertTrue("the insertion should have been refused", result.isRefused());
-        assertEquals(0, result.getInsertedCount());
-        assertTrue(result.getUnresolvedCount() > 0);
-
-        UnresolvedRow row = result.getUnresolved().get(0);
-        assertEquals("AiImport.proposal.unresolved.object", row.getReasonKey());
-        assertEquals(plot.getSourceValue(), row.getValue());
-        assertNotNull("the refusal has to name the sheet", row.getSheet());
-        assertTrue("the refusal has to name the row", row.getRowNumber() > 0);
-    }
-
-    /**
-     * A missing variable refuses too, and says so as a variable rather than as an object: the two
-     * are fixed in different places.
-     */
-    @Test
-    public void anUnresolvedVariableRefusesTheWholeInsertion() throws Exception {
-        AiImportSession session = sessionWithEverythingFound();
-        session.getReport().getVariables()
-                .forEach(item -> item.setStatus(ResolutionStatus.MISSING).setMatches(List.of()));
-
-        DataInsertionResult result = service.insertData(session, insertionValues());
-
-        assertTrue(result.isRefused());
-        assertEquals("AiImport.proposal.unresolved.variable",
-                result.getUnresolved().get(0).getReasonKey());
-    }
-
-    /**
-     * Weather is measured at the field, not on a micro plot, so a data sheet can point at a
-     * facility. Resolving those against the scientific objects would have silently dropped them.
-     */
-    @Test
-    public void aFacilityTargetResolvesAgainstTheFacilities() throws Exception {
-        AiImportSession session = sessionWithEverythingFound();
-        session.setDataPoints(List.of(new DataPoint()
-                .setSheet("data_meteo")
-                .setRowNumber(4)
-                .setObjectName("Melgueil")
-                .setTargetKind(DataPoint.TargetKind.FACILITY)
-                .setDate(LocalDate.of(2020, 5, 12))
-                .setVariableKey(firstVariableKey(session))
-                .setRawValue("18.4")));
-        session.getReport().getFacilities().add(new ResolvedItem("Melgueil")
-                .setStatus(ResolutionStatus.FOUND)
-                .setMatches(List.of(new ResourceReference(FACILITY, "Melgueil"))));
-
-        List<DataCreationDTO> drafts = new ArrayList<>();
-        List<UnresolvedRow> unresolved = service.resolveRows(session, drafts);
-
-        assertTrue("a resolved facility must not be reported as unresolved: " + unresolved,
-                unresolved.isEmpty());
-        assertEquals(1, drafts.size());
-        assertEquals(FACILITY, drafts.get(0).getTarget());
-    }
-
-    @Test
-    public void anUnknownFacilityRefusesAsAFacility() throws Exception {
-        AiImportSession session = sessionWithEverythingFound();
-        session.setDataPoints(List.of(new DataPoint()
-                .setSheet("data_meteo")
-                .setRowNumber(4)
-                .setObjectName("Melgueil")
-                .setTargetKind(DataPoint.TargetKind.FACILITY)
-                .setDate(LocalDate.of(2020, 5, 12))
-                .setVariableKey(firstVariableKey(session))
-                .setRawValue("18.4")));
-
-        DataInsertionResult result = service.insertData(session, insertionValues());
-
-        assertTrue(result.isRefused());
-        UnresolvedRow row = result.getUnresolved().get(0);
-        assertEquals("AiImport.proposal.unresolved.facility", row.getReasonKey());
-        assertEquals("data_meteo", row.getSheet());
-        assertEquals(4, row.getRowNumber());
-    }
-
-    /**
-     * The refusal shows a sample rather than thousands of lines, but says how many there are.
-     */
-    @Test
-    public void theRefusalSamplesTheRowsAndCountsThemAll() throws Exception {
-        AiImportSession session = sessionWithEverythingFound();
-        session.getReport().getScientificObjects()
-                .forEach(item -> item.setStatus(ResolutionStatus.MISSING).setMatches(List.of()));
-
-        DataInsertionResult result = service.insertData(session, insertionValues());
-
-        assertTrue(result.getUnresolvedCount() > result.getUnresolved().size());
-        assertEquals(session.getDataPoints().size(), result.getUnresolvedCount());
-    }
+    // The refusals of the insertion itself — one row that cannot be placed stops everything — are
+    // tested where the insertion now lives, in DataBulkImportTest.
 
     /**
      * A data sheet whose observations sit on a facility must be blocked while that facility is

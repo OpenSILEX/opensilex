@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,30 +32,56 @@ public class StubLlmEndpoint implements AutoCloseable {
     /**
      * Replies handed out in order, one per request.
      */
-    private final List<String> replies = new ArrayList<>();
+    private final List<String> replies = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Bodies received, so a test can assert what the connector actually sent.
      */
-    private final List<String> requestBodies = new ArrayList<>();
+    private final List<String> requestBodies = Collections.synchronizedList(new ArrayList<>());
 
     private final List<String> authorizationHeaders = new ArrayList<>();
 
     private int status = 200;
 
+    private int modelsStatus = 200;
+
+    /**
+     * The port the module's test configuration ({@code config/test/opensilex.yml}) points the
+     * assistant at, for the tests that go through the REST API.
+     */
+    public static final int TEST_PORT = 28771;
+
+    /**
+     * On a free port, for the tests that build their own configuration.
+     */
     public StubLlmEndpoint() throws IOException {
-        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        this(0);
+    }
+
+    public StubLlmEndpoint(int port) throws IOException {
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.createContext("/v1/chat/completions", exchange -> {
             requestBodies.add(read(exchange.getRequestBody()));
             authorizationHeaders.add(exchange.getRequestHeaders().getFirst("Authorization"));
 
-            String body = replies.isEmpty()
-                    ? assistantReply("no reply was queued")
-                    : replies.remove(0);
+            String body;
+            synchronized (replies) {
+                body = replies.isEmpty() ? assistantReply("no reply was queued") : replies.remove(0);
+            }
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
 
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(status, bytes.length);
+            try (OutputStream out = exchange.getResponseBody()) {
+                out.write(bytes);
+            }
+        });
+        // The model list the status probe asks for. Not counted as a request: it sends no message.
+        server.createContext("/v1/models", exchange -> {
+            byte[] bytes = "{\"object\":\"list\",\"data\":[{\"id\":\"stub-model\",\"object\":\"model\"}]}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(modelsStatus, bytes.length);
             try (OutputStream out = exchange.getResponseBody()) {
                 out.write(bytes);
             }
@@ -64,6 +91,23 @@ public class StubLlmEndpoint implements AutoCloseable {
 
     public String getBaseUrl() {
         return "http://127.0.0.1:" + server.getAddress().getPort() + "/v1";
+    }
+
+    /**
+     * Forgets the replies a previous test queued and did not use.
+     */
+    public StubLlmEndpoint reset() {
+        replies.clear();
+        requestBodies.clear();
+        authorizationHeaders.clear();
+        status = 200;
+        modelsStatus = 200;
+        return this;
+    }
+
+    public StubLlmEndpoint respondToModelsWithStatus(int status) {
+        this.modelsStatus = status;
+        return this;
     }
 
     public StubLlmEndpoint queue(String responseBody) {

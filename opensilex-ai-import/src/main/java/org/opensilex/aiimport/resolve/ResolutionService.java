@@ -4,52 +4,17 @@
 //******************************************************************************
 package org.opensilex.aiimport.resolve;
 
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.E_Str;
-import org.apache.jena.sparql.expr.E_StrEndsWith;
-import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.expr.nodevalue.NodeValueString;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
 import org.opensilex.aiimport.profile.PersonCandidate;
 import org.opensilex.aiimport.profile.VariableCandidate;
-import org.opensilex.aiimport.profile.VariableComponent;
 import org.opensilex.aiimport.report.ReportMessage;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.organisation.bll.FacilityLogic;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.project.dal.ProjectDAO;
-import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
-import org.opensilex.core.variable.dal.BaseVariableDAO;
-import org.opensilex.core.variable.dal.BaseVariableModel;
-import org.opensilex.core.variable.dal.CharacteristicModel;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.UnitModel;
-import org.opensilex.security.person.dal.PersonDAO;
-import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.core.variable.dal.VariableSearchFilter;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +24,28 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
-import static org.apache.jena.arq.querybuilder.AbstractQueryBuilder.makeVar;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Checks, against this instance, every name a profile read out of an uploaded file.
  * <p>
  * The whole point of this class is that no URI ever originates from the language model: the
  * assistant is handed the report this service produces, and can only cite what a database returned.
+ * <p>
+ * Each name goes down the same chain, in order of confidence, and stops at the first step that
+ * settles it:
+ * <ol>
+ *     <li><b>confirmed</b> — what the user has already said this spelling means, in this
+ *     conversation;</li>
+ *     <li><b>exact</b> — a resource carrying exactly this name;</li>
+ *     <li><b>learned</b> — a misspelling the instance was taught, re-read under this user's
+ *     rights;</li>
+ *     <li><b>near</b> — names merely close, only ever suggested, never resolved.</li>
+ * </ol>
+ * This class holds the chain and writes the report. How each kind of resource is fetched lives in
+ * {@link InstanceLookups}; the variables, which are tried in more ways than the rest, in
+ * {@link VariableResolver}.
  *
  * @author Arnaud Charleroy
  */
@@ -80,25 +58,25 @@ public class ResolutionService {
     private static final String HINT = "AiImport.report.hint.";
     private static final String WARN = "AiImport.report.warning.";
 
-    /**
-     * How many people one lookup brings back. A name is searched as a pattern, so a common one can
-     * match several; more than a handful means the file gave a name too vague to settle here.
-     */
-    private static final int PERSON_SEARCH_LIMIT = 10;
-
-    /**
-     * How many candidates a component lookup brings back before the exact name is picked out. A
-     * handful: the search is a label pattern, and only an exact name is accepted from it.
-     */
-    private static final int COMPONENT_SEARCH_LIMIT = 10;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ResolutionService.class);
 
     private final SPARQLService sparql;
     private final MongoDBService nosql;
     private final FileStorageService fs;
     private final AccountModel currentUser;
-    private final SharedResourceVariableLookup sharedResources;
+    private final InstanceLookups lookups;
+    private final VariableResolver variables;
+
+    /**
+     * Set for the duration of one {@link #resolve} call. The service is built per analysis, so this
+     * is state of that analysis, not of the service.
+     */
+    private ConfirmedMatches confirmed = new ConfirmedMatches();
+
+    /**
+     * The misspellings the instance was taught, read once per analysis.
+     */
+    private CorrectionStore.Corrections learned = new CorrectionStore.Corrections();
 
     public ResolutionService(SPARQLService sparql,
                              MongoDBService nosql,
@@ -109,26 +87,124 @@ public class ResolutionService {
         this.nosql = nosql;
         this.fs = fs;
         this.currentUser = currentUser;
-        this.sharedResources = sharedResources;
+        this.lookups = new InstanceLookups(sparql, nosql, fs, currentUser);
+        this.variables = new VariableResolver(sparql, nosql, fs, currentUser, sharedResources, lookups);
     }
 
     public ResolutionReport resolve(ExtractedImportPlan plan) {
+        return resolve(plan, new ConfirmedMatches());
+    }
+
+    /**
+     * @param confirmed what the user has already said a misspelt name means; consulted before any
+     *                  search, so a confirmed name resolves exactly as a correctly spelt one would
+     */
+    public ResolutionReport resolve(ExtractedImportPlan plan, ConfirmedMatches confirmed) {
+        this.confirmed = confirmed == null ? new ConfirmedMatches() : confirmed;
         ResolutionReport report = new ResolutionReport().setProfileId(plan.getProfileId());
         report.addAnomalies(plan.getAnomalyMessages());
         report.getNotes().putAll(plan.getNotes());
 
+        this.learned = loadCorrections(report);
+
+        // Confirmed, then exact, for every category.
         List<ExperimentModel> resolvedExperiments = resolveExperiments(plan, report);
-        resolveProjects(plan, report);
+        // Before the plots: they are looked up inside the experiment, however it was recognised.
+        resolvedExperiments.addAll(applyLearnedExperiments(report));
+        resolveEach(report, ReportCategory.PROJECTS, plan.getProjectNames(), ResolvedItem::new,
+                lookups::projectsNamed, "project",
+                ReportMessage.of(HINT + "projectMissing",
+                        "No project carries this name. Ask the user which project the trial "
+                                + "belongs to, or create it."));
         resolveVariables(plan, report);
-        resolveGermplasm(plan, report);
-        resolvePersons(plan, report);
+        resolveEach(report, ReportCategory.GERMPLASM, plan.getGermplasmNames(), ResolvedItem::new,
+                lookups::germplasmNamed, "germplasm",
+                ReportMessage.of(HINT + "germplasmMissing",
+                        "No germplasm carries this name. Check the naming convention with the "
+                                + "user before creating anything."));
+        resolveEach(report, ReportCategory.PERSONS, plan.getPersons(),
+                candidate -> new ResolvedItem(candidate.getName()).setExternalId(candidate.getOrcid()),
+                lookups::personsMatching, "person",
+                ReportMessage.of(HINT + "personMissing",
+                        "Nobody here matches this person. Create them, or say which existing "
+                                + "person they are."));
+        resolveEach(report, ReportCategory.ORGANIZATIONS, plan.getOrganizationNames(),
+                name -> new ResolvedItem(name).setParentValue(plan.getOrganizationParents().get(name)),
+                lookups::organizationsNamed, "organization",
+                ReportMessage.of(HINT + "organizationMissing",
+                        "No organisation carries this name. Create it — a unit as part of its "
+                                + "institution — or say which existing organisation it is."));
         resolveScientificObjects(plan, report, resolvedExperiments);
-        resolveFacilities(plan, report);
+        // A field named in the file is a place, and places outlive experiments — so it is looked
+        // up across the instance rather than inside one experiment's graph.
+        resolveEach(report, ReportCategory.FACILITIES, plan.getFacilityNames(),
+                name -> new ResolvedItem(name).setDetails(plan.getFacilityDetails().get(name)),
+                lookups::facilitiesNamed, "facility",
+                ReportMessage.of(HINT + "facilityMissing",
+                        "No facility carries this name. Create it with the Create button beside it, "
+                                + "which opens the platform's form with what the file says of it, "
+                                + "or tell the assistant which existing one the field corresponds "
+                                + "to."));
+
+        // Then what is still missing, in order of confidence: a misspelling the instance was taught
+        // resolves outright; a name merely close is only suggested.
+        applyLearnedCorrections(report);
+        suggestNearMatches(report);
 
         return report;
     }
 
-    //#region experiments
+    /**
+     * A resource as this user may see it, with its current name; empty when they may not or when it
+     * does not exist. What the API checks before binding a row of the file to a resource the user
+     * has just created: the URI comes from the platform's creation response, and is read back here
+     * under the user's rights rather than trusted.
+     */
+    public Optional<ResourceReference> visibleResource(ReportCategory category, URI uri) {
+        return visible(category, uri);
+    }
+
+    //#region confirmed and exact
+
+    /**
+     * An exact lookup of one thing the file names — a name, or a person with their identifiers.
+     */
+    @FunctionalInterface
+    interface ExactLookup<S> {
+        List<ResourceReference> find(S source) throws Exception;
+    }
+
+    /**
+     * The first two steps of the chain for a category whose resources are recognised by a name
+     * alone: a confirmation if the user gave one, otherwise the exact lookup.
+     * <p>
+     * A lookup that fails is a warning on the report, never an exception: one unreachable DAO must
+     * not cost the user the rest of the analysis.
+     *
+     * @param newItem     the report line for one source, before it is resolved
+     * @param noun        what the category is called in a warning, "project", "person"…
+     * @param missingHint what the report says when nothing carries the name
+     */
+    private <S> void resolveEach(ResolutionReport report, ReportCategory category, List<S> sources,
+                                 Function<S, ResolvedItem> newItem, ExactLookup<S> lookup,
+                                 String noun, ReportMessage missingHint) {
+        List<ResolvedItem> items = category.itemsOf(report);
+        for (S source : sources) {
+            ResolvedItem item = newItem.apply(source);
+            items.add(item);
+            if (confirmed.resolve(category, item)) {
+                continue;
+            }
+            try {
+                applyMatches(item, lookup.find(source), missingHint);
+            } catch (Exception e) {
+                String name = item.getSourceValue();
+                LOGGER.warn("Could not resolve {} {}", noun, name, e);
+                report.addWarning(ReportMessage.of(WARN + noun + "LookupFailed",
+                        "The " + noun + " '" + name + "' could not be looked up.").with("name", name));
+            }
+        }
+    }
 
     private List<ExperimentModel> resolveExperiments(ExtractedImportPlan plan, ResolutionReport report) {
         List<ExperimentModel> resolved = new ArrayList<>();
@@ -137,6 +213,11 @@ public class ResolutionService {
         for (String name : plan.getExperimentNames()) {
             ResolvedItem item = new ResolvedItem(name);
             report.getExperiments().add(item);
+            if (confirmed.resolve(ReportCategory.EXPERIMENTS, item)) {
+                // The plots are looked up inside the experiment, so it has to be loaded as well.
+                loadExperiment(item.getMatches().get(0).getUri(), name).ifPresent(resolved::add);
+                continue;
+            }
             try {
                 ExperimentModel experiment = dao.getExperimentByNameOrURI(name, currentUser);
                 if (experiment == null) {
@@ -147,7 +228,7 @@ public class ResolutionService {
                                             + "corresponds to."));
                 } else {
                     item.setStatus(ResolutionStatus.FOUND)
-                            .getMatches().add(reference(experiment));
+                            .getMatches().add(lookups.reference(experiment));
                     resolved.add(experiment);
                 }
             } catch (Exception e) {
@@ -162,452 +243,23 @@ public class ResolutionService {
         return resolved;
     }
 
-    //#endregion
-
-    //#region projects
-
-    private void resolveProjects(ExtractedImportPlan plan, ResolutionReport report) {
-        ProjectDAO dao = new ProjectDAO(sparql);
-
-        for (String name : plan.getProjectNames()) {
-            ResolvedItem item = new ResolvedItem(name);
-            report.getProjects().add(item);
-            try {
-                List<ProjectModel> candidates = dao
-                        .search(name, null, null, null, currentUser, null, 0, 10)
-                        .getList();
-                List<ResourceReference> exact = new ArrayList<>();
-                for (ProjectModel project : candidates) {
-                    if (name.equalsIgnoreCase(project.getName())
-                            || name.equalsIgnoreCase(project.getShortname())) {
-                        exact.add(reference(project));
-                    }
-                }
-                applyMatches(item, exact, ReportMessage.of(HINT + "projectMissing",
-                        "No project carries this name. Ask the user which project the trial belongs "
-                                + "to, or create it."));
-            } catch (Exception e) {
-                LOGGER.warn("Could not resolve project {}", name, e);
-                report.addWarning(ReportMessage.of(WARN + "projectLookupFailed",
-                        "The project '" + name + "' could not be looked up.").with("name", name));
-            }
-        }
-    }
-
-    //#endregion
-
-    //#region variables
-
     private void resolveVariables(ExtractedImportPlan plan, ResolutionReport report) {
-        VariableDAO dao = new VariableDAO(sparql, nosql, fs, currentUser);
-
         for (VariableCandidate candidate : plan.getVariables()) {
             ResolvedItem item = new ResolvedItem(candidate.getColumnKey())
                     .setExternalId(candidate.getExternalId());
             report.getVariables().add(item);
-
-            List<ResourceReference> matches = new ArrayList<>();
-
-            // The ontology identifier the file carries is the most reliable key, so try it first.
-            if (candidate.getExternalId() != null && !candidate.getExternalId().isEmpty()) {
-                matches.addAll(searchByExactMatch(candidate.getExternalId(), report));
-            }
-            if (!matches.isEmpty()) {
-                // The ontology query returns uri and name only; the datatype comes from the model.
-                fetchDatatypes(dao, matches, report);
-            } else {
-                matches.addAll(searchByName(dao, candidate, report));
-            }
-
-            if (!matches.isEmpty()) {
-                applyMatches(item, matches, null);
+            if (confirmed.resolve(ReportCategory.VARIABLES, item)) {
+                // The type check needs the datatype, which a confirmation does not carry.
+                variables.fetchDatatypes(item.getMatches(), report);
                 continue;
             }
-
-            List<ResourceReference> remote = sharedResources != null && sharedResources.isEnable()
-                    ? sharedResources.search(candidate.getSearchName(), report.getWarnings())
-                    : new ArrayList<>();
-            if (!remote.isEmpty()) {
-                item.setStatus(ResolutionStatus.FOUND_IN_SHARED_RESOURCE)
-                        .setMatches(remote)
-                        .setHint(ReportMessage.of(HINT + "variableInSharedResource",
-                                "This variable exists on a shared resource instance. It can be "
-                                        + "imported from here, with its entity, characteristic, "
-                                        + "method and unit, in one step."));
-                continue;
-            }
-
-            // Nowhere to be found, so the next step is creating it — and that takes four
-            // components. Whatever the file says about them is resolved now: a component that
-            // already exists here must be reused, never entered a second time.
-            resolveComponents(candidate, item);
-
-            item.setStatus(ResolutionStatus.MISSING)
-                    .setHint(missingVariableHint(candidate));
+            variables.resolve(candidate, item, report);
         }
 
         if (!plan.getVariables().isEmpty()) {
             report.getNotes().put("variable columns", String.valueOf(plan.getVariables().size()));
         }
     }
-
-    private ReportMessage missingVariableHint(VariableCandidate candidate) {
-        String externalId = candidate.getExternalId();
-        if (externalId != null && !externalId.isEmpty()) {
-            return ReportMessage.of(HINT + "variableMissingWithExternalId",
-                            "No variable matches this column. The file gives the ontology "
-                                    + "identifier " + externalId + ", which can be used to create "
-                                    + "it.")
-                    .with("externalId", externalId);
-        }
-        return ReportMessage.of(HINT + "variableMissing",
-                "No variable matches this column. Ask the user what it measures, with which "
-                        + "method and in which unit.");
-    }
-
-    private List<ResourceReference> searchByName(VariableDAO dao, VariableCandidate candidate,
-                                                 ResolutionReport report) {
-        List<ResourceReference> matches = new ArrayList<>();
-        for (String name : distinct(candidate.getColumnKey(), candidate.getLabel())) {
-            try {
-                VariableSearchFilter filter = new VariableSearchFilter()
-                        .setNamePattern(name)
-                        .setUserModel(currentUser);
-                filter.setLang(currentUser.getLanguage());
-                filter.setPage(0);
-                filter.setPageSize(10);
-
-                for (VariableModel variable : dao.search(filter).getList()) {
-                    if (!isExactVariableMatch(name, variable)) {
-                        continue;
-                    }
-                    ResourceReference reference = reference(variable)
-                            .setDatatype(variable.getDataType() == null
-                                    ? null
-                                    : variable.getDataType().toString());
-                    if (!containsUri(matches, reference.getUri())) {
-                        matches.add(reference);
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.warn("Could not search variable {}", name, e);
-                report.addWarning(ReportMessage.of(WARN + "variableLookupFailed",
-                        "The variable '" + name + "' could not be looked up locally.")
-                        .with("name", name));
-            }
-            if (!matches.isEmpty()) {
-                break;
-            }
-        }
-        return matches;
-    }
-
-    /**
-     * The name filter of the variable DAO is a regex OR'd over several fields, so it returns near
-     * misses. Only an exact name or alternative name is accepted, otherwise the report would point
-     * the user at a variable that merely looks similar.
-     */
-    private boolean isExactVariableMatch(String name, VariableModel variable) {
-        return name.equalsIgnoreCase(variable.getName())
-                || name.equalsIgnoreCase(variable.getAlternativeName());
-    }
-
-    /**
-     * Finds variables whose {@code skos:exactMatch} ends with the identifier written in the file.
-     * <p>
-     * The file carries a compact identifier such as {@code CO_356:1000217} while the instance
-     * stores a full URI, and the prefix used is a local choice. Matching on the end of the URI is
-     * what bridges the two without hard-coding anyone's prefix.
-     */
-    private List<ResourceReference> searchByExactMatch(String externalId, ResolutionReport report) {
-        List<ResourceReference> matches = new ArrayList<>();
-        try {
-            Node variableGraph = sparql.getDefaultGraph(VariableModel.class);
-            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-            Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
-            Var matchVar = makeVar("exactMatch");
-
-            SelectBuilder select = new SelectBuilder()
-                    .addVar(uriVar)
-                    .addVar(nameVar)
-                    .setDistinct(true);
-            select.addGraph(variableGraph, uriVar, RDF.type, Oeso.Variable);
-            select.addGraph(variableGraph, uriVar, RDFS.label, nameVar);
-            select.addGraph(variableGraph, uriVar, SKOS.exactMatch, matchVar);
-            select.addFilter(new E_StrEndsWith(
-                    new E_Str(new ExprVar(matchVar)),
-                    new NodeValueString(externalId)));
-            select.setLimit(10);
-
-            for (SPARQLResult result : sparql.executeSelectQuery(select, null)) {
-                URI uri = URI.create(result.getStringValue(SPARQLResourceModel.URI_FIELD));
-                String name = result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD);
-                if (!containsUri(matches, uri)) {
-                    matches.add(new ResourceReference(uri, name));
-                }
-            }
-        } catch (SPARQLException | RuntimeException e) {
-            LOGGER.warn("Could not search variables by exact match on {}", externalId, e);
-            report.addWarning(ReportMessage.of(WARN + "externalIdLookupFailed",
-                    "Variables could not be looked up by the ontology identifier "
-                            + externalId + ".").with("externalId", externalId));
-        }
-        return matches;
-    }
-
-    //#endregion
-
-    /**
-     * Fills in the datatype of variables matched by their ontology identifier, which the SPARQL
-     * query does not return.
-     */
-    private void fetchDatatypes(VariableDAO dao, List<ResourceReference> matches,
-                                ResolutionReport report) {
-        List<URI> uris = new ArrayList<>(matches.size());
-        matches.forEach(match -> uris.add(match.getUri()));
-        try {
-            for (VariableModel variable : dao.getList(uris, currentUser.getLanguage())) {
-                for (ResourceReference match : matches) {
-                    if (match.getUri() != null && match.getUri().equals(variable.getUri())) {
-                        match.setDatatype(variable.getDataType() == null
-                                ? null
-                                : variable.getDataType().toString());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.warn("Could not read the datatype of matched variables", e);
-            report.addWarning(ReportMessage.of(WARN + "datatypeUnreadable",
-                    "The expected data type of some variables could not be read, so type "
-                            + "mismatches were not checked for them."));
-        }
-    }
-
-    //#region germplasm
-
-    private void resolveGermplasm(ExtractedImportPlan plan, ResolutionReport report) {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-
-        for (String name : plan.getGermplasmNames()) {
-            ResolvedItem item = new ResolvedItem(name);
-            report.getGermplasm().add(item);
-            try {
-                GermplasmSearchFilter filter = new GermplasmSearchFilter();
-                filter.setName(name);
-                filter.setUser(currentUser);
-                filter.setLang(currentUser.getLanguage());
-                filter.setPage(0);
-                filter.setPageSize(10);
-
-                List<ResourceReference> exact = new ArrayList<>();
-                for (GermplasmModel germplasm : dao.search(filter, false, false).getList()) {
-                    if (name.equalsIgnoreCase(germplasm.getName())) {
-                        exact.add(reference(germplasm));
-                    }
-                }
-                applyMatches(item, exact, ReportMessage.of(HINT + "germplasmMissing",
-                        "No germplasm carries this name. Check the naming convention with the user "
-                                + "before creating anything."));
-            } catch (Exception e) {
-                LOGGER.warn("Could not resolve germplasm {}", name, e);
-                report.addWarning(ReportMessage.of(WARN + "germplasmLookupFailed",
-                        "The germplasm '" + name + "' could not be looked up.").with("name", name));
-            }
-        }
-    }
-
-    //#endregion
-
-    //#region facilities
-
-    /**
-     * A field named in the file is a place, and places outlive experiments — so it is looked up
-     * across the instance rather than inside one experiment's graph.
-     * <p>
-     * Through {@code FacilityLogic} rather than a direct query: it computes the organisations and
-     * sites the account may see and filters on them. Querying the triplestore straight would list
-     * facilities the user has no right to, which is not the resolver's call to make.
-     */
-    /**
-     * Matches the parts a variable is made of against the ones this instance already has.
-     * <p>
-     * Only what the file actually states. MIAPPE gives a trait, a method and a scale; the scale is
-     * the unit and the method is the method, but the trait covers both the entity and the
-     * characteristic — "plant height" is the entity "plant" and the characteristic "height" — and
-     * that split is a judgement about the user's science. So the trait is offered as a
-     * characteristic, which is the closer of the two, and the entity is left for the user to
-     * choose. Guessing it would put a wrong entity in the instance's referential for good.
-     */
-    private void resolveComponents(VariableCandidate candidate, ResolvedItem item) {
-        if (!candidate.hasComponents()) {
-            return;
-        }
-        add(item, "characteristic", candidate.getTrait(), CharacteristicModel.class);
-        add(item, "method", candidate.getMethod(), MethodModel.class);
-        add(item, "unit", candidate.getUnit(), UnitModel.class);
-    }
-
-    private <T extends BaseVariableModel<T>> void add(ResolvedItem item, String role,
-                                                      VariableComponent component,
-                                                      Class<T> modelClass) {
-        if (component == null || component.isEmpty()) {
-            return;
-        }
-        ResolvedComponent resolved =
-                new ResolvedComponent(role, component.getName(), component.getAccession());
-        item.getComponents().add(resolved);
-
-        if (component.getName() == null || component.getName().isEmpty()) {
-            return;
-        }
-        try {
-            new BaseVariableDAO<>(modelClass, sparql)
-                    .search(Pattern.quote(component.getName()), null, 0, COMPONENT_SEARCH_LIMIT,
-                            currentUser.getLanguage())
-                    .getList().stream()
-                    .filter(model -> component.getName().equalsIgnoreCase(model.getName()))
-                    .findFirst()
-                    .ifPresent(model -> resolved.setUri(model.getUri()));
-        } catch (Exception e) {
-            // Not worth a warning of its own: the variable is already reported missing, and an
-            // unresolved component only means one more choice on the form.
-            LOGGER.warn("Could not look up the {} '{}'", role, component.getName(), e);
-        }
-    }
-
-    //#endregion
-
-    //#region persons
-
-    /**
-     * Matches the people the file names against the ones this instance knows.
-     * <p>
-     * By the best key each candidate has: an ORCID identifies one human worldwide, an email one
-     * mailbox, a name neither. Two agronomists called Martin are not the same person, so a match on
-     * the name alone is reported as ambiguous rather than picked.
-     */
-    private void resolvePersons(ExtractedImportPlan plan, ResolutionReport report) {
-        if (plan.getPersons().isEmpty()) {
-            return;
-        }
-        PersonDAO dao = new PersonDAO(sparql);
-
-        for (PersonCandidate candidate : plan.getPersons()) {
-            ResolvedItem item = new ResolvedItem(candidate.getName())
-                    .setExternalId(candidate.getOrcid());
-            report.getPersons().add(item);
-            try {
-                applyMatches(item, findPerson(dao, candidate),
-                        ReportMessage.of(HINT + "personMissing",
-                                "Nobody here matches this person. Create them, or say which "
-                                        + "existing person they are."));
-            } catch (Exception e) {
-                LOGGER.warn("Could not resolve person {}", candidate.getName(), e);
-                report.addWarning(ReportMessage.of(WARN + "personLookupFailed",
-                                "The person '" + candidate.getName() + "' could not be looked up.")
-                        .with("name", candidate.getName()));
-            }
-        }
-    }
-
-    /**
-     * @return the people matching the candidate's strongest identifier, exact matches only
-     */
-    private List<ResourceReference> findPerson(PersonDAO dao, PersonCandidate candidate)
-            throws Exception {
-        List<ResourceReference> matches = new ArrayList<>();
-        String key = candidate.getSearchKey();
-        if (key == null || key.isEmpty()) {
-            return matches;
-        }
-
-        // The DAO's pattern runs over the given name, family name, email and ORCID at once, so one
-        // query covers whichever key the file supplied.
-        for (PersonModel person : dao.search(Pattern.quote(key), null, 0, PERSON_SEARCH_LIMIT)
-                .getList()) {
-            if (isTheSamePerson(person, candidate)) {
-                matches.add(new ResourceReference(person.getUri(), fullNameOf(person)));
-            }
-        }
-        return matches;
-    }
-
-    /**
-     * A regex search matches loosely; this is where it is made exact again.
-     */
-    private boolean isTheSamePerson(PersonModel person, PersonCandidate candidate) {
-        if (candidate.getOrcid() != null && person.getOrcid() != null) {
-            return candidate.getOrcid().equalsIgnoreCase(person.getOrcid().toString());
-        }
-        if (candidate.getEmail() != null && person.getEmail() != null) {
-            return candidate.getEmail().equalsIgnoreCase(person.getEmail().toString());
-        }
-        return candidate.getName() != null
-                && candidate.getName().equalsIgnoreCase(fullNameOf(person));
-    }
-
-    /**
-     * A person is stored as a given name and a family name; the file writes them together.
-     */
-    private String fullNameOf(PersonModel person) {
-        return (nullToEmpty(person.getFirstName()) + " " + nullToEmpty(person.getLastName())).trim();
-    }
-
-    private String nullToEmpty(String value) {
-        return value == null ? "" : value;
-    }
-
-    //#endregion
-
-    //#region facilities
-
-    private void resolveFacilities(ExtractedImportPlan plan, ResolutionReport report) {
-        if (plan.getFacilityNames().isEmpty()) {
-            return;
-        }
-        FacilityLogic facilityLogic;
-        try {
-            facilityLogic = new FacilityLogic(sparql, nosql, currentUser, fs);
-        } catch (Exception e) {
-            LOGGER.warn("Could not reach the facilities", e);
-            report.addWarning(ReportMessage.of(WARN + "facilitiesLookupFailed",
-                    "The facilities could not be looked up."));
-            return;
-        }
-
-        for (String name : plan.getFacilityNames()) {
-            ResolvedItem item = new ResolvedItem(name);
-            report.getFacilities().add(item);
-            try {
-                FacilitySearchFilter filter = new FacilitySearchFilter()
-                        .setUser(currentUser)
-                        .setPattern(name);
-                filter.setLang(currentUser.getLanguage());
-                filter.setPage(0);
-                filter.setPageSize(10);
-
-                List<ResourceReference> exact = new ArrayList<>();
-                for (FacilityModel facility : facilityLogic.search(filter).getList()) {
-                    // The pattern is a regex, so it returns near misses too.
-                    if (name.equalsIgnoreCase(facility.getName())) {
-                        exact.add(reference(facility));
-                    }
-                }
-                applyMatches(item, exact, ReportMessage.of(HINT + "facilityMissing",
-                        "No facility carries this name. Create it from the facilities screen, or "
-                                + "tell the assistant which existing one the field corresponds "
-                                + "to."));
-            } catch (Exception e) {
-                LOGGER.warn("Could not resolve facility {}", name, e);
-                report.addWarning(ReportMessage.of(WARN + "facilityLookupFailed",
-                        "The facility '" + name + "' could not be looked up.").with("name", name));
-            }
-        }
-    }
-
-    //#endregion
-
-    //#region scientific objects
 
     private void resolveScientificObjects(ExtractedImportPlan plan, ResolutionReport report,
                                           List<ExperimentModel> experiments) {
@@ -673,10 +325,211 @@ public class ResolutionService {
 
     //#endregion
 
+    //#region learned corrections
+
+    private CorrectionStore.Corrections loadCorrections(ResolutionReport report) {
+        try {
+            return new CorrectionStore(sparql, CorrectionStore.graphFor(sparql.getBaseURI())).load();
+        } catch (Exception e) {
+            LOGGER.warn("Could not read the corrections taught to this instance", e);
+            report.addWarning(ReportMessage.of(WARN + "correctionsUnreadable",
+                    "The corrections this instance was taught could not be read, so misspellings "
+                            + "it knows are treated as unknown this time."));
+            return new CorrectionStore.Corrections();
+        }
+    }
+
+    /**
+     * Experiments first and apart, because the plots are resolved inside them and need the model.
+     */
+    private List<ExperimentModel> applyLearnedExperiments(ResolutionReport report) {
+        List<ExperimentModel> resolved = new ArrayList<>();
+        for (ResolvedItem item : missingLearnable(report, ReportCategory.EXPERIMENTS)) {
+            LearnedCorrection correction =
+                    learned.lookup(ReportCategory.EXPERIMENTS, item.getSourceValue()).get();
+            loadExperiment(correction.getTarget(), item.getSourceValue()).ifPresent(experiment -> {
+                applyLearned(item, correction, lookups.reference(experiment));
+                resolved.add(experiment);
+            });
+        }
+        return resolved;
+    }
+
+    private void applyLearnedCorrections(ResolutionReport report) {
+        for (ReportCategory category : ReportCategory.values()) {
+            if (category == ReportCategory.EXPERIMENTS) {
+                continue;
+            }
+            for (ResolvedItem item : missingLearnable(report, category)) {
+                LearnedCorrection correction = learned.lookup(category, item.getSourceValue()).get();
+                visible(category, correction.getTarget())
+                        .ifPresent(current -> applyLearned(item, correction, current));
+            }
+        }
+    }
+
+    /**
+     * Missing items of a category for which a correction was taught. Only missing ones: a name
+     * spelt exactly as a resource here always wins over what was learned about it.
+     */
+    private List<ResolvedItem> missingLearnable(ResolutionReport report, ReportCategory category) {
+        List<ResolvedItem> items = new ArrayList<>();
+        if (learned.isEmpty()) {
+            return items;
+        }
+        for (ResolvedItem item : missingItems(report, category)) {
+            if (learned.lookup(category, item.getSourceValue()).isPresent()) {
+                items.add(item);
+            }
+        }
+        return items;
+    }
+
+    private void applyLearned(ResolvedItem item, LearnedCorrection correction,
+                              ResourceReference current) {
+        String author = correction.getAuthor() == null ? "" : correction.getAuthor();
+        String date = correction.getCreated() == null
+                ? ""
+                : correction.getCreated().toLocalDate().toString();
+        item.setStatus(ResolutionStatus.FOUND)
+                .setLearnedCorrection(correction)
+                .setMatches(new ArrayList<>(List.of(current)))
+                .setHint(ReportMessage.of(HINT + "learnedCorrection",
+                                "Recognised as '" + current.getName() + "' from a correction "
+                                        + (author.isEmpty() ? "" : "by " + author + " ")
+                                        + (date.isEmpty() ? "" : "on " + date + " ")
+                                        + "that this instance remembers.")
+                        .with("name", current.getName())
+                        .with("author", author)
+                        .with("date", date));
+    }
+
+    /**
+     * The resource a correction names, as this user may see it. Not visible, or gone: the
+     * correction simply does not apply to them.
+     */
+    private Optional<ResourceReference> visible(ReportCategory category, URI uri) {
+        try {
+            return lookups.visible(category, uri);
+        } catch (Exception e) {
+            LOGGER.debug("{} {} not visible to this user", category.getKey(), uri, e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<ExperimentModel> loadExperiment(URI uri, String sourceValue) {
+        try {
+            return lookups.experiment(uri);
+        } catch (Exception e) {
+            LOGGER.debug("Experiment {} for {} not visible to this user", uri, sourceValue, e);
+            return Optional.empty();
+        }
+    }
+
+    //#endregion
+
+    //#region near matches
+
+    /**
+     * A source of resources to compare misspelt names against. Called at most once per category
+     * and per analysis, and only when that category has something missing.
+     */
+    @FunctionalInterface
+    interface CandidateSource {
+        List<ResourceReference> list() throws Exception;
+    }
+
+    private void suggestNearMatches(ResolutionReport report) {
+        for (ReportCategory category : List.of(ReportCategory.EXPERIMENTS, ReportCategory.PROJECTS,
+                ReportCategory.VARIABLES, ReportCategory.FACILITIES, ReportCategory.PERSONS,
+                ReportCategory.ORGANIZATIONS)) {
+            suggest(report, category, () -> lookups.candidates(category));
+        }
+        suggestGermplasm(report);
+    }
+
+    private void suggest(ResolutionReport report, ReportCategory category, CandidateSource source) {
+        List<ResolvedItem> missing = missingItems(report, category);
+        if (missing.isEmpty()) {
+            return;
+        }
+        List<ResourceReference> candidates;
+        try {
+            candidates = source.list();
+        } catch (Exception e) {
+            LOGGER.warn("Could not list the {} to compare against", category.getKey(), e);
+            report.addWarning(ReportMessage.of(WARN + "nearMatchLookupFailed",
+                    "Names close to the missing " + category.getKey() + " could not be looked "
+                            + "for.").with("category", category.getKey()));
+            return;
+        }
+        int limit = InstanceLookups.NEAR_MATCH_CANDIDATE_LIMIT;
+        if (candidates.size() >= limit) {
+            // Said out loud: a suggestion missing because of a limit looks exactly like a name
+            // with no close match, and the user deserves to know which one it is.
+            report.addWarning(ReportMessage.of(WARN + "nearMatchLimitReached",
+                            "Only the first " + limit + " " + category.getKey()
+                                    + " were compared against the missing names, so a close match "
+                                    + "may have been missed.")
+                    .with("category", category.getKey())
+                    .with("limit", limit));
+        }
+        NearMatchFinder finder = new NearMatchFinder();
+        for (ResolvedItem item : missing) {
+            attachSuggestions(item, finder.suggest(item.getSourceValue(), candidates));
+        }
+    }
+
+    /**
+     * Germplasm is compared name by name, against the few resources sharing a fragment with it,
+     * rather than against a list of all of them.
+     */
+    private void suggestGermplasm(ResolutionReport report) {
+        NearMatchFinder finder = new NearMatchFinder();
+        for (ResolvedItem item : missingItems(report, ReportCategory.GERMPLASM)) {
+            try {
+                attachSuggestions(item, finder.suggest(item.getSourceValue(),
+                        lookups.germplasmCloseTo(item.getSourceValue())));
+            } catch (Exception e) {
+                LOGGER.warn("Could not look for germplasm close to {}", item.getSourceValue(), e);
+            }
+        }
+    }
+
+    private void attachSuggestions(ResolvedItem item, List<ResourceReference> suggestions) {
+        if (suggestions.isEmpty()) {
+            return;
+        }
+        item.getSuggestions().addAll(suggestions);
+        String closest = suggestions.get(0).getName();
+        item.setHint(ReportMessage.of(HINT + "didYouMean",
+                        "Not found as written. Did you mean '" + closest + "'? Confirm it rather "
+                                + "than creating a second one under this spelling.")
+                .with("name", closest));
+    }
+
+    private List<ResolvedItem> missingItems(ResolutionReport report, ReportCategory category) {
+        List<ResolvedItem> missing = new ArrayList<>();
+        if (!category.allowsNearMatching()) {
+            return missing;
+        }
+        for (ResolvedItem item : category.itemsOf(report)) {
+            if (item.getStatus() == ResolutionStatus.MISSING) {
+                missing.add(item);
+            }
+        }
+        return missing;
+    }
+
+    //#endregion
+
     //#region helpers
 
-    private void applyMatches(ResolvedItem item, List<ResourceReference> matches,
-                              ReportMessage missingHint) {
+    /**
+     * One match is found, several are for a human to pick from, none is missing.
+     */
+    static void applyMatches(ResolvedItem item, List<ResourceReference> matches,
+                             ReportMessage missingHint) {
         if (matches.isEmpty()) {
             item.setStatus(ResolutionStatus.MISSING).setHint(missingHint);
         } else if (matches.size() == 1) {
@@ -686,29 +539,6 @@ public class ResolutionService {
                     .setHint(ReportMessage.of(HINT + "ambiguous",
                             "Several resources carry this name, so a human has to pick one."));
         }
-    }
-
-    private ResourceReference reference(SPARQLNamedResourceModel<?> model) {
-        return new ResourceReference(model.getUri(), model.getName());
-    }
-
-    private boolean containsUri(List<ResourceReference> references, URI uri) {
-        for (ResourceReference reference : references) {
-            if (reference.getUri() != null && reference.getUri().equals(uri)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private List<String> distinct(String... values) {
-        List<String> result = new ArrayList<>();
-        for (String value : values) {
-            if (value != null && !value.isEmpty() && !result.contains(value)) {
-                result.add(value);
-            }
-        }
-        return result;
     }
 
     private String summarise(List<String> values) {

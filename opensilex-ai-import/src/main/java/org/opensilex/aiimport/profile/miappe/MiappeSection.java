@@ -128,6 +128,20 @@ public class MiappeSection {
     }
 
     /**
+     * @return the row number the spreadsheet shows for a value row — the header is row 1 — found
+     *         by identity, since two rows can hold the same values
+     */
+    public int rowNumberOf(List<String> valueRow) {
+        List<List<String>> rows = sheet.getRows();
+        for (int i = 0; i < rows.size(); i++) {
+            if (rows.get(i) == valueRow) {
+                return i + 2;
+            }
+        }
+        return 0;
+    }
+
+    /**
      * @return the value of a field in a value row, empty when the field is absent or blank
      */
     public String cell(List<String> row, String field) {

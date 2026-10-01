@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.aiimport.WorkbookFixture;
+import org.opensilex.aiimport.create.CreationTarget;
+import org.opensilex.aiimport.create.rows.RowError;
 import org.opensilex.aiimport.mapping.ColumnMapping;
 import org.opensilex.aiimport.mapping.MappingService;
 import org.opensilex.aiimport.mapping.TypeIssue;
@@ -101,9 +103,58 @@ public class TranslationKeyTest {
                 "AiImport.report.warning.externalIdLookupFailed",
                 "AiImport.report.warning.datatypeUnreadable",
                 "AiImport.report.warning.germplasmLookupFailed",
-                "AiImport.report.warning.facilitiesLookupFailed",
                 "AiImport.report.warning.facilityLookupFailed",
-                "AiImport.report.warning.objectsLookupFailed")));
+                "AiImport.report.warning.objectsLookupFailed",
+                "AiImport.report.hint.personMissing",
+                "AiImport.report.warning.personLookupFailed",
+                "AiImport.report.hint.didYouMean",
+                "AiImport.report.hint.confirmedByUser",
+                "AiImport.report.warning.nearMatchLookupFailed",
+                "AiImport.report.warning.nearMatchLimitReached",
+                "AiImport.report.hint.learnedCorrection",
+                "AiImport.report.warning.correctionsUnreadable")));
+    }
+
+    /**
+     * One key per family of row error the platform's validators report, and per file-level refusal.
+     * Derived from the enum, so a family added there without a translation fails here. The module's
+     * own refusals (UNRESOLVED) and file errors carry their key with them.
+     */
+    @Test
+    public void everyRowErrorFamilyIsTranslated() {
+        Set<String> keys = new LinkedHashSet<>();
+        for (RowError.Kind kind : RowError.Kind.values()) {
+            if (kind != RowError.Kind.UNRESOLVED && kind != RowError.Kind.FILE) {
+                keys.add("AiImport.rows.kind." + kind.name());
+            }
+            keys.add("AiImport.rows.family." + kind.name());
+        }
+        keys.addAll(List.of("AiImport.rows.kind.tooLarge", "AiImport.rows.kind.missingHeader",
+                "AiImport.rows.kind.invalidHeader", "AiImport.rows.interrupted"));
+        assertNoneMissing(keys);
+    }
+
+    /**
+     * Every creation target has its title, and the messages of the proposals that need an instance
+     * to be produced are listed.
+     */
+    @Test
+    public void theCreationKeysAreTranslated() {
+        Set<String> keys = new LinkedHashSet<>();
+        for (CreationTarget target : CreationTarget.values()) {
+            keys.add("AiImport.proposal.target_" + target.name());
+        }
+        keys.addAll(List.of(
+                "AiImport.proposal.appliedObjects",
+                "AiImport.proposal.field.objectType",
+                "AiImport.proposal.field.objectSummary",
+                "AiImport.proposal.from.objectSheet",
+                "AiImport.proposal.block.noObjectRows",
+                "AiImport.proposal.warn.objectsWillBeUpdated",
+                "AiImport.proposal.unresolved.germplasm",
+                "AiImport.proposal.unresolved.factorLevel",
+                "AiImport.proposal.unresolved.facility"));
+        assertNoneMissing(keys);
     }
 
     //#region helpers

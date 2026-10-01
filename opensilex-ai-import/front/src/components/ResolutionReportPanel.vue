@@ -104,6 +104,96 @@
                         — {{ match.shared_resource_instance_label }}
                       </span>
                     </div>
+
+                    <!--
+                      Linked by a person, not found by name: said so, and reversible, because the
+                      file still spells it differently and a wrong click must cost one more click.
+                    -->
+                    <div v-if="item.confirmed_by_user" class="ai-import-report__confirmed">
+                      <n-tag size="tiny" type="info">{{ $t('AiImport.report.confirmedByYou') }}</n-tag>
+                      <n-button
+                        size="tiny"
+                        quaternary
+                        :disabled="revalidating"
+                        @click="$emit('forget-match', { category: category.key, value: item.source_value })"
+                      >
+                        {{ $t('AiImport.report.forgetMatch') }}
+                      </n-button>
+                      <n-button
+                        v-if="item.matches && item.matches.length"
+                        size="tiny"
+                        secondary
+                        :disabled="revalidating"
+                        :title="$t('AiImport.report.rememberCorrectionTitle')"
+                        @click="$emit('remember-correction', {
+                          category: category.key, value: item.source_value, uri: item.matches[0].uri
+                        })"
+                      >
+                        {{ $t('AiImport.report.rememberCorrection') }}
+                      </n-button>
+                    </div>
+
+                    <!--
+                      Recognised from a correction somebody taught the instance: on whose word, and
+                      forgettable, since it acts on everyone's imports and this user did not make it.
+                    -->
+                    <div v-if="item.learned_correction" class="ai-import-report__confirmed">
+                      <n-tag size="tiny" type="info">
+                        {{ $t('AiImport.report.learnedBy', {
+                          author: item.learned_correction.author || '?',
+                          date: item.learned_correction.created || '?'
+                        }) }}
+                      </n-tag>
+                      <n-button
+                        size="tiny"
+                        quaternary
+                        :disabled="revalidating"
+                        :title="$t('AiImport.report.forgetCorrectionTitle')"
+                        @click="$emit('forget-correction', { category: category.key, value: item.source_value })"
+                      >
+                        {{ $t('AiImport.report.forgetCorrection') }}
+                      </n-button>
+                    </div>
+
+                    <!--
+                      Close names the instance already has. Offered, never applied: the row stays
+                      missing until the user picks one, since a click on the wrong neighbour files
+                      their data against somebody else's resource.
+                    -->
+                    <div v-if="item.suggestions && item.suggestions.length" class="ai-import-report__suggestions">
+                      <div class="text-body-secondary">{{ $t('AiImport.report.didYouMean') }}</div>
+                      <div
+                        v-for="suggestion in item.suggestions"
+                        :key="suggestion.uri"
+                        class="ai-import-report__suggestion"
+                      >
+                        <span class="ai-import-report__suggestion-name">
+                          <span
+                            v-for="(segment, segmentIndex) in diffAgainst(item.source_value, suggestion.name)"
+                            :key="segmentIndex"
+                            :class="{ 'ai-import-report__diff': segment.changed }"
+                          >{{ segment.text }}</span>
+                        </span>
+                        <span
+                          v-if="suggestion.similarity != null"
+                          class="text-body-secondary"
+                        >
+                          ({{ $t('AiImport.report.similarity', { percent: Math.round(suggestion.similarity * 100) }) }})
+                        </span>
+                        <n-button
+                          size="tiny"
+                          secondary
+                          type="primary"
+                          :disabled="revalidating"
+                          :title="$t('AiImport.report.confirmMatchTitle')"
+                          @click="$emit('confirm-match', {
+                            category: category.key, value: item.source_value, uri: suggestion.uri
+                          })"
+                        >
+                          {{ $t('AiImport.report.confirmMatch') }}
+                        </n-button>
+                      </div>
+                    </div>
                   </td>
                   <td>
                     {{ say(item.hint_message, item.hint) }}
@@ -118,16 +208,20 @@
                         v-for="component in item.components"
                         :key="component.role"
                         size="tiny"
-                        :type="component.uri ? 'success' : 'default'"
+                        :type="component.uri ? 'success' : (component.suggested_name ? 'warning' : 'default')"
                         class="me-1"
                       >
                         {{ $t('AiImport.report.component_' + component.role) }}: {{ component.name }}
+                        <!-- A close name the instance has: to pick in the form's selector, not applied. -->
+                        <template v-if="!component.uri && component.suggested_name">
+                          ≈ {{ component.suggested_name }}
+                        </template>
                       </n-tag>
                     </div>
                   </td>
                   <td v-if="category.creates" class="text-nowrap">
                     <n-button
-                      v-if="item.status === 'MISSING'"
+                      v-if="item.status === 'MISSING' && canCreate(category.creates)"
                       size="tiny"
                       secondary
                       :title="$t(createTitleOf(category.creates))"
@@ -150,10 +244,12 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue'
 import { useReportMessage, type ReportMessage } from '../reportMessage'
+import { diffAgainst } from '../textDiff'
 
 interface Match {
   uri: string
   name: string
+  similarity?: number
   shared_resource_instance_label?: string
 }
 
@@ -164,7 +260,17 @@ interface ResolvedItem {
   external_id?: string
   status: string
   hint_message?: ReportMessage
-  components?: Array<{ role: string; name: string; accession?: string; uri?: string }>
+  suggestions?: Match[]
+  confirmed_by_user?: boolean
+  learned_correction?: { author?: string; created?: string }
+  components?: Array<{
+    role: string
+    name: string
+    accession?: string
+    uri?: string
+    suggested_name?: string
+    suggested_uri?: string
+  }>
   matches: Match[]
   hint?: string
 }
@@ -185,6 +291,7 @@ const props = defineProps<{
     scientific_objects: ResolvedItem[]
     facilities?: ResolvedItem[]
     persons?: ResolvedItem[]
+    organizations?: ResolvedItem[]
     anomalies?: string[]
     warnings?: string[]
     anomaly_messages?: ReportMessage[]
@@ -200,6 +307,10 @@ const props = defineProps<{
 defineEmits<{
   (event: 'revalidate'): void
   (event: 'create', payload: { target: string; value: string }): void
+  (event: 'confirm-match', payload: { category: string; value: string; uri: string }): void
+  (event: 'forget-match', payload: { category: string; value: string }): void
+  (event: 'remember-correction', payload: { category: string; value: string; uri: string }): void
+  (event: 'forget-correction', payload: { category: string; value: string }): void
 }>()
 
 /**
@@ -222,12 +333,41 @@ const $opensilex: any = inject('$opensilex')
  * Two of these buttons open a form of the platform's own; the others hand the question to the
  * assistant. The tooltip has to say which, or the user cannot tell what a click will do.
  */
+/**
+ * The credential each creation needs on the platform. Without it the form would open, be filled in,
+ * and fail with a 403 on submit; the platform's own screens hide the button instead, and so does
+ * this one.
+ */
+const CREDENTIAL_OF_TARGET: { [target: string]: string } = {
+  EXPERIMENT: 'CREDENTIAL_EXPERIMENT_MODIFICATION_ID',
+  PROJECT: 'CREDENTIAL_PROJECT_MODIFICATION_ID',
+  VARIABLE: 'CREDENTIAL_VARIABLE_MODIFICATION_ID',
+  FACILITY: 'CREDENTIAL_FACILITY_MODIFICATION_ID',
+  PERSON: 'CREDENTIAL_PERSON_MODIFICATION_ID',
+  ORGANIZATION: 'CREDENTIAL_ORGANIZATION_MODIFICATION_ID'
+}
+
+function canCreate(target: string | null): boolean {
+  const credential = target ? $opensilex.$store?.state?.credentials?.[CREDENTIAL_OF_TARGET[target]] : null
+  const user = $opensilex.getUser?.()
+  return !!credential && !!user && user.hasCredential(credential)
+}
+
 function createTitleOf(target: string | null): string {
   if (target === 'VARIABLE') {
     return 'AiImport.report.createVariableTitle'
   }
   if (target === 'PERSON') {
     return 'AiImport.report.createPersonTitle'
+  }
+  if (target === 'PROJECT') {
+    return 'AiImport.report.createProjectTitle'
+  }
+  if (target === 'FACILITY') {
+    return 'AiImport.report.createFacilityTitle'
+  }
+  if (target === 'ORGANIZATION') {
+    return 'AiImport.report.createOrganizationTitle'
   }
   return 'AiImport.report.createTitle'
 }
@@ -254,8 +394,9 @@ const categories = computed(() => [
     label: 'AiImport.report.experiments',
     items: props.report.experiments ?? [],
     link: (uri: string) => `#/experiment/details/${encodeURIComponent(uri)}`,
-    // Only the categories this module can write. Germplasm and scientific objects are created
-    // elsewhere, and a button that opens an empty form would be a false promise.
+    // Only the categories with a way to create them from here: a platform form (project, facility,
+    // variable, person) or a draft on the proposal card (experiment). Germplasm and scientific
+    // objects are created elsewhere, and a button that opens an empty form would be a false promise.
     creates: 'EXPERIMENT'
   },
   {
@@ -291,7 +432,7 @@ const categories = computed(() => [
     label: 'AiImport.report.facilities',
     items: props.report.facilities ?? [],
     link: (uri: string) => `#/facility/details/${encodeURIComponent(uri)}`,
-    creates: null
+    creates: 'FACILITY'
   },
   {
     key: 'persons',
@@ -299,6 +440,13 @@ const categories = computed(() => [
     items: props.report.persons ?? [],
     link: null,
     creates: 'PERSON'
+  },
+  {
+    key: 'organizations',
+    label: 'AiImport.report.organizations',
+    items: props.report.organizations ?? [],
+    link: null,
+    creates: 'ORGANIZATION'
   }
 ])
 
@@ -365,6 +513,34 @@ function tagType(status: string): string {
 </script>
 
 <style scoped>
+.ai-import-report__suggestions,
+.ai-import-report__confirmed {
+  margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-import-report__confirmed {
+  flex-direction: row;
+  align-items: center;
+}
+
+/* The letters that differ from the file's spelling: what the user actually has to check. */
+.ai-import-report__diff {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--bs-warning, #ffc107);
+  text-decoration-thickness: 2px;
+}
+
+.ai-import-report__suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 /*
  * Even folded away, an open category can hold hundreds of rows. Capping it keeps the panel usable
  * beside the conversation instead of pushing everything else off the screen.

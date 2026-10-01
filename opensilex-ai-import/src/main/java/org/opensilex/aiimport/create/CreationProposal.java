@@ -61,7 +61,7 @@ public class CreationProposal {
 
     private final String id;
     private final CreationTarget target;
-    private final Instant createdAt = Instant.now();
+    private final Instant createdAt;
 
     private final Map<String, String> fields = new LinkedHashMap<>();
     private final Map<String, FieldSource> fieldSources = new LinkedHashMap<>();
@@ -87,8 +87,16 @@ public class CreationProposal {
     private Integer insertedCount;
 
     public CreationProposal(String id, CreationTarget target) {
+        this(id, target, Instant.now());
+    }
+
+    /**
+     * A draft read back from a stored session, with the moment it was first made.
+     */
+    public CreationProposal(String id, CreationTarget target, Instant createdAt) {
         this.id = id;
         this.target = target;
+        this.createdAt = createdAt == null ? Instant.now() : createdAt;
     }
 
     public String getId() {

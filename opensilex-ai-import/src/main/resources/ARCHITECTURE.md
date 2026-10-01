@@ -5,8 +5,15 @@
 | Date       | Editor(s)       | OpenSILEX version | Comment           |
 |------------|-----------------|-------------------|-------------------|
 | 2026-09-08 | Arnaud Charleroy | BUILD-SNAPSHOT    | Document creation |
+| 2026-09-26 | Arnaud Charleroy | BUILD-SNAPSHOT    | Bulk scientific objects, resolution split, design document |
+| 2026-09-27 | Arnaud Charleroy | BUILD-SNAPSHOT    | Data through the platform's data import, in batches        |
+| 2026-09-29 | Arnaud Charleroy | BUILD-SNAPSHOT    | Link to the guide for adding a profile                     |
+| 2026-09-29 | Arnaud Charleroy | BUILD-SNAPSHOT    | Assistant status, conversation folded when not connected   |
 
 > ⚠️ _WARNING_ : This document is incomplete ! You can help by expanding it. ⚠️
+>
+> How the module is built — its coding conventions and design patterns, with a checklist per kind of
+> extension — is in the companion document [`DESIGN.md`](DESIGN.md).
 >
 > Currently covered topics :
 >
@@ -200,6 +207,7 @@ reports the module as unavailable instead of failing at the first request.
 | `mapping`      | column → business entity, and expected type versus observed type    |
 | `service`      | the language model connector, the tool loop, the session, the prompt |
 | `create`       | what a creation requires, and the creation itself                    |
+| `export`       | the other direction: an experiment of the instance written as STAR  |
 | `api`          | the REST surface and its DTOs                                       |
 | `exception`    | `WorkbookReadException`                                             |
 
@@ -332,7 +340,20 @@ classDiagram
     }
 
     class ResolutionService {
-        +resolve(ExtractedImportPlan) ResolutionReport
+        +resolve(ExtractedImportPlan, ConfirmedMatches) ResolutionReport
+    }
+
+    class InstanceLookups {
+        ~projectsNamed(String) List~ResourceReference~
+        ~germplasmNamed(String) List~ResourceReference~
+        ~facilitiesNamed(String) List~ResourceReference~
+        ~personsMatching(PersonCandidate) List~ResourceReference~
+        ~visible(ReportCategory, URI) Optional~ResourceReference~
+        ~candidates(ReportCategory) List~ResourceReference~
+    }
+
+    class VariableResolver {
+        ~resolve(VariableCandidate, ResolvedItem, ResolutionReport)
     }
 
     class ResolutionReport {
@@ -375,8 +396,13 @@ classDiagram
         +createProject(AiImportSession, Map) URI
         +createExperiment(AiImportSession, Map) URI
         +createEvents(AiImportSession, Map) int
-        +insertData(AiImportSession, Map) DataInsertionResult
-        ~resolveRows(AiImportSession, List~DataCreationDTO~) List~UnresolvedRow~
+        +apply(CreationTarget, AiImportSession, Map) CreationOutcome
+    }
+
+    class DataBulkImport {
+        +importAll(AiImportSession, Map) BulkOutcome
+        #generate(AiImportSession, Map) GeneratedCsv
+        #finish(boolean written)
     }
 
     class CreationRequirements {
@@ -415,10 +441,11 @@ classDiagram
         -Status status
     }
 
-    class DataInsertionResult {
-        -int insertedCount
-        -int unresolvedCount
-        -List~UnresolvedRow~ unresolved
+    class BulkOutcome {
+        -int rowsChecked
+        -int imported
+        -List~RowError~ errors
+        -List~URI~ batches
         +isRefused() boolean
     }
 
@@ -433,16 +460,18 @@ classDiagram
     AiImportSession *-- ResolutionReport
     AiImportSession *-- CreationProposal : pending
     ResolutionService ..> ResolutionReport : produces
+    ResolutionService --> InstanceLookups : reads the instance through
+    ResolutionService --> VariableResolver : delegates variables to
     ResolutionReport *-- ResolvedItem
     ResolvedItem --> ResolutionStatus
     ResolvedItem *-- ResourceReference
 
     AiImportCreationService ..> CreationRequirements : answers "what would this take?"
-    AiImportCreationService ..> DataInsertionResult : answers "what was written?"
+    AiImportCreationService --> DataBulkImport : inserts the data through
+    DataBulkImport ..> BulkOutcome : answers "what was written?"
     CreationRequirements *-- RequiredField
     CreationRequirements --> CreationTarget
     CreationProposal --> CreationTarget
-    DataInsertionResult *-- UnresolvedRow
 
     AiImportCreationService ..> ResolutionReport : reads every URI from
 ```
@@ -480,18 +509,25 @@ sequenceDiagram
     alt a blocker or an unsatisfied required field
         API-->>UI: 400, naming what stands in the way
     else data insertion
-        API->>Creation: insertData(session, values)
-        Creation->>Creation: resolveRows — every row, before any write
+        API->>Creation: apply(DATA, session, values)
+        Creation->>Creation: DataBulkImport.generate — every row placed, before any write
         alt one row cannot be placed
-            Creation-->>API: DataInsertionResult.refused(rows)
+            Creation-->>API: refused(rows)
             Note over Creation: Refused before the provenance exists,<br/>so nothing is left behind
             API-->>UI: the offending sheet, row and reason
         else every row resolves
-            Creation->>DAO: DataLogic.createMany
-            DAO-->>Creation: written
-            Creation-->>API: DataInsertionResult.inserted(n)
-            API->>Chat: revalidate(session)
-            API-->>UI: the count, and the recomputed report
+            Creation->>DAO: DataImportLogic.validateWholeCsv, batch after batch
+            alt the platform refuses a row
+                Creation->>DAO: delete the provenance of the run
+                Creation-->>API: refused(rows, on the workbook)
+                API-->>UI: the rows, drawn on the user's sheets
+            else every batch valid
+                Creation->>DAO: DataImportLogic.importCSVData, one transaction per batch
+                DAO-->>Creation: written, with a batch history per batch
+                Creation-->>API: inserted(n, batches)
+                API->>Chat: revalidate(session)
+                API-->>UI: the count, and the recomputed report
+            end
         end
     end
 ```
@@ -530,6 +566,9 @@ public interface ImportProfile {
     int match(WorkbookStructure structure);              // 0 = not mine; highest wins
     String getPromptContext(WorkbookStructure structure);
     ExtractedImportPlan extract(WorkbookStructure structure);
+    default List<ObjectRow> extractObjectRows(WorkbookStructure structure); // empty = none
+    default ObjectSheetDefaults objectSheetDefaults(WorkbookStructure s, String sheet);
+    default List<FactorLevelCandidate> extractFactorLevels(WorkbookStructure structure);
     default List<EventCandidate> extractEvents(WorkbookStructure structure); // empty = none
     default List<DataPoint> extractDataPoints(WorkbookStructure structure);  // empty = refuse
     default ColumnRole roleOf(WorkbookStructure s, String sheet, String header);
@@ -540,6 +579,9 @@ public interface ImportProfile {
 `GenericTabularProfile`, and picks up any
 profile contributed by another module through `ServiceLoader`. The generic profile scores 1, so it
 only wins when nothing recognises the file.
+
+To write a profile for a new file family, follow [`ADDING_A_PROFILE.md`](ADDING_A_PROFILE.md), a
+step-by-step guide with the STAR profile as the worked example.
 
 `VitisExplorerProfile` (614 lines) knows the grapevine observation template: three fixed sheets
 (`ReadMe`, `Chronologie` catalogue, `Cartouche_Fixe`) then one sheet per phenological stage. It maps
@@ -579,9 +621,17 @@ Three pieces:
 - **`PlotIdReconciliation`** resolves the identifier mismatch described below.
 
 The mapping onto OpenSILEX is settled by the published STAR to ELOA alignment rather than guessed:
-`expe` is the experiment, `ed_parcelle` a **facility** (address from the commune, location from the
-coordinates), `ed_placette` the **scientific objects**, `cultivar_name` the germplasm, `modalite` a
-factor and its levels. The ELOA classes are not loaded in this instance, so each resource takes an
+`expe` is the experiment — with the organisation and the unit that run it — the field sheet a
+**facility** (address from the commune, location from the coordinates, a WKT point), each `ed_`
+sheet **scientific objects**, `cultivar_name` the germplasm, `modalite` a factor and its levels,
+`meteo` the weather measured on the field.
+
+**Where the field is.** The current convention prefixes the facility sheets with `field`; the
+earlier revisions filed the field among the design sheets as `ed_parcelle`, or bare as `parcelle`.
+`StarSheets.field()` takes the first `field…` sheet, then the older names. The commune is
+`town_name`, `commune_name` in the older revisions; both are read. The plot sheet is `ed_placette`,
+or else the first design sheet identifying its rows by `plot_id` — which is how an exported
+workbook names it, after the type of its objects (`ed_plot`). The ELOA classes are not loaded in this instance, so each resource takes an
 existing OESO type and keeps its ELOA IRI as an external reference — the same treatment already
 given to the CropOntology identifiers of variables.
 
@@ -699,6 +749,13 @@ forms. `LlmService` funnels every failure — unreachable, misconfigured, disabl
 one exception, which the chat service turns into a notice in the transcript rather than an error
 page, carrying a translation key because the module wrote it and not the model.
 
+The page does not wait for that notice. When a session opens it asks `GET /ai-import/assistant`,
+which probes the endpoint's model list (`LlmService.isReachable`: no token spent, 3 s at most, only
+a success counts), and **folds the conversation away** when the model does not answer, so the
+report takes the whole width. A button beside the file name opens or closes the conversation at
+any time, and once the user has used it, their choice stands. A reply that comes back as the
+unreachable notice updates the "not connected" badge without folding the panel the user is reading.
+
 `HeaderRoleDictionary` is what makes that promise worth something for an **unrecognised** file. The
 default `roleOf` used to answer only DATE, COMMENT or VARIABLE, leaving the business mapping to the
 conversation; the dictionary answers OBJECT, TRIAL, PROJECT, GERMPLASM, LOCATION, PERSON, OBSERVER,
@@ -712,15 +769,21 @@ treats it as a facility, other templates use it for the observed plot — becaus
 
 ### `resolve` — confronting the instance
 
-`ResolutionService` (464 lines) turns names into a `ResolutionReport`. Per category:
+`ResolutionService` turns names into a `ResolutionReport`. It holds the **order** in which a name is
+tried — confirmed by the user, exact, taught to the instance, merely close — and writes the report.
+How each kind of resource is fetched lives in `InstanceLookups`, always through the platform's own
+DAOs and logic classes, so their access checks apply; variables, which are tried in more ways than
+the rest, in `VariableResolver`. [`DESIGN.md`](DESIGN.md) explains the split. Per category:
 
 | Category           | How                                                                            |
 |--------------------|--------------------------------------------------------------------------------|
 | Experiment         | `ExperimentDAO.getExperimentByNameOrURI`                                       |
 | Project            | `ProjectDAO.search`, then strict equality on name or short name                |
 | Variable           | pass 1: `skos:exactMatch` ending with the ontology id from the file; pass 2: `VariableDAO.search` then strict equality on name or alternative name; pass 3: the shared resource instances |
-| Germplasm          | `GermplasmSearchFilter` on name, then strict equality                          |
-| Scientific object  | `ScientificObjectDAO.getByNameAndContext`, sampled at 25                       |
+| Germplasm          | `GermplasmSearchFilter` on name, then strict equality on name or synonym       |
+| Person             | `PersonDAO.search` on the ORCID, the email or the name, then strict equality on that key |
+| Facility           | `FacilityLogic.search`, then strict equality                                   |
+| Scientific object  | `ScientificObjectDAO.checkUniqueNameByGraph`, every name in one query          |
 
 Each entry carries a `ResolutionStatus`: `FOUND`, `AMBIGUOUS`, `FOUND_IN_SHARED_RESOURCE`, `MISSING`
 or `NOT_CHECKED`. The strict-equality filter matters: every DAO name filter is a regular expression,
@@ -740,6 +803,241 @@ Facilities are resolved through **`FacilityLogic.search(filter)`**, not through 
 `sparql.search`. The direct query bypassed the access control that logic applies, so a user could be
 told about a facility they are not entitled to see. Going through the logic layer is also what the
 rest of the codebase does.
+
+#### Misspelt names: suggest, then let a person confirm
+
+Resolution compares names exactly, case aside. A typo — "Chardonay" for "Chardonnay" — therefore
+came out `MISSING`, and the next thing the page offered was to **create** it: a duplicate in the
+referential, the one outcome nothing later undoes. A missing name now comes with up to three
+**suggestions**, existing resources whose name is close, and stays missing until the user picks one.
+
+*Why not in the triplestore.* Standard SPARQL has no edit distance; the DAOs use `REGEX`, which
+tolerates nothing. RDF4J's `LuceneSail` does fuzzy queries (`term~2`), but it is a configuration of
+the repository **on the server**, which OpenSILEX reaches over HTTP: enabling it means rebuilding and
+reindexing every instance's repository, with a syntax other stores do not share. A custom SPARQL
+function would have to be deployed in the server's classpath and would scan every label with no
+index. So the comparison runs here, in Java; `LuceneSail` remains the scaling option for germplasm.
+
+`NameSimilarity` decides what counts as close, and leans towards silence — a missed suggestion costs
+one search, a wrong one files data against somebody else's resource:
+
+- **restricted Damerau-Levenshtein**, so a swap of two neighbours ("Genotpye") is one edit, not two;
+  bounded, stopping as soon as the answer is known to be "too far";
+- **short names are compared exactly** (≤ 4 normalised characters): `A1` and `A10` are one edit
+  apart and are two plots;
+- **digits must agree**: "Clone 115" and "Clone 116" are one edit apart and are two clones;
+- case, accents and separators are normalised away first, through `HeaderMatcher.normalize`.
+
+`NearMatchFinder` ranks candidates and keeps three. The candidates come from the same DAOs and logic
+the exact lookup uses — `ExperimentSearchFilter.setUser`, `FacilityLogic.search`, the user-scoped
+project and variable searches — so a suggestion can never reveal a resource the user is not allowed
+to see. Small referentials are listed once per analysis, up to 2000, with a warning if that limit is
+reached; germplasm, which can run to tens of thousands, is searched per name through its three-letter
+fragments, since a typo spoils one or two fragments and never all of them. **Scientific objects are
+excluded** (`ReportCategory.SCIENTIFIC_OBJECTS`): plot codes are too close to one another for a
+distance to mean anything. Variable components get the same treatment, shown as "≈ name" beside the
+component and picked, if at all, in the variable form's own selector.
+
+A confirmation goes through `POST /ai-import/matches` and is stored in `ConfirmedMatches` on the
+session. It survives revalidation, is consulted before any search, and makes the name resolve
+exactly as a correct spelling would — so `SessionFacts` and the insertion use it without a line of
+their own. The server accepts only **one of the suggestions the report made for that very name**
+(`ResolutionReport.suggestion`), never an arbitrary URI sent in a request. `POST
+/ai-import/matches/forget` takes a confirmation back. Nothing is renamed, in the file or in the
+instance, and the assistant is told it may mention suggestions but never confirm one.
+
+Regex literals sent to the triplestore are escaped character by character (`escapeRegex`) rather
+than with `Pattern.quote`, whose `\Q…\E` form is a Java extension outside the XPath regular
+expressions SPARQL specifies.
+
+#### Teaching the instance a misspelling
+
+A confirmation lasts one conversation. The next file that writes "Chardonay" would ask again — so a
+confirmed match can also be **remembered**: `POST /ai-import/corrections`.
+
+*Where it goes.* A misspelling is not a synonym, and writing it as one would put "Chardonay" in the
+germplasm's list of names for everyone to read. SKOS has a property for exactly this case,
+`skos:hiddenLabel`, defined for misspelt variants: searchable, never displayed. `CorrectionStore`
+writes it on the resource, **in a graph of the module's own** (`<base>/set/ai-import/corrections`),
+together with a small PROV-O record — `prov:wasAttributedTo`, `prov:generatedAtTime`,
+`dcterms:type` for the category. Nothing is written into a resource's own graph; any SPARQL client
+can use what was learned; forgetting is deleting a few triples. A correction whose resource has
+since been deleted — the resource has lost its `rdf:type` — is simply not read back. Literals are
+serialised by Jena, never concatenated: a spreadsheet cell holding `" } ; DROP ALL` is stored as
+text, which a test checks against a real in-memory RDF4J store.
+
+*How it acts.* Read once per analysis, applied only to what is still **missing** after the exact
+lookup — a name spelt exactly as a resource here always wins — and before near matches: a
+remembered correction resolves outright, a merely close name is only suggested. The report says so
+("recognised from a correction by A. Martin on 2026-09-26") and offers to forget it.
+
+*Who may teach it.* A remembered correction acts on everyone's imports, so teaching or forgetting
+one takes the right to modify that kind of resource (`ReportCategory.getModificationCredential`,
+the platform's own `germplasm-modification`, `variable-modification`…), or administrator rights.
+Only a suggestion the report made for that name, or the match the user confirmed for it, can be
+taught.
+
+*Who may benefit.* A correction names a URI, and URIs are not visible to everyone. Before one is
+applied, the resource is read again **under the current user's rights**, through the platform's own
+access-checked getters (`ExperimentDAO.get(uri, user)`, `FacilityLogic.get(uri, user)`…). A
+correction taught by one person never reveals to another a resource they may not see.
+
+*Showing the difference.* `front/src/textDiff.ts` aligns the file's spelling with a suggestion and
+underlines what differs — Chardon**n**ay — ignoring case, accents and separators as the matching
+does. The user checks one letter instead of rereading two words.
+
+*A fix found on the way.* The germplasm lookup searched synonyms in SPARQL but then kept only exact
+**names** in Java, so a variety written under one of its synonyms was reported missing although the
+query had found it. Synonyms are now accepted.
+
+#### Errors on the user's own rows
+
+Bulk creation goes through the platform's own validators — `ScientificObjectCsvImporterLogic`,
+`DataImportLogic` — fed with a CSV the module generates. Their errors point at lines of that CSV,
+which the user never sees, so every error is brought back to the **workbook**: sheet, row number as
+the spreadsheet shows it, column header as the file writes it.
+
+- `RowOrigins` records, while a CSV is written, which workbook row each data line came from and
+  which workbook header each generated column holds. Columns are matched on the generated
+  **header**, never its index: the platform's CSV engine counts columns from 0 for some errors and
+  from 1 for others, while the header it reports is always the one written.
+- `PlatformValidationAdapter` reads both validation models — physical CSV lines from 1 after two
+  header lines for the scientific-object engine, body indexes from 0 after three header lines for
+  the data import — and folds their twenty-odd error buckets into a dozen `RowError.Kind`s a user
+  can act on (missing, refused, wrong type, unknown, already there, duplicate…). The platform's own
+  message is kept as the detail. Row-0 errors, which the engine emits for whole chunks, are said
+  about the file rather than pinned on a row.
+- The module's own refusals (`UnresolvedRow`) become `RowError`s too, so both look the same.
+- `BulkValidationDTO` carries the errors (at most 1000, with the total) **and the faulty rows with
+  their values**, in the column order of their sheet, so the interface draws them without reading
+  the file again. Only faulty rows travel.
+- `ImportRowsGrid.vue` draws them with the platform's `n-data-table` — globally registered, so the
+  module bundles nothing — one sheet at a time, the faulty cell marked with its message on hover,
+  counts per family above. Tabulator was the first idea; it is imported directly by the core front,
+  not exposed to modules, and would have been bundled whole into this one.
+
+#### Scientific objects in bulk
+
+Target `SCIENTIFIC_OBJECTS` creates every observed unit of the workbook in one pass, through the
+platform's own `ScientificObjectCsvImporterLogic` — the code the scientific-object screen runs, with
+all its rules — rather than a second implementation.
+
+- Each profile reads its plot sheet into `ObjectRow`s (`extractObjectRows`): name, germplasm,
+  treatment, hosting facility, position. STAR: `plot_id`, cultivar, `xp_trt_code`, the field,
+  `plot_x` / `plot_y`; VitisExplorer: the cartouche's plot, genotype and status; MIAPPE: the
+  observation unit, its biological material and its factor value.
+- `ScientificObjectBulkImport` (a `PlatformBulkImport`, see [`DESIGN.md`](DESIGN.md)) writes the
+  importer's CSV with URIs only: germplasm and facility from the report, the treatment as a level of
+  the experiment's factors (`FactorDAO`), a position as a move dated from the experiment's start —
+  the workbook says where, never since when. A value that resolves to nothing is refused on its own
+  row before the platform is asked: the importer would accept an empty factor level and silently
+  lose the information.
+- **The object type is the user's choice**, made per sheet with the platform's `opensilex-TypeForm`
+  restricted to scientific object types. What a "plot" is on this instance is not the file's call.
+- Validation first (`importCSV(file, true)`), then the import in one `SparqlMongoTransaction`.
+  A refusal comes back as `RowError`s on the plot sheet, drawn by `ImportRowsGrid`.
+
+**One type per sheet, and any column to any property of that type.** A workbook can list objects
+on several sheets — STAR's `ed_*` sheets, one kind of experimental unit each — and each sheet takes
+its own type. The pieces, in `create/objects/`:
+
+| Piece | Role |
+|---|---|
+| `ImportProfile.objectSheetDefaults` | what the profile knows of a sheet: the column naming the objects, what the columns it recognises become, the type the file states (`object_type`, as an exported workbook writes it) |
+| `ObjectSheetPlan` | what the user changed — type, sheet left out, column to target — kept in the session and in its stored copy (Memento) |
+| `ObjectSheets` / `ObjectSheet` | the effective view: the user's choice, else the profile's, else nothing; and `problemsOf`, what the type contradicts in the mapping |
+| `TypeProperties` | the properties a type accepts, read where the platform's importer reads them: the ontology store's restrictions, inherited up to `oeso:ScientificObject` |
+| `ObjectValueResolver` | a name written in a cell turned into the URI of the resource it names, by exact label among the instances of the property's range; a name matching two is refused, not guessed |
+
+A target is a property URI, `x` / `y` for a position, or nothing. Every sheet goes into **one** CSV
+— the importer reads the type row by row — so all sheets are validated and written together or
+not at all. The header is the union of what the sheets write; a property two columns feed appears
+twice, which the importer reads as a list. The name column always stays the name.
+
+A **parent** (`isPartOf`) must already exist in the experiment: the importer checks every object of
+a file against the instance before writing any. A parent created by another sheet of the same run
+is therefore stopped with that explanation — create that sheet first, leave it out the second time.
+
+Two findings from the platform, recorded here because they shaped the code:
+
+- `OntologyStore.classExist(type, ancestor)` answers yes for **any** class the store knows,
+  whatever its ancestry — `oeso:Facility`, `oeso:Germplasm` pass as scientific object types.
+  `TypeProperties.isObjectType` walks the class's parents instead.
+- The platform reports some headers of its errors back **prefixed** (`vocabulary:hasCreationDate`)
+  where the module wrote them in full; `RowOrigins` expands both before comparing, otherwise an
+  error lands on the property's URI instead of the user's column.
+
+The panel (`ObjectSheetsPanel.vue`, under the conversation, full width): a tab per sheet, the
+type, the rows as the file holds them with a drop-down above each column — nothing, a position,
+the factor level, or a property of the type — and what the type contradicts. *Check* runs the whole
+validation without writing (`POST /object-sheets/validate`); *Create the objects* asks the assistant,
+whose proposal card confirms, as every other creation.
+
+#### Creating from the platform's own forms
+
+A missing variable, person, project, facility or organisation in the report has a **Create** button
+that opens the platform's creation form — `VariableForm`, `PersonForm`, `ProjectForm`,
+`FacilityModalForm`, `OrganizationForm` — prefilled from the file, rather than a form of this module.
+What each brings:
+
+| Form                | Prefilled from the file                                           | Sub-resources it can create on the spot                                     |
+|---------------------|-------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `VariableForm`      | name, ontology identifier, the components the report found        | entity, entity of interest, characteristic, method, unit (Agroportal forms) |
+| `PersonForm`        | given and family name (a guess, shown to be corrected)            | —                                                                           |
+| `ProjectForm`       | name, acronym, dates, objective, description (the PROJECT draft's suggestions) | coordinators and contacts, through `PersonSelector`             |
+| `FacilityModalForm` | name; commune (address locality); the centroid as a dated location (a point, shown in WKT); row and plant spacing and INSEE code in the description; the organisations the report found | none: organisations, sites and variable groups must already exist          |
+| `OrganizationForm`  | name; a unit's institution as its parent, when the instance has it | —                                                                           |
+
+An experiment has no creation form in this front yet, so it is still drafted on the proposal card.
+The button only shows when the user holds the platform's modification credential for that kind of
+resource, as on the platform's own screens.
+
+**The row is bound to what the form created, by URI.** `VariableForm` renames a variable after its
+components as soon as one is chosen, and any name can be edited in any form, so finding the resource
+again by the file's name would leave the row "missing" right after it was created. The front sends
+the created URI to `POST /ai-import/matches/created`, which reads it back under the user's rights
+(`ResolutionService.visibleResource`) and records it as a confirmed match for that row.
+
+Two changes to core forms made this possible, both backwards compatible: `ProjectForm` gained the
+optional `initForm` hook `FacilityModalForm` already had, and `FacilityModalForm` now hands the
+created URI to its `onCreate` listeners instead of `undefined`.
+
+#### The rest of a STAR workbook: organisations, the field, the treatments
+
+- **Organisations.** `expe` names the institution and the unit running the trial. They form a
+  report category of their own, `ORGANIZATIONS`, resolved exactly and by near match like the
+  others; a unit's row carries the institution the file places it in (`ResolvedItem.parentValue`),
+  so the organisation form opens with that parent. Create the institution first.
+- **The field.** Its row carries what the file says of it (`ResolvedItem.details`): commune, INSEE
+  code, latitude and longitude, row and plant spacing — the facility form starts from them. No core
+  facility property holds a spacing, so it is written in the description rather than dropped.
+- **The experiment** is drafted with the organisations and the facilities the report found
+  (`organisations`, `facilities`, platform selectors on the card). This is not cosmetic: the
+  platform lets a plot be hosted only by a facility the experiment uses, or that its organisations
+  host.
+- **The treatments** (`modalite`) are the levels of the experiment's factors: target `FACTORS`,
+  created as the platform's factor screen creates them (`FactorDAO`, the experiment read under the
+  user's rights, the right `factor-modification`). The level's name is the treatment's code — what
+  the plots write and what the object import matches — its description the treatment's name and
+  what the file says of it. A treatment the experiment already has is skipped; a factor it already
+  names is refused on its field. The experiment must exist: the requirements say so until it does.
+
+The order that follows — institution, unit, facility, experiment, factors, objects, data — is the
+order each step checks the previous one, and the prompt tells the assistant as much.
+
+#### Storing and resuming a conversation
+
+Every conversation is stored as it goes, with its file. The first screen of the assistant has two
+tabs, **New file** and **My sessions** — the second always shown, with its count, and an explicit
+message when there is nothing to resume yet; leaving a conversation lands on it. The REST endpoints
+find a stored session transparently when the memory cache has let it go. What is stored, what is recomputed, and how expiry works is described in
+[`DESIGN.md`](DESIGN.md#memento--savedsession).
+
+| Endpoint                          | Does                                                        |
+|-----------------------------------|-------------------------------------------------------------|
+| `GET /ai-import/sessions`         | the user's stored conversations, most recent first, with their expiry date |
+| `GET /ai-import/sessions/{id}`    | a conversation, resumed from storage if needed               |
+| `DELETE /ai-import/sessions/{id}` | closes a conversation and deletes it, with its file          |
 
 ### `mapping` — business entities and expected types
 
@@ -935,42 +1233,82 @@ alone reads a trait, a method and a scale out of the file.
 
 #### Insertion is all or nothing
 
-`insertData` resolves **every** row before writing **any**, in `resolveRows`, and returns a
-`DataInsertionResult` — either a count, or a refusal naming the sheet, the row and what could not be
-placed. The refusal happens before the provenance is created, so a refused insertion leaves nothing
-behind at all.
+The observations go through the platform's own data import, `DataImportLogic` — what the data
+import screen runs — rather than a write of this module's own. `DataBulkImport` (a
+`PlatformBulkImport`, see [`DESIGN.md`](DESIGN.md)) writes the CSV that import reads, with URIs
+where the workbook has names, and brings the platform's findings back to the workbook:
 
-This closed three paths that lost rows in silence, each of which reported success for a partial
-import — the worst possible outcome, because the user believes they imported:
+- **Every row is placed before any is written.** A row whose variable, plot or facility the report
+  did not resolve is refused by the module itself, before the platform is asked, with its sheet, row
+  and reason. So is a row giving two different values for the same variable, target and date: the
+  platform's format has one cell for them, and dropping one silently is not an option.
+- **The format**: three header lines (variable URIs, the workbook's own headers, empty
+  descriptions), then one line per workbook row, target and date, with a cell per variable — empty
+  where that row did not measure it, which the platform skips. Plots and facilities share the
+  generic `target` column: a `scientific_object` cell may not be empty, so a file mixing both could
+  not use it, and the plots were resolved inside the experiment already.
+- **A provenance must exist before the platform validates**, so one is created for the run and
+  deleted again when nothing was written: a refusal still leaves nothing behind. Being fresh, it also
+  makes a duplicate *already in the instance* impossible — MongoDB's unique index includes the
+  provenance — which is why only duplicates *within* the file are reported.
+- **At most 10,000 lines per platform import** (`DataAPI.SIZE_MAX`). A larger file goes in batches,
+  **all validated before the first is written**; each batch is then written in its own transaction,
+  with its own batch history and archived CSV. Should a batch still fail after the validation passed,
+  the outcome says so plainly — how much was written, in which batches — the draft is closed so it
+  cannot write them twice, and the batches can be deleted from the data import history. The module
+  caps a file at 50,000 observations, so at five batches.
 
-1. **facility targets were resolved against the scientific objects.** A `data_` sheet can name a
-   field rather than a plot — weather is measured at the field — and those rows matched nothing. The
-   2242 rows of `data_meteo` would have been dropped. `DataPoint.targetKind` now decides which map
-   to look in.
-2. **the resolution sampled 25 scientific objects.** Beyond the sample, a plot never entered the
-   report, so it was never `MISSING`, and its observations were dropped without a word.
-   `ScientificObjectDAO.checkUniqueNameByGraph` resolves every name in **one** SPARQL `VALUES`
-   query — the same call the CSV importer uses — so the sample is gone and 44 plots (or 500) cost
-   one query instead of 44.
-   *Contrepartie:* that helper keeps the first URI when a name repeats, where `getByNameAndContext`
-   raises `DuplicateNameException`. Ambiguity detection on scientific objects is therefore traded
-   for completeness; a duplicate name within an experiment graph is an abnormal state of the
-   instance, the CSV importer makes the same trade, and a shortfall between distinct names and
-   returned URIs is reported as a warning.
-3. **an unresolved target was logged and skipped**, and the method returned the number written, so
-   the user read "N values inserted" with no indication that M had vanished. The comment defending
-   that path — *"reaching this point means the instance changed under our feet"* — had stopped being
-   true: with sampling and facilities it was reached in normal operation.
+What the platform brings that the module's own write did not: every value checked against its
+variable's type, the batch history, and the CSV archived as a document — data imported from here is
+found, traced and deleted like any other import.
 
-Since the report now covers every object, `insertData` reads the resolved URIs **from the report**
-rather than querying again: one source for what exists, and one fewer round trip.
-
-Insertion then builds `DataCreationDTO` objects and calls `newModel()` on each, reusing the core
-DTO's date parsing rather than reimplementing it, then `DataLogic.createMany`. After any creation
-the report is recomputed and returned, so the interface reflects the new state without a second
-call.
+The three silent losses the first version of the insertion had are still closed, by the same means:
+facility targets resolve against the facilities (`DataPoint.targetKind`), every plot is resolved in
+one `checkUniqueNameByGraph` query rather than a sample, and an unresolved row refuses the insertion
+instead of being skipped while the count reported success.
 
 Event creation follows the same rule for the same reason, through `EventLogic.create`.
+
+### `export` — an experiment written as STAR
+
+The other direction from the import: `GET /ai-import/star?experiment=` returns the experiment as a
+STAR workbook, the file the STAR profile reads. No language model is involved, so the export stays
+available when the assistant is not configured; nothing is written to the instance.
+
+Three pieces, one responsibility each:
+
+- **`ExperimentSnapshotReader`** — the only part that knows the platform (a gateway, like
+  `InstanceLookups`). Every read goes through the platform's own DAO or logic, under the user's
+  rights: `ExperimentDAO.get` (which refuses an experiment the user cannot see), `FactorDAO`,
+  `FacilityLogic` and its last location, the scientific-object search the platform's CSV export runs
+  (factor levels and custom properties included), `DataDAO.search` page by page, `VariableDAO`.
+  Beyond 500 000 values it refuses with a 400 that points at the platform's data export — a workbook
+  is no longer the right shape, and failing on memory half-way would say nothing.
+- **`ExperimentSnapshot`** — what the two others share: names where the format expects names (a
+  STAR file points from one sheet to another by name), the URIs beside them in columns of their own.
+- **`StarWorkbookBuilder`** — the only part that knows the workbook. Streamed (`SXSSFWorkbook`), in
+  the profile's own column constants so the import and the export cannot drift apart.
+
+What is written:
+
+| Sheet | Content |
+|---|---|
+| `readme` | origin, date, and the values nobody could attach, counted |
+| `expe` | one row per project, organisation or contact — STAR reads distinct values per column, so a list in one cell would read as one name. An organisation with a parent is the unit (`suborganization_name`), its parent the institution |
+| `field` | the facilities; latitude and longitude are the **centroid** of the last location (JTS), as STAR asks; the facility's custom properties follow the standard columns, named by the property's last segment |
+| `modalite` | one row per factor level; the code is the level's name, which is what the design sheets write and what the platform matches a treatment on |
+| `ed_<type>` | one sheet per type of object, shaped like STAR's plots: `<type>_id`, `xp_trt_code`, `parent_id`, `cultivar_name`, `<type>_x`/`_y` (the initial move), `<type>_desc`, then `object_type`, `object_uri` and the type's own properties |
+| `data_<type>`, `data_meteo` | one column per variable; repetitions (several values of one variable on one target at one date) become rows, as the template writes several leaves read on the same plot; the facilities' observations go to `data_meteo` |
+| `dictionary_variables` | code (the alternative name when there is one), unit symbol, R class from the datatype, the ontology term matched or the variable's URI |
+| `dictionary_metadata` | every other column written, described as the reference template describes it (`star/dictionary_metadata.tsv`, a copy of its dictionary); the columns this module adds carry no URI, since the standard has none for them |
+
+The standard allows added columns — "add columns freely, and declare them in the dictionary" — and
+that is the rule followed for everything STAR has no column for. Values measured on something that
+is neither an object nor a facility of the experiment (a device, say) are counted in the readme
+rather than dropped in silence.
+
+The front end offers it as a third tab of the first screen, *Export as STAR*: the platform's
+`ExperimentSelector`, and the platform's `downloadFilefromService`, which carries the token.
 
 ### `api` — the REST surface
 
@@ -979,6 +1317,7 @@ Event creation follows the same rule for the same reason, through `EventLogic.cr
 | Verb   | Path                                                | Purpose                                                        |
 |--------|-----------------------------------------------------|----------------------------------------------------------------|
 | `GET`  | `/profiles`                                         | the file families recognised                                   |
+| `GET`  | `/assistant`                                        | whether the model is configured and answers (no token spent)   |
 | `POST` | `/sessions`                                         | multipart upload; opens a conversation and returns the analysis |
 | `GET`  | `/sessions/{id}`                                    | structure, report, mapping and history                         |
 | `DELETE` | `/sessions/{id}`                                  | close and forget                                               |
@@ -988,6 +1327,11 @@ Event creation follows the same rule for the same reason, through `EventLogic.cr
 | `POST` | `/sessions/{id}/revalidate`                         | recompute against the instance, keeping the conversation       |
 | `GET`  | `/sessions/{id}/creation-requirements?target=`      | fields, suggestions and blockers                               |
 | `POST` | `/create`                                           | create a project or experiment, or insert the data             |
+| `GET`  | `/sessions/{id}/object-sheets`                      | the object sheets: rows, type, mapping, what the type contradicts |
+| `POST` | `/object-sheets`                                    | choose a sheet's type, leave it out, map its columns           |
+| `GET`  | `/object-types/properties?type=`                    | what a scientific object type accepts                          |
+| `POST` | `/object-sheets/validate`                           | check every object sheet against the platform, writing nothing |
+| `GET`  | `/star?experiment=`                                 | the experiment as a STAR workbook (`StarExportAPI`)            |
 
 > **A generator constraint worth knowing.** The TypeScript client generator cannot express a request
 > that has both a body and a path parameter — it emits `method(body?: X, sessionId: string)`, which is
@@ -1057,7 +1401,19 @@ of its own.
 
 ### Tests
 
-192 tests, no database and no language model required.
+330 tests, **90.5 % of the module's lines covered**, and the build checks it: under the platform's
+coverage profile the module adds a `jacoco:check` rule that fails below 90 %.
+
+```
+mvn -pl opensilex-ai-import -Pwith-test-report verify
+```
+
+The report lands in `site/opensilex-ai-import/jacoco/`. None of the tests needs a real language
+model: `StubLlmEndpoint` stands in for it and replays the tool calls each test scripts. The
+integration suites extend the core's `AbstractMongoIntegrationTest` — RDF4J in memory, an embedded
+MongoDB. The REST suite, `AiImportAPITest`, runs against the assistant switched on by the module's
+test configuration (`src/main/resources/config/test/opensilex.yml`, read under the `test` profile
+only), which points it at the stub on a fixed port.
 
 | Suite                                | Covers                                                                 |
 |--------------------------------------|------------------------------------------------------------------------|
@@ -1071,13 +1427,32 @@ of its own.
 | `MiappeProfileTest` (9)              | recognition, documentation rows, mandatory fields, the empty template  |
 | `FilledMiappeSubmissionTest` (8)     | a filled submission: sections, variable components, events             |
 | `MappingServiceTest` (15)            | roles, observed kinds, type mismatches, proposed datatypes             |
-| `AiImportCreationServiceTest` (23)   | required fields, every blocker, the all-or-nothing refusal, the confirmation checkbox, importing from a shared instance |
+| `AiImportCreationServiceTest` (18)   | required fields, every blocker, the confirmation checkbox, importing from a shared instance |
 | `ProposalBuilderTest` (9)            | invented fields, malformed dates, missing required values              |
 | `LlmServiceTest` (11)                | request shape, bearer header, tool-call parsing, every failure path    |
 | `AiImportSessionCacheTest` (6)       | ownership isolation, expiry, prompt replacement                        |
 | `PromptBudgetTest` (5)               | the prompt stays within its measured budget                            |
-| `TranslationKeyTest` (3)             | every key the report emits exists in both language files               |
+| `TranslationKeyTest` (5)             | every key the report emits exists in both language files; target and row-error keys derived from their enums |
+| `NameSimilarityTest` (9)             | typos, transpositions, short codes, digits, bounded distance           |
+| `NearMatchFinderTest` (6)            | ranking, the cap of three, one resource under two names                |
+| `ConfirmedMatchesTest` (7)           | a confirmed name resolves; only a suggestion made for it is accepted   |
+| `ResolutionQueryTest` (3)            | fragment search and portable regex escaping                            |
+| `PlatformValidationAdapterTest` (10) | platform validation errors brought back to workbook sheet, row and column; batches; duplicates in the file versus in the instance |
+| `CorrectionStoreTest` (7)            | taught corrections on a real in-memory RDF4J store: provenance, replacement, deletion, injection |
 | `HeaderRoleDictionaryTest` (11)      | the header-to-entity mapping, its near-misses and its stated limits    |
+| `ScientificObjectBulkImportTest` (5) | the CSV the object importer receives, from a real STAR workbook; a treatment the experiment lacks refused on its row |
+| `DataBulkImportTest` (9)             | the CSV the data import receives; every refusal made before anything is written |
+| `DataBulkImportPlatformTest` (4)     | **integration**: the platform's real data import — written with a batch history, a wrong type refused on its row with nothing written, batches, an error in the last batch stopping all |
+| `AiImportAPITest` (21)               | **integration**: the REST surface end to end — upload, analysis, questions with tool calls, drafts confirmed into a project and an experiment, cancellation, confirmations, corrections taught and forgotten, binding of created resources, stored sessions, every refusal and every unknown conversation |
+| `VariableAndPersonResolutionTest` (8) | **integration**: variables by ontology identifier, alternative name, components resolved or suggested, confirmation, learned correction; people by email and by close name |
+| `CreationServicePlatformTest` (5)    | **integration**: events written on known targets, experiments linked to a project, a wrong project refused on its field |
+| `ToolsTest` (10)                     | every tool the model may call: its answers, its refusals, never an exception |
+| `DtoRoundTripTest` (4)               | every DTO written with the platform's JSON mapper and read back, snake_case names asserted |
+| `SharedResourceVariableLookupTest` (3) | the lookup on shared instances, against a stand-in instance and an unreachable one |
+| `GenericTabularProfileTest` (3), `PersonCandidateTest` (4), `CreationModelsTest` (4) | the fallback profile, a person's keys and name split, the outcome and field models |
+| `ResolutionServiceTest` (12)         | **integration**: the whole resolution on a seeded instance — exact, synonym, confirmed, learned, near, experiments before plots, binding a created resource by URI |
+| `AiImportSessionStoreTest` (6)       | **integration**: a stored conversation comes back whole; owner isolation; the file kept and deleted with it; expiry after the retention |
+| `SessionResumptionTest` (1)          | **integration**: a stored session rebuilt from the real VitisExplorer file, report recomputed, no model call |
 
 `StubLlmEndpoint` is a chat completion endpoint built on the JDK's own HTTP server — no test
 framework dependency was added. `TestConfig` implements the configuration interfaces directly, which

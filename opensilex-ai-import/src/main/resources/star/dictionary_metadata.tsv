@@ -1,0 +1,61 @@
+# Descriptions of the STAR metadata columns, taken from the reference template's dictionary_metadata
+# (STAR_standard.xlsx). Tab-separated: name, French description, unit, R class, URI, ELOA class.
+# Columns this module adds to the standard are declared in the same file, without a URI.
+bbch_stage	Stade phénologique lors de la mesure (échelle BBCH)		character	vignevin:bbch_stage	
+block_code	Code du boc sur la quelle est située l'unité expérimentale. Un bloc regroupe plusieurs unités expérimentales. Les blocs sont utilisés pour réduire la variabilité expérimentale et améliorer la précision des comparaisons entre les traitements.		character	vignevin:block_code	
+commune_insee_id	Code INSEE de la commune (5 caractères alphanumériques)		character	vignevin:commune_insee_id	
+commune_name	Nom de la commune sur laquelle se trouve la parcelle		character	vignevin:commune_name	
+cultivar_name	Nom de la variété (et clone si connu) produisant les fruits. Format de type "Syrah N Cl300" ou "Grenache B". Utiliser la nomenclature de https://www.plantgrape.fr/fr		character	vignevin:cultivar_name	
+dataop_agent	Opérateur réalisant la manipulation des données		character	vignevin:dataop_agent	
+dataop_date	Date de l'opération sur les données		date	vignevin:dataop_date	
+dataop_desc	Description de l'opération réalisée sur les données (importation, mise à jour…)		character	vignevin:dataop_desc	
+dataop_input	Nom de la source des données (Par exemple TopVigne, POM…). Pour une feuile Excel, nom de la feuille		character	vignevin:dataop_input	
+dataop_output	Nom de la table de donnée en sortie de l'opération sur les données (nom de la feuille sous Excel)		character	vignevin:dataop_output	
+design_plan	Type de plan d'expérience		character	vignevin:design_plan	
+eloa_class	Nom de la classe dans l'ontologie ELOA		character	vignevin:eloa_class	
+email	Email de la personne		character	vignevin:email	
+etp_mm	Evapotranspiration sur la période de mesure en mm	mm	numeric	vignevin:etp_mm	
+event_date	Date (et heure) de l'événement		character	vignevin:event_date	
+event_description	Description libre de l'événement		character	vignevin:event_description	
+event_type	Type d'évenement survenu lors de l'expérimentation : accident climatique, accident ou incident technique…		character	vignevin:event_type	
+expe_desc	Description de l’expérimentation et des objectifs poursuivis		character	vignevin:expe_desc	
+expe_end_date	Date de fin de l’expérimentation. Elle est exprimée au format AAAA-MM-JJ suivant la norme internationale ISO 8601.		date	vignevin:expe_end_date	
+expe_id	Identifiant de l'expérimentation (URI ou autre)		character	vignevin:expe_id	
+expe_obj	Objectif(s) de l'expérimentation		character	vignevin:expe_obj	
+expe_start_date	Date de début de l’expérimentation. Elle est exprimée au format AAAA-MM-JJ suivant la norme internationale ISO 8601.		date	vignevin:expe_start_date	
+field_id	Identifiant de la parcelle expérimentale (URI ou autre)		character	vignevin:field_id	
+field_latitude	Latitude du centroïde de la parcelle  (degrés décimaux WGS84)	decimal degrees	numeric	vignevin:field_latitude	
+field_longitude	Longitude du centroïde de la parcelle (degrés décimaux WGS84)	decimal degrees	numeric	vignevin:field_longitude	
+field_name	Nom (ou code) de la parcelle sur laquelle l’expérimentation a lieu		character	vignevin:field_name	
+meteo_datetime	Date (heure) de l'observation météo. Format AAAA-MM-JJ ou AAAA-MM-JJ HH:MM		date	vignevin:meteo_datetime	
+observation_date	Date de réalisation de l'observation.		date	vignevin:observation_date	
+organization_name	Nom de l'institution responsable de l'expérimentation		character	vignevin:organization_name	
+p_amm	Numéro d'Autorisation de Mise sur le Marché du produit phytosanitaire		character	vignevin:p_amm	
+p_app_code	Code de l'application, généralement séquentiel pour les traitements (T1, T2 ...)		character	vignevin:p_app_code	
+p_app_date	Date d'application du produit phytosanitaire		date	vignevin:p_app_date	
+p_app_vol_rate	Volume hectare appliqué lors d'un traitement, en L/ha	L/ha	numeric	vignevin:p_app_vol_rate	
+p_dose	Dose de produit phytosanitaire appliqué		numeric	vignevin:p_dose	
+p_dose_unit	Unité de la dose de produit appliquée		character	vignevin:p_dose_unit	
+p_name	Nom du produit phytosanitaire		character	vignevin:p_name	
+p_operator	Personne ayant réalisée l'application		character	vignevin:p_operator	
+plant_spacing	Ecartement entre les ceps de vigne sur le rang, en m	m	numeric	vignevin:plant_spacing	
+plot_desc	Description ou commentaire sur la placette		character	vignevin:plot_desc	
+plot_id	Code de la parcelle unitaire (ou élémentaire) permettant son identification unique au sein de l'expérimentation		character	vignevin:plot_id	
+plot_n	Nombre de ceps dans la parcelle unitaire		interger	vignevin:plot_n	
+plot_x	Position de la parcelle unitaire en coordonnées relatives x. Typiquement, cela peut être un numéro de rang.		interger	vignevin:plot_x	
+plot_y	Position de la parcelle unitaire en coordonnées relatives y. Typiquement, cela peut être le numéro de la 1er souche de la placette à partir du début du rang.		interger	vignevin:plot_y	
+proj_id	Identifiant du projet (URI ou autre)		character	vignevin:proj_id	
+rain_mm	Pluie sur la période de mesure en mm	mm	numeric	vignevin:rain_mm	Variable
+row_spacing	Ecartement entre les rangs de vigne, en m	m	numeric	vignevin:row_spacing	
+sprayer_name	Nom ou code du pulvérisateur utilisé		character	vignevin:sprayer_name	
+suborganization_name	Unité (appartenant à une organisation plus large).		character	vignevin:suborganization_name	
+xp_trt_code	Code de la modalité (traitement expérimental)		character	vignevin:xp_trt_code	Traitement expérimental
+xp_trt_desc	Description et commentaires sur le traitement expérimental		character	vignevin:xp_trt_desc	Traitement expérimental
+xp_trt_name	Nom court de la modalité (traitement expérimental)		character	vignevin:xp_trt_name	Traitement expérimental
+expe_uri	URI de l'expérimentation dans l'instance OpenSILEX d'origine		character		
+field_uri	URI de l'installation (parcelle) dans l'instance OpenSILEX d'origine		character		
+town_name	Nom de la commune sur laquelle se trouve la parcelle		character		
+factor_name	Nom du facteur expérimental auquel appartient la modalité		character		
+object_type	URI du type d'objet scientifique OpenSILEX des lignes de la feuille		character		
+object_uri	URI de l'objet scientifique dans l'instance OpenSILEX d'origine		character		
+parent_id	Identifiant de l'objet dont celui-ci fait partie (oeso:isPartOf)		character		

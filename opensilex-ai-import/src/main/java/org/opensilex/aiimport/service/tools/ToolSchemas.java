@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Small helpers for writing the JSON Schema of a tool without a wall of node building.
  *
@@ -67,5 +70,15 @@ public class ToolSchemas {
             return defaultValue;
         }
         return Math.min(value, max);
+    }
+
+    /**
+     * What a tool answers when it cannot: a single {@code error} field, which the model reads and
+     * relays instead of an exception it would never see.
+     */
+    public static Map<String, Object> error(String message) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("error", message);
+        return response;
     }
 }

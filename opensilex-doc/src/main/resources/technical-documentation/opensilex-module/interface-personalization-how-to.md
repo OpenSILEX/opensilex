@@ -8,7 +8,7 @@
 
 > ⚠️ _WARNING_ : This document is about personalizing OpenSILEX's front-end by creating a new module.
 >
-> You first need to follow the first steps of creating a new module: [modules.md](modules.md)
+> You first need to follow the first steps of creating a new module: [create-your-own-module.md](create-your-own-module.md)
 >
 
 ## Table of contents
@@ -37,7 +37,7 @@ Creating a front-end for your module could be useful for:
 
 ## Creating the front-end part of a new module
 
-After following the steps in [modules.md](modules.md), you should have a new module with at least the following structure:
+After following the steps in [create-your-own-module.md](create-your-own-module.md), you should have a new module with at least the following structure:
 
 ```bash
 # module_name  => .e.g : inrae-sixtine

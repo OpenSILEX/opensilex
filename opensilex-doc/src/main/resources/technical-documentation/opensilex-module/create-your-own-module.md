@@ -1,4 +1,4 @@
-# Technical documentation : [module] Create a new module for OpenSilex
+# Technical documentation : [module] Create a new minimal module for OpenSilex
 
 **Document history (please add a line when you edit the document)**
 
@@ -12,15 +12,19 @@
 ## Table of contents
 
 <!-- TOC -->
-* [Definitions](#definitions)
-* [Functional requirements](#functional-requirements)
-* [Create a new module for opensilex](#create-a-new-module-for-opensilex-)
-  * [1. Create a directory in ``opensilex`` directory with the name of the module, here {module_name} ``Example : inrae-sixtine``.](#1-create-a-directory-in-opensilex-directory-with-the-name-of-the-module-here-module_name-example--inrae-sixtine)
-  * [2. Module skeleton](#2-module-skeleton)
-  * [3. Add a pom file to configure the maven project **pom.xml** in module directory ``opensilex/{module_name}``](#3-add-a-pom-file-to-configure-the-maven-project-pomxml-in-module-directory-opensilexmodule_name)
-  * [4. Add a class with the module name which will describe interfaces, services and config that it implements.](#4-add-a-class-with-the-module-name-which-will-describe-interfaces-services-and-config-that-it-implements)
-  * [5. Update global ***pom.xml definition**](#5-update-global-pomxml-definition)
-* [Documentation for next steps](#documentation-for-next-steps)
+* [Technical documentation : [module] Create a new minimal module for OpenSilex](#technical-documentation--module-create-a-new-minimal-module-for-opensilex)
+  * [Table of contents](#table-of-contents)
+  * [Definitions](#definitions)
+  * [What this document is about](#what-this-document-is-about)
+  * [Create your module's directory](#create-your-modules-directory)
+  * [2. Minimal module skeleton](#2-minimal-module-skeleton)
+    * [pom.xml file](#pomxml-file)
+    * [Module java class](#module-java-class)
+  * [Add your module to OpenSILEX](#add-your-module-to-opensilex)
+      * [A. On an official OpenSILEX release build :](#a-on-an-official-opensilex-release-build-)
+      * [B. During development : Update global ***pom.xml definition**](#b-during-development--update-global-pomxml-definition)
+  * [Complete module skeleton](#complete-module-skeleton)
+  * [Going further](#going-further)
 <!-- TOC -->
 
 ## Definitions
@@ -30,18 +34,22 @@
 - **Type** : The word type is often used as a synonym of class from a user perspective. In the interface we define new types of events rather than new subclasses of event.
 - **Property** : In ontology, a property describes a relationship between concepts. For example, `rdfs:label` is a property that links a concept to a string that is its label (sort of name).
 
-## Functional requirements
+## What this document is about
 
-Creating a new module allow personalizing OpenSILEX's ontology, API and front-end.
+Creating a new module allows personalizing OpenSILEX's ontology, API and front-end.
 
 This could be useful for:
 - extending the core ontologie. See [ontology-module-extension-system.md](ontology-module-extension-system.md)
 - extending the API. See [module-api-and-interface-extension.md](module-api-and-interface-extension.md)
 - personalizing the front-end. See [module-interface-personalization.md](module-interface-personalization.md)
 
-## Create a new module for opensilex 
+This documentation helps you to create a new minimal module for OpenSilex and load it in OpenSilex. At the end of this document,
+your module will not modify OpenSILEX behavior, interface or ontology. When you minimal module is ready, please follow
+one of the links below to personalize OpenSILEX thanks to your new module.
 
-### 1. Create a directory in `opensilex` directory with the name of the module, here {module_name} `Example : inrae-sixtine`.
+## Create your module's directory
+
+Create a directory in `opensilex` directory with the name of the module, here {module_name} `Example : inrae-sixtine`.
 
 ```
 opensilex
@@ -52,7 +60,6 @@ opensilex
 ├── opensilex-doc
 ├── opensilex-front
 ├── opensilex-fs
-├── {module_name}
 ├── opensilex-nosql
 ├── opensilex-parent
 ├── opensilex-release
@@ -61,53 +68,28 @@ opensilex
 ├── opensilex-swagger-codegen-maven-plugin
 ```
 
-### 2. Module skeleton
+## 2. Minimal module skeleton
 
-How to create module front part:
+The minimum file structure for a new module contains only two files.
 
 Notes : *We use these naming conventions as examples, but **they are not mandatory.***
-```bash
-# module_name  => .e.g : inrae-sixtine
-# Module_name  => .e.g : Sixtine
-# short_module_name  => .e.g : sixtine
+```
 {module_name} # module
-├── front # front
-│   ├── babel.config.js # translation config
-│   ├── package.json # module javascript packages description
-│   ├── src # javascript sources
-│   │   ├── components # vue components
-│   │   │   └── layout
-│   │   │       ├── {Module_name}FooterComponent.vue
-│   │   │       ├── {Module_name}HeaderComponent.vue
-│   │   │       ├── {Module_name}HomeComponent.vue
-│   │   │       ├── {Module_name}LoginComponent.vue
-│   │   │       └── {Module_name}MenuComponent.vue
-│   │   ├── index.ts # register vue components
-│   │   ├── lang # lang translation
-│   │   │   ├── {short_module_name}-en.json
-│   │   │   └── {short_module_name}-fr.json
-│   │   ├── lib # need to build archive
-│   │   └── shims-vue.d.ts # ??
-│   ├── theme # theme files imgs, scss variables, fonts etc...
-│   │   └── {short_module_name}
-│   │       ├── {short_module_name}.yml
-│   │       ├── fonts
-│   │       ├── images
-│   │       └── variables.scss
-│   ├── tsconfig.json # typescript config
-│   ├── vue.config.js # vue config
-│   └── yarn.lock # yarn packages
-├── pom.xml  # module pom file
+│── pom.xml
 ├── src # back end java sources
 │   └── main
 │       ├── java
 │       │   └──org.opensilex.{module_name}
 │       │       └── {module_name}Module.java
-│       └── resources
 ```
-See [Theme subject](module-theme-personalization.md) for more details.
+- `pom.xml` is the maven configuration file for the module.
+- `{module_name}Module.java` is the main class of the module.
 
-### 3. Add a pom file to configure the maven project **pom.xml** in module directory `opensilex/{module_name}`
+We will describe this two files in more details in the next sections.
+
+### pom.xml file
+
+Add a pom file to configure the maven project **pom.xml** in module directory `opensilex/{module_name}`
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -115,11 +97,7 @@ See [Theme subject](module-theme-personalization.md) for more details.
 ******************************************************************************
  OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  Copyright © INRAE 2020
- Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
- 
- PHIS pom.xml
- This module is {description} web services API integrate as a module of the new
- modular system.
+ Contact: anne.tireau@inra.fr, arnaud.charleroy@inrae.fr
 ******************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -145,9 +123,14 @@ See [Theme subject](module-theme-personalization.md) for more details.
 </project>
 ```
 
-### 4. Add a class with the module name which will describe interfaces, services and config that it implements.
+Here again, this is a minimal configuration file. You can add build scripts or dependencies to other modules. But you can't
+run the module without at least this configuration.
 
-The minimal OpenSilexModule configuration is the following :
+### Module java class
+
+Add a class named `{module_name}Module.java` which will describe interfaces, services and config that it implements.
+
+The minimal content of this class is the following :
 
 ```java
 package org.opensilex.{module_name};
@@ -163,7 +146,15 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 }
 ```
 
-### 5. Add your module to OpenSILEX
+Extending OpenSilexModule is mandatory as it allows the module to be listed with the others modules. This is how the
+main process (opensilex-main) retrieves the list of modules to load.
+
+## Add your module to OpenSILEX
+
+Once you have created your module, you need to add it to OpenSILEX so that it can be loaded and used.
+There are two ways to do this:
+- When you are developing your module, the easiest way is to modify the global pom.xml. See how in the step B.
+- Once the module is ready for production, build it following the instructions of the step A.
 
 #### A. On an official OpenSILEX release build :
 
@@ -198,26 +189,17 @@ If you want your new module to be part of the OpenSilex build, you need to add i
         <module>opensilex-parent</module>
         <module>opensilex-main</module>
         <module>opensilex-sparql</module>
-        <module>opensilex-nosql</module>
-        <module>opensilex-fs</module>
-        <module>opensilex-security</module>
-        <module>opensilex-core</module>
-        <module>opensilex-front</module>
-        
-        <!-- Extension modules -->
+
+      <!-- ... etc .......................................  -->
+
+      <!-- Extension modules -->
         <module>{module_name}</module>
 
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
-        
-        <!-- Release module -->
-        <module>opensilex-release</module>
-         
-        <!-- Maven Plugin module -->
-        <module>opensilex-swagger-codegen-maven-plugin</module>
-        
-        <!-- Documentation module -->
-        <module>opensilex-doc</module>
+
+      <!-- ... etc .......................................  -->  
+
     </modules>
     
     <dependencies>
@@ -240,49 +222,62 @@ If you want your new module to be part of the OpenSilex build, you need to add i
             <artifactId>opensilex-sparql</artifactId>
             <version>${revision}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-nosql</artifactId>
-            <version>${revision}</version>
-        </dependency>
-                
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-fs</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-security</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-core</artifactId>
-            <version>${revision}</version>
-        </dependency>
-            
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-front</artifactId>
-            <version>${revision}</version>
-        </dependency>
 
-        <!--Other extension modules must be declared as dependencies-->
+      <!-- ... etc .......................................  -->
+
+
+      <!--Other extension modules must be declared as dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>{module_name}</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>
-    [....]
+  <!-- ... etc .......................................  -->  
 ```
 
-## Documentation for next steps
+## Complete module skeleton
+example of what you can find in the skeleton of a complete module :
 
-- extending core ontology : [ontology-module-extension-system.md](/src/main/resources/technical-documentation/opensilex-module/ontology-module-extension-system.md)
-- extending API and front-end in a new module : [module-api-and-interface-extension.md](module-api-and-interface-extension.md)
+```
+# module_name  => .e.g : inrae-sixtine
+# short_module_name  => .e.g : sixtine
+{module_name} # module
+├── front
+│   ├── babel.config.js # translation config
+│   ├── package.json # module javascript packages description
+│   ├── src # javascript sources
+│   │   ├── components # vue components
+│   │   │   └── layout
+│   │   │       ├── {Module_name}FooterComponent.vue
+│   │   │       ├── {Module_name}HeaderComponent.vue
+│   │   │       ├── {Module_name}HomeComponent.vue
+│   │   │       ├── {Module_name}LoginComponent.vue
+│   │   │       └── {Module_name}MenuComponent.vue
+│   │   ├── index.ts # register vue components
+│   │   ├── lang # lang translation
+│   │   │   ├── {short_module_name}-en.json
+│   │   │   └── {short_module_name}-fr.json
+│   │   ├── lib # need to build archive
+│   │   └── shims-vue.d.ts # ??
+│   ├── theme # theme files imgs, scss variables, fonts etc...
+│   │   └── {short_module_name}
+│   │       ├── {short_module_name}.yml
+│   │       ├── fonts
+│   │       ├── images
+│   │       └── variables.scss
+│   ├── tsconfig.json # typescript config
+│   ├── vue.config.js # vue config
+│   └── yarn.lock # yarn packages
+├── pom.xml  # module pom file
+├── src # back end java sources
+│   └── main
+│       ├── java
+│       │   └──org.opensilex.{module_name}
+│       │       └── {module_name}Module.java
+│       └── resources
+```
+## Going further
+Now you should b eready to personalize OpenSilex with your new module.
 
+See the [What this document is about](#what-this-document-is-about) section of the documentation for the next steps.

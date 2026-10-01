@@ -244,7 +244,6 @@ example of what you can find in the skeleton of a complete module :
 # short_module_name  => .e.g : sixtine
 {module_name} # module
 ├── front
-│   ├── babel.config.js # translation config
 │   ├── package.json # module javascript packages description
 │   ├── src # javascript sources
 │   │   ├── components # vue components

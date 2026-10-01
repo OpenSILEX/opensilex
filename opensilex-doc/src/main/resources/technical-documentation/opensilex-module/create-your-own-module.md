@@ -44,7 +44,7 @@ This could be useful for:
 - personalizing the front-end. See [interface-personalization-how-to.md](interface-personalization-how-to.md)
 
 This documentation helps you to create a new minimal module for OpenSilex and load it in OpenSilex. At the end of this document,
-your module will not modify OpenSILEX behavior, interface or ontology. When you minimal module is ready, please follow
+your module will not modify OpenSILEX behavior, interface or ontology. When your minimal module is ready, please follow
 one of the links above to personalize OpenSILEX thanks to your new module.
 
 ## Create your module's directory

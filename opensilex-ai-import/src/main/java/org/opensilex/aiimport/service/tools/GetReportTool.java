@@ -35,7 +35,8 @@ public class GetReportTool implements AiTool {
     private static final int MAX_LIMIT = 200;
 
     private static final List<String> CATEGORIES = List.of(
-            "experiments", "projects", "variables", "germplasm", "scientific_objects", "facilities");
+            "experiments", "projects", "variables", "germplasm", "scientific_objects", "facilities",
+            "persons", "organizations");
 
     @Override
     public String getName() {
@@ -68,16 +69,16 @@ public class GetReportTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) {
         String category = ToolSchemas.text(arguments, "category");
         if (category == null) {
-            return SearchVariablesTool.error("The 'category' argument is required.");
+            return ToolSchemas.error("The 'category' argument is required.");
         }
         ResolutionReport report = context.getReport();
         if (report == null) {
-            return SearchVariablesTool.error("The file has not been analysed yet.");
+            return ToolSchemas.error("The file has not been analysed yet.");
         }
 
         List<ResolvedItem> items = itemsOf(report, category);
         if (items == null) {
-            Map<String, Object> error = SearchVariablesTool.error(
+            Map<String, Object> error = ToolSchemas.error(
                     "There is no category named '" + category + "'.");
             error.put("available_categories", CATEGORIES);
             return error;
@@ -162,6 +163,10 @@ public class GetReportTool implements AiTool {
                 return report.getScientificObjects();
             case "facilities":
                 return report.getFacilities();
+            case "persons":
+                return report.getPersons();
+            case "organizations":
+                return report.getOrganizations();
             default:
                 return null;
         }

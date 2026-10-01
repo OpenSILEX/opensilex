@@ -39,6 +39,12 @@ public class ResolvedComponent {
      */
     private URI uri;
 
+    /**
+     * When nothing here carries the file's name exactly: the closest existing one, offered for the
+     * user to pick in the variable form — never selected on their behalf.
+     */
+    private ResourceReference suggestion;
+
     public ResolvedComponent(String role, String name, String accession) {
         this.role = role;
         this.name = name;
@@ -63,6 +69,15 @@ public class ResolvedComponent {
 
     public ResolvedComponent setUri(URI uri) {
         this.uri = uri;
+        return this;
+    }
+
+    public ResourceReference getSuggestion() {
+        return suggestion;
+    }
+
+    public ResolvedComponent setSuggestion(ResourceReference suggestion) {
+        this.suggestion = suggestion;
         return this;
     }
 

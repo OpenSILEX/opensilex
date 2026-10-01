@@ -11,8 +11,11 @@ import org.opensilex.aiimport.mapping.ColumnRole;
 import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.EventCandidate;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
+import org.opensilex.aiimport.profile.FactorLevelCandidate;
 import org.opensilex.aiimport.profile.GenericTabularProfile;
 import org.opensilex.aiimport.profile.ImportProfileRegistry;
+import org.opensilex.aiimport.profile.ObjectSheetDefaults;
+import org.opensilex.aiimport.profile.ObjectTargets;
 import org.opensilex.aiimport.profile.VariableCandidate;
 import org.opensilex.aiimport.profile.vitis.VitisExplorerProfile;
 import org.opensilex.aiimport.workbook.WorkbookStructure;
@@ -397,6 +400,90 @@ public class StarProfileTest {
 
         assertTrue(anomalies, anomalies.contains("never says what a plot is"));
         assertTrue(anomalies, anomalies.contains("A block can be a scientific object of its own"));
+    }
+
+    //#endregion
+
+    //#region the rest of the STAR semantics
+
+    /**
+     * The treatments of the modalite sheet, as the levels they become: the code the plots write,
+     * described by the treatment's name and what the file says of it.
+     */
+    @Test
+    public void theTreatmentsAreReadAsFactorLevels() {
+        List<FactorLevelCandidate> levels = profile.extractFactorLevels(standard);
+
+        assertEquals(11, levels.size());
+        FactorLevelCandidate control = levels.get(0);
+        assertEquals("TNT", control.code());
+        assertEquals("Témoin non traité", control.levelDescription());
+        assertEquals("the template names no factor", null, control.factor());
+        FactorLevelCandidate late = levels.stream().filter(level -> level.code().equals("1")).findFirst().orElseThrow();
+        assertEquals("Cuivre tardif — cuivre 2 semains après symptômes", late.levelDescription());
+    }
+
+    @Test
+    public void aLevelIsDescribedByWhatTheFileSays() {
+        assertEquals("only", new FactorLevelCandidate("s", 2, null, "1", null, "only").levelDescription());
+        assertEquals(null, new FactorLevelCandidate("s", 2, null, "1", "1", " ").levelDescription());
+        assertEquals("named", new FactorLevelCandidate("s", 2, null, "1", "named", null).levelDescription());
+    }
+
+    /**
+     * The institution and its unit, both to declare, the unit as part of the institution.
+     */
+    @Test
+    public void theOrganisationsAreReadWithTheirHierarchy() {
+        assertEquals(List.of("IFV", "Unité de Rodilhan"), standardPlan.getOrganizationNames());
+        assertEquals("IFV", standardPlan.getOrganizationParents().get("Unité de Rodilhan"));
+    }
+
+    /**
+     * What the field sheet says of the field, for the facility form: the commune, the INSEE code,
+     * the centroid, how it is planted.
+     */
+    @Test
+    public void theFieldDetailsAreRead() {
+        java.util.Map<String, String> details = standardPlan.getFacilityDetails().get("teissonniere");
+
+        assertEquals("Bellegarde", details.get(StarProfile.FIELD_TOWN));
+        assertEquals("30034", details.get(StarProfile.FIELD_INSEE));
+        assertEquals("as the file writes it", "43.771750", details.get(StarProfile.FIELD_LATITUDE));
+        assertEquals("4.475683", details.get(StarProfile.FIELD_LONGITUDE));
+        assertEquals("2.5", details.get(StarProfile.FIELD_ROW_SPACING));
+        assertEquals("0.9", details.get(StarProfile.FIELD_PLANT_SPACING));
+    }
+
+    /**
+     * The plot sheet starts mapped as STAR names its columns; the type is left to the user.
+     */
+    @Test
+    public void thePlotSheetStartsFromWhatStarNames() {
+        ObjectSheetDefaults defaults = profile.objectSheetDefaults(standard, "ed_placette");
+
+        assertEquals("plot_id", defaults.nameColumn());
+        assertEquals(ObjectTargets.NAME, defaults.targets().get("plot_id"));
+        assertEquals(ObjectTargets.FACTOR_LEVEL, defaults.targets().get("xp_trt_code"));
+        assertEquals(ObjectTargets.X, defaults.targets().get("plot_x"));
+        assertEquals(ObjectTargets.COMMENT, defaults.targets().get("plot_desc"));
+        assertEquals("a block is asked, never mapped", ObjectTargets.NONE, defaults.targets().get("block_code"));
+        assertEquals(null, defaults.suggestedType());
+        assertEquals("a sheet that lists no object knows nothing",
+                null, profile.objectSheetDefaults(standard, "expe").nameColumn());
+    }
+
+    /**
+     * The field sheet of the earlier revision is not an object sheet, even under the design prefix.
+     */
+    @Test
+    public void theFieldIsNeverAnObjectSheet() {
+        List<String> sheets = new StarSheets(standard).objectSheets().stream()
+                .map(sheet -> sheet.getName()).collect(Collectors.toList());
+
+        assertEquals(List.of("ed_placette"), sheets);
+        assertEquals(List.of("placette"), new StarSheets(example).objectSheets().stream()
+                .map(sheet -> sheet.getName()).collect(Collectors.toList()));
     }
 
     //#endregion

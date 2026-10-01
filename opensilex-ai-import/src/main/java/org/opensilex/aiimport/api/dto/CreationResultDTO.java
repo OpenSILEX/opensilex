@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * What a creation produced, with the report recomputed so the interface reflects the new state
@@ -41,13 +41,19 @@ public class CreationResultDTO {
      */
     private boolean refused;
 
-    @JsonProperty("unresolved_count")
-    private int unresolvedCount;
+
 
     /**
-     * The first few offending rows, enough to see the pattern without listing thousands.
+     * Set with a refusal: every faulty row, where the user will look for it, with its values.
      */
-    private List<UnresolvedRowDTO> unresolved = new ArrayList<>();
+    private BulkValidationDTO validation;
+
+    /**
+     * The platform's batch histories of the data written. Data larger than the platform imports at
+     * once goes in several batches: if one is refused after others were written, those are named
+     * here, so the user can find them — and delete them — in the data import history.
+     */
+    private List<URI> batches = new ArrayList<>();
 
     private ResolutionReportDTO report;
 
@@ -99,23 +105,14 @@ public class CreationResultDTO {
         return this;
     }
 
-    @ApiModelProperty(value = "How many rows could not be resolved in all")
-    public int getUnresolvedCount() {
-        return unresolvedCount;
+
+    @ApiModelProperty(value = "With a refusal: the faulty rows and their errors")
+    public BulkValidationDTO getValidation() {
+        return validation;
     }
 
-    public CreationResultDTO setUnresolvedCount(int unresolvedCount) {
-        this.unresolvedCount = unresolvedCount;
-        return this;
-    }
-
-    @ApiModelProperty(value = "A sample of the rows that could not be resolved")
-    public List<UnresolvedRowDTO> getUnresolved() {
-        return unresolved;
-    }
-
-    public CreationResultDTO setUnresolved(List<UnresolvedRowDTO> unresolved) {
-        this.unresolved = unresolved;
+    public CreationResultDTO setValidation(BulkValidationDTO validation) {
+        this.validation = validation;
         return this;
     }
 
@@ -126,6 +123,16 @@ public class CreationResultDTO {
 
     public CreationResultDTO setReport(ResolutionReportDTO report) {
         this.report = report;
+        return this;
+    }
+
+    @ApiModelProperty(value = "Batch histories of the data written, when it went through the data import")
+    public List<URI> getBatches() {
+        return batches;
+    }
+
+    public CreationResultDTO setBatches(List<URI> batches) {
+        this.batches = batches == null ? new ArrayList<>() : new ArrayList<>(batches);
         return this;
     }
 }

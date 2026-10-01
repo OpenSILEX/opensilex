@@ -6,6 +6,7 @@ package org.opensilex.aiimport.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.aiimport.create.CreationProposal;
 import org.opensilex.aiimport.mapping.ColumnMapping;
 import org.opensilex.aiimport.service.AiImportMessage;
 import org.opensilex.aiimport.service.AiImportSession;
@@ -29,6 +30,9 @@ public class AiImportSessionDTO {
     @JsonProperty("profile_id")
     private String profileId;
 
+    @JsonProperty("file_name")
+    private String fileName;
+
     private WorkbookStructureDTO structure;
 
     private ResolutionReportDTO report;
@@ -42,6 +46,12 @@ public class AiImportSessionDTO {
 
     @JsonProperty("pending_proposal")
     private CreationProposalDTO pendingProposal;
+
+    /**
+     * Every draft of the conversation, applied and cancelled included, so that a resumed
+     * conversation shows each card under the message that made it.
+     */
+    private List<CreationProposalDTO> proposals = new ArrayList<>();
 
     public static AiImportSessionDTO fromModel(AiImportSession model, int sampleRows) {
         return fromModel(model, sampleRows, null);
@@ -58,6 +68,7 @@ public class AiImportSessionDTO {
         dto.sessionId = model.getId();
         dto.createdAt = String.valueOf(model.getCreatedAt());
         dto.profileId = model.getProfileId();
+        dto.fileName = model.getFileName();
         if (model.getWorkbook() != null) {
             dto.structure = WorkbookStructureDTO.fromModel(model.getWorkbook(), sampleRows);
         }
@@ -74,6 +85,11 @@ public class AiImportSessionDTO {
         if (model.getPendingProposal() != null) {
             dto.pendingProposal = CreationProposalDTO.fromModel(
                     model.getPendingProposal(), proposalRequirements);
+        }
+        for (CreationProposal proposal : model.getProposals()) {
+            dto.proposals.add(proposal == model.getPendingProposal()
+                    ? dto.pendingProposal
+                    : CreationProposalDTO.fromModel(proposal, null));
         }
         return dto;
     }
@@ -153,5 +169,23 @@ public class AiImportSessionDTO {
 
     public void setPendingProposal(CreationProposalDTO pendingProposal) {
         this.pendingProposal = pendingProposal;
+    }
+
+    @ApiModelProperty(value = "Every draft of the conversation, in the order they were made")
+    public List<CreationProposalDTO> getProposals() {
+        return proposals;
+    }
+
+    public void setProposals(List<CreationProposalDTO> proposals) {
+        this.proposals = proposals;
+    }
+
+    @ApiModelProperty(example = "Vitis_2020.xlsx")
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

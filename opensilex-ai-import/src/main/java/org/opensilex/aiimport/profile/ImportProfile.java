@@ -53,6 +53,36 @@ public interface ImportProfile {
     ExtractedImportPlan extract(WorkbookStructure structure);
 
     /**
+     * Reads the observed objects the workbook describes, one per row, for bulk creation.
+     * <p>
+     * A profile that cannot tell which sheet lists the objects returns nothing, and bulk creation
+     * of objects is simply not offered for that file.
+     */
+    default List<ObjectRow> extractObjectRows(WorkbookStructure structure) {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Says what the columns of an object sheet become, as far as this profile knows: the starting
+     * position of the mapping the user adjusts, sheet by sheet, before the objects are created.
+     * <p>
+     * The default knows nothing, and every column starts unmapped.
+     */
+    default ObjectSheetDefaults objectSheetDefaults(WorkbookStructure structure, String sheetName) {
+        return ObjectSheetDefaults.none();
+    }
+
+    /**
+     * Reads the treatments the workbook declares, which become the levels of the experiment's
+     * factors — and have to, before any object can name one.
+     * <p>
+     * A profile with no treatment sheet returns nothing, and factor creation is not offered.
+     */
+    default List<FactorLevelCandidate> extractFactorLevels(WorkbookStructure structure) {
+        return Collections.emptyList();
+    }
+
+    /**
      * Reads what happened during the trial: sprayings, incidents, observation rounds.
      * <p>
      * Templates keep these apart from the measurements, in sheets of their own, so they are read

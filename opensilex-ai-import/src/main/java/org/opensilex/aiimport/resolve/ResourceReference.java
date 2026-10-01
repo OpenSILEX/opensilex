@@ -36,6 +36,12 @@ public class ResourceReference {
      */
     private String datatype;
 
+    /**
+     * Set on a near match only: how close its name is to the one the file wrote, between 0 and 1.
+     * Null on an exact match, where the question does not arise.
+     */
+    private Double similarity;
+
     public ResourceReference() {
     }
 
@@ -77,6 +83,15 @@ public class ResourceReference {
 
     public ResourceReference setSharedResourceInstanceLabel(String sharedResourceInstanceLabel) {
         this.sharedResourceInstanceLabel = sharedResourceInstanceLabel;
+        return this;
+    }
+
+    public Double getSimilarity() {
+        return similarity;
+    }
+
+    public ResourceReference setSimilarity(Double similarity) {
+        this.similarity = similarity;
         return this;
     }
 

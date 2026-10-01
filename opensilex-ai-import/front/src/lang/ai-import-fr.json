@@ -18,6 +18,10 @@
     },
     "chat": {
       "title": "Conversation",
+      "show": "Ouvrir la conversation",
+      "hide": "Fermer la conversation",
+      "disconnected": "Assistant non connecté",
+      "disconnectedTitle": "Le modèle de langue ne répond pas, la conversation est donc repliée. L'analyse du fichier, la correspondance des colonnes et les formulaires de création fonctionnent sans lui.",
       "placeholder": "Posez une question sur ce fichier…",
       "send": "Envoyer",
       "thinking": "L'assistant réfléchit…",
@@ -69,7 +73,11 @@
         "objectsNeedAnExperiment": "Les objets scientifiques vivent dans une expérimentation, et aucune n'a encore pu être résolue. Réglez d'abord l'expérimentation, puis revalidez.",
         "objectMissing": "Aucun objet scientifique ne porte ce nom dans l'expérimentation.",
         "ambiguous": "Plusieurs ressources portent ce nom : le choix revient à une personne.",
-        "personMissing": "Personne ici ne correspond. Créez cette personne, ou indiquez de qui il s'agit parmi celles existantes."
+        "personMissing": "Personne ici ne correspond. Créez cette personne, ou indiquez de qui il s'agit parmi celles existantes.",
+        "didYouMean": "Introuvable tel qu'écrit. Vouliez-vous dire « {name} » ? Confirmez-le plutôt que d'en créer un second sous cette orthographe.",
+        "confirmedByUser": "Rattaché à « {name} », comme vous l'avez confirmé ; le fichier l'écrit autrement.",
+        "learnedCorrection": "Reconnu comme « {name} » d'après une correction de {author} du {date}, retenue par l'instance.",
+        "organizationMissing": "Aucune organisation ne porte ce nom. Créez-la — une unité comme partie de son institution — ou indiquez de quelle organisation existante il s'agit."
       },
       "empty": "Rien à vérifier dans cette catégorie.",
       "openLink": "Ouvrir",
@@ -90,10 +98,12 @@
         "externalIdLookupFailed": "Les variables n'ont pas pu être recherchées par l'identifiant d'ontologie {externalId}.",
         "datatypeUnreadable": "Le type attendu de certaines variables n'a pas pu être lu ; les écarts de type n'ont donc pas été vérifiés pour elles.",
         "germplasmLookupFailed": "Le matériel végétal « {name} » n'a pas pu être recherché.",
-        "facilitiesLookupFailed": "Les installations n'ont pas pu être recherchées.",
         "facilityLookupFailed": "L'installation « {name} » n'a pas pu être recherchée.",
         "objectsLookupFailed": "Les objets scientifiques n'ont pas pu être recherchés.",
-        "personLookupFailed": "La personne « {name} » n'a pas pu être recherchée."
+        "personLookupFailed": "La personne « {name} » n'a pas pu être recherchée.",
+        "nearMatchLookupFailed": "Les noms proches des {category} manquants n'ont pas pu être recherchés.",
+        "nearMatchLimitReached": "Seuls les {limit} premiers {category} ont été comparés aux noms manquants : une correspondance proche a pu échapper.",
+        "correctionsUnreadable": "Les corrections retenues par l'instance n'ont pas pu être lues : les fautes qu'elle connaît sont traitées comme inconnues cette fois."
       },
       "suggestion": {
         "noDeclaredDatatype": "La variable correspondante ne déclare aucun type de données : les valeurs ne peuvent pas être vérifiées. Envisagez d'en définir un sur la variable.",
@@ -154,7 +164,27 @@
       "component_characteristic": "caractéristique",
       "component_method": "méthode",
       "component_unit": "unité",
-      "componentsFound": "{found} des {total} composantes existent déjà ici."
+      "componentsFound": "{found} des {total} composantes existent déjà ici.",
+      "didYouMean": "Vouliez-vous dire",
+      "confirmMatch": "C'est celui-ci",
+      "confirmMatchTitle": "Rattacher cette valeur du fichier à cette ressource pour toute la session. Rien n'est renommé, ni dans le fichier ni dans la base.",
+      "confirmedByYou": "Confirmé par vous",
+      "forgetMatch": "Annuler",
+      "similarity": "{percent} % de ressemblance",
+      "rememberCorrection": "Retenir pour les prochains imports",
+      "rememberCorrectionTitle": "L'instance reconnaîtra désormais cette orthographe, pour tous les imports et tous les utilisateurs. Nécessite le droit de modifier ce type de ressource ; révocable.",
+      "learnedBy": "Correction retenue — {author}, {date}",
+      "forgetCorrection": "Oublier",
+      "forgetCorrectionTitle": "L'instance cessera de reconnaître cette orthographe, pour tout le monde.",
+      "createProjectTitle": "Ouvrir le formulaire de projet, prérempli avec ce que dit le fichier : nom, acronyme, dates, objectif.",
+      "createFacilityTitle": "Ouvrir le formulaire d'installation, nom prérempli. Le type, l'organisation et le site se choisissent dans le formulaire.",
+      "askCreate_SCIENTIFIC_OBJECTS": "Crée les objets scientifiques des onglets du fichier, avec les types et les colonnes choisis.",
+      "askCreate_FACTORS": "Crée les facteurs de l'expérimentation à partir des modalités du fichier.",
+      "organizations": "Organisations",
+      "createOrganizationTitle": "Ouvrir le formulaire d'organisation, nom pré-rempli ; une unité part avec son institution comme parent si l'instance la connaît déjà.",
+      "fieldRowSpacing": "écartement entre rangs : {value} m",
+      "fieldPlantSpacing": "écartement entre plants : {value} m",
+      "fieldInsee": "commune INSEE {value}"
     },
     "errors": {
       "notEnabled": "L'assistant d'import n'est pas activé sur cette instance.",
@@ -238,7 +268,13 @@
         "provenanceDescription": "Description de la provenance",
         "eventSummary": "Événements lus dans le fichier",
         "variableSummary": "Variables importables depuis un centre de ressources",
-        "reconciliationConfirmed": "Je confirme la correspondance des identifiants de placette"
+        "reconciliationConfirmed": "Je confirme la correspondance des identifiants de placette",
+        "objectType": "Type des objets (une placette est-elle un « Plot », une « Plant »… ?)",
+        "objectSummary": "Objets lus dans le fichier",
+        "factorName": "Nom du facteur",
+        "levelsSummary": "Modalités du fichier",
+        "organizations": "Organisations",
+        "facilities": "Installations"
       },
       "from": {
         "projectColumn": "d'après la colonne projet du fichier",
@@ -249,7 +285,11 @@
         "fileName": "d'après le nom du fichier",
         "eventSheets": "d'après les feuilles d'événements et de traitements",
         "sharedResources": "d'après les centres de ressources partagés déclarés",
-        "profileReconciliation": "d'après la recomposition appliquée par le profil"
+        "profileReconciliation": "d'après la recomposition appliquée par le profil",
+        "objectSheet": "d'après la feuille des objets",
+        "treatmentSheet": "de la feuille des modalités",
+        "resolvedOrganizations": "des organisations trouvées",
+        "resolvedFacilities": "des installations trouvées"
       },
       "block": {
         "noDataPoints": "Aucune observation n'a pu être lue dans ce fichier.",
@@ -263,7 +303,10 @@
         "noImportableVariable": "Aucune variable du fichier n'a été trouvée sur un centre de ressources partagé.",
         "noEvents": "Aucun événement n'a été lu dans ce fichier.",
         "eventTargetsMissing": "Aucun des objets concernés par ces événements n'existe encore : créez d'abord la parcelle et les placettes.",
-        "facilitiesMissing": "Des installations (parcelles, stations) nommées par le fichier sont absentes de la base."
+        "facilitiesMissing": "Des installations (parcelles, stations) nommées par le fichier sont absentes de la base.",
+        "noObjectRows": "Ce fichier ne décrit pas d'objets observés, ligne par ligne, que l'on puisse créer.",
+        "noFactorLevels": "Le fichier ne déclare aucune modalité.",
+        "factorsNotAllowed": "Vous n'avez pas le droit de modifier les facteurs sur cette instance."
       },
       "refused": {
         "title": "Insertion refusée : rien n'a été écrit",
@@ -274,14 +317,125 @@
       "unresolved": {
         "variable": "aucune variable ne correspond à la colonne « {value} »",
         "object": "aucun objet scientifique nommé « {value} » dans l'expérimentation",
-        "facility": "aucune installation nommée « {value} »"
+        "facility": "aucune installation nommée « {value} »",
+        "germplasm": "aucun matériel végétal nommé « {value} »",
+        "factorLevel": "aucune modalité « {value} » dans les facteurs de l'expérimentation",
+        "parent": "aucun objet nommé « {value} » dans l'expérimentation",
+        "value": "rien ne s'appelle « {value} »"
       },
       "warn": {
         "projectMissing": "Le projet nommé dans le fichier n'existe pas encore ; l'expérimentation pourra être rattachée plus tard.",
         "variablesStillMissing": "Certaines variables n'existent nulle part : après l'import, il restera à les créer.",
         "someEventTargetsMissing": "Certains événements ne trouvent pas ce qu'ils concernent ; ceux-là seront ignorés.",
-        "typeIssues": "Des cellules ne correspondent pas au type attendu par leur variable. Vérifiez-les avant d'insérer."
-      }
+        "typeIssues": "Des cellules ne correspondent pas au type attendu par leur variable. Vérifiez-les avant d'insérer.",
+        "objectsWillBeUpdated": "Certains objets existent déjà sous le même nom dans l'expérimentation : l'import les mettra à jour.",
+        "objectTypeFromFile": "Le type d'au moins un onglet vient du fichier (colonne object_type) et n'a pas encore été confirmé.",
+        "experimentFirst": "Aucune expérimentation du fichier n'existe encore : un facteur se déclare dans une expérimentation, créez-la d'abord."
+      },
+      "target_SCIENTIFIC_OBJECTS": "Objets scientifiques",
+      "appliedObjects": "{count} objet(s) scientifique(s) importé(s).",
+      "interrupted": {
+        "title": "Import interrompu",
+        "explanation": "{count} observations ont déjà été écrites, en {batches} lot(s) ; le lot suivant a été refusé (lignes ci-dessous). Les lots écrits figurent dans l'historique des imports de données, d'où ils peuvent être supprimés. Ce brouillon est clos pour qu'ils ne soient pas écrits une seconde fois."
+      },
+      "ambiguous": {
+        "parent": "plusieurs objets s'appellent « {value} »",
+        "value": "plusieurs ressources s'appellent « {value} »"
+      },
+      "target_FACTORS": "Facteurs de l'expérimentation",
+      "appliedFactors": "{count} modalité(s) créée(s) comme niveaux de facteur."
+    },
+    "rows": {
+      "summary": "{rows} ligne(s) en erreur sur {checked} contrôlée(s) — {errors} erreur(s)",
+      "sampled": "Les {shown} premières erreurs sont affichées, sur {total}.",
+      "row": "Ligne",
+      "errors": "Erreurs",
+      "kind": {
+        "MISSING_VALUE": "Valeur manquante dans « {column} ». {detail}",
+        "INVALID_VALUE": "Valeur refusée dans « {column} » : « {value} ». {detail}",
+        "INVALID_DATATYPE": "Type incorrect dans « {column} » : « {value} ». {detail}",
+        "INVALID_DATE": "Date invalide dans « {column} » : « {value} ».",
+        "INVALID_URI": "URI invalide dans « {column} » : « {value} ».",
+        "UNKNOWN_REFERENCE": "« {value} » (colonne « {column} ») n'existe pas dans l'instance. {detail}",
+        "ALREADY_EXISTS": "« {value} » (colonne « {column} ») existe déjà.",
+        "DUPLICATE_IN_FILE": "« {value} » apparaît plusieurs fois dans le fichier (colonne « {column} »).",
+        "DUPLICATE_IN_INSTANCE": "Cette donnée est déjà dans l'instance (même date, variable, cible et provenance). {detail}",
+        "INVALID_ROW": "La ligne n'a pas le bon nombre de colonnes.",
+        "tooLarge": "Le lot dépasse le nombre de lignes que la plateforme importe en une fois.",
+        "missingHeader": "La plateforme attend une colonne « {column} » absente du fichier généré.",
+        "invalidHeader": "La plateforme ne reconnaît pas la colonne « {column} »."
+      },
+      "family": {
+        "MISSING_VALUE": "valeurs manquantes",
+        "INVALID_VALUE": "valeurs refusées",
+        "INVALID_DATATYPE": "types incorrects",
+        "INVALID_DATE": "dates invalides",
+        "INVALID_URI": "URI invalides",
+        "UNKNOWN_REFERENCE": "références inconnues",
+        "ALREADY_EXISTS": "déjà existants",
+        "DUPLICATE_IN_FILE": "doublons dans le fichier",
+        "DUPLICATE_IN_INSTANCE": "déjà dans l'instance",
+        "INVALID_ROW": "lignes mal formées",
+        "UNRESOLVED": "non rattachées",
+        "FILE": "fichier"
+      },
+      "interrupted": "L'import s'est arrêté aux lignes {from} à {to} du fichier généré : {detail}. Les lots précédents ont été écrits et restent dans l'instance."
+    },
+    "saved": {
+      "title": "Reprendre une session",
+      "hint": "Chaque session est enregistrée au fil de l'échange, avec son fichier. À la reprise, le fichier est relu et le rapport recalculé contre l'état actuel de l'instance ; la conversation, les brouillons et les correspondances confirmées reviennent tels quels.",
+      "file": "Fichier",
+      "updated": "Dernière activité",
+      "messages": "Messages",
+      "expires": "Supprimée le",
+      "resume": "Reprendre",
+      "delete": "Supprimer cette session",
+      "leave": "Changer de fichier",
+      "leaveTitle": "Revenir à l'accueil. La session est enregistrée : vous la retrouverez dans la liste.",
+      "empty": "Aucune session enregistrée pour l'instant. Déposez un fichier : la session sera enregistrée au fil de l'échange et apparaîtra ici, prête à être reprise."
+    },
+    "home": {
+      "newFile": "Nouveau fichier",
+      "sessions": "Mes sessions",
+      "export": "Exporter en STAR"
+    },
+    "export": {
+      "title": "Exporter une expérimentation au format STAR",
+      "hint": "Écrit l'expérimentation, ses installations, les modalités de ses facteurs, ses objets scientifiques — une feuille par type — et leurs observations, avec un dictionnaire décrivant chaque colonne. Le classeur se relit par le profil STAR de l'assistant. Rien n'est écrit dans l'instance.",
+      "experiment": "Expérimentation",
+      "download": "Télécharger le classeur STAR",
+      "failed": "Le classeur STAR n'a pas pu être produit."
+    },
+    "objects": {
+      "problem": {
+        "unknownProperty": "La colonne « {column} » est reliée à {property}, que les objets de ce type n'ont pas.",
+        "singleValued": "Les colonnes {columns} sont toutes reliées à « {property} », qui ne porte qu'une valeur.",
+        "noType": "Aucun type n'a été choisi pour les objets de l'onglet « {sheet} ».",
+        "notObjectType": "Le type choisi pour l'onglet « {sheet} » n'est pas un type d'objet scientifique.",
+        "parentInSameRun": "« {value} » est créé par l'onglet « {sheet} » dans cette même création : créez d'abord cet onglet, puis celui-ci."
+      },
+      "title": "Objets scientifiques à créer",
+      "hint": "Chaque onglet dont les lignes deviennent des objets : choisissez le type de ses objets, puis ce que devient chaque colonne. Les choix sont gardés avec la conversation. « Vérifier » interroge la plateforme sans rien écrire ; la création passe par l'assistant, qui la propose à votre confirmation.",
+      "type": "Type des objets de cet onglet",
+      "included": "Créer les objets de cet onglet",
+      "typeFromFile": "Ce type vient du fichier (colonne object_type) : confirmez-le ou choisissez-en un autre.",
+      "noType": "Aucun type n'est choisi : les objets de cet onglet ne peuvent pas être créés.",
+      "preview": "{shown} lignes affichées sur {total}.",
+      "experiment": "Expérimentation des objets",
+      "validate": "Vérifier",
+      "create": "Créer les objets",
+      "valid": "Les {rows} lignes sont acceptées par la plateforme.",
+      "notWritten": "— non écrite —",
+      "name": "Nom de l'objet",
+      "nameLocked": "Cette colonne nomme les objets : elle reste leur nom.",
+      "positionX": "Position x",
+      "positionY": "Position y",
+      "factorLevel": "Modalité (niveau de facteur)",
+      "list": "plusieurs valeurs",
+      "unknownToType": "inconnue de ce type",
+      "saveFailed": "Ce choix n'a pas pu être enregistré.",
+      "validateFailed": "La vérification n'a pas pu être faite.",
+      "createFactors": "Créer les modalités"
     }
   }
 }

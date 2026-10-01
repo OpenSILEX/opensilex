@@ -136,6 +136,9 @@ public class RequiredField {
 
     public static final String RESOURCE_EXPERIMENT = "experiment";
     public static final String RESOURCE_PROJECT = "project";
+    public static final String RESOURCE_OBJECT_TYPE = "objectType";
+    public static final String RESOURCE_ORGANIZATION = "organization";
+    public static final String RESOURCE_FACILITY = "facility";
 
     /**
      * Whether a submitted value satisfies this field.

@@ -183,8 +183,8 @@ public class PromptBuilder {
         lines.add("  from the report below or from a tool result. If you do not have one, say so.");
         lines.add("- Never claim something exists in the instance without having seen it in the");
         lines.add("  report or in a tool result. Call a tool instead of guessing.");
-        lines.add("- You can draft a creation, here in the conversation. When the user wants a");
-        lines.add("  project, an experiment, or the observation data inserted:");
+        lines.add("- You can draft a creation, here in the conversation. When the user wants an");
+        lines.add("  experiment, its scientific objects, or the observation data inserted:");
         lines.add("    1. describe what it would contain, in prose — which name, which dates, which");
         lines.add("       objective, and where each value comes from;");
         lines.add("    2. then call propose_creation with those values.");
@@ -198,9 +198,24 @@ public class PromptBuilder {
         lines.add("- One draft at a time. Settle the current one before proposing another.");
         lines.add("- You never confirm a draft yourself, and nothing is written until the user does.");
         lines.add("  Say what the draft will create; never say you have created it.");
-        lines.add("- Never tell the user to go to the general OpenSILEX screens to create a project,");
-        lines.add("  an experiment, or to import the data. You can draft all three here, filled in");
-        lines.add("  from their file. Sending them elsewhere throws away the work this page did.");
+        lines.add("- A project, a facility, a person or an organisation the report lists as MISSING is");
+        lines.add("  created with the Create button beside it in the report: it opens the platform's");
+        lines.add("  own form, prefilled from the file (a project's name, acronym, dates and");
+        lines.add("  objective; a facility's name, commune and coordinates; a person's name; an");
+        lines.add("  organisation's name, a unit under its institution), and what it creates is bound");
+        lines.add("  to that row. Create an institution before its units.");
+        lines.add("- The treatments of the file are the levels of the experiment's FACTORS: they can");
+        lines.add("  only be created once the experiment exists, and before the scientific objects,");
+        lines.add("  which name them.");
+        lines.add("  Say what the file supplies and what is left to fill in. Draft a PROJECT with");
+        lines.add("  propose_creation only when the report lists no project to click.");
+        lines.add("- Scientific objects are created sheet by sheet: each object sheet has its own type");
+        lines.add("  and says what each of its columns becomes, as the user chose in the objects panel");
+        lines.add("  under the conversation. Never choose a type yourself. If get_creation_fields");
+        lines.add("  marks object_type required, a sheet has none yet: ask the user to choose it there,");
+        lines.add("  or propose the one type they name for every sheet as object_type.");
+        lines.add("- Never tell the user to go to the general OpenSILEX screens to create what this");
+        lines.add("  page can create. Sending them elsewhere throws away the work this page did.");
         lines.add("- Variables are handled from this page, in this order of preference:");
         lines.add("    1. if the report says a variable is FOUND_IN_SHARED_RESOURCE, propose the");
         lines.add("       VARIABLE creation: it copies the variable AND its entity, characteristic,");
@@ -214,8 +229,17 @@ public class PromptBuilder {
         lines.add("       know what is left to decide.");
         lines.add("  No template names all four components, so never state one you have not read.");
         lines.add("  A component created by mistake is a permanent entry in this instance.");
-        lines.add("- Germplasm and scientific objects cannot be created from this page. For those,");
-        lines.add("  the general OpenSILEX screens are the right answer.");
+        lines.add("- A missing name may come with suggestions: existing resources whose name is");
+        lines.add("  close ('did you mean ...'). Mention them and ask the user to confirm with the");
+        lines.add("  button beside the name. A suggestion is not a match until the user confirms it,");
+        lines.add("  and you never confirm one yourself. Never offer to create a resource that has a");
+        lines.add("  suggestion without first asking whether the suggestion is the one meant: a");
+        lines.add("  second spelling of an existing resource is a duplicate nobody can undo.");
+        lines.add("- A name may also be recognised from a correction the instance remembers, taught");
+        lines.add("  by someone earlier. When you rely on one, say so and by whom, so the user can");
+        lines.add("  check it: they did not confirm it themselves.");
+        lines.add("- Germplasm cannot be created from this page. For it, the general OpenSILEX");
+        lines.add("  screens are the right answer.");
         lines.add("- Never silently correct a value. When a cell disagrees with the type its");
         lines.add("  variable expects, say which cell, why, and what would fix it, then offer to");
         lines.add("  walk the user through it. A measurement converted behind their back is a");
@@ -371,6 +395,9 @@ public class PromptBuilder {
         view.put("germplasm", categorySummary(report.getGermplasm()));
         view.put("scientific_objects", categorySummary(report.getScientificObjects()));
         view.put("facilities", categorySummary(report.getFacilities()));
+        if (!report.getOrganizations().isEmpty()) {
+            view.put("organizations", categorySummary(report.getOrganizations()));
+        }
 
         if (!report.getAnomalies().isEmpty()) {
             view.put("inconsistencies_found_in_the_file", report.getAnomalies());

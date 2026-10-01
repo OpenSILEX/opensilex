@@ -51,7 +51,7 @@ public class SearchSharedResourceVariablesTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) {
         String name = ToolSchemas.text(arguments, "name");
         if (name == null) {
-            return SearchVariablesTool.error("The 'name' argument is required.");
+            return ToolSchemas.error("The 'name' argument is required.");
         }
 
         SharedResourceVariableLookup lookup = context.getSharedResources();

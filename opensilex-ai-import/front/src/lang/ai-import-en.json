@@ -18,6 +18,10 @@
     },
     "chat": {
       "title": "Conversation",
+      "show": "Open the conversation",
+      "hide": "Close the conversation",
+      "disconnected": "Assistant not connected",
+      "disconnectedTitle": "The language model does not answer, so the conversation is folded away. The file analysis, the column mapping and the creation forms work without it.",
       "placeholder": "Ask a question about this file…",
       "send": "Send",
       "thinking": "The assistant is thinking…",
@@ -69,7 +73,11 @@
         "objectsNeedAnExperiment": "Scientific objects live inside an experiment, and no experiment could be resolved yet. Settle the experiment first, then revalidate.",
         "objectMissing": "No scientific object carries this name in the experiment.",
         "ambiguous": "Several resources carry this name, so a human has to pick one.",
-        "personMissing": "Nobody here matches this person. Create them, or say which existing person they are."
+        "personMissing": "Nobody here matches this person. Create them, or say which existing person they are.",
+        "didYouMean": "Not found as written. Did you mean '{name}'? Confirm it rather than creating a second one under this spelling.",
+        "confirmedByUser": "Matched to '{name}', as you confirmed; the file writes it differently.",
+        "learnedCorrection": "Recognised as '{name}' from a correction by {author} on {date} that this instance remembers.",
+        "organizationMissing": "No organisation carries this name. Create it — a unit as part of its institution — or say which existing organisation it is."
       },
       "empty": "Nothing to check in this category.",
       "openLink": "Open",
@@ -90,10 +98,12 @@
         "externalIdLookupFailed": "Variables could not be looked up by the ontology identifier {externalId}.",
         "datatypeUnreadable": "The expected data type of some variables could not be read, so type mismatches were not checked for them.",
         "germplasmLookupFailed": "The germplasm '{name}' could not be looked up.",
-        "facilitiesLookupFailed": "The facilities could not be looked up.",
         "facilityLookupFailed": "The facility '{name}' could not be looked up.",
         "objectsLookupFailed": "The scientific objects could not be looked up.",
-        "personLookupFailed": "The person '{name}' could not be looked up."
+        "personLookupFailed": "The person '{name}' could not be looked up.",
+        "nearMatchLookupFailed": "Names close to the missing {category} could not be looked for.",
+        "nearMatchLimitReached": "Only the first {limit} {category} were compared against the missing names, so a close match may have been missed.",
+        "correctionsUnreadable": "The corrections this instance was taught could not be read, so misspellings it knows are treated as unknown this time."
       },
       "suggestion": {
         "noDeclaredDatatype": "The matching variable declares no data type, so the values cannot be checked. Consider setting one on the variable.",
@@ -154,7 +164,27 @@
       "component_characteristic": "characteristic",
       "component_method": "method",
       "component_unit": "unit",
-      "componentsFound": "{found} of the {total} components already exist here."
+      "componentsFound": "{found} of the {total} components already exist here.",
+      "didYouMean": "Did you mean",
+      "confirmMatch": "This one",
+      "confirmMatchTitle": "Match this value of the file to this resource for the whole session. Nothing is renamed, in the file or in the instance.",
+      "confirmedByYou": "Confirmed by you",
+      "forgetMatch": "Undo",
+      "similarity": "{percent}% alike",
+      "rememberCorrection": "Remember for later imports",
+      "rememberCorrectionTitle": "The instance will recognise this spelling from now on, for every import and every user. Needs the right to modify this kind of resource; can be undone.",
+      "learnedBy": "Remembered correction — {author}, {date}",
+      "forgetCorrection": "Forget",
+      "forgetCorrectionTitle": "The instance will stop recognising this spelling, for everyone.",
+      "createProjectTitle": "Open the project form, prefilled with what the file says: name, acronym, dates, objective.",
+      "createFacilityTitle": "Open the facility form, name prefilled. The type, organisation and site are chosen in the form.",
+      "askCreate_SCIENTIFIC_OBJECTS": "Create the scientific objects of the file's sheets, with the types and columns chosen.",
+      "askCreate_FACTORS": "Create the experiment's factors from the file's treatments.",
+      "organizations": "Organisations",
+      "createOrganizationTitle": "Open the organisation form, name filled in; a unit starts with its institution as parent when the instance already has it.",
+      "fieldRowSpacing": "row spacing: {value} m",
+      "fieldPlantSpacing": "plant spacing: {value} m",
+      "fieldInsee": "INSEE commune {value}"
     },
     "errors": {
       "notEnabled": "The import assistant is not enabled on this instance.",
@@ -238,7 +268,13 @@
         "provenanceDescription": "Provenance description",
         "eventSummary": "Events read from the file",
         "variableSummary": "Variables importable from a shared resource instance",
-        "reconciliationConfirmed": "I confirm how the plot identifiers were matched"
+        "reconciliationConfirmed": "I confirm how the plot identifiers were matched",
+        "objectType": "Type of the objects (is a plot a \"Plot\", a \"Plant\"…?)",
+        "objectSummary": "Objects read from the file",
+        "factorName": "Factor name",
+        "levelsSummary": "Treatments of the file",
+        "organizations": "Organisations",
+        "facilities": "Facilities"
       },
       "from": {
         "projectColumn": "from the project column of the file",
@@ -249,7 +285,11 @@
         "fileName": "from the file name",
         "eventSheets": "from the event and treatment sheets",
         "sharedResources": "from the declared shared resource instances",
-        "profileReconciliation": "from the recomposition the profile applied"
+        "profileReconciliation": "from the recomposition the profile applied",
+        "objectSheet": "from the objects sheet",
+        "treatmentSheet": "from the treatment sheet",
+        "resolvedOrganizations": "from the organisations found",
+        "resolvedFacilities": "from the facilities found"
       },
       "block": {
         "noDataPoints": "No observation could be read from this file.",
@@ -263,7 +303,10 @@
         "noImportableVariable": "None of the file's variables was found on a shared resource instance.",
         "noEvents": "No event was read from this file.",
         "eventTargetsMissing": "None of what these events concerned exists yet: create the field and its plots first.",
-        "facilitiesMissing": "Facilities named by the file are absent from the instance."
+        "facilitiesMissing": "Facilities named by the file are absent from the instance.",
+        "noObjectRows": "This file describes no observed objects, row by row, that could be created.",
+        "noFactorLevels": "The file declares no treatment.",
+        "factorsNotAllowed": "You are not allowed to modify factors on this instance."
       },
       "refused": {
         "title": "Insertion refused: nothing was written",
@@ -274,14 +317,125 @@
       "unresolved": {
         "variable": "no variable matches the column “{value}”",
         "object": "no scientific object named “{value}” in the experiment",
-        "facility": "no facility named “{value}”"
+        "facility": "no facility named “{value}”",
+        "germplasm": "no germplasm named \"{value}\"",
+        "factorLevel": "no factor level \"{value}\" among the experiment's factors",
+        "parent": "no object named “{value}” in the experiment",
+        "value": "nothing is named “{value}”"
       },
       "warn": {
         "projectMissing": "The project named in the file does not exist yet; the experiment can be attached later.",
         "variablesStillMissing": "Some variables exist nowhere: after the import, those still have to be created.",
         "someEventTargetsMissing": "Some events cannot find what they concerned; those will be skipped.",
-        "typeIssues": "Some cells do not match the type their variable expects. Check them before inserting."
-      }
+        "typeIssues": "Some cells do not match the type their variable expects. Check them before inserting.",
+        "objectsWillBeUpdated": "Some objects already exist under the same name in the experiment: the import will update them.",
+        "objectTypeFromFile": "The type of at least one sheet comes from the file (object_type column) and has not been confirmed yet.",
+        "experimentFirst": "None of the file's experiments exists yet: a factor is declared in an experiment, create it first."
+      },
+      "target_SCIENTIFIC_OBJECTS": "Scientific objects",
+      "appliedObjects": "{count} scientific object(s) imported.",
+      "interrupted": {
+        "title": "Import interrupted",
+        "explanation": "{count} observations were already written, in {batches} batch(es); the next batch was refused (rows below). The batches written are in the data import history, where they can be deleted. This draft is closed so that they are not written a second time."
+      },
+      "ambiguous": {
+        "parent": "several objects are named “{value}”",
+        "value": "several resources are named “{value}”"
+      },
+      "target_FACTORS": "Experiment factors",
+      "appliedFactors": "{count} treatment(s) created as factor levels."
+    },
+    "rows": {
+      "summary": "{rows} row(s) in error out of {checked} checked — {errors} error(s)",
+      "sampled": "The first {shown} errors are shown, out of {total}.",
+      "row": "Row",
+      "errors": "Errors",
+      "kind": {
+        "MISSING_VALUE": "Missing value in '{column}'. {detail}",
+        "INVALID_VALUE": "Value refused in '{column}': '{value}'. {detail}",
+        "INVALID_DATATYPE": "Wrong type in '{column}': '{value}'. {detail}",
+        "INVALID_DATE": "Invalid date in '{column}': '{value}'.",
+        "INVALID_URI": "Invalid URI in '{column}': '{value}'.",
+        "UNKNOWN_REFERENCE": "'{value}' (column '{column}') does not exist in the instance. {detail}",
+        "ALREADY_EXISTS": "'{value}' (column '{column}') already exists.",
+        "DUPLICATE_IN_FILE": "'{value}' appears more than once in the file (column '{column}').",
+        "DUPLICATE_IN_INSTANCE": "This value is already in the instance (same date, variable, target and provenance). {detail}",
+        "INVALID_ROW": "The row does not have the right number of columns.",
+        "tooLarge": "The batch holds more rows than the platform imports at once.",
+        "missingHeader": "The platform expects a column '{column}' missing from the generated file.",
+        "invalidHeader": "The platform does not recognise the column '{column}'."
+      },
+      "family": {
+        "MISSING_VALUE": "missing values",
+        "INVALID_VALUE": "refused values",
+        "INVALID_DATATYPE": "wrong types",
+        "INVALID_DATE": "invalid dates",
+        "INVALID_URI": "invalid URIs",
+        "UNKNOWN_REFERENCE": "unknown references",
+        "ALREADY_EXISTS": "already existing",
+        "DUPLICATE_IN_FILE": "duplicates in the file",
+        "DUPLICATE_IN_INSTANCE": "already in the instance",
+        "INVALID_ROW": "malformed rows",
+        "UNRESOLVED": "not placed",
+        "FILE": "file"
+      },
+      "interrupted": "The import stopped at lines {from} to {to} of the generated file: {detail}. The batches before were written and remain in the instance."
+    },
+    "saved": {
+      "title": "Resume a session",
+      "hint": "Every session is stored as it goes, with its file. Resuming reads the file again and recomputes the report against the instance as it is now; the conversation, the drafts and the confirmed names come back as they were.",
+      "file": "File",
+      "updated": "Last activity",
+      "messages": "Messages",
+      "expires": "Deleted on",
+      "resume": "Resume",
+      "delete": "Delete this session",
+      "leave": "Change file",
+      "leaveTitle": "Back to the first screen. The session is stored: you will find it in the list.",
+      "empty": "No stored session yet. Upload a file: the session is stored as it goes and will appear here, ready to be resumed."
+    },
+    "home": {
+      "newFile": "New file",
+      "sessions": "My sessions",
+      "export": "Export as STAR"
+    },
+    "export": {
+      "title": "Export an experiment as STAR",
+      "hint": "Writes the experiment, its facilities, its factor levels, its scientific objects — one sheet per type — and their observations, with a dictionary describing every column. The workbook reads back through the assistant's STAR profile. Nothing is written to the instance.",
+      "experiment": "Experiment",
+      "download": "Download the STAR workbook",
+      "failed": "The STAR workbook could not be produced."
+    },
+    "objects": {
+      "problem": {
+        "unknownProperty": "Column “{column}” is mapped to {property}, which objects of this type do not have.",
+        "singleValued": "Columns {columns} are all mapped to “{property}”, which holds one value.",
+        "noType": "No type was chosen for the objects of sheet “{sheet}”.",
+        "notObjectType": "The type chosen for sheet “{sheet}” is not a scientific object type.",
+        "parentInSameRun": "“{value}” is created by sheet “{sheet}” in this same creation: create that sheet first, then this one."
+      },
+      "title": "Scientific objects to create",
+      "hint": "Each sheet whose rows become objects: choose the type of its objects, then what each column becomes. The choices are kept with the conversation. “Check” asks the platform without writing anything; creating goes through the assistant, which proposes it for your confirmation.",
+      "type": "Type of this sheet's objects",
+      "included": "Create the objects of this sheet",
+      "typeFromFile": "This type comes from the file (object_type column): confirm it or choose another one.",
+      "noType": "No type is chosen: the objects of this sheet cannot be created.",
+      "preview": "{shown} rows shown out of {total}.",
+      "experiment": "Experiment of the objects",
+      "validate": "Check",
+      "create": "Create the objects",
+      "valid": "The platform accepts all {rows} rows.",
+      "notWritten": "— not written —",
+      "name": "Object name",
+      "nameLocked": "This column names the objects: it stays their name.",
+      "positionX": "Position x",
+      "positionY": "Position y",
+      "factorLevel": "Treatment (factor level)",
+      "list": "several values",
+      "unknownToType": "unknown to this type",
+      "saveFailed": "This choice could not be saved.",
+      "validateFailed": "The check could not be made.",
+      "createFactors": "Create the treatments"
     }
   }
 }

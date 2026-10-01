@@ -52,7 +52,7 @@ public class GetColumnMappingTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) {
         List<ColumnMapping> mappings = context.getMappings();
         if (mappings.isEmpty()) {
-            return SearchVariablesTool.error("The file has not been analysed yet.");
+            return ToolSchemas.error("The file has not been analysed yet.");
         }
 
         String column = ToolSchemas.text(arguments, "column");
@@ -67,7 +67,7 @@ public class GetColumnMappingTool implements AiTool {
             }
         }
         if (matches.isEmpty()) {
-            Map<String, Object> error = SearchVariablesTool.error(
+            Map<String, Object> error = ToolSchemas.error(
                     "No column named '" + column + "' in the uploaded file.");
             List<String> names = new ArrayList<>();
             mappings.forEach(mapping -> names.add(mapping.getColumn()));

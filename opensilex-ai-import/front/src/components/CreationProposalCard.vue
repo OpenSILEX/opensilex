@@ -24,22 +24,26 @@
         not place, and wrote nothing. The draft stays open so the user fixes what is named below and
         validates again.
       -->
+      <!--
+        The one case where a refusal comes after writing: data larger than the platform imports at
+        once goes in batches, all validated first, and one was still refused. What was written is
+        said plainly, with where to find it; the draft is closed so it cannot be written twice.
+      -->
+      <div v-if="interrupted" class="alert alert-danger py-2 small">
+        <div class="fw-semibold">{{ $t('AiImport.proposal.interrupted.title') }}</div>
+        <p class="mb-0">
+          {{ $t('AiImport.proposal.interrupted.explanation',
+                { count: interrupted.count, batches: interrupted.batches }) }}
+        </p>
+      </div>
+
       <div v-if="refusal" class="alert alert-warning py-2 small">
         <div class="fw-semibold">{{ $t('AiImport.proposal.refused.title') }}</div>
-        <p class="mb-1">
-          {{ $t('AiImport.proposal.refused.explanation', { count: refusal.unresolved_count }) }}
+        <p v-if="!interrupted" class="mb-2">
+          {{ $t('AiImport.proposal.refused.explanation', { count: refusal.rows_in_error }) }}
         </p>
-        <ul class="mb-0 ps-3">
-          <li v-for="(row, index) in refusal.unresolved" :key="index">
-            {{ $t('AiImport.proposal.refused.row', { sheet: row.sheet, row: row.row }) }} —
-            {{ $t(row.reason_key, { value: row.value }) }}
-          </li>
-        </ul>
-        <div v-if="refusal.unresolved_count > refusal.unresolved.length" class="mt-1">
-          {{ $t('AiImport.proposal.refused.more', {
-            count: refusal.unresolved_count - refusal.unresolved.length
-          }) }}
-        </div>
+        <!-- Every faulty row, as the user's own rows with the faulty cells marked. -->
+        <opensilex-ai-import-ImportRowsGrid :validation="refusal" />
       </div>
 
       <div v-if="proposal.blockers && proposal.blockers.length" class="alert alert-danger py-2 small">
@@ -158,7 +162,22 @@ interface ProposalField {
  * Each has its own model prop — a legacy of how they grew — so the name is carried here rather
  * than assumed, which is what lets one template drive all of them.
  */
-const SELECTORS: { [resource: string]: { component: string; modelProp: string; updateEvent: string } } = {
+const SELECTORS: {
+  [resource: string]: {
+    component: string
+    modelProp: string
+    updateEvent: string
+    /** Props the selector needs besides its value, read from the platform at render time. */
+    fixedProps?: () => { [name: string]: any }
+  }
+} = {
+  // The type selector of the scientific-object screen, rooted where that screen roots it.
+  objectType: {
+    component: 'opensilex-TypeForm',
+    modelProp: 'type',
+    updateEvent: 'update:type',
+    fixedProps: () => ({ baseType: $opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI })
+  },
   experiment: {
     component: 'opensilex-ExperimentSelector',
     modelProp: 'experiments',
@@ -168,6 +187,16 @@ const SELECTORS: { [resource: string]: { component: string; modelProp: string; u
     component: 'opensilex-ProjectSelector',
     modelProp: 'projects',
     updateEvent: 'update:projects'
+  },
+  organization: {
+    component: 'opensilex-OrganizationSelector',
+    modelProp: 'organizations',
+    updateEvent: 'update:organizations'
+  },
+  facility: {
+    component: 'opensilex-FacilitySelector',
+    modelProp: 'facilities',
+    updateEvent: 'update:facilities'
   },
   entity: {
     component: 'opensilex-EntitySelector',
@@ -189,19 +218,6 @@ const SELECTORS: { [resource: string]: { component: string; modelProp: string; u
     modelProp: 'selected',
     updateEvent: 'update:selected'
   }
-}
-
-interface UnresolvedRow {
-  sheet: string
-  row: number
-  column?: string
-  reason_key: string
-  value?: string
-}
-
-interface Refusal {
-  unresolved_count: number
-  unresolved: UnresolvedRow[]
 }
 
 interface Proposal {
@@ -235,7 +251,8 @@ const $opensilex: any = inject('$opensilex')
 
 const edited = reactive<{ [field: string]: string }>({})
 const submitting = ref(false)
-const refusal = ref<Refusal | null>(null)
+const refusal = ref<any | null>(null)
+const interrupted = ref<{ count: number; batches: number } | null>(null)
 
 // A new draft replaces what is on screen, so its values must replace the edited ones too.
 watch(
@@ -269,7 +286,9 @@ const appliedMessage = computed(() => {
   }
   const key = {
     EVENT: 'AiImport.proposal.appliedEvents',
-    VARIABLE: 'AiImport.proposal.appliedVariables'
+    VARIABLE: 'AiImport.proposal.appliedVariables',
+    SCIENTIFIC_OBJECTS: 'AiImport.proposal.appliedObjects',
+    FACTORS: 'AiImport.proposal.appliedFactors'
   }[props.proposal.target] ?? 'AiImport.proposal.appliedCount'
   return t(key, { count: props.proposal.inserted_count })
 })
@@ -289,7 +308,7 @@ function selectorBindings(field: ProposalField) {
   }
   const raw = (edited[field.name] ?? '').trim()
   const value = field.kind === 'uri-list' ? (raw ? raw.split(',').map((u) => u.trim()) : []) : raw
-  return { [selector.modelProp]: value }
+  return { ...(selector.fixedProps ? selector.fixedProps() : {}), [selector.modelProp]: value }
 }
 
 // A multi-valued selector hands back an array; the server takes the same comma-separated list it
@@ -327,11 +346,11 @@ async function confirm() {
       values: { ...edited }
     })
     const result = http.response.result
+    interrupted.value = result.refused && result.inserted_count > 0
+      ? { count: result.inserted_count, batches: (result.batches ?? []).length }
+      : null
     if (result.refused) {
-      refusal.value = {
-        unresolved_count: result.unresolved_count,
-        unresolved: result.unresolved ?? []
-      }
+      refusal.value = result.validation
       return
     }
     refusal.value = null

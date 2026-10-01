@@ -7,6 +7,8 @@ import WorkbookStructurePanel from './components/WorkbookStructurePanel.vue';
 import ResolutionReportPanel from './components/ResolutionReportPanel.vue';
 import MappingPanel from './components/MappingPanel.vue';
 import CreationProposalCard from './components/CreationProposalCard.vue';
+import ImportRowsGrid from './components/ImportRowsGrid.vue';
+import ObjectSheetsPanel from './components/ObjectSheetsPanel.vue';
 
 import fr from './lang/ai-import-fr.json';
 import en from './lang/ai-import-en.json';
@@ -23,6 +25,8 @@ const components: { [key: string]: any } = {
     'opensilex-ai-import-ResolutionReportPanel': ResolutionReportPanel,
     'opensilex-ai-import-MappingPanel': MappingPanel,
     'opensilex-ai-import-CreationProposalCard': CreationProposalCard,
+    'opensilex-ai-import-ImportRowsGrid': ImportRowsGrid,
+    'opensilex-ai-import-ObjectSheetsPanel': ObjectSheetsPanel,
 };
 
 const messages: { [locale: string]: any } = { fr, en };

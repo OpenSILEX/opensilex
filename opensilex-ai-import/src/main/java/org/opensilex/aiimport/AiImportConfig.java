@@ -43,6 +43,13 @@ public interface AiImportConfig {
     int sessionTtlMinutes();
 
     @ConfigDescription(
+            value = "Days a stored import conversation is kept after its last activity, before it and "
+                    + "its file are deleted",
+            defaultInt = 30
+    )
+    int savedSessionDays();
+
+    @ConfigDescription(
             value = "Also look up missing variables on the configured shared resource instances",
             defaultBoolean = true
     )

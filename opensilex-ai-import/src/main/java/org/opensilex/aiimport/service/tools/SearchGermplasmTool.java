@@ -51,7 +51,7 @@ public class SearchGermplasmTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) throws Exception {
         String name = ToolSchemas.text(arguments, "name");
         if (name == null) {
-            return SearchVariablesTool.error("The 'name' argument is required.");
+            return ToolSchemas.error("The 'name' argument is required.");
         }
         int limit = ToolSchemas.number(arguments, "limit", DEFAULT_LIMIT, MAX_LIMIT);
 

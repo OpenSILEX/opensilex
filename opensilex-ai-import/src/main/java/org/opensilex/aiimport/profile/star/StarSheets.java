@@ -9,9 +9,11 @@ import org.opensilex.aiimport.workbook.WorkbookStructure;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Finds the sheets of a STAR workbook, by prefix rather than by name.
@@ -29,6 +31,26 @@ public class StarSheets {
     public static final String EXPERIMENTAL_DESIGN_PREFIX = "ed_";
     public static final String DATA_PREFIX = "data_";
     public static final String DICTIONARY_PREFIX = "dictionary";
+
+    /**
+     * The prefix of the sheets describing a facility — the field, in STAR's words. Earlier
+     * revisions filed the field among the design sheets as {@code ed_parcelle}, or bare as
+     * {@code parcelle}; both are still read.
+     */
+    public static final String FIELD_PREFIX = "field";
+
+    /**
+     * The name the earlier revisions gave the field sheet, with or without the design prefix.
+     */
+    public static final String LEGACY_FIELD_SHEET = "parcelle";
+
+    /**
+     * The plot sheet of the earlier revision, which carried no prefix.
+     */
+    public static final String LEGACY_PLOT_SHEET = "placette";
+
+    private static final String ID_SUFFIX = "_id";
+    private static final String FIELD_ID = "field_id";
 
     public static final String EXPERIMENT_SHEET = "expe";
     public static final String TREATMENT_SHEET = "modalite";
@@ -82,17 +104,85 @@ public class StarSheets {
     }
 
     /**
-     * @return the field sheet, which becomes a facility
+     * @return the field sheet, which becomes a facility: the first sheet named with the field
+     * prefix, or the sheet the earlier revisions used
      */
     public Optional<SheetStructure> field() {
-        return designSheet("parcelle");
+        for (SheetStructure sheet : workbook.getSheets()) {
+            if (sheet.isTabular() && sheet.getName().toLowerCase(Locale.ROOT).startsWith(FIELD_PREFIX)) {
+                return Optional.of(sheet);
+            }
+        }
+        return designSheet(LEGACY_FIELD_SHEET);
     }
 
     /**
-     * @return the plot sheet, which becomes the scientific objects
+     * @return the plot sheet: {@code ed_placette} as the template names it, or else the first
+     * design sheet identifying its rows by {@code plot_id} — an exported workbook names its design
+     * sheets after the type of their objects, {@code ed_plot} for plots
      */
     public Optional<SheetStructure> plots() {
-        return designSheet("placette");
+        Optional<SheetStructure> named = designSheet(LEGACY_PLOT_SHEET);
+        if (named.isPresent()) {
+            return named;
+        }
+        for (SheetStructure sheet : workbook.getSheets()) {
+            String name = sheet.getName().toLowerCase(Locale.ROOT);
+            if (sheet.isTabular() && name.startsWith(EXPERIMENTAL_DESIGN_PREFIX)
+                    && sheet.hasHeader(PlotIdReconciliation.COLUMN_PLOT)) {
+                return Optional.of(sheet);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * @return the sheets listing scientific objects: every design sheet — {@code ed_placette}, or
+     * {@code ed_plot} and {@code ed_plant} in an exported workbook, or the earlier revision's bare
+     * {@code placette} — except those describing something else (the field, the events, the
+     * sprayings) and those whose rows identify nothing
+     */
+    public List<SheetStructure> objectSheets() {
+        Set<String> elsewhere = new HashSet<>();
+        field().ifPresent(sheet -> elsewhere.add(sheet.getName()));
+        events().ifPresent(sheet -> elsewhere.add(sheet.getName()));
+        treatmentApplications().ifPresent(sheet -> elsewhere.add(sheet.getName()));
+
+        List<SheetStructure> sheets = new ArrayList<>();
+        for (SheetStructure sheet : workbook.getSheets()) {
+            String name = sheet.getName().toLowerCase(Locale.ROOT);
+            boolean design = name.startsWith(EXPERIMENTAL_DESIGN_PREFIX) || name.equals(LEGACY_PLOT_SHEET);
+            if (design && sheet.isTabular() && !elsewhere.contains(sheet.getName())
+                    && identifierColumn(sheet) != null) {
+                sheets.add(sheet);
+            }
+        }
+        return sheets;
+    }
+
+    /**
+     * The column naming the objects of a design sheet: the one named after the sheet —
+     * {@code plant_id} in {@code ed_plant} — else {@code plot_id}, else the first identifier that
+     * does not name the field the objects stand in.
+     *
+     * @return the column, or {@code null} when the sheet identifies nothing
+     */
+    public static String identifierColumn(SheetStructure sheet) {
+        String name = sheet.getName().toLowerCase(Locale.ROOT);
+        String own = (name.startsWith(EXPERIMENTAL_DESIGN_PREFIX)
+                ? name.substring(EXPERIMENTAL_DESIGN_PREFIX.length())
+                : name) + ID_SUFFIX;
+        String firstOther = null;
+        for (String header : sheet.getHeaders()) {
+            String lower = header.toLowerCase(Locale.ROOT);
+            if (lower.equals(own)) {
+                return header;
+            }
+            if (firstOther == null && lower.endsWith(ID_SUFFIX) && !lower.equals(FIELD_ID)) {
+                firstOther = header;
+            }
+        }
+        return sheet.hasHeader(PlotIdReconciliation.COLUMN_PLOT) ? PlotIdReconciliation.COLUMN_PLOT : firstOther;
     }
 
     /**

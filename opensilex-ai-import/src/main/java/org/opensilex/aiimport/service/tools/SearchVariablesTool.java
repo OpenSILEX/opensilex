@@ -53,7 +53,7 @@ public class SearchVariablesTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) throws Exception {
         String name = ToolSchemas.text(arguments, "name");
         if (name == null) {
-            return error("The 'name' argument is required.");
+            return ToolSchemas.error("The 'name' argument is required.");
         }
         int limit = ToolSchemas.number(arguments, "limit", DEFAULT_LIMIT, MAX_LIMIT);
 
@@ -82,12 +82,6 @@ public class SearchVariablesTool implements AiTool {
         response.put("query", name);
         response.put("count", results.size());
         response.put("variables", results);
-        return response;
-    }
-
-    static Map<String, Object> error(String message) {
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("error", message);
         return response;
     }
 }

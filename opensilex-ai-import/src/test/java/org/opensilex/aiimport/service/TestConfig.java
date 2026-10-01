@@ -84,6 +84,11 @@ public class TestConfig implements AiImportConfig, LlmConfig {
     }
 
     @Override
+    public int savedSessionDays() {
+        return 30;
+    }
+
+    @Override
     public boolean searchSharedResourceInstances() {
         return searchSharedResourceInstances;
     }

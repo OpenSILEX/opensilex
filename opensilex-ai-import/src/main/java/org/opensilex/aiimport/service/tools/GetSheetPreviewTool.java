@@ -51,13 +51,16 @@ public class GetSheetPreviewTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) {
         String sheetName = ToolSchemas.text(arguments, "sheet");
         if (sheetName == null) {
-            return SearchVariablesTool.error("The 'sheet' argument is required.");
+            return ToolSchemas.error("The 'sheet' argument is required.");
         }
         int rows = ToolSchemas.number(arguments, "rows", DEFAULT_ROWS, MAX_ROWS);
 
+        if (context.getWorkbook() == null) {
+            return ToolSchemas.error("The file has not been read yet.");
+        }
         Optional<SheetStructure> found = context.getWorkbook().getSheet(sheetName);
         if (!found.isPresent()) {
-            Map<String, Object> error = SearchVariablesTool.error(
+            Map<String, Object> error = ToolSchemas.error(
                     "No sheet is named '" + sheetName + "' in the uploaded file.");
             error.put("available_sheets", context.getWorkbook().getSheetNames());
             return error;

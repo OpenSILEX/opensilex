@@ -7,31 +7,42 @@ package org.opensilex.aiimport.create;
 import org.opensilex.aiimport.mapping.ColumnMapping;
 import org.opensilex.aiimport.mapping.ColumnRole;
 import org.opensilex.aiimport.profile.DataPoint;
+import org.opensilex.aiimport.create.bulk.DataBulkImport;
+import org.opensilex.aiimport.create.bulk.ScientificObjectBulkImport;
+import org.opensilex.aiimport.create.objects.ObjectSheet;
+import org.opensilex.aiimport.create.objects.ObjectSheets;
 import org.opensilex.aiimport.profile.EventCandidate;
-import org.opensilex.aiimport.profile.star.StarProfile;
+import org.opensilex.aiimport.profile.FactorLevelCandidate;
+import org.opensilex.aiimport.profile.ImportProfileRegistry;
+import org.opensilex.aiimport.profile.ObjectRow;
 import org.opensilex.aiimport.resolve.ResolutionReport;
 import org.opensilex.aiimport.resolve.ResolutionStatus;
 import org.opensilex.aiimport.resolve.ResolvedItem;
 import org.opensilex.aiimport.service.AiImportSession;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.data.api.DataCreationDTO;
-import org.opensilex.core.data.bll.DataLogic;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.event.bll.EventLogic;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.api.FactorAPI;
+import org.opensilex.core.experiment.factor.dal.FactorDAO;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.bll.VariableCopyLogic;
 import org.opensilex.core.variable.bll.VariableCopyResult;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.server.exceptions.NotFoundURIException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
@@ -43,12 +54,15 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Creates what the report said was missing: a project, an experiment, or the observations
@@ -65,16 +79,23 @@ public class AiImportCreationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiImportCreationService.class);
 
     /**
-     * Matches the limit the data API enforces on a single call, so a large workbook is refused with
-     * an explanation rather than halfway through.
+     * The most observations one file may insert. The platform imports at most 10,000 lines at
+     * once, so a larger file goes in batches, all validated in memory before the first is written;
+     * this bounds that memory, and refuses a file above it up front with an explanation.
      */
     public static final int MAX_DATA_POINTS = 50_000;
 
     /**
-     * How many offending rows a refusal quotes. Enough to see the pattern; a file where every row
-     * fails does not need every row listed.
+     * The fields of a factor creation.
      */
-    private static final int MAX_UNRESOLVED_REPORTED = 20;
+    public static final String FACTOR_EXPERIMENT = "experiment";
+    public static final String FACTOR_NAME = "factor_name";
+
+    /**
+     * The fields linking an experiment to the organisations running it and the facilities it uses.
+     */
+    public static final String EXPERIMENT_ORGANIZATIONS = "organisations";
+    public static final String EXPERIMENT_FACILITIES = "facilities";
 
     private final SPARQLService sparql;
     private final MongoDBService nosql;
@@ -121,6 +142,10 @@ public class AiImportCreationService {
                 return projectRequirements(session);
             case EXPERIMENT:
                 return experimentRequirements(session);
+            case FACTORS:
+                return factorRequirements(session);
+            case SCIENTIFIC_OBJECTS:
+                return objectRequirements(session);
             case VARIABLE:
                 return variableRequirements(session);
             case EVENT:
@@ -191,12 +216,79 @@ public class AiImportCreationService {
         requirements.field(new RequiredField("description", "AiImport.proposal.field.description",
                 RequiredField.KIND_LONG_TEXT, false));
 
+        RequiredField organizations = new RequiredField(EXPERIMENT_ORGANIZATIONS,
+                "AiImport.proposal.field.organizations", RequiredField.KIND_URI_LIST, false)
+                .setResource(RequiredField.RESOURCE_ORGANIZATION);
+        RequiredField facilities = new RequiredField(EXPERIMENT_FACILITIES,
+                "AiImport.proposal.field.facilities", RequiredField.KIND_URI_LIST, false)
+                .setResource(RequiredField.RESOURCE_FACILITY);
+        if (session.getReport() != null) {
+            foundUris(session.getReport().getOrganizations()).ifPresent(uris ->
+                    organizations.suggest(uris, "AiImport.proposal.from.resolvedOrganizations"));
+            foundUris(session.getReport().getFacilities()).ifPresent(uris ->
+                    facilities.suggest(uris, "AiImport.proposal.from.resolvedFacilities"));
+        }
+        requirements.field(organizations);
+        requirements.field(facilities);
+
         if (session.getReport() != null) {
             for (ResolvedItem project : session.getReport().getProjects()) {
                 if (project.getStatus() == ResolutionStatus.MISSING) {
                     requirements.warn("AiImport.proposal.warn.projectMissing");
                 }
             }
+        }
+        return requirements;
+    }
+
+    /**
+     * What creating the observed objects takes: the experiment they belong to, and their type.
+     * <p>
+     * The type is asked, never guessed. No template states it — a plot sheet counts plants per plot
+     * without saying what a plot is — and several hundred objects created under a type nobody chose
+     * are not repaired by editing one of them.
+     */
+    private CreationRequirements objectRequirements(AiImportSession session) {
+        CreationRequirements requirements = new CreationRequirements(CreationTarget.SCIENTIFIC_OBJECTS);
+        List<ObjectRow> rows = ScientificObjectBulkImport.rowsOf(session);
+        if (rows.isEmpty()) {
+            requirements.block("AiImport.proposal.block.noObjectRows");
+            return requirements;
+        }
+
+        RequiredField experiment = new RequiredField(ScientificObjectBulkImport.EXPERIMENT,
+                "AiImport.proposal.field.experiment", RequiredField.KIND_URI, true)
+                .setResource(RequiredField.RESOURCE_EXPERIMENT);
+        facts(session).firstFoundUri(session.getReport() == null ? null : session.getReport().getExperiments())
+                .ifPresent(uri -> experiment.suggest(uri.toString(), "AiImport.proposal.from.resolvedExperiment"));
+        requirements.field(experiment);
+
+        // Each sheet carries its own type, chosen in the object sheets panel or stated by the file;
+        // this one only stands for the sheets that have none, and is asked only when one hasn't.
+        List<ObjectSheet> sheets = ObjectSheets.of(session).stream().filter(ObjectSheet::isIncluded)
+                .collect(Collectors.toList());
+        boolean untyped = sheets.isEmpty() || sheets.stream().anyMatch(sheet -> sheet.getType() == null);
+        requirements.field(new RequiredField(ScientificObjectBulkImport.OBJECT_TYPE,
+                "AiImport.proposal.field.objectType", RequiredField.KIND_URI, untyped)
+                .setResource(RequiredField.RESOURCE_OBJECT_TYPE));
+
+        long included = sheets.stream().mapToLong(sheet -> sheet.getRows().size()).sum();
+        String summary = sheets.size() > 1
+                ? included + " (" + sheets.stream().map(sheet -> sheet.getName() + " : " + sheet.getRows().size())
+                .collect(Collectors.joining(", ")) + ")"
+                : String.valueOf(sheets.isEmpty() ? rows.size() : included);
+        requirements.field(new RequiredField("object_summary", "AiImport.proposal.field.objectSummary",
+                RequiredField.KIND_TEXT, false)
+                .suggest(summary, "AiImport.proposal.from.objectSheet"));
+        if (sheets.stream().anyMatch(ObjectSheet::isTypeFromFile)) {
+            requirements.warn("AiImport.proposal.warn.objectTypeFromFile");
+        }
+
+        // The importer updates an object whose name already exists in the experiment: said before
+        // the click, since an update is not what "create" suggests.
+        if (session.getReport() != null && facts(session).countStatus(
+                session.getReport().getScientificObjects(), ResolutionStatus.FOUND) > 0) {
+            requirements.warn("AiImport.proposal.warn.objectsWillBeUpdated");
         }
         return requirements;
     }
@@ -238,6 +330,83 @@ public class AiImportCreationService {
     }
 
 
+
+    /**
+     * What creating the experiment's factors takes: the experiment they belong to — a factor is
+     * declared in one, which is why it has to exist first — and the factor's name when the file
+     * does not give it, which a STAR workbook never does.
+     */
+    private CreationRequirements factorRequirements(AiImportSession session) {
+        CreationRequirements requirements = new CreationRequirements(CreationTarget.FACTORS);
+        List<FactorLevelCandidate> levels = factorLevelsOf(session);
+        if (levels.isEmpty()) {
+            requirements.block("AiImport.proposal.block.noFactorLevels");
+            return requirements;
+        }
+        if (!mayCreateFactors()) {
+            requirements.block("AiImport.proposal.block.factorsNotAllowed");
+        }
+
+        RequiredField experiment = new RequiredField(FACTOR_EXPERIMENT, "AiImport.proposal.field.experiment",
+                RequiredField.KIND_URI, true).setResource(RequiredField.RESOURCE_EXPERIMENT);
+        Optional<URI> resolved = facts(session).firstFoundUri(
+                session.getReport() == null ? null : session.getReport().getExperiments());
+        resolved.ifPresent(uri -> experiment.suggest(uri.toString(), "AiImport.proposal.from.resolvedExperiment"));
+        requirements.field(experiment);
+        if (!resolved.isPresent()) {
+            requirements.warn("AiImport.proposal.warn.experimentFirst");
+        }
+
+        boolean named = levels.stream().allMatch(level -> level.factor() != null);
+        requirements.field(new RequiredField(FACTOR_NAME, "AiImport.proposal.field.factorName",
+                RequiredField.KIND_TEXT, !named));
+
+        String codes = levels.stream().limit(12).map(FactorLevelCandidate::code).collect(Collectors.joining(", "));
+        requirements.field(new RequiredField("levels_summary", "AiImport.proposal.field.levelsSummary",
+                RequiredField.KIND_TEXT, false)
+                .suggest(levels.size() + " : " + codes + (levels.size() > 12 ? ", …" : ""),
+                        "AiImport.proposal.from.treatmentSheet"));
+        return requirements;
+    }
+
+    /**
+     * The URIs of the items the report found, comma-separated as a list field carries them.
+     */
+    private static Optional<String> foundUris(List<ResolvedItem> items) {
+        String uris = items.stream().filter(item -> item.getStatus() == ResolutionStatus.FOUND)
+                .filter(item -> !item.getMatches().isEmpty())
+                .map(item -> item.getMatches().get(0).getUri().toString())
+                .distinct().collect(Collectors.joining(","));
+        return uris.isEmpty() ? Optional.empty() : Optional.of(uris);
+    }
+
+    private List<FactorLevelCandidate> factorLevelsOf(AiImportSession session) {
+        if (session.getWorkbook() == null) {
+            return List.of();
+        }
+        return new ImportProfileRegistry().getById(session.getProfileId())
+                .map(profile -> profile.extractFactorLevels(session.getWorkbook()))
+                .orElse(List.of());
+    }
+
+    /**
+     * The right the platform's factor screen asks for.
+     */
+    private boolean mayCreateFactors() {
+        if (currentUser == null) {
+            return false;
+        }
+        if (Boolean.TRUE.equals(currentUser.isAdmin())) {
+            return true;
+        }
+        try {
+            return new AccountDAO(sparql).getCredentialList(currentUser.getUri())
+                    .contains(FactorAPI.CREDENTIAL_FACTOR_MODIFICATION_ID);
+        } catch (Exception e) {
+            LOGGER.warn("Could not read the credentials of {}", currentUser.getUri(), e);
+            return false;
+        }
+    }
 
     /**
      * What creating the events takes.
@@ -366,6 +535,37 @@ public class AiImportCreationService {
     //#region creation
 
     /**
+     * Carries out a confirmed draft: the one place that knows which operation serves which target.
+     * <p>
+     * The requirements are checked by the caller beforehand; this only writes. A refusal comes back
+     * as the rows of the workbook in the way, and means nothing was written.
+     */
+    public CreationOutcome apply(CreationTarget target, AiImportSession session,
+                                 Map<String, String> values) throws Exception {
+        switch (target) {
+            case PROJECT:
+                return CreationOutcome.created(createProject(session, values));
+            case EXPERIMENT:
+                return CreationOutcome.created(createExperiment(session, values));
+            case FACTORS:
+                return CreationOutcome.inserted(createFactors(session, values));
+            case SCIENTIFIC_OBJECTS:
+                return CreationOutcome.of(new ScientificObjectBulkImport(sparql, nosql, fs, currentUser)
+                        .importAll(session, values));
+            case VARIABLE:
+                return CreationOutcome.inserted(importVariables(session, values));
+            case EVENT:
+                return CreationOutcome.inserted(createEvents(session, values));
+            case DATA:
+            default:
+                // Through the platform's data import: its validation, its batch history, its
+                // archived CSV — see DataBulkImport.
+                return CreationOutcome.of(new DataBulkImport(sparql, nosql, fs, currentUser)
+                        .importAll(session, values));
+        }
+    }
+
+    /**
      * Imports the variables the report found on a shared resource instance.
      * <p>
      * Delegated to {@link VariableCopyLogic}, which is the code the variables screen runs: copying
@@ -403,13 +603,23 @@ public class AiImportCreationService {
      * user was a list of URIs with nothing saying which form field to correct.
      */
     private List<ProjectModel> linkedProjects(String projects) throws Exception {
-        List<ProjectModel> linked = new ArrayList<>();
-        if (projects == null || projects.trim().isEmpty()) {
+        return linked("projects", projects, ProjectModel.class, ProjectModel::new, "project");
+    }
+
+    /**
+     * The resources a field lists, by URI, each checked to exist: refused on that field otherwise,
+     * rather than deep in the storage where nothing would say which field to correct.
+     */
+    private <T extends SPARQLResourceModel> List<T> linked(String field, String value, Class<T> type,
+                                                           Supplier<T> constructor, String noun)
+            throws Exception {
+        List<T> linked = new ArrayList<>();
+        if (value == null || value.trim().isEmpty()) {
             return linked;
         }
 
         List<URI> uris = new ArrayList<>();
-        for (String uri : projects.split(",")) {
+        for (String uri : value.split(",")) {
             String trimmed = uri.trim();
             if (trimmed.isEmpty()) {
                 continue;
@@ -417,8 +627,8 @@ public class AiImportCreationService {
             try {
                 uris.add(new URI(trimmed));
             } catch (URISyntaxException e) {
-                throw new CreationFieldException("projects",
-                        "'" + trimmed + "' is not a URI. Pick the project from the list instead of "
+                throw new CreationFieldException(field,
+                        "'" + trimmed + "' is not a URI. Pick the " + noun + " from the list instead of "
                                 + "typing it.");
             }
         }
@@ -427,17 +637,17 @@ public class AiImportCreationService {
         }
 
         // checkExist = false returns the ones that are absent, which is what has to be reported.
-        Set<URI> unknown = sparql.getExistingUris(ProjectModel.class, uris, false);
+        Set<URI> unknown = sparql.getExistingUris(type, uris, false);
         if (!unknown.isEmpty()) {
-            throw new CreationFieldException("projects",
-                    "No project carries " + (unknown.size() == 1 ? "this URI: " : "these URIs: ")
-                            + unknown + ". Pick an existing project, or create it first.");
+            throw new CreationFieldException(field,
+                    "No " + noun + " carries " + (unknown.size() == 1 ? "this URI: " : "these URIs: ")
+                            + unknown + ". Pick an existing " + noun + ", or create it first.");
         }
 
         uris.forEach(uri -> {
-            ProjectModel project = new ProjectModel();
-            project.setUri(uri);
-            linked.add(project);
+            T resource = constructor.get();
+            resource.setUri(uri);
+            linked.add(resource);
         });
         return linked;
     }
@@ -510,121 +720,106 @@ public class AiImportCreationService {
         }
 
         model.setProjects(linkedProjects(optional(values, "projects")));
+        // The organisations running the trial and the field it stands in: the platform only lets a
+        // plot be hosted by a facility the experiment uses or its organisations host.
+        model.setOrganizations(linked(EXPERIMENT_ORGANIZATIONS, optional(values, EXPERIMENT_ORGANIZATIONS),
+                OrganizationModel.class, OrganizationModel::new, "organisation"));
+        model.setFacilities(linked(EXPERIMENT_FACILITIES, optional(values, EXPERIMENT_FACILITIES),
+                FacilityModel.class, FacilityModel::new, "facility"));
 
         return new ExperimentDAO(sparql, nosql, fs).create(model).getUri();
     }
 
     /**
-     * Inserts the observations read from the file, or writes nothing at all.
+     * Declares the treatments of the workbook as the levels of the experiment's factors, the way
+     * the platform's factor screen does: the level's name is the treatment's code — what the object
+     * sheets write, and what the objects are matched on — its description what the file says of it.
      * <p>
-     * Every target and every variable is resolved first. If one row cannot be placed, the whole
-     * insertion is refused and the offending rows are named. Writing the rows that happen to
-     * resolve would leave the user believing they imported their dataset when they imported part of
-     * it, with nothing on screen saying which part.
-     */
-    public DataInsertionResult insertData(AiImportSession session, Map<String, String> values)
-            throws Exception {
-        URI experiment = URI.create(required(values, "experiment"));
-
-        List<DataCreationDTO> drafts = new ArrayList<>();
-        List<UnresolvedRow> unresolved = resolveRows(session, drafts);
-
-        if (!unresolved.isEmpty()) {
-            // Refused before the provenance is created, so a refusal leaves nothing behind.
-            LOGGER.warn("Refusing to insert {} observations: {} could not be placed",
-                    session.getDataPoints().size(), unresolved.size());
-            return DataInsertionResult.refused(
-                    unresolved.subList(0, Math.min(unresolved.size(), MAX_UNRESOLVED_REPORTED)),
-                    unresolved.size());
-        }
-        if (drafts.isEmpty()) {
-            return DataInsertionResult.inserted(0);
-        }
-
-        URI provenance = createProvenance(required(values, "provenance_name"),
-                optional(values, "provenance_description"));
-        DataProvenanceModel dataProvenance = new DataProvenanceModel();
-        dataProvenance.setUri(provenance);
-        dataProvenance.setExperiments(List.of(experiment));
-
-        List<DataModel> models = new ArrayList<>(drafts.size());
-        for (DataCreationDTO draft : drafts) {
-            draft.setProvenance(dataProvenance);
-            models.add(draft.newModel());
-        }
-
-        new DataLogic(sparql, nosql, fs, currentUser).createMany(models);
-        return DataInsertionResult.inserted(models.size());
-    }
-
-    private URI createProvenance(String name, String description) throws Exception {
-        ProvenanceModel model = new ProvenanceModel();
-        model.setName(name);
-        model.setDescription(description);
-        return new ProvenanceDAO(nosql, sparql).create(model).getUri();
-    }
-
-    //#endregion
-
-    //#region lookups built from the report
-
-
-    /**
-     * Resolves every plot the observations mention, in one query.
-     * <p>
-     * {@code checkUniqueNameByGraph} sends the whole set of names as a SPARQL {@code VALUES} clause
-     * and returns them mapped to their URI. One query instead of one per plot — and, more to the
-     * point, no reason left to resolve only a sample, which is what used to make observations
-     * disappear.
-     */
-    /**
-     * Places every observation on a target and a variable, without writing anything.
-     * <p>
-     * Separate from the writing so that the decision to refuse can be tested on its own, and so
-     * that reading the code makes the order plain: everything resolves, then everything is written.
+     * A treatment the experiment already has is left as it is; a factor the experiment already
+     * names is refused on its field rather than duplicated under the same name.
      *
-     * @param drafts filled with what would be written, when nothing is left unresolved
-     * @return the rows that could not be placed, empty when the insertion can go ahead
+     * @return how many levels were created
      */
-    List<UnresolvedRow> resolveRows(AiImportSession session, List<DataCreationDTO> drafts) {
-        Map<String, URI> variablesByColumn = facts(session).variableUrisByColumn();
-        Map<String, URI> objectsByName = facts(session).scientificObjectUris();
-        Map<String, URI> facilitiesByName = facts(session).facilityUris();
-
-        List<UnresolvedRow> unresolved = new ArrayList<>();
-        for (DataPoint point : session.getDataPoints()) {
-            URI variable = variablesByColumn.get(point.getVariableKey().toLowerCase());
-            if (variable == null) {
-                unresolved.add(new UnresolvedRow(point.getSheet(), point.getRowNumber(),
-                        point.getVariableKey(), "AiImport.proposal.unresolved.variable",
-                        point.getVariableKey()));
-                continue;
-            }
-            boolean atFacility = point.getTargetKind() == DataPoint.TargetKind.FACILITY;
-            URI target = atFacility
-                    ? facilitiesByName.get(point.getObjectName().toLowerCase())
-                    : objectsByName.get(point.getObjectName().toLowerCase());
-            if (target == null) {
-                unresolved.add(new UnresolvedRow(point.getSheet(), point.getRowNumber(),
-                        point.getVariableKey(),
-                        atFacility
-                                ? "AiImport.proposal.unresolved.facility"
-                                : "AiImport.proposal.unresolved.object",
-                        point.getObjectName()));
-                continue;
-            }
-
-            DataCreationDTO dto = new DataCreationDTO();
-            dto.setDate(point.getDate().toString());
-            dto.setTarget(target);
-            dto.setVariable(variable);
-            dto.setValue(point.getRawValue());
-            drafts.add(dto);
+    public int createFactors(AiImportSession session, Map<String, String> values) throws Exception {
+        if (!mayCreateFactors()) {
+            throw new CreationFieldException(FACTOR_EXPERIMENT,
+                    "Creating factors needs the right to modify factors on this instance.");
         }
-        return unresolved;
+        ExperimentModel experiment = experimentOf(required(values, FACTOR_EXPERIMENT));
+        FactorDAO dao = new FactorDAO(sparql);
+
+        Map<String, FactorModel> existingFactors = new HashMap<>();
+        Set<String> existingLevels = new HashSet<>();
+        for (FactorModel factor : dao.getByExperiment(experiment.getUri(), currentUser.getLanguage())) {
+            existingFactors.put(factor.getName().toLowerCase(Locale.ROOT), factor);
+            if (factor.getFactorLevels() != null) {
+                factor.getFactorLevels().forEach(level -> existingLevels.add(level.getName().toLowerCase(Locale.ROOT)));
+            }
+        }
+
+        String defaultName = optional(values, FACTOR_NAME);
+        Map<String, List<FactorLevelCandidate>> byFactor = new LinkedHashMap<>();
+        for (FactorLevelCandidate level : factorLevelsOf(session)) {
+            String factor = level.factor() != null ? level.factor() : defaultName;
+            if (factor == null) {
+                throw new CreationFieldException(FACTOR_NAME, "The file does not name the factor its "
+                        + "treatments belong to: give it a name.");
+            }
+            byFactor.computeIfAbsent(factor, name -> new ArrayList<>()).add(level);
+        }
+
+        int created = 0;
+        for (Map.Entry<String, List<FactorLevelCandidate>> factor : byFactor.entrySet()) {
+            List<FactorLevelCandidate> fresh = factor.getValue().stream()
+                    .filter(level -> !existingLevels.contains(level.code().toLowerCase(Locale.ROOT)))
+                    .collect(Collectors.toList());
+            if (fresh.isEmpty()) {
+                continue;
+            }
+            if (existingFactors.containsKey(factor.getKey().toLowerCase(Locale.ROOT))) {
+                throw new CreationFieldException(FACTOR_NAME, "The experiment already has a factor named '"
+                        + factor.getKey() + "'. Name this one differently, or add the missing levels to "
+                        + "that factor from the experiment's page.");
+            }
+            FactorModel model = new FactorModel();
+            model.setName(factor.getKey());
+            model.setPublisher(currentUser.getUri());
+            List<FactorLevelModel> levels = new ArrayList<>();
+            for (FactorLevelCandidate candidate : fresh) {
+                FactorLevelModel level = new FactorLevelModel();
+                level.setName(candidate.code());
+                level.setDescription(candidate.levelDescription());
+                level.setPublisher(currentUser.getUri());
+                level.setFactor(model);
+                levels.add(level);
+            }
+            model.setFactorLevels(levels);
+            model.setExperiment(experiment);
+            model.setAssociatedExperiments(List.of(experiment));
+            dao.create(model);
+            created += levels.size();
+        }
+        return created;
     }
 
-
+    /**
+     * The experiment a field names, as the user may see it; refused on that field otherwise.
+     */
+    private ExperimentModel experimentOf(String value) throws Exception {
+        URI uri;
+        try {
+            uri = new URI(value.trim());
+        } catch (URISyntaxException e) {
+            throw new CreationFieldException(FACTOR_EXPERIMENT, "'" + value + "' is not a URI. Pick the "
+                    + "experiment from the list instead of typing it.");
+        }
+        try {
+            return new ExperimentDAO(sparql, nosql, fs).get(uri, currentUser);
+        } catch (NotFoundURIException | ForbiddenURIAccessException | SPARQLInvalidUriListException e) {
+            throw new CreationFieldException(FACTOR_EXPERIMENT, "No experiment you can see carries this URI: "
+                    + uri + ". Create the experiment first.");
+        }
+    }
 
     //#endregion
 

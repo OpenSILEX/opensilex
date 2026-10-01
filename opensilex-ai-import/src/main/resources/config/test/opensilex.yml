@@ -1,0 +1,10 @@
+# Read only under the "test" profile, which the integration tests start the instance with.
+# The assistant is disabled by default; its REST tests need it on, talking to the stub language
+# model the tests open on this port (StubLlmEndpoint.TEST_PORT), and without shared resource
+# instances, which a test cannot reach.
+ai-import:
+    enabled: true
+    llm:
+        baseUrl: http://127.0.0.1:28771/v1
+        model: stub-model
+    searchSharedResourceInstances: false

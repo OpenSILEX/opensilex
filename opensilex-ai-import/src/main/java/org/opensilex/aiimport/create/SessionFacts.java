@@ -7,6 +7,7 @@ package org.opensilex.aiimport.create;
 import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.EventCandidate;
 import org.opensilex.aiimport.profile.star.StarProfile;
+import org.opensilex.aiimport.resolve.ReportCategory;
 import org.opensilex.aiimport.resolve.ResolutionStatus;
 import org.opensilex.aiimport.resolve.ResolvedItem;
 import org.opensilex.aiimport.service.AiImportSession;
@@ -111,8 +112,8 @@ public class SessionFacts {
      */
     public List<URI> resolveTargets(EventCandidate candidate) {
         Map<String, URI> byName = candidate.getTargetKind() == DataPoint.TargetKind.FACILITY
-                ? facilityUris()
-                : scientificObjectUris();
+                ? resolvedUris(ReportCategory.FACILITIES)
+                : resolvedUris(ReportCategory.SCIENTIFIC_OBJECTS);
 
         List<URI> targets = new ArrayList<>();
         for (String name : candidate.getTargetNames()) {
@@ -125,39 +126,17 @@ public class SessionFacts {
     }
 
     /**
-     * Column header to variable URI, lowercased so a header's casing cannot lose a match.
-     */
-    public Map<String, URI> variableUrisByColumn() {
-        Map<String, URI> byColumn = new HashMap<>();
-        for (ResolvedItem item : this.session.getReport().getVariables()) {
-            if (item.getStatus() == ResolutionStatus.FOUND && item.getMatches().size() == 1) {
-                byColumn.put(item.getSourceValue().toLowerCase(),
-                        item.getMatches().get(0).getUri());
-            }
-        }
-        return byColumn;
-    }
-
-    /**
-     * The scientific objects, read from the report rather than looked up again.
+     * The resources of one category that the report resolved to exactly one match, keyed by the
+     * file's value in lower case.
      * <p>
-     * Since the resolution stopped sampling, the report covers every name the file mentions, and it
-     * is recomputed after each creation. Querying a second time here would repeat that work and let
-     * the two disagree; reading the report keeps one source for what exists.
+     * Read from the report rather than looked up again: the report covers every name the file
+     * mentions and is recomputed after each creation, so it is the one source of what exists. A
+     * name matched ambiguously is left out on purpose — a row must not be filed against one of two
+     * candidates picked at random.
      */
-    public Map<String, URI> scientificObjectUris() {
+    public Map<String, URI> resolvedUris(ReportCategory category) {
         Map<String, URI> byName = new HashMap<>();
-        for (ResolvedItem item : this.session.getReport().getScientificObjects()) {
-            if (item.getStatus() == ResolutionStatus.FOUND && item.getMatches().size() == 1) {
-                byName.put(item.getSourceValue().toLowerCase(), item.getMatches().get(0).getUri());
-            }
-        }
-        return byName;
-    }
-
-    public Map<String, URI> facilityUris() {
-        Map<String, URI> byName = new HashMap<>();
-        for (ResolvedItem item : this.session.getReport().getFacilities()) {
+        for (ResolvedItem item : category.itemsOf(session.getReport())) {
             if (item.getStatus() == ResolutionStatus.FOUND && item.getMatches().size() == 1) {
                 byName.put(item.getSourceValue().toLowerCase(), item.getMatches().get(0).getUri());
             }

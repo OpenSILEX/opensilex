@@ -14,7 +14,6 @@ import org.opensilex.aiimport.create.RequiredField;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -37,7 +36,8 @@ public class GetCreationFieldsTool implements AiTool {
 
     @Override
     public String getDescription() {
-        return "List the fields a PROJECT, an EXPERIMENT, the trial EVENT records or the observation DATA need, which of "
+        return "List the fields a PROJECT, an EXPERIMENT, its FACTORS, its SCIENTIFIC_OBJECTS, the trial EVENT records or "
+                + "the observation DATA need, which of "
                 + "them are required, what the uploaded file already suggests for each, and what "
                 + "currently prevents the creation. Call it before propose_creation when you are "
                 + "unsure of a field name, or after something was created, since that changes what "
@@ -47,7 +47,7 @@ public class GetCreationFieldsTool implements AiTool {
     @Override
     public ObjectNode getParametersSchema(ObjectMapper mapper) {
         ObjectNode schema = ToolSchemas.object(mapper);
-        ToolSchemas.string(schema, "target", "PROJECT, EXPERIMENT, VARIABLE, EVENT or DATA", true);
+        ToolSchemas.string(schema, "target", CreationTarget.choices(), true);
         return schema;
     }
 
@@ -55,17 +55,15 @@ public class GetCreationFieldsTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) {
         String rawTarget = ToolSchemas.text(arguments, "target");
         if (rawTarget == null) {
-            return SearchVariablesTool.error("The 'target' argument is required.");
+            return ToolSchemas.error("The 'target' argument is required.");
         }
-        CreationTarget target;
-        try {
-            target = CreationTarget.valueOf(rawTarget.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            return SearchVariablesTool.error(
-                    "'" + rawTarget + "' is not one of PROJECT, EXPERIMENT, VARIABLE, EVENT or DATA.");
+        CreationTarget target = CreationTarget.parse(rawTarget).orElse(null);
+        if (target == null) {
+            return ToolSchemas.error(
+                    "'" + rawTarget + "' is not one of " + CreationTarget.choices() + ".");
         }
         if (context.getSession() == null) {
-            return SearchVariablesTool.error("There is no open conversation.");
+            return ToolSchemas.error("There is no open conversation.");
         }
 
         CreationRequirements requirements =

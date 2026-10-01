@@ -6,11 +6,13 @@ package org.opensilex.aiimport.resolve;
 
 import org.opensilex.aiimport.report.ReportMessage;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * What the instance already has, and what it does not, for one uploaded file.
@@ -36,6 +38,11 @@ public class ResolutionReport {
      * People the file names — a study contact, an author — as OpenSILEX persons.
      */
     private final List<ResolvedItem> persons = new ArrayList<>();
+
+    /**
+     * The organisations the file names as running the trial: an institution and its units.
+     */
+    private final List<ResolvedItem> organizations = new ArrayList<>();
 
     /**
      * Inconsistencies noticed while reading the file, phrased for a human.
@@ -99,6 +106,10 @@ public class ResolutionReport {
         return persons;
     }
 
+    public List<ResolvedItem> getOrganizations() {
+        return organizations;
+    }
+
     /**
      * The anomalies in English, which is what the prompt carries.
      */
@@ -152,6 +163,42 @@ public class ResolutionReport {
 
     public ResolutionReport addWarning(String warning) {
         return addWarning(ReportMessage.plain(warning));
+    }
+
+    /**
+     * The suggestion this report made for a name of the file, when it made that one.
+     * <p>
+     * This is what keeps a confirmation honest: the user picks among what the resolution
+     * proposed — read through the DAOs, under their own access rights — and never an arbitrary URI
+     * sent in a request.
+     */
+    public Optional<ResourceReference> suggestion(ReportCategory category, String fileValue, URI uri) {
+        if (fileValue == null || uri == null) {
+            return Optional.empty();
+        }
+        return category.itemsOf(this).stream()
+                .filter(item -> fileValue.equalsIgnoreCase(item.getSourceValue()))
+                .flatMap(item -> item.getSuggestions().stream())
+                .filter(suggestion -> uri.equals(suggestion.getUri()))
+                .findFirst();
+    }
+
+    /**
+     * A suggestion made for this name, or the match the user already confirmed for it in this
+     * conversation — the two things a correction may be taught from.
+     */
+    public Optional<ResourceReference> suggestionOrConfirmedMatch(ReportCategory category,
+                                                                   String fileValue, URI uri) {
+        Optional<ResourceReference> suggested = suggestion(category, fileValue, uri);
+        if (suggested.isPresent() || fileValue == null || uri == null) {
+            return suggested;
+        }
+        return category.itemsOf(this).stream()
+                .filter(item -> fileValue.equalsIgnoreCase(item.getSourceValue()))
+                .filter(ResolvedItem::isConfirmedByUser)
+                .flatMap(item -> item.getMatches().stream())
+                .filter(match -> uri.equals(match.getUri()))
+                .findFirst();
     }
 
     public int count(List<ResolvedItem> items, ResolutionStatus status) {

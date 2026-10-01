@@ -29,6 +29,15 @@ public class TokenUsage {
      * Adds one response's usage. A response that reports none is still counted as a call, so the
      * ratio of calls to messages stays honest on endpoints that omit the field.
      */
+    /**
+     * Puts back the counters of a stored session, so its cost keeps adding up across a resumption.
+     */
+    public synchronized void restore(long promptTokens, long completionTokens, int calls) {
+        this.promptTokens = promptTokens;
+        this.completionTokens = completionTokens;
+        this.calls = calls;
+    }
+
     public synchronized void add(ChatResponse response) {
         calls++;
         if (response == null || response.getUsage() == null) {

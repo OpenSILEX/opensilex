@@ -5,9 +5,11 @@
 package org.opensilex.aiimport.service;
 
 import org.opensilex.aiimport.create.CreationProposal;
+import org.opensilex.aiimport.create.objects.ObjectSheetPlan;
 import org.opensilex.aiimport.mapping.ColumnMapping;
 import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.EventCandidate;
+import org.opensilex.aiimport.resolve.ConfirmedMatches;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
 import org.opensilex.aiimport.resolve.ResolutionReport;
 import org.opensilex.aiimport.service.dto.ChatMessage;
@@ -39,7 +41,7 @@ public class AiImportSession {
      */
     private final URI accountUri;
 
-    private final Instant createdAt = Instant.now();
+    private final Instant createdAt;
 
     private String fileName;
     private String profileId;
@@ -53,6 +55,19 @@ public class AiImportSession {
      * the data does not mean reading the workbook again.
      */
     private List<EventCandidate> events = new ArrayList<>();
+
+    /**
+     * What the user confirmed a misspelt name means. Survives revalidation, which is the point:
+     * the report is recomputed after every creation, and a confirmation that vanished with it
+     * would have to be given again each time.
+     */
+    private final ConfirmedMatches confirmedMatches = new ConfirmedMatches();
+
+    /**
+     * What the user chose for each object sheet — the type, the columns — by sheet name. Survives
+     * revalidation for the same reason the confirmations do.
+     */
+    private final Map<String, ObjectSheetPlan> objectPlans = new LinkedHashMap<>();
 
     private List<DataPoint> dataPoints = new ArrayList<>();
 
@@ -84,8 +99,30 @@ public class AiImportSession {
     private final Map<String, CreationProposal> proposals = new LinkedHashMap<>();
 
     public AiImportSession(String id, URI accountUri) {
+        this(id, accountUri, Instant.now());
+    }
+
+    /**
+     * A session read back from storage, keeping its identifier and the moment it was opened.
+     */
+    public AiImportSession(String id, URI accountUri, Instant createdAt) {
         this.id = id;
         this.accountUri = accountUri;
+        this.createdAt = createdAt == null ? Instant.now() : createdAt;
+    }
+
+    /**
+     * Records a draft read back from storage, without making it the pending one.
+     */
+    public void restoreProposal(CreationProposal proposal) {
+        proposals.put(proposal.getId(), proposal);
+    }
+
+    /**
+     * Every draft of the conversation, in the order they were made.
+     */
+    public List<CreationProposal> getProposals() {
+        return new ArrayList<>(proposals.values());
     }
 
     public String getId() {
@@ -152,6 +189,14 @@ public class AiImportSession {
     public AiImportSession setMappings(List<ColumnMapping> mappings) {
         this.mappings = mappings;
         return this;
+    }
+
+    public ConfirmedMatches getConfirmedMatches() {
+        return confirmedMatches;
+    }
+
+    public Map<String, ObjectSheetPlan> getObjectPlans() {
+        return objectPlans;
     }
 
     public List<EventCandidate> getEvents() {

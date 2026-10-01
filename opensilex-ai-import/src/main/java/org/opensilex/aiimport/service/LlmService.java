@@ -55,6 +55,12 @@ public class LlmService {
     private static final String NOT_CONFIGURED_TRANSLATION_KEY = "server.errors.ai-import-llm-not-configured";
 
     private static final String COMPLETION_ENDPOINT = "chat/completions";
+    private static final String MODELS_ENDPOINT = "models";
+
+    /**
+     * The probe answers a page as it opens, so it gives up long before a completion would.
+     */
+    private static final int PROBE_TIMEOUT_MS = 3000;
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     private static final String AUTHORIZATION_HEADER_CONTENT_FORMAT = "Bearer %s";
 
@@ -77,6 +83,45 @@ public class LlmService {
 
     public int getMaxToolIterations() {
         return config.maxToolIterations();
+    }
+
+    /**
+     * Asks the endpoint for its models, which costs no token, to tell whether a conversation can
+     * take place at all. Only a success counts: a refused key or a wrong base URL would fail the
+     * first question just the same.
+     *
+     * @return true when the endpoint is configured and answers
+     */
+    public boolean isReachable() {
+        if (!isEnable()) {
+            return false;
+        }
+        int timeout = Math.min(config.timeoutMs(), PROBE_TIMEOUT_MS);
+        Client client = ClientBuilder.newBuilder()
+                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .build();
+        try {
+            var builder = client.target(config.baseUrl()).path(MODELS_ENDPOINT)
+                    .request(MediaType.APPLICATION_JSON_TYPE);
+            if (StringUtils.isNotEmpty(config.apiKey())) {
+                builder = builder.header(AUTHORIZATION_HEADER_NAME,
+                        String.format(AUTHORIZATION_HEADER_CONTENT_FORMAT, config.apiKey()));
+            }
+            try (Response response = builder.get()) {
+                boolean answered = response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL;
+                if (!answered) {
+                    LOGGER.info("The chat completion endpoint {} answered its model list with status {}",
+                            config.baseUrl(), response.getStatus());
+                }
+                return answered;
+            }
+        } catch (RuntimeException e) {
+            LOGGER.info("The chat completion endpoint {} is not reachable: {}", config.baseUrl(), e.getMessage());
+            return false;
+        } finally {
+            client.close();
+        }
     }
 
     /**

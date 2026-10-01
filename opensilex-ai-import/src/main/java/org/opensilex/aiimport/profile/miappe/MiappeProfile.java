@@ -9,6 +9,9 @@ import org.opensilex.aiimport.profile.DataPoint;
 import org.opensilex.aiimport.profile.EventCandidate;
 import org.opensilex.aiimport.profile.ExtractedImportPlan;
 import org.opensilex.aiimport.profile.ImportProfile;
+import org.opensilex.aiimport.profile.ObjectRow;
+import org.opensilex.aiimport.profile.ObjectSheetDefaults;
+import org.opensilex.aiimport.profile.ObjectTargets;
 import org.opensilex.aiimport.profile.PersonCandidate;
 import org.opensilex.aiimport.profile.VariableCandidate;
 import org.opensilex.aiimport.profile.VariableComponent;
@@ -19,8 +22,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -74,6 +79,8 @@ public class MiappeProfile implements ImportProfile {
 
     static final String OBSERVATION_UNIT_ID = "Observation unit ID";
     static final String OBSERVATION_UNIT_TYPE = "Observation unit type";
+    static final String OBSERVATION_UNIT_MATERIAL = "Biological Material ID";
+    static final String OBSERVATION_UNIT_FACTOR = "Observation Unit factor value";
 
     static final String VARIABLE_ID = "Variable ID";
     static final String VARIABLE_NAME = "Variable name";
@@ -493,6 +500,45 @@ public class MiappeProfile implements ImportProfile {
         if (value != null && !value.trim().isEmpty()) {
             plan.note(key, value.trim());
         }
+    }
+
+    /**
+     * The observation units, with the material they hold and the factor value they receive.
+     */
+    @Override
+    public List<ObjectRow> extractObjectRows(WorkbookStructure structure) {
+        List<ObjectRow> rows = new ArrayList<>();
+        new MiappeSheets(structure).section(MiappeSheets.OBSERVATION_UNIT).ifPresent(section -> {
+            for (List<String> row : section.values()) {
+                String name = section.cell(row, OBSERVATION_UNIT_ID);
+                if (!name.isEmpty()) {
+                    rows.add(new ObjectRow(section.getName(), section.rowNumberOf(row), name)
+                            .setGermplasm(section.cell(row, OBSERVATION_UNIT_MATERIAL))
+                            .setFactorLevel(section.cell(row, OBSERVATION_UNIT_FACTOR))
+                            .setCells(section.fields(), row));
+                }
+            }
+        });
+        return rows;
+    }
+
+    /**
+     * The observation units: their identifier, the material they hold, the factor value they
+     * receive; the other fields start unmapped.
+     */
+    @Override
+    public ObjectSheetDefaults objectSheetDefaults(WorkbookStructure structure, String sheetName) {
+        boolean units = new MiappeSheets(structure).section(MiappeSheets.OBSERVATION_UNIT)
+                .map(section -> section.getName().equals(sheetName))
+                .orElse(false);
+        if (!units) {
+            return ObjectSheetDefaults.none();
+        }
+        Map<String, String> targets = new LinkedHashMap<>();
+        targets.put(OBSERVATION_UNIT_ID, ObjectTargets.NAME);
+        targets.put(OBSERVATION_UNIT_MATERIAL, ObjectTargets.GERMPLASM);
+        targets.put(OBSERVATION_UNIT_FACTOR, ObjectTargets.FACTOR_LEVEL);
+        return new ObjectSheetDefaults(OBSERVATION_UNIT_ID, targets, null);
     }
 
     /**

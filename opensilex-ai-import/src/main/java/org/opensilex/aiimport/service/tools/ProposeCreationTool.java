@@ -14,7 +14,6 @@ import org.opensilex.aiimport.create.ProposalBuilder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -38,7 +37,10 @@ public class ProposeCreationTool implements AiTool {
 
     @Override
     public String getDescription() {
-        return "Draft the creation of a PROJECT, an EXPERIMENT, the import of the VARIABLE definitions from a shared resource instance, the trial EVENT records, or the insertion of the observation "
+        return "Draft the creation of a PROJECT, an EXPERIMENT, its FACTORS (the treatments of the "
+                + "file as factor levels), its SCIENTIFIC_OBJECTS (every observed unit of the file in one "
+                + "pass), the import of the VARIABLE definitions from a shared "
+                + "resource instance, the trial EVENT records, or the insertion of the observation "
                 + "DATA, for the user to confirm. Nothing is written: the draft appears in the "
                 + "conversation with a confirm button, and the user may correct any value first. "
                 + "Describe what you are about to propose in your reply before calling this. Pass "
@@ -50,7 +52,7 @@ public class ProposeCreationTool implements AiTool {
     @Override
     public ObjectNode getParametersSchema(ObjectMapper mapper) {
         ObjectNode schema = ToolSchemas.object(mapper);
-        ToolSchemas.string(schema, "target", "PROJECT, EXPERIMENT, VARIABLE, EVENT or DATA", true);
+        ToolSchemas.string(schema, "target", CreationTarget.choices(), true);
 
         ObjectNode fields = ((ObjectNode) schema.get("properties")).putObject("fields");
         fields.put("type", "object");
@@ -67,17 +69,15 @@ public class ProposeCreationTool implements AiTool {
     public Object execute(JsonNode arguments, ToolContext context) {
         String rawTarget = ToolSchemas.text(arguments, "target");
         if (rawTarget == null) {
-            return SearchVariablesTool.error("The 'target' argument is required.");
+            return ToolSchemas.error("The 'target' argument is required.");
         }
-        CreationTarget target;
-        try {
-            target = CreationTarget.valueOf(rawTarget.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException e) {
-            return SearchVariablesTool.error(
-                    "'" + rawTarget + "' is not one of PROJECT, EXPERIMENT, VARIABLE, EVENT or DATA.");
+        CreationTarget target = CreationTarget.parse(rawTarget).orElse(null);
+        if (target == null) {
+            return ToolSchemas.error(
+                    "'" + rawTarget + "' is not one of " + CreationTarget.choices() + ".");
         }
         if (context.getSession() == null) {
-            return SearchVariablesTool.error("There is no open conversation to propose against.");
+            return ToolSchemas.error("There is no open conversation to propose against.");
         }
 
         Map<String, String> fields = readFields(arguments);
@@ -89,7 +89,7 @@ public class ProposeCreationTool implements AiTool {
         } catch (IllegalArgumentException e) {
             // The assistant's own mistake — a field it invented, a date it malformed. Telling it
             // lets it correct itself; raising would lose the turn.
-            return SearchVariablesTool.error(e.getMessage());
+            return ToolSchemas.error(e.getMessage());
         }
 
         context.getSession().setPendingProposal(proposal);

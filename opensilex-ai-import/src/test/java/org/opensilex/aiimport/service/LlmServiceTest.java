@@ -175,6 +175,34 @@ public class LlmServiceTest {
         }
     }
 
+    //#region the status probe
+
+    @Test
+    public void anAnsweringEndpointIsReachableAndCostsNoCompletion() {
+        assertTrue(new LlmService(TestConfig.pointingAt(endpoint.getBaseUrl())).isReachable());
+        assertEquals("the probe must not send a message", 0, endpoint.getRequestCount());
+    }
+
+    @Test
+    public void aRefusedModelListIsNotReachable() {
+        endpoint.respondToModelsWithStatus(401);
+
+        assertFalse("a refused key would refuse the first question too",
+                new LlmService(TestConfig.pointingAt(endpoint.getBaseUrl())).isReachable());
+    }
+
+    @Test
+    public void anEndpointNobodyListensOnIsNotReachable() {
+        assertFalse(new LlmService(TestConfig.pointingAt("http://127.0.0.1:1/v1")).isReachable());
+    }
+
+    @Test
+    public void anUnconfiguredEndpointIsNotProbed() {
+        assertFalse(new LlmService(TestConfig.pointingAt("")).isReachable());
+    }
+
+    //#endregion
+
     @Test
     public void theToolIterationLimitComesFromTheConfiguration() {
         assertEquals(4, new LlmService(

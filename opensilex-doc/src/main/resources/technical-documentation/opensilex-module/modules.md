@@ -163,7 +163,16 @@ public class {module_name}Module extends OpenSilexModule implements APIExtension
 }
 ```
 
-### 5. Update global ***pom.xml definition**
+### 5. Add your module to OpenSILEX
+
+#### A. On an official OpenSILEX release build :
+
+- Compile your module with `mvn clean install` (launch the command in the opensilex-dev/{module_name} directory)
+- Copy the jar file from `opensilex-dev/{module_name}/target/{module_name}-{version}.jar`
+- rename the jar file to `{module_name}.jar`
+- Copy the jar file in the `modules` directory of the release build folder (you can fint zip file of release build folders on our GitHub repository)
+
+#### B. During development : Update global ***pom.xml definition**
 
 If you want your new module to be part of the OpenSilex build, you need to add it to the global pom.xml file in two places :
 - In the `<module> </module>` section to include it in the build

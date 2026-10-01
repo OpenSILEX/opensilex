@@ -35,10 +35,16 @@ Below is the **minimal structure reference** for module theme override :
 # short_module_name  => .e.g : phis
 {module_name}
 ├── front
-│   ├── theme
-│   │   └── {short_module_name}
-│   │       ├── {short_module_name}.yml
-│   │       └── main.css
+│   └─── theme
+│       └── {short_module_name}
+│           ├── {short_module_name}.yml
+│           └── main.css
+├── pom.xml  # module pom file
+├── src # back end java sources
+│   └── main
+│       ├── java
+│       │   └──org.opensilex.{module_name}
+│       │       └── {module_name}Module.java # needed to load module
 ```
 Your `{short_module_name}.yml` config file should always start with `extend: "opensilex-front#opensilex"`. This instruction
 allows using the default OpenSILEX theme, and to override only the variables and CSS you want to change. Skipping this instruction

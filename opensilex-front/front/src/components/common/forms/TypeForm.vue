@@ -36,7 +36,6 @@ import FormField from "@/components/common/forms/FormField.vue";
 import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 
 const props = withDefaults(defineProps<{
-  type?: string | string[]
   baseType: string
   label?: string
   placeholder?: string
@@ -50,7 +49,6 @@ const props = withDefaults(defineProps<{
   tree?: boolean
   selectBranchNodes?: boolean
 }>(), {
-  type: undefined,
   required: false,
   disabled: false,
   multiple: false,
@@ -61,8 +59,9 @@ const props = withDefaults(defineProps<{
   selectBranchNodes: false,
 })
 
+const type = defineModel<string>('type')
+
 const emit = defineEmits<{
-  (e: 'update:type', v?: string | string[]): void
   (e: 'select', payload: any): void
   (e: 'handlingEnterKey'): void
 }>()

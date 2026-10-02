@@ -8,7 +8,7 @@
     target="_blank"
   >
     <slot name="icon">
-      <opensilex-Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" />
+      <Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" />
       <i v-else-if="icon && icon.startsWith('bi-')" :class="['bi', icon]" />
     </slot>
     <span class="button-label" :title="tooltip" v-if="size === 'md'">{{ t(label) }}</span>
@@ -22,7 +22,7 @@
     :disabled="disabled"
   >
     <slot name="icon">
-      <opensilex-Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" />
+      <Icon v-if="icon && icon.startsWith('fa#')" :icon="icon" />
       <i v-else-if="icon && icon.startsWith('bi-')" :class="['bi', icon]" />
     </slot>
     <span class="button-label" :title="tooltip" v-if="size === 'md'">{{ t(label) }}</span>
@@ -32,6 +32,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import Icon from "@/components/common/views/Icon.vue";
 
 const props = defineProps<{
   label?: string;

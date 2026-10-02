@@ -84,14 +84,3 @@ watch(isOpen, (open) => {
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  ExperimentsModalList:
-    title: "Current experiments hosted in {0}"
-    no_experiments: "No current experiments"
-fr:
-  ExperimentsModalList:
-    title: "Expériences en cours hébergées dans {0}"
-    no_experiments: "Pas d'expériences en cours"
-</i18n>

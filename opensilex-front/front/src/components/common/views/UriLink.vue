@@ -109,7 +109,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { t } = useI18n();
-const $opensilex = inject<OpenSilexVuePlugin | undefined>("$opensilex");
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
 const emit = defineEmits<{
   (event: "click", uri: string): void;

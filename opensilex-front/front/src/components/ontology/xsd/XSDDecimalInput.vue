@@ -1,20 +1,23 @@
 <template>
-  <opensilex-InputForm
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" >
+  <InputForm
     v-model:value="internalValue"
-    :label="property?.name"
     type="number"
     rules="decimal"
     :disabled="false"
     :required="property?.is_required"
     :helpMessage="property?.comment"
-    :placeholder="t('XSDDecimalInput.placeholder')"
+    :placeholder="t('component.ontology.externalOntologies.XSD-placehorlder.XSDDecimalInput-placeholder')"
   />
+  </n-form-item>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { VueRDFTypePropertyDTO } from '@/lib'
 import { useI18n } from 'vue-i18n'
+import InputForm from "@/components/common/forms/InputForm.vue";
+import {FormItemRule, NFormItem} from "naive-ui";
 
 const { t } = useI18n()
 
@@ -35,13 +38,12 @@ const internalValue = computed({
     emit('update:value', value)
   }
 })
-</script>
 
-<i18n>
-en:
-  XSDDecimalInput:
-    placeholder: "Enter a decimal number, ex : 8611.53"
-fr:
-  XSDDecimalInput:
-    placeholder: "Saisir un nombre décimal, ex : 8611.53"
-</i18n>
+const rule = computed<FormItemRule>(() => {
+  return {
+    required: false,
+    message: "validations.champs-input-dec",
+    trigger: ['change', 'blur']
+  }
+})
+</script>

@@ -24,6 +24,7 @@ import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { ExperimentGetListDTO } from 'opensilex-core/index'
 import { useI18n } from 'vue-i18n'
 import FormSelector from "@/components/common/forms/FormSelector.vue";
+import {ExperimentsService} from "../../../../../opensilex-core/front/src/lib";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
@@ -50,7 +51,6 @@ const props = withDefaults(defineProps<{
 
 const experimentSelector = ref<any>(null)
 const pageSize = ref(10)
-const page = ref(0)
 
 const experimentsByUriCache = ref<Map<string, ExperimentGetListDTO>>(new Map())
 
@@ -67,7 +67,7 @@ const placeholder = computed(() => {
 
 function searchExperiments(name: string, page: number, pageSize: number) {
   return $opensilex
-    .getService('opensilex.ExperimentsService')
+    .getService<ExperimentsService>('opensilex.ExperimentsService')
     .searchExperiments(
       name,
       undefined,
@@ -117,26 +117,3 @@ defineExpose({
   loadMoreItems
 })
 </script>
-
-<style scoped>
-</style>
-
-<i18n>
-en:
-  component:
-    experiment:
-      form:
-        selector:
-          placeholder: Select one experiment
-          placeholder-multiple: Select one or more Experiments
-          filter-search-no-result: No experiment found
-
-fr:
-  component:
-    experiment:
-      form:
-        selector:
-          placeholder: Sélectionner une expérimentation
-          placeholder-multiple: Sélectionner une ou plusieurs expérimentations
-          filter-search-no-result: Aucune expérimentation trouvée
-</i18n>

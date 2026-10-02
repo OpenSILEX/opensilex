@@ -9,8 +9,8 @@
       <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
         <div class="select-button-container">
-          <customTreeselect
-            ref="customTreeselectRef"
+          <CustomTreeselect
+            ref="customTreeselect"
             v-bind="$attrs"
             v-model:selected="selectedProxy"
             :searchMethod="searchMethod"
@@ -29,8 +29,8 @@
             :disableBranchNodes="disableBranchNodes"
             :itemLoadingMethod="itemLoadingMethod || undefined"
             class="select-main"
-            @totalCount="updateTotalCount"
-            @resultCount="updateResultCount"
+            :totalCount="updateTotalCount"
+            :resultCount="updateResultCount"
             @close="onBlur"
             @select="(v) => emit('select', v)"
             @deselect="(v) => emit('deselect', v)"
@@ -47,7 +47,7 @@
                 {{ t('FormSelector.refineSearchMessage', { resultCount, totalCount }) }}
               </n-button>
             </template>
-          </customTreeselect>
+          </CustomTreeselect>
 
           <div v-if="!actionHandler && viewHandler" class="select-side-button">
             <DetailButton
@@ -74,13 +74,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, inject } from 'vue'
+import {computed, nextTick, onMounted, ref, watch, inject, useTemplateRef} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NFormItem } from 'naive-ui'
 import { formInjectionKey } from 'naive-ui/es/form/src/context'
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
-import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 import FormField from "@/components/common/forms/FormField.vue";
+import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 
 const { t } = useI18n()
 
@@ -148,8 +148,7 @@ const totalCount = ref(0)
 const resultCount = ref(0)
 const resultLimit = ref(10)
 
-const customTreeselectRef = ref<InstanceType<typeof CustomTreeselect> | null>(null)
-const refresh = () => customTreeselectRef.value?.refresh()
+const customTreeselectRef = useTemplateRef<InstanceType<typeof CustomTreeselect>>('customTreeselect')
 const openTreeselect = () => customTreeselectRef.value?.openTreeselect()
 
 function loadMoreItems () {
@@ -162,9 +161,6 @@ function loadMoreItems () {
 function updateTotalCount (n: number) { totalCount.value = n }
 function updateResultCount (n: number) { resultCount.value = n }
 
-onMounted(() => {
-  console.debug('[FormSelector] mounted. searchMethod:', typeof props.searchMethod)
-})
 </script>
 
 
@@ -181,6 +177,7 @@ onMounted(() => {
 .select-main {
   flex: 1 1 auto;
   min-width: 0;
+  width: 0;
 }
 
 .select-side-button {

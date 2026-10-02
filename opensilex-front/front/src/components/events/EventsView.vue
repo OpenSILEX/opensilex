@@ -17,7 +17,7 @@
 import { computed } from "vue";
 import EventList from "./list/EventList.vue";
 import { useStore } from "vuex";
-import { OpenSilexStore } from '../../models/Store';
+import { OpenSilexStore } from '@/models/Store';
 import PageContent from "@/components/layout/PageContent.vue";
 
 const store = useStore() as OpenSilexStore;

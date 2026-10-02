@@ -41,7 +41,7 @@ for (const skosRelation of skosArray) {
   if (references) {
     for (const uri of references) {
       allRelations.push({
-        relation: t(skosRelation.dtoKey),
+        relation: t(skosRelation.label),
         relationURI: uri,
       });
     }

@@ -169,11 +169,11 @@
         </template>
 
         <template #cell(description)="{ data }">
-          <opensilex-TextView :value="data.item.description" />
+          <TextView :value="data.item.description" />
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group class="btn-group btn-group-sm">
+          <n-button-group size="small">
             <DetailButton
               v-if="user.hasCredential(modificationCredentialId)"
               @click="showEventView(data.item)"
@@ -273,17 +273,17 @@ import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncV
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import TextView from "@/components/common/views/TextView.vue";
-import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
-import EventModalView from "@/components/events/view/EventModalView.vue";
-import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import EditButton from "@/components/common/buttons/EditButton.vue";
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
-import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import EventModalView from "@/components/events/view/EventModalView.vue";
+import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
 
 type EventFilter = {
   target: string | undefined

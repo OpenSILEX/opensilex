@@ -156,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (!1562) [Modules] Fixed images acquisition in modules that overload the default opensilex theme.
 - (!1566) [Person] The list of countries available in the phone number field is now configurable through the `front.phoneCountryList` option, which defaults to `["FR"]`. See the [configuration instructions](opensilex-doc/src/main/resources/installation/configuration/phone-number.md).
+- (!1570) [Updates] Links to models will no longer be deleted if this model is updated (Example, a Variable will no longer lose it's hasMethod link if the Method is updated.)
 
 ## [1.5.6]
 

@@ -1,5 +1,6 @@
 package org.opensilex.nosql;
 
+import com.mongodb.MongoClientSettings;
 import de.flapdoodle.embed.mongo.client.ClientActions;
 import de.flapdoodle.embed.mongo.client.SyncClientAdapter;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
@@ -56,7 +57,8 @@ public class EmbedMongoClient {
                     .initializedWith(ProcessOutput.silent()));
         }
 
-        runningMongoDb = mongod.start(MONGOD_VERSION, ClientActions.initReplicaSet(new SyncClientAdapter(), MONGOD_VERSION, storage));
+        var settings = MongoClientSettings.builder().build();
+        runningMongoDb = mongod.start(MONGOD_VERSION, ClientActions.initReplicaSet(new SyncClientAdapter(settings), MONGOD_VERSION, storage));
 
         await().atMost(5, TimeUnit.SECONDS);
     }

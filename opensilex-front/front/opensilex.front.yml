@@ -342,6 +342,9 @@ routes:
   # TODO add the tab component as child once ExperimentData is migrated
   - path: /experiment/data/:uri
     component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-ExperimentData
   - path: /experiment/data-visualisation/:uri
     component: opensilex-ExperimentView
     children:

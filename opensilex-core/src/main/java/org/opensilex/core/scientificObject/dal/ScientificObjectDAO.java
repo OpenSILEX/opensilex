@@ -860,8 +860,10 @@ public class ScientificObjectDAO {
      * @throws SPARQLException
      */
     public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {
-        // OS type and name COPY
+        // OS type and name COPY, one INSERT DATA per batch of objects.
+        // The builder must be renewed after each execution, otherwise every query re-sends all the previous objects.
         UpdateBuilder update = new UpdateBuilder();
+        int objectsInUpdate = 0;
 
         try{
             // use serializer in order to ensure that name is well serialized as a String
@@ -869,29 +871,35 @@ public class ScientificObjectDAO {
             SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
             SPARQLDeserializer<OffsetDateTime> dateDeserializer = SPARQLDeserializers.getForClass(OffsetDateTime.class);
 
-            models.forEach(object -> {
+            Iterator<ScientificObjectModel> modelIterator = models.iterator();
+            while (modelIterator.hasNext()) {
+                ScientificObjectModel object = modelIterator.next();
                 Node uriNode = SPARQLDeserializers.nodeURI(object.getUri());
 
-                try {
-                    // write type and name triple
-                    update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
-                            .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+                // write type and name triple
+                update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
+                        .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
 
-                    if (Objects.nonNull(object.getPublisher())) {
-                        update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, uriDeserializer.getNode(object.getPublisher()));
-                    }
-                    if (Objects.nonNull(object.getPublicationDate())) {
-                        update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, dateDeserializer.getNode(object.getPublicationDate()));
-                    }
-                    if (Objects.nonNull(object.getLastUpdateDate())) {
-                        update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, dateDeserializer.getNode(object.getLastUpdateDate()));
-                    }
-
-                    sparql.executeUpdateQuery(update);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (Objects.nonNull(object.getPublisher())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, uriDeserializer.getNode(object.getPublisher()));
                 }
-            });
+                if (Objects.nonNull(object.getPublicationDate())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, dateDeserializer.getNode(object.getPublicationDate()));
+                }
+                if (Objects.nonNull(object.getLastUpdateDate())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, dateDeserializer.getNode(object.getLastUpdateDate()));
+                }
+
+                if (++objectsInUpdate == SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY) {
+                    sparql.executeUpdateQuery(update);
+                    update = new UpdateBuilder();
+                    objectsInUpdate = 0;
+                }
+            }
+
+            if (objectsInUpdate > 0) {
+                sparql.executeUpdateQuery(update);
+            }
         }catch (Exception e){
             throw new SPARQLException(e);
         }

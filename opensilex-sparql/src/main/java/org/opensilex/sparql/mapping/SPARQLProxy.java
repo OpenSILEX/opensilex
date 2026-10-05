@@ -5,10 +5,13 @@
  */
 package org.opensilex.sparql.mapping;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.implementation.InvocationHandlerAdapter;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.jena.graph.*;
 import org.opensilex.OpenSilex;
@@ -23,6 +26,41 @@ import org.slf4j.LoggerFactory;
 abstract class SPARQLProxy<T> implements InvocationHandler {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLProxy.class);
+
+    /**
+     * Proxy class generated once per proxied type. Generating it for each proxy (with its own class loader) cost
+     * more than the data it loads: allocations, CPU and metaspace, until the class was unloaded.
+     */
+    private static final ClassValue<ProxyClass> PROXY_CLASSES = new ClassValue<ProxyClass>() {
+        @Override
+        protected ProxyClass computeValue(Class<?> type) {
+            Class<?> proxyClass = new ByteBuddy()
+                    .subclass(type)
+                    .implement(SPARQLProxyMarker.class)
+                    .defineField(SPARQLProxyInterceptor.HANDLER_FIELD, InvocationHandler.class, Visibility.PUBLIC)
+                    .method(ElementMatchers.any())
+                    .intercept(MethodDelegation.to(SPARQLProxyInterceptor.class))
+                    .make()
+                    .load(OpenSilex.getClassLoader())
+                    .getLoaded();
+
+            try {
+                return new ProxyClass(proxyClass.getConstructor(), proxyClass.getField(SPARQLProxyInterceptor.HANDLER_FIELD));
+            } catch (NoSuchMethodException | NoSuchFieldException ex) {
+                throw new IllegalStateException("Invalid SPARQL proxy class generated for " + type.getName(), ex);
+            }
+        }
+    };
+
+    private static final class ProxyClass {
+        private final Constructor<?> constructor;
+        private final Field handlerField;
+
+        private ProxyClass(Constructor<?> constructor, Field handlerField) {
+            this.constructor = constructor;
+            this.handlerField = handlerField;
+        }
+    }
 
     public SPARQLProxy(SPARQLClassObjectMapperIndex mapperIndex, Node graph, Class<T> type, String lang, SPARQLService service) {
         this.mapperIndex = mapperIndex;
@@ -40,17 +78,12 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
     protected T instance;
 
     public T getInstance() {
-        Class<? extends T> proxy = new ByteBuddy()
-                .subclass(type)
-                .implement(SPARQLProxyMarker.class)
-                .method(ElementMatchers.any())
-                .intercept(InvocationHandlerAdapter.of(this))
-                .make()
-                .load(OpenSilex.getClassLoader())
-                .getLoaded();
+        ProxyClass proxyClass = PROXY_CLASSES.get(type);
 
         try {
-            return proxy.getConstructor().newInstance();
+            T proxy = type.cast(SPARQLProxyInterceptor.newInstance(proxyClass.constructor, this));
+            proxyClass.handlerField.set(proxy, this);
+            return proxy;
         } catch (Exception ex) {
             LOGGER.error("Error while creating SPARQL proxy class (should never happend)", ex);
         }

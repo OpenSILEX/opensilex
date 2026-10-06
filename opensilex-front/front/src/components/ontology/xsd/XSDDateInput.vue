@@ -26,7 +26,10 @@ const props = defineProps<{
 
 const internalValue = defineModel<string>("value");
 
-const rule = computed<FormItemRule>(() => props.property.is_required ? required(props.property.name) : undefined)
+const rule = computed<FormItemRule>(() => props.property.is_required
+    ? {...required(props.property.name), validator: () => !!internalValue.value}
+    : undefined)
+
 </script>
 
 <style scoped lang="scss">

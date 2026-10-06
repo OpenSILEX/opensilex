@@ -550,7 +550,6 @@ public class ScientificObjectAPI {
 
     ) throws Exception {
         ScientificObjectLogic logic = new ScientificObjectLogic(sparql, nosql, fs);
-        selectedProps.add(URI.create(SPARQLDeserializers.getShortURI(Oeso.participatesIn.getURI())));
         Map<String, byte[]> result = logic.exportFromMapScientificObjects(selectedObjects, selectedProps, contextURI, format, currentUser);
 
         return Response.ok(result.entrySet().stream().findFirst().get().getValue(), MediaType.APPLICATION_OCTET_STREAM)

@@ -38,12 +38,26 @@ const internalValue = computed({
   }
 })
 
-const rule = computed<FormItemRule>(() => {
-  return {
-    required: false,
-    message: t("component.skos.uri-field"),
-    trigger: ['change', 'blur']
+const rule = computed<FormItemRule[]>(() => [
+  {
+    required: props.property.is_required,
+    validator: () => {
+      const value = props.value?.trim()
+      if (!value) {
+        return props.property.is_required
+            ? new Error(t('validations.required_if', {_field_: props.property.name}))
+            : true
+      }
+      try {
+        new URL(value)
+        return true
+      } catch {
+        return new Error(t('validations.url', {_field_: props.property.name}))
+      }
+    },
+    trigger: ['input', 'blur']
   }
-})
+]);
+
 
 </script>

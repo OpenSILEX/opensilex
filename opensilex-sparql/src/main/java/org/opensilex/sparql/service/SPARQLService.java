@@ -1414,7 +1414,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     /**
      * Delete any custom relations that do not apply to the current type of instance. Here a custom relation means a relation
-     * that is defined in the ontology, but is not handled in the model class of instance.
+     * that is defined in the ontology via Restrictions, but is not handled in the model class of instance.
      */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 
@@ -1425,32 +1425,45 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return;
         }
 
-        // try to retrieve associated ClassModel
         URI rootType = analyzer.getRdfTypeURI();
-        ClassModel classModel;
+
+        // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
+        Set<URI> customProperties;
         try {
-            classModel = new OntologyDAO(this).getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
+            customProperties = getCustomRelationsForType(instance.getType(), analyzer);
         } catch (SPARQLInvalidURIException e) {
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
         }
 
+        if(! CollectionUtils.isEmpty(customProperties)){
+            deleteRelations(graph, instance.getUri(), customProperties);
+        }
+    }
+
+    /**
+     *
+     * @param type The rdfType for whom we want to fetch custom relations
+     * @param analyzer , needed to get the root type, and to fetch managed properties (a custom property is: Restrictions - analyzer.getManagedPropertiesUris())
+     * @return Any custom relations predicate URIs that can be applied on this type
+     * @throws SPARQLException if the getClassModel call fails with passed type.
+     */
+    public Set<URI> getCustomRelationsForType(URI type, SPARQLClassAnalyzer analyzer) throws SPARQLException {
+
+        ClassModel classModel = new OntologyDAO(this).getClassModel(type, analyzer.getRdfTypeURI(), OpenSilex.DEFAULT_LANGUAGE);
+
         if(MapUtils.isEmpty(classModel.getRestrictionsByProperties())){
-            return;
+            return Collections.emptySet();
         }
 
-        Set<String> managedPropUris = mapper.getClassAnalyzer().getManagedPropertiesUris();
+        Set<String> managedPropUris = analyzer.getManagedPropertiesUris();
 
         // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
-        Set<URI> customProperties = classModel.getRestrictionsByProperties()
+        return classModel.getRestrictionsByProperties()
                 .values()
                 .stream()
                 .map(OwlRestrictionModel::getOnProperty)
                 .filter(property -> ! managedPropUris.contains(property.toString()))
                 .collect(Collectors.toSet());
-
-        if(! customProperties.isEmpty()){
-            deleteRelations(graph, instance.getUri(), customProperties);
-        }
     }
 
     public <T extends SPARQLResourceModel> void update(Node graph, T instance) throws Exception {

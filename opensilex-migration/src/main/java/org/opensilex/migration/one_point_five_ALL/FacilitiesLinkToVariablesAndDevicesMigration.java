@@ -176,7 +176,9 @@ public class FacilitiesLinkToVariablesAndDevicesMigration implements OpenSilexMo
         //A boolean to show a warning at end if some data with no variable or data exists
         boolean messedUpDataExists = false;
         try (var cursor = collection.aggregate(session, pipeline).cursor()) {
-            while (currentIndex < total) {
+            // also stop on cursor exhaustion : countDocuments() is evaluated outside the session, so it can
+            // exceed what the cursor actually returns, which would leave this loop spinning forever
+            while (currentIndex < total && cursor.hasNext()) {
                 batch.clear();
                 while (cursor.hasNext() && batch.size() < BATCH_SIZE) {
                     var document = cursor.next();

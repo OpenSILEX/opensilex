@@ -16,19 +16,17 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import {FormItemRule, NFormItem} from "naive-ui";
 import {computed} from "vue";
 import {VueRDFTypePropertyDTO} from "@/lib";
+import {required} from "@/models/FormFieldsFormatter";
 
-defineProps<{
+const props = defineProps<{
   property: VueRDFTypePropertyDTO
 }>();
 
 const internalValue = defineModel<string>("value");
-const rule = computed<FormItemRule>(() => {
-  return {
-    required: false,
-    message: "A traduire",
-    trigger: ['change', 'blur']
-  }
-})
+
+const rule = computed<FormItemRule>(() => props.property.is_required
+    ? {...required(props.property.name), validator: () => !!internalValue.value}
+    : undefined)
 
 
 </script>

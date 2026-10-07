@@ -1464,6 +1464,7 @@
         "emailError": "Invalid email address",
         "phoneNumberError": "Invalid phone number",
         "decimal": "The {_field_} field must contain only decimal values",
+        "integer": "The {_field_} field must be an integer",
         "wkt": "The {_field_} field must be a valid WKT geometry",
         "containsPoint": "Coordinates must be 'POINT' type geometry",
         "dateDiff" : "The {_field_} must not be before the start date",

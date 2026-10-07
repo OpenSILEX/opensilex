@@ -1,6 +1,10 @@
 {
     "component": {
         "common": {
+            "language": {
+                "fr": "French",
+                "en": "English"
+            },
             "actions": "Actions",
             "multiselect": {
                 "label": {
@@ -105,6 +109,7 @@
             "url-copy": "URL copied to clipboard",
             "uri-or-url": "URI or URL",
             "search-prompt-text": "Type to search...",
+            "search-name-description": "Search in name and description",
             "advanced-search-title": "Advanced Search",
             "not-specified": "Not specified",
             "required": "Required",
@@ -166,6 +171,7 @@
                 "generate-template": "Generate template",
                 "csv-import": "CSV Import",
                 "expected-format": "Expected format",
+                "select-all": "Select all",
                 "help-text-common": {
                     "line-1": "You can insert or update your data from this row.",
                     "line-2": "First two rows of CSV content will be ignored.",
@@ -177,10 +183,15 @@
                     "multiple-values": "If a property has multiple values, add a column for each with the same URI."
                 }
             },
+            "treeViewAsync":{
+                "load-more": "Load more...",
+                "loading-more": "Loading more elements..."
+            },
             "tabulator": {
                 "reset-table": "Reset table",
                 "add-one": "Add one by one",
                 "add-multiple": "Add multiple at once",
+                "load-csv": "Load CSV",
                 "lang-options": {
                     "pagination": {
                         "first": "First",
@@ -230,6 +241,7 @@
                 }
             },
             "addDocument": "Add document",
+            "editDocument": "Edit document",
             "warningInstruction" : "Experimental feature",
             "organization": {
                 "description": "Manage and configure organizations",
@@ -260,10 +272,6 @@
             "copyText": "Copy text to clipboard"
         },
         "header": {
-            "language": {
-                "fr": "French",
-                "en": "English"
-            },
             "account": {
                 "admin": "Admin",
                 "logout": "Logout"
@@ -320,7 +328,12 @@
             "experimentalDesign": {
                 "label": "Scientific Information",
                 "factors": "Factors",
-                "germplasm": "Germplasm"
+                "germplasm": "Germplasm",
+                "factorLevels": "Levels",
+                "factor-alert-help": "This factor can be linked to existing experiments be careful when update",
+                "factorLevel-alert-help": "Levels can be linked to scientific objects be careful when update",
+                "btn-exportAll": "Export all",
+                "associated-level-factor": "associated level factor"
             },
             "groupVariables": "Variables Groups",
             "organizations": "Organizations",
@@ -335,7 +348,7 @@
             "devices": "Devices",
             "document": {
                 "label" :"Document",
-                "description": "Manage Document" 
+                "description": "Manage Document"
             },
             "events" : "Events",
             "vocabulary" : "Vocabulary",
@@ -352,6 +365,8 @@
             "web-api" : "Web API"
         },
         "login": {
+            "info-guest": "You can log in as a guest",
+            "loginAsGuest": "Connect as guest",
             "input": {
                 "email": "Email or URI",
                 "password": "Password"
@@ -364,14 +379,14 @@
             "button": {
                 "login": "Login"
             },
-            "copyright": { 
+            "copyright": {
                 "1": "PHIS - Phenotyping Hybrid Information System",
                 "2": "Version {version}",
                 "3": "Based on OpenSILEX version {version}",
                 "4": "Copyright © 2021 INRAE"
             },
             "errors": {
-                "invalid-credentials": "Invalid credentials"
+                "invalid-credentials": "User does not exists, is disabled or password is invalid"
             }
         },
         "footer": {
@@ -596,7 +611,8 @@
                 "description": "Grain yield obtained after harvesting an experimental microplot",
                 "species": "Rice"
             },
-            "no-enviromental-variable": "No environnemental variables found"
+            "no-enviromental-variable": "No environnemental variables found",
+            "search-variables": "Search variables"
         },
         "profile": {
             "description": "Manage and configure profiles",
@@ -672,7 +688,7 @@
             "coordinators":"Coordinators",
             "financialFunding":"Financial funding",
             "scientificContacts":"Scientific supervisors",
-            "administrativeContacts":"Administrative supervisors",           
+            "administrativeContacts":"Administrative supervisors",
             "experiments":"Experiments",
             "relatedProjects":"Related projects",
             "inProgress":"In progress ...",
@@ -685,7 +701,8 @@
                     "in-progress": "In-progress",
                     "public": "Public"
                 }
-            }
+            },
+            "search-projects": "Search Projects"
         },
         "events": {
             "details": "View event details",
@@ -742,17 +759,21 @@
             }
         },
         "experiment": {
+            "name-required": "Name is required",
             "uri-help": "Unique experiment identifier",
-            "label-placeholder": "ZA17",
             "label-help": "Experiment name",
             "objective": "Objective",
+            "objective-required": "The field objective is required",
             "objective-help": "Genomic prediction of maize yield ",
             "uri": "Experiment URI",
             "label": "Name",
             "comment": "Description",
             "comment-help": "Genomic prediction of maize yield across European environmental scenarios",
             "startDate-help": "The beginning of an experiment (required)",
+            "startDate": "Start Date",
+            "start-date-required": "Start date is required",
             "endDate": "End date",
+            "end-date-required": "The end date is required",
             "endDate-help": "The end of an experiment, could be empty",
             "campaign": "Campaign",
             "campaign-placeholder": "2020",
@@ -781,14 +802,42 @@
             "add": "Add an experiment",
             "update": "Update experiment",
             "delete": "Delete experiment",
+            "all": "All experiments",
+            "selected": "Selected experiments",
+            "selected-scientific-object": "Objects Scientifiques Sélectionnés",
+            "category": "Category",
+            "funding-placeholder": "Select funding",
+            "filter-search-no-result": "No funding found",
+            "factors-categories-placeholder": "Sélectionner une ou plusieurs categories",
+            "add-factor": "Add factor",
+            "update-factor": "Update factor",
+            "factors-categories": "Factors categories",
+            "name-factor-help": "Usual name witch describes a factor in an experiment",
+            "name-factor-placeholder": "Irrigation, Shading, Planting year, etc.",
+            "state-placeholder": "Select an experiment state",
+            "project-placeholder": "Select a project",
+            "facilities-placeholder": "Select one or more facilities",
             "public-label": "Public experiment",
             "public-title": "Select this option to make experiment data publicly available",
+            "category-help-more": "More informations ",
+            "category-factor-placeholder": "Select a category",
+            "category-factor-help": "Select a category for the factor",
+            "description-factor-help": "Description associated with this factor (Protocole, amount of component)",
+            "description-factor-placeholder":"Protocole n°1289 - Amount of water 5ml/Days",
+            "associated-factor-help": "Levels describe the possible values of a factor",
+            "factor-level-add": "Add row",
             "common": {
                 "status": {
                     "finished": "Finished",
                     "in-progress": "In-progress",
                     "public": "Public"
                 }
+            },
+            "moveView": {
+                "from": "From",
+                "location": "Location",
+                "to": "To",
+                "positionTitle": "Position"
             },
             "view": {
                 "title": "Experiment",
@@ -886,6 +935,9 @@
         "scientificObjects": {
             "scientificObjects": "Scientific object(s)",
             "scientificObjects-placeholder": "Select scientific objects",
+            "parent-placeholder": "Select a parent",
+            "objectType": "Object type",
+            "alertSelectAllLimitSize": "The selection has too many lines for this feature, refine your search, maximum=",
             "error" : {
                 "delete" : {
                     "associated-data" : "The object {scientific_object} can't be deleted since there are some associated data. You must delete them first",
@@ -1080,7 +1132,8 @@
         },
         "provenance": {
             "description": "Describe data provenance",
-            "all_provenances": "All Provenances"
+            "all_provenances": "All Provenances",
+            "search-provenances": "Search provenances"
         },
         "data": {
             "lastMedianData": "Last median value",
@@ -1197,7 +1250,14 @@
                 "uo": "Metrical units for use in conjunction with the Phenotype And Trait Ontology (PATO)",
                 "om": "The Ontology of units of Measure (OM) 2.0 models concepts and relations important to scientific research. It has a strong focus on units, quantities, measurements, and dimensions.",
                 "qudt": "Quantities, Units, Dimensions and Data Types models are based on dimensional analysis expressed in the OWL Web Ontology Language (OWL). The dimensional approach relates each unit to a system of base units using numeric factors and a vector of exponents defined over a set of fundamental dimensions.",
-                "xsd": "Discover XML schema languages."
+                "xsd": "Discover XML schema languages.",
+                "placeholder": "Enter an URI, ex : http://www.opensilex.org/",
+                "XSD-placehorlder": {
+                    "XSDLongStringInput-placeholder": "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data.",
+                    "XSDIntegerInput-placeholder": "Enter an integer number, ex : 8611",
+                    "XSDDecimalInput-placeholder": "Enter a decimal number, ex : 8611.53",
+                    "XSDUriInput-placeholder": "Enter an URI, ex : http://www.opensilex.org/"
+                }
             },
             "typeView": {
                 "scientificObject": {

@@ -13,6 +13,7 @@
       @select="(v) => emit('select', v)"
       @deselect="(v) => emit('deselect', v)"
       @clear="onClear"
+      :path="path"
     />
   </div>
 </template>
@@ -36,6 +37,7 @@ const props = withDefaults(
     helpMessage?: string
     placeholder?: string
     required?: boolean
+    path?: string
   }>(),
   {
     facilities: () => [],

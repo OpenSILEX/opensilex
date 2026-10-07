@@ -8,17 +8,16 @@
     <template #field="{ id: fieldId, validator }">
       <div :id="fieldId" @keydown.enter.stop="$emit('handlingEnterKey')">
         <CustomTreeselect
-          v-model:selected="selectedIds"
-          :filterable="true"
-          :options="typesOptions"
-          :multiple="multiple"
-          :disabled="disabled"
-          :placeholder="t(placeholder || 'component.common.type')"
-          :itemLoadingMethod="props.tree ? undefined : loadByUris"
-          :disableBranchNodes="!selectBranchNodes"
-          :searchMethod="props.tree ? undefined : searchTypes"
-          :resultLimit="20"
-          @select="validator?.validate(); $emit('select',$event)"
+            v-model:selected="selectedIds"
+            :filterable="true"
+            :options="typesOptions"
+            :multiple="multiple"
+            :disabled="disabled"
+            :placeholder="t(placeholder || 'component.common.type')"
+            :itemLoadingMethod="props.tree ? undefined : loadByUris"
+            :disableBranchNodes="!selectBranchNodes"
+            :searchMethod="props.tree ? undefined : searchTypes"
+            @select="validator?.validate(); $emit('select', $event)"
         />
       </div>
     </template>
@@ -37,7 +36,6 @@ import FormField from "@/components/common/forms/FormField.vue";
 import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 
 const props = withDefaults(defineProps<{
-  type?: string | string[]
   baseType: string
   label?: string
   placeholder?: string
@@ -51,19 +49,19 @@ const props = withDefaults(defineProps<{
   tree?: boolean
   selectBranchNodes?: boolean
 }>(), {
-  type: undefined,
   required: false,
   disabled: false,
   multiple: false,
   rules: undefined,
   ignoreRoot: true,
   unselectableTypes: () => [],
-  tree: false,
+  tree: true,
   selectBranchNodes: false,
 })
 
+const type = defineModel<string>('type')
+
 const emit = defineEmits<{
-  (e: 'update:type', v?: string | string[]): void
   (e: 'select', payload: any): void
   (e: 'handlingEnterKey'): void
 }>()
@@ -147,7 +145,7 @@ function flatten(nodes: InputOpt[] = []): Array<{ id: string; label: string }> {
 
 // searchMethod attend => Promise<{ response: { result: NamedResourceDTO[], metadata: { pagination: { totalCount }}}}>
 // NamedResourceDTO minimal = { uri, name }
-async function searchTypes(rawQuery: string, _offset = 0, limit = 20) {
+async function searchTypes(rawQuery: string) {
   // CustomTreeselect utilise '.*' quand query vide
   const searchedText = (rawQuery === '.*' ? '' : (rawQuery ?? '')).trim().toLowerCase()
 
@@ -160,11 +158,9 @@ async function searchTypes(rawQuery: string, _offset = 0, limit = 20) {
       )
       : all
 
-  const sliced = filtered.slice(0, limit)
-
   return {
     response: {
-      result: sliced.map(x => ({ uri: x.id, name: x.label })), // <= matcher ce que CustomTreeselect attend
+      result: filtered.map(x => ({ uri: x.id, name: x.label })), // <= matcher ce que CustomTreeselect attend
       metadata: { pagination: { totalCount: filtered.length } }
     }
   }

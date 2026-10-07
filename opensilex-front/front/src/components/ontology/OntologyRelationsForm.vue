@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="(relation, index) in typeRelations" :key="index">
+    <div  v-for="(relation, index) in typeRelations" :key="index">
       <component
           v-if="getInputComponent(relation.property)"
           :is="getInputComponent(relation.property)"
@@ -19,6 +19,7 @@
 
 <script setup lang="ts">
 import {computed, inject, ref, watch} from 'vue'
+import {NFormItem} from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type {OntologyService} from 'opensilex-core/api/ontology.service'
 import type {PropertiesByDomainDTO, RDFObjectRelationDTO} from 'opensilex-core/index'
@@ -33,14 +34,14 @@ const props = withDefaults(defineProps<{
   typeToLoad?: string | null, //This is a way to avoid directly calling typeSwitch in the cases where we were using nextTick
   excludedProperties?: Set<string>,
   context?: { experimentURI: string } | string,
-  initHandler?: (relation: MultiValuedRDFObjectRelation) => void,
+  initHandler?: (relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation,
   customComponentProps?: Map<string, Map<string, any>>
 }>(), {
   relations: () => [],
   excludedProperties: () => new Set<string>(),
-  customComponentProps: () => new Map<string, Map<string, any>>(),
-  initHandler: () => {
-  }
+  customComponentProps: () => new Map<string, Map<string, any>>()
+  // No default initHandler on purpose: its presence is what triggers the synchronisation of the
+  // pre-filled values in typeSwitch, and only the forms that pre-fill relations need it.
 })
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
@@ -102,7 +103,6 @@ function getHandledProperties(): Array<VueRDFTypePropertyDTO> {
 
   const properties = typeModel.value.data_properties
       .concat(typeModel.value.object_properties)
-      .filter(property => property.inherited === false)
       .filter(property => !shortExcludedProperties.has(opensilex.getShortUri(property.uri)))
       .filter(property => !!getInputComponent(property))
 
@@ -161,6 +161,7 @@ function getCustomPropsForComponent(property: string): any {
 }
 
 async function typeSwitch(type: string, initialLoad: boolean) {
+
   /**
    * Charge les propriétés du type RDF sélectionné, initialise le modèle interne,
    * puis prépare les relations affichées dans le formulaire
@@ -179,9 +180,6 @@ async function typeSwitch(type: string, initialLoad: boolean) {
             [type]
         )
     propertiesByDomainHierarchy.value = propertiesByDomainHttpResponse.response.result
-
-    propertiesByDomainHierarchy.value =
-        propertiesByDomainHttpResponse.response.result
 
     const vueRdfTypeResponse =
         await vueOntologyService.getRDFTypeProperties(type, props.baseType)
@@ -202,9 +200,13 @@ async function typeSwitch(type: string, initialLoad: boolean) {
     }
 
     if (props.initHandler) {
-      internalRelations.value.forEach(relation => {
-        props.initHandler?.(relation)
-      })
+      internalRelations.value = internalRelations.value.map(relation => {
+        return props.initHandler?.(relation) || relation
+      });
+      // Synchronise les valeurs pré-remplies par initHandler (par exemple isPartOf lors de l'ajout
+      // d'un enfant) avec les relations exposées au parent : sans cela elles restent internes au
+      // formulaire et ne sont jamais envoyées à l'API.
+      updateRelation()
     }
   } catch (error) {
     opensilex.errorHandler(error)
@@ -215,10 +217,7 @@ async function typeSwitch(type: string, initialLoad: boolean) {
  * Synchronise la prop relations avec les relations internes,
  * en reconvertissant les valeurs multiples en relations mono-valuées.
  */
-function updateRelation(
-    _newValue: string | Array<string>,
-    _property: VueRDFTypePropertyDTO
-) {
+function updateRelation() {
   props.relations.splice(0)
   props.relations.push(...toMultipleMonoValuedRelations(internalRelations.value))
 }
@@ -355,7 +354,8 @@ watch(
       // `initialLoad` is true when we are called from the parent after a base‑type change
       await typeSwitch(newType, true);
     }
-  }
+  },
+{}
 );
 
 defineExpose({typeSwitch, updateRelation});

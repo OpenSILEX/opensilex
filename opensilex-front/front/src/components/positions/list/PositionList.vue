@@ -106,8 +106,8 @@
         ref="modalForm"
         :target="target"
         :defaultEventType="'oeev:Move'"
-        createTitle="Event.add"
-        editTitle="Event.edit"
+        createTitle="component.events.add"
+        editTitle="component.events.edit"
         @onCreate="refresh"
         @onUpdate="refresh"
       />

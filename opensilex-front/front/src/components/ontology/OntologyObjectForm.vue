@@ -1,5 +1,11 @@
 <template>
   <Modal ref="modalRef">
+    <template #header>
+      <FormHeader
+          :title="formTitle"
+          icon="bi#bi-bullseye"
+      />
+    </template>
     <n-form
       ref="formRef"
       v-if="form"
@@ -27,7 +33,7 @@
           label="component.common.name"
           type="text"
           :required="true"
-          placeholder="component.common.forms-generic-placeholders.form-name-placeholder"
+          :placeholder="t('component.common.forms-generic-placeholders.form-name-placeholder')"
         ></InputForm>
       </n-form-item>
 
@@ -71,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, useTemplateRef, watch} from "vue";
+import {computed, nextTick, ref, useTemplateRef, watch} from "vue";
 import OntologyRelationsForm from "./OntologyRelationsForm.vue";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
 import Rdfs from "../../ontologies/Rdfs";
@@ -91,6 +97,7 @@ import Modal from "@/components/common/views/Modal.vue";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {RDFObjectRelationDTO} from "../../../../../opensilex-core/front/src/lib";
 import FormFooter from "@/components/common/forms/FormFooter.vue";
+import FormHeader from "@/components/common/forms/FormHeader.vue";
 import {UserGetDTO} from "@/lib";
 
 /*
@@ -122,9 +129,9 @@ const excludedProperties = ref<Set<string>>(new Set<string>([
 
 const customComponentProps = ref<Map<string, Map<string, any>>>(new Map());
 
-const initHandler = ref<(relation: MultiValuedRDFObjectRelation) => void>(
-  (relation: MultiValuedRDFObjectRelation) => {}
-);
+// Null by default: the relations form only synchronises pre-filled values when a handler is set,
+// and the handler must be reset between two openings of the form (see setInitHandler).
+const initHandler = ref<((relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation) | null>(null);
 
 const loadCustomProperties = ref<boolean>(true);
 //#endregion
@@ -163,7 +170,7 @@ function getEmptyForm(): OntologyObjectFormModel {
   }
 }
 
-function setInitHandler(handler) {
+function setInitHandler(handler: ((relation: MultiValuedRDFObjectRelation) => MultiValuedRDFObjectRelation) | null) {
   initHandler.value = handler;
 }
 
@@ -180,13 +187,20 @@ function setLoadCustomProperties(loadCustomPropertiess: boolean){
 }
 
 function updateRelations() {
-  ontologyRelationsForm.value.updateRelation(null, null);
+  ontologyRelationsForm.value.updateRelation();
 }
 
 async function typeSwitch(type: string, initialLoad: boolean) {
   if(ontologyRelationsForm.value){
     await ontologyRelationsForm.value.typeSwitch(type, initialLoad);
   }
+}
+
+// The relations form is never unmounted (the modal only toggles its display), so its properties
+// have to be reloaded on every opening, as the Vue 2 setBaseType did.
+async function reloadRelations() {
+  await nextTick();
+  await typeSwitch(props.currentType, true);
 }
 //#endregion
 
@@ -205,12 +219,13 @@ const rules = computed<FormRules>(() => ({
 }))
 //#endregion
 
-const {form, isEditMode, exposed, hide, submit} = useModalFormLogic<OntologyObjectFormModel>({
+const {form, isEditMode, exposed, hide, submit, formTitle} = useModalFormLogic<OntologyObjectFormModel>({
   modalRef,
   nFormRef: formRef,
   getEmptyForm,
   create: props.createAction,
   update: props.updateAction,
+  reset: reloadRelations,
   props,
   emit
 })

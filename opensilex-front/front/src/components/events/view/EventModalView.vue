@@ -9,37 +9,36 @@
 
         <div class="modal-body">
           <div class="card-body" v-if="event">
-            <opensilex-UriView :uri="event.uri" />
-            <opensilex-TypeView :type="event.rdf_type" :typeLabel="event.rdf_type_name" />
-            <opensilex-TextView label="component.common.description" :value="event.description" /><br>
+            <UriView :uri="event.uri" />
+            <TypeView :type="event.rdf_type" :typeLabel="event.rdf_type_name" />
+            <TextView label="component.common.description" :value="event.description" /><br>
 
-            <opensilex-StringView v-if="event.start" label="EventModalView.start" :value="formatDate(event.start)" />
-            <opensilex-StringView v-if="event.end" :label="t('EventModalView.end')" :value="formatDate(event.end)" />
-            <opensilex-StringView :label="t('EventModalView.publisher')" :value="displayPublisher(event.publisher)" />
-            <opensilex-StringView :label="t('EventModalView.datePublication')" :value="event.publication_date" />
-            <opensilex-StringView :label="t('EventModalView.lastUpdateDate')" :value="event.last_updated_date" />
+            <StringView v-if="event.start" label="EventModalView.start" :value="formatDate(event.start)" />
+            <StringView v-if="event.end" :label="t('EventModalView.end')" :value="formatDate(event.end)" />
+            <StringView :label="t('EventModalView.publisher')" :value="displayPublisher(event.publisher)" />
+            <StringView :label="t('EventModalView.datePublication')" :value="event.publication_date" />
+            <StringView :label="t('EventModalView.lastUpdateDate')" :value="event.last_updated_date" />
             <br>
-            <opensilex-StringView class="overflow-auto" style="height: 100px" :label="t('EventModalView.targets')" :uri="event.targets">
+            <StringView class="overflow-auto" style="height: 100px" :label="t('EventModalView.targets')" :uri="event.targets">
               <div v-for="targetURI in event.targets" :key="targetURI">
-                <opensilex-UriLink :uri="targetURI" :value="uriLabels[targetURI]" :to="{ path: uriPaths[targetURI] }" />
+                <UriLink :uri="targetURI" :value="uriLabels[targetURI]" :to="{ path: uriPaths[targetURI] }" />
               </div>
-            </opensilex-StringView>
+            </StringView>
           </div>
 
           <div v-if="event && isMove()">
-            <opensilex-MoveView
+            <MoveView
               :event="event"
               :positionsUriLabels="positionsUriLabels"
               :positionsUriPaths="positionsUriPaths"
             />
           </div>
-
           <div v-if="hasRelations(event)" class="card-body">
             <br>
             <p><b>{{ t('EventModalView.specific-properties') }} ({{ event.rdf_type_name }})</b></p>
             <hr />
             <div v-for="(relation, index) in event.relations" :key="index">
-              <opensilex-UriView
+              <UriView
                 :uri="relation.value"
                 :value="specificPropertiesLabels[relation.value] || relation.value"
                 :title="getPropertyName(relation.property)"
@@ -50,7 +49,7 @@
           </div>
           <br>
 
-          <opensilex-DocumentTabList
+          <DocumentTabList
             :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
             :uri="event.uri"
             :search="false"
@@ -76,6 +75,13 @@ import { VueJsOntologyExtensionService, VueRDFTypeDTO } from '../../../lib';
 import { OntologyService } from 'opensilex-core/api/ontology.service';
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin';
 import { useI18n } from 'vue-i18n'
+import UriView from "@/components/common/views/UriView.vue";
+import TextView from "@/components/common/views/TextView.vue";
+import TypeView from "@/components/common/views/TypeView.vue";
+import StringView from "@/components/common/views/StringView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import MoveView from "@/components/events/view/MoveView.vue";
+import DocumentTabList from "@/components/documents/DocumentTabList.vue";
 
 const props = defineProps({
   modalSize: { type: String, default: 'lg' },

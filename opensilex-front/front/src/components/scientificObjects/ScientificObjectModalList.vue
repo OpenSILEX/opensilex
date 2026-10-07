@@ -16,151 +16,121 @@
 
     <div class="modal-body">
       <n-layout has-sider class="so-layout">
-        <n-space class="mb-2 me-1" align="top">
-          <n-button
-            quaternary
-            circle
-            @click="searchFiltersToggle = !searchFiltersToggle"
-            :title="searchFiltersPanel()"
-            :class="{ greenThemeColor: searchFiltersToggle }"
-            class="globalFiltersSearchButton"
-          >
-            <i class="bi bi-search filtersGlobalSearchIcon"></i>
-          </n-button>
-        </n-space>
-
-        <!-- SIDEBAR / FILTRES -->
-        <n-layout-sider
-          v-model:collapsed="filtersCollapsedProxy"
-          :collapsed-width="0"
-          :width="360"
-          collapse-mode="width"
-          show-trigger
-          bordered
-          class="so-sider"
+        <SearchFiltersSidebar
+          :activeFiltersCount="activeFiltersCount"
+          :filtersCollapsed="searchFiltersToggle"
+          @refresh="refresh"
+          @reset="reset"
         >
-          <n-space class="p-3" vertical>
-            <n-form label-placement="top" size="small" @submit.prevent="refresh">
-              <!-- Name -->
-              <n-form-item :label="t('component.common.name')" class="compact-form-item">
-                <opensilex-StringFilter
-                  :filter="filter.name"
-                  :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
-                  class="searchFilter"
-                  @update:filter="filter.name = $event"
-                  @handlingEnterKey="refresh"
-                />
-              </n-form-item>
+          <!-- Name -->
+          <n-form-item :label="t('component.common.name')" class="compact-form-item">
+            <opensilex-StringFilter
+              :filter="filter.name"
+              :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
+              class="searchFilter"
+              @update:filter="filter.name = $event"
+              @handlingEnterKey="refresh"
+            />
+          </n-form-item>
 
-              <!-- Experiment -->
+          <!-- Experiment -->
+          <n-form-item :show-feedback="false" class="compact-form-item">
+            <opensilex-ExperimentSelector
+              :multiple="false"
+              :experiments="filter.experiment"
+              :label="t('component.experiment.view.experiment-experiments')"
+              class="searchFilter"
+              @update:experiments="filter.experiment = $event"
+              @handlingEnterKey="refresh"
+            />
+          </n-form-item>
+
+          <!-- Type -->
+          <n-form-item
+            :label="$t('component.common.type')"
+            :show-feedback="false"
+            class="compact-form-item"
+          >
+            <opensilex-ScientificObjectTypeSelector
+              :types="filter.types"
+              :multiple="true"
+              class="searchFilter"
+              @update:types="filter.types = $event"
+              @handlingEnterKey="refresh"
+            />
+          </n-form-item>
+
+          <!-- Advanced -->
+          <n-collapse
+            v-model:expanded-names="expandedNames"
+            :accordion="false"
+            class="advancedFiltersSearch"
+          >
+            <n-collapse-item :title="$t('component.common.advanced-search-title')" name="adv">
+              <!-- Germplasm -->
               <n-form-item :show-feedback="false" class="compact-form-item">
-                <opensilex-ExperimentSelector
+                <opensilex-GermplasmSelector
                   :multiple="false"
-                  :experiments="filter.experiment"
-                  :label="t('component.experiment.view.experiment-experiments')"
+                  :germplasm="filter.germplasm"
+                  :experiment="filter.experiment"
                   class="searchFilter"
-                  @update:experiments="filter.experiment = $event"
+                  @update:germplasm="filter.germplasm = $event"
                   @handlingEnterKey="refresh"
                 />
               </n-form-item>
 
-              <!-- Type -->
-              <n-form-item
-                :label="$t('component.common.type')"
-                :show-feedback="false"
-                class="compact-form-item"
-              >
-                <opensilex-ScientificObjectTypeSelector
-                  :types="filter.types"
+              <!-- Factor levels -->
+              <n-form-item :show-feedback="false" class="compact-form-item">
+                <opensilex-FactorLevelSelector
+                  :factorLevels="filter.factorLevels"
                   :multiple="true"
+                  :required="false"
                   class="searchFilter"
-                  @update:types="filter.types = $event"
+                  @update:factorLevels="filter.factorLevels = $event"
                   @handlingEnterKey="refresh"
                 />
               </n-form-item>
 
-              <!-- Advanced -->
-              <n-collapse
-                v-model:expanded-names="expandedNames"
-                :accordion="false"
-                class="advancedFiltersSearch"
+              <!-- Existence date -->
+              <n-form-item
+                :label="t('component.scientificObjects.filters.existenceDate')"
+                :show-feedback="false"
               >
-                <n-collapse-item :title="$t('component.common.advanced-search-title')" name="adv">
-                  <!-- Germplasm -->
-                  <n-form-item :show-feedback="false" class="compact-form-item">
-                    <opensilex-GermplasmSelector
-                      :multiple="false"
-                      :germplasm="filter.germplasm"
-                      :experiment="filter.experiment"
-                      class="searchFilter"
-                      @update:germplasm="filter.germplasm = $event"
-                      @handlingEnterKey="refresh"
-                    />
-                  </n-form-item>
+                <opensilex-DateForm
+                  :value="filter.existenceDate"
+                  class="searchFilter"
+                  @update:value="filter.existenceDate = $event"
+                />
+              </n-form-item>
 
-                  <!-- Factor levels -->
-                  <n-form-item :show-feedback="false" class="compact-form-item">
-                    <opensilex-FactorLevelSelector
-                      :factorLevels="filter.factorLevels"
-                      :multiple="true"
-                      :required="false"
-                      class="searchFilter"
-                      @update:factorLevels="filter.factorLevels = $event"
-                      @handlingEnterKey="refresh"
-                    />
-                  </n-form-item>
+              <br />
 
-                  <!-- Existence date -->
-                  <n-form-item
-                    :label="t('component.scientificObjects.filters.existenceDate')"
-                    :show-feedback="false"
-                  >
-                    <opensilex-DateForm
-                      :value="filter.existenceDate"
-                      class="searchFilter"
-                      @update:value="filter.existenceDate = $event"
-                    />
-                  </n-form-item>
+              <!-- Creation date -->
+              <n-form-item
+                :label="t('component.common.date-time.creationDate')"
+                :show-feedback="false"
+              >
+                <opensilex-DateForm
+                  :value="filter.creationDate"
+                  class="searchFilter"
+                  @update:value="filter.creationDate = $event"
+                />
+              </n-form-item>
 
-                  <br />
-
-                  <!-- Creation date -->
-                  <n-form-item
-                    :label="t('component.common.date-time.creationDate')"
-                    :show-feedback="false"
-                  >
-                    <opensilex-DateForm
-                      :value="filter.creationDate"
-                      class="searchFilter"
-                      @update:value="filter.creationDate = $event"
-                    />
-                  </n-form-item>
-
-                  <!-- Criteria search -->
-                  <n-form-item :show-feedback="false">
-                    <opensilex-CriteriaSearchModalCreator
-                      ref="criteriaSearchCreateModal"
-                      class="searchFilter"
-                      :criteria_dto="filter.criteriaDto"
-                      :required="false"
-                      :requiredBlue="false"
-                      @update:criteria_dto="filter.criteriaDto = $event"
-                    />
-                  </n-form-item>
-                </n-collapse-item>
-              </n-collapse>
-
-              <n-space justify="end" class="mt-2">
-                <n-button tertiary @click="reset">
-                  {{ $t('component.common.search.clear-button') }}
-                </n-button>
-                <n-button type="primary" class="greenThemeColor" @click="refresh">
-                  {{ $t('component.common.search.search-button') }}
-                </n-button>
-              </n-space>
-            </n-form>
-          </n-space>
-        </n-layout-sider>
+              <!-- Criteria search -->
+              <n-form-item :show-feedback="false">
+                <opensilex-CriteriaSearchModalCreator
+                  ref="criteriaSearchCreateModal"
+                  class="searchFilter"
+                  :criteria_dto="filter.criteriaDto"
+                  :required="false"
+                  :requiredBlue="false"
+                  @update:criteria_dto="filter.criteriaDto = $event"
+                />
+              </n-form-item>
+            </n-collapse-item>
+          </n-collapse>
+        </SearchFiltersSidebar>
 
         <!-- CONTENU -->
         <n-layout-content class="so-content">
@@ -208,6 +178,7 @@ import {
 } from 'naive-ui'
 import CriteriaSearchModalCreator from './CriteriaSearchModalCreator.vue'
 import { useI18n } from 'vue-i18n'
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 type ScientificObjectFilter = {
   name: string
@@ -267,6 +238,25 @@ function defaultFilter(): ScientificObjectFilter {
   }
 }
 
+const activeFiltersCount = computed(() => {
+
+  const staticFilters = [
+    filter.name,
+    filter.experiment,
+    filter.germplasm,
+    filter.factorLevels,
+    filter.types,
+    filter.existenceDate,
+    filter.creationDate,
+    filter.criteriaDto.criteria_list
+  ]
+
+  return staticFilters.filter(v => {
+    if (Array.isArray(v)) return v.length > 0
+    return v !== undefined && v !== null && String(v).trim() !== ''
+  }).length
+})
+
 watch(
   () => props.searchFilter,
   newValue => {
@@ -282,13 +272,6 @@ watch(
   },
   { immediate: true, deep: true }
 )
-
-const filtersCollapsedProxy = computed({
-  get: () => !searchFiltersToggle.value,
-  set: (collapsed: boolean) => {
-    searchFiltersToggle.value = !collapsed
-  }
-})
 
 function normalizeItem(item: any): SelectableItem | null {
   if (!item) {
@@ -533,37 +516,10 @@ defineExpose({
 
 .modal-body {
   padding: 8px 0;
-  height: 72vh;
-  overflow: hidden;
 }
 
 .so-layout {
-  height: 100%;
   background: transparent;
-}
-
-.so-sider,
-.so-content {
-  height: 100%;
-}
-
-.so-sider {
-  background: #fff;
-  overflow: auto;
-}
-
-.so-content {
-  overflow: auto;
-  padding-left: 12px;
-}
-
-.filtersGlobalSearchIcon {
-  font-size: 1.2em;
-}
-
-.globalFiltersSearchButton {
-  width: 40px;
-  height: 55px;
 }
 
 .globalFiltersSearchButton span {

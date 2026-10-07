@@ -44,6 +44,7 @@ public class StartServerWithFront {
     private static final Path RELATIVE_NODE_DIRECTORY = Path.of("../.node/node");
     private static String nodeBin = "node";
 
+    /** allow us to wait and know when all front modules are built. */
     private static CountDownLatch countDownLatch;
 
     public static void main(String[] args) throws Exception {
@@ -131,7 +132,7 @@ public class StartServerWithFront {
         List<String> args = new ArrayList<>();
         args.add(nodeDirectory.resolve("npm").toFile().getCanonicalPath());
         args.add("run");
-        args.add("serve");
+        args.add("dev:build");
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
         addNodePathToEnv(frontBuilder);
 
@@ -154,19 +155,6 @@ public class StartServerWithFront {
         FileAlterationMonitor monitor = new FileAlterationMonitor(200);
         FileAlterationListener listener = new FileAlterationListenerAdaptor() {
             @Override
-            public void onStart(FileAlterationObserver observer){
-                File file = observer.getDirectory();
-                if (file.getName().equals(filename)) {
-                    LOGGER.debug("File exist: " + file.getName());
-                    try {
-                        FileUtils.copyFile(moduleDirectory.resolve("dist/" + filename).toFile(), targetDirectory.resolve(filename).toFile());
-                    } catch (IOException ex) {
-                        LOGGER.error("Error while copying lib file: " + filename, ex);
-                    }
-                    countDownLatch.countDown();
-                }
-            }
-            @Override
             public void onFileCreate(File file) {
                 if (file.getName().equals(filename)) {
                     LOGGER.debug("File created: " + file.getName());
@@ -178,12 +166,6 @@ public class StartServerWithFront {
                     countDownLatch.countDown();
                 }
             }
-
-
-            @Override
-            public void onFileDelete(File file) {
-            }
-
             @Override
             public void onFileChange(File file) {
                 if (file.getName().equals(filename)) {
@@ -194,6 +176,7 @@ public class StartServerWithFront {
                     } catch (IOException ex) {
                         LOGGER.error("Error while copying lib file: " + filename, ex);
                     }
+                    countDownLatch.countDown();
                 }
             }
         };

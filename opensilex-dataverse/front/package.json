@@ -1,19 +1,23 @@
 {
-    "name": "opensilex-brapi",
+    "name": "opensilex-dataverse",
     "version": "0.1.0",
+    "license":"AGPL-3.0-only", 
+    "type": "module",
     "private": true,
+    "main": "./dist/opensilex-dataverse.umd.min.js",
+    "module": "./dist/opensilex-dataverse.umd.min.js",
+    "exports": {
+        ".": {
+        "import": "./dist/opensilex-dataverse.umd.min.js"
+        }
+    },
     "scripts": {
-        "serve": "npx vite serve --config vite.config.ts",
-        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vite build --config vite.config.ts",
+        "dev:build": "vite build --config vite.config.ts --watch",
+        "build": "vite build --config vite.config.ts",
         "lint": "vue-cli-service lint",
-        "check:browserlist": "npm add caniuse-lite && npm remove caniuse-lite",
-        "check:outdated": "npm outdated || cd .",
-        "check:security": "npm audit || cd ."
+        "check:outdated": "npm outdated || cd ."
     },
     "devDependencies": {
-        
- 
-        
         "vite": "^8.2.2"
     },
     "eslintConfig": {
@@ -40,6 +44,5 @@
     "browserslist": [
         "> 1%",
         "last 2 versions"
-    ],
-    "dependencies": {}
+    ]
 }

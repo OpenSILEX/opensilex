@@ -906,6 +906,10 @@
                 "projects-selected-list-title": "Experiment projects",
                 "placeholder": {
                     "species": "Select one or more species"
+                },
+                "selector": {
+                    "placeholder-multiple": "Select one or more Experiments",
+                    "placeholder": "Select one Experiment"
                 }
             },
             "form-wizard": {

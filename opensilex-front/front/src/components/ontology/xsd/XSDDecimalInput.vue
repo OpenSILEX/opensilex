@@ -39,11 +39,23 @@ const internalValue = computed({
   }
 })
 
-const rule = computed<FormItemRule>(() => {
-  return {
-    required: false,
-    message: "validations.champs-input-dec",
-    trigger: ['change', 'blur']
+const rule = computed<FormItemRule>(() => ({
+  trigger: ['input', 'blur'],
+  validator: () => {
+    const value = internalValue.value;
+    const isEmpty = value === undefined || value === null || String(value).trim() === ""
+    // field required
+    if (isEmpty) {
+      return props.property.is_required
+          ? new Error(t("validations.required_if", {_field_: props.property.name}))
+          : true;
+    }
+    // integer only (no decimal)
+    if (!/^-?\d+\.\d+$/.test(String(value).trim())) {
+      return new Error(t("validations.decimal", {_field_: props.property.name})
+      );
+    }
+    return true;
   }
-})
+}));
 </script>

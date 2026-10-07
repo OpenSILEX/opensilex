@@ -309,23 +309,62 @@ routes:
     icon: bi#bi-globe
   - path: /organization/site/details/:uri
     component: opensilex-SiteDetailView
-  # - path: /experiment/details/:uri
-  #   component: opensilex-ExperimentView
-  #   rdfType: vocabulary:Experiment
-  # - path: /experiment/scientific-objects/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/data/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/data-visualisation/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/map/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/annotations/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/document/:uri
-  #   component: opensilex-ExperimentView
-  # - path: /experiment/factors/:uri
-  #   component: opensilex-ExperimentView
+  # Each experiment tab keeps its own top level route (the rdfType lookup only reads top level paths), whose single
+  # child is the tab component, rendered by the router-view of ExperimentView
+  - path: /experiment/details/:uri
+    component: opensilex-ExperimentView
+    rdfType: vocabulary:Experiment
+    children:
+      - path: ''
+        component: opensilex-ExperimentDetail
+  - path: /experiment/scientific-objects/:uri
+    component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-ExperimentScientificObjects
+        # Tabs of the detail panel of the selected scientific object, rendered by the router-view of ExperimentScientificObjects
+        children:
+          - path: ''
+            component: opensilex-ScientificObjectDetailProperties
+            name: ExperimentScientificObjectDetails
+          - path: events
+            component: opensilex-EventList
+            name: ExperimentScientificObjectEvents
+          - path: positions
+            component: opensilex-PositionList
+            name: ExperimentScientificObjectPositions
+          - path: annotations
+            component: opensilex-AnnotationList
+            name: ExperimentScientificObjectAnnotations
+          - path: documents
+            component: opensilex-DocumentTabList
+            name: ExperimentScientificObjectDocuments
+  # TODO add the tab component as child once ExperimentData is migrated
+  - path: /experiment/data/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/data-visualisation/:uri
+    component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-ExperimentDataVisualisation
+  # TODO add the tab component as child once MapView is migrated
+  - path: /experiment/map/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/annotations/:uri
+    component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-AnnotationList
+  - path: /experiment/document/:uri
+    component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-DocumentTabList
+  - path: /experiment/factors/:uri
+    component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-ExperimentFactors
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView
@@ -392,23 +431,22 @@ routes:
   # - path: /germplasm/group
   #   component: opensilex-GermplasmGlobalView
 
-  # - path: /factor/create
-  #   component: opensilex-FactorForm
-  #   credentials:
-  #     - factor-modification
-  # - path: /:xpUri/factor/details/:uri
-  #   component: opensilex-FactorView
-  # - path: /:xpUri/factor/experiments/:uri
-  #   component: opensilex-FactorView
-  # - path: /:xpUri/factor/annotations/:uri
-  #   component: opensilex-FactorView
-  # - path: /:xpUri/factor/document/:uri
-  #   component: opensilex-FactorView
+  - path: /factor/create
+    component: opensilex-FactorForm
+    credentials:
+       - factor-modificationdocumentForm
+  - path: /:xpUri/factor/details/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/experiments/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/annotations/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/document/:uri
+    component: opensilex-FactorView
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
     credentials: [ ]
-
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
     rdfType: vocabulary:Device

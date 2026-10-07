@@ -32,7 +32,7 @@
           class="btn mr-2 h-100 back-button"
           @click="$router.go(-1)"
         >
-          <opensilex-Icon
+          <Icon
             class="icon-title back-button-icon"
             icon="bi#bi-arrow-90deg-left"
           />
@@ -54,6 +54,7 @@
 import { computed }  from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
+import Icon from "@/components/common/views/Icon.vue";
 
 const props = defineProps<{
   returnToTitle?: string;

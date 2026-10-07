@@ -8,7 +8,7 @@
               :options="languages"
               @select="onLanguageSelected"
           >
-            <n-button><i class="bi bi-globe m-2"></i> {{ t(`component.header.language.${locale}`) }}</n-button>
+            <n-button><i class="bi bi-globe m-2"></i> {{ t(`component.common.guage.${locale}`) }}</n-button>
           </n-dropdown>
         </div>
       </div>
@@ -110,7 +110,7 @@ const rules = computed<FormRules>(() => ({
 const languages = computed(() =>
     availableLocales.map(l => ({
       key: l,
-      label: t(`component.header.language.${l}`)
+      label: t(`component.common.guage.${l}`)
     }))
 );
 

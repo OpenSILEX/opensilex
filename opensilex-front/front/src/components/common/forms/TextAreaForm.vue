@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormField
+  <FormField
     :rules="rules"
     :required="required"
     :label="label"
@@ -22,13 +22,14 @@
         @keypress.enter="onEnter"
       />
     </template>
-  </opensilex-FormField>
+  </FormField>
 </template>
 
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NInput } from 'naive-ui'
+import FormField from "@/components/common/forms/FormField.vue";
 
 const { t } = useI18n()
 

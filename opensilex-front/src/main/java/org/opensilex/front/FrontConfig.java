@@ -18,6 +18,14 @@ import java.util.Map;
  */
 public interface FrontConfig {
 
+    /**
+     * Module and theme serving the resources every other theme falls back on. A custom theme can only
+     * override a subset of them.
+     */
+    String DEFAULT_THEME_MODULE = "opensilex-front";
+    String DEFAULT_THEME_NAME = "opensilex";
+    String DEFAULT_THEME = DEFAULT_THEME_MODULE + "#" + DEFAULT_THEME_NAME;
+
     @ConfigDescription(
             value = "Front login component definition",
             defaultString = "opensilex-DefaultLoginComponent"
@@ -56,7 +64,7 @@ public interface FrontConfig {
 
     @ConfigDescription(
             value = "Front theme identifier",
-            defaultString = "opensilex-front#opensilex"
+            defaultString = DEFAULT_THEME
     )
     String theme();
 

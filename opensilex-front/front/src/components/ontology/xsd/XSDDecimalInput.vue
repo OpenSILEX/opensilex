@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required" >
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" ref="formItemRef">
   <InputForm
     v-model:value="internalValue"
     type="number"
@@ -13,16 +13,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import {computed, useTemplateRef, watch} from 'vue'
 import type { VueRDFTypePropertyDTO } from '@/lib'
 import { useI18n } from 'vue-i18n'
 import InputForm from "@/components/common/forms/InputForm.vue";
 import {FormItemRule, NFormItem} from "naive-ui";
 
 const { t } = useI18n()
-
+const formItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('formItemRef')
 const props = defineProps<{
-    property: VueRDFTypePropertyDTO
+  property: VueRDFTypePropertyDTO
   value?: string | number
 }>()
 
@@ -40,7 +40,7 @@ const internalValue = computed({
 })
 
 const rule = computed<FormItemRule>(() => ({
-  trigger: ['input', 'blur'],
+  trigger: ['blur'],
   validator: () => {
     const value = internalValue.value;
     const isEmpty = value === undefined || value === null || String(value).trim() === ""
@@ -58,4 +58,13 @@ const rule = computed<FormItemRule>(() => ({
     return true;
   }
 }));
+
+watch(
+    () => props.value,
+    (newVal) => {
+      if (newVal) {
+        formItemRef.value?.validate()
+      }
+    }
+);
 </script>

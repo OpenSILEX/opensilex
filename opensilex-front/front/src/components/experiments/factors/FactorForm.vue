@@ -19,6 +19,8 @@
       </p>
       <n-form
           ref="nForm"
+          :model="form"
+          :rules="rules"
       >
         <!-- URI -->
         <n-form-item>
@@ -27,13 +29,12 @@
             :label="t('component.experiment.search.column.uri')"
             helpMessage="component.common.uri-help-message"
             :editMode="isEditMode"
-            :generated.sync="uriGenerated"
+            v-model:generated="uriGenerated"
         ></UriForm>
         </n-form-item>
 
         <!-- Name -->
         <div id="v-step-0">
-          <n-form :model="form" :rules="rules">
             <n-form-item path="name">
               <InputForm
                   v-model:value="form.name"
@@ -45,7 +46,6 @@
                   :placeholder="t('component.experiment.name-factor-placeholder')"
               />
             </n-form-item>
-          </n-form>
         </div>
 
         <p class="divHelpMsg">
@@ -152,10 +152,11 @@ const props = defineProps<ModalFormProps & {
 }>();
 
 const emit = defineEmits<ModalFormEmits>()
+const nformRef = useTemplateRef<InstanceType<typeof NForm>>('nForm')
 
 const {form, formTitle, isEditMode, exposed, submit, hide} = useModalFormLogic<FactorCreationDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>('modal'),
-  nFormRef: useTemplateRef<InstanceType<typeof NForm>>('nForm'),
+  nFormRef: nformRef,
   getEmptyForm,
   create,
   update,
@@ -268,6 +269,7 @@ function create(form) {
           );
         } else {
           opensilex.errorHandler(error);
+          console.debug('error')
         }
       });
 }
@@ -294,9 +296,9 @@ function validateAndSubmit() {
       );
 
   if (showFactorLevelsWarning.value) {
+    nformRef.value.validate()
     return;
   }
-
   submit();
 }
 

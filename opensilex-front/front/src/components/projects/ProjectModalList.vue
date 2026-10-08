@@ -49,13 +49,13 @@ const projectSelection = ref<any>(null)
 const visible = ref(false)
 
 const emit = defineEmits<{
-  (e: 'onValidate', value: any[]): void
-  (e: 'onClose'): void
-  (e: 'shown'): void
-  (e: 'hide'): void
-  (e: 'select', value: any): void
-  (e: 'unselect', value: any): void
-  (e: 'selectall', value: any): void
+  onValidate: [value: any[]]
+  onClose: []
+  shown: []
+  hide: []
+  select: [value: any]
+  unselect: [value: any]
+  selectall: [value: any]
 }>()
 
 async function show() {

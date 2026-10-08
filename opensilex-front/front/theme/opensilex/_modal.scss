@@ -44,7 +44,7 @@
 			    border: none;
 			    border-radius: 0;
 			    min-height: 100vh;
-			    background-color: $white;
+			    background-color: var(--color-white);
 			    .quick-search {
 				    position: absolute;
 				    width: 100%;
@@ -97,7 +97,7 @@
 							}
 							&:hover {
 								i {
-								    color: $theme;
+								    color: var(--color-theme);
 								}
 							}
 						}

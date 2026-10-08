@@ -108,7 +108,7 @@ function onDeviceListUpdate(dto: any): void {
 .devicesHelp {
   font-size: 1.3em;
   background: #f1f1f1;
-  color: #00A38D;
+  color: var(--main-color-theme);
   border-radius: 50%;
    margin-top: -10px;
 }

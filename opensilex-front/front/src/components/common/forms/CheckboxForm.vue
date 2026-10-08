@@ -59,7 +59,7 @@ function onChange(e: Event) {
 .ox-checkbox input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #00A38D;
+  accent-color: var(--main-color-theme);
 }
 
 .ox-checkbox__label {

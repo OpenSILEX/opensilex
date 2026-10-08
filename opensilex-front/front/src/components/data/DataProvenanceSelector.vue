@@ -1,5 +1,5 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="formSelector"
     :label="label"
     v-model:selected="provenancesURI"
@@ -36,11 +36,11 @@ const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'update:provenances', value: any): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
-  (e: 'clear'): void
-  (e: 'handlingEnterKey'): void
+  'update:provenances': [value: any]
+  select: [value: any]
+  deselect: [value: any]
+  clear: []
+  handlingEnterKey: []
 }>()
 
 const props = withDefaults(defineProps<{

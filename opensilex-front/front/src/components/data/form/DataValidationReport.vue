@@ -122,7 +122,6 @@ function reset() {
  * @param dataErrors dataErrors validation model
  */
 function checkValidation(dataErrors) {
-  console.debug("Verification data", dataErrors);
   tooLargeDataset.value = dataErrors.tooLargeDataset;
   nbLinesToImport.value = dataErrors.nbLinesToImport;
   let errors = dataErrors;
@@ -339,7 +338,6 @@ function csvExportInvalidData() {
     }
     arrData.push(line);
   });
-  console.debug("CSV validationReport data :", arrData);
   downloadCsv(Papa.unparse(arrData, {delimiter: ","}), "validationReport");
 }
 

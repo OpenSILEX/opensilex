@@ -124,6 +124,8 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import {FactorsService} from "opensilex-core/api/factors.service";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
 import {NButtonGroup} from "naive-ui";
+import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
+import FilterField from "@/components/common/filters/FilterField.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const factorService = opensilex.getService<FactorsService>('opensilex.FactorsService')

@@ -64,7 +64,6 @@
             <slot name="clear">
               <Button
                 label="component.common.search.clear-button"
-                icon="ik#ik-x"
                 @click="$emit('clear', $event)"
                 variant="light"
                 class="mr-3"

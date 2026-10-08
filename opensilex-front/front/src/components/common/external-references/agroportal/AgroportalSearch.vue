@@ -185,11 +185,11 @@ function onInputValueChange(val: string) {
 }
 
 .agroportalSearchBarBtn, .agroportalCleanSearchBtn {
-  color: #00A38D;
-  border-color: #00A38D;
+  color: var(--main-color-theme);
+  border-color: var(--main-color-theme);
 }
 .agroportalSearchBarBtn:hover {
-  background: #00A38D;
+  background: var(--main-color-theme);
   color: white;
 }
 .agroportalCleanSearchBtn:hover {

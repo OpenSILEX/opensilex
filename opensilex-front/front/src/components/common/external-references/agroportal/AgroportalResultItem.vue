@@ -80,7 +80,7 @@ defineExpose({ setSelected })
 }
 
 a {
-  color: #00A38D;
+  color: var(--main-color-theme);
 }
 
 .result {

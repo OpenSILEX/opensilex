@@ -317,7 +317,7 @@ defineExpose({
 .facilitiesHelp {
   font-size: 1.3em;
   background: #f1f1f1;
-  color: #00A38D;
+  color: var(--main-color-theme);
   border-radius: 50%;
 }
 

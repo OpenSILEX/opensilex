@@ -1,18 +1,8 @@
 <template>
-  <opensilex-DefaultLoginComponent>
-    <template v-slot:loginMedia>
-        <img
-            v-bind:src="opensilex.getResourceURI('images/opensilex-login-bg.jpg')"
-        />
-    </template>
-
-    <template v-slot:loginLogo>
-        <img
-            v-bind:src="
-            opensilex.getResourceURI('images/logo-phis-lg.png')
-            "
-        />
-    </template>
+  <opensilex-DefaultLoginComponent
+      loginLogoPath='images/logo-phis-lg.png'
+      :carouselImagesPaths="['images/opensilex-login-bg.jpg']"
+  >
 
     <template v-slot:loginFooter>   
         <p>

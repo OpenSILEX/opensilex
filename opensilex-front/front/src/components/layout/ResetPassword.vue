@@ -8,7 +8,7 @@
               :options="languages"
               @select="onLanguageSelected"
           >
-            <n-button><i class="bi bi-globe m-2"></i> {{ t(`component.common.guage.${locale}`) }}</n-button>
+            <n-button><i class="bi bi-globe m-2"></i> {{ t(`component.common.language.${locale}`) }}</n-button>
           </n-dropdown>
         </div>
       </div>

@@ -141,14 +141,14 @@ defineExpose({ show, hide });
 <style scoped lang="scss">
 
 .periodBtn{
-  border-color:#018371;
+  border-color:var(--main-color-theme-hover);
   background: #fff;
-  color: #018371
+  color: var(--main-color-theme-hover)
 }
 
 .active {
-  background-color: #00A38D;
-  border-color:#00A38D;
+  background-color: var(--main-color-theme);
+  border-color:var(--main-color-theme);
   color: #fff;
 }
 

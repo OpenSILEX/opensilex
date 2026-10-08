@@ -1,0 +1,73 @@
+.auth-wrapper {
+    .carousel {
+        height: 100vh;
+        position: relative;
+        width: 100%;
+        -webkit-background-size: cover;
+        background-size: cover;
+        background-repeat: no-repeat;
+
+        .carousel-inner {
+            height: 100%;
+        }
+
+        .carousel-item {
+            height: 100%;
+            transition: opacity 1.5s ease-in-out !important;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+    }
+
+    .authentication-form {
+        font-size: .9rem;
+        width: 70%;
+        display: block;
+        padding: 100px 0;
+
+        .logo-centered {
+            width: 60px;
+            margin: 0 auto;
+            margin-bottom: 40px;
+        }
+
+        h3 {
+            font-size: 20px;
+            color: #272d36;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            position: relative;
+
+            .form-control {
+                padding-left: 40px;
+
+                & ~ i {
+                    position: absolute;
+                    top: 10px;
+                    left: 15px;
+                }
+            }
+        }
+
+        .sign-btn {
+            margin-top: 30px;
+        }
+
+        .register {
+            margin-top: 30px;
+            text-align: center;
+        }
+    }
+
+    .languagesDropdown {
+        position: fixed;
+        top: 5px;
+        right: 10px;
+    }
+}

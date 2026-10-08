@@ -8,7 +8,7 @@
 
 > ⚠️ _WARNING_ : This document is about personalizing OpenSILEX's front-end by creating a new module.
 >
-> You first need to follow the first steps of creating a new module: [modules.md](modules.md)
+> You first need to follow the first steps of creating a new module: [create-your-own-module.md](create-your-own-module.md)
 >
 
 ## Table of contents
@@ -42,7 +42,7 @@ front:
     loginComponent: opensilex-phis-PhisLoginComponent
     headerComponent: opensilex-phis-PhisHeaderComponent
 ```
-> Note : the theme key of this exemple is used to load the CSS theme from phis module. This part is better explained in the [module-theme-personalization.md](module-theme-personalization.md)
+> Note : the theme key of this exemple is used to load the CSS theme from phis module. This part is better explained in the [theme-personalization.md](theme-personalization.md)
 
 ## Technical workflow
 

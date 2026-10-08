@@ -6,21 +6,21 @@
 	}
 }
 .jq-icon-info {
-    background-color: $info;
-    color: $white;
+    background-color: var(--color-info);
+    color: var(--color-white);
     border: none;
 }
 .jq-icon-warning {
-    background-color: $warning;
-    color: $white;
+    background-color: var(--color-warning);
+    color: var(--color-white);
 }
 .jq-icon-error {
-    background-color: $danger;
-    color: $white;
+    background-color: var(--color-danger);
+    color: var(--color-white);
 }
 .jq-icon-success {
-    color: $white;
-    background-color: $success;
+    color: var(--color-white);
+    background-color: var(--color-success);
 }
 .jq-toast-single, .jq-toast-single h2 {
     font-family: 'Nunito Sans', sans-serif;

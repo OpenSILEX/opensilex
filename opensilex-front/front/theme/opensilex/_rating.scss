@@ -57,21 +57,21 @@ span.value {
 .br-theme-bars-reversed,
 .br-theme-bars-horizontal {
     .br-widget a {
-        background-color: lighten($primary, 20%);
+        background-color: color-mix(in srgb, var(--color-primary) 80%, white);
         &.br-active,
         &.br-selected {
-            background-color: $primary;
+            background-color: var(--color-primary);
         }
     }
 }
 
 .br-theme-bars-pill {
     .br-widget a {
-        background-color: lighten($primary, 20%);
-        color: $primary;
+        background-color: color-mix(in srgb, var(--color-primary) 80%, white);
+        color: var(--color-primary);
         &.br-active,
         &.br-selected {
-            background-color: $primary;
+            background-color: var(--color-primary);
         }
     }
 }
@@ -80,7 +80,7 @@ span.value {
     .br-widget {
         a.br-active:after,
         a.br-selected:after {
-            color: $primary;
+            color: var(--color-primary);
         }
     }
 }
@@ -89,19 +89,19 @@ span.value {
     .br-widget {
         a.br-active:after,
         a.br-selected:after {
-            color: $primary;
+            color: var(--color-primary);
         }
     }
 }
 
 .br-theme-bars-square {
     .br-widget a {
-        border: 2px solid lighten($primary, 20%);
-        color: lighten($primary, 8%);
+        border: 2px solid color-mix(in srgb, var(--color-primary) 80%, white);
+        color: color-mix(in srgb, var(--color-primary) 92%, white);
         &.br-active,
         &.br-selected {
-            border: 2px solid $primary;
-            color: $primary;
+            border: 2px solid var(--color-primary);
+            color: var(--color-primary);
         }
     }
 }
@@ -112,7 +112,7 @@ span.value {
         a:after,
         a.br-active:after,
         a.br-fractional:after {
-            color: $primary;
+            color: var(--color-primary);
         }
     }
 }

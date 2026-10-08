@@ -89,7 +89,7 @@
 }
 
 .multiselect__tag {
-    background: #00A38D;
+    background: var(--main-color-theme);
     margin-bottom: 0;
 }
 
@@ -99,7 +99,7 @@
 }
 
 .multiselect__option--highlight {
-    background: #00A38D;
+    background: var(--main-color-theme);
 }
 
 .multiselect, .multiselect__input, .multiselect__single {

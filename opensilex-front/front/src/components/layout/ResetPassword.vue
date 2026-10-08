@@ -110,7 +110,7 @@ const rules = computed<FormRules>(() => ({
 const languages = computed(() =>
     availableLocales.map(l => ({
       key: l,
-      label: t(`component.common.guage.${l}`)
+      label: t(`component.common.language.${l}`)
     }))
 );
 

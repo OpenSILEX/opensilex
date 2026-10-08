@@ -104,7 +104,7 @@ const formModel = ref({
 const languages = computed(() =>
     availableLocales.map(l => ({
       key: l,
-      label: t(`component.common.guage.${l}`)
+      label: t(`component.common.language.${l}`)
     })));
 const rules = computed<FormRules>(() => ({
   email: [validEmail(), requiredTrimmed('component.account.email-address')]

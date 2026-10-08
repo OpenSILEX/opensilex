@@ -154,7 +154,7 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
         //Basic props
         typeBuilder.setName(title + "_" + geomType.getSimpleName() + "_" + now);
         typeBuilder.add(geomKey,geomType);
-        typeBuilder.add("Name", String.class);
+        typeBuilder.add("name", String.class);
         typeBuilder.add("URI", String.class);
         typeBuilder.add("type_name", String.class);
         typeBuilder.add("type_URI", String.class);
@@ -364,7 +364,7 @@ public abstract class GeospatialExporter<T extends SPARQLNamedResourceModel>{
         objDetailList.forEach(el -> {
             // Basic props
             Map<String, Object> properties = new HashMap<>();
-            properties.put("Name", el.getName());
+            properties.put("name", el.getName());
             properties.put("URI", el.getUri());
             properties.put("type_name", el.getTypeLabel().getDefaultValue());
             properties.put("type_URI", el.getType());

@@ -3,6 +3,7 @@ package org.opensilex.core.scientificObject.dal;
 
 import org.apache.commons.collections4.BidiMap;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialExporter;
 import org.opensilex.core.ontology.Oeso;
@@ -16,12 +17,19 @@ import java.util.stream.Collectors;
 
 public class ScientificObjectGeospatialExporter extends GeospatialExporter<ScientificObjectModel> {
 
-    static URI HAS_FACTORLEVEL = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasFactorLevel.getURI()));
-    static URI HAS_CREATION_DATE = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasCreationDate.getURI()));
-    static URI HAS_DESTRUCTIONTION_DATE = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasDestructionDate.getURI()));
+    static final URI HAS_FACTORLEVEL = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasFactorLevel.getURI()));
+    static final URI HAS_CREATION_DATE = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasCreationDate.getURI()));
+    static final URI HAS_DESTRUCTIONTION_DATE = URI.create(SPARQLDeserializers.getShortURI(Oeso.hasDestructionDate.getURI()));
+    static final URI PARTICIPATES_IN = URI.create(SPARQLDeserializers.getShortURI(Oeso.participatesIn.getURI()));
 
-    public ScientificObjectGeospatialExporter() {
+    static final String EXPERIMENT_URI_PROP = "experiment_URI";
+    static final String EXPERIMENT_NAME_PROP = "experiment_name";
+
+    private final ExperimentModel experimentModel;
+
+    public ScientificObjectGeospatialExporter(ExperimentModel experimentModel) {
         super();
+        this.experimentModel = experimentModel;
     }
 
     @Override
@@ -36,6 +44,9 @@ public class ScientificObjectGeospatialExporter extends GeospatialExporter<Scien
         } else if (prop.equals(HAS_DESTRUCTIONTION_DATE) && el.getDestructionDate() != null) {
             int index = indexAttributes.getKey(propFormatting(prop));
             featureBuilder.set(index, el.getDestructionDate());
+        } else if (prop.equals(PARTICIPATES_IN) && experimentModel != null) {
+            featureBuilder.set(EXPERIMENT_URI_PROP, experimentModel.getUri().toString());
+            featureBuilder.set(EXPERIMENT_NAME_PROP, experimentModel.getName());
         } else {
             if (!el.getRelations().isEmpty()) {
                 //Get the value of the corresponding property
@@ -60,6 +71,9 @@ public class ScientificObjectGeospatialExporter extends GeospatialExporter<Scien
             properties.put(prop.toString(), el.getCreationDate().toString());
         } else if (prop.equals(HAS_DESTRUCTIONTION_DATE) && el.getDestructionDate() != null) {
             properties.put(prop.toString(), el.getDestructionDate().toString());
+        } else if (prop.equals(PARTICIPATES_IN) && experimentModel != null) {
+            properties.put(EXPERIMENT_URI_PROP, experimentModel.getUri().toString());
+            properties.put(EXPERIMENT_NAME_PROP, experimentModel.getName());
         } else {
             if (!el.getRelations().isEmpty()) {
                 //Get the value of the corresponding property

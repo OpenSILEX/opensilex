@@ -47,7 +47,7 @@ Your `{short_module_name}.yml` config file should always start with `extend: "op
 allows using the default OpenSILEX theme, and to override only the variables and CSS you want to change. Skipping this instruction
 will result in a complete override of the OpenSILEX theme, leading to a broken UI in future updates.
 
-The config file should also at list reference one CSS file ine the `stylesheets` section. For our **minimal structure reference**
+The config file should also at least reference one CSS file in the `stylesheets` section. For our **minimal structure reference**
 our `{short_module_name}.yml` file should at least look like this, with the `main.css` containing any CSS you want :
 ```yaml
 extend: "opensilex-front#opensilex"

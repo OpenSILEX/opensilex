@@ -25,11 +25,19 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
+import {PropSync} from "vue-property-decorator";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class NbElementPerPageSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+
+  /**
+   * Number of elements per page, synchronized with the parent as soon as this component is created
+   * so that the parent can do its first search with the right page size.
+   */
+  @PropSync("nbElementPerPage")
+  nbElementPerPageSync: number;
 
   private itemsPerPage: string = "20";
 
@@ -37,13 +45,18 @@ export default class NbElementPerPageSelector extends Vue {
     if (localStorage.getItem("numberOfElements") !== null) {
       this.itemsPerPage = localStorage.getItem("numberOfElements");
     }
-    this.onItemsPerPageChange()
+    this.updateItemsPerPage();
   }
 
   private onItemsPerPageChange(): void {
+    this.updateItemsPerPage();
+    this.emitChange();
+  }
+
+  private updateItemsPerPage(): void {
     localStorage.setItem("numberOfElements", this.itemsPerPage);
     this.$opensilex.updateURLParameter("page_size", this.itemsPerPage, 20);
-    this.emitChange();
+    this.nbElementPerPageSync = parseInt(this.itemsPerPage, 10);
   }
 
   private emitChange(): void {

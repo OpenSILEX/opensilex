@@ -13,12 +13,14 @@
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
         <opensilex-NbElementPerPageSelector
+            :nbElementPerPage.sync="defaultPageSize"
             @change="OnNbElementPerPageChange"
         />
       </div>
       <!-- on other tables -->
       <div v-if="!isSelectable && tableRef" class="numberOfElementsSelectorListsWthCheckbox">
         <opensilex-NbElementPerPageSelector
+            :nbElementPerPage.sync="defaultPageSize"
             @change="OnNbElementPerPageChange"
         />
       </div>
@@ -731,11 +733,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     }
   }
 
-  OnNbElementPerPageChange(itemPerPage: string) {
-    this.pageSize = parseInt(itemPerPage);
-    this.defaultPageSize = this.pageSize;
+  // defaultPageSize is already updated by the selector (sync), changeCurrentPage refreshes the table with it
+  OnNbElementPerPageChange() {
     this.changeCurrentPage(1);
-    this.refresh();
   }
 
     checkSelectedItems(uri) {

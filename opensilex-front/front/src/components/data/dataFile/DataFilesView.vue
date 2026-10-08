@@ -237,6 +237,7 @@ import {validate} from "vee-validate";
 import HttpResponse, {OpenSilexResponse} from "@/lib/HttpResponse";
 import {ProvenanceGetDTO} from "opensilex-core/lib";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
+import FilterField from "@/components/common/filters/FilterField.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const store = useStore();

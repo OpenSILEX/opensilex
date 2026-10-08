@@ -1,52 +1,45 @@
 <template>
   <div>
-    <SearchFilterField
-      v-if="searchBar"
-      @clear="resetSearch()"
-      @search="updateFilters()"
-      label="component.factor.list.filter.label"
-    >
-      <template v-slot:filters>
-        <FilterField>
-          <b-form-group>
-            <label for="name">{{
-              $t("component.factor.list.filter.name")
-            }}</label>
-            <StringFilter
-              id="name"
-              v-model:filter="filter.name"
-              placeholder="component.factor.name-placeholder"
-            ></StringFilter>
-          </b-form-group>
-        </FilterField>
+    <n-layout has-sider class="factor-layout">
+      <!-- FILTERS -->
+      <SearchFiltersSidebar
+        v-if="searchBar"
+        v-model:filtersCollapsed="filtersCollapsed"
+        :activeFiltersCount="activeFiltersCount"
+        searchButtonLabelTranslationKey="component.factor.list.filter.label"
+        @refresh="updateFilters()"
+        @reset="resetSearch()"
+      >
+        <!-- Name -->
+        <n-form-item class="compact-form-item">
+          <StringFilter
+            id="name"
+            label="component.factor.list.filter.name"
+            v-model:filter="filter.name"
+            placeholder="component.factor.name-placeholder"
+            @handlingEnterKey="updateFilters()"
+          />
+        </n-form-item>
 
-        <FilterField>
-          <b-form-group>
-            <b-input-group>
-              <!-- Factor categories -->
-              <FactorCategorySelector
-                label="component.factor.list.filter.category"
-                placeholder="component.factor.names.category-placeholder"
-                :category.sync="filter.category"
-              ></FactorCategorySelector>
-            </b-input-group>
-          </b-form-group>
-        </FilterField>
+        <!-- Factor categories -->
+        <n-form-item class="compact-form-item">
+          <FactorCategorySelector
+            label="component.factor.list.filter.category"
+            v-model:category="filter.category"
+          />
+        </n-form-item>
 
-        <FilterField v-if="experiment == null">
-          <b-form-group>
-            <b-input-group>
-              <!-- Experiments -->
-              <ExperimentSelector
-                label="component.factor.list.filter.experiment"
-                :multiple="false"
-                :experiments.sync="filter.experiment"
-              ></ExperimentSelector>
-            </b-input-group>
-          </b-form-group>
-        </FilterField>
-      </template>
-    </SearchFilterField>
+        <!-- Experiments -->
+        <n-form-item v-if="experiment == null" class="compact-form-item">
+          <ExperimentSelector
+            label="component.factor.list.filter.experiment"
+            :multiple="false"
+            v-model:experiments="filter.experiment"
+          />
+        </n-form-item>
+      </SearchFiltersSidebar>
+
+      <n-layout-content class="factor-content">
 
     <TableAsyncView
       ref="tableRef"
@@ -55,7 +48,7 @@
       defaultSortBy="name"
       :isSelectable="isSelectable"
       labelNumberOfSelectedRow="FactorList.selected"
-      iconNumberOfSelectedRow="ik#ik-feather"
+      iconNumberOfSelectedRow="fa#fa-feather"
     >
       <template v-slot:head(name)="{ data }">{{ $t(data.label) }}</template>
       <template v-slot:head(description)="{ data }">{{
@@ -103,6 +96,8 @@
         </n-button-group>
       </template>
     </TableAsyncView>
+      </n-layout-content>
+    </n-layout>
   </div>
 </template>
 
@@ -116,16 +111,15 @@ import UriLink from "@/components/common/views/UriLink.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import InteroperabilityButton from "@/components/common/buttons/InteroperabilityButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import {computed, inject, onBeforeUnmount, onMounted, useTemplateRef} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, reactive, ref, useTemplateRef} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import {FactorsService} from "opensilex-core/api/factors.service";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
-import {NButtonGroup} from "naive-ui";
-import SearchFilterField from "@/components/common/filters/SearchFilterField.vue";
-import FilterField from "@/components/common/filters/FilterField.vue";
+import {NButtonGroup, NFormItem, NLayout, NLayoutContent} from "naive-ui";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const factorService = opensilex.getService<FactorsService>('opensilex.FactorsService')
@@ -175,13 +169,23 @@ const credentials = computed(() => {
   return store.state.credentials
 })
 
-  const filter = {
+  const filter = reactive({
     uri: "",
     name: "",
     description: "",
     experiment: null,
     category: "",
-  };
+  });
+
+  const filtersCollapsed = ref(true);
+
+  const activeFiltersCount = computed(() => {
+    return Object.entries(filter).filter(([key, v]) => {
+      if (key === "experiment" && props.experiment != null) return false;
+      if (Array.isArray(v)) return v.length > 0;
+      return v !== undefined && v !== null && String(v).trim() !== '';
+    }).length;
+  });
 
   function resetSearch() {
     resetFilters();
@@ -287,6 +291,14 @@ const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
 </script>
 
 <style scoped lang="scss">
+.factor-layout {
+  background: transparent;
+}
+
+.factor-content {
+  padding-left: 12px;
+}
+
 a {
   color: #007bff;
 }

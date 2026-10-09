@@ -18,7 +18,7 @@
           :key="modalFormLogic.form.value.rdf_type ?? 'no-type'"
           v-model:type="modalFormLogic.form.value.rdf_type"
           :baseType="Oeso.DATAFILE_TYPE_URI"
-          :helpMessage="t('DataFileForm.type-help')"
+          :helpMessage="t('component.datafile.form.type-help')"
           :required="true"
         />
       </n-form-item>
@@ -44,7 +44,7 @@
             path="provenance"
             ref="provenanceSelector"
             v-model:provenances="modalFormLogic.form.value.provenance"
-            :label="t('DataFileForm.provenance')"
+            :label="t('component.datafile.form.provenance')"
             :multiple="false"
             @clear="reset"
             :actionHandler="
@@ -58,7 +58,7 @@
         <!-- experiment -->
           <ExperimentSelector
             path="experiments"
-            :label="t('DataFileForm.experiment')"
+            :label="t('component.datafile.form.experiment')"
             v-model:experiments="modalFormLogic.form.value.experiments"
             :required="true"
           />
@@ -82,9 +82,9 @@
         <n-form-item v-if="!modalFormLogic.isEditMode.value && selectedSource === 'file'" path="file" ref="fileItem">
           <FileInputForm
             v-model:file="modalFormLogic.form.value.file"
-            :label="t('DataFileForm.fileDX')"
+            :label="t('component.datafile.form.fileDX')"
             type="file"
-            :browse-text="t('DataFileForm.browse')"
+            :browse-text="t('component.datafile.form.browse')"
             :required="true"
             rules="size:100000"
             :helpMessage="helpMessageFile"
@@ -94,7 +94,7 @@
         <!-- External source -->
         <n-form-item v-if="!modalFormLogic.isEditMode.value && selectedSource === 'external'" path="file" ref="externalSourceItem">
           <InputForm
-            :label="t('DataFileForm.external-source')"
+            :label="t('component.datafile.form.external-source')"
             type="text"
             v-model:value="modalFormLogic.form.value.file"
             :required="true"
@@ -105,8 +105,8 @@
         <n-form-item v-if="selectedFormat === 'all' || selectedSource === 'external'" path="date" ref="dateItem">
           <DateForm
             v-model:value="modalFormLogic.form.value.date"
-            :helpMessage="t('DataFileForm.date-help')"
-            :label="t('DataFileForm.date')"
+            :helpMessage="t('component.datafile.form.date-help')"
+            :label="t('component.datafile.form.date')"
             :required="true"
           />
         </n-form-item>
@@ -116,8 +116,8 @@
           <InputForm
             v-model:value="modalFormLogic.form.value.target"
             :baseType="Oeso.targets"
-            :label="t('DataFileForm.targets')"
-            :helpMessage="t('DataFileForm.targets-help')"
+            :label="t('component.datafile.form.targets')"
+            :helpMessage="t('component.datafile.form.targets-help')"
             type="text"
           />
         </n-form-item>
@@ -214,11 +214,11 @@ const sources = [
 
 const helpMessageFile = computed(() => {
   if (selectedFormat.value === 'DX') {
-    return 'DataFileForm.fileDX-help'
+    return 'component.datafile.form.fileDX-help'
   }
 
   if (selectedFormat.value === 'CSV') {
-    return 'DataFileForm.fileSpectraCSV-help'
+    return 'component.datafile.form.fileSpectraCSV-help'
   }
 
   return null
@@ -228,7 +228,7 @@ const rules = computed(() => ({
   rdf_type: {
     required: true,
     message: t('validations.required_if', {
-      _field_: t('DataFileForm.type')
+      _field_: t('component.datafile.form.type')
     }),
     trigger: ['change', 'blur']
   },
@@ -240,7 +240,7 @@ const rules = computed(() => ({
         ? true
         : new Error(
             t('validations.required_if', {
-              _field_: t('DataFileForm.provenance')
+              _field_: t('component.datafile.form.provenance')
             }) as string
           )
     }
@@ -257,7 +257,7 @@ const rules = computed(() => ({
         ? true
         : new Error(
             t('validations.required_if', {
-              _field_: t('DataFileForm.experiment')
+              _field_: t('component.datafile.form.experiment')
             }) as string
           )
     }
@@ -271,7 +271,7 @@ const rules = computed(() => ({
           ? true
           : new Error(
               t('validations.required_if', {
-                _field_: t('DataFileForm.fileDX')
+                _field_: t('component.datafile.form.fileDX')
               }) as string
             )
       }
@@ -281,7 +281,7 @@ const rules = computed(() => ({
           ? true
           : new Error(
               t('validations.required_if', {
-                _field_: t('DataFileForm.external-source')
+                _field_: t('component.datafile.form.external-source')
               }) as string
             )
       }
@@ -298,7 +298,7 @@ const rules = computed(() => ({
           ? true
           : new Error(
               t('validations.required_if', {
-                _field_: t('DataFileForm.date')
+                _field_: t('component.datafile.form.date')
               }) as string
             )
       }
@@ -386,7 +386,7 @@ async function checkOSinExperiment(form: DataFileFormModel) {
 
   if (foundObjects.length === 0) {
     opensilex.showErrorToast(
-      t('DataFileForm.error.object-not-in-experiment')
+      t('component.datafile.form.error.object-not-in-experiment')
     )
     return false
   }
@@ -555,50 +555,3 @@ defineExpose(modalFormLogic.exposed)
 
 </script>
 
-<i18n>
-en:
-  DataFileForm:
-    add-provenance: Add provenance
-    update-provenance: Update provenance
-    browse: Browse
-    date: Date
-    date-help: Creation Date
-    error:
-      datafile-already-exists: Datafile already exists
-      file-name-too-long: File name is too long
-      object-not-in-experiment: Scientific Object is not in this experiment
-    experiment: Experiment
-    external-source: External source
-    fileDX: File
-    fileDX-help: Insert a file in JCAMP-DX, JDX, DX format. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.
-    fileSpectraCSV-help: Insert a spectra file in CSV format with tabulation separator. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.
-    form-selectFormat-placeholder: Select datafile format to insert
-    provenance: Provenance
-    targets-help: List of resources's URI concerned by the document
-    targets-error: Concerned item's URI expected
-    type: Type
-    type-help: Datafile type
-
-fr:
-  DataFileForm:
-    add-provenance: Ajouter une provenance
-    update-provenance: Modifier une provenance
-    browse: Parcourir
-    date: Date
-    date-help: Date de création
-    error:
-      datafile-already-exists: Le fichier de données existe déjà
-      file-name-too-long: Le nom du fichier est trop long
-      object-not-in-experiment: L'objet scientifique n'est pas inclus dans cette expérience
-    experiment: Expérimentation
-    external-source: Source externe
-    fileDX: Fichier
-    fileDX-help: Insérer un fichier au format JCAMP-DX, JDX, DX. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.
-    fileSpectraCSV-help: Insérer un fichier de spectres au format CSV avec le séparateur tabulation. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.
-    form-selectFormat-placeholder: Sélectionner le format du fichier de données à insérer
-    provenance: Provenance
-    targets: Cible(s)
-    targets-help: Liste d'URI des ressources concernées par le document
-    type: Type
-    type-help: Type de datafile
-</i18n>

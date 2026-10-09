@@ -208,6 +208,7 @@
                 }
             },
             "search": {
+                "label": "Recherche",
                 "search-button": "Rechercher",
                 "visualize-button": "Visualiser",
                 "badgeHelpMessage": "Ce badge représente le nombre d'éléments sélectionnés sur le maximum permis.",
@@ -1209,7 +1210,62 @@
                 "rdfType-placeholder": "Sélectionner le type de fichier",
                 "provenance": "Provenance"
             },
-            "list-title": "Fichiers de données"
+            "list-title": "Fichiers de données",
+            "list": {
+                "add-event": "Ajouter des événements",
+                "datafile-not-found": "Fichiers de données non trouvés",
+                "date": "Date",
+                "details": "Voir les métadonnées du fichier",
+                "display": "Affichage",
+                "displayImage": "Afficher l'image",
+                "export": "Exporter des fichiers de données",
+                "filename": "Nom du fichier",
+                "format": "Format",
+                "object": "Objet cible",
+                "provenance": "Provenance",
+                "rdfType": "Type",
+                "selected": "Fichiers de données selectionnés",
+                "selected-all": "Tous les fichiers",
+                "upload-success-message": "Fichier téléchargé et traité avec succès."
+            },
+            "form": {
+                "browse": "Parcourir",
+                "date": "Date",
+                "date-help": "Date de création",
+                "error": {
+                    "object-not-in-experiment": "L'objet scientifique n'est pas inclus dans cette expérience"
+                },
+                "experiment": "Expérimentation",
+                "external-source": "Source externe",
+                "fileDX": "Fichier",
+                "fileDX-help": "Insérer un fichier au format JCAMP-DX, JDX, DX. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
+                "fileSpectraCSV-help": "Insérer un fichier de spectres au format CSV avec le séparateur tabulation. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.",
+                "provenance": "Provenance",
+                "targets": "Cible(s)",
+                "targets-help": "Liste d'URI des ressources concernées par le document",
+                "type": "Type",
+                "type-help": "Type de datafile"
+            },
+            "images": {
+                "no-file": "Aucun fichier à afficher",
+                "scroll-to-display": "Faire défiler pour afficher plus d'images",
+                "goToTopButton": "Retour au début"
+            },
+            "export": {
+                "export": "Exporter des fichiers de données",
+                "format": "Format",
+                "includeAverage": "Inclure la moyenne",
+                "includeAverage-help": "Ajouter une ligne avec les valeurs moyennes du même échantillon. Uniquement pour l'export DX vers TSV.",
+                "includeAverage-title": "Moyenne",
+                "includeSampleDatetime": "Inclure la date et l'heure",
+                "includeSampleDatetime-help": "Ajouter une colonne avec la date et heure. Uniquement pour l'export DX vers TSV.",
+                "includeSampleDatetime-title": "Date et heure"
+            },
+            "provenance-selector": {
+                "placeholder": "Sélectionner une provenance",
+                "placeholder-multiple": "Sélectionner une ou plusieurs provenance(s)",
+                "filter-search-no-result": "Aucune provenance trouvée"
+            }
         },
         "custom-properties": {
             "linked-resources": "Ressources liée(s)"

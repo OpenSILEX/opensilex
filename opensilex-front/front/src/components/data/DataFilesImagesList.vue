@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="images.length === 0 && !showScrollSpinner">
-      {{ t('DataFilesImagesList.no-file') }}
+      {{ t('component.datafile.images.no-file') }}
     </div>
 
     <n-tooltip
@@ -21,7 +21,7 @@
         </n-button>
     </template>
 
-    {{ t('DataFilesImagesList.goToTopButton') }}
+    {{ t('component.datafile.images.goToTopButton') }}
     </n-tooltip>
 
     <!-- Images list -->
@@ -39,7 +39,7 @@
     />
 
     <strong v-if="images.length >= 35 && !showScrollSpinner">
-      {{ t('DataFilesImagesList.scroll-to-display') }}
+      {{ t('component.datafile.images.scroll-to-display') }}
     </strong>
 
     <AnnotationForm
@@ -321,16 +321,3 @@ defineExpose({
 }
 </style>
 
-<i18n>
-en:
-  DataFilesImagesList:
-    no-file: No file to display
-    scroll-to-display: Scroll to see more images
-    goToTopButton: "Go back to top"
-
-fr:
-  DataFilesImagesList:
-    no-file: "Aucun fichier à afficher"
-    scroll-to-display: "Faire défiler pour afficher plus d'images"
-    goToTopButton: "Retour au début"
-</i18n>

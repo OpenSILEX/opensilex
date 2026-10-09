@@ -3,7 +3,7 @@
     <PageActions>
       <CreateButton
           @click="datafileForm.showCreateForm()"
-          label="DataFilesList.add"
+          label="component.datafile.create"
           class="createButton"
       ></CreateButton>
     </PageActions>
@@ -35,11 +35,11 @@
                 <!-- FileName -->
                 <div>
                   <FilterField>
-                    <label for="name">{{ $t("DataFilesView.fileName") }}</label>
+                    <label for="name">{{ $t("component.datafile.fileName") }}</label>
                     <StringFilter
                         id="name"
                         :filter.sync="filter.name"
-                        placeholder="DataFilesView.fileName-placeholder"
+                        placeholder="component.datafile.fileName-placeholder"
                         class="searchFilter"
                         @handlingEnterKey="refresh()"
                     ></StringFilter>
@@ -175,7 +175,7 @@
                 <!-- Images -->
                 <FilterField>
                   <b-form-checkbox v-model="filter.imagesView" name="check-button" switch>
-                    <b> {{ $t("DataFilesView.imagesView") }}</b>
+                    <b> {{ $t("component.datafile.imagesView") }}</b>
                   </b-form-checkbox>
                 </FilterField>
 
@@ -202,7 +202,7 @@
             ref="datafileForm"
             component="DataFileForm"
             editTitle="update"
-            createTitle="DataFilesList.add"
+            createTitle="component.datafile.create"
             icon="ik#ik-file-text"
             modalSize="lg"
             @onCreate="refresh()"
@@ -407,20 +407,3 @@ function searchFiltersPannel()
 
 </style>
 
-<i18n>
-en:
-  DataFilesView:
-    description: View datafiles
-    details: view datafile metadata
-    fileName: File Name
-    fileName-placeholder: Enter file name
-    imagesView: View
-
-fr:
-  DataFilesView:
-    description: Voir les fichiers de données
-    details: Voir les métadonnées du fichier
-    fileName: Nom de fichier
-    fileName-placeholder: Saisir un nom de fichier
-    imagesView: Visualisation
-</i18n>

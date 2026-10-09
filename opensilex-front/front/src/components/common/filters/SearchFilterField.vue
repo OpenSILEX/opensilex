@@ -96,8 +96,8 @@ const props = withDefaults(defineProps<{
   showAdvancedSearch: boolean;
   advancedSearchLabel: string;
   }>(),{
-  label: "SearchFilter.searchlabel",
-  searchButtonLabel: "SearchFilter.advancedSearchLabel",
+  label: "component.common.search.label",
+  searchButtonLabel: "component.common.advanced-search-title",
   withButton: true,
   withIcon: false,
   showTitle: true,
@@ -154,16 +154,4 @@ const emit = defineEmits<{
 }
 </style>
 
-<i18n>
-
-en:
-  SearchFilter:
-    searchlabel: Search
-    advancedSearchLabel: Advanced Search
-fr:
-  SearchFilter:
-    searchlabel: Recherche
-    advancedSearchLabel: Recherche Avancée
-
-</i18n>
 

@@ -8,7 +8,7 @@
         @select="onDisplayDropdownSelect"
       >
         <n-button size="small" class="greenThemeColor">
-          {{ t('DataFilesList.display') }}
+          {{ t('component.datafile.list.display') }}
         </n-button>
       </n-dropdown>
 
@@ -66,7 +66,7 @@
         <span> | </span>
 
         <span>
-          {{ t('DataFilesList.selected') }} :
+          {{ t('component.datafile.list.selected') }} :
           <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
         </span>
       </div>
@@ -79,7 +79,7 @@
       :fields="fields"
       defaultSortBy="name"
       :isSelectable="true"
-      labelNumberOfSelectedRow="DataFilesList.selected"
+      labelNumberOfSelectedRow="component.datafile.list.selected"
     >
       <template #cell(target)="{ data }">
         <UriLink
@@ -119,7 +119,7 @@
             :disabled="!images_rdf_types.includes(data.item.rdf_type)"
             component="DocumentDetails"
             @click="showImage(data.item)"
-            :label="t('DataFilesList.displayImage')"
+            :label="t('component.datafile.list.displayImage')"
             :small="true"
             icon="fa#image"
             variant="outline-info"
@@ -127,7 +127,7 @@
           <DetailButton
             v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
             @click="showDataProvenanceDetailsModal(data.item)"
-            :label="t('DataFilesList.details')"
+            :label="t('component.datafile.list.details')"
             :small="true"
           />
           <Button
@@ -256,27 +256,27 @@ const fields = computed(() => {
   const baseFields: any[] = [
     {
       key: 'date',
-      label: t('DataFilesList.date'),
+      label: t('component.datafile.list.date'),
       sortable: true
     },
     {
       key: 'format',
-      label: t('DataFilesList.format'),
+      label: t('component.datafile.list.format'),
       sortable: false
     },
     {
       key: 'filename',
-      label: t('DataFilesList.filename'),
+      label: t('component.datafile.list.filename'),
       sortable: true
     },
     {
       key: 'rdfType',
-      label: t('DataFilesList.rdfType'),
+      label: t('component.datafile.list.rdfType'),
       sortable: true
     },
     {
       key: 'provenance',
-      label: t('DataFilesList.provenance'),
+      label: t('component.datafile.list.provenance'),
       sortable: false
     },
     {
@@ -288,7 +288,7 @@ const fields = computed(() => {
   if (!props.hideTarget) {
     baseFields.unshift({
       key: 'target',
-      label: t('DataFilesList.list.object')
+      label: t('component.datafile.list.object')
     })
   }
 
@@ -327,7 +327,7 @@ const paginationInfo = computed(() => {
 const displayDropdownOptions = computed(() => [
   {
     label: onlySelected.value
-      ? t('DataFilesList.selected-all')
+      ? t('component.datafile.list.selected-all')
       : t('component.common.selected-only'),
     key: 'onlySelected'
   },
@@ -341,14 +341,14 @@ const displayDropdownOptions = computed(() => [
 const actionsDropdownOptions = computed(() => {
   const options: any[] = [
     {
-      label: t('DataFilesList.export'),
+      label: t('component.datafile.list.export'),
       key: 'export'
     }
   ]
 
   if (user.value?.hasCredential?.(credentials.value.CREDENTIAL_EVENT_MODIFICATION_ID)) {
     options.push({
-      label: t('DataFilesList.add-event'),
+      label: t('component.datafile.list.add-event'),
       key: 'createEvents'
     })
   }
@@ -677,14 +677,14 @@ function exportDataFiles(format: string, includeAverage: boolean, includeSampleD
         null
       ).then((http: HttpResponse<OpenSilexResponse<any>>) => {
         if (http && http.status === 200) {
-          $opensilex.showSuccessToast(t('DataFilesList.upload-success-message'))
+          $opensilex.showSuccessToast(t('component.datafile.list.upload-success-message'))
         }
       }).catch((error: any) => {
         if (error.status === 500) {
           console.error('DataFile not found', error)
           $opensilex.errorHandler(
             error,
-            t('DataFilesList.datafile-not-found')
+            t('component.datafile.list.datafile-not-found')
           )
         } else {
           $opensilex.errorHandler(error)
@@ -714,14 +714,14 @@ function exportDataFiles(format: string, includeAverage: boolean, includeSampleD
     lang.value
   ).then((http: HttpResponse<OpenSilexResponse<any>>) => {
     if (http && http.status === 200) {
-      $opensilex.showSuccessToast(t('DataFilesList.upload-success-message'))
+      $opensilex.showSuccessToast(t('component.datafile.list.upload-success-message'))
     }
   }).catch((error: any) => {
     if (error.status === 500) {
       console.error('DataFile not found', error)
       $opensilex.errorHandler(
         error,
-        t('DataFilesList.datafile-not-found')
+        t('component.datafile.list.datafile-not-found')
       )
     } else {
       $opensilex.errorHandler(error)
@@ -796,65 +796,3 @@ defineExpose({
 
 </style>
 
-<i18n>
-en:
-  DataFilesList:
-    add: Add datafiles
-    add-event: Add events
-    datafile-not-found: Datafile not found
-    date: Date
-    details: View datafile metadata
-    display: Display
-    displayImage: Display image
-    format: Format
-    filename: Filename
-    selected: Selected datafiles
-    selected-all: All datafiles
-    export: Export datafiles
-    exportDX: Export DX datafiles to DX datafile
-    exportTSVAVG: Export DX datafiles to TSV datafile with average
-    exportTSV: Export DX datafiles to TSV datafile
-    exportCSV: Export CSV datafiles to CSV datafile
-    exportTSVDATE: Export DX datafiles to TSV datafile with datetime
-    error:
-      datafile-not-found: Datafile not found
-    provenance: Provenance
-    rdfType: Type
-    upload-success-message: File uploaded and processed successfully.
-    list:
-      date: Date
-      variable: Variable
-      value: Value
-      object: Target
-
-
-fr:
-  DataFilesList:
-    add: Ajouter un fichier de données
-    add-event: Ajouter des événements
-    datafile-not-found: Fichiers de données non trouvés
-    date: Date
-    details: Voir les métadonnées du fichier
-    display: Affichage
-    displayImage: Afficher l'image
-    format: Format
-    filename: Nom du fichier
-    selected: Fichiers de données selectionnés
-    selected-all: Tous les fichiers
-    export: Exporter des fichiers de données
-    exportDX: Export des fichiers de données DX
-    exportTSVAVG: Export des fichiers de données DX au format TSV avec moyenne
-    exportTSV: Export des fichiers de données DX au format TSV
-    exportCSV: Export des fichiers de données CSV
-    exportTSVDATE: Export des fichiers de données DX au format TSV avec la date
-    error:
-      datafile-not-found: Fichiers de données non trouvés
-    provenance: Provenance
-    rdfType: Type
-    upload-success-message: Fichier téléchargé et traité avec succès.
-    list:
-      date: Date
-      variable: Variable
-      value: Valeur
-      object: Objet cible
-</i18n>

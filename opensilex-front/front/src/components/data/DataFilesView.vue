@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <PageActions v-if="withPageActions">
+    <PageActions v-if="withPageActions" class="pageActionsBtns">
       <CreateButton
         @click="showCreateDataFileForm"
         :label="t('component.datafile.create')"
@@ -480,9 +480,13 @@ defineExpose({
   width: 100%;
 }
 
+.pageActionsBtns .createButton {
+  margin-left: 15px;
+}
+
 .createButton {
-  margin-bottom: 10px;
-  margin-top: -15px;
+  margin-top: 1px;
+  margin-left: 0;
 }
 
 .project-content {

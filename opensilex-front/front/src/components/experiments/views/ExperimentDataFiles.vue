@@ -1,5 +1,5 @@
 <template>
-  <DataFilesView :withImagesViewOption="false" :enforcedExperimentUri="uri" />
+  <DataFilesView :withFileNameFilter="false" :enforcedExperimentUri="uri" />
 </template>
 
 <script setup lang="ts">

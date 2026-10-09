@@ -6,7 +6,7 @@
     :baseType="opensilex.Oeso.FACTOR_CATEGORY_URI"
     :multiple="multiple"
     :label="label"
-    placeholder="component.factors.form.placeholder.factors"
+    :placeholder="t('component.factors.form.placeholder.factors')"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"

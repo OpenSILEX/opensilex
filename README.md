@@ -242,6 +242,7 @@ the team does. They are discovered automatically when you open the repository wi
 | `opensilex-java`   | Create, review, fix and lint Java code: conventions, class scaffold, Checkstyle, SonarLint, JDK-safe Maven commands |
 | `opensilex-review` | Review a branch, a commit range or a merge request on five axes: maintainability, homogeneity, clarity, tests, performance |
 | `opensilex-mr`     | Write the GitLab merge request (title, changelog front matter, description) and check it against the CI rules       |
+| `opensilex-profile` | Profile a running server (memory, CPU, what allocates) phase by phase, and compare runs before and after a fix     |
 
 What each skill does, its prerequisites, examples and how to add or maintain one:
 [Claude Code skills documentation](opensilex-doc/src/main/resources/technical-documentation/claude-code-skills/index.md).

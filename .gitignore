@@ -10,6 +10,8 @@
 !/.claude/skills/opensilex-java/
 !/.claude/skills/opensilex-mr/
 !/.claude/skills/opensilex-review/
+!/.claude/skills/opensilex-profile/
+**/__pycache__/
 target/
 node_modules/
 **/nb-configuration.xml

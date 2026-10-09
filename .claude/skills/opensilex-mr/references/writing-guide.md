@@ -1,6 +1,7 @@
 # Writing a merge request people want to read
 
-Sources: the team's `mr_redaction.md` (dev-tools repository, `docs/workflow/conventions/`), the templates in
+Sources: the team's `mr_redaction.md` (separate GitLab repository `OpenSILEX/opensilex-dev-tools`,
+`docs/workflow/conventions/`, not the Maven module of the same name here; its rules are summarised below), the templates in
 `.gitlab/merge_request_templates/`, the `merge-request:check` job of `.gitlab-ci.yml`, `CHANGELOG.md`.
 A finished example: `example-fix.md` (+ `example-fix.title`), written as the original MR of the fix (!1570). Its port
 to `develop` (commit `43a08ce95`) would instead use `ignore-changelog: true`, see "Ports".

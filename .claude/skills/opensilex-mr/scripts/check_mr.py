@@ -115,6 +115,190 @@ def sections(body):
     return result
 
 
+class Report:
+    """ERROR = the CI would reject the MR or placeholders remain; WARN = conventions or readability; INFO = look."""
+
+    def __init__(self):
+        self.errors, self.warnings, self.infos = [], [], []
+
+    def print_and_exit(self):
+        for label, items in (("ERROR", self.errors), ("WARN", self.warnings), ("INFO", self.infos)):
+            for item in items:
+                print(f"{label:5} {item}")
+        if not self.errors and not self.warnings:
+            print("OK    no problem found")
+        print(f"\n{len(self.errors)} error(s), {len(self.warnings)} warning(s)")
+        sys.exit(1 if self.errors else 0)
+
+
+def check_title(title, report):
+    if not title:
+        report.errors.append("no title given (--title, or a .title file next to the draft)")
+        return
+    if "\n" in title:
+        report.errors.append("title spans several lines")
+    if not CC_TITLE_RE.match(title.split("\n")[0]):
+        report.errors.append(f"title does not match the CI Conventional Commit pattern: {title!r} (type(scope): "
+                             "Description; known type; scope without spaces; description starting with a letter "
+                             "or digit)")
+    if re.search(r"[^\x20-\x7e]", title):
+        report.warnings.append("title has non-ASCII characters: accepted by the CI, but titles are English (team "
+                               "convention) and become the merge commit subject")
+    description = re.sub(r"^(Draft: )?\w+(\([^)]*\))?!?: ", "", title)
+    if len(description.split()) < 4:
+        report.warnings.append(f"title description too vague ({description!r}): say what changed for whom (team "
+                               "example: 'Fixed target column being able to be put at end during data import')")
+    if len(title) > 100:
+        report.warnings.append(f"title is {len(title)} characters: it becomes the merge commit subject, aim for < 100")
+    if FRENCH_RE.search(description):
+        report.warnings.append("title should be written in English (team MR convention)")
+
+
+def read_front_matter(front, report):
+    """(changelog text, ignore-changelog value) as the CI reads them."""
+    if yaml is None:
+        report.warnings.append("PyYAML missing: front matter checked with a simple parser")
+        changelog = re.search(r"^changelog:[ \t]*(.*)$", front, re.MULTILINE)
+        ignore = re.search(r"^ignore-changelog:[ \t]*(\S+)", front, re.MULTILINE)
+        return (changelog.group(1) if changelog else "").strip(), ignore.group(1) if ignore else None
+    try:
+        data = yaml.safe_load(front) or {}
+    except yaml.YAMLError as error:
+        report.errors.append(f"front matter is not valid YAML: {error}")
+        return "", None
+    if not isinstance(data, dict):
+        return "", None
+    changelog = data.get("changelog") or ""
+    if not isinstance(changelog, str):
+        report.errors.append("changelog must be text (use `changelog: |-` followed by indented lines)")
+        changelog = str(changelog)
+    unknown = set(data) - {"changelog", "ignore-changelog"}
+    if unknown:
+        report.infos.append(f"extra front matter keys ignored by the CI: {', '.join(sorted(unknown))}")
+    return changelog, data.get("ignore-changelog")
+
+
+def check_front_matter(front, title, report):
+    if front is None:
+        report.errors.append("the description must START with the YAML front matter (--- changelog / "
+                             "ignore-changelog ---): the CI extracts it from the first line")
+        return
+    changelog, ignore = read_front_matter(front, report)
+    ignore_true = str(ignore).lower() == "true"
+    if changelog.strip() and ignore_true:
+        report.errors.append("changelog is filled AND ignore-changelog is true: the CI rejects this, keep one")
+    elif not changelog.strip() and not ignore_true:
+        report.errors.append("changelog is empty and ignore-changelog is not true: the CI rejects this")
+    if re.search(r"#\s*(Remplir cette section|Passer cette valeur)", front):
+        report.warnings.append("template comments left in the front matter: remove them")
+    if changelog.strip():
+        if re.search(r"^changelog:[ \t]*[^|>\s]", front, re.MULTILINE) and len(changelog) > 100:
+            report.warnings.append("long changelog on one line: use `changelog: |-` and wrap lines")
+        if FRENCH_RE.search(changelog):
+            report.warnings.append("changelog should be written in English (it is copied into CHANGELOG.md)")
+        if DEV_CENTRIC_RE.search(changelog):
+            report.infos.append("changelog uses code-level words: describe the change from the user's point of view "
+                                "('You can now ...', '... now works correctly') unless API users are the audience")
+        if re.match(r"^\s*(-\s*)?\(!\d+\)", changelog):
+            report.infos.append("the `(!MR) [Scope]` prefix is added when CHANGELOG.md is compiled: not needed here")
+    elif ignore_true and title and re.match(r"^(Draft: )?(fix|feat|perf)\b", title):
+        report.infos.append("a fix/feat/perf with ignore-changelog: say why in the description (port of a change "
+                            "already released, internal-only behaviour...)")
+
+
+def load_template(top, template_path, title_type, report):
+    """Body of the template the draft follows (given, or chosen from the title type)."""
+    template_dir = os.path.join(top, ".gitlab", "merge_request_templates")
+    if template_path is None and os.path.isdir(template_dir):
+        prefix = "bug_fix" if title_type == "fix" else "feature"
+        candidates = sorted(p for p in os.listdir(template_dir) if p.startswith(prefix) and p.endswith(".md"))
+        template_path = os.path.join(template_dir, candidates[0]) if candidates else None
+    if not template_path or not os.path.exists(template_path):
+        report.warnings.append("template not found: checklist and example content not compared")
+        return ""
+    report.infos.append(f"compared with template {os.path.relpath(template_path, top)}")
+    with open(template_path, encoding="utf-8") as handle:
+        return split_front_matter(handle.read())[1]
+
+
+def check_template(body, template_body, report):
+    if template_body:
+        present = [normalise_item(i) for i in checklist_items(body)]
+        for item in checklist_items(template_body):
+            expected = normalise_item(item)
+            # a note may follow the template text: "Tests écrits et OK (pas de tests front automatisés)"
+            if not any(p == expected or p.startswith(expected + " ") for p in present):
+                report.warnings.append(f"checklist item of the template missing or reworded: '{item[:70]}'")
+        draft_lines = {l.strip() for l in body.split("\n")}
+        for line in placeholder_lines(template_body):
+            if line in draft_lines:
+                report.errors.append(f"template example content left: '{line[:80]}'")
+    for item in ticked(body):
+        if item.lower().startswith("relecture"):
+            report.warnings.append("'Relecture MR' is ticked: the reviewer ticks it, not the author")
+    if any(link in body for link in GENERIC_LINKS):
+        report.errors.append("generic Trello link left ([Carte trello](https://trello.com/)): put the card URL or "
+                             "remove it")
+
+
+def check_structure(text, body, title_type, report):
+    found = sections(body)
+    titles = [t.lower() for _, t, _ in found]
+    for required in ("contexte", "changements"):
+        if required not in titles:
+            report.errors.append(f"section '# {required.capitalize()}' missing (template structure)")
+    if title_type == "fix":
+        for required in ("avant", "après"):
+            if required not in titles:
+                report.warnings.append(f"bug fix without '## {required.capitalize()}': show the behaviour before "
+                                       "and after")
+    for index, (level, heading, content) in enumerate(found):
+        has_children = index + 1 < len(found) and found[index + 1][0] > level
+        if not any(l.strip() for l in content) and not has_children:
+            report.warnings.append(f"empty section '{heading}': fill it or remove it")
+        if re.search(r"sous[- ]partie\s*\d", heading, re.IGNORECASE):
+            report.errors.append(f"template heading left: '{heading}': name the sub-part after what it describes")
+    for number, line in enumerate(text.split("\n"), 1):
+        if TODO_MARKER_RE.search(line):
+            report.errors.append(f"line {number}: unresolved marker: {line.strip()[:80]}")
+    non_empty = [l for l in body.split("\n") if l.strip()]
+    if len(non_empty) > 120:
+        report.warnings.append(f"description is {len(non_empty)} lines: a reviewer reads ~60; group changes by intent")
+    in_changes, bullets = False, 0
+    for level, heading, content in found:
+        if level == 1:
+            in_changes = heading.lower() == "changements"
+        if in_changes:
+            bullets += sum(1 for l in content if re.match(r"^\s*- `", l))
+    if bullets > 15:
+        report.warnings.append(f"{bullets} file bullets under 'Changements': group them by intent, keep the files "
+                               "that need explaining")
+
+
+def check_cited_files(body, args, target, report):
+    """Backticked file names should be part of the change, or be deliberate context."""
+    head = (git("rev-parse", "--verify", "--quiet", args.head + "^{commit}") or "").strip()
+    if args.base:
+        base = (git("rev-parse", "--verify", "--quiet", args.base + "^{commit}") or "").strip()
+    else:
+        base = (git("merge-base", args.head, f"origin/{target}") or git("merge-base", args.head, target) or "").strip()
+    if not base or not head:
+        return
+    changed = (git("diff", "--name-only", base, head) or "").split()
+    names = {os.path.basename(p) for p in changed} | set(changed)
+    for ref in sorted(set(FILE_REF_RE.findall(body))):
+        if ref not in names and not any(p.endswith("/" + ref) for p in changed):
+            report.infos.append(f"`{ref}` is cited but not changed in {base[:9]}..{head[:9]}: intended context, or "
+                                "a typo?")
+
+
+def check_branch(source, target, report):
+    if target == "master" and not source.startswith("hotfix/"):
+        report.errors.append("CI: only hotfix/* branches can target master")
+    if target in ("develop", "release") and not source.startswith("feature/"):
+        report.errors.append(f"CI: only feature/* branches can target {target}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("draft", help="MR description file (Markdown with YAML front matter)")
@@ -134,177 +318,21 @@ def main():
     if title is None and os.path.exists(title_file):
         with open(title_file, encoding="utf-8") as handle:
             title = handle.read().strip()
-
-    errors, warnings, infos = [], [], []
-
-    # ---- title (CI)
-    if not title:
-        errors.append("no title given (--title, or a .title file next to the draft)")
-    else:
-        if "\n" in title:
-            errors.append("title spans several lines")
-        if not CC_TITLE_RE.match(title.split("\n")[0]):
-            errors.append(f"title does not match the CI Conventional Commit pattern: {title!r} "
-                          "(type(scope): Description; known type; scope without spaces; description starting with a "
-                          "letter or digit)")
-        if re.search(r"[^\x20-\x7e]", title):
-            warnings.append("title has non-ASCII characters: accepted by the CI, but titles are English (team "
-                            "convention) and become the merge commit subject")
-        description = re.sub(r"^(Draft: )?\w+(\([^)]*\))?!?: ", "", title)
-        if len(description.split()) < 4:
-            warnings.append(f"title description too vague ({description!r}): say what changed for whom "
-                            "(team example: 'Fixed target column being able to be put at end during data import')")
-        if len(title) > 100:
-            warnings.append(f"title is {len(title)} characters: it becomes the merge commit subject, aim for < 100")
-        if FRENCH_RE.search(description):
-            warnings.append("title should be written in English (team MR convention)")
-
-    # ---- front matter (CI)
-    front, body = split_front_matter(text)
-    changelog, ignore = "", None
-    if front is None:
-        errors.append("the description must START with the YAML front matter (--- changelog / ignore-changelog ---): "
-                      "the CI extracts it from the first line")
-    else:
-        data = None
-        if yaml is None:
-            warnings.append("PyYAML missing: front matter checked with a simple parser")
-            match = re.search(r"^changelog:[ \t]*(.*)$", front, re.MULTILINE)
-            changelog = (match.group(1) if match else "").strip()
-            match = re.search(r"^ignore-changelog:[ \t]*(\S+)", front, re.MULTILINE)
-            ignore = match.group(1) if match else None
-        else:
-            try:
-                data = yaml.safe_load(front) or {}
-            except yaml.YAMLError as error:
-                errors.append(f"front matter is not valid YAML: {error}")
-            if isinstance(data, dict):
-                changelog = data.get("changelog") or ""
-                ignore = data.get("ignore-changelog")
-                if not isinstance(changelog, str):
-                    errors.append("changelog must be text (use `changelog: |-` followed by indented lines)")
-                    changelog = str(changelog)
-                unknown = set(data) - {"changelog", "ignore-changelog"}
-                if unknown:
-                    infos.append(f"extra front matter keys ignored by the CI: {', '.join(sorted(unknown))}")
-        ignore_true = str(ignore).lower() == "true"
-        if changelog.strip() and ignore_true:
-            errors.append("changelog is filled AND ignore-changelog is true: the CI rejects this, keep one")
-        elif not changelog.strip() and not ignore_true:
-            errors.append("changelog is empty and ignore-changelog is not true: the CI rejects this")
-        if re.search(r"#\s*(Remplir cette section|Passer cette valeur)", front):
-            warnings.append("template comments left in the front matter: remove them")
-        if changelog.strip():
-            if re.search(r"^changelog:[ \t]*[^|>\s]", front, re.MULTILINE) and len(changelog) > 100:
-                warnings.append("long changelog on one line: use `changelog: |-` and wrap lines (team recommendation)")
-            if FRENCH_RE.search(changelog):
-                warnings.append("changelog should be written in English (it is copied into CHANGELOG.md)")
-            if DEV_CENTRIC_RE.search(changelog):
-                infos.append("changelog uses code-level words: describe the change from the user's point of view "
-                             "('You can now ...', '... now works correctly') unless API users are the audience")
-            if re.match(r"^\s*(-\s*)?\(!\d+\)", changelog):
-                infos.append("the `(!MR) [Scope]` prefix is added when CHANGELOG.md is compiled: not needed here")
-        elif ignore_true and title and re.match(r"^(Draft: )?(fix|feat|perf)\b", title):
-            infos.append("a fix/feat/perf with ignore-changelog: say why in the description (port of a change "
-                         "already released, internal-only behaviour...)")
-
-    # ---- template: checklist and example content
     type_match = re.match(r"^(Draft: )?(\w+)", title or "")
     title_type = type_match.group(2) if type_match else None
-    template_path = args.template
-    template_dir = os.path.join(top, ".gitlab", "merge_request_templates")
-    if template_path is None and os.path.isdir(template_dir):
-        prefix = "bug_fix" if title_type == "fix" else "feature"
-        candidates = sorted(p for p in os.listdir(template_dir) if p.startswith(prefix) and p.endswith(".md"))
-        template_path = os.path.join(template_dir, candidates[0]) if candidates else None
-    template_body = ""
-    if template_path and os.path.exists(template_path):
-        with open(template_path, encoding="utf-8") as handle:
-            template_body = split_front_matter(handle.read())[1]
-        infos.append(f"compared with template {os.path.relpath(template_path, top)}")
-    else:
-        warnings.append("template not found: checklist and example content not compared")
-
-    if template_body:
-        present = [normalise_item(i) for i in checklist_items(body)]
-        for item in checklist_items(template_body):
-            expected = normalise_item(item)
-            # a note may follow the template text: "Tests écrits et OK (pas de tests front automatisés)"
-            if not any(p == expected or p.startswith(expected + " ") for p in present):
-                warnings.append(f"checklist item of the template missing or reworded: '{item[:70]}'")
-        draft_lines = {l.strip() for l in body.split("\n")}
-        for line in placeholder_lines(template_body):
-            if line in draft_lines:
-                errors.append(f"template example content left: '{line[:80]}'")
-    for item in ticked(body):
-        if item.lower().startswith("relecture"):
-            warnings.append("'Relecture MR' is ticked: the reviewer ticks it, not the author")
-    if any(link in body for link in GENERIC_LINKS):
-        errors.append("generic Trello link left ([Carte trello](https://trello.com/)): put the card URL or remove it")
-
-    # ---- structure and readability
-    found = sections(body)
-    titles = [t.lower() for _, t, _ in found]
-    for required in ("contexte", "changements"):
-        if required not in titles:
-            errors.append(f"section '# {required.capitalize()}' missing (template structure)")
-    if title_type == "fix":
-        for required in ("avant", "après"):
-            if required not in titles:
-                warnings.append(f"bug fix without '## {required.capitalize()}': show the behaviour before and after")
-    for index, (level, heading, content) in enumerate(found):
-        has_text = any(l.strip() for l in content)
-        has_children = index + 1 < len(found) and found[index + 1][0] > level
-        if not has_text and not has_children:
-            warnings.append(f"empty section '{heading}': fill it or remove it")
-        if re.search(r"sous[- ]partie\s*\d", heading, re.IGNORECASE):
-            errors.append(f"template heading left: '{heading}': name the sub-part after what it describes")
-    for number, line in enumerate(text.split("\n"), 1):
-        if TODO_MARKER_RE.search(line):
-            errors.append(f"line {number}: unresolved marker: {line.strip()[:80]}")
-    non_empty = [l for l in body.split("\n") if l.strip()]
-    if len(non_empty) > 120:
-        warnings.append(f"description is {len(non_empty)} lines: a reviewer reads ~60; group changes by intent")
-    in_changes, bullets = False, 0
-    for level, heading, content in found:
-        if level == 1:
-            in_changes = heading.lower() == "changements"
-        if in_changes:
-            bullets += sum(1 for l in content if re.match(r"^\s*- `", l))
-    if bullets > 15:
-        warnings.append(f"{bullets} file bullets under 'Changements': group them by intent, keep the files that "
-                        "need explaining")
-
-    # ---- cited files exist in the diff
     source = args.source or (git("branch", "--show-current") or "").strip()
     target = args.target or ("master" if source.startswith("hotfix/") else "develop")
-    head = (git("rev-parse", "--verify", "--quiet", args.head + "^{commit}") or "").strip()
-    if args.base:
-        base = (git("rev-parse", "--verify", "--quiet", args.base + "^{commit}") or "").strip()
-    else:
-        base = (git("merge-base", args.head, f"origin/{target}") or git("merge-base", args.head, target) or "").strip()
-    if base and head:
-        changed = (git("diff", "--name-only", base, head) or "").split()
-        names = {os.path.basename(p) for p in changed} | set(changed)
-        for ref in sorted(set(FILE_REF_RE.findall(body))):
-            if ref not in names and not any(p.endswith("/" + ref) for p in changed):
-                infos.append(f"`{ref}` is cited but not changed in {base[:9]}..{head[:9]}: intended context, or a "
-                             "typo?")
 
-    # ---- branch rules (CI)
+    report = Report()
+    front, body = split_front_matter(text)
+    check_title(title, report)
+    check_front_matter(front, title, report)
+    check_template(body, load_template(top, args.template, title_type, report), report)
+    check_structure(text, body, title_type, report)
+    check_cited_files(body, args, target, report)
     if source:
-        if target == "master" and not source.startswith("hotfix/"):
-            errors.append("CI: only hotfix/* branches can target master")
-        if target in ("develop", "release") and not source.startswith("feature/"):
-            errors.append(f"CI: only feature/* branches can target {target}")
-
-    for label, items in (("ERROR", errors), ("WARN", warnings), ("INFO", infos)):
-        for item in items:
-            print(f"{label:5} {item}")
-    if not errors and not warnings:
-        print("OK    no problem found")
-    print(f"\n{len(errors)} error(s), {len(warnings)} warning(s)")
-    sys.exit(1 if errors else 0)
+        check_branch(source, target, report)
+    report.print_and_exit()
 
 
 if __name__ == "__main__":

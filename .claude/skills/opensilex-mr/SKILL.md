@@ -105,6 +105,7 @@ Pushing and creating the MR are outward actions: ask before each, show what will
 - `CHANGELOG.md` is compiled at release time from the MR front matter: a feature MR normally does not edit it.
 
 ## Files
-`scripts/mr_facts.py` (facts from git), `scripts/check_mr.py` (CI rules, template, placeholders, readability),
+`scripts/mr_facts.py` (facts from git, with `mr_signals.py`: file kinds, signals, ports), `scripts/check_mr.py` (CI
+rules, template, placeholders, readability),
 `references/writing-guide.md` (how to write each part, signal-to-section map, examples),
 `references/example-fix.md` + `example-fix.title` (a complete bug-fix MR that passes `check_mr.py`).

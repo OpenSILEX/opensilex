@@ -243,7 +243,8 @@ def print_markdown(r, leads_only):
           f"{s['mechanical_files']} files")
     print(f"- Size: {s['size']}; modules with functional code changes: {', '.join(s['functional_modules']) or '-'}")
     if not leads_only:
-        print("\n## Functional files (read them)\n\n| file | st | + | - | functional | kind | layer |\n|---|---|---|---|---|---|---|")
+        print("\n## Functional files (read them)\n")
+        print("| file | st | + | - | functional | kind | layer |\n|---|---|---|---|---|---|---|")
         for row in (x for x in r["files"] if not x["mechanical"]):
             print(f"| {row['file']} | {row['status']} | {row['added']} | {row['removed']} | {row['functional']} "
                   f"| {row['kind']} | {row['layer']} |")

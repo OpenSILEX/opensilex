@@ -5,6 +5,7 @@
 | Date       | Editor(s)         | OpenSILEX version | Comment                                                           |
 |------------|-------------------|-------------------|-------------------------------------------------------------------|
 | 2026-10-09 | Arnaud Charleroy  | develop           | Document creation: skills `opensilex-java`, `opensilex-review`, `opensilex-mr` |
+| 2026-10-09 | Arnaud Charleroy  | develop           | Added `opensilex-profile`; `review_scope.py` split into modules     |
 
 ## Table of contents
 
@@ -18,6 +19,7 @@
     * [opensilex-java](#opensilex-java)
     * [opensilex-review](#opensilex-review)
     * [opensilex-mr](#opensilex-mr)
+    * [opensilex-profile](#opensilex-profile)
   * [How the skills work together](#how-the-skills-work-together)
   * [Rules shared by all skills](#rules-shared-by-all-skills)
   * [Maintaining the skills](#maintaining-the-skills)
@@ -34,7 +36,7 @@
   `scripts/` (deterministic helpers) and `assets/` (templates). Claude Code loads a skill when the request matches its
   description, or when it is called by name (for example `/opensilex-java`).
 - **Project skill** : a skill committed in the repository, so that every developer gets the same conventions and the
-  same tools. The three skills below are project skills.
+  same tools. The skills below are project skills.
 
 ## Overview
 
@@ -43,6 +45,7 @@
 | `opensilex-java`   | How do I write, check and fix Java code the OpenSILEX way?  | "add an endpoint", "new model", "review this class", "fix the lint", "run SonarLint", "it does not compile" |
 | `opensilex-review` | What should change before this branch or MR is merged?      | "review my branch", "is it mergeable?", "check the test coverage", "any performance issue?" |
 | `opensilex-mr`     | How do I describe this change in a merge request?           | "write my MR", "fill the template", "changelog entry", "title of the MR"                  |
+| `opensilex-profile` | Where do memory and CPU go when the server runs a scenario? | "profile the server", "what allocates during the deletion?", "compare before/after"      |
 
 Each skill also answers French requests (for example "ajoute un endpoint", "relis ma branche", "rédige ma MR").
 
@@ -51,7 +54,7 @@ Each skill also answers French requests (for example "ajoute un endpoint", "reli
 1. Open the repository root with Claude Code. The skills in `.claude/skills/` are discovered automatically; nothing to
    install.
 2. Ask for what you want in your own words: the skill that matches is loaded by itself. To force one, call it by name
-   (`/opensilex-java`, `/opensilex-review`, `/opensilex-mr`).
+   (`/opensilex-java`, `/opensilex-review`, `/opensilex-mr`, `/opensilex-profile`).
 3. The scripts bundled with a skill can also be run by hand from the repository root, without Claude Code (examples
    below).
 
@@ -62,6 +65,7 @@ Prerequisites shared by the scripts: `git`, Python 3.8 or later. Per skill:
 | `opensilex-java`   | JDK matching `java.compiler.version` (17), Maven; a JDK 21 or later for the SonarLint engine only            |
 | `opensilex-review` | `git`; JaCoCo reports only for the optional coverage check of the changed lines                              |
 | `opensilex-mr`     | `git`; read access to `origin` to fetch the target branch                                                    |
+| `opensilex-profile` | Linux (`/proc`, `ss`), the JDK of the server (`jcmd`, `jstat`, `jfr`), `docker` for the container figures   |
 
 ## The skills
 
@@ -130,6 +134,7 @@ or by minimal edits following the front guidelines.
 |-----------------------|-----------------------------------------------------------------------------------------------------------------|
 | `review_scope.py`     | Fixes the scope, lists the files by layer and module, the siblings to compare with, a map of changed endpoints and the tests that call them, and leads to confirm |
 | `coverage_changed.py` | JaCoCo coverage of the changed lines (only for the checked-out sources and the tests that were run)              |
+| `scope_git.py`, `scope_code.py`, `scope_leads.py` | Modules of `review_scope.py`: git snapshot and diff, code structure (methods, endpoints), lead detectors |
 
 ```bash
 python3 .claude/skills/opensilex-review/scripts/review_scope.py
@@ -159,6 +164,7 @@ and what is risky.
 | Script         | Role                                                                                                                  |
 |----------------|-----------------------------------------------------------------------------------------------------------------------|
 | `mr_facts.py`  | Facts from git: branches and CI rules, commits with their bodies, files by module, signals (endpoints, DTO fields, migrations, credentials, configuration...), suggested type, scope and changelog decision |
+| `mr_signals.py` | Module of `mr_facts.py`: file kinds, signals, detection of ports of a change already in a changelog                  |
 | `check_mr.py`  | Validates a draft against the CI rules and the template: errors (CI would reject it, placeholders left), warnings (conventions, readability) |
 
 ```bash
@@ -168,6 +174,34 @@ python3 .claude/skills/opensilex-mr/scripts/check_mr.py .git/mr-drafts/{draft}.m
 
 Drafts are saved under `.git/mr-drafts/` (never committed). The skill pushes the branch or opens the MR only when
 asked, and each step is confirmed.
+
+### opensilex-profile
+
+**Purpose** : measure what a running server does during a scenario driven by the user (data generator, import,
+deletion, UI actions), phase by phase, and compare runs before and after a fix. It packages the method used for the
+memory footprint work of October 2026.
+
+**What it records** (in `~/memprofile/{date}_{time}_{label}/`, outside the repository): every 2 s the RSS, heap,
+metaspace, GC, loaded and unloaded classes, threads and CPU of the JVM; the memory of the RDF4J and MongoDB containers
+the server uses; a JFR recording (`settings=profile`) per phase and for the whole run; the GC log; optionally a class
+histogram after a full GC and the process memory map.
+
+**Tools** (in `.claude/skills/opensilex-profile/scripts/`)
+
+| Script        | Role                                                                                                        |
+|---------------|-------------------------------------------------------------------------------------------------------------|
+| `profile.sh`  | `find` the server JVM, `start` a run, `mark` phases, `stop`, `status`                                       |
+| `analyze.py`  | Figures per phase, JFR allocation and CPU by REST endpoint, OpenSILEX method and class; `--compare` two runs |
+
+```bash
+.claude/skills/opensilex-profile/scripts/profile.sh start "" generation
+.claude/skills/opensilex-profile/scripts/profile.sh mark suppression
+.claude/skills/opensilex-profile/scripts/profile.sh stop
+python3 .claude/skills/opensilex-profile/scripts/analyze.py ~/memprofile/{run} --compare ~/memprofile/{reference run}
+```
+
+**Good to know** : the dev launcher forces DEBUG logging (`DevModule`), so its figures include logging costs; compare
+runs started the same way, on the same data volume. The JVM command line is never printed (it may carry passwords).
 
 ## How the skills work together
 
@@ -181,7 +215,7 @@ A change normally goes through the three skills, in this order:
 4. **Describe** : `opensilex-mr` writes the title, the changelog front matter and the description, and validates them
    against the CI rules.
 
-Each skill can be used alone.
+Each skill can be used alone. `opensilex-profile` is used apart, before and after a performance fix.
 
 ## Rules shared by all skills
 
@@ -226,8 +260,8 @@ Java policy of `opensilex-java` is tied to `java.compiler.version`: when the rel
 - SonarLint runs with the default profile, not the INRAE SonarQube one; its download path from Maven Central has not
   been executed by the author (the path through an installed IntelliJ plugin has). Linux and macOS only.
 - `opensilex-review` cannot read a GitLab MR by number (no API access): it needs the source branch.
-- Compiled Python caches (`__pycache__`) can appear in the skill folders when scripts are imported: they must not be
-  committed.
+- Compiled Python caches (`__pycache__`) appear in the skill folders when scripts are imported; `.gitignore` excludes
+  them.
 
 ## Documentation
 
@@ -237,4 +271,4 @@ Java policy of `opensilex-java` is tied to `java.compiler.version`: when the rel
 - see the merge request templates: `.gitlab/merge_request_templates/`
 - see the SonarLint tool: `.claude/skills/opensilex-java/scripts/sonarlint/README.md`
 - see each skill entry point: `.claude/skills/opensilex-java/SKILL.md`, `.claude/skills/opensilex-review/SKILL.md`,
-  `.claude/skills/opensilex-mr/SKILL.md`
+  `.claude/skills/opensilex-mr/SKILL.md`, `.claude/skills/opensilex-profile/SKILL.md`

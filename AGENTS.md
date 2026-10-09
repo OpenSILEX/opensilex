@@ -14,13 +14,16 @@ rules: `CONTRIBUTING.md`.
 
 ## Skills to use
 
-Project skills live in `.claude/skills/`. Use the one that matches the task instead of working from memory.
+Project skills live in `.claude/skills/`. Use the one that matches the task instead of working from memory. An agent
+that does not load skills by itself reads `.claude/skills/<skill>/SKILL.md` first and follows it; the scripts run
+from the repository root with `python3` or `bash`.
 
-| Task                                                                                           | Skill              |
-|------------------------------------------------------------------------------------------------|--------------------|
-| Write, change, fix or lint Java (model, DAO, endpoint, DTO, migration, test); build or JDK problem | `opensilex-java`   |
-| Review a branch, a commit range or a merge request                                             | `opensilex-review` |
-| Write or check a merge request (title, changelog entry, description)                           | `opensilex-mr`     |
+| Task                                                                                               | Skill               |
+|----------------------------------------------------------------------------------------------------|---------------------|
+| Write, change, fix or lint Java (model, DAO, endpoint, DTO, migration, test); build or JDK problem | `opensilex-java`    |
+| Review changes on maintainability, homogeneity, clarity, test coverage and performance             | `opensilex-review`  |
+| Write or check a merge request (title, changelog entry, description)                               | `opensilex-mr`      |
+| Profile a running server: memory, CPU, what allocates, before/after a fix                          | `opensilex-profile` |
 
 Usual order for a change: `opensilex-java` (write), `opensilex-review` (review), `opensilex-java` (fix),
 `opensilex-mr` (merge request). There is no skill for the Vue front yet: follow

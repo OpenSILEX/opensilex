@@ -52,6 +52,8 @@ def resolve_base(base):
 def excluded(path, explicit_paths=()):
     if explicit_paths and any(path.startswith(p.rstrip("/")) for p in explicit_paths):
         return False
+    if path.startswith(".claude/skills/"):
+        return "/__pycache__/" in path  # versioned skills are reviewed; other .claude files are personal
     return path.startswith(EXCLUDED_PREFIXES) or any(part in "/" + path for part in EXCLUDED_PARTS)
 
 

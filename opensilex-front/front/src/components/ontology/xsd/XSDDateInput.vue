@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required" :label="property.name">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" :label="property.name" :path="property.uri" ref="formItemRef">
   <DateForm
     :disabled="false"
     :required="property.is_required"
@@ -13,7 +13,7 @@
 import DateForm from "@/components/common/forms/DateForm.vue";
 import {FormItemRule, NFormItem} from "naive-ui";
 import type {VueRDFTypePropertyDTO} from "@/lib";
-import {computed} from "vue";
+import {computed, useTemplateRef, watch} from "vue";
 import {required} from "@/models/FormFieldsFormatter";
 
 
@@ -25,8 +25,20 @@ const props = defineProps<{
 }>();
 
 const internalValue = defineModel<string>("value");
+const formItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('formItemRef')
 
-const rule = computed<FormItemRule>(() => props.property.is_required ? required(props.property.name) : undefined)
+const rule = computed<FormItemRule>(() => props.property.is_required
+    ? {...required(props.property.name), validator: () => !!internalValue.value}
+    : undefined)
+
+watch(
+    internalValue,
+    (newVal) => {
+      if (newVal) {
+        formItemRef.value?.validate()
+      }
+    }
+);
 </script>
 
 <style scoped lang="scss">

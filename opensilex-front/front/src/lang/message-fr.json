@@ -1521,6 +1521,7 @@
         "emailError": "Adresse email non valide",
         "phoneNumberError": "Numéro de téléphone non valide",
         "decimal": "Le champ {_field_} doit contenir une valeur décimale",
+        "integer": "Le champ {_field_} doit être un entier",
         "wkt": "Le champ {_field_} doit être au format WKT",
         "containsPoint": "Les coordonnées doivent être une géométrie de type 'POINT'",
         "dateDiff": "La date du champ {_field_} ne doit pas être antérieur à la date de début",

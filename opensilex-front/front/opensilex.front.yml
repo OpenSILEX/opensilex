@@ -340,15 +340,12 @@ routes:
             component: opensilex-DocumentTabList
             name: ExperimentScientificObjectDocuments
   # TODO add the tab component as child once ExperimentData is migrated
-  - path: /experiment/data/:uri
+  - path: /experiment/:uri
     component: opensilex-ExperimentView
     children:
-      - path: ''
+      - path: 'data'
         component: opensilex-ExperimentData
-  - path: /experiment/data-visualisation/:uri
-    component: opensilex-ExperimentView
-    children:
-      - path: ''
+      - path: 'data-visualisation'
         component: opensilex-ExperimentDataVisualisation
   # TODO add the tab component as child once MapView is migrated
   - path: /experiment/map/:uri

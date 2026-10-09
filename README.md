@@ -23,6 +23,7 @@
   * [OpenSilex Application](#opensilex-application)
   * [RDF4J workbench](#rdf4j-workbench)
   * [MongoDB](#mongodb)
+* [Claude Code skills](#claude-code-skills)
 * [Generate documentation](#generate-documentation)
 * [Other maven build profiles and options](#other-maven-build-profiles-and-options)
   * [Generate release](#generate-release)
@@ -229,6 +230,21 @@ Upon first connection, you must configure RDF4J server URL with this value: `htt
 MongoDB is accessible on port 8668
 
 You could download MongoDB Compass to manage your database
+
+# Claude Code skills
+
+The repository ships project skills for Claude Code in `.claude/skills/`. They encode the team conventions and
+workflows, so that the assistant and the scripts bundled with them write, lint, review and describe changes the way
+the team does. They are discovered automatically when you open the repository with Claude Code.
+
+| Skill              | Use it to                                                                                                          |
+|--------------------|--------------------------------------------------------------------------------------------------------------------|
+| `opensilex-java`   | Create, review, fix and lint Java code: conventions, class scaffold, Checkstyle, SonarLint, JDK-safe Maven commands |
+| `opensilex-review` | Review a branch, a commit range or a merge request on five axes: maintainability, homogeneity, clarity, tests, performance |
+| `opensilex-mr`     | Write the GitLab merge request (title, changelog front matter, description) and check it against the CI rules       |
+
+What each skill does, its prerequisites, examples and how to add or maintain one:
+[Claude Code skills documentation](opensilex-doc/src/main/resources/technical-documentation/claude-code-skills/index.md).
 
 # Generate documentation
 

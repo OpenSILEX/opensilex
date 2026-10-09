@@ -33,3 +33,8 @@ The following sections regroup information about the different OpenSILEX modules
 ## [opensilex-security](./opensilex-security)
 
 ## [opensilex-sparql](./opensilex-sparql)
+
+## [Claude Code skills](./claude-code-skills)
+
+This section lists the Claude Code skills shipped with the repository (`opensilex-java`, `opensilex-review`,
+`opensilex-mr`), what each one is for, their prerequisites and how to maintain them.

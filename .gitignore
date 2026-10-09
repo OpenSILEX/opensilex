@@ -2,6 +2,14 @@
 .*/
 !/opensilex-doc/src/main/resources/*/.vitepress/
 !/.gitignore
+# Claude Code: version only the shared project skills, never personal settings (.claude/settings.local.json ...)
+!/.claude/
+/.claude/*
+!/.claude/skills/
+/.claude/skills/*
+!/.claude/skills/opensilex-java/
+!/.claude/skills/opensilex-mr/
+!/.claude/skills/opensilex-review/
 target/
 node_modules/
 **/nb-configuration.xml
@@ -24,3 +32,6 @@ sonarqube_reports_log/*
 **/package-lock.json
 **/.vitepress/dist/
 **/.vitepress/cache/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

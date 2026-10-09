@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Dependency manifest of the headless SonarLint tool (scripts/sonarlint/sonarlint.py). NOT part of the OpenSILEX build:
+  it is only used with `mvn -f scripts/sonarlint/pom.xml dependency:copy-dependencies`, which sonarlint.py runs once
+  (after asking) to fill ~/.cache/opensilex-sonarlint/<version>.
+
+  The versions are the ones the runner was developed and tested against (the engine of the SonarLint IntelliJ plugin
+  12.5: SonarLint core 11.6, SonarJava 8.34). To bump them, change the properties below, then re-run the tool on a few
+  files: the JSON-RPC API of sonarlint-core changes between major versions (see README.md).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.opensilex.tools</groupId>
+    <artifactId>opensilex-sonarlint-tool</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <name>OpenSILEX SonarLint tool dependencies</name>
+
+    <properties>
+        <sonarlint.core.version>11.6.0.85952</sonarlint.core.version>
+        <sonar.java.plugin.version>8.34.0.44906</sonar.java.plugin.version>
+        <sonar.java.se.plugin.version>8.16.4.1912</sonar.java.se.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- the backend process (SonarLintServerCli) and its dependencies: flat copy = classpath of the backend -->
+        <dependency>
+            <groupId>org.sonarsource.sonarlint.core</groupId>
+            <artifactId>sonarlint-backend-cli</artifactId>
+            <version>${sonarlint.core.version}</version>
+        </dependency>
+        <!-- the Java client of the JSON-RPC API used by SonarLintRunner.java -->
+        <dependency>
+            <groupId>org.sonarsource.sonarlint.core</groupId>
+            <artifactId>sonarlint-rpc-java-client</artifactId>
+            <version>${sonarlint.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sonarsource.sonarlint.core</groupId>
+            <artifactId>sonarlint-java-client-utils</artifactId>
+            <version>${sonarlint.core.version}</version>
+        </dependency>
+    </dependencies>
+</project>

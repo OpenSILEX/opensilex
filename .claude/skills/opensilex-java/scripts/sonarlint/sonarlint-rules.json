@@ -1,0 +1,14 @@
+{
+  "_comment": [
+    "Rule overrides applied on top of the default 'Sonar way' Java profile of SonarLint (standalone mode).",
+    "disabled: rule keys switched off. enabled: rule keys switched on (outside the default profile). parameters: per-rule parameters.",
+    "Only rules that contradict an idiom the team uses on purpose are disabled; everything else stays on and is triaged on changed lines only.",
+    "java:S6813 field injection: HK2 `@Inject private SPARQLService sparql;` on API classes is the project convention (80 hits in opensilex-core).",
+    "java:S3252 static access through the subclass: `ProjectModel.NAME_FIELD` / `GroupModel.URI_FIELD` (constants inherited from SPARQLResourceModel) is the idiom (97 hits).",
+    "java:S1133 / java:S1135: reminders about deprecated code and TODO comments (INFO), pure noise in review.",
+    "To bind to the INRAE SonarQube quality profile instead, use the IDE connected mode (see README.md)."
+  ],
+  "disabled": ["java:S6813", "java:S3252", "java:S1133", "java:S1135"],
+  "enabled": [],
+  "parameters": {}
+}

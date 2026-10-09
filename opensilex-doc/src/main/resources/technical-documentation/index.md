@@ -32,6 +32,7 @@ code coverage button is commented until we have a working jacoco report
 - If you are looking for global information about the project, the `Architecture` section may be more relevant.
 - If you are working on frontend development, the `Opensilex front` section may contain the relevant information.
 - If you are working on backend development and databases, the `Opensilex nosql`, `Opensilex sparql` and `Databases` sections may contain the relevant information.
+- If you want to know which Claude Code skills help to write, lint, review and describe a change (`opensilex-java`, `opensilex-review`, `opensilex-mr`), the `Claude code skills` section lists them.
 
 ## Version
 

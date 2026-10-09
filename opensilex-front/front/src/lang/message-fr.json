@@ -852,6 +852,7 @@
             },
             "search": {
                 "description": "Gérer et configurer les expérimentations",
+                "label": "Rechercher des expérimentations",
                 "buttons": {
                     "create-experiment": "Ajouter une expérimentation",
                     "create-experiment-help": "Ajouter une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"

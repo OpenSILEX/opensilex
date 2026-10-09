@@ -1,14 +1,13 @@
 <template>
   <form ref="formRef" @submit.prevent>
-    <div class="input-group input-group-sm">
-      <opensilex-FormInputLabelHelper
-        class="mt-2 mr-2"
-        v-if="label"
-        :label="label"
-        :helpMessage="helpMessage"
-        :labelFor="id"
-      />
+    <FormInputLabelHelper
+      v-if="label"
+      :label="label"
+      :helpMessage="helpMessage"
+      :labelFor="id"
+    />
 
+    <div class="input-group input-group-sm">
       <input
         :id="id"
         class="form-control filter"
@@ -25,7 +24,7 @@
         type="button"
         @click="clear"
       >
-        <opensilex-Icon icon="fa#times" />
+        <Icon icon="fa#times" />
       </button>
     </div>
   </form>
@@ -35,6 +34,8 @@
 import { ref, watch, onMounted, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 // Props
 const {

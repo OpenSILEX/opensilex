@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" :path="property.uri" ref="formItemRef">
     <InputForm
         v-model:value="internalValue"
         type="url"
@@ -12,13 +12,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import {computed, useTemplateRef, watch} from 'vue'
 import type { VueRDFTypePropertyDTO } from '@/lib'
 import { useI18n } from 'vue-i18n'
 import {FormItemRule, NFormItem} from "naive-ui";
 import InputForm from "@/components/common/forms/InputForm.vue";
 
 const { t } = useI18n()
+const formItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('formItemRef')
 
 const props = defineProps<{
   property: VueRDFTypePropertyDTO
@@ -58,6 +59,15 @@ const rule = computed<FormItemRule[]>(() => [
     trigger: ['input', 'blur']
   }
 ]);
+
+watch(
+    () => props.value,
+    (newVal) => {
+      if (newVal) {
+        formItemRef.value?.validate()
+      }
+    }
+);
 
 
 </script>

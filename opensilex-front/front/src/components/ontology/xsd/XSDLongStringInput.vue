@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" :path="property.uri" ref="formItemRef">
     <InputForm
         type="textarea"
         v-model:value="internalValue"
@@ -14,13 +14,14 @@
 import {FormItemRule, NFormItem} from "naive-ui";
 import {useI18n} from "vue-i18n";
 import InputForm from "@/components/common/forms/InputForm.vue";
-import {computed} from "vue";
+import {computed, useTemplateRef, watch} from "vue";
 import {required} from "@/models/FormFieldsFormatter";
 
 const { t } = useI18n()
 
 const props = defineProps<{
   property: {
+    uri: string;
     name: string;
     is_required: boolean;
     comment?: string;
@@ -28,10 +29,20 @@ const props = defineProps<{
 }>();
 
 const internalValue = defineModel<string>("value");
+const formItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('formItemRef')
 
 const rule = computed<FormItemRule>(() => props.property.is_required
     ? {...required(props.property.name), validator: () => !!internalValue.value}
     : undefined)
+
+watch(
+    internalValue,
+    (newVal) => {
+      if (newVal) {
+        formItemRef.value?.validate()
+      }
+    }
+);
 
 </script>
 

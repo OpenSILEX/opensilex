@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required" ref="formItemRef">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" :path="property.uri" ref="formItemRef">
   <InputForm
     v-model:value="internalValue"
     type="number"
@@ -50,7 +50,7 @@ const rule = computed<FormItemRule>(() => ({
           ? new Error(t("validations.required_if", {_field_: props.property.name}))
           : true;
     }
-    // integer only (no decimal)
+    // integer only decimal
     if (!/^-?\d+\.\d+$/.test(String(value).trim())) {
       return new Error(t("validations.decimal", {_field_: props.property.name})
       );

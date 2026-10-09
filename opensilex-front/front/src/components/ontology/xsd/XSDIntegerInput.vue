@@ -1,5 +1,5 @@
 <template>
-  <n-form-item :rule="rule" :show-require-mark="property.is_required">
+  <n-form-item :rule="rule" :show-require-mark="property.is_required" :path="property.uri" ref="formItemRef">
   <InputForm
     v-model:value="internalValue"
     type="number"
@@ -17,7 +17,7 @@
   import InputForm from "@/components/common/forms/InputForm.vue";
   import {FormItemRule, NFormItem} from "naive-ui";
   import {VueRDFTypePropertyDTO} from "@/lib";
-  import {computed} from "vue";
+  import {computed, useTemplateRef, watch} from "vue";
   import {useI18n} from "vue-i18n";
   import {required} from "@/models/FormFieldsFormatter";
 
@@ -31,6 +31,7 @@
 }>();
 
 const internalValue = defineModel<string>("value");
+const formItemRef = useTemplateRef<InstanceType<typeof NFormItem>>('formItemRef')
 
   const rule = computed<FormItemRule>(() => ({
     trigger: ['input', 'blur'],
@@ -50,6 +51,15 @@ const internalValue = defineModel<string>("value");
       return true;
     }
   }));
+
+watch(
+    internalValue,
+    (newVal) => {
+      if (newVal) {
+        formItemRef.value?.validate()
+      }
+    }
+);
 
 </script>
 

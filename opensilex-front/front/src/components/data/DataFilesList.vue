@@ -43,7 +43,7 @@
           </strong>
 
 
-          <opensilex-Button
+          <Button
             :small="true"
             @click="loadTotalCount"
             label="component.common.list.pagination.showTotalCount"
@@ -52,7 +52,7 @@
             <template v-slot:icon>
               <opensilex-Icon icon="fa#eye" />
             </template>
-          </opensilex-Button>
+          </Button>
         </div>
 
         <div v-else>
@@ -72,7 +72,7 @@
       </div>
     </n-space>
 
-    <opensilex-TableAsyncView
+    <TableAsyncView
       ref="tableRef"
       :searchMethod="searchDatafiles"
       :countMethod="countDatafiles"
@@ -82,7 +82,7 @@
       labelNumberOfSelectedRow="DataFilesList.selected"
     >
       <template #cell(target)="{ data }">
-        <opensilex-UriLink
+        <UriLink
           :uri="data.item.target"
           :value="objects[data.item.target]"
           :to="{ path: getTargetPath(data.item.target) }"
@@ -102,7 +102,7 @@
       </template>
 
       <template #cell(provenance)="{ data }">
-        <opensilex-UriLink
+        <UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
           :to="{ path: '/provenances/details/' + encodeURIComponent(data.item.provenance.uri) }"
@@ -115,22 +115,22 @@
 
       <template #cell(actions)="{ data }">
         <n-button-group size="small">
-          <opensilex-Button
+          <Button
             :disabled="!images_rdf_types.includes(data.item.rdf_type)"
-            component="opensilex-DocumentDetails"
+            component="DocumentDetails"
             @click="showImage(data.item)"
             :label="t('DataFilesList.displayImage')"
             :small="true"
             icon="fa#image"
             variant="outline-info"
           />
-          <opensilex-DetailButton
+          <DetailButton
             v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
             @click="showDataProvenanceDetailsModal(data.item)"
             :label="t('DataFilesList.details')"
             :small="true"
           />
-          <opensilex-Button
+          <Button
             @click="deleteDatafile(data.item.uri)"
             variant="outline-danger"
             :small="true"
@@ -139,24 +139,24 @@
           />
         </n-button-group>
       </template>
-    </opensilex-TableAsyncView>
+    </TableAsyncView>
 
-    <opensilex-DataProvenanceModalView
+    <DataProvenanceModalView
       ref="dataProvenanceModalView"
       :datafile="true"
     />
 
-    <opensilex-ImageModal
+    <ImageModal
       ref="imageModal"
       v-model:fileUrl="imageUrl"
     />
 
-    <opensilex-ExportDataFileModal
+    <ExportDataFileModal
       ref="exportDataFileModal"
       @onCreate="exportDataFiles"
     />
 
-    <opensilex-EventCsvForm
+    <EventCsvForm
       v-if="showEventForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
       ref="eventCsvForm"
       :targets="selectedUris"
@@ -176,6 +176,10 @@ import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import type { OntologyService } from 'opensilex-core/api/ontology.service'
 import type { DataService } from 'opensilex-core/api/data.service'
+import Button from "@/components/common/buttons/Button.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
 
 export type DatafileFilter = {
   name?: string | null

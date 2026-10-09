@@ -365,6 +365,11 @@ routes:
     children:
       - path: ''
         component: opensilex-ExperimentFactors
+  - path: /experiment/datafiles/:uri
+    component: opensilex-ExperimentView
+    children:
+      - path: ''
+        component: opensilex-ExperimentDataFiles
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView

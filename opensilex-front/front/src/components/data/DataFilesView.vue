@@ -55,7 +55,7 @@
             </n-form-item>
 
             <!-- Experiments -->
-            <n-form-item class="compact-form-item">
+            <n-form-item v-if="!enforcedExperimentUri" class="compact-form-item">
               <opensilex-ExperimentSelector
                 :label="t('component.experiment.view.experiment-experiments')"
                 v-model:experiments="filter.experiments"
@@ -118,7 +118,7 @@
                 @select="loadProvenance"
                 :devices="passedDeviceUri ? [passedDeviceUri] : undefined"
                 :targets="filter.scientificObjects"
-                :experiments="filter.experiments"
+                :experiments="realFilterToApply.experiments"
                 :multiple="false"
                 :viewHandler="showProvenanceDetails"
                 :viewHandlerDetailsVisible="provenanceDetailsAreVisible"
@@ -252,6 +252,8 @@ interface Props{
   enforcedScientificObjectUri?: string | undefined
   /** When coming from Device details, we pass the device to have better display of possible provenances */
   passedDeviceUri?: string | undefined
+  /** If not null, then we do not show an experiment filter (Coming from an experiment details page)*/
+  enforcedExperimentUri?: string | undefined
 }
 const props = withDefaults(
   defineProps<Props>(),
@@ -284,7 +286,7 @@ const filter = ref<FilterModel>({
 
 const soFilter = ref<SoFilterModel>({
   name: undefined,
-  experiment: undefined,
+  experiment: props.enforcedExperimentUri,
   germplasm: undefined,
   factorLevels: [],
   types: [],
@@ -306,6 +308,7 @@ const datafileForm = useTemplateRef<InstanceType<typeof DataFileForm>>("datafile
 const realFilterToApply = computed<DatafileFilter>(() => {
   return {
     ...filter.value,
+    experiments: (props.enforcedExperimentUri ? [props.enforcedExperimentUri] : filter.value.experiments),
     scientificObjects: (props.enforcedScientificObjectUri ? [props.enforcedScientificObjectUri] : filter.value.scientificObjects),
     devices: (props.passedDeviceUri ? [props.passedDeviceUri] : [])
   }

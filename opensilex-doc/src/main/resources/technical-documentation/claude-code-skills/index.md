@@ -153,9 +153,10 @@ and what is risky.
 
 **What it produces**
 
-- A Conventional Commit **title in English** (`type(scope): Description`, no space in the scope).
-- The YAML **front matter**: a `changelog` entry in English from the user's point of view, or `ignore-changelog: true`
-  for refactoring, docs, CI, tests-only changes and ports of a change already in a changelog.
+- A Conventional Commit **title, always in English** (`type(scope): Description`, no space in the scope), checked
+  with the regex of the `merge-request:check` job.
+- The YAML **front matter**, always both lines: a `changelog` entry in English from the user's point of view and
+  `ignore-changelog: false` (team rule); for a port of a change already in a changelog, the author is asked.
 - A **description in French** built on the team templates (`.gitlab/merge_request_templates`, bug fix or feature):
   context, before/after, changes grouped by intent, an honest checklist, review hints, test steps and deployment notes.
 

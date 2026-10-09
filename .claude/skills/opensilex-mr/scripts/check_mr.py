@@ -151,7 +151,7 @@ def check_title(title, report):
     if len(title) > 100:
         report.warnings.append(f"title is {len(title)} characters: it becomes the merge commit subject, aim for < 100")
     if FRENCH_RE.search(description):
-        report.warnings.append("title should be written in English (team MR convention)")
+        report.errors.append("title must be written in English (team rule; the CI regex alone would accept it)")
 
 
 def read_front_matter(front, report):
@@ -201,9 +201,11 @@ def check_front_matter(front, title, report):
                                 "('You can now ...', '... now works correctly') unless API users are the audience")
         if re.match(r"^\s*(-\s*)?\(!\d+\)", changelog):
             report.infos.append("the `(!MR) [Scope]` prefix is added when CHANGELOG.md is compiled: not needed here")
-    elif ignore_true and title and re.match(r"^(Draft: )?(fix|feat|perf)\b", title):
-        report.infos.append("a fix/feat/perf with ignore-changelog: say why in the description (port of a change "
-                            "already released, internal-only behaviour...)")
+    elif ignore_true:
+        report.warnings.append("team rule: always write the changelog entry with `ignore-changelog: false`; only a "
+                               "port of an already released change may stay ignored, if the author chose it")
+    if changelog.strip() and str(ignore).lower() != "false":
+        report.warnings.append("team rule: keep both lines in the front matter, add `ignore-changelog: false`")
 
 
 def load_template(top, template_path, title_type, report):

@@ -22,7 +22,6 @@ from collections import Counter, defaultdict
 from mr_signals import classify, concept_of, git, module_of, ports_already_released, signals_for
 
 CC_TYPES = ("build", "chore", "ci", "docs", "feat", "fix", "perf", "refactor", "revert", "style", "test")
-NO_CHANGELOG_TYPES = ("build", "chore", "ci", "docs", "refactor", "style", "test")
 EXCLUDED = ("target/", "node_modules/", ".kilo/", "graft/", "site/", ".idea/", ".node/", ".claude/")
 TEMPLATE_DIR = ".gitlab/merge_request_templates"
 
@@ -131,14 +130,14 @@ def changed_files(base, head):
     return files
 
 
-def suggest_changelog(kind, commits, ported):
-    released = {p["commit"] for p in ported if p["changelog_ref"]}
-    if commits and all(c["sha"] in released for c in commits):
-        return ("ignore-changelog: true - every commit ports a change already listed in a CHANGELOG.md "
-                "(say so in Points d'attention)")
+def suggest_changelog(ported):
+    """Team rule (2026-10-09): always a changelog entry in English with `ignore-changelog: false`."""
+    rule = "`changelog: |-` (English, user point of view) + `ignore-changelog: false`"
+    released = sorted({f"{p['mr']} ({p['version']})" for p in ported if p["changelog_ref"]})
     if released:
-        return "changelog entry for the new work only - some commits port changes already in a CHANGELOG.md"
-    return "ignore-changelog: true" if kind in NO_CHANGELOG_TYPES else "changelog entry (user point of view, English)"
+        return (f"{rule} - but {', '.join(released)} is already in a CHANGELOG.md: ask the author whether a second "
+                "entry is wanted")
+    return rule
 
 
 def list_templates():
@@ -161,7 +160,7 @@ def suggest(branch, commits, files, ported):
         kind = "docs" if files and all(f["kind"] == "doc" for f in files) else "feat"
     concepts = Counter(f["concept"] for f in files if f["concept"])
     template = next((t for t in list_templates() if t.startswith("bug_fix" if kind == "fix" else "feature")), None)
-    return {"type": kind, "changelog": suggest_changelog(kind, commits, ported),
+    return {"type": kind, "changelog": suggest_changelog(ported),
             "scope_candidates": [s for s, _ in scopes.most_common(3)]
                                 + [c for c, _ in concepts.most_common(3) if c not in scopes],
             "template": f"{TEMPLATE_DIR}/{template}" if template else None}

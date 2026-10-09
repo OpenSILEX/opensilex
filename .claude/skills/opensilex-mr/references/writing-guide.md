@@ -3,8 +3,8 @@
 Sources: the team's `mr_redaction.md` (separate GitLab repository `OpenSILEX/opensilex-dev-tools`,
 `docs/workflow/conventions/`, not the Maven module of the same name here; its rules are summarised below), the templates in
 `.gitlab/merge_request_templates/`, the `merge-request:check` job of `.gitlab-ci.yml`, `CHANGELOG.md`.
-A finished example: `example-fix.md` (+ `example-fix.title`), written as the original MR of the fix (!1570). Its port
-to `develop` (commit `43a08ce95`) would instead use `ignore-changelog: true`, see "Ports".
+A finished example: `example-fix.md` (+ `example-fix.title`), written as the original MR of the fix (!1570). For its
+port to `develop` (commit `43a08ce95`), see "Ports".
 
 ## Readers and languages
 Three readers, in this order:
@@ -14,7 +14,7 @@ Three readers, in this order:
 
 | Part | Language | Why |
 |---|---|---|
-| Title | English | CI pattern, becomes the merge commit subject |
+| Title | **always English**, even when the body is French | team rule; becomes the merge commit subject |
 | `changelog` front matter | English | copied into `CHANGELOG.md` |
 | Body (Contexte, Changements, Autres) | French, like the template | team language; follow the user if they want English |
 | Code identifiers, paths, endpoints | unchanged, in backticks | searchable |
@@ -49,7 +49,8 @@ build).
   - good: `feat(Front): Added support for Matomo analytics`
 
 ## Front matter (`changelog` / `ignore-changelog`)
-The description must **start** with it (the CI reads it from the first line). Exactly one of:
+The description must **start** with it (the CI reads it from the first line). **Team rule (2026-10-09): always write
+the changelog entry, with `ignore-changelog: false`**, whatever the type of MR (feature, fix, docs, tooling...):
 ```yaml
 ---
 changelog: |-
@@ -58,19 +59,13 @@ changelog: |-
 ignore-changelog: false
 ---
 ```
-```yaml
----
-ignore-changelog: true
----
-```
-- **Fill it** for anything a user, an administrator or an API client can notice: feature, fix, behaviour change,
-  performance gain, configuration or migration to run, API contract change.
-- **Ignore it** (`ignore-changelog: true`, no `changelog` key) for refactoring, developer documentation, CI, tests
-  only, internal tooling. `mr_facts.py` suggests it for `docs/ci/test/refactor/style/chore/build`.
+- For a change users do not see (tooling, docs, refactoring, CI), write one sentence for the developers who read the
+  release notes: "Add Claude Code skills for AI assistance."
+- Never `changelog: <text>` together with `ignore-changelog: true`: the CI job rejects it.
 - **Ports** (a hotfix of `master` cherry-picked to `develop`, a change re-applied from another branch): when
-  `mr_facts.py` finds its `(!NNNN)` already in a `CHANGELOG.md`, ignore the changelog and say in "Points d'attention"
-  which MR is ported and in which version it was released. A port mixed with new work gets an entry for the new work
-  only.
+  `mr_facts.py` finds its `(!NNNN)` already in a `CHANGELOG.md`, a second entry would duplicate it. Do not decide
+  alone: tell the author, and write the entry unless they choose `ignore-changelog: true` (then no `changelog` text,
+  and say in "Points d'attention" which MR is ported and in which version it was released).
 - English, **from the user's point of view**: "You can now ...", "... now works correctly", "... no longer ...".
   One to three sentences; a short Markdown list when several things change. Use `|-` and wrap lines.
 - Do not add the `(!1234) [Scope]` prefix: it is added when `CHANGELOG.md` is compiled for a release.
@@ -137,7 +132,7 @@ Mirrored bullets per layer, observable behaviour only: **Front**, **API** (with 
 | `tests_added` / no test file changed | "Tests" checklist item + Tests sub-section; a fix without test -> say why in Points d'attention |
 | `tests_ignored` | Points d'attention: why each `@Ignore` |
 | `front_touched` | Comment tester; Vue guidelines checklist item (feature template only) |
-| `ported` (cherry-pick, `(!NNNN)` already released) | `ignore-changelog: true` + Points d'attention: ported MR and release version |
+| `ported` (cherry-pick, `(!NNNN)` already released) | ask the author: entry kept (default) or `ignore-changelog: true`; Points d'attention: ported MR and release version |
 | `generated_files_touched` | should not happen: tell the user before writing |
 | `changelog_md_edited` | `CHANGELOG.md` is compiled at release time: ask whether this edit belongs in the MR |
 | `docs_changed` | "Documentation technique" item + Liens |

@@ -15,7 +15,6 @@
             :disabled="disabled"
             :placeholder="t(placeholder || 'component.common.type')"
             :itemLoadingMethod="props.tree ? undefined : loadByUris"
-            :disableBranchNodes="!selectBranchNodes"
             :searchMethod="props.tree ? undefined : searchTypes"
             @select="validator?.validate(); $emit('select', $event)"
         />
@@ -47,7 +46,6 @@ const props = withDefaults(defineProps<{
   ignoreRoot?: boolean
   unselectableTypes?: string[]
   tree?: boolean
-  selectBranchNodes?: boolean
 }>(), {
   required: false,
   disabled: false,
@@ -56,10 +54,9 @@ const props = withDefaults(defineProps<{
   ignoreRoot: true,
   unselectableTypes: () => [],
   tree: true,
-  selectBranchNodes: false,
 })
 
-const type = defineModel<string>('type')
+const type = defineModel<string | string[]>('type')
 
 const emit = defineEmits<{
   (e: 'select', payload: any): void
@@ -75,10 +72,13 @@ type InputOpt = { id: string; label: string; children?: InputOpt[] }
 const typesOptions = ref<InputOpt[]>([])
 
 const selectedIds = computed<string[] | string>({
-  get: () => (Array.isArray(props.type) ? (props.type as string[]) : (props.type ?? '')),
+  // Tree keys are short URIs, so the incoming value is shortened to match them (it can arrive as a full URI, ex: device edit)
+  get: () => Array.isArray(type.value)
+      ? type.value.map(uri => opensilex.getShortUri(uri))
+      : (type.value ? opensilex.getShortUri(type.value) : ''),
   set: (selectedValue) => {
-    if (props.multiple) emit('update:type', Array.isArray(selectedValue) ? selectedValue : (selectedValue ? [selectedValue] : []))
-    else emit('update:type', Array.isArray(selectedValue) ? selectedValue[0] : (selectedValue || undefined))
+    if (props.multiple) type.value = Array.isArray(selectedValue) ? selectedValue : (selectedValue ? [selectedValue] : [])
+    else type.value = Array.isArray(selectedValue) ? selectedValue[0] : (selectedValue || undefined)
   }
 })
 

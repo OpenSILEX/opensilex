@@ -1130,7 +1130,7 @@
             "description": "Gestion des appareils",
             "all_devices": "Tout les appareils",
             "add": "Ajouter un appareil",
-            "update": "Editer un appareil",
+            "update": "Modifier un appareil",
             "select_devices": "Choisir des dispositifs",
             "import" : {
                 "success-message": "appareil(s) importé(s)",

@@ -163,7 +163,7 @@ const languages: ComputedRef<Array<{id: string; label: string}>> = computed(() =
   availableLocales.forEach( locale => {
     langs.push({
       id: locale,
-      label: t("component.common.guage." + locale)
+      label: t("component.common.language." + locale)
     });
   });
   return langs;

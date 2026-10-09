@@ -28,9 +28,9 @@
 This document only describes the technical part of the front-end module loading.
 
 Further steps could be to :
-- create a new module from zero. See [modules.md](modules.md)
+- create a new module from zero. See [create-your-own-module.md](create-your-own-module.md)
 - extending the front-end by adding new pages. See [module-front-end-extension.md](module-api-and-interface-extension.md)
-- modifying the front-end style by overloading the default theme. See [module-theme-personalization.md](module-theme-personalization.md)
+- modifying the front-end style by overloading the default theme. See [theme-personalization.md](theme-personalization.md)
 - modifying some frontend pages by overriding default components. See [overriding-defaults-components.md](overriding-defaults-components.md)
 
 ## Building the front-end

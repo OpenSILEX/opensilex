@@ -14,7 +14,9 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodCreationDTO;
 import org.opensilex.core.variable.api.method.MethodDetailsDTO;
+import org.opensilex.core.variable.api.method.MethodUpdateDTO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -40,6 +42,18 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
     public static String updatePath = path;
     public static String deletePath = path + "/{uri}";
 
+    public static final ServiceDescription update;
+
+    static {
+        try {
+            update = new ServiceDescription(
+                    MethodAPI.class.getMethod("updateMethod", MethodUpdateDTO.class),
+                    updatePath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private MethodCreationDTO getCreationDto() {
         MethodCreationDTO dto = new MethodCreationDTO();

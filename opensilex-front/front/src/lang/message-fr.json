@@ -1199,6 +1199,13 @@
             "no-data": "Aucune donnée trouvée pour cette période"
         },
         "datafile": {
+            "image-modal": {
+                "title": "Image"
+            },
+            "provenance-modal": {
+                "data": "Donnée",
+                "datafile": "Fichier de données"
+            },
             "create": "Ajouter un fichier de données",
             "update": "Modifier un fichier de donnée",
             "description": "Voir les fichiers de données",
@@ -1244,7 +1251,9 @@
                 "targets": "Cible(s)",
                 "targets-help": "Liste d'URI des ressources concernées par le document",
                 "type": "Type",
-                "type-help": "Type de datafile"
+                "type-help": "Type de datafile",
+                "add-provenance": "Ajouter une provenance",
+                "update-provenance": "Modifier une provenance"
             },
             "images": {
                 "no-file": "Aucun fichier à afficher",

@@ -1142,6 +1142,13 @@
             "no-data": "No data found for this period"
         },
         "datafile": {
+            "image-modal": {
+                "title": "Image"
+            },
+            "provenance-modal": {
+                "data": "Data",
+                "datafile": "Datafile"
+            },
             "create": "Add data file",
             "update": "Update data file",
             "description": "View datafiles",
@@ -1187,7 +1194,9 @@
                 "targets": "Target(s)",
                 "targets-help": "List of resources's URI concerned by the document",
                 "type": "Type",
-                "type-help": "Datafile type"
+                "type-help": "Datafile type",
+                "add-provenance": "Add provenance",
+                "update-provenance": "Update provenance"
             },
             "images": {
                 "no-file": "No file to display",

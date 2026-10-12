@@ -40,6 +40,7 @@
         </n-form-item>
 
         <!-- provenance -->
+        <n-form-item class="compact-form-item provenanceSelector">
           <ProvenanceSelector
             path="provenance"
             ref="provenanceSelector"
@@ -54,14 +55,17 @@
             "
             :required="true"
           />
+        </n-form-item>
 
         <!-- experiment -->
+        <n-form-item v-if="!tabExperimentMode" class="compact-form-item">
           <ExperimentSelector
             path="experiments"
             :label="t('component.datafile.form.experiment')"
             v-model:experiments="modalFormLogic.form.value.experiments"
             :required="true"
           />
+        </n-form-item>
 
         <!-- File source -->
         <n-form-item label="Source">
@@ -124,6 +128,14 @@
       </template>
     </n-form>
 
+    <ProvenanceForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
+      ref="provenanceForm"
+      :createTitle="t('component.datafile.form.add-provenance')"
+      :editTitle="t('component.datafile.form.update-provenance')"
+      @onCreate="afterCreateProvenance"
+    />
+
     <template #footer>
       <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
     </template>
@@ -151,6 +163,7 @@ import type {
 import type { DataService } from 'opensilex-core/api/data.service'
 import TypeForm from '@/components/common/forms/TypeForm.vue'
 import ProvenanceSelector from '@/components/data/ProvenanceSelector.vue'
+import ProvenanceForm from '@/components/data/form/ProvenanceForm.vue'
 import ExperimentSelector from '@/components/experiments/ExperimentSelector.vue'
 import FileInputForm from '@/components/common/forms/FileInputForm.vue'
 import InputForm from '@/components/common/forms/InputForm.vue'
@@ -164,7 +177,7 @@ import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/u
 type DataFileFormModel = {
   rdf_type: string | null
   provenance: any
-  experiments: any[]
+  experiments: any
   file: File | string | null
   date: string | null
   target: string | null
@@ -173,6 +186,7 @@ type DataFileFormModel = {
 const emit = defineEmits<ModalFormEmits>();
 const props = defineProps<ModalFormProps & {
   tabExperimentMode?: boolean
+  experimentUri?: string
 }>();
 //#endregion
 
@@ -192,6 +206,7 @@ const serviceOS = opensilex.getService<ScientificObjectsService>(
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 const provenanceSelector = ref<any>(null)
+const provenanceForm = useTemplateRef<InstanceType<typeof ProvenanceForm>>('provenanceForm')
 
 //#region Datas & computed
 const selectedFormat = ref<'all' | 'DX' | 'CSV'>('DX')
@@ -326,7 +341,7 @@ function getEmptyForm(): DataFileFormModel {
   return {
     rdf_type: null,
     provenance: null,
-    experiments: [],
+    experiments: props.experimentUri ?? [],
     file: null,
     date: null,
     target: null
@@ -369,8 +384,11 @@ function getProvenanceUri(provenance: any) {
 }
 
 function showProvenanceCreateForm() {
-  // This would be handled by a separate ProvenanceForm component if needed
-  // For now, kept as placeholder for potential integration
+  provenanceForm.value?.showCreateForm?.()
+}
+
+function afterCreateProvenance(http: HttpResponse<OpenSilexResponse<string>>) {
+  modalFormLogic.form.value.provenance = http.response.result
 }
 
 async function checkOSinExperiment(form: DataFileFormModel) {
@@ -469,7 +487,7 @@ function createDxFile(submittedForm: DataFileFormModel) {
       const uri = http.response.result
       submittedForm.uri = uri
       console.debug('Datafile created', uri)
-      opensilex.showSuccessToast('File uploaded and processed successfully.')
+      opensilex.showSuccessToast(t('component.datafile.list.upload-success-message'))
       return submittedForm
     })
 }
@@ -497,7 +515,7 @@ function createCsvSpectraFile(submittedForm: DataFileFormModel) {
       const uri = http.response.result
       submittedForm.uri = uri
       console.debug('Datafile created', uri)
-      opensilex.showSuccessToast('File uploaded and processed successfully.')
+      opensilex.showSuccessToast(t('component.datafile.list.upload-success-message'))
       return submittedForm
     })
 }
@@ -555,3 +573,37 @@ defineExpose(modalFormLogic.exposed)
 
 </script>
 
+<style scoped lang="scss">
+:deep(.compact-form-item) {
+  --n-label-height: 0px !important;
+  --n-label-padding: 0 !important;
+}
+
+.provenanceSelector :deep(.select-button-container) {
+  position: relative;
+}
+
+.provenanceSelector :deep(.select-side-button) {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin-left: 0;
+  z-index: 1;
+}
+
+.provenanceSelector :deep(.select-side-button > *) {
+  height: 100%;
+  padding: 0 12px;
+  border-radius: 0 3px 3px 0;
+}
+
+.provenanceSelector :deep(.n-base-suffix) {
+  right: 40px !important;
+}
+
+.provenanceSelector :deep(.n-base-selection) {
+  --n-padding-single-right: 64px !important;
+  --n-padding-multiple-right: 64px !important;
+}
+</style>

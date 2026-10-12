@@ -167,6 +167,8 @@
               v-if="withPageActions"
               :editTitle="t('component.datafile.update')"
               :createTitle="t('component.datafile.create')"
+              :tabExperimentMode="!!enforcedExperimentUri"
+              :experimentUri="enforcedExperimentUri"
               @onCreate="refresh"
             />
           </n-layout-content>

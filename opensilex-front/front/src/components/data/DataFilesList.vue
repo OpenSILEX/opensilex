@@ -50,7 +50,7 @@
             class="totalCountDetailButton"
           >
             <template v-slot:icon>
-              <opensilex-Icon icon="fa#eye" />
+              <Icon icon="fa#eye" />
             </template>
           </Button>
         </div>
@@ -114,12 +114,11 @@
       </template>
 
       <template #cell(actions)="{ data }">
-        <n-button-group size="small">
+        <n-button-group size="small" class="btn-group btn-group-sm">
           <Button
             :disabled="!images_rdf_types.includes(data.item.rdf_type)"
-            component="DocumentDetails"
             @click="showImage(data.item)"
-            :label="t('component.datafile.list.displayImage')"
+            label="component.datafile.list.displayImage"
             :small="true"
             icon="fa#image"
             variant="outline-info"
@@ -127,15 +126,13 @@
           <DetailButton
             v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
             @click="showDataProvenanceDetailsModal(data.item)"
-            :label="t('component.datafile.list.details')"
+            label="component.datafile.list.details"
             :small="true"
           />
-          <Button
+          <DeleteButton
             @click="deleteDatafile(data.item.uri)"
-            variant="outline-danger"
+            label="component.common.delete"
             :small="true"
-            :label="t('component.common.delete')"
-            icon="fa#trash-alt"
           />
         </n-button-group>
       </template>
@@ -180,6 +177,12 @@ import Button from "@/components/common/buttons/Button.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
+import Icon from "@/components/common/views/Icon.vue";
+import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
+import ImageModal from "@/components/data/ImageModal.vue";
+import ExportDataFileModal from "@/components/data/ExportDataFileModal.vue";
+import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
 
 export type DatafileFilter = {
   name?: string | null
@@ -387,7 +390,7 @@ async function getProvenance(uri: string) {
   if (!uri) return null
 
   const http = await $opensilex
-    .getService('opensilex.DataService')
+    .getService<DataService>('opensilex.DataService')
     .getProvenance(uri) as HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>
 
   return http.response.result
@@ -522,7 +525,7 @@ async function searchDatafiles(options: any) {
 
   if (objectsToLoad.length > 0) {
     const promiseObject = $opensilex
-      .getService('opensilex.OntologyService')
+      .getService<OntologyService>('opensilex.OntologyService')
       .getURILabelsList(objectsToLoad, props.contextUri)
       .then((httpObj: any) => {
         for (const obj of httpObj.response.result) {
@@ -534,7 +537,7 @@ async function searchDatafiles(options: any) {
 
   if (provenancesToLoad.length > 0) {
     const promiseProvenance = $opensilex
-      .getService('opensilex.DataService')
+      .getService<DataService>('opensilex.DataService')
       .getProvenancesByURIs(provenancesToLoad)
       .then((httpObj: any) => {
         for (const prov of httpObj.response.result) {
@@ -559,7 +562,7 @@ function showImage(item: any) {
 }
 
 function loadTypes() {
-  $opensilex.getService('opensilex.OntologyService')
+  $opensilex.getService<OntologyService>('opensilex.OntologyService')
     .getSubClassesOf($opensilex.Oeso.DATAFILE_TYPE_URI, false)
     .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
       images_rdf_types.value = []
@@ -730,11 +733,8 @@ function exportDataFiles(format: string, includeAverage: boolean, includeSampleD
 }
 
 function deleteDatafile(uri: string) {
-  const confirmed = window.confirm(t('component.common.delete-datafile-confirmation').toString())
-  if (!confirmed) return
-
   $opensilex
-    .getService('opensilex.DataService')
+    .getService<DataService>('opensilex.DataService')
     .deleteDatafile(uri)
     .then(() => {
       tableRef.value?.checkSelectedItems?.(uri)

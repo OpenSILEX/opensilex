@@ -2,8 +2,8 @@
   <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
     <div class="card">
       <!-- on selectable tables -->
-      <div v-if="isSelectable && tableRef" class="card-header clearfix">
-        <div>
+      <div v-if="isSelectable" class="card-header clearfix">
+        <div v-if="tableRef">
             <h3 class="d-inline mr-1">
               <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
               {{$t(labelNumberOfSelectedRow)}}
@@ -13,12 +13,14 @@
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
         <opensilex-NbElementPerPageSelector
+            :nbElementPerPage.sync="pageSize"
             @change="OnNbElementPerPageChange"
         />
       </div>
       <!-- on other tables -->
-      <div v-if="!isSelectable && tableRef" class="numberOfElementsSelectorListsWthCheckbox">
+      <div v-if="!isSelectable" class="numberOfElementsSelectorListsWthCheckbox">
         <opensilex-NbElementPerPageSelector
+            :nbElementPerPage.sync="pageSize"
             @change="OnNbElementPerPageChange"
         />
       </div>
@@ -229,8 +231,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   })
   defaultSortDesc;
 
-  defaultPageSize: number = 20;
-
   @Prop({
     default: false
   })
@@ -288,7 +288,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   currentStartPath: string = "";
   currentTabPath: string ="";
   routeArr : string[] = this.$route.path.split('/');
-  pageSize: number;
+  pageSize: number = null;
+  defaultPageSize: number = 20;
   totalRow = 0;
   sortBy;
   sortDesc = false;
@@ -469,7 +470,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   refresh() {
     this.currentPage = 1;
-    this.pageSize=this.defaultPageSize;
     this.tableRef.refresh();
   }
 
@@ -598,7 +598,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
       return this.searchMethod({
         orderBy: orderBy,
         currentPage: this.currentPage - 1,
-        pageSize: this.$route.query.pageSize ? parseInt(this.$route.query.pageSize) : this.defaultPageSize
+        pageSize: this.pageSize
       })
         .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
           if(this.countMethod){
@@ -731,11 +731,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     }
   }
 
-  OnNbElementPerPageChange(itemPerPage: string) {
-    this.pageSize = parseInt(itemPerPage);
-    this.defaultPageSize = this.pageSize;
+  // defaultPageSize is already updated by the selector (sync), changeCurrentPage refreshes the table with it
+  OnNbElementPerPageChange() {
     this.changeCurrentPage(1);
-    this.refresh();
   }
 
     checkSelectedItems(uri) {

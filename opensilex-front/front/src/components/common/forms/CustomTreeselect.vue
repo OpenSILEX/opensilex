@@ -56,7 +56,8 @@ const props = defineProps<{
   showCount?: boolean
   disabled?: boolean
   conversionMethod?: (dto: NamedResourceDTO) => { id: string; label: string; isDisabled?: boolean }
-  disableBranchNodes?: boolean
+  /** If true then only nodes with 0 children can be selected*/
+  disableParentNodes?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -117,7 +118,7 @@ const treeSelectBindings = computed(() => ({
   disabled: props.disabled,
   placeholder: props.placeholder,
   value: value.value,
-  'check-strategy': props.disableBranchNodes ? 'child' : 'all',
+  'check-strategy': props.disableParentNodes ? 'child' : 'all',
   'default-expanded-keys': defaultExpandedKeys.value,   // <— optionnel
   'default-expand-all': true
 }))

@@ -71,6 +71,10 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
                 .map(URI::create)
                 .into(new ArrayList<>());
         logger.info("Retrieved " + uris.size() + " germplasm attribute documents to update");
+        if (uris.isEmpty()) {
+            logger.info("No germplasm attribute document found, nothing to update.");
+            return;
+        }
         List<GermplasmModel> germplasms = sparql.getListByURIs(GermplasmModel.class, uris, null);
 
         logger.debug("Sleeping to avoid stressing RDF4J...");
@@ -99,6 +103,12 @@ public class GermplasmAttributeUpdateRightsMigration implements OpenSilexModuleU
                     Filters.eq(GermplasmMetadataModel.URI_FIELD, uri),
                     Updates.combine(new Document("$set", update))
             ));
+        }
+
+        // bulkWrite rejects an empty list of writes, so nothing must be sent when no germplasm matched
+        if (ops.isEmpty()) {
+            logger.info("No germplasm found in the triplestore for the " + uris.size() + " germplasm attribute documents, nothing to update.");
+            return;
         }
 
         attributeCollection.bulkWrite(session, ops);

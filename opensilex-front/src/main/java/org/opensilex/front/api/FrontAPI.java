@@ -12,6 +12,7 @@ import org.apache.http.HttpStatus;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
+import org.opensilex.front.FrontConfig;
 import org.opensilex.front.FrontModule;
 import org.opensilex.front.theme.ThemeBuilder;
 import org.opensilex.front.theme.ThemeConfig;
@@ -262,6 +263,11 @@ public class FrontAPI {
         return themeBuilder;
     }
 
+    /**
+     * Return the resource from the requested theme,
+     * or from the default opensilex theme if the resources were not found in the requested theme.
+     * @Throw 404 error if the resource were not found in the requested theme nor the default one.
+     */
     @GET
     @Path("/theme/{moduleId}/{themeId}/resource")
     @ApiOperation(value = "Return the theme requested resource")
@@ -278,34 +284,66 @@ public Response getThemeResource(
 
         OpenSilexModule module = getModule(moduleId);
 
+        Response response = getThemeResourceOrNull(module, themeId, filePath, acceptedExtensions);
+        if (response != null) {
+            return response;
+        }
+
+        // A custom theme only overrides a subset of the resources: look for the missing ones in the
+        // default theme before giving up.
+        if (!FrontConfig.DEFAULT_THEME_MODULE.equals(moduleId) || !FrontConfig.DEFAULT_THEME_NAME.equals(themeId)) {
+            LOGGER.debug("Resource " + filePath + " not found in theme " + moduleId + "#" + themeId
+                    + ", falling back on the default theme " + FrontConfig.DEFAULT_THEME);
+
+            OpenSilexModule defaultThemeModule = getModule(FrontConfig.DEFAULT_THEME_MODULE);
+            response = getThemeResourceOrNull(defaultThemeModule, FrontConfig.DEFAULT_THEME_NAME, filePath, acceptedExtensions);
+            if (response != null) {
+                return response;
+            }
+        }
+
+        throw new NotFoundException("Resource file not found for module: " + moduleId + " - with theme: " + themeId + " - with path: " + filePath);
+    }
+
+    /**
+     * Look for a resource within a single theme.
+     *
+     * @param module module owning the theme
+     * @param themeId theme identifier
+     * @param filePath resource path, relative to the theme directory
+     * @param acceptedExtensions if not empty, extensions to append to filePath, tried in order
+     * @return the response serving the resource, or null if this theme does not provide it
+     */
+    private Response getThemeResourceOrNull(OpenSilexModule module, String themeId, String filePath,
+            List<String> acceptedExtensions) throws IOException, URISyntaxException {
+
         String themeFilePath = getModuleFrontThemeResourcePath(themeId, filePath);
         String fileName = getFileName(filePath);
-        
+
         if (CollectionUtils.isNotEmpty(acceptedExtensions)) {
             for (String ext : acceptedExtensions) {
                 String filePathWithExtension = themeFilePath + "." + ext;
-                String mimeType = module.getFileMimeType(filePathWithExtension);
                 if (module.fileExists(filePathWithExtension)) {
-                    return Response
-                    .ok(module.getFileInputStream(filePathWithExtension), mimeType)
-                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                    .build();
+                    return buildResourceResponse(module, filePathWithExtension, fileName);
                 }
             }
-            throw new NotFoundException("No matching file found with one of the supported extensions");
+            return null;
         }
 
         if (module.fileExists(themeFilePath)) {
-            String mimeType = module.getFileMimeType(themeFilePath);
-
-            // Load file
-            return Response
-                    .ok(module.getFileInputStream(themeFilePath), mimeType)
-                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                    .build();
-        } else {
-            throw new NotFoundException("Resource file not found for module: " + moduleId + " - with theme: " + themeId + " - with path: " + filePath);
+            return buildResourceResponse(module, themeFilePath, fileName);
         }
+
+        return null;
+    }
+
+    private Response buildResourceResponse(OpenSilexModule module, String resourcePath, String fileName)
+            throws IOException, URISyntaxException {
+        // Load file
+        return Response
+                .ok(module.getFileInputStream(resourcePath), module.getFileMimeType(resourcePath))
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .build();
     }
 
     public static String getModuleFrontLibFilePath(String moduleId) {

@@ -187,7 +187,7 @@ function isFileAccepted (file: File, accept: string) {
 .dropzone-title {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #00A38D;
+  color: var(--main-color-theme);
 }
 
 /* .dropzone-sub {

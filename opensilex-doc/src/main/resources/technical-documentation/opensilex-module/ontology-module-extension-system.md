@@ -9,6 +9,9 @@
 > ⚠️ _WARNING_ : This document is about module ontology extension system and does not cover API extension system. ⚠️
 >
 > If you are looking for an explanation about the way you can extend the core ontology using the OpenSILEX API see [ontology API extension system](/src/main/resources/technical-documentation/opensilex-core/ontology/ontology-extension-system-API.md).
+> 
+> > ⚠️ _WARNING_ : You first need to follow the first steps of creating a new module: [create-your-own-module.md](create-your-own-module.md)
+>
 
 ## Table of contents
 
@@ -46,7 +49,7 @@ This could be useful for:
 
 ## Creating a new OpenSILEX module
 
-To create and register a new module, follow the instructions in the [module documentation](/src/main/resources/technical-documentation/opensilex-module/modules.md).
+To create and register a new module, follow the instructions in the [module documentation](/src/main/resources/technical-documentation/opensilex-module/create-your-own-module.md).
 
 ### Create an ontology file
 
@@ -62,7 +65,7 @@ Make your module class (the one extending `OpenSilexModule` class) implement the
 Override the `getOntologiesFiles()` method to return the list of ontology files you want to register. Once again you can see examples of this in the `opensilex-phis` module. You can now compile the OpenSILEX project with your module.
 
 ### Run the reset
-Once OpenSILEX is compiled with your module configured in the POM.xml (see [module documentation](/src/main/resources/technical-documentation/opensilex-module/modules.md)), you can run the `sparql reset-ontologies` command to load the ontology in the database.
+Once OpenSILEX is compiled with your module configured in the POM.xml (see [module documentation](/src/main/resources/technical-documentation/opensilex-module/create-your-own-module.md)), you can run the `sparql reset-ontologies` command to load the ontology in the database.
 
 Once done, you should be able to see your new ontology's concepts and contexts in the RDF4J Triple Store database.
 
@@ -91,7 +94,7 @@ You should also be able to use your new concepts to extend the API with new web 
 
 ## Documentation
 
-- how to create a new module : [module documentation](/src/main/resources/technical-documentation/opensilex-module/modules.md)
+- how to create a new module : [module documentation](/src/main/resources/technical-documentation/opensilex-module/create-your-own-module.md)
 - writing API and front-end in a new module : [ontology-module-extension-system.md](/src/main/resources/technical-documentation/opensilex-module/ontology-module-extension-system.md)
 
 **ontology extension system with API and not module :**

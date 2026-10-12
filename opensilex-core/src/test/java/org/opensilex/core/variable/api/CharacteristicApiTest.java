@@ -14,7 +14,9 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.characteristic.CharacteristicAPI;
 import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicDetailsDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicUpdateDTO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
+import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -39,6 +41,19 @@ public class CharacteristicApiTest extends AbstractSecurityIntegrationTest {
     public static String createPath = path;
     public static String updatePath = path;
     public static String deletePath = path + "/{uri}";
+
+    public static final ServiceDescription update;
+
+    static {
+        try {
+            update = new ServiceDescription(
+                    CharacteristicAPI.class.getMethod("updateCharacteristic", CharacteristicUpdateDTO.class),
+                    updatePath
+            );
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private CharacteristicCreationDTO getCreationDto() {
         CharacteristicCreationDTO dto = new CharacteristicCreationDTO();

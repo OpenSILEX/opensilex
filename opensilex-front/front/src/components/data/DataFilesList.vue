@@ -786,7 +786,7 @@ defineExpose({
 .totalCountDetailButton {
   background: none;
   border: none;
-  color: #00A38D;
+  color: var(--main-color-theme);
 }
 
 .totalCountDetailButton:focus {

@@ -235,7 +235,10 @@ function getEmptyForm(): DeviceCreationDTO {
 
 function reset() {
   uriGenerated.value = true
-  attributeTable.value?.resetTable?.()
+  // the form is already set when the composable calls reset, so in edit mode we load the existing attributes from it
+  attributesArray.value = modalFormLogic.isEditMode.value
+    ? readAttributes(modalFormLogic.form.value.metadata)
+    : []
 }
 
 async function create(form: DeviceCreationDTO) {
@@ -246,10 +249,6 @@ async function create(form: DeviceCreationDTO) {
 async function update(form: DeviceCreationDTO) {
   form.metadata = attributeTable.value?.pushAttributes?.()
   return await service.updateDevice(form)
-}
-
-function loadAttributes(metadata: Record<string, string>) {
-  attributesArray.value = readAttributes(metadata)
 }
 
 function typeSwitch(type: string, initialLoad: boolean) {
@@ -265,7 +264,6 @@ defineExpose({
   reset,
   create,
   update,
-  readAttributes: loadAttributes,
   getEmptyForm
 })
 </script>

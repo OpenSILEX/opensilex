@@ -158,6 +158,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (!1574) [RdfIndexes] On system install, some new rdf indexes are now used. Changed recommended version of rdf.
 - (!1582) [scientific object] add experiment infos on os geospatial export
 - (!1584) [perf] avoid loading data twice when displaying lists with pagination
+- (!1578) [Build] Upgraded embed-mongo version to make the build work on Ubuntu 26.04
 
 ## [1.5.7]
 

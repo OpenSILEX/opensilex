@@ -177,7 +177,7 @@ async function typeSwitch(type: string, initialLoad: boolean) {
     const propertiesByDomainHttpResponse =
         await ontologyService.getPropertiesByDomainHierarchyUsingRestrictions(
             props.baseType,
-            [type]
+            [opensilex.getShortUri(type)]
         )
     propertiesByDomainHierarchy.value = propertiesByDomainHttpResponse.response.result
 

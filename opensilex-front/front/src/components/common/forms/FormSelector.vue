@@ -26,7 +26,7 @@
             :defaultSelectedValue="defaultSelectedValue"
             :showCount="showCount"
             :actionHandler="actionHandler"
-            :disableBranchNodes="disableBranchNodes"
+            :disableParentNodes="disableParentNodes"
             :itemLoadingMethod="itemLoadingMethod || undefined"
             class="select-main"
             :totalCount="updateTotalCount"
@@ -108,7 +108,8 @@ const props = defineProps<{
   viewHandler?: Function
   viewHandlerDetailsVisible?: boolean
   defaultSelectedValue?: boolean
-  disableBranchNodes?: boolean
+  /** If true then only nodes with 0 children can be selected*/
+  disableParentNodes?: boolean
 }>()
 
 const emit = defineEmits<{

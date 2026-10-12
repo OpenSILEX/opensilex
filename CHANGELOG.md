@@ -1,5 +1,6 @@
 <!-- TOC -->
 * [Changelog](#changelog)
+  * [[1.5.8]](#158)
   * [[1.5.7]](#157)
   * [[1.5.6]](#156)
   * [[1.5.5]](#155)
@@ -154,6 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 >
 > If you are upgrading from 1.5.1 or higher, there's nothing to do.
 
+- (!1574) [RdfIndexes] On system install, some new rdf indexes are now used. Changed recommended version of rdf.
 - (!1582) [scientific object] add experiment infos on os geospatial export
 - (!1584) [perf] avoid loading data twice when displaying lists with pagination
 

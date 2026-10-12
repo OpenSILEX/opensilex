@@ -87,7 +87,7 @@ docker run -d --rm -p 27017:27017 --name mongo_opensilex --network mongoCluster 
 
 ## Set up a triplestore
 
-You can use [RDF4J 5.X](https://rdf4j.org/) or [GraphDB](http://graphdb.ontotext.com/) for storing semantic data.
+You can use [RDF4J 5.3.X](https://rdf4j.org/) or [GraphDB](http://graphdb.ontotext.com/) for storing semantic data.
 
 You can find a quick comparison of both triplestore engines [here](https://db-engines.com/en/system/GraphDB%3BRDF4J).
 
@@ -99,6 +99,13 @@ For RDF4J you first need to set up and configure a Servlet Container server like
 And then follow [RDF4J's documentation](https://rdf4j.org/documentation/server-workbench-console/) .
 
 You can also use this docker image: [eclipse/rdf4j-workbench](https://hub.docker.com/r/eclipse/rdf4j-workbench)
+
+At the current time of modifying this document we use rdf version 5.3.2. To correctly apply a docker image change for rdf version change you should run the following commands:
+
+```bash
+docker compose pull rdf4j
+docker compose up -d rdf4j
+```
 
 > Linux example command
 

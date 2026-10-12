@@ -699,7 +699,9 @@ public class ScientificObjectLogic {
         List<ScientificObjectModel> objDetailList = dao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)).getList();
 
         //Convert
-        ScientificObjectGeospatialExporter shpExport = new ScientificObjectGeospatialExporter();
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql, fs);
+        ExperimentModel experiment = experimentDAO.get(contextURI, currentUser);
+        ScientificObjectGeospatialExporter shpExport = new ScientificObjectGeospatialExporter(experiment);
         return shpExport.exportFormat(selectedProps, objDetailList, selectedObjectsMap,format);
     }
 

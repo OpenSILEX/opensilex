@@ -11,7 +11,7 @@
         : t('DatafileProvenanceSelector.placeholder')
     "
     :noResultsText="t('DatafileProvenanceSelector.filter-search-no-result')"
-    :disableBranchNodes="true"
+    :disableParentNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
     :viewHandler="viewHandler"

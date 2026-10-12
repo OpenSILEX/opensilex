@@ -145,7 +145,7 @@ function flatten(nodes: InputOpt[] = []): Array<{ id: string; label: string }> {
 
 // searchMethod attend => Promise<{ response: { result: NamedResourceDTO[], metadata: { pagination: { totalCount }}}}>
 // NamedResourceDTO minimal = { uri, name }
-async function searchTypes(rawQuery: string, page = 0, limit = 20) {
+async function searchTypes(rawQuery: string) {
   // CustomTreeselect utilise '.*' quand query vide
   const searchedText = (rawQuery === '.*' ? '' : (rawQuery ?? '')).trim().toLowerCase()
 
@@ -158,11 +158,9 @@ async function searchTypes(rawQuery: string, page = 0, limit = 20) {
       )
       : all
 
-  const sliced = filtered.slice(page * limit, (page + 1) * limit)
-
   return {
     response: {
-      result: sliced.map(x => ({ uri: x.id, name: x.label })), // <= matcher ce que CustomTreeselect attend
+      result: filtered.map(x => ({ uri: x.id, name: x.label })), // <= matcher ce que CustomTreeselect attend
       metadata: { pagination: { totalCount: filtered.length } }
     }
   }

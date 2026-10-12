@@ -10,6 +10,7 @@
     :label="label"
     :helpMessage="helpMessage"
     :required="required"
+    :path="path"
     @selectionChange="(option) => emit('selectionChange', option)"
   ></InfiniteScrollDropdown>
 </template>
@@ -33,6 +34,7 @@ const props = withDefaults(
     helpMessage?: string
     placeholder?: string
     required?: boolean
+    path?: string
   }>(),
   {
     placeholder: 'FacilitySelector.placeholder',

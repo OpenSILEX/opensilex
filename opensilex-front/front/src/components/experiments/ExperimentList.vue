@@ -1,162 +1,119 @@
 <template>
   <div>
     <PageContent class="pagecontent">
-      <!-- Toggle Sidebar-->
-      <div
-        class="searchMenuContainer"
-        v-on:click="searchFiltersToggle = !searchFiltersToggle"
-        :title="searchFiltersPannel()"
-      >
-        <div class="searchMenuIcon">
-          <i class="icon ik ik-search"></i>
-        </div>
-      </div>
-      <!-- FILTERS -->
-      <Transition>
-        <div v-show="searchFiltersToggle">
-          <SearchFilterField
-            ref="searchFilterField"
-            @search="refresh()"
-            @clear="reset()"
-            label="component.experiment.search.label"
-            :showAdvancedSearch="true"
-            class="searchFilterField"
-          >
-            <template v-slot:filters>
-              <!-- Name -->
-              <div>
-                <FilterField>
-                  <b-form-group>
-                    <label for="name">{{ t('ExperimentList.filter-label') }}</label>
-                    <StringFilter
-                      id="name"
-                      :filter.sync="filter.name"
-                      placeholder="ExperimentList.filter-label-placeholder"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                    ></StringFilter>
-                  </b-form-group>
-                </FilterField>
-              </div>
+      <n-layout has-sider class="experiment-layout">
+        <!-- FILTERS -->
+        <SearchFiltersSidebar
+          v-model:filtersCollapsed="filtersCollapsed"
+          :activeFiltersCount="activeFiltersCount"
+          searchButtonLabelTranslationKey="component.experiment.search.label"
+          @refresh="refresh()"
+          @reset="reset()"
+        >
+          <!-- Name -->
+          <n-form-item class="compact-form-item">
+            <StringFilter
+              id="name"
+              label="component.common.name"
+              v-model:filter="filter.name"
+              placeholder="component.experiment.filter-label-placeholder"
+              class="searchFilter"
+              @handlingEnterKey="refresh()"
+            />
+          </n-form-item>
 
-              <!-- Species -->
-              <div>
-                <FilterField>
-                  <FormSelector
-                    v-if="!isGermplasmMenuExcluded"
-                    label="ExperimentList.filter-species"
-                    placeholder="ExperimentList.filter-species-placeholder"
-                    :multiple="true"
-                    :selected.sync="filter.species"
-                    :options="species"
-                    class="searchFilter"
-                  ></FormSelector>
-                </FilterField>
-              </div>
+          <!-- Species -->
+            <FormSelector
+              :label="t('component.experiment.species')"
+              :placeholder="t('component.variable.species.species-placeholder')"
+              :multiple="true"
+              v-model:selected="filter.species"
+              :options="species"
+              class="searchFilter"
+            />
 
-              <!-- factorCategories -->
-              <div>
-                <FilterField>
-                  <FactorCategorySelector
-                    ref="factorCategorySelector"
-                    label="ExperimentList.filter-factors-categories"
-                    placeholder="ExperimentList.filter-factors-categories-placeholder"
-                    helpMessage="component.factor.name-help"
-                    :multiple="true"
-                    :category.sync="filter.factorCategories"
-                    class="searchFilter"
-                  ></FactorCategorySelector>
-                </FilterField>
-              </div>
+          <!-- factorCategories -->
+          <n-form-item class="compact-form-item">
+            <FactorCategorySelector
+              ref="factorCategorySelector"
+              :label="t('component.experiment.factors-categories')"
+              helpMessage="component.experiment.category-factor-help"
+              :multiple="true"
+              v-model:category="filter.factorCategories"
+              class="searchFilter"
+            />
+          </n-form-item>
 
-              <!-- Facilities -->
-              <div>
-                <FilterField>
-                  <FormSelector
-                    label="ExperimentList.filter-facilities"
-                    placeholder="ExperimentList.filter-facilities-placeholder"
-                    :multiple="true"
-                    :selected.sync="filter.facilities"
-                    :options="facilities"
-                    class="searchFilter"
-                  ></FormSelector>
-                </FilterField>
-              </div>
+          <!-- Facilities -->
+            <FormSelector
+              :label="t('component.experiment.facilities')"
+              :placeholder="t('component.experiment.facilities-placeholder')"
+              :multiple="true"
+              v-model:selected="filter.facilities"
+              :options="facilities"
+              class="searchFilter"
+            />
 
-              <!-- Year -->
-              <div>
-                <FilterField>
-                  <label>{{ $t('ExperimentList.filter-year') }}</label>
-                  <StringFilter
-                    placeholder="ExperimentList.filter-year-placeholder"
-                    :filter.sync="filter.yearFilter"
-                    type="number"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                  ></StringFilter> </FilterField
-                ><br />
-              </div>
-            </template>
+          <!-- Year -->
+            <StringFilter
+              label="component.document.date"
+              placeholder="component.project.filter-year-placeholder"
+              v-model:filter="filter.yearFilter"
+              type="number"
+              class="searchFilter"
+              @handlingEnterKey="refresh()"
+            />
 
-            <template v-slot:advancedSearch>
+          <!-- ADVANCED SEARCH -->
+          <n-collapse :accordion="false" class="advancedFiltersSearch">
+            <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
               <!-- Projects -->
-              <div>
-                <FilterField>
-                  <ModalFormSelector
-                    ref="projectSelector"
-                    label="ExperimentList.filter-project"
-                    placeholder="ExperimentList.filter-project-placeholder"
-                    :selected.sync="filter.projects"
-                    modalComponent="ProjectModalList"
-                    :clearable="true"
-                    :multiple="true"
-                    @clear="refreshProjectSelector"
-                    :limit="1"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                  ></ModalFormSelector>
-                </FilterField>
-              </div>
+              <n-form-item class="compact-form-item">
+                <ModalFormSelector
+                  ref="projectSelector"
+                  :label="t('component.experiment.projects')"
+                  :placeholder="t('component.experiment.project-placeholder')"
+                  v-model:selected="filter.projects"
+                  modalComponent="opensilex-ProjectModalList"
+                  :clearable="true"
+                  :multiple="true"
+                  @clear="refreshProjectSelector"
+                  :limit="1"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                />
+              </n-form-item>
 
               <!-- State -->
-              <div>
-                <FilterField>
-                  <FormSelector
-                    label="ExperimentList.filter-state"
-                    placeholder="ExperimentList.filter-state-placeholder"
-                    :multiple="false"
-                    :selected.sync="filter.state"
-                    :options="experimentStates"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                  ></FormSelector>
-                </FilterField>
-              </div>
+                <FormSelector
+                  :label="t('component.common.state')"
+                  :placeholder="t('component.experiment.state-placeholder')"
+                  :multiple="false"
+                  v-model:selected="filter.state"
+                  :options="experimentStates"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                />
 
               <!-- funding -->
-              <div>
-                <FilterField>
-                  <FundingSelector
-                    label="ExperimentList.filter-funding"
-                    placeholder="ExperimentList.filter-funding-placeholder"
-                    :multiple="true"
-                    :funding.sync="filter.funding"
-                    class="searchFilter"
-                  ></FundingSelector>
-                </FilterField>
-              </div>
-            </template>
-          </SearchFilterField>
-        </div>
-      </Transition>
+                <FundingSelector
+                  :label="t('component.experiment.funding')"
+                  :multiple="true"
+                  v-model:fundinguri="filter.funding"
+                  class="searchFilter"
+                />
+            </n-collapse-item>
+          </n-collapse>
+        </SearchFiltersSidebar>
 
+        <n-layout-content class="experiment-content">
       <TableAsyncView
         ref="tableRef"
         :searchMethod="searchExperiments"
         :fields="fields"
         @isSelectable="true"
         @refreshed="onRefreshed"
-        labelNumberOfSelectedRow="ExperimentList.selected"
+        labelNumberOfSelectedRow="component.experiment.selected"
         iconNumberOfSelectedRow="ik#ik-layers"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
@@ -164,11 +121,11 @@
             dropright
             class="mb-2 mr-2"
             :small="true"
-            :text="$t('VariableList.display')"
+            :text="$t('component.document.display')"
           >
             <b-dropdown-item-button @click="clickOnlySelected()">{{
               onlySelected
-                ? $t('ExperimentList.selected-all')
+                ? $t('component.experiment.all')
                 : $t('component.common.selected-only')
             }}</b-dropdown-item-button>
             <b-dropdown-item-button @click="resetSelected()">{{
@@ -290,12 +247,15 @@
         icon="ik#ik-file-text"
        edit-title="">
       </DocumentForm>
+        </n-layout-content>
+      </n-layout>
     </PageContent>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, inject, onMounted, onUnmounted, useTemplateRef } from 'vue';
+import { useRoute } from 'vue-router';
 import { SpeciesDTO, SpeciesService } from 'opensilex-core/index';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { User } from '../../models/User';
@@ -317,7 +277,8 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import FactorCategorySelector from "@/components/experiments/factors/FactorCategorySelector.vue";
-import {NButtonGroup} from "naive-ui";
+import {NButtonGroup, NCollapse, NCollapseItem, NFormItem, NLayout, NLayoutContent} from "naive-ui";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 
 //#region Public
 interface Props {
@@ -337,13 +298,15 @@ const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const documentForm = useTemplateRef<InstanceType<typeof DocumentForm>>('documentForm');
 const { t } = useI18n();
 const store = useStore();
+const route = useRoute();
 
 const user = computed<User>(() => store.state.user);
 const onlySelected = computed(() => store.state.onlySelected);
 const credentials = computed(() => store.state.credentials);
 
-const facilities = [];
-const species = [];
+const facilities = ref([]);
+const species = ref([]);
+const filtersCollapsed = ref(true);
 
 /**
  * The key is the URI in extended form
@@ -376,6 +339,13 @@ const filter = ref({
   state: '',
   facilities: [],
   funding: [],
+});
+
+const activeFiltersCount = computed(() => {
+  return Object.values(filter.value).filter((v) => {
+    if (Array.isArray(v)) return v.length > 0;
+    return v !== undefined && v !== null && String(v).trim() !== '';
+  }).length;
 });
 
 const experimentStates = computed(() => [
@@ -465,6 +435,9 @@ let langUnwatcher: (() => void) | undefined;
 
 //#region Hooks
 onMounted(() => {
+  loadSpecies();
+  loadFacilities();
+  opensilex.updateFiltersFromURL(route.query, filter.value);
   langUnwatcher = store.watch(
     (state, getters) => getters.language,
     (lang) => {
@@ -491,13 +464,13 @@ function loadSpecies() {
   service
     .getAllSpecies()
     .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-      const species = [];
+      species.value = [];
       for (let i = 0; i < http.response.result.length; i++) {
         speciesByUri.value.set(
           opensilex.getLongUri(http.response.result[i].uri),
           http.response.result[i]
         );
-        species.push({
+        species.value.push({
           id: http.response.result[i].uri,
           label: http.response.result[i].name,
         });
@@ -511,9 +484,9 @@ function loadFacilities() {
   service
     .getAllFacilities()
     .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-      const facilities = [];
+      facilities.value = [];
       for (let i = 0; i < http.response.result.length; i++) {
-        facilities.push({
+        facilities.value.push({
           id: http.response.result[i].uri,
           label: http.response.result[i].name,
         });
@@ -585,7 +558,7 @@ function deleteExperiment(uri: string) {
     .then(() => {
       tableRef.value.checkSelectedItems(uri);
       refresh();
-      const message = `${t('ExperimentList.name')} ${uri} ${t(
+      const message = `${t('component.experiment.view.title')} ${uri} ${t(
           'component.common.success.delete-success-message'
       )}`;
       opensilex.showSuccessToast(message);
@@ -650,6 +623,18 @@ defineExpose({
   white-space: nowrap;
   display: inline-block;
   max-width: 40vw;
+}
+
+.experiment-layout {
+  background: transparent;
+}
+
+.experiment-content {
+  padding-left: 12px;
+}
+
+.advancedFiltersSearch {
+  margin-top: 10px;
 }
 
 .funding-badge {

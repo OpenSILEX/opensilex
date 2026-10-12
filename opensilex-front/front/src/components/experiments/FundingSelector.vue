@@ -4,7 +4,7 @@
     :options="options"
     :multiple="multiple"
     :label="label"
-    placeholder="component.experiment.funding-placeholder"
+    :placeholder="t('component.experiment.funding-placeholder')"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -19,12 +19,14 @@
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
 import HttpResponse, { OpenSilexResponse } from '../../lib/HttpResponse';
 import { inject } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
 const service = inject<ExperimentsService>('service');
+const { t } = useI18n();
 
 const fundinguri = defineModel<string>('fundinguri');
 

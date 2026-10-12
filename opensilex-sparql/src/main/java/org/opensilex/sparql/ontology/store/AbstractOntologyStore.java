@@ -315,7 +315,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     @Override
     public LinkedHashSet<String> getAncestorHierarchy(URI classURI, URI ancestorUri){
-        return JgraphtUtils.getVertexesFromAncestor(modelsGraph, URIDeserializer.formatURI(ancestorUri).toString(), classURI.toString(), MAX_GRAPH_PATH_LENGTH);
+        return JgraphtUtils.getVertexesFromAncestor(modelsGraph, URIDeserializer.formatURI(ancestorUri).toString(), URIDeserializer.formatURI(classURI).toString(), MAX_GRAPH_PATH_LENGTH);
     }
 
     private void inheritFromSuperClasses(URI ancestorURI, ClassModel classModel, boolean addRestrictions, boolean addDataProperties, boolean addObjectProperties) throws SPARQLInvalidURIException {

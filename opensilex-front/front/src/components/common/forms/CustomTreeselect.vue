@@ -56,7 +56,8 @@ const props = defineProps<{
   showCount?: boolean
   disabled?: boolean
   conversionMethod?: (dto: NamedResourceDTO) => { id: string; label: string; isDisabled?: boolean }
-  disableBranchNodes?: boolean
+  /** If true then only nodes with 0 children can be selected*/
+  disableParentNodes?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -117,7 +118,7 @@ const treeSelectBindings = computed(() => ({
   disabled: props.disabled,
   placeholder: props.placeholder,
   value: value.value,
-  'check-strategy': props.disableBranchNodes ? 'child' : 'all',
+  'check-strategy': props.disableParentNodes ? 'child' : 'all',
   'default-expanded-keys': defaultExpandedKeys.value,   // <— optionnel
   'default-expand-all': true
 }))
@@ -195,35 +196,30 @@ function normalizeSelectedToIds(selectedElements: string | string[] | undefined)
 async function loadSelectedValues() {
   const sel = props.selected
   const ids = normalizeSelectedToIds(sel)
-  // si aucune sélection réelle, on ne call pas itemLoadingMethod
+// si aucune sélection réelle, on ne call pas itemLoadingMethod
   if (ids.length === 0) {
     value.value = null
     return
   }
   if (props.itemLoadingMethod) {
     const dtos = await props.itemLoadingMethod(ids)
-  //  const opts = dtos
-  //    .map(fromDTO)
-  //    .filter((object): object is { id: string; label: string; isDisabled?: boolean } => !!object)
-  //    .map(toTreeSelectOption)
 
+    const opts = dtos
+        .map((dto, i) => {
+          const o = fromDTO(dto)
+          o.id = ids[i] ?? o.id
+          return o
+        })
+        .filter(Boolean)
+        .map(toTreeSelectOption)
 
-  const opts = dtos
-     .map((dto, i) => {
-       const o = fromDTO(dto)
-       o.id = ids[i] ?? o.id
-       return o
-     })
-     .filter(Boolean)
-     .map(toTreeSelectOption)
-
-      opts.forEach(object => {
-        const exists = !!findOptionByKey(object.key, options.value)
-        if (!exists) options.value.push(object)
-        cacheSelectedOption(object)
-      })
+    opts.forEach(object => {
+      const exists = !!findOptionByKey(object.key, options.value)
+      if (!exists) options.value.push(object)
+      cacheSelectedOption(object)
+    })
   }
-   // on répercute la sélection normalisée
+  // on répercute la sélection normalisée
   value.value = props.multiple ? ids : ids[0]
 }
 
@@ -241,7 +237,6 @@ watch(
 
 // recherche
 const lastQuery = ref<string | null>(null)
-
 async function runSearch(rawQuery: string, overrideLimit?: number) {
   if (!props.searchMethod) return
   const query = rawQuery === '' ? '.*' : rawQuery
@@ -263,7 +258,6 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
    }
  }
 
-
   // options.value = list.map(fromDTO).map(toTreeSelectOption)
   options.value = newOptions
   totalCount.value = resp.response.metadata.pagination.totalCount
@@ -276,7 +270,6 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   emit('resultCount', resultCount.value)
 }
 const debounceSearch = debounce(runSearch, 250)
-
 // si pas de searchMethod: Naive filtre localement -> ne rien faire
 function onSearchChange(q: string) {
   if (props.searchMethod) debounceSearch(q)

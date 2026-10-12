@@ -123,14 +123,23 @@ const incomingPropertiesOpen = ref<boolean>(false);
 
 //#region Watch Towers
 watch(
-  props.relations,
-  async (newRelationsValue) => {
+  // A getter, not the array itself: Vue would read an array source as a list of sources, and it is
+  // empty on mount, so the callback would never run again when the parent replaces the relations.
+  () => props.relations,
+  async (relations) => {
     const http = await $vueOntologyService.getRDFTypeProperties(props.selected.rdf_type, props.parentType)
       .catch($opensilex.errorHandler);
+
+    if (!http) {
+      return;
+    }
+
     const typeModel = http.response.result;
 
-    propertyMap.value = buildPropertyMap(typeModel, props.relations, false, props.ignoredProperties);
-    incomingPropertyMap.value = buildPropertyMap(typeModel, props.relations, true, props.ignoredProperties);
+    // Build from the relations this run was triggered with: props.relations may already have been
+    // replaced while the type model was loading.
+    propertyMap.value = buildPropertyMap(typeModel, relations, false, props.ignoredProperties);
+    incomingPropertyMap.value = buildPropertyMap(typeModel, relations, true, props.ignoredProperties);
   },
   {immediate: true}
 );

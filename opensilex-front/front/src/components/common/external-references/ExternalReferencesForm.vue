@@ -1,12 +1,449 @@
 <template>
   <div>
- ExternalReferencesForm à migrer
+    <p v-if="skosReferences">
+      {{ t('component.skos.addTo') }}
+      <em>
+        <strong class="text-primary">{{ skosReferences.uri }}</strong>
+      </em>
+    </p>
+
+    <div
+        class="row"
+        v-if="includeAgroportalSearch && isAgroportalReachable"
+    >
+      <div class="col">
+        <AgroportalSearch
+            label="component.common.name"
+            type="text"
+            placeholder="search"
+            v-model:selected="ontologies"
+            v-model:isAllOntologies="isAllOntologies"
+            @change="onSearchTextChange"
+        />
+
+        <AgroportalResults
+            ref="searchResults"
+            v-model:text="text"
+            :isMappingMode="true"
+            :mappingOptions="options"
+            :importMapping="onImportMapping"
+        />
+      </div>
+    </div>
+
+    <Card noHeader :noFooter="true">
+      <template #body>
+        <div class="row">
+          <div class="col">
+            <h5 class="font-weight-bold mb-0">
+              {{ t('component.skos.ontologies-references-label') }}
+            </h5>
+
+            <div>
+              <ul>
+                <li
+                    v-for="externalOntologyRef in externalOntologiesRefs"
+                    :key="externalOntologyRef.name"
+                >
+                  <a
+                      target="_blank"
+                      :title="`${externalOntologyRef.name}: ${externalOntologyRef.description}`"
+                      :href="externalOntologyRef.link"
+                  >
+                    {{ externalOntologyRef.name }}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col">
+            <n-form
+                ref="nFormRef"
+                :model="form"
+                :rules="rules"
+                label-placement="top"
+                :show-require-mark="true"
+            >
+              <FormSelector
+                  label="component.skos.relation"
+                  helpMessage="component.skos.relation-help"
+                  placeholder="component.skos.no-relation"
+                  path="relation"
+                  v-model:selected="form.relation"
+                  :options="options"
+                  :required="true"
+              />
+
+              <!-- URI -->
+              <n-form-item path="externalUri" :show-label="false">
+                <FormField
+                    label="component.skos.uri"
+                    helpMessage="component.skos.uri-help"
+                    :required="true"
+                >
+                  <template #field="{ id }">
+                    <span
+                        class="error-message alert alert-danger"
+                        v-if="isIncludedInRelations()"
+                    >
+                      {{ t('component.skos.external-already-existing') }}
+                    </span>
+
+                    <n-input
+                        :id="id"
+                        v-model:value="form.externalUri"
+                        type="text"
+                        :placeholder="t('component.skos.uri-placeholder')"
+                    />
+                  </template>
+                </FormField>
+              </n-form-item>
+
+              <div class="text-end">
+                <Button
+                    label="component.skos.add"
+                    @click="addRelationsToSkosReferences"
+                    class="greenThemeColor"
+                />
+              </div>
+            </n-form>
+          </div>
+        </div>
+      </template>
+    </Card>
+
+    <div
+        v-if="displayInsertButton"
+        class="text-end mt-2"
+    >
+      <Button
+          label="component.skos.update"
+          @click="update"
+      />
+    </div>
+
+    <div>
+      <n-data-table
+          v-if="relations.length !== 0"
+          :columns="columns"
+          :data="relations"
+          :pagination="false"
+          size="small"
+          bordered
+      />
+
+      <p v-else>
+        <strong>
+          {{ t('component.skos.no-external-links-provided') }}
+        </strong>
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineExpose } from 'vue';
+import {computed, h, inject, nextTick, onMounted, reactive, ref, useTemplateRef} from "vue";
+import {useI18n} from "vue-i18n";
+import {FormRules, NDataTable, NForm, NFormItem, NInput} from "naive-ui";
+import {required, requiredTrimmed, validUri} from "@/models/FormFieldsFormatter";
 
+import SUPPORTED_SKOS_RELATIONS from "../../../models/SkosRelations";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {AgroportalAPIService} from "opensilex-core/api/agroportalAPI.service";
+import {AgroportalTermDTO} from "opensilex-core/model/agroportalTermDTO";
+import HttpResponse from "../../../lib/HttpResponse";
 
+import AgroportalSearch from "@/components/common/external-references/agroportal/AgroportalSearch.vue";
+import AgroportalResults from "@/components/common/external-references/agroportal/AgroportalResults.vue";
+import FormSelector from "@/components/common/forms/FormSelector.vue";
+import FormField from "@/components/common/forms/FormField.vue";
+import Card from "@/components/common/views/Card.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
+const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const {t} = useI18n();
+const text = ref<string>("");
+const ontologies = ref<string[]>([]);
+const isAllOntologies = ref<boolean>(false);
+const isAgroportalReachable = ref<boolean>(false);
+const agroportalAPIService = ref<AgroportalAPIService>();
+const nFormRef = useTemplateRef<InstanceType<typeof NForm>>("nFormRef");
+
+const props = withDefaults(
+    defineProps<{
+      displayInsertButton: boolean;
+      includeAgroportalSearch: boolean;
+      ontologiesToSelect: string[];
+    }>(),
+    {
+      displayInsertButton: true,
+      includeAgroportalSearch: false,
+      ontologiesToSelect: () => []
+    }
+);
+
+interface SkosReferencesDTO {
+  uri?: string;
+  exact_match?: string[];
+  close_match?: string[];
+  broad_match?: string[];
+  narrow_match?: string[];
+}
+
+type SkosReferencesCallback = (result?: Promise<unknown>) => void;
+
+const emit = defineEmits<{
+  onAdd: [value: SkosReferencesDTO, callback: SkosReferencesCallback];
+  onDelete: [value: SkosReferencesDTO, callback: SkosReferencesCallback];
+  onUpdate: [value: SkosReferencesDTO, callback: SkosReferencesCallback];
+}>();
+
+const skosReferences = defineModel('references')
+
+const form = reactive({
+  relation: "",
+  externalUri: ""
+});
+
+const rules = computed<FormRules>(() => ({
+  relation: required('component.skos.relation'),
+  externalUri: [validUri(t('validations.url', {_field_: t('component.skos.uri')})), requiredTrimmed('component.skos.uri')]
+}));
+
+const externalOntologiesRefs = computed<any[]>(() => {
+  if (!props.ontologiesToSelect) {
+    return [];
+  }
+
+  return ExternalOntologies
+      .getExternalOntologiesReferences(props.ontologiesToSelect)
+      .map(ref => ({
+        ...ref,
+        description: t(ref.description)
+      }));
+});
+
+function checkAgroportalReachable() {
+  agroportalAPIService.value.pingAgroportal()
+      .then((http) => {
+        if (http && http.response) {
+          isAgroportalReachable.value = http.response.result;
+        }
+      })
+      .catch((error: HttpResponse) => {
+        if (error.status === 503) {
+          isAgroportalReachable.value = false;
+          return;
+        }
+
+        opensilex?.errorHandler(error);
+      });
+}
+
+const relationsInternal = ref<any[]>([]);
+const options = computed<any[]>(() => {
+  const options: any[] = [];
+
+  for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
+    options.push({
+      id: skosRelation.dtoKey,
+      label: t(skosRelation.label),
+      title: t(skosRelation.description)
+    });
+  }
+
+  return options;
+});
+
+onMounted(() => {
+  agroportalAPIService.value =
+      opensilex?.getService<AgroportalAPIService>(
+          "opensilex.AgroportalAPIService"
+      );
+
+  checkAgroportalReachable();
+});
+
+function resetExternalUriForm() {
+  form.externalUri = "";
+
+  nextTick(() => {
+    nFormRef.value?.restoreValidation();
+  });
+}
+
+const relations = computed(() => {
+  relationsInternal.value = [];
+
+  for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
+    updateRelations(
+        skosRelation.dtoKey,
+        skosReferences.value[skosRelation.dtoKey]
+    );
+  }
+
+  return relationsInternal.value;
+});
+
+function updateRelations(
+    relation: string,
+    references: string[]
+) {
+  if (references !== undefined) {
+    for (let index = 0; index < references.length; index++) {
+      const element = references[index];
+      addRelation(relation, element);
+    }
+  }
+}
+
+function addRelation(
+    relation: string,
+    externalUri: string
+) {
+  const skosRelation = [...SUPPORTED_SKOS_RELATIONS]
+      .find(r => r.dtoKey === relation);
+
+  if (skosRelation) {
+    relationsInternal.value.push({
+      relation: t(skosRelation.label),
+      relationURI: externalUri
+    });
+  }
+}
+
+const columns = [
+  {
+    title: t('component.skos.relation'),
+    key: 'relation'
+  },
+  {
+    title: t('component.skos.uri'),
+    key: 'relationURI',
+    render: (row: any) => h('a', {href: row.relationURI, target: '_blank'}, row.relationURI)
+  },
+  {
+    title: t('component.common.actions'),
+    key: 'actions',
+    align: 'center' as const,
+    render: (row: any) =>
+        h(DeleteButton, {
+          label: 'component.common.delete',
+          small: true,
+          onClick: () => removeRelationsToSkosReferences(row)
+        })
+  }
+];
+
+function validateForm() {
+  return nFormRef.value.validate()
+      .then(() => true)
+      .catch(() => false);
+}
+
+function addRelationsToSkosReferences() {
+  validateForm().then(isValid => {
+    if (isValid) {
+      addRelationToSkosReferences();
+
+      return new Promise((resolve, reject) => {
+        emit("onAdd", skosReferences.value, result => {
+          if (result instanceof Promise) {
+            result.then(resolve).catch(reject);
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    }
+  });
+}
+
+function addRelationToSkosReferences() {
+  if (!isIncludedInRelations()) {
+    skosReferences.value[form.relation].push(
+        form.externalUri
+    );
+
+    resetExternalUriForm();
+  }
+}
+
+function isIncludedInRelations(): boolean {
+  if (
+      form.externalUri == undefined ||
+      form.externalUri == "" ||
+      form.externalUri.length == 0
+  ) {
+    return false;
+  }
+
+  let includedInRelations = false;
+
+  for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
+    if (
+        skosReferences.value[skosRelation.dtoKey]
+            .includes(form.externalUri)
+    ) {
+      includedInRelations = true;
+      break;
+    }
+  }
+
+  return includedInRelations;
+}
+
+function removeRelationsToSkosReferences(row: any) {
+  for (const skosRelation of SUPPORTED_SKOS_RELATIONS) {
+    skosReferences.value[skosRelation.dtoKey] =
+        skosReferences.value[skosRelation.dtoKey].filter(
+            function (value, index, arr) {
+              return value != row.relationURI;
+            }
+        );
+  }
+
+  return new Promise((resolve, reject) => {
+    emit("onDelete", skosReferences.value, result => {
+      if (result instanceof Promise) {
+        result.then(resolve).catch(reject);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+async function update() {
+  return new Promise((resolve, reject) => {
+    emit("onUpdate", skosReferences.value, result => {
+      if (result instanceof Promise) {
+        result.then(resolve).catch(reject);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+function onSearchTextChange(searchedText: string) {
+  text.value = searchedText;
+}
+
+function onImportMapping(
+    entity: AgroportalTermDTO,
+    relation: any
+) {
+  form.externalUri = entity.id;
+  form.relation = relation.id;
+}
 </script>
+
+<style scoped lang="scss">
+a {
+  color: #007bff;
+}
+</style>

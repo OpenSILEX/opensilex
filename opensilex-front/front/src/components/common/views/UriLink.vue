@@ -109,7 +109,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { t } = useI18n();
-const $opensilex = inject<OpenSilexVuePlugin | undefined>("$opensilex");
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 
 const emit = defineEmits<{
   (event: "click", uri: string): void;
@@ -220,7 +220,7 @@ const handleUriLinkClicked = () => {
 
 .onlyCopyAllowed:hover {
   text-decoration: none !important;
-  color: #018371 !important;
+  color: var(--main-color-theme-hover) !important;
 }
 
 .uri-in-table {

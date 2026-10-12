@@ -23,7 +23,6 @@
               :ignoreRoot="false"
               :placeholder="typePlaceholder"
               :tree="true"
-              :selectBranchNodes="true"
               @update:type="types = $event"
             />
           </div>

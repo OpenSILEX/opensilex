@@ -25,6 +25,7 @@ import type { OpenSilexResponse } from 'opensilex-security/HttpResponse'
 import type { ExperimentGetListDTO } from 'opensilex-core/index'
 import { useI18n } from 'vue-i18n'
 import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
+import {ExperimentsService} from "../../../../../opensilex-core/front/src/lib";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!
 const { t } = useI18n()
@@ -50,6 +51,11 @@ const props = withDefaults(defineProps<{
 })
 
 // v-model proxy
+const experimentSelector = ref<any>(null)
+const pageSize = ref(10)
+
+const experimentsByUriCache = ref<Map<string, ExperimentGetListDTO>>(new Map())
+
 const experimentsURI = computed({
   get: () => props.experiments,
   set: (value) => emit('update:experiments', value)
@@ -64,7 +70,7 @@ const placeholder = computed(() => {
 /** Loads one page of results. `page` is zero-based. */
 function searchExperiments(name: string, page: number, pageSize: number) {
   return $opensilex
-    .getService('opensilex.ExperimentsService')
+    .getService<ExperimentsService>('opensilex.ExperimentsService')
     .searchExperiments(
       name,
       undefined,       // year
@@ -99,26 +105,3 @@ const experimentToSelectOption = (dto: ExperimentGetListDTO): SelectOption => ({
   value: dto.uri
 })
 </script>
-
-<style scoped>
-</style>
-
-<i18n>
-en:
-  component:
-    experiment:
-      form:
-        selector:
-          placeholder: Select one experiment
-          placeholder-multiple: Select one or more Experiments
-          filter-search-no-result: No experiment found
-
-fr:
-  component:
-    experiment:
-      form:
-        selector:
-          placeholder: Sélectionner une expérimentation
-          placeholder-multiple: Sélectionner une ou plusieurs expérimentations
-          filter-search-no-result: Aucune expérimentation trouvée
-</i18n>

@@ -1,7 +1,7 @@
 <template>
-  <opensilex-Card :label="t('AssociatedExperimentsList.relatedExperiments')" icon="bi-layers" :no-footer="true">
+  <Card :label="t('AssociatedExperimentsList.relatedExperiments')" icon="bi-layers" :no-footer="true">
     <template #body>
-      <opensilex-StringFilter
+      <StringFilter
         v-model:filter="filter"
         @update="updateFilters"
         :debounce="300"
@@ -9,7 +9,7 @@
         :placeholder="t('AssociatedExperimentsList.experimentNameFilter')"
       />
 
-      <opensilex-TableAsyncView
+      <TableAsyncView
         ref="tableRef"
         :searchMethod="searchMethod"
         :fields="fields"
@@ -17,7 +17,7 @@
         :defaultPageSize="5"
       >
         <template #cell(name)="{ data }">
-          <opensilex-UriLink
+          <UriLink
             :uri="data.item.uri"
             :value="data.item.name"
             :to="{ path: '/experiment/details/' + encodeURIComponent(data.item.uri) }"
@@ -26,11 +26,11 @@
         </template>
 
         <template #cell(start_date)="{ data }">
-          <opensilex-DateView :value="data.item.start_date" />
+          <DateView :value="data.item.start_date" />
         </template>
 
         <template #cell(end_date)="{ data }">
-          <opensilex-DateView :value="data.item.end_date" />
+          <DateView :value="data.item.end_date" />
         </template>
 
         <template #cell(species)="{ data }">
@@ -44,30 +44,30 @@
         </template>
 
         <template #cell(state)="{ data }">
-          <opensilex-Icon
+          <Icon
             v-if="!isEnded(data.item)"
             icon="bi#bi-activity"
             :title="t('component.experiment.common.status.in-progress')"
             class="badge-icon badge-pill badge-info-phis p-1"
           />
 
-          <opensilex-Icon
+          <Icon
             v-else
             icon="bi#bi-archive"
             :title="t('component.experiment.common.status.finished')"
             class="badge-icon badge-pill p-1"
           />
 
-          <opensilex-Icon
+          <Icon
             v-if="data.item.is_public"
             icon="bi#bi-people"
             :title="t('component.experiment.common.status.public')"
             class="badge-icon badge-info p-1"
           />
         </template>
-      </opensilex-TableAsyncView>
+      </TableAsyncView>
     </template>
-  </opensilex-Card>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -79,6 +79,12 @@ import type { SpeciesService } from 'opensilex-core/api/species.service'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import type { SpeciesDTO } from 'opensilex-core/index'
+import Card from "@/components/common/views/Card.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import DateView from "@/components/common/views/DateView.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 /** Props */
 const props = defineProps<{
@@ -162,15 +168,3 @@ onMounted(() => {
   max-width: 150px;
 }
 </style>
-
-<i18n>
-en:
-  AssociatedExperimentsList:
-    experimentNameFilter: Search on experiment name
-    relatedExperiments: Related Experiments
-
-fr:
-  AssociatedExperimentsList:
-    experimentNameFilter: Chercher sur le nom de l'expérimentation
-    relatedExperiments: Expérimentations connexes
-</i18n>

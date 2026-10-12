@@ -8,17 +8,15 @@
     <template #field="{ id: fieldId, validator }">
       <div :id="fieldId" @keydown.enter.stop="$emit('handlingEnterKey')">
         <CustomTreeselect
-          v-model:selected="selectedIds"
-          :filterable="true"
-          :options="typesOptions"
-          :multiple="multiple"
-          :disabled="disabled"
-          :placeholder="t(placeholder || 'component.common.type')"
-          :itemLoadingMethod="props.tree ? undefined : loadByUris"
-          :disableBranchNodes="!selectBranchNodes"
-          :searchMethod="props.tree ? undefined : searchTypes"
-          :resultLimit="20"
-          @select="validator?.validate(); $emit('select',$event)"
+            v-model:selected="selectedIds"
+            :filterable="true"
+            :options="typesOptions"
+            :multiple="multiple"
+            :disabled="disabled"
+            :placeholder="t(placeholder || 'component.common.type')"
+            :itemLoadingMethod="props.tree ? undefined : loadByUris"
+            :searchMethod="props.tree ? undefined : searchTypes"
+            @select="validator?.validate(); $emit('select', $event)"
         />
       </div>
     </template>
@@ -37,7 +35,6 @@ import FormField from "@/components/common/forms/FormField.vue";
 import CustomTreeselect from "@/components/common/forms/CustomTreeselect.vue";
 
 const props = withDefaults(defineProps<{
-  type?: string | string[]
   baseType: string
   label?: string
   placeholder?: string
@@ -49,21 +46,19 @@ const props = withDefaults(defineProps<{
   ignoreRoot?: boolean
   unselectableTypes?: string[]
   tree?: boolean
-  selectBranchNodes?: boolean
 }>(), {
-  type: undefined,
   required: false,
   disabled: false,
   multiple: false,
   rules: undefined,
   ignoreRoot: true,
   unselectableTypes: () => [],
-  tree: false,
-  selectBranchNodes: false,
+  tree: true,
 })
 
+const type = defineModel<string | string[]>('type')
+
 const emit = defineEmits<{
-  (e: 'update:type', v?: string | string[]): void
   (e: 'select', payload: any): void
   (e: 'handlingEnterKey'): void
 }>()
@@ -77,10 +72,13 @@ type InputOpt = { id: string; label: string; children?: InputOpt[] }
 const typesOptions = ref<InputOpt[]>([])
 
 const selectedIds = computed<string[] | string>({
-  get: () => (Array.isArray(props.type) ? (props.type as string[]) : (props.type ?? '')),
+  // Tree keys are short URIs, so the incoming value is shortened to match them (it can arrive as a full URI, ex: device edit)
+  get: () => Array.isArray(type.value)
+      ? type.value.map(uri => opensilex.getShortUri(uri))
+      : (type.value ? opensilex.getShortUri(type.value) : ''),
   set: (selectedValue) => {
-    if (props.multiple) emit('update:type', Array.isArray(selectedValue) ? selectedValue : (selectedValue ? [selectedValue] : []))
-    else emit('update:type', Array.isArray(selectedValue) ? selectedValue[0] : (selectedValue || undefined))
+    if (props.multiple) type.value = Array.isArray(selectedValue) ? selectedValue : (selectedValue ? [selectedValue] : [])
+    else type.value = Array.isArray(selectedValue) ? selectedValue[0] : (selectedValue || undefined)
   }
 })
 

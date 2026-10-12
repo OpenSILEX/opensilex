@@ -96,8 +96,7 @@ const scientificObjectToSelectOption = (so: any): SelectOption => ({
 /** Loads one page of results. `page` is zero-based. */
 async function searchParents(query: string, page: number, pageSize: number) {
   const types = getSearchTypes()
-
-  const http: any = await service.searchScientificObjects(
+  const http = await service.searchScientificObjects(
     getExperimentURI(),
     types,
     query,
@@ -135,7 +134,7 @@ async function getParentsByURI(soURIs: string[] | string) {
     return []
   }
 
-  const http: any = await service.getScientificObjectsListByUris(
+  const http = await service.searchScientificObjectsListByUris(
     getExperimentURI(),
     uris
   )

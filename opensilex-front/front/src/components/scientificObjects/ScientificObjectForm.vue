@@ -7,6 +7,10 @@
     :base-type="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
     :create-action="callScientificObjectCreation"
     :update-action="callScientificObjectUpdate"
+    :context="context"
+    @onUpdate="(payload) => emit('onUpdate', payload)"
+    @onCreate="(payload) => emit('onCreate', payload)"
+    @onSuccess="() => emit('onSuccess')"
   ></OntologyObjectForm>
 </template>
 
@@ -43,12 +47,18 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const emit = defineEmits<{
+  onUpdate: [payload: any];
+  onCreate: [payload: any];
+  onSuccess: [];
+}>();
+
 //endregion
 
 
 //#region reactive data
 //Data to track what type of OS is being created or updated
-const currentType = ref<string>(null);
+const currentType = ref<string | null>(null);
 //#endregion
 
 //#region Template refs
@@ -57,19 +67,20 @@ const modalForm = useTemplateRef<OntologyObjectFormInstance>('modalForm')
 
 //#region Public methods & Expose
 function createScientificObject(parentURI?) {
+  currentType.value = null;
 
   let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
   initOntologyObjectForm(ontologyObjectForm);
 
   // if parentURI property is set, then use this value as default isPartOf relation value
-  ontologyObjectForm.setInitHandler((relation: Ref<MultiValuedRDFObjectRelation>) => {
-    if (parentURI) {
-      if ($opensilex.Oeso.checkURIs(relation.value.property.uri, $opensilex.Oeso.IS_PART_OF)) {
-        relation.value.value = parentURI;
-        ontologyObjectForm.updateRelations();
+  ontologyObjectForm.setInitHandler(parentURI
+    ? (relation: MultiValuedRDFObjectRelation) => {
+      if ($opensilex.Oeso.checkURIs(relation.property.uri, $opensilex.Oeso.IS_PART_OF)) {
+        relation.value = parentURI;
+        return relation
       }
     }
-  });
+    : null);
   modalForm.value.showCreateForm();
 }
 
@@ -80,6 +91,8 @@ function editScientificObject(objectURI: string) {
       let ontologyObjectForm: OntologyObjectFormInstance = modalForm.value;
       let os: ScientificObjectDetailDTO = http.response.result;
 
+      // Drop any handler left by a previous "add child": it would overwrite the real parent.
+      ontologyObjectForm.setInitHandler(null);
       currentType.value = os.rdf_type;
       initOntologyObjectForm(ontologyObjectForm);
       excludeCurrentURIFromParentSelector(objectURI, ontologyObjectForm);

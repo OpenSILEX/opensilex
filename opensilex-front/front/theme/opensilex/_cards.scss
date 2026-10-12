@@ -80,7 +80,7 @@
 				    left: 30px !important;
 				    width: 100%;
 				    top: 30px;
-				    background-color: $white;
+				    background-color: var(--color-white);
 				    z-index: 4;
 				    @include box-shadow(0 2px 30px rgba(0,0,0,.08));
 				    @include border-radius(6px);
@@ -140,7 +140,7 @@
 			i {
 				font-size: 46px;
 			    line-height: 66px;
-			    color: $dark;
+			    color: var(--color-dark);
 			}
 			.card-text {
 			    color: #8f8f8f;
@@ -148,7 +148,7 @@
 			    line-height: 26px;
 			}
 			.lead {
-			    color: $dark;
+			    color: var(--color-dark);
 			    margin-bottom: 0;
 			}
 		}

@@ -46,6 +46,8 @@
           >
             <i class="bi bi-x-lg"></i>
           </n-button>
+
+          <n-button class="greenThemeColor select-side-button" :bordered="false" :disabled="isDisabled" @click="showModal">>></n-button>
         </div>
       </n-spin>
 
@@ -651,7 +653,9 @@ defineExpose({
 .select-button-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .selectedItemsArea {
@@ -659,12 +663,21 @@ defineExpose({
   min-width: 0;
   min-height: 36px;
   padding: 6px 8px;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+
+.select-side-button {
+  flex: 0 0 auto;
+  align-self: stretch;
+  height: auto;
+  border-radius: 0;
+}
+
+.greenThemeColor {
+  color: #fff;
 }
 
 .clickable {

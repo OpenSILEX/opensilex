@@ -196,7 +196,6 @@ import type { OpenSilexResponse} from "@/lib/HttpResponse";
 import DataFileForm from "@/components/data/form/DataFileForm.vue";
 import DataFilesList, {DatafileFilter} from "@/components/data/DataFilesList.vue";
 import DataFilesImagesList from "@/components/data/DataFilesImagesList.vue";
-import Button from "@/components/common/buttons/Button.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
 import DatafileProvenanceSelector from "@/components/data/DatafileProvenanceSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";

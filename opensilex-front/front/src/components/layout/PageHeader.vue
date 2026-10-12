@@ -1,6 +1,6 @@
 <template>
   <div class="page-header">
-    <opensilex-Icon v-if="hasIcon" :icon="icon" class="title-icon" />
+    <OVLIcon v-if="hasIcon" :icon="icon" class="title-icon" />
     <img v-else-if="hasImage" :src="imageSrc" class="title-image" />
 
     <div class="header-title">
@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts"> 
+import { OVLIcon } from "opensilex-vue-library";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();

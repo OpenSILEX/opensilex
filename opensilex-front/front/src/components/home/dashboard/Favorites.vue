@@ -16,7 +16,7 @@
         <ul class="fav-list">
           <li v-for="(item, index) in favorites" :key="index" class="fav-entry">
             <slot name="icon">
-                <opensilex-Icon v-if="getIcon(item.type).startsWith('fa#')" :icon="getIcon(item.type)" class="fav-icon" />
+                <OVLIcon v-if="getIcon(item.type).startsWith('fa#')" :icon="getIcon(item.type)" class="fav-icon" />
                 <i v-else :class="['fav-icon', getIcon(item.type)]"></i>
             </slot>
             <opensilex-UriLink
@@ -27,7 +27,7 @@
               :to="getLink(item.type, item.uri)"
             />
 
-            <opensilex-Button
+            <OVLButton
               :label="t('Favorites.delete')"
               icon="bi-x-lg"
               @click="removeFavorite(item.uri)"
@@ -53,6 +53,7 @@ export const FAVORITE_TYPES = [
 ];
 </script>
 <script setup lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { ref, onMounted, inject } from "vue";
 import { SecurityService } from "opensilex-security/api/security.service";
 import FavoritesHelp from "./FavoritesHelp.vue";

@@ -137,7 +137,6 @@ import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import {TableField} from "@/components/common/views/TableField";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
-import Button from "@/components/common/buttons/Button.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";

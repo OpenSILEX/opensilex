@@ -9,19 +9,19 @@
       @csvImported="onCsvImported()"
     >
       <template #icon>
-        <Icon icon="bi#bi-bullseye" class="icon-title"/>
+        <OVLIcon icon="bi#bi-bullseye" class="icon-title"/>
       </template>
       <template #help>
         <ScientificObjectImportHelp></ScientificObjectImportHelp>
       </template>
       <template #generator>
         <div class="col-12 col-md-2">
-          <Button
+          <OVLButton
             class="mr-2 greenThemeColor"
             :small="false"
             @click="templateGenerator.show()"
-            label="component.common.import-files.generate-template"
-          ></Button>
+            :label="t('component.common.import-files.generate-template')"
+          ></OVLButton>
           <OntologyCsvTemplateGenerator
             ref="templateGenerator"
             :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
@@ -47,14 +47,15 @@ import OntologyCsvTemplateGenerator from "../ontology/csv/OntologyCsvTemplateGen
 import {DescriptionGeneratorInformation} from "../../components/ontology/csv/OntologyCsvTemplateGenerator.vue";
 import GenerateEventTemplate from "../../components/events/form/csv/GenerateEventTemplate.vue";
 import {computed, inject, ref} from "vue";
-import Icon from "@/components/common/views/Icon.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import { useI18n } from "vue-i18n";
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import {MOVE_DESCRIPTION_GENERATOR_BY_HEADER} from "@/components/events/form/csv/EventTemplateConstants";
 import ScientificObjectImportHelp from "@/components/scientificObjects/ScientificObjectImportHelp.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const $store = useStore();
+const { t } = useI18n();
 
 const moveDescriptionGeneratorsPerMoveHeader: Map<string, DescriptionGeneratorInformation> = new Map([
   ["start_date_of_Location", {propertyTranslationKey: "component.scientificObjects.geometry.startHelp", required: false, example: "component.events.start-example"}],

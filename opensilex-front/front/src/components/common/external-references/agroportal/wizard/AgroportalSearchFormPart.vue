@@ -31,7 +31,7 @@
         <div class="mb-2 fw-bold d-flex align-items-center justify-content-between">
         <span>{{ t('AgroportalSearchFormPart.selected-term') }}</span>
 
-        <opensilex-Button
+        <OVLButton
           v-if="selectedTerm"
           @click="clearSelectedTerm"
           icon="fa#trash-alt"
@@ -55,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton } from "opensilex-vue-library";
 import { ref, computed, watch, inject, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'

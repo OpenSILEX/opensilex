@@ -2,7 +2,7 @@
   <div class="flex justify-between items-center">
     <h4>
       <slot name="icon">
-        <Icon :icon="icon" class="icon-title" v-if="icon" />
+        <OVLIcon :icon="icon" class="icon-title" v-if="icon" />
       </slot>
       {{ title }}
     </h4>
@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 
 
 const props = withDefaults(

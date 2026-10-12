@@ -58,7 +58,7 @@
                     @click="() => deprecatedDocument(data.item.uri)"
                     :small="true"
                   />
-                  <opensilex-Button
+                  <OVLButton
                     v-if="!data.item.source"
                     component="opensilex-DocumentDetails"
                     @click="() => loadFile(data.item.uri, data.item.title, data.item.format)"
@@ -67,7 +67,7 @@
                     icon="bi-download"
                     variant="outline-info"
                   />
-                  <opensilex-Button
+                  <OVLButton
                     v-if="data.item.source"
                     @click="() => browseSource(data.item.source)"
                     :label="t('DocumentTabList.browseSource')"
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton } from "opensilex-vue-library";
 import { ref, computed, watch, onMounted, nextTick, inject, useTemplateRef } from 'vue'
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'

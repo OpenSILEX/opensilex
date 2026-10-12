@@ -10,7 +10,7 @@
       @csvImported="onCsvImported"
     >
       <template #icon>
-        <Icon icon="bi#bi-bullseye" class="icon-title" />
+        <OVLIcon icon="bi#bi-bullseye" class="icon-title" />
       </template>
 
       <template #help>
@@ -19,7 +19,7 @@
 
       <template #generator>
         <div class="col-12 col-md-2">
-          <Button
+          <OVLButton
             class="mr-2 greenThemeColor"
             :small="false"
             @click="showTemplateGenerator"
@@ -42,9 +42,8 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import OntologyCsvImporter from "@/components/ontology/csv/OntologyCsvImporter.vue";
 import GenerateEventTemplate from "@/components/events/form/csv/GenerateEventTemplate.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import EventHelpTableView from "@/components/events/form/csv/EventHelpTableView.vue";
-import Icon from "@/components/common/views/Icon.vue";
 
 const props = withDefaults(defineProps<{
   targets?: string[]

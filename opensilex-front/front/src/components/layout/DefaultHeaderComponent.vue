@@ -22,8 +22,8 @@
 
       <div class="container-fluid boxed-layout">
         <h5 v-if="iconvalue" class="header-title">
-          <opensilex-Icon :icon="iconvalue" class="title-icon" />
-          <!-- <opensilex-Icon :icon.sync="iconvalue" class="title-icon" /> -->
+          <OVLIcon :icon="iconvalue" class="title-icon" />
+          <!-- <OVLIcon :icon.sync="iconvalue" class="title-icon" /> -->
           <slot name="title">&nbsp;{{ t(titlevalue) }}</slot>
         </h5>
         <span v-else> <br> </span>
@@ -90,7 +90,7 @@
             <!-- Burger menu end -->
 
                         <!--Uri global search-->
-            <!-- <opensilex-Button
+            <!-- <OVLButton
               class="searchicon"
               :class="{ 'selected-searchicon': searchBoxIsActive }"
               :label="component.header.uriSearchHoverMessage"
@@ -98,15 +98,15 @@
               @click="$emit('uriGlobalSearch')"
             >
               URI
-            </opensilex-Button> -->
+            </OVLButton> -->
 
-            <opensilex-Button
+            <OVLButton
               label="URI"
               icon="bi-search"
               :title="t('component.header.uriSearchHoverMessage')"
               @click="$emit('uriGlobalSearch')"
               class="uri-button"
-            ></opensilex-Button>
+            ></OVLButton>
 
 
 
@@ -121,7 +121,7 @@
             <span class="headerMenuIcons">
 <!-- language button -->
 <div class="dropdown btn-group">
-  <opensilex-Button
+  <OVLButton
     class="btn settingsButton dropdown-toggle"
     id="languageDropdown2"
     data-bs-toggle="dropdown"
@@ -129,7 +129,7 @@
     :label="`language - ${language}`"
     icon="bi-globe"
     :small="true">
-  </opensilex-Button>
+  </OVLButton>
 
   <ul class="dropdown-menu" aria-labelledby="languageDropdown2">
     <li v-for="item in languages" :key="`language-${item}`">
@@ -151,7 +151,7 @@
               <!-- user button -->
 <!-- user button -->
 <div v-if="user.isLoggedIn()" class="dropdown btn-group">
-  <opensilex-Button
+  <OVLButton
     class="btn settingsButton dropdown-toggle"
     id="userDropdown2"
     data-bs-toggle="dropdown"
@@ -159,7 +159,7 @@
     :label="user.getEmail()"
     icon="bi-person"
     :small="true">
-  </opensilex-Button>
+  </OVLButton>
 
   <ul class="dropdown-menu" aria-labelledby="userDropdown2">
     <li>
@@ -180,6 +180,7 @@
 
 
 <script lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { defineComponent, ref, onMounted, onBeforeUnmount, computed , inject} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { User } from "../../models/User";
@@ -190,6 +191,7 @@ import { useStore } from 'vuex';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 export default defineComponent({
+    components: { OVLButton, OVLIcon },
     setup() {
       const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
       const { t, locale, availableLocales } = useI18n({

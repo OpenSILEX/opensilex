@@ -39,13 +39,13 @@
         <slot>Nothing to show here</slot>
 
         <n-space justify="end" class="mt-2">
-          <Button
+          <OVLButton
             class="resetButton"
             :label="t('component.common.search.clear-button')"
             icon="bi-x-lg"
             @click="emit('reset')"
           />
-          <Button
+          <OVLButton
             class="greenThemeColor"
             :label="t('component.common.search.search-button')"
             icon="bi-search"
@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton } from "opensilex-vue-library";
 import {NButton, NForm, NLayoutSider, NSpace} from "naive-ui";
 import {useI18n} from "vue-i18n";
 

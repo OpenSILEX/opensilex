@@ -48,7 +48,7 @@
                 role="button"
                 class="m-2 cardAnnotationIcon"
               >
-                <opensilex-Icon icon="fa#pencil-alt" />
+                <OVLIcon icon="fa#pencil-alt" />
               </div>
             </template>
             {{ t('ImageSingle.annotate') }}
@@ -61,7 +61,7 @@
                 role="button"
                 class="m-2 cardAdvancedSearchIcon"
               >
-                <opensilex-Icon v-if="!detailOpen" icon="fa#eye" />
+                <OVLIcon v-if="!detailOpen" icon="fa#eye" />
                 <i v-else class="bi bi-dash-lg"></i>
               </div>
             </template>
@@ -110,6 +110,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NCard, NCollapseTransition, NTooltip } from 'naive-ui'

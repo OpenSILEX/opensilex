@@ -1,16 +1,19 @@
 <template>
-  <Button
+  <OVLButton
     @click="$emit('click')"
     variant="outline-primary"
     :small="small"
-    :label="label"
+    :label="t(label)"
     :disabled="disabled"
     icon="fa#pencil-alt"
   />
 </template>
 
 <script setup lang="ts">
-import Button from "@/components/common/buttons/Button.vue";
+import { useI18n } from "vue-i18n";
+import { OVLButton } from "opensilex-vue-library";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   label: string;

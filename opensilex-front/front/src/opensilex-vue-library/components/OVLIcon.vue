@@ -1,12 +1,13 @@
 <template>
   <span>
-    <font-awesome-icon v-if="iconType === 'fa'" :icon="faClass" :size="size" />
+    <FontAwesomeIcon v-if="iconType === 'fa'" :icon="faClass" :size="size" />
     <i v-else-if="iconType === 'bi'" :class="bootstrapClasses"></i>
   </span>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const props = defineProps<{
   icon?: string;

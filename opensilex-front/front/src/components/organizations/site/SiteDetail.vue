@@ -4,7 +4,7 @@
     <div v-if="selected" class="card">
       <div class="card-header d-flex align-items-start justify-content-between">
         <h3 class="mb-0">
-          <Icon icon="bi#bi-clipboard" />
+          <OVLIcon icon="bi#bi-clipboard" />
           {{ t("component.common.details-label") }}
         </h3>
 
@@ -107,7 +107,7 @@ import type { OrganizationsService } from "opensilex-core/api/organizations.serv
 import DTOConverter from "../../../models/DTOConverter";
 import type OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type { SiteGetDTO, SiteUpdateDTO } from "opensilex-core/index";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import UriView from "@/components/common/views/UriView.vue";

@@ -151,9 +151,9 @@
           <!-- TRAIT BUTTON -->
           <div class="col-lg-6" id="traitButton">
             <n-form-item>
-              <Button
-                label="component.variable.trait-button"
-                helpMessage="component.variable.trait-button-help"
+              <OVLButton
+                :label="t('component.variable.trait-button')"
+                :helpMessage="t('component.variable.trait-button-help')"
                 @click="showTraitForm"
                 :small="false"
                 icon="fa#globe-americas"
@@ -302,7 +302,7 @@ import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
 import FormSelector from '@/components/common/forms/FormSelector.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
-import Button from '@/components/common/buttons/Button.vue'
+import { OVLButton } from "opensilex-vue-library";
 import WizardForm from '@/components/common/forms/WizardForm.vue'
 import Modal from '@/components/common/views/Modal.vue'
 import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'

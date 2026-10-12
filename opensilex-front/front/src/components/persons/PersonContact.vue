@@ -12,7 +12,7 @@
         :title="t('component.person.mail-redirection')"
         @click.stop
       >
-        <opensilex-Icon icon="bi#bi-envelope" />
+        <OVLIcon icon="bi#bi-envelope" />
       </button>
     </a>
 
@@ -23,7 +23,7 @@
       :title="t('component.copyToClipboard.copyUri')"
       @click.stop.prevent="copyURI(uri)"
     >
-      <opensilex-Icon icon="bi#bi-clipboard" />
+      <OVLIcon icon="bi#bi-clipboard" />
     </button>
 
     <!-- Pop -->
@@ -68,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import copy from 'copy-to-clipboard'

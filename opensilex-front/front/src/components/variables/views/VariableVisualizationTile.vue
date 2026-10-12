@@ -63,7 +63,7 @@
           <div class="graphic-modal-header-actions">
             <!-- Period badge-->
             <n-tag v-if="period" round class="greenThemeColor">
-              <opensilex-Icon icon="fa#hourglass-half"/>
+              <OVLIcon icon="fa#hourglass-half"/>
               {{ t("component.common.date-time.period-descriptions." + period) }}
             </n-tag>
 
@@ -75,17 +75,17 @@
               @select="handleGraphicDropdownSelect"
             >
               <n-button text>
-                <opensilex-Icon icon="fa#bars" size="lg" class="dashboardGraphicMenu" />
+                <OVLIcon icon="fa#bars" size="lg" class="dashboardGraphicMenu" />
               </n-button>
             </n-dropdown>
 
             <!-- Settings button -->
-            <opensilex-Button
+            <OVLButton
               :label="t('component.facility.monitoring.settings')"
               class="settingsButton"
               icon="fa#cog"
               @click="histogramSettings.show()"
-            ></opensilex-Button>
+            ></OVLButton>
           </div>
 
           <div class="row justify-content-center">
@@ -130,6 +130,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import {NamedResourceDTOVariableModel} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
@@ -141,7 +142,7 @@ import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
 import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
-import {computed, inject, onMounted, ref, useTemplateRef, nextTick, h, resolveComponent} from "vue";
+import {computed, inject, onMounted, ref, useTemplateRef, nextTick, h} from "vue";
 import { useStore } from "vuex";
 import { useI18n } from 'vue-i18n'
 import VisualisationGraphic from "@/components/home/dashboard/VisualisationGraphic.vue";
@@ -180,23 +181,22 @@ const isDataForGraph = computed(() => {
   return !(dataSeries.value.length ===0 && calculatedDataSeries.value.length === 0)
 });
 
-const OpensilexIcon = resolveComponent("opensilex-Icon");
 
 const graphicDropdownOptions = computed(() => [
   {
     label: t("component.common.change-viewing-mode"),
     key: "scatter",
-    icon: () => h(OpensilexIcon, { icon: "fa#braille" })
+    icon: () => h(OVLIcon, { icon: "fa#braille" })
   },
   {
     label: t("component.common.fullscreen"),
     key: "fullscreen",
-    icon: () => h(OpensilexIcon, { icon: "fa#expand" })
+    icon: () => h(OVLIcon, { icon: "fa#expand" })
   },
   {
     label: t("component.datafile.download-image"),
     key: "exportPNG",
-    icon: () => h(OpensilexIcon, { icon: "fa#download" })
+    icon: () => h(OVLIcon, { icon: "fa#download" })
   }
 ]);
 //#endregion

@@ -44,21 +44,21 @@
         </template>
 
         <template #cell(state)="{ data }">
-          <Icon
+          <OVLIcon
             v-if="!isEnded(data.item)"
             icon="bi#bi-activity"
             :title="t('component.experiment.common.status.in-progress')"
             class="badge-icon badge-pill badge-info-phis p-1"
           />
 
-          <Icon
+          <OVLIcon
             v-else
             icon="bi#bi-archive"
             :title="t('component.experiment.common.status.finished')"
             class="badge-icon badge-pill p-1"
           />
 
-          <Icon
+          <OVLIcon
             v-if="data.item.is_public"
             icon="bi#bi-people"
             :title="t('component.experiment.common.status.public')"
@@ -84,7 +84,7 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DateView from "@/components/common/views/DateView.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 
 /** Props */
 const props = defineProps<{

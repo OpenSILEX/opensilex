@@ -245,7 +245,6 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import Prov from '../../ontologies/Prov'
 import PageContent from "@/components/layout/PageContent.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
-import Button from "@/components/common/buttons/Button.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DateView from "@/components/common/views/DateView.vue";

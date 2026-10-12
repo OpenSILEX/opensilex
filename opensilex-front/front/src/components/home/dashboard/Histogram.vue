@@ -12,31 +12,31 @@
         <div class="graphicOptions">
         <!-- Period badge -->
         <span v-if="period" class="badge rounded-pill greenThemeColor">
-        <opensilex-Icon icon="fa#hourglass-half" /> {{ t("component.common.period-descriptions." + period) }}
+        <OVLIcon icon="fa#hourglass-half" /> {{ t("component.common.period-descriptions." + period) }}
         </span>
 
 
         <!-- Dropdown menu -->
         <div class="dropdown">
           <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <opensilex-Icon icon="fa#bars" size="lg" class="dashboardGraphicMenu" />
+            <OVLIcon icon="fa#bars" size="lg" class="dashboardGraphicMenu" />
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <li>
                 <a class="dropdown-item" href="#" @click="scatter">
-                <opensilex-Icon icon="fa#braille" />
+                <OVLIcon icon="fa#braille" />
                 {{ t("component.common.change-viewing-mode") }}
                 </a>
             </li>
             <li>
                 <a class="dropdown-item" href="#" @click="fullscreen">
-                <opensilex-Icon icon="fa#expand" />
+                <OVLIcon icon="fa#expand" />
                 {{ t("component.common.fullscreen") }}
                 </a>
             </li>
             <li>
                 <a class="dropdown-item" href="#" @click="exportPNG">
-                <opensilex-Icon icon="fa#download" />
+                <OVLIcon icon="fa#download" />
                 {{ t("component.datafile.download-image") }}
                 </a>
             </li>
@@ -44,8 +44,8 @@
         </div>
 
         <!-- Periods & Devices selection button -->
-        <opensilex-Button class="btn settingsButton" @click="histogramSettings.show()" :label="t('component.facility.monitoring.settings')" icon="fa#cog" :small="true">
-        </opensilex-Button>
+        <OVLButton class="btn settingsButton" @click="histogramSettings.show()" :label="t('component.facility.monitoring.settings')" icon="fa#cog" :small="true">
+        </OVLButton>
         </div>
       </template>
 
@@ -80,6 +80,7 @@
 </template>
 
 <script lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { ref, watchEffect, onMounted, inject, nextTick } from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HistogramSettings from "./HistogramSettings.vue";
@@ -100,6 +101,8 @@ export default {
   components: {
     HistogramSettings,
     VisualisationGraphic,
+    OVLButton,
+    OVLIcon,
   },
   props: {
     variableChoice: String,

@@ -5,7 +5,7 @@
       @select="displayClassDetail($event[0]?.data?.uri)">
     <template #node="{ node, selected }">
       <span v-if="classParametersByURI[node.data.uri] && classParametersByURI[node.data.uri].icon" class="item-icon">
-        <Icon :icon="classParametersByURI[node.data.uri].icon"/>&nbsp;
+        <OVLIcon :icon="classParametersByURI[node.data.uri].icon"/>&nbsp;
       </span>
       <strong v-if="selected">{{ node.title }}</strong>
       <span v-else>{{ node.title }}</span>
@@ -48,7 +48,7 @@ import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {useI18n} from "vue-i18n";
 import TreeView, {TreeViewOption} from "@/components/common/views/TreeView.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";

@@ -1,5 +1,5 @@
 <template>
-  <Button
+  <OVLButton
       @click="handleClick"
       variant="outline-warning"
       :small="true"
@@ -20,7 +20,7 @@ import type { SecurityService } from 'opensilex-security/api/security.service'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import { FAVORITE_TYPES } from '../../home/dashboard/Favorites.vue'
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton } from "opensilex-vue-library";
 
 const props = defineProps<{
   uri: string

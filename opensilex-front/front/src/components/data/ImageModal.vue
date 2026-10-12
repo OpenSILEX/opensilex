@@ -10,7 +10,7 @@
       <div class="imageModalHeader">
         <i>
           <h4 class="imageModalTitle">
-            <opensilex-Icon icon="fa#image" />
+            <OVLIcon icon="fa#image" />
             {{ t('ImageModal.title') }}
           </h4>
         </i>
@@ -37,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NModal, NButton } from 'naive-ui'

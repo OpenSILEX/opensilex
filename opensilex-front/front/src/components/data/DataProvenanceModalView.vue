@@ -11,7 +11,7 @@
         <div class="modalHeaderLeft">
           <i>
             <h4 class="modalTitle">
-              <opensilex-Icon icon="fa#eye" />
+              <OVLIcon icon="fa#eye" />
             </h4>
           </i>
         </div>
@@ -51,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NModal, NButton } from 'naive-ui'

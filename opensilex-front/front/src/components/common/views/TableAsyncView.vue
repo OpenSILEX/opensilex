@@ -8,7 +8,7 @@
       >
         <div>
           <h3 class="d-inline me-2">
-            <Icon
+            <OVLIcon
               :icon="iconNumberOfSelectedRow"
               class="title-icon"
             />
@@ -111,7 +111,7 @@ import type HttpResponse from '../../../lib/HttpResponse';
 import { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider } from 'naive-ui';
 import LoadingOverlay from '@/components/layout/LoadingOverlay.vue';
-import Icon from '@/components/common/views/Icon.vue';
+import { OVLIcon } from "opensilex-vue-library";
 import { TableField } from '@/components/common/views/TableField';
 
 export type RowWithData<T> = {

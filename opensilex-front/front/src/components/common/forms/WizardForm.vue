@@ -13,7 +13,7 @@
         {{ editMode ? t(editTitle) : t(createTitle) }}
       </div>
 
-      <Button
+      <OVLButton
         class="greenThemeColorText wizard-help-btn"
         @click="startCurrentStepTutorial"
         :small="true"
@@ -21,16 +21,16 @@
         :label="t('component.tutorial.name')"
       >
         <template v-slot:icon>
-          <Icon icon="fa#question" class="tutoriel-button-icon" />
+          <OVLIcon icon="fa#question" class="tutoriel-button-icon" />
         </template>
-      </Button>
+      </OVLButton>
     </div> -->
     <!-- ----------------------------------------- -->
     <template #header>
       <div class="flex justify-between items-center">
         <h4>
           <slot name="icon">
-            <Icon :icon="icon" class="icon-title" />
+            <OVLIcon :icon="icon" class="icon-title" />
           </slot>
           {{ translatedTitle }}
         </h4>
@@ -119,7 +119,7 @@ import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 
 export type WizardStep = {
   component: any

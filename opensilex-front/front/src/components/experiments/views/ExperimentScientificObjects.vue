@@ -119,7 +119,7 @@
             <n-card class="treePanel">
               <div class="card-header">
                 <h3 class="d-inline">
-                  <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
+                  <OVLIcon icon="bi#bi-bullseye" class="title-icon"></OVLIcon>
                   {{ t("component.experiment.selected-scientific-object" +
                     "") }}
                 </h3>&nbsp;
@@ -209,7 +209,7 @@
 
             <n-card v-if="selected" class="selectedCard">
               <h5>
-                <Icon icon="bi#bi-bullseye" class="title-icon"></Icon>
+                <OVLIcon icon="bi#bi-bullseye" class="title-icon"></OVLIcon>
                 <slot name="name">&nbsp;{{ selected.name }}</slot>
               </h5>
 
@@ -281,7 +281,7 @@ import {PositionsService} from "opensilex-core/api/positions.service";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 import TreeViewAsync from "@/components/common/views/TreeViewAsync.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";

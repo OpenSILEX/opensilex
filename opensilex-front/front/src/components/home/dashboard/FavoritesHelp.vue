@@ -6,7 +6,7 @@
       </header>
 
       <p>{{ t("FavoritesHelp.body") }}
-      <opensilex-Icon icon="fa#star" class="sm" /></p>
+      <OVLIcon icon="fa#star" class="sm" /></p>
 
       <div class="modal-footer">
         <button type="button" class="btn greenThemeColor" @click="hide">
@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 

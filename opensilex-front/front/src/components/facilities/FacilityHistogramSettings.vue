@@ -8,7 +8,7 @@
         <!-- Header -->
         <div class="modal-header">
           <h4 class="modal-title">
-            <Icon icon="fa#cog" />
+            <OVLIcon icon="fa#cog" />
             {{ t("component.common.graphs.settings") }}
           </h4>
           <button type="button" class="btn-close" @click="hide"></button>
@@ -67,7 +67,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {inject, onMounted, ref} from "vue";
 import DatePeriodPicker, { Period } from "@/components/common/forms/DatePeriodPicker.vue";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

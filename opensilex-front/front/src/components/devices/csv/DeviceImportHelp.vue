@@ -2,12 +2,12 @@
   <div class="table-responsive-xl">
     <p @click="visible = !visible" style="cursor: pointer">
       <strong>{{ t('component.common.import-files.expected-format') }} </strong>
-      <opensilex-Icon
+      <OVLIcon
         v-if="!visible"
         icon="fa#eye"
         class="DeviceImportHelpEyeIcon"
       />
-      <opensilex-Icon
+      <OVLIcon
         v-else
         icon="fa#eye-slash"
         class="DeviceImportHelpEyeIcon"
@@ -97,6 +97,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'

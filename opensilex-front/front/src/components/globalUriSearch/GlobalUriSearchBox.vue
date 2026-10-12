@@ -14,7 +14,7 @@
           </button>
         </div>
       </div>
-      <opensilex-Button
+      <OVLButton
         :label="t('component.common.close')"
         icon="bi-x"
         class="closeResultBox"
@@ -40,6 +40,7 @@
 </template>
 
 <script lang="ts" setup>
+import { OVLButton } from "opensilex-vue-library";
 import { ref, computed, onMounted, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import { URIGlobalSearchDTO } from "opensilex-core/index";

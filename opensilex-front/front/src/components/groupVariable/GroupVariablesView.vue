@@ -55,7 +55,7 @@
       <!-- Carte Variables du groupe selectionné -->
       <opensilex-Card v-if="selected.variables?.length" :noFooter="true">
         <template #title>
-            <opensilex-Icon icon="fa#vials"></opensilex-Icon>
+            <OVLIcon icon="fa#vials"></OVLIcon>
             {{ t("component.menu.variables") }}
         </template>
         <template #body>
@@ -96,6 +96,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import {computed, h, inject, nextTick, onBeforeMount, onMounted, ref, resolveComponent, watch} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {NamedResourceDTO, VariablesService} from 'opensilex-core/index';

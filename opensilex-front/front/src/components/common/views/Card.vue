@@ -5,7 +5,7 @@
       <h3 class="capitalize-first-letter">
       <!-- si le parent passe une propriété "title" -->
         <slot name="title">
-          <opensilex-Icon
+          <OVLIcon
             v-if="icon && icon.startsWith('fa#')"
             :icon="icon"
             class="icon-title"
@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
  
 import { useI18n } from 'vue-i18n';
 

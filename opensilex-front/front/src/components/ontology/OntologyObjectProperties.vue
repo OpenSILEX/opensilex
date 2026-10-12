@@ -33,9 +33,9 @@
                 <span class="mr-3">
                     {{ t("component.ontology.property.properties-targeting-someName", { name: selected.name}) }}
                 </span>
-        <opensilex-Icon
+        <OVLIcon
           :icon="incomingPropertiesOpen ? 'fa#chevron-down' : 'fa#chevron-right'"
-        ></opensilex-Icon>
+        ></OVLIcon>
       </div>
       <div
         v-show="incomingPropertiesOpen"
@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";

@@ -161,7 +161,7 @@
               :small="true"
             />
 
-            <opensilex-Button
+            <OVLButton
               v-if="!data.item.source"
               component="opensilex-DocumentDetails"
               @click="() => loadFile(data.item.uri, data.item.title, data.item.format)"
@@ -170,7 +170,7 @@
               icon="bi-download"
               variant="outline-info"
             />
-            <opensilex-Button
+            <OVLButton
               v-if="data.item.source"
               @click="() => browseSource(data.item.source)"
               label="component.document.browseSource"
@@ -196,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton } from "opensilex-vue-library";
 import { computed, inject, nextTick, onMounted, ref, useTemplateRef, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'

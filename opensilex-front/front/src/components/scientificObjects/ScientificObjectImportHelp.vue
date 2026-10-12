@@ -2,8 +2,8 @@
   <div>
     <p @click="visible = !visible" style="cursor: pointer">
       <strong>{{ t("component.common.import-files.expected-format") }} </strong>
-      <Icon v-if="!visible" icon="fa#eye" class="ScientificObjectImportHelpEyeIcon" />
-      <Icon v-if="visible" icon="fa#eye-slash" class="ScientificObjectImportHelpEyeIcon" />
+      <OVLIcon v-if="!visible" icon="fa#eye" class="ScientificObjectImportHelpEyeIcon" />
+      <OVLIcon v-if="visible" icon="fa#eye-slash" class="ScientificObjectImportHelpEyeIcon" />
     </p>
 
     <div v-show="visible" class="mt-2">
@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import { useI18n } from "vue-i18n";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 
 const {t} = useI18n();
 

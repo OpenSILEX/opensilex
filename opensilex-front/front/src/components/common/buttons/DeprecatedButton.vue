@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Button
+  <OVLButton
     @click="$emit('click')"
     variant="outline-info"
     :small="small"
@@ -8,14 +8,15 @@
   >
     <template v-slot:icon>
     <span>
-        <opensilex-Icon v-if="!deprecated" icon="bi#bi-dash-circle" />
-        <opensilex-Icon v-else icon="bi#bi-plus-circle" />
+        <OVLIcon v-if="!deprecated" icon="bi#bi-dash-circle" />
+        <OVLIcon v-else icon="bi#bi-plus-circle" />
     </span>
     </template>
-  </opensilex-Button>
+  </OVLButton>
 </template>
 
 <script setup lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { computed, defineProps, defineEmits } from 'vue'
 import { useI18n } from 'vue-i18n'
 

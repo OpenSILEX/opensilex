@@ -2,7 +2,7 @@
   <div v-if="selected && selected.uri" class="card">
     <div class="card-header">
       <h3 class="mb-0 d-flex align-items-center">
-        <opensilex-Icon icon="bi#bi-clipboard" class="me-2" />
+        <OVLIcon icon="bi#bi-clipboard" class="me-2" />
         {{ $t("component.common.details-label") }}
       </h3>
     </div>
@@ -28,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { defineProps } from 'vue';
 
 const props = defineProps<{

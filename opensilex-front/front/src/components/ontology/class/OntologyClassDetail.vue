@@ -50,24 +50,24 @@
           </div>
 
           <div class="col-lg-8">
-            <Button
+            <OVLButton
                 v-if="user.isAdmin()"
                 @click="showClassPropertyForm"
                 class="greenThemeColor addPropertyButton"
                 icon="ik#ik-plus"
                 :small="false"
                 :label="t('component.ontology.class.detail.addProperty')"
-                helpMessage="component.ontology.class.detail.add-property-help"
-            ></Button>
+                :helpMessage="t('component.ontology.class.detail.add-property-help')"
+            ></OVLButton>
             &nbsp;
-            <Button
+            <OVLButton
                 v-if="user.isAdmin()"
                 @click="startSetPropertiesOrder"
                 class="greenThemeColor"
                 icon="fa#pencil-alt"
                 :small="false"
                 :label="t('component.ontology.class.detail.setPropertiesOrder')"
-            ></Button>
+            ></OVLButton>
           </div>
         </div>
 
@@ -147,7 +147,7 @@ import TextView from "@/components/common/views/TextView.vue";
 import Card from "@/components/common/views/Card.vue";
 import StringView from "@/components/common/views/StringView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton } from "opensilex-vue-library";
 import OntologyClassPropertyForm from "@/components/ontology/class/OntologyClassPropertyForm.vue";
 import {OntologyService} from "../../../../../../opensilex-core/front/src/lib";
 

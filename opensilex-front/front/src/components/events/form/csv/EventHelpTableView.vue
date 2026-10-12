@@ -2,12 +2,12 @@
   <div class="table-responsive-xl">
     <p @click="visible = !visible" style="cursor: pointer">
       <strong>{{ t('EventHelpTableView.expected-format') }} </strong>
-      <opensilex-Icon
+      <OVLIcon
         v-if="!visible"
         icon="fa#eye"
         class="EventHelpTableViewHelpEyeIcon"
       />
-      <opensilex-Icon
+      <OVLIcon
         v-else
         icon="fa#eye-slash"
         class="EventHelpTableViewHelpEyeIcon"
@@ -111,6 +111,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref, inject } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'

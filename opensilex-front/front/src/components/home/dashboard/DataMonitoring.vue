@@ -13,7 +13,7 @@
 
             <!-- Expériences -->
             <span class="expe">
-              <opensilex-Icon icon="bi#bi-layers"/>
+              <OVLIcon icon="bi#bi-layers"/>
               <span>
                 {{ nbExperiments }} ({{ deltaExperiments }}) 
                 <a href="/app/experiments" class="metricsElementTitle" :title="t('DataMonitoring.redirectionToExpe')">
@@ -26,7 +26,7 @@
             <!-- <span v-if="deltaScientificObjects.includes('+')" id="popover-so" class="so" > -->
             <span v-show="deltaScientificObjects.includes('+')" id="popover-so" class="so">
 
-              <opensilex-Icon icon="bi#bi-bullseye"/>
+              <OVLIcon icon="bi#bi-bullseye"/>
               <span 
                 ref="popoverTarget"
                 class="stats-underline"
@@ -44,7 +44,7 @@
             </span>
             
             <!-- <span v-else>
-              <opensilex-Icon icon="bi#bi-bullseye"/>
+              <OVLIcon icon="bi#bi-bullseye"/>
               <span>
                 {{ nbScientificObjects }} ({{ deltaScientificObjects }}) 
                 <a href="/app/scientific-objects" :title="t('DataMonitoring.redirectionToOS')" class="metricsElementTitle">
@@ -55,7 +55,7 @@
 
             <!-- Données -->
             <span class="data">
-              <opensilex-Icon icon="bi#bi-bar-chart"/>
+              <OVLIcon icon="bi#bi-bar-chart"/>
               <span>
                 {{ nbData }} ({{ deltaData }})
                 <a href="/app/data" class="metricsElementTitle" :title="t('DataMonitoring.redirectionToData')"> 
@@ -96,6 +96,7 @@
 </template>
 
 <script lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref, computed, onMounted, watch, getCurrentInstance, nextTick, inject } from "vue";
 import { Popover } from "bootstrap";
 import { MetricsService } from "opensilex-core/api/metrics.service";
@@ -107,7 +108,7 @@ import { useI18n } from "vue-i18n";
 import LoadingOverlay from "@/components/layout/LoadingOverlay.vue";
 
 export default {
-  components: {LoadingOverlay},
+  components: {LoadingOverlay, OVLIcon},
   setup() {
     const instance = getCurrentInstance();
     const $opensilex= inject<OpenSilexVuePlugin>("$opensilex");

@@ -34,7 +34,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {NCheckbox, NTree} from "naive-ui";
 
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 import Overlay from "@/components/layout/Overlay.vue";
 
 const store = useStore();
@@ -364,7 +364,7 @@ function handleSelectedKeys(
 function renderSwitcherIcon(
     info: { expanded: boolean }
 ): VNodeChild {
-  return h(Icon, {
+  return h(OVLIcon, {
     icon: info.expanded
         ? "fa#chevron-down"
         : "fa#chevron-right",

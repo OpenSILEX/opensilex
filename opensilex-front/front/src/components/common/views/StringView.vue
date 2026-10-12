@@ -18,7 +18,7 @@
             :class="'uri-copy ' + (props.underlineTextForCopy ? 'uri-display-none' : 'uri-copy-string')"
             :title="t(props.copyTextMessage)"
           >
-            <opensilex-Icon icon="bi#bi-clipboard" />
+            <OVLIcon icon="bi#bi-clipboard" />
           </button>
         </a>
       </span>
@@ -34,6 +34,7 @@
 </template>
 
 <script lang="ts" setup>
+import { OVLIcon } from "opensilex-vue-library";
 import { inject, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import copy from 'copy-to-clipboard';

@@ -13,7 +13,7 @@
               <i>
                 <h4 class="mb-0">
                   <slot name="icon">
-                    <opensilex-Icon icon="fa#eye" class="icon-title" />
+                    <OVLIcon icon="fa#eye" class="icon-title" />
                   </slot>
                   <span>{{ t(title) }}</span>
                 </h4>
@@ -172,6 +172,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref, inject } from 'vue'
 import { NModal, NCard, NUpload, NUploadDragger } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'

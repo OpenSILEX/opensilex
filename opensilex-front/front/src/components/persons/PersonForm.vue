@@ -38,8 +38,8 @@
                         :placeholder="t('component.person.orcid-placeholder')"
             ></input-form>
 
-            <Button
-                label="component.person.load-orcid-infos"
+            <OVLButton
+                :label="t('component.person.load-orcid-infos')"
                 :disabled="! validOrcid"
                 :class=" 'orcid-button ' + (validOrcid ? 'greenThemeColor' : 'btn-secondary') "
                 @click="onShowOrcidModalButtonClick()"
@@ -137,7 +137,7 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import FormField from "@/components/common/forms/FormField.vue";
 import {NForm, NFormItem} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton } from "opensilex-vue-library";
 import OrcidSuggestionModal, {Option, orcidSuggestionForm} from "@/components/persons/OrcidSuggestionModal.vue";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {VueTelInput} from "vue-tel-input";

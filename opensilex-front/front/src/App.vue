@@ -41,13 +41,13 @@
         >
           <span class="notificationText" v-html="t(notificationMessageDisplayed)"></span>
           <span class="notificationButtonContainer">
-              <opensilex-Button
-                  label="component.common.close"
+              <OVLButton
+                  :label="t('component.common.close')"
                   icon="bi-x"
                   :small="true"
                   class="closeNotificationButton"
                   @click="closeNotification()"
-              ></opensilex-Button>
+              ></OVLButton>
             </span>
         </div>
 
@@ -88,6 +88,7 @@
 </template>
 
 <script setup>
+import { OVLButton } from "opensilex-vue-library";
 import {ref, computed, onMounted, watch, inject, getCurrentInstance} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import {useStore} from 'vuex';

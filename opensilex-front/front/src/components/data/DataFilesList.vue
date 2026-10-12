@@ -43,16 +43,16 @@
           </strong>
 
 
-          <opensilex-Button
+          <OVLButton
             :small="true"
             @click="loadTotalCount"
-            label="component.common.list.pagination.showTotalCount"
+            :label="t('component.common.list.pagination.showTotalCount')"
             class="totalCountDetailButton"
           >
             <template v-slot:icon>
-              <opensilex-Icon icon="fa#eye" />
+              <OVLIcon icon="fa#eye" />
             </template>
-          </opensilex-Button>
+          </OVLButton>
         </div>
 
         <div v-else>
@@ -115,7 +115,7 @@
 
       <template #cell(actions)="{ data }">
         <n-button-group size="small">
-          <opensilex-Button
+          <OVLButton
             :disabled="!images_rdf_types.includes(data.item.rdf_type)"
             component="opensilex-DocumentDetails"
             @click="showImage(data.item)"
@@ -130,7 +130,7 @@
             :label="t('DataFilesList.details')"
             :small="true"
           />
-          <opensilex-Button
+          <OVLButton
             @click="deleteDatafile(data.item.uri)"
             variant="outline-danger"
             :small="true"
@@ -165,6 +165,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { computed, inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'

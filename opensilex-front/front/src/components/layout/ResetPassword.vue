@@ -40,20 +40,20 @@
                 :placeholder="t('component.account.form-password-placeholder')"
             ></InputForm>
           </n-form-item>
-          <Button
+          <OVLButton
               variant="primary"
               :label="t('component.reset-password.submit')"
               @click="submit"
-          ></Button>
+          ></OVLButton>
         </n-form>
         <div v-else>
           <h4>{{ t('component.reset-password.error.bad-token') }}</h4>
           <p>{{ t('component.reset-password.error.bad-token-info') }}</p>
-          <Button
+          <OVLButton
               variant="secondary"
               :label="t('component.reset-password.return')"
               @click="router.push({ path: '/' })"
-          ></Button>
+          ></OVLButton>
         </div>
       </div>
       <div class="col"></div>
@@ -70,7 +70,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {FormItemRule, FormRules, NForm, NFormItem} from "naive-ui";
 import InputForm from "@/components/common/forms/InputForm.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton } from "opensilex-vue-library";
 
 
 //#region public

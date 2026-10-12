@@ -3,7 +3,7 @@
     <span class="field-view-title">{{ t(label) }}:</span>
     <span class="static-field-line">
       <span v-if="value">
-        <Icon :icon="value"></Icon>
+        <OVLIcon :icon="value"></OVLIcon>
         &nbsp;({{ value }})
       </span>
       <br v-else />
@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import {useI18n} from "vue-i18n";
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 
 var { t } = useI18n();
 

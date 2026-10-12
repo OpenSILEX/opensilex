@@ -8,7 +8,7 @@
     >
       <template #header>
         <div class="d-flex align-items-center gap-2">
-          <opensilex-Icon icon="bi#bi-download" />
+          <OVLIcon icon="bi#bi-download" />
           <h4 class="mb-0">{{ t('ExportDataFileModal.export') }}</h4>
         </div>
       </template>
@@ -72,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {

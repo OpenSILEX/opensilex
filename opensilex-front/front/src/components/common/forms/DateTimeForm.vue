@@ -22,7 +22,7 @@
           @click="clear"
           aria-label="clear"
         >
-          <opensilex-Icon icon="fa#times" />
+          <OVLIcon icon="fa#times" />
         </n-button>
       </n-input-group>
     </template>
@@ -30,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NDatePicker, NInputGroup, NButton } from 'naive-ui'

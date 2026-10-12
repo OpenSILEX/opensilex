@@ -19,7 +19,8 @@
         "paths": {
             "@/*": [  "src/*" ],
             "opensilex-security/*": ["../../opensilex-security/front/src/*"],
-            "opensilex-core/*": ["../../opensilex-core/front/src/*"]
+            "opensilex-core/*": ["../../opensilex-core/front/src/*"],
+            "opensilex-vue-library": ["src/opensilex-vue-library"]
         },
         "lib": [
             "esnext",

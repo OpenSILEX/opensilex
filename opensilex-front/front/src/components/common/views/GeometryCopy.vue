@@ -7,7 +7,7 @@
         @click.prevent.stop="copyGeometry(wktValue(value), 'WKT')"
       >
         {{ t('component.geometryWKT') }}
-        <opensilex-Icon icon="bi#bi-copy" />
+        <OVLIcon icon="bi#bi-copy" />
       </span>
 
       <span
@@ -16,13 +16,14 @@
         @click.prevent.stop="copyGeometry(geoJsonValue(value), 'GeoJSON')"
       >
         {{ t('component.geometryGeoJSON') }}
-        <opensilex-Icon icon="bi#bi-copy" />
+        <OVLIcon icon="bi#bi-copy" />
       </span>
     </div>
   </opensilex-StringView>
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { stringify } from 'wkt';

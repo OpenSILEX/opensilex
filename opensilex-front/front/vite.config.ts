@@ -9,7 +9,8 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '@': resolve(import.meta.dirname, 'src'),
       'opensilex-core': resolve(import.meta.dirname, '../../opensilex-core/front/src'),
-      'opensilex-security': resolve(import.meta.dirname, '../../opensilex-security/front/src')
+      'opensilex-security': resolve(import.meta.dirname, '../../opensilex-security/front/src'),
+      'opensilex-vue-library': resolve(import.meta.dirname, 'src/opensilex-vue-library')
     },
   },
 

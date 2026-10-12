@@ -6,7 +6,7 @@
         <!-- Header -->
         <div class="modal-header">
           <h4 class="modal-title">
-            <opensilex-Icon icon="fa#cog" />
+            <OVLIcon icon="fa#cog" />
             {{ t("component.common.graphs.settings") }}
           </h4>
           <button type="button" class="btn-close" @click="hide"></button>
@@ -76,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLIcon } from "opensilex-vue-library";
 import { ref, computed  } from "vue";
 import { useI18n } from "vue-i18n";
 

@@ -10,7 +10,7 @@
       @csvImported="onCsvImported"
     >
       <template #icon>
-        <opensilex-Icon icon="bi#bi-bullseye" class="icon-title" />
+        <OVLIcon icon="bi#bi-bullseye" class="icon-title" />
       </template>
 
       <template #help>
@@ -19,7 +19,7 @@
 
       <template #generator>
         <div class="col-12 col-md-2">
-          <opensilex-Button
+          <OVLButton
             class="me-2 greenThemeColor"
             :small="false"
             icon
@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { inject, ref } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'

@@ -1,36 +1,39 @@
 <template>
-  <Button
+  <OVLButton
     v-if="!automaticToogle"
     @click="$emit('click', {})"
     variant="outline-success"
     :small="small"
-    :label="label"
+    :label="t(label)"
     :disabled="disabled"
   >
     <template #icon>
-      <opensilex-Icon v-if="!detailVisible" icon="fa#eye" />
-      <opensilex-Icon v-else icon="fa#eye-slash" />
+      <OVLIcon v-if="!detailVisible" icon="fa#eye" />
+      <OVLIcon v-else icon="fa#eye-slash" />
     </template>
-  </Button>
+  </OVLButton>
 
-  <Button
+  <OVLButton
     v-else
     @click="automaticToogleClick"
     variant="outline-success"
     :small="small"
-    :label="label"
+    :label="t(label)"
     :disabled="disabled"
   >
     <template #icon>
-      <opensilex-Icon v-if="automaticSwitch" icon="fa#eye" />
-      <opensilex-Icon v-else icon="fa#eye-slash" />
+      <OVLIcon v-if="automaticSwitch" icon="fa#eye" />
+      <OVLIcon v-else icon="fa#eye-slash" />
     </template>
-  </Button>
+  </OVLButton>
 </template>
 
 <script lang="ts" setup>
 import { ref }  from 'vue';
-import Button from "@/components/common/buttons/Button.vue";
+import { useI18n } from "vue-i18n";
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   label: string;

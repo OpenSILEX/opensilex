@@ -17,7 +17,7 @@
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <Icon icon="bi#bi-clipboard" />
+        <OVLIcon icon="bi#bi-clipboard" />
       </button>
     </router-link>
 
@@ -37,7 +37,7 @@
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUrl')"
       >
-        <Icon icon="bi#bi-clipboard" />
+        <OVLIcon icon="bi#bi-clipboard" />
       </button>
     </a>
 
@@ -56,7 +56,7 @@
         class="uri-copy-visible"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <Icon icon="bi#bi-clipboard" />
+        <OVLIcon icon="bi#bi-clipboard" />
       </button>
     </span>
 
@@ -76,7 +76,7 @@
         class="uri-copy"
         :title="t('component.copyToClipboard.copyUri')"
       >
-        <Icon icon="bi#bi-clipboard" />
+        <OVLIcon icon="bi#bi-clipboard" />
       </button>
     </a>
   </span>
@@ -87,7 +87,7 @@ import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import copy from "copy-to-clipboard";
 
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 export type UriLinkDestination = string | { path: string };

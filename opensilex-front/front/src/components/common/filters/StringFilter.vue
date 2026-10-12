@@ -25,13 +25,14 @@
         type="button"
         @click="clear"
       >
-        <opensilex-Icon icon="fa#times" />
+        <OVLIcon icon="fa#times" />
       </button>
     </div>
   </form>
 </template>
 
 <script lang="ts" setup>
+import { OVLIcon } from "opensilex-vue-library";
 import { ref, watch, onMounted, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";

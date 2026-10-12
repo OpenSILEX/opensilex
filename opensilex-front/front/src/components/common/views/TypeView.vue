@@ -2,7 +2,7 @@
   <div class="static-field">
     <span :class="['field-view-title', customClass]">{{ t("component.common.type") }}</span>
     <span class="static-field-line">
-      <Icon :icon="$opensilex?.getRDFIcon(type)" />
+      <OVLIcon :icon="$opensilex?.getRDFIcon(type)" />
        &nbsp;
       <UriLink
         v-if="copyableTypeUri"
@@ -19,7 +19,7 @@
 import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
-import Icon from "@/components/common/views/Icon.vue";
+import { OVLIcon } from "opensilex-vue-library";
 import UriLink from "@/components/common/views/UriLink.vue";
 
 const props = defineProps<{

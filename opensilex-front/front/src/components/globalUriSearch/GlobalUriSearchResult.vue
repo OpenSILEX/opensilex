@@ -17,17 +17,17 @@
       <!-- si pas de page de detail  -->
       <span v-else class="data-uri-details">
         <opensilex-UriView :uri="shortUri" :value="shortUri" customClass="sectionTitle"/>
-        <opensilex-Button
+        <OVLButton
           v-if="(dataDto && dataDto.uri) || isSubTypeOfEvent"
           :small="true"
           @click="handleSeeDetails"
-          label="GlobalUriSearch.seeDetails"
+          :label="t('GlobalUriSearch.seeDetails')"
           class="data-uri-details-item"
         >
           <template v-slot:icon>
-            <opensilex-Icon icon="fa#eye" />
+            <OVLIcon icon="fa#eye" />
           </template>
-        </opensilex-Button>
+        </OVLButton>
       </span>
 
       <!-- Name -->
@@ -79,6 +79,7 @@
 </template>
 
 <script setup lang="ts">
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import { ref, computed, onMounted, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {DataService} from "opensilex-core/api/data.service";

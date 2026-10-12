@@ -4,7 +4,7 @@
       <div class="flex justify-between items-center">
         <h4>
           <slot name="icon">
-            <Icon icon="bi#bi-card-checklist" class="icon-title"/>
+            <OVLIcon icon="bi#bi-card-checklist" class="icon-title"/>
           </slot>
           {{ t('component.person.orcid-suggestion.title') }}
         </h4>
@@ -76,14 +76,14 @@
 
 
     <template #footer>
-      <Button
-          label="component.common.close"
+      <OVLButton
+          :label="t('component.common.close')"
           class="btn-secondary"
           @click="onCancelButtonClick()"
       />
 
-      <Button
-          label="component.common.validateSelection"
+      <OVLButton
+          :label="t('component.common.validateSelection')"
           class="greenThemeColor"
           @click="onValidateButtonClick()"
       />
@@ -97,11 +97,10 @@ import {NCheckbox} from "naive-ui";
 import {PersonDTO} from "opensilex-security/index";
 import {useI18n} from "vue-i18n";
 import Modal from "@/components/common/views/Modal.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import { OVLButton, OVLIcon } from "opensilex-vue-library";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
-import Icon from "@/components/common/views/Icon.vue";
 
 export type Option = { id: string, label: string }
 export type orcidSuggestionForm = {

@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NModal, NButton } from 'naive-ui'

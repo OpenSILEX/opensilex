@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import { useI18n } from "vue-i18n";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 const {t} = useI18n();
 

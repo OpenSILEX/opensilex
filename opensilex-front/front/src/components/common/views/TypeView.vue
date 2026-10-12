@@ -19,7 +19,7 @@
 import { inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 
 const props = defineProps<{

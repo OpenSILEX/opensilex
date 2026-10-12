@@ -12,7 +12,7 @@
 <script setup lang="ts">
 
 import { useI18n } from "vue-i18n";
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 
 const { t } = useI18n();
 

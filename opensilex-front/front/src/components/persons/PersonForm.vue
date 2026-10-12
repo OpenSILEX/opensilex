@@ -137,7 +137,7 @@ import InputForm from "@/components/common/forms/InputForm.vue";
 import FormField from "@/components/common/forms/FormField.vue";
 import {NForm, NFormItem} from "naive-ui";
 import FormInputLabelHelper from "@/components/common/forms/FormInputLabelHelper.vue";
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import OrcidSuggestionModal, {Option, orcidSuggestionForm} from "@/components/persons/OrcidSuggestionModal.vue";
 import {requiredTrimmed, validEmail} from "@/models/FormFieldsFormatter";
 import {VueTelInput} from "vue-tel-input";

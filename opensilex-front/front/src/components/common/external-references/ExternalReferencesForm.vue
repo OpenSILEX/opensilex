@@ -160,7 +160,7 @@ import AgroportalResults from "@/components/common/external-references/agroporta
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import FormField from "@/components/common/forms/FormField.vue";
 import Card from "@/components/common/views/Card.vue";
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");

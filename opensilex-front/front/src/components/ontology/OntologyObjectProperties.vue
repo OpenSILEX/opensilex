@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";

@@ -87,7 +87,7 @@ import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import copy from "copy-to-clipboard";
 
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 
 export type UriLinkDestination = string | { path: string };

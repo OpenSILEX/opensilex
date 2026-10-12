@@ -48,7 +48,7 @@ import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "@/lib";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {useI18n} from "vue-i18n";
 import TreeView, {TreeViewOption} from "@/components/common/views/TreeView.vue";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import AddChildButton from "@/components/common/buttons/AddChildButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";

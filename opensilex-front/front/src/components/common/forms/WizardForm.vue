@@ -119,7 +119,8 @@ import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import { NModal, NSteps, NStep, NButton, NSpace } from 'naive-ui'
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
-import { OVLButton, OVLIcon } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 export type WizardStep = {
   component: any

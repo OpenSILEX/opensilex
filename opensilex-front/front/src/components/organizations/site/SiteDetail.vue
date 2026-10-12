@@ -107,7 +107,7 @@ import type { OrganizationsService } from "opensilex-core/api/organizations.serv
 import DTOConverter from "../../../models/DTOConverter";
 import type OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import type { SiteGetDTO, SiteUpdateDTO } from "opensilex-core/index";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import UriView from "@/components/common/views/UriView.vue";

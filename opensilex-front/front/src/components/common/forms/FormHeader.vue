@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import HelpButton from "@/components/common/buttons/HelpButton.vue";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 
 const props = withDefaults(

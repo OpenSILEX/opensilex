@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import {NButton, NForm, NLayoutSider, NSpace} from "naive-ui";
 import {useI18n} from "vue-i18n";
 

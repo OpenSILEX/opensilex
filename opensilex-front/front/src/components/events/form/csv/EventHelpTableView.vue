@@ -111,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { ref, inject } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'

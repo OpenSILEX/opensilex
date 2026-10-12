@@ -281,7 +281,7 @@ import {PositionsService} from "opensilex-core/api/positions.service";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import TreeViewAsync from "@/components/common/views/TreeViewAsync.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import EditButton from "@/components/common/buttons/EditButton.vue";

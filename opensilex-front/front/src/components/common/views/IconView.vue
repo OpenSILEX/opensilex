@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import {useI18n} from "vue-i18n";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 var { t } = useI18n();
 

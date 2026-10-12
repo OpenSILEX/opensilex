@@ -48,7 +48,8 @@ import {DescriptionGeneratorInformation} from "../../components/ontology/csv/Ont
 import GenerateEventTemplate from "../../components/events/form/csv/GenerateEventTemplate.vue";
 import {computed, inject, ref} from "vue";
 import { useI18n } from "vue-i18n";
-import { OVLButton, OVLIcon } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import {MOVE_DESCRIPTION_GENERATOR_BY_HEADER} from "@/components/events/form/csv/EventTemplateConstants";
 import ScientificObjectImportHelp from "@/components/scientificObjects/ScientificObjectImportHelp.vue";
 

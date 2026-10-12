@@ -111,7 +111,7 @@ import type HttpResponse from '../../../lib/HttpResponse';
 import { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import { DataTableRowKey, GlobalThemeOverrides, NDataTable, NConfigProvider } from 'naive-ui';
 import LoadingOverlay from '@/components/layout/LoadingOverlay.vue';
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { TableField } from '@/components/common/views/TableField';
 
 export type RowWithData<T> = {

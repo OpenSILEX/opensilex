@@ -49,7 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 
 const props = defineProps<{
   label: string

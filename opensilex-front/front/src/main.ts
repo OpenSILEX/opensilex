@@ -34,6 +34,8 @@ import {ModuleComponentDefinition} from '@/models/ModuleComponentDefinition'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 // Load default components
 import components from '@/components';
+// Load opensilex-vue-library components (registered as opensilex-library-*)
+import libraryComponents from 'opensilex-vue-library';
 import App from '@/App.vue';
 // Import and assignation to enable auto rebuild on ws library change (hot reload forced by server on module change ex: phis)
 import * as LATEST_UPDATE from "@/opensilex.dev";
@@ -168,6 +170,10 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 for (let componentName in components) {
   let component = components[componentName];
   app.component(componentName, component);
+}
+
+for (let componentName in libraryComponents) {
+  app.component(componentName, libraryComponents[componentName]);
 }
 
 

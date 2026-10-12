@@ -147,7 +147,7 @@ import TextView from "@/components/common/views/TextView.vue";
 import Card from "@/components/common/views/Card.vue";
 import StringView from "@/components/common/views/StringView.vue";
 import MetadataView from "@/components/common/views/MetadataView.vue";
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import OntologyClassPropertyForm from "@/components/ontology/class/OntologyClassPropertyForm.vue";
 import {OntologyService} from "../../../../../../opensilex-core/front/src/lib";
 

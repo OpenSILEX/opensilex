@@ -302,7 +302,7 @@ import TextAreaForm from '@/components/common/forms/TextAreaForm.vue'
 import FormSelector from '@/components/common/forms/FormSelector.vue'
 import FormHeader from '@/components/common/forms/FormHeader.vue'
 import FormFooter from '@/components/common/forms/FormFooter.vue'
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import WizardForm from '@/components/common/forms/WizardForm.vue'
 import Modal from '@/components/common/views/Modal.vue'
 import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/useModalFormLogic'

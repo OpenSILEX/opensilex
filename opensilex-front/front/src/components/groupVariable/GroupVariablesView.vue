@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import {computed, h, inject, nextTick, onBeforeMount, onMounted, ref, resolveComponent, watch} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {NamedResourceDTO, VariablesService} from 'opensilex-core/index';

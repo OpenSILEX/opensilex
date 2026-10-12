@@ -54,7 +54,7 @@
 import { computed }  from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 const props = defineProps<{
   returnToTitle?: string;

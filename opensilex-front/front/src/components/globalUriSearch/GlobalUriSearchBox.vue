@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import { ref, computed, onMounted, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import { URIGlobalSearchDTO } from "opensilex-core/index";

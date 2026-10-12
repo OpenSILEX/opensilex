@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts"> 
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();

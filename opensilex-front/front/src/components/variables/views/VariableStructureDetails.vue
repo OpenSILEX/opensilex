@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { defineProps } from 'vue';
 
 const props = defineProps<{

@@ -130,7 +130,8 @@
 </template>
 
 <script setup lang="ts">
-import { OVLButton, OVLIcon } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import {NamedResourceDTOVariableModel} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";

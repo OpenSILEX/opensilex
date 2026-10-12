@@ -42,7 +42,8 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import OntologyCsvImporter from "@/components/ontology/csv/OntologyCsvImporter.vue";
 import GenerateEventTemplate from "@/components/events/form/csv/GenerateEventTemplate.vue";
-import { OVLButton, OVLIcon } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import EventHelpTableView from "@/components/events/form/csv/EventHelpTableView.vue";
 
 const props = withDefaults(defineProps<{

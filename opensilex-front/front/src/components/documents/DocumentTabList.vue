@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import { ref, computed, watch, onMounted, nextTick, inject, useTemplateRef } from 'vue'
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'

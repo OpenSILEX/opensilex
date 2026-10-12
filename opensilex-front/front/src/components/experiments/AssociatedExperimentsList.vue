@@ -84,7 +84,7 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DateView from "@/components/common/views/DateView.vue";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 /** Props */
 const props = defineProps<{

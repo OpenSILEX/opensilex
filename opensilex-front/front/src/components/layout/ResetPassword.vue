@@ -70,7 +70,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {FormItemRule, FormRules, NForm, NFormItem} from "naive-ui";
 import InputForm from "@/components/common/forms/InputForm.vue";
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 
 
 //#region public

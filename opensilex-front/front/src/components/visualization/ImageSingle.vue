@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NCard, NCollapseTransition, NTooltip } from 'naive-ui'

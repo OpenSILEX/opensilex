@@ -34,7 +34,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {NCheckbox, NTree} from "naive-ui";
 
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import Overlay from "@/components/layout/Overlay.vue";
 
 const store = useStore();

@@ -20,7 +20,7 @@ import type { SecurityService } from 'opensilex-security/api/security.service'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import { FAVORITE_TYPES } from '../../home/dashboard/Favorites.vue'
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 
 const props = defineProps<{
   uri: string

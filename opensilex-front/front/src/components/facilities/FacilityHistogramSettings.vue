@@ -67,7 +67,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {inject, onMounted, ref} from "vue";
 import DatePeriodPicker, { Period } from "@/components/common/forms/DatePeriodPicker.vue";
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;

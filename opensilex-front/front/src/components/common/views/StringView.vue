@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts" setup>
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { inject, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import copy from 'copy-to-clipboard';

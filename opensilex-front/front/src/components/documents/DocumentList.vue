@@ -196,7 +196,7 @@
 </template>
 
 <script setup lang="ts">
-import { OVLButton } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
 import { computed, inject, nextTick, onMounted, ref, useTemplateRef, withDefaults } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'

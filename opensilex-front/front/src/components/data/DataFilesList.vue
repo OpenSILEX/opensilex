@@ -165,7 +165,8 @@
 </template>
 
 <script setup lang="ts">
-import { OVLButton, OVLIcon } from "opensilex-vue-library";
+import OVLButton from "opensilex-vue-library/components/OVLButton.vue";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { computed, inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'

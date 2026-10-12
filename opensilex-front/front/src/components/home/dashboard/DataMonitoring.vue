@@ -96,7 +96,7 @@
 </template>
 
 <script lang="ts">
-import { OVLIcon } from "opensilex-vue-library";
+import OVLIcon from "opensilex-vue-library/components/OVLIcon.vue";
 import { ref, computed, onMounted, watch, getCurrentInstance, nextTick, inject } from "vue";
 import { Popover } from "bootstrap";
 import { MetricsService } from "opensilex-core/api/metrics.service";

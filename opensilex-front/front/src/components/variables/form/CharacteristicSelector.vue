@@ -1,7 +1,7 @@
 <template>
   <InfiniteScrollDropdown
     ref="dropdown"
-    v-model:selected="modelSelected"
+    v-model:selected="selected"
     :fetchPage="searchCharacteristics"
     :itemLoadingMethod="loadCharacteristics"
     :conversionMethod="characteristicToSelectOption"
@@ -33,7 +33,6 @@ import InfiniteScrollDropdown from '@/components/common/forms/InfiniteScrollDrop
 const props = defineProps<{
   /** Path of the field in the parent NForm model, used for validation */
   path?: string
-  selected: string | string[] | undefined
   label?: string
   multiple?: boolean
   helpMessage?: string
@@ -45,20 +44,15 @@ const props = defineProps<{
   placeholder?: string
 }>()
 
+const selected = defineModel<string | string[] | undefined>('selected');
+
 const emit = defineEmits<{
-  (e: 'update:selected', value: any): void
   (e: 'selectionChange', option: SelectOption | SelectOption[] | undefined): void
   (e: 'handlingEnterKey'): void
 }>()
 
 const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('opensilex')!
-
-// v-model proxy
-const modelSelected = computed({
-  get: () => props.selected,
-  set: (v) => emit('update:selected', v)
-})
 
 // InfiniteScrollDropdown is a generic component, so it has no constructor type for InstanceType to
 // read. Only `refresh` is needed here, so the exposed shape is declared directly.

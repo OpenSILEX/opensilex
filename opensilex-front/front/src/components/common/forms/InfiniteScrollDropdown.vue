@@ -60,14 +60,14 @@
 
           <div v-if="!actionHandler && viewHandler" class="select-side-button">
             <n-button class="greenThemeColor" :title="detailsButtonLabel" @click="viewHandler">
-              <opensilex-Icon :icon="viewHandlerDetailsVisible ? 'fa#eye-slash' : 'fa#eye'" />
+              <Icon :icon="viewHandlerDetailsVisible ? 'fa#eye-slash' : 'fa#eye'" />
             </n-button>
           </div>
 
           <div v-else-if="actionHandler" class="select-side-button">
             <n-button class="greenThemeColor" @click="actionHandler">+</n-button>
             <n-button v-if="viewHandler" :title="detailsButtonLabel" @click="viewHandler">
-              <opensilex-Icon :icon="viewHandlerDetailsVisible ? 'fa#eye-slash' : 'fa#eye'" />
+              <Icon :icon="viewHandlerDetailsVisible ? 'fa#eye-slash' : 'fa#eye'" />
             </n-button>
           </div>
         </div>
@@ -85,6 +85,7 @@ import useInfiniteScrollSearch from "@/composables/useInfiniteScrollSearch";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import FormField from "@/components/common/forms/FormField.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 //#region PUBLIC
 const selectedValue = defineModel<string | string[] | null>('selected');
@@ -122,24 +123,28 @@ interface Props{
 }
 const props = withDefaults(defineProps<Props>(), {multiple: false});
 
-const emit = defineEmits(['handlingEnterKey', 'selectionChange', 'clear']);
+const emit = defineEmits<{
+  handlingEnterKey: []
+  selectionChange: [selected: SelectOption | SelectOption[] | undefined]
+  clear: []
+}>();
 //#endregion
 
-//#region Constants
+//#region Constants & non-reactive data
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const PAGE_SIZE = 20;
 const { t } = useI18n();
+// Guards against out-of-order resolutions if the selection changes while a load is in flight.
+let resolveRequestId = 0;
 //#endregion
 
-//#region Reactive Data
+//#region Reactive Data (Refs)
 /**
  * Options resolved through `itemLoadingMethod` for values that are already selected but absent
  * from the search results (typically an update form arriving with URIs but no labels).
  */
 const preselectedOptions = ref<SelectOption[]>([]);
 
-// Guards against out-of-order resolutions if the selection changes while a load is in flight.
-let resolveRequestId = 0;
 //#endregion
 
 //#region Functions
@@ -172,7 +177,7 @@ const {
   onScroll: onDropdownScroll,
   dispose
 } = useInfiniteScrollSearch<T, SelectOption, string | number>({
-  pageSize: () => props.resultLimit ?? PAGE_SIZE,
+  pageSize: props.resultLimit ?? PAGE_SIZE,
   fetchPage: (query, pageIndex, pageSize) =>
     props.fetchPage(query, pageIndex, pageSize).then(resp => ({
       result: resp.response.result ?? [],

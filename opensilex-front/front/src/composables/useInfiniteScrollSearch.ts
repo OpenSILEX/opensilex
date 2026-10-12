@@ -1,8 +1,7 @@
 import { computed, ref, shallowRef } from 'vue'
 
 export interface UseInfiniteScrollSearchOptions<TRaw, TOption, TKey> {
-  /** Page size, or a function resolving it fresh on every call (e.g. reading a prop). */
-  pageSize: number | (() => number)
+  pageSize: number
   debounceMs?: number
   /**
    * Returns the requested page. `hasNext` is optional: when the API provides it, it is
@@ -43,10 +42,6 @@ export default function useInfiniteScrollSearch<TRaw, TOption, TKey>(
     return Math.min(loadedCount.value, totalCount.value)
   })
 
-  function resolvePageSize(): number {
-    return typeof options.pageSize === 'function' ? options.pageSize() : options.pageSize
-  }
-
   async function load(reset: boolean) {
     if (isLoading.value) return
     if (!hasMoreResults.value && !reset) return
@@ -63,8 +58,7 @@ export default function useInfiniteScrollSearch<TRaw, TOption, TKey>(
         loadedCount.value = 0
       }
 
-      const pageSize = resolvePageSize()
-      const { result, total, hasNext } = await options.fetchPage(searchText.value.trim(), currentPage.value, pageSize)
+      const { result, total, hasNext } = await options.fetchPage(searchText.value.trim(), currentPage.value, options.pageSize)
 
       // Ignore a stale response if a newer request has since started (e.g. fast typing).
       if (currentRequestId !== requestId) return
@@ -83,11 +77,11 @@ export default function useInfiniteScrollSearch<TRaw, TOption, TKey>(
       // Otherwise the API's hasNext wins; the heuristic only applies when it is absent
       // (?? and not ||: an explicitly false hasNext must be respected).
       hasMoreResults.value =
-        pageSize > 0 &&
+        options.pageSize > 0 &&
         (hasNext ?? (
           totalCount.value > 0 &&
           loadedCount.value < totalCount.value &&
-          result.length === pageSize
+          result.length === options.pageSize
         ))
 
       if (result.length > 0) {

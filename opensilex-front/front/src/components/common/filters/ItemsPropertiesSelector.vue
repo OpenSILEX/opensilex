@@ -65,6 +65,11 @@ export default class ItemsPropertiesSelector extends Vue {
                   prop.uri.toString() !== "vocabulary:hasGeometry" &&
                   prop.uri.toString() !== this.$opensilex.getShortUri(this.$opensilex.Rdfs.LABEL)
               )
+            // add participatesIn property to the list of properties to export experiments infos
+            filteredProps.push({
+              uri: 'vocabulary:participatesIn',
+              name: "experiment",
+            })
               //Formatting for vue-treeSelect + display label in Camel case
               filteredProps.forEach(obj => {
                     this.optionsProps.push({

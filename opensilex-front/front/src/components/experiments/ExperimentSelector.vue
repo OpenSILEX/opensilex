@@ -51,11 +51,6 @@ const props = withDefaults(defineProps<{
 })
 
 // v-model proxy
-const experimentSelector = ref<any>(null)
-const pageSize = ref(10)
-
-const experimentsByUriCache = ref<Map<string, ExperimentGetListDTO>>(new Map())
-
 const experimentsURI = computed({
   get: () => props.experiments,
   set: (value) => emit('update:experiments', value)

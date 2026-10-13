@@ -5,52 +5,52 @@
       :model="experiment">
     <PersonSelector
         label="component.experiment.scientificSupervisors"
-        :persons.sync="experiment.scientific_supervisors"
+        v-model:persons="experiment.scientific_supervisors"
         :multiple="true"
         helpMessage="ExperimentForm.scientificSupervisors"
     ></PersonSelector>
 
     <PersonSelector
         label="component.experiment.technicalSupervisors"
-        :persons.sync="experiment.technical_supervisors"
+        v-model:persons="experiment.technical_supervisors"
         :multiple="true"
         helpMessage="ExperimentForm.technicalSupervisors"
     ></PersonSelector>
 
     <ProjectSelector
         label="component.experiment.projects"
-        :projects.sync="experiment.projects"
+        v-model:projects="experiment.projects"
         :multiple="true"
     ></ProjectSelector>
 
     <OrganizationSelector
         label="component.experiment.organizations"
-        :organizations.sync="experiment.organisations"
+        v-model:organizations="experiment.organisations"
         :multiple="true"
     ></OrganizationSelector>
 
     <FacilitySelector
         label="component.experiment.facilities"
-        :facilities.sync="experiment.facilities"
+        v-model:facilities="experiment.facilities"
         :multiple="true"
         path="facilities"
     ></FacilitySelector>
 
     <GroupSelector
         label="component.experiment.groups"
-        :groups.sync="experiment.groups"
+        v-model:groups="experiment.groups"
         :multiple="true"
     ></GroupSelector>
 
     <FundingSelector
         label="component.experiment.funding"
-        :funding.sync="experiment.funding"
+        v-model:fundinguri="experiment.funding"
         :multiple="true"
         helpMessage="ExperimentForm.funding"
     ></FundingSelector>
 
     <CheckboxForm
-        :value.sync="form.is_public"
+        v-model:value="experiment.is_public"
         label="component.experiment.public-label"
         title="component.experiment.public-title"
     ></CheckboxForm>

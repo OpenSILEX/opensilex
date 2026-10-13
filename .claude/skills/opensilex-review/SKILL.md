@@ -1,12 +1,13 @@
 ---
 name: opensilex-review
-description: Review OpenSILEX code changes - the current branch, a colleague's branch, a commit range, a merged MR or named files - on five axes (maintainability, homogeneity with the existing code, clarity, test coverage, performance), plus correctness problems found in the changed code, and report confirmed findings ranked Bloquant / Important / Suggestion / Question with path:line, the norm they break (sibling file, team guideline) and a concrete fix. Covers Java (api/bll/dal, SPARQL and Mongo DAOs, JAX-RS, migrations, JUnit 4 tests, JaCoCo coverage of the changed lines) and the Vue 2 / TypeScript front (component guidelines, i18n en/fr). Use whenever the user asks for a review, a code review, a "relecture", a "revue de code", "relis ma branche / ma MR", "est-ce que c'est mergeable", "qu'est-ce que tu penses de ces changements", "vérifie la couverture de tests", "y a-t-il des problèmes de perf", before opening a merge request, or to review a colleague's branch. Reports only; fixes only when asked.
+description: Review code changes for quality, bugs and best practices, judging the new and changed code against the OpenSILEX team's own norms - the current branch, a colleague's branch, a commit range, a merged MR or named files. Checks correctness (bugs), maintainability, homogeneity with the existing code, clarity, test coverage and performance, and reports confirmed findings ranked Bloquant / Important / Suggestion / Question with path:line, the norm they break and a concrete fix. Covers Java (api/bll/dal, SPARQL and Mongo DAOs, JAX-RS, migrations, JUnit 4 tests, JaCoCo coverage of the changed lines) and the Vue 2 / TypeScript front (component guidelines, i18n en/fr). Use whenever the user asks for a review, a code review, a "relecture", a "revue de code", "relis ma branche / ma MR", "est-ce que c'est mergeable", "vérifie la couverture de tests", "y a-t-il des bugs ou des problèmes de perf", before opening a merge request, or to review a colleague's branch. Reports only; fixes only when asked.
 ---
 
 # OpenSILEX review
 
 A review answers one question for the author: **what must change before this is merged, and why**, measured against
 what the team actually does (sibling files, Vue guidelines, team workflow rules), not a generic style guide.
+It reviews the **new code** (added and changed lines) for quality, bugs and best practices.
 Paths are relative to `.claude/skills/opensilex-review/`; run the scripts from the repository root.
 
 ## 1. Scope
@@ -47,11 +48,15 @@ For each functional file, read the hunks with context (`git diff -U15 <base> <he
 listed. When no sibling is listed or it is not the right norm, search **methods of the same role**
 (`git grep -n "delete\w*(" <head> -- '*Logic.java'`): the norm is how the team already solves the same problem.
 Then walk `references/checklist.md`:
-- **Correctness (CORR)**: does the changed code do what its name, its MR and its tests claim? Trace one realistic
+- **Correctness, i.e. bugs (CORR)**: does the changed code do what its name, its MR and its tests claim? Trace one realistic
   scenario through it (data that exists in production, an inverse relation, an empty list); check that a built query
   filters what it says. Found in the changed code: report it, first.
 - **Maintainability (MAINT)**, **Homogeneity (HOMO)**, **Clarity (CLAR)**, **Test coverage (TEST)**,
   **Performance (PERF)**: the five axes asked for.
+- **Best practices**, on the new code only: for Java, the idioms and layering rules of the project's Java release
+  (`.claude/skills/opensilex-java/references/java17-practices.md`, `naming-and-style.md` and the severity checklist of
+  `review-and-fix.md`); for the front, the Vue component guidelines and i18n en/fr. Report each finding under the axis it
+  belongs to (HOMO, MAINT, CLAR) and never ask to modernise code the change does not touch.
 
 Judge changed lines; a legacy problem on untouched lines is one "Existant" line, unless the change makes it worse.
 Before calling something duplicated or missing, search for it; before citing a sibling, open it.

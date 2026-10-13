@@ -143,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, nextTick, watch, useTemplateRef } from 'vue'
+import { computed, inject, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import {
@@ -153,7 +153,6 @@ import {
   NRadioGroup,
   NSpace
 } from 'naive-ui'
-import type { FormInst, FormItemInst } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from '@/lib/HttpResponse'
 import type {

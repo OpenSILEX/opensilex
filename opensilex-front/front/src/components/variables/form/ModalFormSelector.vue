@@ -47,7 +47,6 @@
             <i class="bi bi-x-lg"></i>
           </n-button>
 
-          <!-- Bouton d’ouverture de la modale, collé au bord droit de l’input -->
           <button
             type="button"
             class="btn greenThemeColor openModalButton"
@@ -668,6 +667,17 @@ defineExpose({
   display: flex;
   align-items: center;
   white-space: nowrap;
+}
+
+.select-side-button {
+  flex: 0 0 auto;
+  align-self: stretch;
+  height: auto;
+  border-radius: 0;
+}
+
+.greenThemeColor {
+  color: #fff;
 }
 
 .clickable {

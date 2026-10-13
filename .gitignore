@@ -52,6 +52,8 @@ opensilex-front/front/src/opensilex.dev.ts
 
 **/.vitepress/dist/
 **/.vitepress/cache/
+
+!**/.storybook/
 graft/*
 opencode.json
 dist/

@@ -14,6 +14,8 @@
     "scripts": {
         "serve": "npx vite serve --config vite.config.ts",
         "build": "vite build --config vite.config.ts",
+        "storybook": "cd src/opensilex-vue-library && storybook dev -p 6006",
+        "build-storybook": "cd src/opensilex-vue-library && storybook build",
         "lint": "vite lint",
         "check:browserlist": "yarn add caniuse-lite && yarn remove caniuse-lite",
         "check:outdated": "yarn outdated || cd .",
@@ -38,8 +40,10 @@
     },
     "devDependencies": {
         "@intlify/unplugin-vue-i18n": "^6.0.8",
+        "@storybook/vue3-vite": "^10.6.1",
         "@types/papaparse": "^5.5.2",
-        "@types/terraformer__wkt": "^2.0.3"
+        "@types/terraformer__wkt": "^2.0.3",
+        "storybook": "^10.6.1"
     },
     "eslintConfig": {
         "root": true,

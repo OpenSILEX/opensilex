@@ -68,7 +68,7 @@ import {NButton, NTooltip} from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import HttpResponse, {OpenSilexResponse} from '@/lib/HttpResponse'
 import type {DataFileGetDTO, DataService} from 'opensilex-core/index'
-import type {DataFileImageDTO} from './DataFileImageDTO'
+import type {DataFileImageDTO} from '../DataFileImageDTO'
 import ImageGrid from "@/components/visualization/ImageGrid.vue";
 import AnnotationForm from "@/components/annotations/list/form/AnnotationForm.vue";
 

@@ -77,7 +77,7 @@
             v-if="enableActions"
             #cell(actions)="{ data }"
           >
-            <div class="action-group">
+            <n-button-group size="small">
               <DetailButton
                 v-if="!modificationCredentialId || user.hasCredential(modificationCredentialId)"
                 @click="showDetails(data)"
@@ -97,7 +97,7 @@
                 :label="t('Annotation.delete')"
                 :small="true"
               />
-            </div>
+            </n-button-group>
           </template>
         </TableAsyncView>
       </template>
@@ -154,6 +154,7 @@ import AnnotationDetails from '@/components/annotations/list/form/AnnotationDeta
 import AnnotationForm from '@/components/annotations/list/form/AnnotationForm.vue';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import { TableField } from '@/components/common/views/TableField';
+import {NButtonGroup} from "naive-ui";
 
 // Props
 const props = withDefaults(

@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
@@ -26,6 +26,8 @@ export default class ExperimentForm extends Vue {
   $t: any;
 
   @Ref("wizardRef") readonly wizardRef!: any;
+  @Prop({ type: String, default: null }) readonly projectUri!: string | null;
+
 
   steps = [
     {
@@ -40,7 +42,7 @@ export default class ExperimentForm extends Vue {
     return {
       uri: undefined,
       name: "",
-      projects: [],
+      projects: this.projectUri ? [this.projectUri] : [],
       start_date: undefined,
       end_date: undefined,
       objective: "",

@@ -2,6 +2,7 @@
   <opensilex-Card label="AssociatedExperimentsList.relatedExperiments" icon="ik#ik-layers">
     
     <template v-slot:body>
+      <slot name="actions"></slot>
         <opensilex-StringFilter          
           :filter.sync="filter"
           @update="updateFilters()"
@@ -149,6 +150,10 @@ export default class AssociatedExperimentsList extends Vue {
   }
 
   updateFilters() {
+    this.tableRef.refresh();
+  }
+
+  refresh(): void {
     this.tableRef.refresh();
   }
 

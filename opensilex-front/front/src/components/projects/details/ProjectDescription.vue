@@ -104,11 +104,27 @@
           </template>
         </opensilex-Card>
         <opensilex-AssociatedExperimentsList
+            ref="associatedExperiments"
             :searchMethod="loadExperiments"
             :nameFilter.sync="experimentName"
             :debounce="300"
             :lazy="false"
-        ></opensilex-AssociatedExperimentsList>
+        >
+        <template v-slot:actions>
+          <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            label="component.experiment.search.buttons.create-experiment"
+            @click="experimentForm.showCreateForm()"
+            class="mb-3"
+          ></opensilex-CreateButton>
+        </template>
+      </opensilex-AssociatedExperimentsList>
+      <opensilex-ExperimentForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+        ref="experimentForm"
+        :project-uri="uri"
+        @onCreate="associatedExperiments.refresh()"
+      ></opensilex-ExperimentForm>
       </div>
     </div>
   </div>
@@ -122,6 +138,8 @@ import {ProjectGetDetailDTO, ProjectsService} from "opensilex-core/index";
 import {SecurityService, PersonDTO} from "opensilex-security/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import ExperimentForm from "src/components/experiments/form/ExperimentForm.vue";
+import AssociatedExperimentsList from "src/components/experiments/AssociatedExperimentsList.vue";
 
 @Component
 export default class ProjectDescription extends Vue {
@@ -139,6 +157,8 @@ export default class ProjectDescription extends Vue {
 
   @Ref("projectForm") readonly projectForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
+  @Ref("experimentForm") readonly experimentForm!: ExperimentForm;
+  @Ref("associatedExperiments") readonly associatedExperiments!: AssociatedExperimentsList;
 
   project: ProjectGetDetailDTO = null;
 

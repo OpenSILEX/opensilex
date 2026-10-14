@@ -14,6 +14,7 @@
     <PageActions
         :tabs="true"
         :returnButton="true"
+        returnTo="/experiments"
     >
       <template v-slot>
         <router-link

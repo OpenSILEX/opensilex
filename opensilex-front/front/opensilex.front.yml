@@ -309,8 +309,7 @@ routes:
     icon: bi#bi-globe
   - path: /organization/site/details/:uri
     component: opensilex-SiteDetailView
-  # Each experiment tab keeps its own top level route (the rdfType lookup only reads top level paths), whose single
-  # child is the tab component, rendered by the router-view of ExperimentView
+  # The details tab keeps its own top level route (the rdfType lookup only reads top level paths), whose single
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
     rdfType: vocabulary:Experiment
@@ -339,32 +338,23 @@ routes:
           - path: documents
             component: opensilex-DocumentTabList
             name: ExperimentScientificObjectDocuments
-  # TODO add the tab component as child once ExperimentData is migrated
-  - path: /experiment/data/:uri
-    component: opensilex-ExperimentView
-  - path: /experiment/data-visualisation/:uri
+  # Other experiment tabs, rendered by the router-view of ExperimentView
+  - path: /experiment
     component: opensilex-ExperimentView
     children:
-      - path: ''
+      - path: 'data/:uri'
+        component: opensilex-ExperimentData
+      - path: 'data-visualisation/:uri'
         component: opensilex-ExperimentDataVisualisation
-  # TODO add the tab component as child once MapView is migrated
+      - path: 'annotations/:uri'
+        component: opensilex-AnnotationList
+      - path: 'document/:uri'
+        component: opensilex-DocumentTabList
+      - path: 'factors/:uri'
+        component: opensilex-ExperimentFactors
+  # TODO add the tab component as child of /experiment once MapView is migrated
   - path: /experiment/map/:uri
     component: opensilex-ExperimentView
-  - path: /experiment/annotations/:uri
-    component: opensilex-ExperimentView
-    children:
-      - path: ''
-        component: opensilex-AnnotationList
-  - path: /experiment/document/:uri
-    component: opensilex-ExperimentView
-    children:
-      - path: ''
-        component: opensilex-DocumentTabList
-  - path: /experiment/factors/:uri
-    component: opensilex-ExperimentView
-    children:
-      - path: ''
-        component: opensilex-ExperimentFactors
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView

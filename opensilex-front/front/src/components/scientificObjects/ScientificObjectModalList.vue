@@ -9,8 +9,8 @@
   >
     <template #header>
       <div class="modal-title">
-        <i class="bi bi-search"></i>
-        {{ $t('component.project.filter-description') }}
+        <Icon icon="bi#bi-bullseye" />
+        {{ t('component.scientificObjects.modal-title') }}
       </div>
     </template>
 
@@ -18,13 +18,13 @@
       <n-layout has-sider class="so-layout">
         <SearchFiltersSidebar
           :activeFiltersCount="activeFiltersCount"
-          :filtersCollapsed="searchFiltersToggle"
+          v-model:filtersCollapsed="searchFiltersToggle"
           @refresh="refresh"
           @reset="reset"
         >
           <!-- Name -->
           <n-form-item :label="t('component.common.name')" class="compact-form-item">
-            <opensilex-StringFilter
+            <StringFilter
               :filter="filter.name"
               :placeholder="t('component.common.forms-generic-placeholders.name-placeholder')"
               class="searchFilter"
@@ -35,10 +35,11 @@
 
           <!-- Experiment -->
           <n-form-item :show-feedback="false" class="compact-form-item">
-            <opensilex-ExperimentSelector
+            <ExperimentSelector
               :multiple="false"
               :experiments="filter.experiment"
               :label="t('component.experiment.view.experiment-experiments')"
+              :placeholder="t('component.experiment.experiment-placeholder')"
               class="searchFilter"
               @update:experiments="filter.experiment = $event"
               @handlingEnterKey="refresh"
@@ -51,7 +52,7 @@
             :show-feedback="false"
             class="compact-form-item"
           >
-            <opensilex-ScientificObjectTypeSelector
+            <ScientificObjectTypeSelector
               :types="filter.types"
               :multiple="true"
               class="searchFilter"
@@ -69,7 +70,7 @@
             <n-collapse-item :title="$t('component.common.advanced-search-title')" name="adv">
               <!-- Germplasm -->
               <n-form-item :show-feedback="false" class="compact-form-item">
-                <opensilex-GermplasmSelector
+                <GermplasmSelector
                   :multiple="false"
                   :germplasm="filter.germplasm"
                   :experiment="filter.experiment"
@@ -81,7 +82,7 @@
 
               <!-- Factor levels -->
               <n-form-item :show-feedback="false" class="compact-form-item">
-                <opensilex-FactorLevelSelector
+                <FactorLevelSelector
                   :factorLevels="filter.factorLevels"
                   :multiple="true"
                   :required="false"
@@ -96,7 +97,7 @@
                 :label="t('component.scientificObjects.filters.existenceDate')"
                 :show-feedback="false"
               >
-                <opensilex-DateForm
+                <DateForm
                   :value="filter.existenceDate"
                   class="searchFilter"
                   @update:value="filter.existenceDate = $event"
@@ -110,7 +111,7 @@
                 :label="t('component.common.date-time.creationDate')"
                 :show-feedback="false"
               >
-                <opensilex-DateForm
+                <DateForm
                   :value="filter.creationDate"
                   class="searchFilter"
                   @update:value="filter.creationDate = $event"
@@ -119,7 +120,7 @@
 
               <!-- Criteria search -->
               <n-form-item :show-feedback="false">
-                <opensilex-CriteriaSearchModalCreator
+                <CriteriaSearchModalCreator
                   ref="criteriaSearchCreateModal"
                   class="searchFilter"
                   :criteria_dto="filter.criteriaDto"
@@ -134,7 +135,7 @@
 
         <!-- CONTENU -->
         <n-layout-content class="so-content">
-          <opensilex-ScientificObjectList
+          <ScientificObjectList
             ref="soList"
             :isSelectable="true"
             :noActions="true"
@@ -179,6 +180,14 @@ import {
 import CriteriaSearchModalCreator from './CriteriaSearchModalCreator.vue'
 import { useI18n } from 'vue-i18n'
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
+import ScientificObjectList from "@/components/scientificObjects/ScientificObjectList.vue";
+import DateForm from "@/components/common/forms/DateForm.vue";
+import FactorLevelSelector from "@/components/experiments/factors/FactorLevelSelector.vue";
+import GermplasmSelector from "@/components/germplasm/GermplasmSelector.vue";
+import ScientificObjectTypeSelector from "@/components/scientificObjects/ScientificObjectTypeSelector.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 type ScientificObjectFilter = {
   name: string
@@ -219,7 +228,7 @@ const soList = ref<any>(null)
 const criteriaSearchCreateModal = ref<InstanceType<typeof CriteriaSearchModalCreator> | null>(null)
 
 const visible = ref(false)
-const searchFiltersToggle = ref(false)
+const searchFiltersToggle = ref(true)
 const expandedNames = ref<string[]>([])
 
 const filter = reactive<ScientificObjectFilter>(defaultFilter())

@@ -56,7 +56,7 @@
 
             <!-- Experiments -->
             <n-form-item class="compact-form-item">
-              <opensilex-ExperimentSelector
+              <ExperimentSelector
                 :label="t('component.experiment.view.experiment-experiments')"
                 v-model:experiments="filter.experiments"
                 :multiple="true"
@@ -208,6 +208,7 @@ import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import {useRoute} from "vue-router";
 import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
 
 //#region Used Models
 interface FilterModel{

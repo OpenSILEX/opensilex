@@ -513,8 +513,14 @@ function updateSelectedDevice() {
   }
 }
 
-function editDevice(rowData: RowWithData<DeviceCreationDTO>) {
-  deviceFormRef.value?.showEditForm?.(rowData.item)
+// The list rows don't contain every field (ex: metadata), so the full device is fetched before editing
+async function editDevice(rowData: RowWithData<DeviceCreationDTO>) {
+  try {
+    const http = await deviceService.getDevice(rowData.item.uri)
+    deviceFormRef.value?.showEditForm?.(http.response.result)
+  } catch (error) {
+    $opensilex.errorHandler(error)
+  }
 }
 
 function addMetadataFilter() {

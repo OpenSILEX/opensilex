@@ -58,7 +58,7 @@ defineProps<{
   justify-content: center;
   align-items: center;
   box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.5);
-  background-color: #00a38d;
+  background-color: var(--main-color-theme);
 }
 
 .title-image {

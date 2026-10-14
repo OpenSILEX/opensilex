@@ -190,6 +190,7 @@ function showCreateForm () {
   form.value = props.initForm()
   editMode.value = false
   currentStepIndex.value = 0
+  opensilex.disableLoader()
   visible.value = true
   nextTick(() => stepComponent.value?.reset?.())
 }
@@ -199,6 +200,7 @@ function showEditForm (inputForm: any) {
   form.value = inputForm
   editMode.value = true
   currentStepIndex.value = 0
+  opensilex.disableLoader()
   visible.value = true
   nextTick(() => stepComponent.value?.reset?.())
 }
@@ -260,6 +262,8 @@ async function submitForm () {
   if (!action) return
 
   try {
+    opensilex.enableLoader()
+    opensilex.showLoader()
     const result = await action(form.value)
     if (result !== false) {
       if (editMode.value) {
@@ -272,6 +276,9 @@ async function submitForm () {
     }
   } catch (e) {
     console.error(e)
+  } finally {
+    opensilex.hideLoader()
+    opensilex.disableLoader()
   }
 }
 
@@ -325,7 +332,7 @@ defineExpose({ showCreateForm, showEditForm, close, getStepRef })
 }
 /* Pastille de chaque étape */
 .wizard-steps .n-step-indicator {
-  background-color: #00A38D !important;
+  background-color: var(--main-color-theme) !important;
 }
 
 /* Icone des étapes validées */
@@ -347,7 +354,7 @@ defineExpose({ showCreateForm, showEditForm, close, getStepRef })
 
 /* Au survol */
 .wizard-help-btn:hover {
-  background-color: #00A38D;
+  background-color: var(--main-color-theme);
   color: #fff;
 }
 

@@ -8,7 +8,7 @@
 
 > ⚠️ _WARNING_ : This document is about personalizing OpenSILEX's front-end by creating a new module.
 >
-> You first need to follow the first steps of creating a new module: [modules.md](modules.md)
+> You first need to follow the first steps of creating a new module: [create-your-own-module.md](create-your-own-module.md)
 >
 
 ## Table of contents
@@ -31,22 +31,32 @@ This document explains how to create the front-end part of a new module.
 
 Creating a front-end for your module could be useful for:
 - extending the front-end by adding new pages. See [module-api-and-interface-extension.md](module-api-and-interface-extension.md)
-- modifying the front-end by overloading the default theme. See [module-theme-personalization.md](module-theme-personalization.md)
+- modifying the front-end by overloading the default theme. See [theme-personalization.md](theme-personalization.md)
 - overriding default components to replace them. See [overriding-defaults-components.md](overriding-defaults-components.md)
+- Changing the application name displayed in the browser tab. See [custom-application-name.md](custom-application-name.md)
+
+This document helps you to **create the minimum necessary to make your module's front-end work**.
+
+Please start by following this document, then use the links above to personalize the front-end according to your needs.
+
+Note that following this document is not mandatory if you **only** want to modify the main theme thanks to the
+[theme-personalization.md](theme-personalization.md) document.
+
+Before starting, make sure you have followed the steps in [create-your-own-module.md](create-your-own-module.md).
 
 ## Creating the front-end part of a new module
 
-After following the steps in [modules.md](modules.md), you should have a new module with at least the following structure:
+After following the steps in [create-your-own-module.md](create-your-own-module.md), you should have a new module with at least the following structure:
 
 ```bash
 # module_name  => .e.g : inrae-sixtine
 {module_name} # module
-├── front # front
-├── pom.xml  # module pom file
+├── front
+├── pom.xml
 ├── src # back end java sources
 │   └── ...
 ```
-We will work only in the front folder of the module.
+We will work only in the front folder of the module. Create it if it does not exist yet.
 
 ### Vite config
 

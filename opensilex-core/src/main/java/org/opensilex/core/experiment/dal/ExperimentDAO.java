@@ -104,6 +104,7 @@ public class ExperimentDAO {
 
     public void delete(URI xpUri, AccountModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
+        sparql.clearGraph(xpUri);
         sparql.delete(ExperimentModel.class, xpUri);
     }
 

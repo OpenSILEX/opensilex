@@ -91,7 +91,7 @@ async function create(form) {
     form.uri = uri;
 
     const message =
-        t("ExperimentList.name") +
+        t("component.experiment.view.title") +
         " " +
         form.name +
         " " +
@@ -105,7 +105,7 @@ async function create(form) {
       console.error("Experiment already exists", error);
       opensilex.errorHandler(
           error,
-          t("ExperimentForm.experiment-already-exists")
+          t("component.experiment.experiment-already-exists")
       );
     } else {
       opensilex.errorHandler(error);
@@ -120,12 +120,12 @@ async function update(form: any) {
       .getService<ExperimentsService>("opensilex.ExperimentsService")
       .updateExperiment(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        const uri = http.response.resultwizar
+        const uri = http.response.result
 
         emit("onUpdate", form)
 
         const message =
-            t("ExperimentList.name") +
+            t("component.experiment.view.title") +
             " " +
             form.name +
             " " +
@@ -144,17 +144,3 @@ defineExpose({
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  ExperimentForm:
-    create: Add experiment
-    update: Update experiment
-    experiment-already-exists: Experiment already exists
-
-fr:
-  ExperimentForm:
-    create: Ajouter une expérimentation
-    update: Modifier une expérimentation
-    experiment-already-exists: L'expérimentation existe déjà
-</i18n>

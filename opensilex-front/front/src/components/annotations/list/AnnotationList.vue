@@ -405,6 +405,9 @@ defineExpose({ refresh });
   margin-left: 10px;
   margin-bottom: 10px;
 }
+.createButton {
+  margin-top: 10px;
+}
 .action-group {
   display: inline-flex;
   gap: 0.35rem;

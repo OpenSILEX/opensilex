@@ -390,7 +390,7 @@ function normalizeDates() {
 
   if (filter.value.end_date === '') {
     filter.value.end_date = undefined;
-  }
+  }import  {DatafileFilter} from "@/components/data/dataFile/DataFilesList.vue";
 }
 
 function refreshSoSelector() {

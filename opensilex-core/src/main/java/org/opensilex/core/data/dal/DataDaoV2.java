@@ -2,6 +2,7 @@ package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
@@ -11,10 +12,12 @@ import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -66,6 +69,8 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
         Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
         Bson batchAscIndex = Indexes.ascending(DataModel.BATCH_URI_FIELD);
+        Bson agentAscIndex = Indexes.ascending(PROVENANCE_AGENTS_URI_FIELD);
+        Bson provenanceUriAscIndex = Indexes.ascending(PROVENANCE_URI_FIELD);
 
         Map<Bson, IndexOptions> indexes = DataFileDaoV2.getIndexes();
 
@@ -80,6 +85,10 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         // Compound index : ensure unicity #TODO delete this index (index on whole field,too big and not well used in query)
         indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetDescIndex, dateDescIndex), new IndexOptions().unique(true));
+
+        // Variable - provenance indexes
+        indexes.put(Indexes.compoundIndex(agentAscIndex, variableAscIndex), null);
+        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, variableAscIndex), null);
 
         return indexes;
     }
@@ -128,6 +137,55 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     @Override
     protected void addDefaultSort(Document sort) {
         sort.put(DataModel.DATE_FIELD, -1);
+    }
+
+    /**
+     * Search variables that are associated with data, filtered by experiments, targets and devices.
+     * <p>
+     * This method is faster than calling
+     * {@link MongoReadWriteDao#distinct(ClientSession, String, Class, MongoSearchFilter)}, because the provenance
+     * lookup (for devices) is done more efficiently using two queries, instead of a single one that uses an `or`
+     * operation.
+     */
+    public Collection<URI> getUsedVariablesByExpeSoDevice(Collection<URI> experiments, Collection<URI> objects, List<URI> devices) {
+        var agentUris = Optional.ofNullable(devices).orElse(Collections.emptyList());
+        var provUris = devices == null || devices.isEmpty() ?
+                Collections.emptySet() :
+                new ProvenanceDAO(mongoDBService, sparql).getProvenancesURIsByAgents(devices);
+
+        var distinctQueries = new ArrayList<Bson>(2);
+        if (CollectionUtils.isNotEmpty(agentUris)) {
+            var dataProvenanceFilter = Filters.in(PROVENANCE_AGENTS_URI_FIELD, agentUris);
+            distinctQueries.add(constructUsedVariableFilter(experiments, objects, dataProvenanceFilter));
+        }
+        if (CollectionUtils.isNotEmpty(provUris)) {
+            var globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, provUris);
+            distinctQueries.add(constructUsedVariableFilter(experiments, objects, globalProvenanceFilter));
+        }
+
+        var mongoResults = distinctQueries.stream()
+                .map(query -> collection.distinct(DataModel.VARIABLE_FIELD, query, URI.class));
+        var resultSet = new HashSet<URI>();
+        mongoResults.forEach(iterable -> {
+            for (var result : iterable) {
+                resultSet.add(result);
+            }
+        });
+        return resultSet;
+    }
+
+    private Bson constructUsedVariableFilter(Collection<URI> experiments, Collection<URI> objects, Bson provenanceFilter) {
+        var filters = new ArrayList<Bson>(3);
+        if (CollectionUtils.isNotEmpty(experiments)) {
+            filters.add(Filters.in(PROVENANCE_EXPERIMENT_FIELD, experiments));
+        }
+        if (CollectionUtils.isNotEmpty(objects)) {
+            filters.add(Filters.in(DataModel.TARGET_FIELD, objects));
+        }
+        if (provenanceFilter != null) {
+            filters.add(provenanceFilter);
+        }
+        return Filters.and(filters);
     }
 
     //#region Aggregation builders

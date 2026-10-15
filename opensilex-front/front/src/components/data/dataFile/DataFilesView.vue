@@ -56,7 +56,7 @@
 
             <!-- Experiments -->
             <n-form-item v-if="!enforcedExperimentUri" class="compact-form-item">
-              <opensilex-ExperimentSelector
+              <ExperimentSelector
                 :label="t('component.experiment.view.experiment-experiments')"
                 v-model:experiments="filter.experiments"
                 :multiple="true"
@@ -192,7 +192,7 @@ import {
 } from 'naive-ui'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type { DataService, ProvenanceGetDTO } from 'opensilex-core/index'
+import type { ProvenanceGetDTO } from 'opensilex-core/index'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse} from "@/lib/HttpResponse";
 import DataFileForm from "@/components/data/dataFile/DataFileForm.vue";
@@ -209,6 +209,7 @@ import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import {useRoute} from "vue-router";
 import {SCIENTIFIC_OBJECT_DATAFILES_PATHNAME} from "@/components/scientificObjects/ScientificObjectUtils";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
 
 //#region Used Models
 interface FilterModel{
@@ -390,7 +391,7 @@ function normalizeDates() {
 
   if (filter.value.end_date === '') {
     filter.value.end_date = undefined;
-  }import  {DatafileFilter} from "@/components/data/dataFile/DataFilesList.vue";
+  }
 }
 
 function refreshSoSelector() {

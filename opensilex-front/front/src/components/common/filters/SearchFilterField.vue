@@ -106,8 +106,8 @@ const props = withDefaults(defineProps<{
 const advancedSearchOpen = ref(false)
 
 const emit = defineEmits<{
-  (e: "toggleAdvancedSearch", event: Event),
-  (e: "search", event: Event),
+  toggleAdvancedSearch: [event: Event];
+  search: [event: Event];
 }>()
 
   function toggleAdvancedSearch($event) {

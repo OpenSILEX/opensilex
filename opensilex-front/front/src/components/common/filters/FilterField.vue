@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
 
+
 import {computed} from "vue";
 
 const props = withDefaults(defineProps<{
@@ -13,7 +14,7 @@ const props = withDefaults(defineProps<{
   fullWidth?: boolean
   halWidth: boolean
   quarterWidth: boolean
-}>(),{
+}>(), {
   label: "component.search.lab",
   fullWidth: true,
   halWidth: false,
@@ -25,6 +26,7 @@ const baseWidth = computed(() => {
 })
 
 </script>
+
 
 <style scoped lang="scss">
 </style>

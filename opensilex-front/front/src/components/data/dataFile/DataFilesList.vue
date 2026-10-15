@@ -173,16 +173,16 @@ import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse } from 'opensilex-core/HttpResponse'
 import type { OntologyService } from 'opensilex-core/api/ontology.service'
 import type { DataService } from 'opensilex-core/api/data.service'
-import Button from "@/components/common/buttons/Button.vue";
-import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
-import UriLink from "@/components/common/views/UriLink.vue";
-import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
-import Icon from "@/components/common/views/Icon.vue";
 import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
 import ImageModal from "@/components/data/ImageModal.vue";
 import ExportDataFileModal from "@/components/data/ExportDataFileModal.vue";
 import EventCsvForm from "@/components/events/form/csv/EventCsvForm.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import DetailButton from "@/components/common/buttons/DetailButton.vue";
+import Icon from "@/components/common/views/Icon.vue";
 
 export type DatafileFilter = {
   name?: string | null

@@ -198,7 +198,6 @@ import type { OpenSilexResponse} from "@/lib/HttpResponse";
 import DataFileForm from "@/components/data/dataFile/DataFileForm.vue";
 import DataFilesList, {DatafileFilter} from "@/components/data/dataFile/DataFilesList.vue";
 import DataFilesImagesList from "@/components/data/dataFile/DataFilesImagesList.vue";
-import Button from "@/components/common/buttons/Button.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
 import DatafileProvenanceSelector from "@/components/data/dataFile/DatafileProvenanceSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
@@ -254,8 +253,6 @@ interface Props{
   enforcedScientificObjectUri?: string | undefined
   /** When coming from Device details, we pass the device to have better display of possible provenances */
   passedDeviceUri?: string | undefined
-  /** If not null, then we do not show an experiment filter (Coming from an experiment details page)*/
-  enforcedExperimentUri?: string | undefined
 }
 const props = withDefaults(
   defineProps<Props>(),

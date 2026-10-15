@@ -40,6 +40,7 @@ const emit = defineEmits<{
 const props = withDefaults(defineProps<{
   experiments?: any
   label?: string
+  placeholder?: string
   multiple?: boolean
   required?: boolean
   path?: string
@@ -60,6 +61,9 @@ const experimentsURI = computed({
 })
 
 const placeholder = computed(() => {
+  if (props.placeholder) {
+    return props.placeholder
+  }
   return props.multiple
     ? t('component.experiment.form.selector.placeholder-multiple')
     : t('component.experiment.form.selector.placeholder')

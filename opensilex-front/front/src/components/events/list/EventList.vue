@@ -173,7 +173,7 @@
         </template>
 
         <template #cell(actions)="{ data }">
-          <n-button-group size="small">
+          <div class="btn-group btn-group-sm" role="group">
             <DetailButton
               v-if="user.hasCredential(modificationCredentialId)"
               @click="showEventView(data.item)"
@@ -192,7 +192,7 @@
               label="component.common.list.buttons.delete"
               :small="true"
             />
-          </n-button-group>
+          </div>
         </template>
       </TableAsyncView>
 
@@ -253,14 +253,9 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import {
   NLayout,
-  NLayoutSider,
   NLayoutContent,
-  NForm,
   NFormItem,
-  NButton,
-  NDropdown,
-  NSpace,
-  NButtonGroup
+  NSpace
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from '@/lib/HttpResponse'

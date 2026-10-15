@@ -11,19 +11,19 @@
       >
       </CreateButton>
       <!-- Export button-->
-      <b-button
+      <n-button
           @click="exportModal.show()"
           class="exportButton greenThemeColor createButton"
       >
         export
-      </b-button>
+      </n-button>
       <!-- Delete by batch button -->
       <Button
         @click="deleteByBatchModal.show()"
         class="createButton greenThemeColor"
         icon="fa#trash-alt"
         :small="false"
-        label="DataView.buttons.delete-by-batch"
+        label="component.data.view.buttons.delete-by-batch"
         :disabled="false"
       ></Button>
     </PageActions>
@@ -39,9 +39,7 @@
       @deleted="refresh"
     ></DeleteByBatchModal>
 
-      <!-- Toggle Sidebar-->
-
-    <Modal
+    <ModalForm
         v-if="renderImportForm"
         ref="modalDataForm"
         createTitle="DataImportForm.create"
@@ -51,242 +49,203 @@
         modalSize="xl"
         @onCreate="afterCreateData"
         :successMessage="successMessage"
-    ></Modal>
+    ></ModalForm>
 
     <PageContent
         class="pagecontent">
-      <template v-slot>
-
-        <!-- Toggle Sidebar-->
-        <div class="searchMenuContainer"
-             v-on:click="toggleFilter()"
-             :title="searchFiltersPannel()">
-          <div class="searchMenuIcon">
-            <i class="icon ik ik-search"></i>
-          </div>
-        </div>
+      <n-layout has-sider class="data-layout">
         <!-- FILTERS -->
-        <Transition>
-          <div v-show="toggleSearchFilters">
+        <SearchFiltersSidebar
+            v-model:filtersCollapsed="toggleSearchFilters"
+            :activeFiltersCount="activeFiltersCount"
+            searchButtonLabelTranslationKey="component.data.view.filter.label"
+            @refresh="refresh()"
+            @reset="reset()"
+        >
+          <!-- Variables -->
+          <n-form-item class="compact-form-item">
+            <VariableSelectorWithFilter
+                placeholder="VariableSelectorWithFilter.placeholder-multiple"
+                v-model:variables="filter.variables"
+                :withAssociatedData="true"
+                class="searchFilter"
+            ></VariableSelectorWithFilter>
+          </n-form-item>
 
-            <SearchFilterField v-if="loadSearchFilters"
-                ref="searchField"
-                @search="refresh()"
-                @clear="reset()"
-                @toggleAdvancedSearch="loadAdvancedFilter"
-                :showAdvancedSearch="true"
-                label="DataView.filter.label"
-                :showTitle="false"
-                class="searchFilterField"
-            >
-              <template v-slot:filters>
+          <!-- Experiments -->
+          <n-form-item class="compact-form-item">
+            <ExperimentSelector
+                :label="t('component.data.view.filter.experiments')"
+                v-model:experiments="filter.experiments"
+                :multiple="true"
+                @select="updateSOFilter"
+                @clear="updateSOFilter"
+                class="searchFilter"
+                :key="resetExperimentSelectorKey"
+            ></ExperimentSelector>
+          </n-form-item>
 
-                <!-- Variables -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <VariableSelectorWithFilter
-                        placeholder="VariableSelectorWithFilter.placeholder-multiple"
-                        :variables.sync="filter.variables"
-                        :withAssociatedData="true"
-                        class="searchFilter"
-                    ></VariableSelectorWithFilter>
-                  </FilterField>
-                </div>
+          <!-- Scientific objects -->
+          <n-form-item class="compact-form-item">
+            <ModalFormSelector
+                ref="soSelector"
+                :label="t('component.data.view.filter.scientificObjects')"
+                :placeholder="t('component.data.view.filter.scientificObjects-placeholder')"
+                v-model:selected="filter.scientificObjects"
+                modalComponent="ScientificObjectModalList"
+                class="searchFilter"
+                v-model:filter="soFilter"
+                :clearable="true"
+                :multiple="true"
+                @clear="refreshSoSelector"
+                @onValidate="refreshComponent"
+                @onClose="refreshComponent"
+                @select="refreshComponent"
+                :limit="1"
+            ></ModalFormSelector>
+          </n-form-item>
 
-                <!-- Experiments -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <ExperimentSelector
-                        label="DataView.filter.experiments"
-                        :experiments.sync="filter.experiments"
-                        :multiple="true"
-                        @select="updateSOFilter"
-                        @clear="updateSOFilter"
-                        class="searchFilter"
-                        :key="resetExperimentSelectorKey"
-                    ></ExperimentSelector>
-                  </FilterField>
-                </div>
+          <!-- Germplasm Group -->
+          <n-form-item class="compact-form-item">
+            <GermplasmGroupSelector
+                label="GermplasmList.filter.germplasm-group"
+                :multiple="false"
+                v-model:germplasmGroup="filter.germplasm_group"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></GermplasmGroupSelector>
+          </n-form-item>
 
-                <!-- Scientific objects -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <ModalFormSelector
-                        ref="soSelector"
-                        label="DataView.filter.scientificObjects"
-                        placeholder="DataView.filter.scientificObjects-placeholder"
-                        :selected.sync="filter.scientificObjects"
-                        modalComponent="ScientificObjectModalList"
-                        class="searchFilter"
-                        :filter.sync="soFilter"
-                        :clearable="true"
-                        :multiple="true"
-                        @clear="refreshSoSelector"
-                        @onValidate="refreshComponent"
-                        @onClose="refreshComponent"
-                        @select="refreshComponent"
-                        :limit="1"
-                    ></ModalFormSelector>
-                  </FilterField>
-                </div>
+          <!-- germplasm -->
+          <n-form-item class="compact-form-item">
+            <GermplasmSelectorWithFilter
+                v-model:germplasmsUris="filter.germplasm"
+            ></GermplasmSelectorWithFilter>
+          </n-form-item>
 
-                <!-- Germplasm Group -->
-                <div>
-                  <FilterField>
-                    <GermplasmGroupSelector
-                        label="GermplasmList.filter.germplasm-group"
-                        :multiple="false"
-                        :germplasmGroup.sync="filter.germplasm_group"
-                        class="searchFilter"
-                        @handlingEnterKey="refresh()"
-                    ></GermplasmGroupSelector>
-                  </FilterField>
-                </div>
+          <!-- Devices in provenance-->
+          <n-form-item class="compact-form-item">
+            <DeviceSelector
+              ref="deviceSelector"
+              :multiple="true"
+              v-model:value="filter.devices"
+              class="searchFilter"
+              @handlingEnterKey="refresh()"
+            ></DeviceSelector>
+          </n-form-item>
 
-                <!-- germplasm -->
-                <div>
-                  <FilterField quarterWidth="false">
-                    <GermplasmSelectorWithFilter
-                        :germplasmsUris.sync="filter.germplasm"
-                    ></GermplasmSelectorWithFilter>
-                  </FilterField>
-                </div>
+          <!-- Operator -->
+          <n-form-item class="compact-form-item">
+            <PersonSelector
+              v-model:persons="filter.operators"
+              label="component.data.view.filter.operator"
+              class="searchFilter"
+              @handlingEnterKey="refresh()"
+              :multiple="true"
+            ></PersonSelector>
+          </n-form-item>
 
-                <!-- Devices in provenance-->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <DeviceSelector
-                      ref="deviceSelector"
-                      :multiple="true"
-                      :value.sync='filter.devices'
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                    ></DeviceSelector>
-                  </FilterField>
-                </div>
+          <!-- Facility -->
+          <n-form-item class="compact-form-item">
+            <FacilitySelector
+              ref="facilitySelector"
+              label="OrganizationForm.form-facilities-label"
+              v-model:facilities="filter.facilities"
+              :multiple="true"
+              class="searchFilter"
+            ></FacilitySelector>
+          </n-form-item>
 
-                <!-- Operator -->
-                <div>
-                  <FilterField>
-                    <PersonSelector
-                      :persons.sync="filter.operators"
-                      label="DataView.filter.operator"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                      :multiple="true"
-                    ></PersonSelector>
-                  </FilterField>
-                </div>
+          <!-- Start Date -->
+          <n-form-item class="compact-form-item">
+            <DateTimeForm
+                v-model:value="filter.start_date"
+                label="component.common.begin"
+                name="startDate"
+                :max-date="filter.end_date ? filter.end_date : undefined"
+                class="searchFilter"
+            ></DateTimeForm>
+          </n-form-item>
 
-                <!-- Facility -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <FacilitySelector
-                      ref="facilitySelector"
-                      label="OrganizationForm.form-facilities-label"
-                      :facilities.sync="filter.facilities"
-                      :multiple="true"
-                      class="searchFilter"
-                    ></FacilitySelector>
-                  </FilterField>
-                </div>
+          <!-- End Date -->
+          <n-form-item class="compact-form-item">
+            <DateTimeForm
+                v-model:value="filter.end_date"
+                label="component.common.end"
+                name="endDate"
+                :min-date="filter.start_date ? filter.start_date : undefined"
+                class="searchFilter"
+            ></DateTimeForm>
+          </n-form-item>
 
-                <!-- Start Date -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <DateTimeForm
-                        :value.sync="filter.start_date"
-                        label="component.common.begin"
-                        name="startDate"
-                        :max-date="filter.end_date ? filter.end_date : undefined"
-                        class="searchFilter"
-                    ></DateTimeForm>
-                  </FilterField>
-                </div>
+          <!-- Provenance -->
+          <n-form-item class="compact-form-item">
+            <DataProvenanceSelector
+                ref="provSelector"
+                v-model:provenances="filter.provenance"
+                label="ExperimentData.provenance"
+                @select="loadProvenance"
+                :targets="filter.scientificObjects"
+                :experiments="filter.experiments"
+                :multiple="false"
+                :viewHandler="showProvenanceDetails"
+                :viewHandlerDetailsVisible="visibleDetails"
+                :key="refreshKey"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+            ></DataProvenanceSelector>
+          </n-form-item>
 
-                <!-- End Date -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <DateTimeForm
-                        :value.sync="filter.end_date"
-                        label="component.common.end"
-                        name="endDate"
-                        :min-date="filter.start_date ? filter.start_date : undefined"
-                        class="searchFilter"
-                    ></DateTimeForm>
-                  </FilterField>
-                </div>
+          <n-collapse-transition
+              v-if="selectedProvenance"
+              :show="visibleDetails"
+          >
+            <ProvenanceDetails
+                :provenance="selectedProvenance"
+            ></ProvenanceDetails>
+          </n-collapse-transition>
 
-                <!-- Provenance -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <DataProvenanceSelector
-                        ref="provSelector"
-                        :provenances.sync="filter.provenance"
-                        label="ExperimentData.provenance"
-                        @select="loadProvenance"
-                        :targets="filter.scientificObjects"
-                        :experiments="filter.experiments"
-                        :multiple="false"
-                        :viewHandler="showProvenanceDetails"
-                        :viewHandlerDetailsVisible="visibleDetails"
-                        :key="refreshKey"
-                        class="searchFilter"
-                        @handlingEnterKey="refresh()"
-                    ></DataProvenanceSelector>
+          <!-- ADVANCED SEARCH -->
+          <n-collapse
+              :accordion="false"
+              @update:expanded-names="loadAdvancedFilter"
+              class="advancedFiltersSearch"
+          >
+            <n-collapse-item :title="t('component.common.advanced-search-title')" name="adv">
+              <!-- Targets -->
+              <n-form-item class="compact-form-item">
+                <TagInputForm
+                    v-if="loadAdvancedSearchFilters"
+                    class="searchFilter"
+                    v-model:value="filter.targets"
+                    label="component.data.view.filter.targets"
+                    helpMessage="component.data.view.filter.targets-help"
+                    type="text"
+                    @handlingEnterKey="refresh()"
+                ></TagInputForm>
+              </n-form-item>
 
-                    <b-collapse
-                        v-if="selectedProvenance"
-                        id="collapse-4"
-                        v-model="visibleDetails"
-                    >
-                      <ProvenanceDetails
-                          :provenance="getSelectedProv"
-                      ></ProvenanceDetails>
-                    </b-collapse>
-                  </FilterField>
-                </div>
-              </template>
-              <template v-slot:advancedSearch>
-                <!-- Targets -->
-                <div>
-                  <FilterField quarterWidth="true">
-                    <TagInputForm
-                        v-if="loadAdvancedSearchFilters"
-                        class="searchFilter"
-                        :value.sync="filter.targets"
-                        label="DataView.filter.targets"
-                        helpMessage="DataView.filter.targets-help"
-                        type="text"
-                        @handlingEnterKey="refresh()"
-                    ></TagInputForm>
-                  </FilterField>
-                </div>
-                <!-- Batch URI -->
-                <div>
-                  <FilterField>
-                    <label>{{ $t('DataView.filter.batch-uri') }}</label>
-                    <StringFilter
-                      :filter.sync="filter.batch_uri"
-                      placeholder="DataView.filter.uri-placeholder"
-                      class="searchFilter"
-                      @handlingEnterKey="refresh()"
-                    ></StringFilter>
-                  </FilterField>
-                  <br>
-                </div>
-              </template>
-            </SearchFilterField>
-          </div>
-        </Transition>
+              <!-- Batch URI -->
+              <n-form-item :label="t('component.data.view.filter.batch-uri')" class="compact-form-item">
+                <StringFilter
+                  v-model:filter="filter.batch_uri"
+                  placeholder="component.data.view.filter.uri-placeholder"
+                  class="searchFilter"
+                  @handlingEnterKey="refresh()"
+                ></StringFilter>
+              </n-form-item>
+            </n-collapse-item>
+          </n-collapse>
+        </SearchFiltersSidebar>
 
-        <DataList
-            ref="dataList"
-            :listFilter.sync="filter"
-            class="dataList">
-        </DataList>
-
-      </template>
+        <n-layout-content class="data-content">
+          <DataList
+              ref="dataList"
+              v-model:listFilter="filter"
+              class="dataList">
+          </DataList>
+        </n-layout-content>
+      </n-layout>
     </PageContent>
 
     <ResultModalView ref="resultModal" @onHide="refreshDataAfterImportation()"></ResultModalView>
@@ -298,20 +257,41 @@
 </template>
 
 <script setup lang="ts">
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {DataService} from "opensilex-core/api/data.service";
-import DeleteByBatchModal from "./DeleteByBatchModal.vue";
-import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
+import {computed, inject, nextTick, ref} from "vue";
 import {useStore} from "vuex";
-import { ref } from "process";
-import {ProvenanceGetDTO} from "opensilex-core/lib";
-import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-import {computed, inject, useTemplateRef} from "vue";
-import Modal from "@/components/common/views/Modal.vue";
+import {useI18n} from "vue-i18n";
+import {
+  NButton,
+  NCollapse,
+  NCollapseItem,
+  NCollapseTransition,
+  NFormItem,
+  NLayout,
+  NLayoutContent
+} from "naive-ui";
+import type HttpResponse from "@/lib/HttpResponse";
+import type {OpenSilexResponse} from "@/lib/HttpResponse";
+import type {DataService} from "opensilex-core/api/data.service";
+import type {ProvenanceGetDTO} from "opensilex-core/index";
+import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
+// import DeleteByBatchModal from "./DeleteByBatchModal.vue";
+import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
+import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
+// import DataExportModal from "@/components/data/DataExportModal.vue";
+// import DataList from "@/components/data/DataList.vue";
+// import ResultModalView from "@/components/data/ResultModalView.vue";
+// import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
+// import ModalForm from "@/components/common/forms/ModalForm.vue";
+import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import Button from "@/components/common/buttons/Button.vue";
+import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
 import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue";
+// import GermplasmGroupSelector from "@/components/germplasmGroup/GermplasmGroupSelector.vue";
+// import GermplasmSelectorWithFilter from "@/components/germplasm/GermplasmSelectorWithFilter.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import TagInputForm from "@/components/common/forms/TagInputForm.vue";
@@ -319,43 +299,84 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import DeviceSelector from "@/components/devices/DeviceSelector.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
 
-
-const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
-const store = useStore()
-const dataService = opensilex.getService<DataService>('opensilex.DataSerice');
-const disabled = ref<boolean>(false)
-const visibleDetails = ref<boolean>(false)
-const selectedProvenance = ref<ProvenanceGetDTO>(null)
-const filterProvenanceLabel = ref<string>(null)
+//#region Constant values
+const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
+const $store = useStore();
+const { t } = useI18n();
+const dataService = $opensilex.getService<DataService>("opensilex.DataService");
+//#endregion
+//#region Reactive Data
+const visibleDetails = ref<boolean>(false);
+const selectedProvenance = ref<ProvenanceGetDTO>(null);
+const filterProvenanceLabel = ref<string>(null);
 const refreshKey = ref<number>(0);
 const resetExperimentSelectorKey = ref<number>(0);
+const toggleSearchFilters = ref<boolean>(false);
+const loadAdvancedSearchFilters = ref<boolean>(false);
+const renderImportForm = ref<boolean>(false);
 
-const user = computed(() =>
-{
-  return store.state.user;
-})
+const filter = ref({
+  germplasm_group: undefined,
+  start_date: null,
+  end_date: null,
+  variables: [],
+  provenance: null,
+  experiments: [],
+  scientificObjects: [],
+  targets: [],
+  devices: [],
+  facilities: [],
+  operators: [],
+  germplasm: [],
+  batch_uri: undefined
+});
 
-const credentials = computed(() => {
-  return store.state.credentials;
-})
+const soFilter = ref({
+  name: "",
+  experiment: undefined,
+  germplasm: undefined,
+  factorLevels: [],
+  types: [],
+  existenceDate: undefined,
+  creationDate: undefined,
+  criteriaDto: {criteria_list: []}
+});
+//#endregion
+//#region Template refs
+const dataList = ref<InstanceType<typeof DataList> | null>(null);
+const modalDataForm = ref<InstanceType<typeof ModalForm> | null>(null);
+const provSelector = ref<InstanceType<typeof DataProvenanceSelector> | null>(null);
+const resultModal = ref<InstanceType<typeof ResultModalView> | null>(null);
+const soSelector = ref<InstanceType<typeof ModalFormSelector> | null>(null);
+const exportModal = ref<InstanceType<typeof DataExportModal> | null>(null);
+const deviceSelector = ref<InstanceType<typeof DeviceSelector> | null>(null);
+const facilitySelector = ref<InstanceType<typeof FacilitySelector> | null>(null);
+const deleteByBatchModal = ref<InstanceType<typeof DeleteByBatchModal> | null>(null);
+const dataProvenanceModalView = ref<InstanceType<typeof DataProvenanceModalView> | null>(null);
+//#endregion
+//#region Computed
+const user = computed(() => $store.state.user);
+const credentials = computed(() => $store.state.credentials);
 
-const lang = computed(() => {
-  return store.getters.language;
-})
+const activeFiltersCount = computed(() => {
+  return Object.values(filter.value).filter(v => {
+    if (Array.isArray(v)) return v.length > 0
+    return v !== undefined && v !== null && String(v).trim() !== ''
+  }).length
+});
+//#endregion
+//#region Functions
+function refreshSoSelector() {
+  soSelector.value.refreshModalSearch();
+  refreshComponent();
+}
 
-const templateForm = useTemplateRef<any>('templateForm');
-const dataList = useTemplateRef<InstanceType<typeof DataList>>('dataList');
-const modalDataForm = useTemplateRef<InstanceType<typeof Modal>>('modalDataForm');
-const searchField = useTemplateRef<any>('searchField');
-const provSelector = useTemplateRef<any>('provSelector');
-const resultModal = useTemplateRef<InstanceType<typeof ResultModalView>>('resultModal');
-const soSelector = useTemplateRef<InstanceType<typeof ModalFormSelector>>('soSelector');
-const exportModal = useTemplateRef<InstanceType<typeof DataExportModal>>('exportModal');
-const deviceSelector = useTemplateRef<InstanceType<typeof DeviceSelector>>('deviceSelector');
-const facilitySelector = useTemplateRef<InstanceType<typeof FacilitySelector>>('facilitySelector');
-const deleteByBatchModal = useTemplateRef<InstanceType<typeof DeleteByBatchModal>>('deleteByBatchModal');
+function refreshComponent() {
+  refreshKey.value += 1;
+}
 
-  filter = {
+function resetFilter() {
+  filter.value = {
     germplasm_group: undefined,
     start_date: null,
     end_date: null,
@@ -371,189 +392,117 @@ const deleteByBatchModal = useTemplateRef<InstanceType<typeof DeleteByBatchModal
     batch_uri: undefined
   };
 
-  soFilter = {
-    name: "",
-    experiment: undefined,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-    criteriaDto: {criteria_list:[]}
-  };
+  soSelector.value.refreshModalSearch();
+}
 
-  toggleSearchFilters: boolean = false;
-  loadSearchFilters: boolean = false;
-  renderImportForm: boolean = false;
+function updateSOFilter() {
+  refreshComponent();
+  soFilter.value.experiment = filter.value.experiments[0];
+  soSelector.value.refreshModalSearch();
+}
 
-    /**
-     * Show or hide the search filter (v-show) on the filter div
-     * Trigger render of search filters selector (v-if).
-     * This ensures that API methods corresponding with the selector are not executed
-     * at the render of this component but only at the first toggle of the filter
-     *
-     */
-    toggleFilter(){
-        this.toggleSearchFilters = ! this.toggleSearchFilters;
-        if(! this.loadSearchFilters){
-            this.loadSearchFilters = true;
-        }
-    }
+function refresh() {
+  dataList.value.refresh();
+}
 
-  refreshSoSelector() {
+function reset() {
+  resetFilter();
+  refresh();
+  resetExperimentSelectorKey.value += 1;
+}
 
-    this.soSelector.refreshModalSearch();
-    this.refreshComponent();
+function showProvenanceDetails() {
+  if (selectedProvenance.value != null) {
+    visibleDetails.value = !visibleDetails.value;
   }
+}
 
-  refreshComponent() {
-    this.refreshKey += 1
-  }
-
-  resetFilter() {
-    this.filter = {
-      germplasm_group: undefined,
-      start_date: null,
-      end_date: null,
-      variables: [],
-      provenance: null,
-      experiments: [],
-      scientificObjects: [],
-      targets: [],
-      devices: [],
-      facilities: [],
-      operators: [],
-      germplasm: [],
-      batch_uri: undefined
-    };
-
-    this.soSelector.refreshModalSearch();
-  }
-
-  updateSOFilter() {
-    this.refreshComponent();
-    this.soFilter.experiment = this.filter.experiments[0];
-    this.soSelector.refreshModalSearch();
-  }
-
-  refresh() {
-    this.dataList.refresh();
-  }
-
-  reset() {
-    this.resetFilter();
-    this.refresh();
-    this.resetExperimentSelectorKey+=1;
-  }
-
-  created() {
-    this.dataService = this.$opensilex.getService("opensilex.DataService");
-  }
-
-  get getSelectedProv() {
-    return this.selectedProvenance;
-  }
-
-  showProvenanceDetails() {
-    if (this.selectedProvenance != null) {
-      this.visibleDetails = !this.visibleDetails;
-    }
-  }
-
-  getProvenance(uri: string) {
-    if (uri != undefined) {
-      this.dataService
-          .getProvenance(uri)
-          .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-            this.selectedProvenance = http.response.result;
-          });
-    }
-  }
-
-  loadProvenance(selectedValue) {
-    if (selectedValue != undefined) {
-      this.getProvenance(selectedValue.id);
-    }
-  }
-
-  afterCreateData(results) {
-      if (results instanceof Promise) {
-        results.then((res) => {
-          this.resultModal.setNbLinesImported(
-              res.validation.dataErrors.nbLinesImported
-          );
-          let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
-          if(annotationsOnObjects){
-              this.resultModal.setNbAnnotationsImported(
-                  annotationsOnObjects.length
-              );
-          }
-          this.resultModal.setProvenance(res.form.provenance);
-          this.resultModal.setBatch(res.validation.dataErrors.batchHistoryUri);
-          this.resultModal.show();
-          this.refreshKey += 1;
-          this.clear();
-          this.filter.provenance = res.form.provenance.uri;
+function getProvenance(uri: string) {
+  if (uri != undefined) {
+    dataService
+        .getProvenance(uri)
+        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+          selectedProvenance.value = http.response.result;
         });
-    } else {
-      this.resultModal.setNbLinesImported(
-          results.validation.dataErrors.nbLinesImported
+  }
+}
+
+function loadProvenance(selectedValue) {
+  if (selectedValue != undefined) {
+    getProvenance(selectedValue.id);
+  }
+}
+
+function afterCreateData(results) {
+  if (results instanceof Promise) {
+    results.then((res) => {
+      resultModal.value.setNbLinesImported(
+          res.validation.dataErrors.nbLinesImported
       );
-      let annotationsOnObjects : Array<any> = results.validation.dataErrors.annotationsOnObjects;
-      if(annotationsOnObjects){
-          this.resultModal.setNbAnnotationsImported(
-              annotationsOnObjects.length
-          );
+      let annotationsOnObjects: Array<any> = res.validation.dataErrors.annotationsOnObjects;
+      if (annotationsOnObjects) {
+        resultModal.value.setNbAnnotationsImported(
+            annotationsOnObjects.length
+        );
       }
-      this.resultModal.setBatch(results.validation.dataErrors.batchHistoryUri);
-      this.resultModal.setProvenance(results.form.provenance);
-      this.resultModal.show();
-      this.refreshKey += 1;
-      this.clear();
-      this.filter.provenance = results.form.provenance.uri;
+      resultModal.value.setProvenance(res.form.provenance);
+      resultModal.value.setBatch(res.validation.dataErrors.batchHistoryUri);
+      resultModal.value.show();
+      refreshKey.value += 1;
+      clear();
+      filter.value.provenance = res.form.provenance.uri;
+    });
+  } else {
+    resultModal.value.setNbLinesImported(
+        results.validation.dataErrors.nbLinesImported
+    );
+    let annotationsOnObjects: Array<any> = results.validation.dataErrors.annotationsOnObjects;
+    if (annotationsOnObjects) {
+      resultModal.value.setNbAnnotationsImported(
+          annotationsOnObjects.length
+      );
     }
-
+    resultModal.value.setBatch(results.validation.dataErrors.batchHistoryUri);
+    resultModal.value.setProvenance(results.form.provenance);
+    resultModal.value.show();
+    refreshKey.value += 1;
+    clear();
+    filter.value.provenance = results.form.provenance.uri;
   }
+}
 
-  clear() {
-    this.selectedProvenance = null;
-    this.resetFilter();
-    this.filterProvenanceLabel = null;
+function clear() {
+  selectedProvenance.value = null;
+  resetFilter();
+  filterProvenanceLabel.value = null;
+}
+
+function successMessage(form) {
+  return t("ResultModalView.data-imported");
+}
+
+function refreshDataAfterImportation() {
+  refresh();
+}
+
+/**
+ * Trigger render of advanced search filters selector (v-if)
+ * This ensures that API methods corresponding with the selector are not executed
+ * at the render of this component but only at the first opening of the advanced filter
+ */
+function loadAdvancedFilter(names: string[]) {
+  if (names.includes('adv')) {
+    loadAdvancedSearchFilters.value = true;
   }
+}
 
-  successMessage(form) {
-    return this.$t("ResultModalView.data-imported");
-  }
-
-  refreshDataAfterImportation() {
-    this.refresh();
-  }
-
-  searchFiltersPannel() {
-    return this.$t("searchfilter.label")
-  }
-
-  loadAdvancedSearchFilters: boolean = false;
-
-  /**
-   * Show or hide the advanced search filter (v-show) on the filter div
-   * Trigger render of advanced search filters selector (v-if)
-   * This ensures that API methods corresponding with the selector are not executed
-   * at the render of this component but only at the first toggle of the advanced filter
-   */
-  loadAdvancedFilter(){
-      if(! this.loadAdvancedSearchFilters){
-          this.loadAdvancedSearchFilters = true;
-      }
-  }
-
-  showImportForm(){
-      this.renderImportForm = true;
-      this.$nextTick(() => {
-          this.modalDataForm.showCreateForm();
-      });
-  }
-
+function showImportForm() {
+  renderImportForm.value = true;
+  nextTick(() => {
+    modalDataForm.value.showCreateForm();
+  });
+}
+//#endregion
 </script>
 
 <style scoped lang="scss">
@@ -562,66 +511,16 @@ const deleteByBatchModal = useTemplateRef<InstanceType<typeof DeleteByBatchModal
   margin-bottom: 10px;
   margin-top: -15px
 }
+
+.data-layout {
+  background: transparent;
+}
+
+.data-content {
+  padding-left: 12px;
+}
+
+.advancedFiltersSearch {
+  margin-top: 10px;
+}
 </style>
-
-<i18n>
-
-en:
-  DataView:
-    buttons:
-      create-data: Add data
-      generate-template: Generate template
-      delete-by-batch: Delete by Batch
-    description: View and export data
-    list:
-      date: Date
-      variable: Variable
-      value: Value
-      object: Target
-      provenance: provenance
-      details: view data details
-    filter:
-      label: Search data
-      experiments: Experiment(s)
-      variables: Variable(s)
-      scientificObjects: Scientific object(s)
-      scientificObjects-placeholder: Select scientific objects
-      devices: Device(s)
-      devices-placeholder:  Select devices
-      provenance: Provenance
-      targets: Target(s)
-      targets-help: Copy target's URI here
-      operator: Operators
-      batch-uri : Batch URI
-      uri-placeholder: Enter a part of an uri
-
-fr:
-  DataView:
-    buttons:
-      create-data: Ajouter un jeu de données
-      generate-template: Générer un gabarit
-      delete-by-batch: Supprimer par Batch
-    description: Visualiser et exporter des données
-    list:
-      date: Date
-      variable: Variable
-      value: Valeur
-      object: Objet cible
-      provenance: provenance
-      details: Voir les détails de la donnée
-    filter:
-      label: Rechercher des données
-      experiments: Expérimentation(s)
-      variables: Variable(s)
-      scientificObjects: Objet(s) scientifique(s)
-      scientificObjects-placeholder: Sélectionner des objets scientifiques
-      devices: Dispositifs
-      devices-placeholder: Sélectionner les dispositifs
-      provenance: Provenance
-      targets: Cible(s)
-      targets-help: Copier les URI des cibles ici
-      operator: Opérateurs
-      batch-uri : URI de Batch
-      uri-placeholder: Entrer une partie d'une uri
-
-</i18n>

@@ -1196,7 +1196,38 @@
         "data": {
             "lastMedianData": "Dernière valeur médiane",
             "lastDataStored": "Dernière donnée importée à la date",
-            "no-data": "Aucune donnée trouvée pour cette période"
+            "no-data": "Aucune donnée trouvée pour cette période",
+            "view": {
+                "buttons": {
+                    "create-data": "Ajouter un jeu de données",
+                    "generate-template": "Générer un gabarit",
+                    "delete-by-batch": "Supprimer par Batch"
+                },
+                "description": "Visualiser et exporter des données",
+                "list": {
+                    "date": "Date",
+                    "variable": "Variable",
+                    "value": "Valeur",
+                    "object": "Objet cible",
+                    "provenance": "provenance",
+                    "details": "Voir les détails de la donnée"
+                },
+                "filter": {
+                    "label": "Rechercher des données",
+                    "experiments": "Expérimentation(s)",
+                    "variables": "Variable(s)",
+                    "scientificObjects": "Objet(s) scientifique(s)",
+                    "scientificObjects-placeholder": "Sélectionner des objets scientifiques",
+                    "devices": "Dispositifs",
+                    "devices-placeholder": "Sélectionner les dispositifs",
+                    "provenance": "Provenance",
+                    "targets": "Cible(s)",
+                    "targets-help": "Copier les URI des cibles ici",
+                    "operator": "Opérateurs",
+                    "batch-uri": "URI de Batch",
+                    "uri-placeholder": "Entrer une partie d'une uri"
+                }
+            }
         },
         "datafile": {
             "create": "Ajouter un fichier de données",

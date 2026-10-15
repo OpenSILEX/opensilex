@@ -394,7 +394,7 @@ async function checkOSinExperiment(form: DataFileFormModel) {
   const contextURI = form.experiments
   const target = form.target
 
-  const http = await serviceOS.getScientificObjectsListByUris(
+  const http = await serviceOS.searchScientificObjectsListByUris(
     contextURI,
     [target]
   )

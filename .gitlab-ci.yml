@@ -1031,7 +1031,7 @@ test:temporary1:build:
     variables:
         MAVEN_SKIP_TESTS: "true"
     rules:
-        - if: $CI_COMMIT_BRANCH == "test/temporary1"
+        - if: $CI_COMMIT_BRANCH == "test/carnel"
 
 test:temporary1:deploy:
     <<: *deploy_opensilex_before_script
@@ -1046,7 +1046,7 @@ test:temporary1:deploy:
         REMOTE_SERVER_RSYNC_DIR: "mistea/temporary1"
         REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
     rules:
-        - if: $CI_COMMIT_BRANCH == "test/temporary1"
+        - if: $CI_COMMIT_BRANCH == "test/carnel"
           when: on_success
     needs:
         - test:temporary1:build

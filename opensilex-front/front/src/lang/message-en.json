@@ -1176,6 +1176,17 @@
                     "uri-placeholder": "Enter a part of an uri",
                     "germplasm-group": "Germplasm Group"
                 }
+            },
+            "export": {
+                "title": "Data export",
+                "export": "Export",
+                "select-format": "File format",
+                "select-format-help": "Long format: each line represents an observation (same as the result table).   Wide format: a given date, provenance, scientific object of an observation represents a row and each variable value is in a specific column.",
+                "check-raw-data": "With Raw data column",
+                "raw-data-help": "If checked, the column \"raw_data\" will be added to the export file",
+                "raw-data": "Raw data",
+                "export-long": "Long format",
+                "export-wide": "Wide format"
             }
         },
         "datafile": {

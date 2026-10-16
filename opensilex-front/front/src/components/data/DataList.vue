@@ -13,7 +13,7 @@
                     :uri="data.item.target"
                     :value="objects[data.item.target]"
                     :to="{
-            path: $opensilex.getTargetPath(data.item.target, contextUri, objectsPath[data.item.target])
+            path: opensilex.getTargetPath(data.item.target, contextUri, objectsPath[data.item.target])
           }"
                 ></UriLink>
             </template>

@@ -299,6 +299,7 @@ import TagInputForm from "@/components/common/forms/TagInputForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
 import DeviceSelector from "@/components/devices/DeviceSelector.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
+import DataExportModal from "@/components/data/DataExportModal.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");

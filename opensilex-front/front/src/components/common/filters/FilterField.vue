@@ -5,29 +5,25 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Component,
-  Prop
-} from "vue-property-decorator";
-import Vue, {computed} from "vue";
 
+
+import {computed} from "vue";
 
 const props = withDefaults(defineProps<{
- label: string
-  fullWidth: boolean
+  label: string
+  fullWidth?: boolean
   halWidth: boolean
   quarterWidth: boolean
 }>(), {
   label: "component.search.lab",
-  fullWidth: false,
+  fullWidth: true,
   halWidth: false,
-  quarterWidth: false
+  quarterWidth: false,
 })
 
-  const baseWidth = computed(() =>
-  {
-    return !props.fullWidth && !props.halWidth && !props.quarterWidth
-  })
+const baseWidth = computed(() => {
+  return !props.fullWidth && !props.halWidth && !props.quarterWidth
+})
 
 </script>
 

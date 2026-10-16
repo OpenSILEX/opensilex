@@ -52,7 +52,9 @@
     </appender> 
 
     
-    <root>
+    <!-- Without a level the root logger defaults to DEBUG: every debug message would be built, then dropped by LogFilter.
+         Classes uncommented as <debug> above also need a <logger name="..." level="DEBUG"/> entry. -->
+    <root level="${opensilex.log.level}">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>

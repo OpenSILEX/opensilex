@@ -22,11 +22,14 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.service.SPARQLService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.opensilex.core.data.dal.DataProvenanceModel.*;
 
@@ -37,6 +40,7 @@ import static org.opensilex.core.data.dal.DataProvenanceModel.*;
  * @author rcolin
  */
 public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataDaoV2.class);
 
     public static final String COLLECTION_NAME = "data";
 
@@ -93,17 +97,22 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         return indexes;
     }
 
-    @Override
-    public List<Bson> getBsonFilters(DataSearchFilter filter) {
-
-        //Get all bsons from DataFiles as they are all the same apart from the variable filter
-
-        List<Bson> bsonFilters = dataFileDaoV2.getBsonFilters(filter);
-
+    private Collection<Bson> getDataBsonFilters(DataSearchFilter filter) {
+        var filters = new ArrayList<Bson>();
 
         if (!CollectionUtils.isEmpty(filter.getVariables())) {
-            bsonFilters.add(Filters.in(DataModel.VARIABLE_FIELD, filter.getVariables()));
+            filters.add(Filters.in(DataModel.VARIABLE_FIELD, filter.getVariables()));
         }
+
+        return filters;
+    }
+
+    @Override
+    public List<Bson> getBsonFilters(DataSearchFilter filter) {
+        //Get all bsons from DataFiles as they are all the same and add data-specific filters (e.g., variable)
+        List<Bson> bsonFilters = dataFileDaoV2.getBsonFilters(filter);
+
+        bsonFilters.addAll(getDataBsonFilters(filter));
 
         return bsonFilters;
     }
@@ -140,52 +149,34 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     }
 
     /**
-     * Search variables that are associated with data, filtered by experiments, targets and devices.
-     * <p>
-     * This method is faster than calling
-     * {@link MongoReadWriteDao#distinct(ClientSession, String, Class, MongoSearchFilter)}, because the provenance
-     * lookup (for devices) is done more efficiently using two queries, instead of a single one that uses an `or`
-     * operation.
+     * An optimization of {@link MongoReadWriteDao#distinct(ClientSession, String, Class, MongoSearchFilter)}
+     * when querying provenance agents (devices or operators). Defaults to the normal behavior when no agent filter is
+     * specified.
      */
-    public Collection<URI> getUsedVariablesByExpeSoDevice(Collection<URI> experiments, Collection<URI> objects, List<URI> devices) {
-        var agentUris = Optional.ofNullable(devices).orElse(Collections.emptyList());
-        var provUris = devices == null || devices.isEmpty() ?
-                Collections.emptySet() :
-                new ProvenanceDAO(mongoDBService, sparql).getProvenancesURIsByAgents(devices);
-
-        var distinctQueries = new ArrayList<Bson>(2);
-        if (CollectionUtils.isNotEmpty(agentUris)) {
-            var dataProvenanceFilter = Filters.in(PROVENANCE_AGENTS_URI_FIELD, agentUris);
-            distinctQueries.add(constructUsedVariableFilter(experiments, objects, dataProvenanceFilter));
-        }
-        if (CollectionUtils.isNotEmpty(provUris)) {
-            var globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, provUris);
-            distinctQueries.add(constructUsedVariableFilter(experiments, objects, globalProvenanceFilter));
+    public Collection<URI> agentOptimizedDistinct(ClientSession session, String field, DataSearchFilter filter) {
+        if (CollectionUtils.isEmpty(filter.getDevices()) && CollectionUtils.isEmpty(filter.getOperators())) {
+            // No filter on provenance agents, we can apply the normal behavior.
+            return super.distinct(session, field, URI.class, filter);
         }
 
-        var mongoResults = distinctQueries.stream()
-                .map(query -> collection.distinct(DataModel.VARIABLE_FIELD, query, URI.class));
+        // Optimization when filtering on agents
+        var filtersWithoutAgents = dataFileDaoV2.getBsonFiltersWithoutAgents(filter);
+        filtersWithoutAgents.addAll(getDataBsonFilters(filter));
+
+        var agentFilters = dataFileDaoV2.getProvenanceAgentFilters(filter);
+        var mongoResults = agentFilters.stream()
+                .map(agentFilter -> Stream.concat(filtersWithoutAgents.stream(), Stream.of(agentFilter)).toList())
+                .map(Filters::and)
+                .peek(query -> LOGGER.debug("Agent-optimized sub-query: {}", query.toBsonDocument(Bson.class, MongoDBService.codecRegistry()).toJson()))
+                .map(query -> collection.distinct(field, query, URI.class));
         var resultSet = new HashSet<URI>();
         mongoResults.forEach(iterable -> {
             for (var result : iterable) {
                 resultSet.add(result);
             }
         });
+        LOGGER.debug("Agent-optimized distinct results: {}", resultSet);
         return resultSet;
-    }
-
-    private Bson constructUsedVariableFilter(Collection<URI> experiments, Collection<URI> objects, Bson provenanceFilter) {
-        var filters = new ArrayList<Bson>(3);
-        if (CollectionUtils.isNotEmpty(experiments)) {
-            filters.add(Filters.in(PROVENANCE_EXPERIMENT_FIELD, experiments));
-        }
-        if (CollectionUtils.isNotEmpty(objects)) {
-            filters.add(Filters.in(DataModel.TARGET_FIELD, objects));
-        }
-        if (provenanceFilter != null) {
-            filters.add(provenanceFilter);
-        }
-        return Filters.and(filters);
     }
 
     //#region Aggregation builders

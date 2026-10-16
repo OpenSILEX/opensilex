@@ -474,7 +474,9 @@ public class DataLogic {
 
 
     public Collection<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
-        return dao.getUsedVariablesByExpeSoDevice(experiments, objects, devices);
+        DataSearchFilter dataSearchFilter = new DataSearchFilter();
+        dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects);
+        return dao.agentOptimizedDistinct(null, DataModel.VARIABLE_FIELD, dataSearchFilter);
     }
 
     //TODO this next function would make more sense being in the future ScientificObjectLogic class

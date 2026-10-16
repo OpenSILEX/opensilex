@@ -66,9 +66,7 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         return indexes;
     }
 
-    @Override
-    public List<Bson> getBsonFilters(DataFileSearchFilter filter) {
-
+    public List<Bson> getBsonFiltersWithoutAgents(DataFileSearchFilter filter) {
         // #todo : Handle business logic (call to Experiment and provenance DAO) in a dedicated business class
         List<Bson> bsonFilters = super.getBsonFilters(filter);
 
@@ -107,6 +105,13 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         if (filter.getBatchUri() != null) {
             bsonFilters.add(Filters.eq(DataModel.BATCH_URI_FIELD, SPARQLDeserializers.getExpandedURI(filter.getBatchUri())));
         }
+
+        return bsonFilters;
+    }
+
+    @Override
+    public List<Bson> getBsonFilters(DataFileSearchFilter filter) {
+        var bsonFilters = getBsonFiltersWithoutAgents(filter);
 
         addProvenanceAgentFilter(bsonFilters, filter);
 
@@ -163,8 +168,7 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         }
     }
 
-    protected void addProvenanceAgentFilter(List<Bson> bsonFilters, DataFileSearchFilter filter) {
-
+    public Collection<Bson> getProvenanceAgentFilters(DataFileSearchFilter filter) {
         // Filter on agent from devices or operator inside data provenance
         List<URI> dataProvenanceAgents = new LinkedList<>();
         dataProvenanceAgents.addAll(Optional.ofNullable(filter.getDevices()).orElse(Collections.emptyList()));
@@ -179,14 +183,20 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
 
         Bson globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, globalProvenanceAgents);
 
-        // Try to simplify the query : avoid a complex OR query with empty array
-        if (!dataProvenanceAgents.isEmpty()) {
-            if (globalProvenanceAgents.isEmpty()) {  // only match data provenance
-                bsonFilters.add(dataProvenanceFilter);
-            } else {
-                bsonFilters.add(Filters.or(dataProvenanceFilter, globalProvenanceFilter));  // match agents from data provenance or from global provenance
-            }
-        }
+        return List.of(dataProvenanceFilter, globalProvenanceFilter);
     }
 
+    protected void addProvenanceAgentFilter(List<Bson> bsonFilters, DataFileSearchFilter filter) {
+        var filters = getProvenanceAgentFilters(filter);
+        if (CollectionUtils.isEmpty(filters)) {
+            throw new IllegalStateException("No provenance agent filter");
+        }
+        if (filters.size() ==  1) {
+            bsonFilters.add(filters.stream().findFirst().get());
+        } else {
+            // The OR filter is inefficient when querying a lot of data. The recommended way to optimize this is to use
+            // two distinct queries and merge the results.
+            bsonFilters.add(Filters.or(filters));
+        }
+    }
 }

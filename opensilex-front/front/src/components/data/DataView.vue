@@ -278,7 +278,7 @@ import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
 // import DataExportModal from "@/components/data/DataExportModal.vue";
-// import DataList from "@/components/data/DataList.vue";
+import DataList from "@/components/data/DataList.vue";
 // import ResultModalView from "@/components/data/ResultModalView.vue";
 // import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 // import ModalForm from "@/components/common/forms/ModalForm.vue";

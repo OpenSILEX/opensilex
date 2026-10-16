@@ -59,7 +59,6 @@
 </template>
 
 <script setup lang="ts">
-import {Prop, PropSync, Ref} from "vue-property-decorator";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataService} from "opensilex-core/api/data.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
@@ -69,25 +68,45 @@ import DataProvenanceModalView from "./DataProvenanceModalView.vue"
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import type {BatchHistoryGetDTO, ProvenanceGetDTO} from "opensilex-core/index";
+import type HttpResponse from "opensilex-core/HttpResponse";
+import type {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {computed, inject, ref, useTemplateRef} from "vue";
+import {useStore} from "vuex";
+import {useRoute} from "vue-router";
 
-    $opensilex: OpenSilexVuePlugin;
-    $store: any;
-    dataService: DataService;
-    ontologyService: OntologyService;
-    variablesService: VariablesService;
-    disabled = false;
+const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
+const store = useStore()
+const route = useRoute()
 
-    visibleDetails: boolean = false;
-    usedVariables: any[] = [];
-    selectedProvenance: any = null;
-    filterProvenanceLabel: string = null;
+const dataService = opensilex.getService<DataService>('opensilex.DataService')
+const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
+const variablesService = opensilex.getService<VariablesService>('opensilex.VariablesService')
 
-    @Prop({
-        default: "",
-    })
-    contextUri: string;
+const disabled = ref<boolean>(false)
+const visibleDetails = ref<boolean>(false)
+const usedVariables = ref<any[]>([])
+const selectedProvenance = ref<any>(null)
+const filterProvenanceLabel = ref<string>(null)
+const objects = ref<{ [key: string]: string }>({})
+const objectsPath = ref<{ [key: string]: string }>({})
+const variableNames = ref<{ [key: string]: string }>({})
+const provenances = ref<{ [key: string]: string }>({})
+const devices = ref<{ [key: string]: string }>({})
+const facilities = ref<{ [key: string]: string }>({})
+const operators = ref<{ [key: string]: string }>({})
 
-    @PropSync("listFilter",
+
+const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
+const dataProvenanceModalView = useTemplateRef<InstanceType<typeof DataProvenanceModalView>>('dataProvenanceModalView')
+
+const props = withDefaults(defineProps<{
+  contextUri?: string
+}>(), {
+  contextUri: ""
+})
+
+const filter = defineModel<any>("listFilter",
         {
             default: () => {
                 return {
@@ -105,175 +124,178 @@ import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
                 };
             },
         })
-    filter: any;
 
-    get user() {
-        return this.$store.state.user;
+const user = computed(() => {
+  return store.state.user;
+})
+
+const credentials = computed(() => {
+  return store.state.credentials;
+})
+
+const getSelectedProv = computed(() => {
+  return selectedProvenance.value;
+})
+
+const fields = computed(() =>
+{
+  let tableFields: any = [
+    {
+      key: "target",
+      label: "DataView.list.object",
+    },
+    {
+      key: "date",
+      label: "DataView.list.date",
+      sortable: true,
+    },
+    {
+      key: "variable",
+      label: "DataView.list.variable",
+      sortable: true,
+    },
+    {
+      key: "value",
+      label: "DataView.list.value",
+      sortable: false,
+    },
+    {
+      key: "provenance",
+      label: "DataView.list.provenance",
+      sortable: false
+    },
+    {
+      key: "actions",
+      label: "component.common.actions"
+    }
+  ];
+  return tableFields;
+})
+
+   function getVariableName(variableUri: string): string {
+        return variableNames.value[opensilex.getLongUri(variableUri)];
     }
 
-    get credentials() {
-        return this.$store.state.credentials;
-    }
-
-    @Ref("templateForm") readonly templateForm!: any;
-    @Ref("tableRef") readonly tableRef!: any;
-    @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: DataProvenanceModalView;
-    @Ref("exportModal") readonly exportModal!: any;
-
-    get fields() {
-        let tableFields: any = [
-            {
-                key: "target",
-                label: "DataView.list.object",
-            },
-            {
-                key: "date",
-                label: "DataView.list.date",
-                sortable: true,
-            },
-            {
-                key: "variable",
-                label: "DataView.list.variable",
-                sortable: true,
-            },
-            {
-                key: "value",
-                label: "DataView.list.value",
-                sortable: false,
-            },
-            {
-                key: "provenance",
-                label: "DataView.list.provenance",
-                sortable: false
-            },
-            {
-                key: "actions",
-                label: "component.common.actions"
-            }
-        ];
-        return tableFields;
-    }
-
-    getVariableName(variableUri: string): string {
-        return this.variableNames[this.$opensilex.getLongUri(variableUri)];
-    }
-
-  refresh() {
-    this.$opensilex.updateURLParameters(this.filter);
-    this.tableRef.changeCurrentPage(1);
+  function refresh() {
+    opensilex.updateURLParameters(filter.value);
+    tableRef.value?.setPage(1);
+    tableRef.value?.refresh();
   }
 
-    created() {
-        this.dataService = this.$opensilex.getService("opensilex.DataService");
-        this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
-        this.variablesService = this.$opensilex.getService("opensilex.VariablesService");
-        this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
-    }
+opensilex.updateFiltersFromURL(route.query, filter.value);
 
-    get getSelectedProv() {
-        return this.selectedProvenance;
-    }
+function getProvenance(uri: string): Promise<ProvenanceGetDTO> {
+  if (uri != undefined) {
+    return dataService
+        .getProvenance(uri)
+        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+          return http.response.result;
+        });
+  }
+}
 
-    showProvenanceDetails() {
-        if (this.selectedProvenance != null) {
-            this.visibleDetails = !this.visibleDetails;
+/**
+ * Gets the batch history dto, containing a link to csv document
+ */
+function getBatch(uri: string): Promise<BatchHistoryGetDTO> {
+  if (uri != undefined) {
+    return dataService
+        .getBatchHistory(uri)
+        .then((http: HttpResponse<OpenSilexResponse<BatchHistoryGetDTO>>) => {
+          return http.response.result;
+        });
+  }
+}
+
+function showProvenanceDetails() {
+        if (selectedProvenance.value != null) {
+            visibleDetails.value = !visibleDetails.value;
         }
     }
 
-    loadProvenance(selectedValue) {
+function loadProvenance(selectedValue) {
         if (selectedValue != undefined) {
-            this.$opensilex.getProvenance(selectedValue.id, this.dataService).then((prov) => {
-                this.selectedProvenance = prov;
+            getProvenance(selectedValue.id).then((prov) => {
+                selectedProvenance.value = prov;
             });
         }
     }
 
-    async showDataDetailsModal(item: DataGetSearchDTO) {
-        this.$opensilex.enableLoader();
+    async function showDataDetailsModal(item: DataGetSearchDTO) {
+        opensilex.enableLoader();
         try {
-            const provenanceSearchResult = await this.$opensilex.getProvenance(item.provenance.uri, this.dataService);
-            const batchSearchResult = await this.$opensilex.getBatch(item.batchUri, this.dataService);
+            const provenanceSearchResult = await getProvenance(item.provenance.uri);
+            const batchSearchResult = await getBatch(item.batchUri);
             const value = {
                 provenance: provenanceSearchResult,
                 data: item,
                 batch: batchSearchResult
             };
-            this.dataProvenanceModalView.setProvenanceAndBatch(value);
-            this.dataProvenanceModalView.show();
+            dataProvenanceModalView.value?.setProvenanceAndBatch(value);
+            dataProvenanceModalView.value?.show();
         } catch (error) {
             console.error("Failed to fetch provenance or Batch:", error);
         }
     }
 
-
-    objects : {[key : string] : string} = {};
-    objectsPath : {[key : string] : string} = {};
-    variableNames = {};
-    provenances = {};
-    devices = {};
-    facilities = {};
-    operators = {};
-
-
-
-   countDataList(options) {
-       let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+  function countDataList(options) {
+       let provUris = opensilex.prepareGetParameter(filter.value.provenance);
        if (provUris != undefined) {
            provUris = [provUris];
        }
 
-       return this.dataService.countData(
+       return dataService.countData(
            // Count data, set limit to  since here we want the exact/total data count according the current filter
-           this.$opensilex.prepareGetParameter(this.filter.start_date),
-           this.$opensilex.prepareGetParameter(this.filter.end_date),
+           opensilex.prepareGetParameter(filter.value.start_date),
+           opensilex.prepareGetParameter(filter.value.end_date),
            undefined,
-           this.filter.experiments,
-           this.$opensilex.prepareGetParameter(this.filter.variables),
-           this.$opensilex.prepareGetParameter(this.filter.devices),
+           filter.value.experiments,
+           opensilex.prepareGetParameter(filter.value.variables),
+           opensilex.prepareGetParameter(filter.value.devices),
            undefined,
            undefined,
            provUris,
            undefined,
-           this.$opensilex.prepareGetParameter(this.filter.operators),
-           this.filter.germplasm_group,
-           this.filter.germplasm,
+           opensilex.prepareGetParameter(filter.value.operators),
+           filter.value.germplasm_group,
+           filter.value.germplasm,
            0,
-         this.filter.batch_uri,
+         filter.value.batch_uri,
            [].concat(
-               this.filter.scientificObjects,
-               this.filter.facilities,
-               this.filter.targets) // targets & os & facilities
+               filter.value.scientificObjects,
+               filter.value.facilities,
+               filter.value.targets) // targets & os & facilities
 
        )
     }
 
 
-    searchDataList(options) {
-        let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+  function  searchDataList(options) {
+        let provUris = opensilex.prepareGetParameter(filter.value.provenance);
         if (provUris != undefined) {
             provUris = [provUris];
         }
 
         return new Promise((resolve, reject) => {
-            this.dataService.searchDataListByTargets(
-                this.$opensilex.prepareGetParameter(this.filter.start_date),
-                this.$opensilex.prepareGetParameter(this.filter.end_date),
+            dataService.searchDataListByTargets(
+                opensilex.prepareGetParameter(filter.value.start_date),
+                opensilex.prepareGetParameter(filter.value.end_date),
                 undefined,
-                this.filter.experiments,
-                this.$opensilex.prepareGetParameter(this.filter.variables),
-                this.$opensilex.prepareGetParameter(this.filter.devices),
+                filter.value.experiments,
+                opensilex.prepareGetParameter(filter.value.variables),
+                opensilex.prepareGetParameter(filter.value.devices),
                 undefined,
                 undefined,
                 provUris,
                 undefined,
-                this.filter.germplasm_group,
-                this.$opensilex.prepareGetParameter(this.filter.operators),
-                this.filter.germplasm,
-                this.filter.batch_uri,
+                filter.value.germplasm_group,
+                opensilex.prepareGetParameter(filter.value.operators),
+                filter.value.germplasm,
+                filter.value.batch_uri,
                 options.orderBy,
                 options.currentPage,
                 options.pageSize,
-                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets) // targets & os & facilities
+                [].concat(filter.value.scientificObjects, filter.value.facilities, filter.value.targets) // targets & os & facilities
             )
                 .then((http) => {
                     let promiseArray = [];
@@ -301,16 +323,16 @@ import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
                         }
 
                         if (objectsToLoad.length > 0) {
-                            promiseArray.push(this.$opensilex.loadOntologyLabelsWithType(objectsToLoad, this.contextUri, this.objects, this.ontologyService));
+                            promiseArray.push(opensilex.loadOntologyLabelsWithType(objectsToLoad, props.contextUri, objects.value, ontologyService));
                         }
 
                         if (variablesToLoad.length > 0) {
-                            let promiseVariable = this.variablesService
+                            let promiseVariable = variablesService
                                 .searchVariablesByURIs(variablesToLoad)
                                 .then((httpObj) => {
                                     for (let j in httpObj.response.result) {
                                         let variable = httpObj.response.result[j];
-                                        this.variableNames[this.$opensilex.getLongUri(variable.uri)] = variable.name;
+                                        variableNames.value[opensilex.getLongUri(variable.uri)] = variable.name;
                                     }
                                 })
                                 .catch(reject);
@@ -318,12 +340,12 @@ import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
                         }
 
                         if (provenancesToLoad.length > 0) {
-                            let promiseProvenance = this.dataService
+                            let promiseProvenance = dataService
                                 .searchProvenancesByURIs(provenancesToLoad)
                                 .then((httpObj) => {
                                     for (let j in httpObj.response.result) {
                                         let prov = httpObj.response.result[j];
-                                        this.provenances[prov.uri] = prov.name;
+                                        provenances.value[prov.uri] = prov.name;
                                     }
                                 })
                                 .catch(reject);
@@ -331,7 +353,7 @@ import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
                         }
 
                         Promise.all(promiseArray).then((values) => {
-                            Promise.all([this.loadObjectsPath()]).then((value) => {
+                            Promise.all([loadObjectsPath()]).then((value) => {
                                 resolve(http);
                             })
                         });
@@ -344,27 +366,32 @@ import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
         });
     }
 
-    /**
-     * Construct paths for each target's UriLink components according to their type.
-     */
-    private loadObjectsPath(): Promise<unknown> {
+/**
+ * Construct paths for each target's UriLink components according to their type.
+ */
+function loadObjectsPath(): Promise<unknown> {
+  // Ensure that at least one object has been loaded
+  const objectURIs = Object.keys(objects.value)
 
-        // ensure that at least one object has been loaded (in case where all data in the page have no target)
-        let objectURIs = Object.keys(this.objects);
-        if (!objectURIs || objectURIs.length == 0) {
-            return Promise.resolve();
+  if (objectURIs.length === 0) {
+    return Promise.resolve()
+  }
+
+  return ontologyService
+      .getURITypes(objectURIs)
+      .then((httpObj) => {
+        for (const j in httpObj.response.result) {
+          const obj = httpObj.response.result[j]
+
+          objectsPath.value[obj.uri] =
+              opensilex.getPathFromUriTypes(obj.rdf_types)
         }
+      })
+}
 
-        return this.ontologyService
-            .getURITypes(objectURIs)
-            .then((httpObj) => {
-                for (let j in httpObj.response.result) {
-                    let obj = httpObj.response.result[j];
-                    this.objectsPath[obj.uri] =
-                        this.$opensilex.getPathFromUriTypes(obj.rdf_types);
-                }
-            });
-
+defineExpose({
+  refresh
+})
 </script>
 
 <style scoped lang="scss">

@@ -1204,6 +1204,11 @@
                     "delete-by-batch": "Supprimer par Batch"
                 },
                 "description": "Visualiser et exporter des données",
+                "data-imported": "observations ont été importées avec succès",
+                "form": {
+                    "create": "Ajouter des données",
+                    "update": "Modifier"
+                },
                 "list": {
                     "date": "Date",
                     "variable": "Variable",
@@ -1225,7 +1230,8 @@
                     "targets-help": "Copier les URI des cibles ici",
                     "operator": "Opérateurs",
                     "batch-uri": "URI de Batch",
-                    "uri-placeholder": "Entrer une partie d'une uri"
+                    "uri-placeholder": "Entrer une partie d'une uri",
+                    "germplasm-group": "Groupe de ressources génétiques"
                 }
             }
         },

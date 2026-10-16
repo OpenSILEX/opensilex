@@ -1146,6 +1146,11 @@
                     "delete-by-batch": "Delete by Batch"
                 },
                 "description": "View and export data",
+                "data-imported": "Observations have been imported successfully",
+                "form": {
+                    "create": "Add Data",
+                    "update": "Update"
+                },
                 "list": {
                     "date": "Date",
                     "variable": "Variable",
@@ -1167,7 +1172,8 @@
                     "targets-help": "Copy target's URI here",
                     "operator": "Operators",
                     "batch-uri": "Batch URI",
-                    "uri-placeholder": "Enter a part of an uri"
+                    "uri-placeholder": "Enter a part of an uri",
+                    "germplasm-group": "Germplasm Group"
                 }
             }
         },

@@ -44,7 +44,7 @@
                     <DetailButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
                         @click="showDataDetailsModal(data.item)"
-                        label="DataView.list.details"
+                        label="component.data.view.list.details"
                         :small="true"
                     ></DetailButton>
                 </b-button-group>
@@ -142,26 +142,26 @@ const fields = computed(() =>
   let tableFields: any = [
     {
       key: "target",
-      label: "DataView.list.object",
+      label: "component.data.view.list.object",
     },
     {
       key: "date",
-      label: "DataView.list.date",
+      label: "component.data.view.list.date",
       sortable: true,
     },
     {
       key: "variable",
-      label: "DataView.list.variable",
+      label: "component.data.view.list.variable",
       sortable: true,
     },
     {
       key: "value",
-      label: "DataView.list.value",
+      label: "component.data.view.list.value",
       sortable: false,
     },
     {
       key: "provenance",
-      label: "DataView.list.provenance",
+      label: "component.data.view.list.provenance",
       sortable: false
     },
     {

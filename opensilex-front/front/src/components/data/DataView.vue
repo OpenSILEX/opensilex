@@ -6,7 +6,7 @@
           v-if="user.hasCredential(
               credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
           @click="showImportForm()"
-          label="OntologyCsvImporter.import"
+          label="component.common.import-files.csv-import"
           class="createButton greenThemeColor"
       >
       </CreateButton>
@@ -42,8 +42,8 @@
     <ModalForm
         v-if="renderImportForm"
         ref="modalDataForm"
-        createTitle="DataImportForm.create"
-        editTitle="DataImportForm.update"
+        createTitle="component.data.view.form.create"
+        editTitle="component.data.view.form.update"
         component="DataImportForm"
         icon="ik#ik-bar-chart-line"
         modalSize="xl"
@@ -65,7 +65,7 @@
           <!-- Variables -->
           <n-form-item class="compact-form-item">
             <VariableSelectorWithFilter
-                placeholder="VariableSelectorWithFilter.placeholder-multiple"
+                placeholder="component.variable.placeholder-multiple"
                 v-model:variables="filter.variables"
                 :withAssociatedData="true"
                 class="searchFilter"
@@ -108,7 +108,7 @@
           <!-- Germplasm Group -->
           <n-form-item class="compact-form-item">
             <GermplasmGroupSelector
-                label="GermplasmList.filter.germplasm-group"
+                label="component.data.view.filter.germplasm-group"
                 :multiple="false"
                 v-model:germplasmGroup="filter.germplasm_group"
                 class="searchFilter"
@@ -149,7 +149,7 @@
           <n-form-item class="compact-form-item">
             <FacilitySelector
               ref="facilitySelector"
-              label="OrganizationForm.form-facilities-label"
+              label="component.experiment.facilities"
               v-model:facilities="filter.facilities"
               :multiple="true"
               class="searchFilter"
@@ -160,7 +160,7 @@
           <n-form-item class="compact-form-item">
             <DateTimeForm
                 v-model:value="filter.start_date"
-                label="component.common.begin"
+                label="component.common.date-time.begin"
                 name="startDate"
                 :max-date="filter.end_date ? filter.end_date : undefined"
                 class="searchFilter"
@@ -171,7 +171,7 @@
           <n-form-item class="compact-form-item">
             <DateTimeForm
                 v-model:value="filter.end_date"
-                label="component.common.end"
+                label="component.common.date-time.end"
                 name="endDate"
                 :min-date="filter.start_date ? filter.start_date : undefined"
                 class="searchFilter"
@@ -183,7 +183,7 @@
             <DataProvenanceSelector
                 ref="provSelector"
                 v-model:provenances="filter.provenance"
-                label="ExperimentData.provenance"
+                label="component.data.view.filter.provenance"
                 @select="loadProvenance"
                 :targets="filter.scientificObjects"
                 :experiments="filter.experiments"
@@ -478,7 +478,7 @@ function clear() {
 }
 
 function successMessage(form) {
-  return t("ResultModalView.data-imported");
+  return t("component.data.view.data-imported");
 }
 
 function refreshDataAfterImportation() {

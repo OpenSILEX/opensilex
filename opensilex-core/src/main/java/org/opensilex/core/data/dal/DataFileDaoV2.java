@@ -174,22 +174,25 @@ public class DataFileDaoV2 extends MongoReadWriteDao<DataFileModel, DataFileSear
         dataProvenanceAgents.addAll(Optional.ofNullable(filter.getDevices()).orElse(Collections.emptyList()));
         dataProvenanceAgents.addAll(Optional.ofNullable(filter.getOperators()).orElse(Collections.emptyList()));
 
-        Bson dataProvenanceFilter = Filters.in(PROVENANCE_AGENTS_URI_FIELD, dataProvenanceAgents);
-
         // Filter on agents from global provenances
         Set<URI> globalProvenanceAgents = dataProvenanceAgents.isEmpty() ?
                 Collections.emptySet() :
                 new ProvenanceDAO(mongoDBService, sparqlService).getProvenancesURIsByAgents(dataProvenanceAgents);
 
-        Bson globalProvenanceFilter = Filters.in(PROVENANCE_URI_FIELD, globalProvenanceAgents);
-
-        return List.of(dataProvenanceFilter, globalProvenanceFilter);
+        var result = new ArrayList<Bson>(2);
+        if (!dataProvenanceAgents.isEmpty()) {
+            result.add(Filters.in(PROVENANCE_AGENTS_URI_FIELD, dataProvenanceAgents));
+        }
+        if (!globalProvenanceAgents.isEmpty()) {
+            result.add(Filters.in(PROVENANCE_URI_FIELD, globalProvenanceAgents));
+        }
+        return result;
     }
 
     protected void addProvenanceAgentFilter(List<Bson> bsonFilters, DataFileSearchFilter filter) {
         var filters = getProvenanceAgentFilters(filter);
         if (CollectionUtils.isEmpty(filters)) {
-            throw new IllegalStateException("No provenance agent filter");
+            return;
         }
         if (filters.size() ==  1) {
             bsonFilters.add(filters.stream().findFirst().get());

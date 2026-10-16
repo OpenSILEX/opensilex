@@ -311,7 +311,7 @@ const selectedProvenance = ref<ProvenanceGetDTO>(null);
 const filterProvenanceLabel = ref<string>(null);
 const refreshKey = ref<number>(0);
 const resetExperimentSelectorKey = ref<number>(0);
-const toggleSearchFilters = ref<boolean>(false);
+const toggleSearchFilters = ref<boolean>(true);
 const loadAdvancedSearchFilters = ref<boolean>(false);
 const renderImportForm = ref<boolean>(false);
 

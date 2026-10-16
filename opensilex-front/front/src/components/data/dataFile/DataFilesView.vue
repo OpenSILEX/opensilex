@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <PageActions v-if="withPageActions">
+    <PageActions v-if="withPageActions" class="pageActionsBtns">
       <CreateButton
         @click="showCreateDataFileForm"
         :label="t('component.datafile.create')"
@@ -55,7 +55,7 @@
             </n-form-item>
 
             <!-- Experiments -->
-            <n-form-item class="compact-form-item">
+            <n-form-item v-if="!enforcedExperimentUri" class="compact-form-item">
               <ExperimentSelector
                 :label="t('component.experiment.view.experiment-experiments')"
                 v-model:experiments="filter.experiments"
@@ -118,7 +118,7 @@
                 @select="loadProvenance"
                 :devices="passedDeviceUri ? [passedDeviceUri] : undefined"
                 :targets="filter.scientificObjects"
-                :experiments="filter.experiments"
+                :experiments="realFilterToApply.experiments"
                 :multiple="false"
                 :viewHandler="showProvenanceDetails"
                 :viewHandlerDetailsVisible="provenanceDetailsAreVisible"
@@ -167,6 +167,8 @@
               v-if="withPageActions"
               :editTitle="t('component.datafile.update')"
               :createTitle="t('component.datafile.create')"
+              :tabExperimentMode="!!enforcedExperimentUri"
+              :experimentUri="enforcedExperimentUri"
               @onCreate="refresh"
             />
           </n-layout-content>
@@ -190,15 +192,14 @@ import {
 } from 'naive-ui'
 
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
-import type { DataService, ProvenanceGetDTO } from 'opensilex-core/index'
+import type { ProvenanceGetDTO } from 'opensilex-core/index'
 import type HttpResponse from '@/lib/HttpResponse'
 import type { OpenSilexResponse} from "@/lib/HttpResponse";
-import DataFileForm from "@/components/data/form/DataFileForm.vue";
-import DataFilesList, {DatafileFilter} from "@/components/data/DataFilesList.vue";
-import DataFilesImagesList from "@/components/data/DataFilesImagesList.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import DataFileForm from "@/components/data/dataFile/DataFileForm.vue";
+import DataFilesList, {DatafileFilter} from "@/components/data/dataFile/DataFilesList.vue";
+import DataFilesImagesList from "@/components/data/dataFile/DataFilesImagesList.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
-import DatafileProvenanceSelector from "@/components/data/DatafileProvenanceSelector.vue";
+import DatafileProvenanceSelector from "@/components/data/dataFile/DatafileProvenanceSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
@@ -285,7 +286,7 @@ const filter = ref<FilterModel>({
 
 const soFilter = ref<SoFilterModel>({
   name: undefined,
-  experiment: undefined,
+  experiment: props.enforcedExperimentUri,
   germplasm: undefined,
   factorLevels: [],
   types: [],
@@ -307,6 +308,7 @@ const datafileForm = useTemplateRef<InstanceType<typeof DataFileForm>>("datafile
 const realFilterToApply = computed<DatafileFilter>(() => {
   return {
     ...filter.value,
+    experiments: (props.enforcedExperimentUri ? [props.enforcedExperimentUri] : filter.value.experiments),
     scientificObjects: (props.enforcedScientificObjectUri ? [props.enforcedScientificObjectUri] : filter.value.scientificObjects),
     devices: (props.passedDeviceUri ? [props.passedDeviceUri] : [])
   }
@@ -478,9 +480,13 @@ defineExpose({
   width: 100%;
 }
 
+.pageActionsBtns .createButton {
+  margin-left: 15px;
+}
+
 .createButton {
-  margin-bottom: 10px;
-  margin-top: -15px;
+  margin-top: 1px;
+  margin-left: 0;
 }
 
 .project-content {

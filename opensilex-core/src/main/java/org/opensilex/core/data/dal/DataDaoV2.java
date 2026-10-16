@@ -70,7 +70,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         Bson variableAscIndex = Indexes.ascending(DataModel.VARIABLE_FIELD);
         Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
-        Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
+        Bson targetAscIndex = Indexes.ascending(DataModel.TARGET_FIELD);
         Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
         Bson batchAscIndex = Indexes.ascending(DataModel.BATCH_URI_FIELD);
         Bson agentAscIndex = Indexes.ascending(PROVENANCE_AGENTS_URI_FIELD);
@@ -84,15 +84,23 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         indexes.put(Indexes.compoundIndex(variableAscIndex, dateDescIndex), null);
 
         // Multi-fields indexes : Access by experiment and (variable, target, provenance agent). Add date to ensure index usage in case of sorting by date
-        indexes.put(Indexes.compoundIndex(experimentAscIndex, variableAscIndex, targetDescIndex, dateDescIndex), null);
-        indexes.put(Indexes.compoundIndex(variableAscIndex, targetDescIndex, dateDescIndex), null);
+        indexes.put(Indexes.compoundIndex(experimentAscIndex, variableAscIndex, targetAscIndex, dateDescIndex), null);
+        indexes.put(Indexes.compoundIndex(variableAscIndex, targetAscIndex, dateDescIndex), null);
 
         // Compound index : ensure unicity #TODO delete this index (index on whole field,too big and not well used in query)
-        indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetDescIndex, dateDescIndex), new IndexOptions().unique(true));
+        indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetAscIndex, dateDescIndex), new IndexOptions().unique(true));
 
-        // Variable - provenance indexes
+        // Provenance - variable indexes (for lookup by agent)
         indexes.put(Indexes.compoundIndex(agentAscIndex, variableAscIndex), null);
         indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, variableAscIndex), null);
+
+        // Provenance - target indexes (for lookup by agent)
+        indexes.put(Indexes.compoundIndex(agentAscIndex, targetAscIndex), null);
+        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, targetAscIndex), null);
+
+        // Provenances indexes (for lookup by agent)
+        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, agentAscIndex), null);
+        indexes.put(Indexes.compoundIndex(agentAscIndex, provenanceUriAscIndex), null);
 
         return indexes;
     }
@@ -163,6 +171,7 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         var filtersWithoutAgents = dataFileDaoV2.getBsonFiltersWithoutAgents(filter);
         filtersWithoutAgents.addAll(getDataBsonFilters(filter));
 
+        LOGGER.debug("Agent-optimized distinct query for field {}", field);
         var agentFilters = dataFileDaoV2.getProvenanceAgentFilters(filter);
         var mongoResults = agentFilters.stream()
                 .map(agentFilter -> Stream.concat(filtersWithoutAgents.stream(), Stream.of(agentFilter)).toList())
@@ -172,7 +181,9 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         var resultSet = new HashSet<URI>();
         mongoResults.forEach(iterable -> {
             for (var result : iterable) {
-                resultSet.add(result);
+                if (result != null) {
+                    resultSet.add(result);
+                }
             }
         });
         LOGGER.debug("Agent-optimized distinct results: {}", resultSet);

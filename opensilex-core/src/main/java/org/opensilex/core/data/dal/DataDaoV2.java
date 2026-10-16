@@ -167,16 +167,18 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
             return super.distinct(session, field, URI.class, filter);
         }
 
-        // Optimization when filtering on agents
+        // Query without the agent filters
         var filtersWithoutAgents = dataFileDaoV2.getBsonFiltersWithoutAgents(filter);
         filtersWithoutAgents.addAll(getDataBsonFilters(filter));
 
         LOGGER.debug("Agent-optimized distinct query for field {}", field);
         var agentFilters = dataFileDaoV2.getProvenanceAgentFilters(filter);
         var mongoResults = agentFilters.stream()
+                // constructing the separated queries
                 .map(agentFilter -> Stream.concat(filtersWithoutAgents.stream(), Stream.of(agentFilter)).toList())
                 .map(Filters::and)
-                .peek(query -> LOGGER.debug("Agent-optimized sub-query: {}", query.toBsonDocument(Bson.class, MongoDBService.codecRegistry()).toJson()))
+                .peek(query -> LOGGER.debug("Agent-optimized distinct sub-query: {}", query.toBsonDocument(Bson.class, MongoDBService.codecRegistry()).toJson()))
+                // making the distinct call
                 .map(query -> collection.distinct(field, query, URI.class));
         var resultSet = new HashSet<URI>();
         mongoResults.forEach(iterable -> {

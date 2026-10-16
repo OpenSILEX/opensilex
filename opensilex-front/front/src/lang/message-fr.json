@@ -1201,7 +1201,8 @@
                 "buttons": {
                     "create-data": "Ajouter un jeu de données",
                     "generate-template": "Générer un gabarit",
-                    "delete-by-batch": "Supprimer par lot"
+                    "delete-by-batch": "Supprimer par lot",
+                    "export": "Exporter"
                 },
                 "description": "Visualiser et exporter des données",
                 "data-imported": "observations ont été importées avec succès",

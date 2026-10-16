@@ -1143,7 +1143,8 @@
                 "buttons": {
                     "create-data": "Add data",
                     "generate-template": "Generate template",
-                    "delete-by-batch": "Delete by Batch"
+                    "delete-by-batch": "Delete by Batch",
+                    "export": "Export"
                 },
                 "description": "View and export data",
                 "data-imported": "Observations have been imported successfully",

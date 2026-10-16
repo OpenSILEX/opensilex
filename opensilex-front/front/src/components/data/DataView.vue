@@ -11,12 +11,13 @@
       >
       </CreateButton>
       <!-- Export button-->
-      <n-button
-          @click="exportModal.show()"
-          class="exportButton greenThemeColor createButton"
-      >
-        export
-      </n-button>
+      <Button
+        @click="exportModal.show()"
+        class="createButton greenThemeColor"
+        icon="bi-download"
+        :small="false"
+        label="component.data.view.buttons.export"
+      ></Button>
       <!-- Delete by batch button -->
       <Button
         @click="deleteByBatchModal.show()"

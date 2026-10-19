@@ -18,14 +18,14 @@
 
 import OpenSilexVuePlugin from '../../models/OpenSilexVuePlugin';
 import HttpResponse, { OpenSilexResponse } from '../../lib/HttpResponse';
-import { inject } from 'vue';
+import { inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import FormSelector from "@/components/common/forms/FormSelector.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 const opensilex = inject<OpenSilexVuePlugin>('opensilex');
-const service = inject<ExperimentsService>('service');
+const service = opensilex.getService<ExperimentsService>('opensilex.ExperimentsService');
 const { t } = useI18n();
 
 const fundinguri = defineModel<string>('fundinguri');
@@ -43,22 +43,16 @@ const props = defineProps({
     type: String,
   },
 });
-const options = [];
+const options = ref([]);
 
-function created() {
-  const service = opensilex.getService('opensilex.ExperimentsService');
-  searchFunding();
-}
+searchFunding();
 
 function searchFunding() {
   service
     .searchFunding(undefined, ['name=asc'], undefined, undefined)
     .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
       if (http && http.response) {
-        const options = [];
-        http.response.result.forEach((fundingDto) => {
-          options.push({ label: fundingDto.name, id: fundingDto.uri });
-        });
+        options.value = http.response.result.map((fundingDto) => ({ label: fundingDto.name, id: fundingDto.uri }));
       }
     })
     .catch(opensilex.errorHandler);

@@ -39,19 +39,12 @@
       </b-col>
     </b-row>
 
-    <ModalForm
+    <ProvenanceForm
       ref="provenanceForm"
-      component="ProvenanceForm"
-      createTitle="ProvenanceView.add"
-      editTitle="ProvenanceView.update"
-      icon="fa#seedling"
-      modalSize="lg"
-      @hide="validateProvenanceForm='true'"
-      :initForm="initForm"
-      :successMessage="successMessage"
-      :validationDisabled="validateProvenanceForm"
+      :createTitle="t('ProvenanceView.add')"
+      :editTitle="t('ProvenanceView.update')"
       @onCreate="afterCreateProvenance"
-    ></ModalForm>
+    ></ProvenanceForm>
     
       <!-- Upload file  -->
       <GenerateDataTemplateFrom
@@ -141,6 +134,8 @@ import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
 import {AgentModel, ProvenanceGetDTO} from "opensilex-core/lib";
 import Oeso from "@/ontologies/Oeso";
+import DataValidationReport from "@/components/data/DataValidationReport.vue";
+import ProvenanceForm from "@/components/data/form/ProvenanceForm.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
@@ -158,7 +153,6 @@ const duplicatedData = ref<any[]>([])
 const tooLargeDataset = ref<boolean>(false)
 const importedLines = ref<number>(0)
 const withSOcolumn = ref<boolean>(true)
-const validateProvenanceForm = ref<boolean>(true)
 const showTable = ref<boolean>()
 const provenance = ref<any>(null)
 const experiments = ref([])
@@ -168,7 +162,7 @@ const hasDeviceAgent = ref<boolean>(false)
 const standardProvURI = ref()
 const validationKey = ref<string>(null)
 
-const provenanceForm = useTemplateRef<InstanceType<typeof ModalForm>>('provenanceForm')
+const provenanceForm = useTemplateRef<InstanceType<typeof ProvenanceForm>>('provenanceForm')
 const provenanceSelector = useTemplateRef<InstanceType<typeof ProvenanceSelector>>('provenanceSelector')
 const validationReport = useTemplateRef<InstanceType<typeof DataValidationReport>>('validationReport')
 const templateForm = useTemplateRef<InstanceType<typeof Button>>('templateForm')
@@ -230,18 +224,28 @@ function showProvenanceDetails() {
   }
 
 function showProvenanceCreateForm() {
-    validateProvenanceForm.value = false;
-    provenanceForm.value.showCreateForm();
+    provenanceForm.value.showCreateForm(initForm());
   }
 
-function successMessage() {
-    return t("DataImportForm.provenance-success-message");
-  }
-
-function initForm(form) {
+function initForm() {
     let formattedDate = opensilex.dateTimeFormatter.formatISODateTime(new Date());
-    form.name = "PROV_" + formattedDate;
-    form.experiments = [];
+    return {
+      uri: null,
+      name: "PROV_" + formattedDate,
+      description: null,
+      experiments: [],
+      activity_type: null,
+      activity_start_date: null,
+      activity_end_date: null,
+      activity_uri: null,
+      agentTypes: [],
+      agents: [
+        {
+          uris: [],
+          rdf_type: null
+        }
+      ]
+    };
   }
 
 function selectedOperators(valueToSelect) {
@@ -274,9 +278,12 @@ function resetProvenanceForm() {
     };
   }
 
-function afterCreateProvenance(data) {
-    provenance.value = data.uri;
-    provenanceSelector.value.select({ id: data.uri, label: data.name });
+function afterCreateProvenance(http: HttpResponse<OpenSilexResponse<string>>) {
+    let uri = http.response.result;
+    provenance.value = uri;
+    getProvenance(uri).then((prov) => {
+      provenanceSelector.value.select({ id: uri, label: prov.name });
+    });
   }
 
 function getProvenance(uri) {

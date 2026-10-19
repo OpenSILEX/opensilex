@@ -68,12 +68,12 @@ import DataProvenanceModalView from "./DataProvenanceModalView.vue"
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
-import type {BatchHistoryGetDTO, ProvenanceGetDTO} from "opensilex-core/index";
 import type HttpResponse from "opensilex-core/HttpResponse";
 import type {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {computed, inject, ref, useTemplateRef} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
+import {BatchHistoryGetDTO, ProvenanceGetDTO} from "opensilex-core/lib";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
@@ -83,18 +83,12 @@ const dataService = opensilex.getService<DataService>('opensilex.DataService')
 const ontologyService = opensilex.getService<OntologyService>('opensilex.OntologyService')
 const variablesService = opensilex.getService<VariablesService>('opensilex.VariablesService')
 
-const disabled = ref<boolean>(false)
 const visibleDetails = ref<boolean>(false)
-const usedVariables = ref<any[]>([])
 const selectedProvenance = ref<any>(null)
-const filterProvenanceLabel = ref<string>(null)
 const objects = ref<{ [key: string]: string }>({})
 const objectsPath = ref<{ [key: string]: string }>({})
 const variableNames = ref<{ [key: string]: string }>({})
 const provenances = ref<{ [key: string]: string }>({})
-const devices = ref<{ [key: string]: string }>({})
-const facilities = ref<{ [key: string]: string }>({})
-const operators = ref<{ [key: string]: string }>({})
 
 
 const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')

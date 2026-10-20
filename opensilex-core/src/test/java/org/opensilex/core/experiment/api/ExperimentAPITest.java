@@ -8,12 +8,17 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
+import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
+import org.opensilex.core.scientificObject.api.ScientificObjectCreationDTO;
 import org.opensilex.integration.test.ServiceDescription;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -30,6 +35,8 @@ import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.*;
+import static org.opensilex.sparql.deserializer.SPARQLDeserializers.nodeURI;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * @author Vincent MIGOT
@@ -158,6 +165,14 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         return xpDto;
     }
 
+    private static ScientificObjectCreationDTO makeScientificObject(URI experiment) {
+        var dto = new ScientificObjectCreationDTO();
+        dto.setName("Test Scientific Object");
+        dto.setType(URI.create(Oeso.ScientificObject.getURI()));
+        dto.setExperiment(experiment);
+        return dto;
+    }
+
     @Test
     public void testCreate() throws Exception {
 
@@ -231,6 +246,30 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testDeleteShouldRemoveGraph() throws Exception {
+        var xpUri = new UserCallBuilder(create)
+                .setBody(getCreationDTO())
+                .buildAdmin()
+                .executeCallAndReturnURI();
+        new UserCallBuilder(ScientificObjectAPITest.create)
+                .setBody(makeScientificObject(xpUri))
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.CREATED);
+
+        var graphExistQuery = new AskBuilder()
+                .addGraph(nodeURI(xpUri), makeVar("s"), makeVar("p"), makeVar("o"));
+        assertTrue("The scientific object should be in the experiment graph.",
+                getSparqlService().executeAskQuery(graphExistQuery));
+
+        new UserCallBuilder(delete)
+                .setUriInPath(xpUri)
+                .buildAdmin()
+                .executeCallAndAssertStatus(Status.OK);
+        assertFalse("The experiment graph should be deleted.",
+                getSparqlService().executeAskQuery(graphExistQuery));
+    }
+
+    @Test
     public void testGetByUri() throws Exception {
 
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
@@ -260,7 +299,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
-    
+
 
     @Test
     public void testSearch() throws Exception {

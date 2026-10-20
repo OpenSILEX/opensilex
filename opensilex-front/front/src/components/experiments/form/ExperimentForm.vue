@@ -40,12 +40,19 @@ const  steps: WizardStep[] = [
   ];
 
 
+const props = withDefaults(defineProps<{
+  /** Called with the empty form on creation, to prefill it (same contract as ProjectForm). */
+  initForm?: (form: any) => void
+}>(), {
+  initForm: () => {}
+})
+
 const emit = defineEmits<{
   onUpdate: [form: any],
 }>()
 
   function getEmptyForm() {
-    return {
+    const empty = {
       uri: undefined,
       name: "",
       projects: [],
@@ -66,6 +73,8 @@ const emit = defineEmits<{
       sensors: [],
       alternative_name:""
     };
+    props.initForm?.(empty);
+    return empty;
   }
 
   function showCreateForm() {

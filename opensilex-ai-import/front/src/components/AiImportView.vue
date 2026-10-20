@@ -243,6 +243,12 @@
           initForm hook with what the file says. An experiment has no creation form in this front
           yet, so it is still drafted on the proposal card.
         -->
+        <!-- The experiments screen's own wizard, prefilled from the file; it creates on submit only. -->
+        <opensilex-ExperimentForm
+          ref="experimentForm"
+          :initForm="prefillExperiment"
+          @onCreate="onCreatedInForm"
+        />
         <opensilex-ProjectForm
           ref="projectForm"
           :initForm="prefillProject"
@@ -366,12 +372,14 @@ const personForm = ref<any>(null)
 const projectForm = ref<any>(null)
 const facilityForm = ref<any>(null)
 const organizationForm = ref<any>(null)
+const experimentForm = ref<any>(null)
 
 /**
  * What the next platform form opens with. The forms call their initForm hook when they build their
  * empty form, so the values are set here just before they are shown.
  */
 const projectPrefill = ref<{ [field: string]: string }>({})
+const experimentPrefill = ref<{ [field: string]: string | string[] }>({})
 
 /**
  * The row of the report a creation form was opened for, and the report category it belongs to.
@@ -381,6 +389,7 @@ const CATEGORY_OF_TARGET: { [target: string]: string } = {
   VARIABLE: 'variables',
   PERSON: 'persons',
   PROJECT: 'projects',
+  EXPERIMENT: 'experiments',
   FACILITY: 'facilities',
   ORGANIZATION: 'organizations'
 }
@@ -700,6 +709,10 @@ function requestCreation(payload: { target: string; value: string }) {
     openPersonForm(payload.value)
     return
   }
+  if (payload.target === 'EXPERIMENT') {
+    openExperimentForm(payload.value)
+    return
+  }
   if (payload.target === 'PROJECT') {
     openProjectForm(payload.value)
     return
@@ -806,6 +819,45 @@ async function openProjectForm(name: string) {
 
 function prefillProject(form: any) {
   Object.assign(form, projectPrefill.value)
+}
+
+/**
+ * The fields of an EXPERIMENT draft that hold several URIs, comma-separated; the platform's form
+ * takes them as arrays.
+ */
+const EXPERIMENT_LIST_FIELDS = ['projects', 'organisations', 'facilities']
+
+/**
+ * Opens the platform's experiment wizard with what the file suggests: the suggestions the server
+ * computes for an EXPERIMENT draft — name, dates, projects, organisations and facilities found in
+ * the instance — under the platform's own field names. Nothing is created until the user submits
+ * the wizard; the name clicked in the report wins over the suggestion.
+ */
+async function openExperimentForm(name: string) {
+  const values: { [field: string]: string | string[] } = {}
+  try {
+    const http = await service().getCreationRequirements(session.value.session_id, 'EXPERIMENT')
+    for (const field of http.response.result.fields ?? []) {
+      if (!field.name || !field.suggested_value) {
+        continue
+      }
+      values[field.name] = EXPERIMENT_LIST_FIELDS.includes(field.name)
+        ? String(field.suggested_value).split(',').map((uri: string) => uri.trim()).filter((uri: string) => uri)
+        : field.suggested_value
+    }
+  } catch (error) {
+    // Without suggestions the wizard still opens, with the name: the user fills in the rest.
+    console.warn('Could not read what the file suggests for an experiment', error)
+  }
+  if (name) {
+    values.name = name
+  }
+  experimentPrefill.value = values
+  experimentForm.value?.showCreateForm()
+}
+
+function prefillExperiment(form: any) {
+  Object.assign(form, experimentPrefill.value)
 }
 
 /**

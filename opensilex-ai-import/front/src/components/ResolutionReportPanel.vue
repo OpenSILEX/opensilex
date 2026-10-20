@@ -363,6 +363,9 @@ function createTitleOf(target: string | null): string {
   if (target === 'PROJECT') {
     return 'AiImport.report.createProjectTitle'
   }
+  if (target === 'EXPERIMENT') {
+    return 'AiImport.report.createExperimentTitle'
+  }
   if (target === 'FACILITY') {
     return 'AiImport.report.createFacilityTitle'
   }

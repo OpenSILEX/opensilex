@@ -177,6 +177,7 @@
       "forgetCorrection": "Forget",
       "forgetCorrectionTitle": "The instance will stop recognising this spelling, for everyone.",
       "createProjectTitle": "Open the project form, prefilled with what the file says: name, acronym, dates, objective.",
+      "createExperimentTitle": "Open the experiment form, prefilled with what the file says: name, dates, and the projects, organisations and facilities found. Nothing is created until the form is submitted.",
       "createFacilityTitle": "Open the facility form, name prefilled. The type, organisation and site are chosen in the form.",
       "askCreate_SCIENTIFIC_OBJECTS": "Create the scientific objects of the file's sheets, with the types and columns chosen.",
       "askCreate_FACTORS": "Create the experiment's factors from the file's treatments.",

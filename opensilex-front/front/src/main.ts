@@ -30,7 +30,7 @@ import HighchartsVue from "highcharts-vue";
 // Local imports
 import store from '@/models/Store'
 import {AuthenticationService} from "opensilex-security/lib";
-import {FontConfigDTO, FrontConfigDTO, ThemeConfigDTO, UserFrontConfigDTO, VueJsService} from '@/lib'
+import {FontConfigDTO, FrontConfigDTO, MenuItemDTO, ThemeConfigDTO, UserFrontConfigDTO, VueJsService} from '@/lib'
 import HttpResponse, {OpenSilexResponse} from '@/lib/HttpResponse'
 import {User} from '@/models/User'
 import {ModuleComponentDefinition} from '@/models/ModuleComponentDefinition'
@@ -259,6 +259,25 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
   })
 }
 
+/**
+ * The components the menu's routes open, children included; an entry that names none, or a name the
+ * module convention cannot split, is skipped.
+ */
+function menuComponentsOf(items: Array<MenuItemDTO> | undefined): ModuleComponentDefinition[] {
+  const components: ModuleComponentDefinition[] = [];
+  for (const item of items ?? []) {
+    if (item.route?.component) {
+      try {
+        components.push(ModuleComponentDefinition.fromString(item.route.component));
+      } catch (error) {
+        console.warn("Invalid menu component " + item.route.component, error);
+      }
+    }
+    components.push(...menuComponentsOf(item.children));
+  }
+  return components;
+}
+
 const modulesToLoad: string[] = [
   "opensilex-security",
   "opensilex-core",
@@ -376,7 +395,20 @@ $opensilex.loadModules(modulesToLoad).then(() => {
                 console.debug("Application is embed");
               }
 
+              // The menu's labels are translation keys, and an extension module's keys come with its
+              // bundle, which its route only loads on the first visit: load those modules before the
+              // menu first renders, so it never shows a raw key. One that fails to load is logged and
+              // left out, as it would be on navigation, rather than keeping the application unmounted.
+              const menuModulesLoaded = embed ? Promise.resolve() : Promise.all(
+                menuComponentsOf(userConfig.menu).map(componentDef =>
+                  $opensilex.loadComponentModule(componentDef).catch(error =>
+                    console.error("Could not load the module of menu component " + componentDef.getId(), error)
+                  )
+                )
+              );
+
               Promise.all([
+                menuModulesLoaded,
                 $opensilex.loadVersionInfo(),
                 $opensilex.loadFactorCategories(),
                 $opensilex.loadDataTypes(),

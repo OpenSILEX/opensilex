@@ -177,6 +177,7 @@
       "forgetCorrection": "Oublier",
       "forgetCorrectionTitle": "L'instance cessera de reconnaître cette orthographe, pour tout le monde.",
       "createProjectTitle": "Ouvrir le formulaire de projet, prérempli avec ce que dit le fichier : nom, acronyme, dates, objectif.",
+      "createExperimentTitle": "Ouvrir le formulaire d'expérimentation, prérempli avec ce que dit le fichier : nom, dates, projets, organisations et installations trouvés. Rien n'est créé avant validation du formulaire.",
       "createFacilityTitle": "Ouvrir le formulaire d'installation, nom prérempli. Le type, l'organisation et le site se choisissent dans le formulaire.",
       "askCreate_SCIENTIFIC_OBJECTS": "Crée les objets scientifiques des onglets du fichier, avec les types et les colonnes choisis.",
       "askCreate_FACTORS": "Crée les facteurs de l'expérimentation à partir des modalités du fichier.",

@@ -2,6 +2,7 @@ package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
@@ -11,19 +12,24 @@ import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.MathematicalOperator;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
+import org.opensilex.nosql.mongodb.dao.MongoSearchFilter;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.service.SPARQLService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.opensilex.core.data.dal.DataProvenanceModel.*;
 
@@ -34,6 +40,7 @@ import static org.opensilex.core.data.dal.DataProvenanceModel.*;
  * @author rcolin
  */
 public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataDaoV2.class);
 
     public static final String COLLECTION_NAME = "data";
 
@@ -63,9 +70,11 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
         Bson variableAscIndex = Indexes.ascending(DataModel.VARIABLE_FIELD);
         Bson dateDescIndex = Indexes.descending(DataModel.DATE_FIELD);
-        Bson targetDescIndex = Indexes.ascending(DataModel.TARGET_FIELD);
+        Bson targetAscIndex = Indexes.ascending(DataModel.TARGET_FIELD);
         Bson experimentAscIndex = Indexes.ascending(PROVENANCE_EXPERIMENT_FIELD);
         Bson batchAscIndex = Indexes.ascending(DataModel.BATCH_URI_FIELD);
+        Bson agentAscIndex = Indexes.ascending(PROVENANCE_AGENTS_URI_FIELD);
+        Bson provenanceUriAscIndex = Indexes.ascending(PROVENANCE_URI_FIELD);
 
         Map<Bson, IndexOptions> indexes = DataFileDaoV2.getIndexes();
 
@@ -75,26 +84,43 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         indexes.put(Indexes.compoundIndex(variableAscIndex, dateDescIndex), null);
 
         // Multi-fields indexes : Access by experiment and (variable, target, provenance agent). Add date to ensure index usage in case of sorting by date
-        indexes.put(Indexes.compoundIndex(experimentAscIndex, variableAscIndex, targetDescIndex, dateDescIndex), null);
-        indexes.put(Indexes.compoundIndex(variableAscIndex, targetDescIndex, dateDescIndex), null);
+        indexes.put(Indexes.compoundIndex(experimentAscIndex, variableAscIndex, targetAscIndex, dateDescIndex), null);
+        indexes.put(Indexes.compoundIndex(variableAscIndex, targetAscIndex, dateDescIndex), null);
 
         // Compound index : ensure unicity #TODO delete this index (index on whole field,too big and not well used in query)
-        indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetDescIndex, dateDescIndex), new IndexOptions().unique(true));
+        indexes.put(Indexes.compoundIndex(variableAscIndex, Indexes.ascending(DataModel.PROVENANCE_FIELD), targetAscIndex, dateDescIndex), new IndexOptions().unique(true));
+
+        // Provenance - variable indexes (for lookup by agent)
+        indexes.put(Indexes.compoundIndex(agentAscIndex, variableAscIndex), null);
+        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, variableAscIndex), null);
+
+        // Provenance - target indexes (for lookup by agent)
+        indexes.put(Indexes.compoundIndex(agentAscIndex, targetAscIndex), null);
+        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, targetAscIndex), null);
+
+        // Provenances indexes (for lookup by agent)
+        indexes.put(Indexes.compoundIndex(provenanceUriAscIndex, agentAscIndex), null);
+        indexes.put(Indexes.compoundIndex(agentAscIndex, provenanceUriAscIndex), null);
 
         return indexes;
     }
 
-    @Override
-    public List<Bson> getBsonFilters(DataSearchFilter filter) {
-
-        //Get all bsons from DataFiles as they are all the same apart from the variable filter
-
-        List<Bson> bsonFilters = dataFileDaoV2.getBsonFilters(filter);
-
+    private Collection<Bson> getDataBsonFilters(DataSearchFilter filter) {
+        var filters = new ArrayList<Bson>();
 
         if (!CollectionUtils.isEmpty(filter.getVariables())) {
-            bsonFilters.add(Filters.in(DataModel.VARIABLE_FIELD, filter.getVariables()));
+            filters.add(Filters.in(DataModel.VARIABLE_FIELD, filter.getVariables()));
         }
+
+        return filters;
+    }
+
+    @Override
+    public List<Bson> getBsonFilters(DataSearchFilter filter) {
+        //Get all bsons from DataFiles as they are all the same and add data-specific filters (e.g., variable)
+        List<Bson> bsonFilters = dataFileDaoV2.getBsonFilters(filter);
+
+        bsonFilters.addAll(getDataBsonFilters(filter));
 
         return bsonFilters;
     }
@@ -128,6 +154,42 @@ public class DataDaoV2 extends MongoReadWriteDao<DataModel, DataSearchFilter> {
     @Override
     protected void addDefaultSort(Document sort) {
         sort.put(DataModel.DATE_FIELD, -1);
+    }
+
+    /**
+     * An optimization of {@link MongoReadWriteDao#distinct(ClientSession, String, Class, MongoSearchFilter)}
+     * when querying provenance agents (devices or operators). Defaults to the normal behavior when no agent filter is
+     * specified.
+     */
+    public Collection<URI> agentOptimizedDistinct(ClientSession session, String field, DataSearchFilter filter) {
+        if (CollectionUtils.isEmpty(filter.getDevices()) && CollectionUtils.isEmpty(filter.getOperators())) {
+            // No filter on provenance agents, we can apply the normal behavior.
+            return super.distinct(session, field, URI.class, filter);
+        }
+
+        // Query without the agent filters
+        var filtersWithoutAgents = dataFileDaoV2.getBsonFiltersWithoutAgents(filter);
+        filtersWithoutAgents.addAll(getDataBsonFilters(filter));
+
+        LOGGER.debug("Agent-optimized distinct query for field {}", field);
+        var agentFilters = dataFileDaoV2.getProvenanceAgentFilters(filter);
+        var mongoResults = agentFilters.stream()
+                // constructing the separated queries
+                .map(agentFilter -> Stream.concat(filtersWithoutAgents.stream(), Stream.of(agentFilter)).toList())
+                .map(Filters::and)
+                .peek(query -> LOGGER.debug("Agent-optimized distinct sub-query: {}", query.toBsonDocument(Bson.class, MongoDBService.codecRegistry()).toJson()))
+                // making the distinct call
+                .map(query -> collection.distinct(field, query, URI.class));
+        var resultSet = new HashSet<URI>();
+        mongoResults.forEach(iterable -> {
+            for (var result : iterable) {
+                if (result != null) {
+                    resultSet.add(result);
+                }
+            }
+        });
+        LOGGER.debug("Agent-optimized distinct results: {}", resultSet);
+        return resultSet;
     }
 
     //#region Aggregation builders

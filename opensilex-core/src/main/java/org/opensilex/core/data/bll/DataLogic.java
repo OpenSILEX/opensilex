@@ -374,7 +374,7 @@ public class DataLogic {
         filter.setVariables(variables);
         filter.setDevices(devices);
 
-        List<URI> provenanceURIs = dao.distinct(null, "provenance.uri", URI.class, filter);
+        var provenanceURIs = dao.agentOptimizedDistinct(null, "provenance.uri", filter);
         List<ProvenanceModel> resultList = new ArrayList<>();
 
         if(!provenanceURIs.isEmpty()){
@@ -457,7 +457,7 @@ public class DataLogic {
     public List<URI> getUsedTargets(List<URI> devices, List<URI> variables, List<URI> experiments, URI typeOfTarget) throws Exception {
         DataSearchFilter dataSearchFilter = new DataSearchFilter().setVariables(variables);
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices);
-        List<URI> usedTargetUris = dao.distinct(null, DataModel.TARGET_FIELD, URI.class, dataSearchFilter);
+        var usedTargetUris = List.copyOf(dao.agentOptimizedDistinct(null, DataModel.TARGET_FIELD, dataSearchFilter));
 
         if(typeOfTarget != null && CollectionUtils.isNotEmpty(usedTargetUris)){
             OntologyDAO ontologyDao = new OntologyDAO(sparql);
@@ -473,10 +473,10 @@ public class DataLogic {
     }
 
 
-    public Set<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
+    public Collection<URI> getUsedVariablesByExpeSoDevice(List<URI> experiments, List<URI> objects, List<URI> devices ) {
         DataSearchFilter dataSearchFilter = new DataSearchFilter();
         dataSearchFilter.setUser(user).setExperiments(experiments).setDevices(devices).setTargets(objects);
-        return new HashSet<>(dao.distinct(null, DataModel.VARIABLE_FIELD, URI.class, dataSearchFilter));
+        return dao.agentOptimizedDistinct(null, DataModel.VARIABLE_FIELD, dataSearchFilter);
     }
 
     //TODO this next function would make more sense being in the future ScientificObjectLogic class

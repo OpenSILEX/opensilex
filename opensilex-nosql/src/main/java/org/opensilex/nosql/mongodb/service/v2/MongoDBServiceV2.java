@@ -9,21 +9,15 @@ package org.opensilex.nosql.mongodb.service.v2;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.nosql.exceptions.MongoDBTransactionException;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
-import org.opensilex.nosql.mongodb.codec.ObjectCodec;
-import org.opensilex.nosql.mongodb.codec.URICodec;
-import org.opensilex.nosql.mongodb.codec.ZonedDateTimeCodec;
 import org.opensilex.nosql.mongodb.logging.MongoLogger;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -36,7 +30,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -248,17 +245,7 @@ public class MongoDBServiceV2 extends BaseService {
     public static MongoClient buildMongoDBClient(MongoDBConfig config) throws IOException {
 
         // Define custom codec registry for URI, Object and GeoJson
-        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(
-                        new URICodec(),
-                        new ObjectCodec(),
-                        new ZonedDateTimeCodec()),
-                CodecRegistries.fromProviders(
-                        new GeoJsonCodecProvider(),
-                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
-                )
-        );
+        var codecRegistry = MongoDBService.codecRegistry();
 
         // Build client : set server, codec and socket settings
         MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()

@@ -70,6 +70,7 @@ public class MongoDBService extends BaseService {
     private MongoDatabase db;
     private URI generationPrefixURI;
     private static String defaultTimezone;
+    private static final CodecRegistry codecRegistry = buildCodecRegistry();
 
     // V2 service : used for an easier transition from this one to the new V2
     private MongoDBServiceV2 serviceV2;
@@ -139,18 +140,7 @@ public class MongoDBService extends BaseService {
     public static MongoClient buildMongoDBClient(MongoDBConfig config) throws IOException {
 
         // Define custom codec registry for URI, Object and GeoJson
-        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(
-                        new URICodec(),
-                        new ObjectCodec(),
-                        new ZonedDateTimeCodec()
-                ),
-                CodecRegistries.fromProviders(
-                        new GeoJsonCodecProvider(),
-                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
-                )
-        );
+        var codecRegistry = codecRegistry();
 
         // Build client : set server, codec and socket settings
         MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
@@ -171,6 +161,29 @@ public class MongoDBService extends BaseService {
         }
         return MongoClients.create(clientBuilder.build());
 
+    }
+
+    private static CodecRegistry buildCodecRegistry() {
+        return CodecRegistries.fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                CodecRegistries.fromCodecs(
+                        new URICodec(),
+                        new ObjectCodec(),
+                        new ZonedDateTimeCodec()
+                ),
+                CodecRegistries.fromProviders(
+                        new GeoJsonCodecProvider(),
+                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
+                )
+        );
+    }
+
+    /**
+     * @return a MongoDB codec registry suitable for OpenSILEX. It includes the default codecs, as well as custom codecs
+     * for URIs, date and time, GeoJson and objects used as value (as in DataModel).
+     */
+    public static CodecRegistry codecRegistry() {
+        return codecRegistry;
     }
 
     public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {

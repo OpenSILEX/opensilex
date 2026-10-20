@@ -206,7 +206,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         //TODO dataLogic should be called from a VariableLogic class
         DataLogic dataLogic = new DataLogic(sparql, nosql, fs, user);
-        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataLogic.getUsedVariablesByExpeSoDevice(filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
+        Collection<URI> variableUriList = filter.isWithAssociatedData() ? dataLogic.getUsedVariablesByExpeSoDevice(filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
         if (variableUriList != null && variableUriList.isEmpty()) {
             return new ListWithPagination<>(dataLogic.getUsedVariables(filter.getExperiments(), filter.getObjects(), null, filter.getDevices()));
         }

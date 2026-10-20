@@ -300,6 +300,9 @@ import StringFilter from "@/components/common/filters/StringFilter.vue";
 import DeviceSelector from "@/components/devices/DeviceSelector.vue";
 import FacilitySelector from "@/components/facilities/FacilitySelector.vue";
 import DataExportModal from "@/components/data/DataExportModal.vue";
+import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
+import ResultModalView from "@/components/data/ResultModalView.vue";
+import DeleteByBatchModal from "@/components/data/DeleteByBatchModal.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");

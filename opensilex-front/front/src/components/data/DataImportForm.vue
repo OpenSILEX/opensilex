@@ -16,7 +16,7 @@
       </b-col>
       <b-col>
         <ProvenanceSelector
-          v-if="!selectDefaultProvenance" 
+          v-if="!selectDefaultProvenance"
           ref="provenanceSelector"
           :provenances.sync="form.provenance.uri"
           :filterLabel="filterProvenanceLabel"
@@ -136,6 +136,8 @@ import {AgentModel, ProvenanceGetDTO} from "opensilex-core/lib";
 import Oeso from "@/ontologies/Oeso";
 import DataValidationReport from "@/components/data/DataValidationReport.vue";
 import ProvenanceForm from "@/components/data/form/ProvenanceForm.vue";
+import DataHelpTableView from "@/components/data/form/DataHelpTableView.vue";
+import GenerateDataTemplateFrom from "@/components/data/form/GenerateDataTemplateFrom.vue";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()

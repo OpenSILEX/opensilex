@@ -3,44 +3,35 @@
       ref="validatorRef">
     <Modal
         ref="modal"
-        :title="$t('component.data.deleteByBatchModal.title')"
-        no-close-on-backdrop
-        no-close-on-esc
     >
-      <template v-slot:modal-header>
-        <b-row class="mt-1" style="width: 100%">
-          <b-col cols="10">
-            <i>
-              <h4>
-                <Icon icon="fa#trash-alt"/>
-                {{ $t("component.data.deleteByBatchModal.title") }}
-              </h4>
-            </i>
-          </b-col>
-        </b-row>
+      <template #header>
+        <i>
+          <h4>
+            <Icon icon="fa#trash-alt"/>
+            {{ t("component.data.deleteByBatchModal.title") }}
+          </h4>
+        </i>
       </template>
-      <template>
-        <!-- Batch URI -->
-        <InputForm
-            :value.sync="batchUri"
-            label="component.data.deleteByBatchModal.batch-uri"
-            type="text"
-            :required="true"
-            :placeholder="t('component.data.deleteByBatchModal.batch-placeholder')"
-        ></InputForm>
-      </template>
-      <template v-slot:modal-footer>
+      <!-- Batch URI -->
+      <InputForm
+          v-model:value="batchUri"
+          label="component.data.deleteByBatchModal.batch-uri"
+          type="text"
+          :required="true"
+          :placeholder="t('component.data.deleteByBatchModal.batch-placeholder')"
+      ></InputForm>
+      <template #footer>
         <button
             type="button"
             class="btn btn-secondary"
-            v-on:click="hide"
-        >{{ $t('component.common.close') }}
+            @click="hide"
+        >{{ t('component.common.close') }}
         </button>
         <button
             type="button"
             class="btn btn-danger"
-            v-on:click="deleteData()"
-        >{{ $t('component.common.delete') }}
+            @click="deleteData()"
+        >{{ t('component.common.delete') }}
         </button>
       </template>
     </Modal>
@@ -70,20 +61,12 @@ const props = defineProps<{
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const {t} = useI18n()
 const store = useStore()
-const dataService = ref<DataService>('dataService')
+const dataService = opensilex.getService<DataService>("opensilex.DataService")
 const batchUri = ref<string>('')
 //#endregion
 //#region: Refs
 const modal = useTemplateRef<InstanceType<typeof Modal>>('modal')
 const validatorRef = useTemplateRef<InstanceType<typeof NForm>>('validatorRef')
-//#endregion
-//#region: hooks
-
-function created()
-{
-  dataService.value = opensilex.getService<DataService>("opensilex.DataService");
-}
-
 //#endregion
 //#region: Methods
 
@@ -99,12 +82,16 @@ function hide()
 
  async function deleteData()
 {
-  const formIsValid = await validatorRef.value.validate();
-  if (!formIsValid) {
+  try {
+    await validatorRef.value.validate();
+  } catch {
+    return;
+  }
+  if (!batchUri.value) {
     return;
   }
 
-  let result = (await dataService.value.deleteDataOnSearch(
+  let result = (await dataService.deleteDataOnSearch(
       props.experimentUri,
       undefined,
       undefined,

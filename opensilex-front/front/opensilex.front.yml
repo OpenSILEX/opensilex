@@ -352,6 +352,8 @@ routes:
         component: opensilex-DocumentTabList
       - path: 'factors/:uri'
         component: opensilex-ExperimentFactors
+      - path: 'datafiles/:uri'
+        component: opensilex-ExperimentDataFiles
   # TODO add the tab component as child of /experiment once MapView is migrated
   - path: /experiment/map/:uri
     component: opensilex-ExperimentView

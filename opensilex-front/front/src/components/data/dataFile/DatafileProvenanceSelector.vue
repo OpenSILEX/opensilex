@@ -7,10 +7,10 @@
     :optionsLoadingMethod="loadProvenances"
     :placeholder="
       multiple
-        ? t('DatafileProvenanceSelector.placeholder-multiple')
-        : t('DatafileProvenanceSelector.placeholder')
+        ? t('component.datafile.provenance-selector.placeholder-multiple')
+        : t('component.datafile.provenance-selector.placeholder')
     "
-    :noResultsText="t('DatafileProvenanceSelector.filter-search-no-result')"
+    :noResultsText="t('component.datafile.provenance-selector.filter-search-no-result')"
     :disableBranchNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
@@ -101,17 +101,3 @@ defineExpose({
 
 <style scoped>
 </style>
-<i18n>
-en:
-    DatafileProvenanceSelector:
-        placeholder  : Select a provenance
-        placeholder-multiple  : Select one or more provenance(s)
-        filter-search-no-result : No provenance found
-
-
-fr:
-    DatafileProvenanceSelector:
-        placeholder : Sélectionner une provenance
-        placeholder-multiple : Sélectionner une ou plusieurs provenance(s)   
-        filter-search-no-result : Aucune provenance trouvée
-</i18n>

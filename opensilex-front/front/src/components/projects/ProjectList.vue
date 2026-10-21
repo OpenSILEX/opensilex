@@ -1,68 +1,18 @@
 <template>
-  <!-- Barre Actions / Counts / Selection -->
-  <n-space
-    class="listActionButtons"
+  <ListActionsBar
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
-  >
-    <!-- Dropdown Affichage / sélection -->
-    <n-dropdown
-      trigger="hover"
-      placement="bottom-end"
-      :options="displayDropdownOptions"
-      @select="onDisplayDropdownSelect"
-    >
-      <n-button size="small" class="greenThemeColor">
-        {{ t('ProjectList.display') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Dropdown Actions -->
-    <n-dropdown
-      v-if="!noActions"
-      trigger="hover"
-      placement="bottom-end"
-      :options="actionsDropdownOptions"
-      :disabled="selectedCount === 0"
-      @select="onActionsDropdownSelect"
-    >
-      <n-button
-        size="small"
-        :disabled="selectedCount === 0"
-        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-      >
-        {{ t('component.common.actions') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Affichage Counts / sélection -->
-    <div class="displayAndListSelectionCount">
-      <div v-if="showCount">
-        <div v-if="paginationInfo.hasResults">
-          <strong>
-            <span class="ml-1">
-                {{ t('component.common.list.pagination.nbEntries', {
-                    limit: paginationInfo.start,
-                    offset: paginationInfo.end,
-                    totalRow: n(paginationInfo.total)
-                }) }}
-            </span>
-          </strong>
-        </div>
-        <div v-else>
-          <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.noEntries') }}
-            </span>
-          </strong>
-        </div>
-      </div>
-      <span> | </span>
-      <n-p>
-        {{ t('ProjectList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </n-p>
-    </div>
-  </n-space>
+    :paginationInfo="paginationInfo"
+    :displayOptions="displayDropdownOptions"
+    :displayLabel="t('ProjectList.display')"
+    :actionsOptions="actionsDropdownOptions"
+    :noActions="noActions"
+    :selectedCount="selectedCount"
+    :selectedLabel="t('ProjectList.selected')"
+    :showCount="showCount"
+    placement="bottom-end"
+    @displaySelect="onDisplayDropdownSelect"
+    @actionSelect="onActionsDropdownSelect"
+  />
 
   <!-- Layout -->
   <n-layout has-sider class="project-layout">
@@ -194,7 +144,8 @@ import { useStore } from 'vuex'
 import {
   NLayout, NLayoutSider, NLayoutContent,
   NForm, NFormItem, NInput,
-  NButton, NDropdown, NSpace, NButtonGroup
+  NButton, NButtonGroup,
+  type DropdownProps
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { ProjectsService } from 'opensilex-core/index'
@@ -207,6 +158,7 @@ import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', project: any): void
@@ -230,7 +182,7 @@ const props = withDefaults(defineProps<{
   showCount: true
 })
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -380,7 +332,7 @@ function initForm() {
 
 /** dropdown display */
 const onlySelected = computed(() => !!tableRef.value?.onlySelected)
-const displayDropdownOptions = computed(() => [
+const displayDropdownOptions = computed<DropdownProps['options']>(() => [
   { label: onlySelected.value ? t('ProjectList.selected-all') : t('component.common.selected-only'), key: 'onlySelected' },
   { type: 'divider', key: 'd1' },
   { label: t('component.common.resetSelected'), key: 'resetSelected' }

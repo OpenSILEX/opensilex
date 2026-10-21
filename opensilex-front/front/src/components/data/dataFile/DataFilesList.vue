@@ -1,34 +1,18 @@
 <template>
   <div>
-    <n-space class="listActionButtons">
-      <n-dropdown
-        trigger="hover"
-        placement="bottom-start"
-        :options="displayDropdownOptions"
-        @select="onDisplayDropdownSelect"
-      >
-        <n-button size="small" class="greenThemeColor">
-          {{ t('component.datafile.list.display') }}
-        </n-button>
-      </n-dropdown>
-
-      <n-dropdown
-        trigger="hover"
-        placement="bottom-start"
-        :options="actionsDropdownOptions"
-        :disabled="selectedCount === 0"
-        @select="onActionsDropdownSelect"
-      >
-        <n-button
-          size="small"
-          :disabled="selectedCount === 0"
-          :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-        >
-          {{ t('component.common.actions') }}
-        </n-button>
-      </n-dropdown>
-
-      <div class="displayAndListSelectionCount">
+    <ListActionsBar
+      :paginationInfo="paginationInfo"
+      :displayOptions="displayDropdownOptions"
+      :displayLabel="t('component.datafile.list.display')"
+      :actionsOptions="actionsDropdownOptions"
+      :selectedCount="selectedCount"
+      :selectedLabel="t('component.datafile.list.selected')"
+      placement="bottom-start"
+      @displaySelect="onDisplayDropdownSelect"
+      @actionSelect="onActionsDropdownSelect"
+    >
+      <!-- Total is only loaded on demand -->
+      <template #paginationCount>
         <div v-if="paginationInfo.hasResults">
           <strong>
             <span class="ml-1">
@@ -41,7 +25,6 @@
               }}
             </span>
           </strong>
-
 
           <Button
             :small="true"
@@ -62,15 +45,8 @@
             </span>
           </strong>
         </div>
-
-        <span> | </span>
-
-        <span>
-          {{ t('component.datafile.list.selected') }} :
-          <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-        </span>
-      </div>
-    </n-space>
+      </template>
+    </ListActionsBar>
 
     <TableAsyncView
       ref="tableRef"
@@ -166,7 +142,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { NButton, NButtonGroup, NDropdown, NSpace, NP } from 'naive-ui'
+import { NButton, NButtonGroup, type DropdownProps } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type { ProvenanceGetDTO, ResourceTreeDTO } from 'opensilex-core/index'
 import type HttpResponse from 'opensilex-core/HttpResponse'
@@ -183,6 +159,7 @@ import UriLink from "@/components/common/views/UriLink.vue";
 import Button from "@/components/common/buttons/Button.vue";
 import DetailButton from "@/components/common/buttons/DetailButton.vue";
 import Icon from "@/components/common/views/Icon.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 
 export type DatafileFilter = {
   name?: string | null
@@ -327,7 +304,7 @@ const paginationInfo = computed(() => {
   }
 })
 
-const displayDropdownOptions = computed(() => [
+const displayDropdownOptions = computed<DropdownProps['options']>(() => [
   {
     label: onlySelected.value
       ? t('component.datafile.list.selected-all')
@@ -757,13 +734,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .listActionButtons {
   position: relative;
   display: flex;
@@ -771,10 +741,7 @@ defineExpose({
   margin-bottom: 10px;
 }
 
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.listActionButtons :deep(.displayAndListSelectionCount) {
   margin-left: auto;
 }
 

@@ -1,66 +1,17 @@
 <template>
-  <!-- Boutons manipulation liste  -->
-  <!-- <n-space class="listActionButtons" :class="{ 'filtersCollapsed' : (!filtersCollapsed)}"> -->
-  <n-space class="listActionButtons" :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']">
-
-    <!-- Premier dropdown (gestion sélection) -->
-    <n-dropdown
-      :options="selectionOptions"
-      trigger="hover"
-      @select="handleSelectionAction"
-    >
-      <n-button size="small" :class="'greenThemeColor'">
-        {{ t('VariableList.display') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Deuxième dropdown (gestion actions) -->
-    <n-dropdown
-      v-if="!noActions"
-      :options="dropdownOptions"
-      trigger="hover"
-      :disabled="selectedCount === 0"
-      @select="handleDropdownAction"
-    >
-      <n-button
-        size="small"
-        :disabled="selectedCount === 0"
-        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-      >
-        {{ t('component.common.actions') }}
-      </n-button>
-    </n-dropdown>
-
-
-    <!-- Affichage Counts  -->
-    <div class="displayAndListSelectionCount">
-      <div v-if="showCount">
-        <div v-if="hasResults">
-          <strong>
-            <span class="ml-1">
-              {{ t('component.common.list.pagination.nbEntries', {
-                limit: start,
-                offset: end,
-                totalRow: n(total)
-              }) }}
-            </span>
-          </strong>
-        </div>
-        <div v-else>
-          <strong>
-            <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-          </strong>
-        </div>
-      </div>
-      <span> | </span>
-      <n-p>
-        {{ t('VariableList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </n-p>
-    </div>
-    <!-- FIN affichage counts -->
-  </n-space>
-  <!-- FIN Boutons manipulation liste  -->
+  <ListActionsBar
+    :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
+    :paginationInfo="paginationInfo"
+    :displayOptions="selectionOptions"
+    :displayLabel="t('VariableList.display')"
+    :actionsOptions="dropdownOptions"
+    :noActions="noActions"
+    :selectedCount="selectedCount"
+    :selectedLabel="t('VariableList.selected')"
+    :showCount="showCount"
+    @displaySelect="handleSelectionAction"
+    @actionSelect="handleDropdownAction"
+  />
 
 
 <n-layout has-sider class="vars-layout">
@@ -234,13 +185,14 @@ import {
   NInput,
   NLayout,
   NLayoutContent,
-  NSpace
+  type DropdownProps
 } from 'naive-ui'
 import {VariablesService} from 'opensilex-core'
 import {VariableGetDTO} from 'opensilex-core/model/variableGetDTO'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import GroupVariablesForm from '../groupVariable/GroupVariablesForm.vue'
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 import SpeciesSelector from "@/components/species/SpeciesSelector.vue";
 import GroupVariablesModalList from "@/components/groupVariable/GroupVariablesModalList.vue";
 
@@ -249,7 +201,7 @@ const groupVariableSelection = ref()
 const groupVariablesForm = useTemplateRef<InstanceType<typeof GroupVariablesForm>>("groupVariablesForm")
 
 /** Services & i18n */
-const { t, n } = useI18n()
+const { t } = useI18n()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const $service = ref<VariablesService | null>(null)
 
@@ -658,7 +610,7 @@ const columns = computed(() => {
     : cols
 })
 
-const dropdownOptions = computed(() => [
+const dropdownOptions = computed<DropdownProps['options']>(() => [
   {
     type: 'group',
     label: t('VariableList.group-actions'),
@@ -693,7 +645,7 @@ function handleDropdownAction(key: string) {
   }
 }
 
-const selectionOptions = computed(() => [
+const selectionOptions = computed<DropdownProps['options']>(() => [
   { label: onlySelected.value ? t('VariableList.selected-all') : t('component.common.selected-only') + t(' (' + selectedCount.value + ')'), key: 'toggleOnlySelected' },
   { type: 'divider' },
   { label: t('component.common.resetSelected'), key: 'resetSelection' },
@@ -822,10 +774,7 @@ const paginationInfo = computed(() => {
   const end = Math.min(page * pageSize, total)
   return { start, end, total, hasResults: total > 0 }
 })
-const start = computed(() => paginationInfo.value.start)
-const end = computed(() => paginationInfo.value.end)
 const total = computed(() => paginationInfo.value.total)
-const hasResults = computed(() => paginationInfo.value.hasResults)
 
 /** Mount */
 onMounted(() => {

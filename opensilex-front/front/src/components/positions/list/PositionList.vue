@@ -1,30 +1,7 @@
 <template>
   <div>
     <div class="card">
-      <n-space class="listActionButtons">
-        <div class="displayAndListSelectionCount">
-          <div v-if="showCount">
-            <div v-if="hasResults">
-              <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.nbEntries', {
-                    limit: start,
-                    offset: end,
-                    totalRow: n(total)
-                  }) }}
-                </span>
-              </strong>
-            </div>
-            <div v-else>
-              <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.noEntries') }}
-                </span>
-              </strong>
-            </div>
-          </div>
-        </div>
-      </n-space>
+      <ListActionsBar :paginationInfo="paginationInfo" :showCount="showCount"/>
 
       <opensilex-PageContent v-if="renderComponent">
         <template #default>
@@ -134,6 +111,7 @@ import type { EventsService } from 'opensilex-core/api/events.service';
 import type { LocationObservationDTO } from 'opensilex-core/model/locationObservationDTO';
 import HttpResponse, { OpenSilexResponse } from 'opensilex-core/HttpResponse';
 import EventForm from '@/components/events/form/EventForm.vue';
+import ListActionsBar from '@/components/common/listUtils/ListActionsBar.vue';
 
 const props = withDefaults(defineProps<{
   isSelectable?: boolean;
@@ -160,7 +138,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useStore();
-const { t, n } = useI18n();
+const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const positionService = opensilex.getService<PositionsService>('opensilex.PositionsService');
 const eventService = opensilex.getService<EventsService>('opensilex.EventsService');
@@ -185,11 +163,6 @@ const paginationInfo = computed(() => {
   const end = Math.min(page * pageSize, total);
   return { start, end, total, hasResults: total > 0 };
 });
-
-const start = computed(() => paginationInfo.value.start);
-const end = computed(() => paginationInfo.value.end);
-const total = computed(() => paginationInfo.value.total);
-const hasResults = computed(() => paginationInfo.value.hasResults);
 
 const user = computed(() => store.state.user);
 const credentials = computed(() => store.state.credentials);

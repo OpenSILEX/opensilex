@@ -9,30 +9,7 @@
         class="createButton greenThemeColor"
       />
     </div>
-    <n-space class="listActionButtons">
-      <div class="displayAndListSelectionCount">
-        <div v-if="showCount">
-          <div v-if="hasResults">
-            <strong>
-              <span class="ml-1">
-                {{
-                  t('component.common.list.pagination.nbEntries', {
-                    limit: start,
-                    offset: end,
-                    totalRow: n(total),
-                  })
-                }}
-              </span>
-            </strong>
-          </div>
-          <div v-else>
-            <strong>
-              <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-            </strong>
-          </div>
-        </div>
-      </div>
-    </n-space>
+    <ListActionsBar :paginationInfo="paginationInfo" :showCount="showCount"/>
 
     <!-- Table -->
     <PageContent v-if="renderComponent">
@@ -144,6 +121,7 @@ import type { UserGetDTO } from 'opensilex-security/index';
 import type { AccountGetDTO } from 'opensilex-security/model/accountGetDTO';
 import TableAsyncView, { RowWithData } from '@/components/common/views/TableAsyncView.vue';
 import CreateButton from '@/components/common/buttons/CreateButton.vue';
+import ListActionsBar from '@/components/common/listUtils/ListActionsBar.vue';
 import PageContent from '@/components/layout/PageContent.vue';
 import TextView from '@/components/common/views/TextView.vue';
 import PersonContact from '@/components/persons/PersonContact.vue';
@@ -196,7 +174,7 @@ const emit = defineEmits<{
 
 // Services / env
 const store = useStore();
-const { t, n } = useI18n();
+const { t } = useI18n();
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 const annotationService = opensilex.getService<AnnotationsService>('opensilex.AnnotationsService');
 const securityService = opensilex.getService<SecurityService>('opensilex.SecurityService');
@@ -213,10 +191,6 @@ const paginationInfo = computed(() => {
   const end = Math.min(page * pageSize, total);
   return { start, end, total, hasResults: total > 0 };
 });
-const start = computed(() => paginationInfo.value.start);
-const end = computed(() => paginationInfo.value.end);
-const total = computed(() => paginationInfo.value.total);
-const hasResults = computed(() => paginationInfo.value.hasResults);
 
 // Store bindings
 const user = computed(() => store.state.user);

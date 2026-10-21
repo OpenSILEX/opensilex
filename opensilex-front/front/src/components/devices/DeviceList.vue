@@ -1,65 +1,16 @@
 <template>
-  <!-- Barre Actions / Counts / Selection -->
-  <n-space
-    class="listActionButtons"
+  <ListActionsBar
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
-  >
-    <!-- Dropdown Affichage / sélection -->
-    <n-dropdown
-      trigger="hover"
-      placement="bottom-end"
-      :options="displayDropdownOptions"
-      @select="onDisplayDropdownSelect"
-    >
-      <n-button size="small" class="greenThemeColor">
-        {{ t('DeviceList.display') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Dropdown Actions -->
-    <n-dropdown
-      trigger="hover"
-      placement="bottom-end"
-      :options="actionsDropdownOptions"
-      :disabled="selectedCount === 0"
-      @select="onActionsDropdownSelect"
-    >
-      <n-button
-        size="small"
-        :disabled="selectedCount === 0"
-        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-      >
-        {{ t('component.common.actions') }}
-      </n-button>
-    </n-dropdown>
-
-    <!-- Affichage Counts / sélection -->
-    <div class="displayAndListSelectionCount">
-      <div v-if="paginationInfo.hasResults">
-        <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.nbEntries', {
-              limit: paginationInfo.start,
-              offset: paginationInfo.end,
-              totalRow: n(paginationInfo.total)
-            }) }}
-          </span>
-        </strong>
-      </div>
-      <div v-else>
-        <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.noEntries') }}
-          </span>
-        </strong>
-      </div>
-      <span> | </span>
-      <span>
-        {{ t('DeviceList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </span>
-    </div>
-  </n-space>
+    :paginationInfo="paginationInfo"
+    :displayOptions="displayDropdownOptions"
+    :displayLabel="t('DeviceList.display')"
+    :actionsOptions="actionsDropdownOptions"
+    :selectedCount="selectedCount"
+    :selectedLabel="t('DeviceList.selected')"
+    placement="bottom-end"
+    @displaySelect="onDisplayDropdownSelect"
+    @actionSelect="onActionsDropdownSelect"
+  />
 
   <!-- Layout -->
   <n-layout has-sider class="device-layout">
@@ -280,11 +231,10 @@ import {
   NButtonGroup,
   NCollapse,
   NCollapseItem,
-  NDropdown,
   NFormItem,
   NLayout,
   NLayoutContent,
-  NSpace
+  type DropdownProps
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import {type DeviceGetDetailsDTO, DevicesService, type FacilityGetDTO} from 'opensilex-core/index'
@@ -305,13 +255,14 @@ import {TableField} from "@/components/common/views/TableField";
 import DeviceForm from "@/components/devices/form/DeviceForm.vue";
 import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 
 const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
   (e: 'onUpdate', form: any): void
 }>()
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -426,7 +377,7 @@ const activeFiltersCount = computed(() => {
 
 const onlySelected = computed(() => !!tableRef.value?.onlySelected)
 
-const displayDropdownOptions = computed(() => [
+const displayDropdownOptions = computed<DropdownProps['options']>(() => [
   {
     label: onlySelected.value
       ? t('DeviceList.selected-all')
@@ -880,13 +831,6 @@ defineExpose({
 }
 
 
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .device-layout {
   background: transparent;
 }
@@ -899,12 +843,6 @@ defineExpose({
   position: relative;
   display: flex;
   gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed {

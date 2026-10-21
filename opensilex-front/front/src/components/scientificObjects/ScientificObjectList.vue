@@ -1,31 +1,15 @@
 <template>
-  <n-space class="listActionButtons">
-    <n-dropdown
-      :options="selectionOptions"
-      trigger="hover"
-      @select="handleSelectionAction"
-    >
-      <n-button size="small" class="greenThemeColor">
-        {{ t('ScientificObjectList.display') }}
-      </n-button>
-    </n-dropdown>
-
-    <n-dropdown
-      v-if="!noActions"
-      :options="dropdownOptions"
-      trigger="hover"
-      :disabled="selectedCount === 0"
-      @select="handleDropdownAction"
-    >
-      <n-button
-        size="small"
-        :disabled="selectedCount === 0"
-        :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-      >
-        {{ t('component.common.actions') }}
-      </n-button>
-    </n-dropdown>
-
+  <ListActionsBar
+    :paginationInfo="paginationInfo"
+    :displayOptions="selectionOptions"
+    :displayLabel="t('ScientificObjectList.display')"
+    :actionsOptions="dropdownOptions"
+    :noActions="noActions"
+    :selectedCount="selectedCount"
+    :selectedLabel="t('ScientificObjectList.selected')"
+    @displaySelect="handleSelectionAction"
+    @actionSelect="handleDropdownAction"
+  >
     <n-button
       v-if="!noActions"
       size="small"
@@ -35,31 +19,7 @@
     >
       {{ t('ScientificObjectList.export-all') }}
     </n-button>
-
-    <div class="displayAndListSelectionCount">
-      <div v-if="hasResults">
-        <strong>
-          <span class="ml-1">
-            {{ t('component.common.list.pagination.nbEntries', {
-              limit: start,
-              offset: end,
-              totalRow: n(total)
-            }) }}
-          </span>
-        </strong>
-      </div>
-      <div v-else>
-        <strong>
-          <span class="ml-1">{{ t('component.common.list.pagination.noEntries') }}</span>
-        </strong>
-      </div>
-      <span> | </span>
-      <span>
-        {{ t('ScientificObjectList.selected') }} :
-        <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-      </span>
-    </div>
-  </n-space>
+  </ListActionsBar>
 
   <n-data-table
     :remote="!onlySelected"
@@ -84,16 +44,17 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import {
   NButton,
-  NDropdown,
   NDataTable,
   NP,
   NSpace,
-  type DataTableRowKey
+  type DataTableRowKey,
+  type DropdownProps
 } from 'naive-ui'
 import { ScientificObjectsService } from 'opensilex-core'
 import type { ExperimentGetDTO } from 'opensilex-core'
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import {CriteriaDTO} from "@/components/scientificObjects/CriteriaSearchModalCreator.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 
 export type ScientificObjectFilter = {
   name?: string
@@ -163,7 +124,7 @@ const emit = defineEmits<{
   (e: 'update', uri: string): void
 }>()
 
-const { t, n, locale } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const $service = ref<ScientificObjectsService | null>(null)
@@ -768,10 +729,7 @@ const paginationInfo = computed(() => {
   return { start, end, total, hasResults: total > 0 }
 })
 
-const start = computed(() => paginationInfo.value.start)
-const end = computed(() => paginationInfo.value.end)
 const total = computed(() => paginationInfo.value.total)
-const hasResults = computed(() => paginationInfo.value.hasResults)
 
 const columns = computed(() => {
   const base: any[] = []
@@ -888,7 +846,7 @@ const columns = computed(() => {
   return base
 })
 
-const selectionOptions = computed(() => [
+const selectionOptions = computed<DropdownProps['options']>(() => [
   {
     label: onlySelected.value
       ? t('ScientificObjectList.selected-all')
@@ -1003,24 +961,11 @@ defineExpose({
 </script>
 
 <style scoped>
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .listActionButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
   margin-bottom: 12px;
 }
 
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.listActionButtons :deep(.displayAndListSelectionCount) {
   margin-left: auto;
 }
 </style>

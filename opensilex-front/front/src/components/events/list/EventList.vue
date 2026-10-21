@@ -1,8 +1,7 @@
 <template>
-  <!-- Barre Actions -->
-  <n-space
-    class="listActionButtons"
+  <ListActionsBar
     :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
+    :paginationInfo="paginationInfo"
   >
     <CreateButton
       v-if="user.hasCredential(modificationCredentialId)"
@@ -24,28 +23,7 @@
       :label="t('EventList.move-csv-import-title')"
       class="createButton"
     />
-
-    <div class="displayAndListSelectionCount">
-      <div v-if="paginationInfo.hasResults">
-          <strong>
-          <span class="ml-1">
-              {{ t('component.common.list.pagination.nbEntries', {
-              limit: paginationInfo.start,
-              offset: paginationInfo.end,
-              totalRow: n(paginationInfo.total)
-              }) }}
-          </span>
-          </strong>
-      </div>
-      <div v-else>
-          <strong>
-          <span class="ml-1">
-              {{ t('component.common.list.pagination.noEntries') }}
-          </span>
-          </strong>
-      </div>
-    </div>
-  </n-space>
+  </ListActionsBar>
 
   <!-- Layout -->
   <n-layout has-sider class="event-layout">
@@ -254,8 +232,7 @@ import { useStore } from 'vuex'
 import {
   NLayout,
   NLayoutContent,
-  NFormItem,
-  NSpace
+  NFormItem
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from '@/lib/HttpResponse'
@@ -268,6 +245,7 @@ import TableAsyncView, {RowWithData} from "@/components/common/views/TableAsyncV
 import EventForm from '../form/EventForm.vue';
 import DocumentForm from '@/components/documents/DocumentForm.vue';
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
 import TypeForm from "@/components/common/forms/TypeForm.vue";
 import StringFilter from "@/components/common/filters/StringFilter.vue";
@@ -314,7 +292,7 @@ const emit = defineEmits<{
   (e: 'onDelete', uri: string): void
 }>()
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -706,13 +684,6 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .event-layout {
   background: transparent;
 }
@@ -725,12 +696,6 @@ defineExpose({
   position: relative;
   display: flex;
   gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed {

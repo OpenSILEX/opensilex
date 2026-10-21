@@ -1,72 +1,20 @@
 <template>
   <div class="container-fluid">
     <PageContent>
-      <!-- Barre Actions / Counts / Selection -->
-      <n-space
-        class="listActionButtons"
+      <ListActionsBar
         :class="[filtersCollapsed ? 'filtersNotCollapsed' : 'filtersCollapsed']"
-      >
-        <!-- Dropdown Affichage / sélection -->
-        <n-dropdown
-          trigger="hover"
-          placement="bottom-end"
-          :options="displayDropdownOptions"
-          @select="onDisplayDropdownSelect"
-        >
-          <n-button size="small" class="greenThemeColor">
-            {{ t('ProvenanceList.display') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Dropdown Actions -->
-        <n-dropdown
-          v-if="!noActions"
-          trigger="hover"
-          placement="bottom-end"
-          :options="actionsDropdownOptions"
-          :disabled="selectedCount === 0"
-          @select="onActionsDropdownSelect"
-        >
-          <n-button
-            size="small"
-            :disabled="selectedCount === 0"
-            :class="selectedCount === 0 ? 'btn-disabled' : 'greenThemeColor'"
-          >
-            {{ t('component.common.actions') }}
-          </n-button>
-        </n-dropdown>
-
-        <!-- Affichage Counts / sélection -->
-        <div class="displayAndListSelectionCount">
-          <div v-if="showCount">
-            <div v-if="paginationInfo.hasResults">
-              <strong>
-                <span class="ml-1">
-                  {{
-                    t('component.common.list.pagination.nbEntries', {
-                      limit: paginationInfo.start,
-                      offset: paginationInfo.end,
-                      totalRow: n(paginationInfo.total)
-                    })
-                  }}
-                </span>
-              </strong>
-            </div>
-            <div v-else>
-              <strong>
-                <span class="ml-1">
-                  {{ t('component.common.list.pagination.noEntries') }}
-                </span>
-              </strong>
-            </div>
-          </div>
-          <span> | </span>
-          <n-p>
-            {{ t('ProvenanceList.selected') }} :
-            <span class="badge badge-pill greenThemeColor">{{ selectedCount }}</span>
-          </n-p>
-        </div>
-      </n-space>
+        :paginationInfo="paginationInfo"
+        :displayOptions="displayDropdownOptions"
+        :displayLabel="t('ProvenanceList.display')"
+        :actionsOptions="actionsDropdownOptions"
+        :noActions="noActions"
+        :selectedCount="selectedCount"
+        :selectedLabel="t('ProvenanceList.selected')"
+        :showCount="showCount"
+        placement="bottom-end"
+        @displaySelect="onDisplayDropdownSelect"
+        @actionSelect="onActionsDropdownSelect"
+      />
 
       <n-layout has-sider class="provenance-layout">
         <!-- Sidebar / Filters -->
@@ -237,9 +185,8 @@ import {
   NFormItem,
   NInput,
   NButton,
-  NDropdown,
-  NSpace,
-  NButtonGroup
+  NButtonGroup,
+  type DropdownProps
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import Prov from '../../ontologies/Prov'
@@ -254,6 +201,7 @@ import EditButton from "@/components/common/buttons/EditButton.vue";
 import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import ListActionsBar from "@/components/common/listUtils/ListActionsBar.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', uri: string): void
@@ -277,7 +225,7 @@ const props = withDefaults(defineProps<{
   showCount: true
 })
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const store = useStore()
 
@@ -481,7 +429,7 @@ function loadActivityTypes() {
 }
 
 /** dropdown display */
-const displayDropdownOptions = computed(() => [
+const displayDropdownOptions = computed<DropdownProps['options']>(() => [
   {
     label: onlySelected.value
       ? t('ProvenanceList.selected-all')
@@ -529,13 +477,6 @@ defineExpose({
   --n-label-padding: 0 !important;
 }
 
-.btn-disabled {
-  background-color: #e0e0e0 !important;
-  color: #2e2e2e !important;
-  border: none !important;
-  cursor: not-allowed;
-}
-
 .provenance-layout {
   background: transparent;
 }
@@ -548,12 +489,6 @@ defineExpose({
   position: relative;
   display: flex;
   gap: 0 !important;
-}
-
-.displayAndListSelectionCount {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtersNotCollapsed {

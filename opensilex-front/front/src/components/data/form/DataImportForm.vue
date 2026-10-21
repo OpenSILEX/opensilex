@@ -3,7 +3,7 @@
     <template #header>
       <i>
         <h4>
-          <Icon icon="bi#bi-bar-chart-fill" />
+          <Icon icon="bi#bi-bar-chart" />
           {{ t("component.data.dataImportForm.create") }}
         </h4>
       </i>

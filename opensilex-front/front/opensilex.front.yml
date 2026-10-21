@@ -115,7 +115,7 @@ menu:
           component: opensilex-DataView
           credentials:
             - data-access
-          icon: bi#bi-bar-chart-fill
+          icon: bi#bi-bar-chart
           title: component.menu.data.label
           description: DataView.description
       - id: datafiles

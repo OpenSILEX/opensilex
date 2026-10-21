@@ -6,7 +6,7 @@
 
 import { onMounted, ref } from "vue";
 import {useRoute} from "vue-router";
-import DataFilesView from "@/components/data/DataFilesView.vue";
+import DataFilesView from "@/components/data/dataFile/DataFilesView.vue";
 
 //#region Constants & Services
 const $route = useRoute();

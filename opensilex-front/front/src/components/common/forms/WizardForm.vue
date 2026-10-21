@@ -34,8 +34,8 @@
           </slot>
           {{ translatedTitle }}
         </h4>
-        <!-- TODO implémenter une condition sur l'apparition du bouton d'aide dans les forms en modal ("?")  -->
         <HelpButton
+          v-if="showHelpButton"
           label="component.tutorial.name"
           class="wizard-help-btn"
           @click="startCurrentStepTutorial"
@@ -146,6 +146,7 @@ const props = defineProps<{
   icon?: string
   modalWidth?: string
   isBlockingStep?: boolean
+  showHelpButton?: boolean
   initForm: () => any
   createAction?: (form: any) => Promise<any>
   updateAction?: (form: any) => Promise<any>

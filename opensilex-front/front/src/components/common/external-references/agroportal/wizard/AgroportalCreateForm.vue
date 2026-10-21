@@ -14,6 +14,7 @@
     :nextStepAction="nextStep"
     :validateAction="validateCustom"
     :isBlockingStep="false"
+    :showHelpButton="true"
     @agroportalTermSelected="handleTermSelected"
     @agroportalTermUnselected="handleTermUnselected"
   >

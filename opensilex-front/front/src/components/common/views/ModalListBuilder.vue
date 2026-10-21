@@ -379,6 +379,8 @@ defineExpose({
   display: flex;
   align-items: center;
   white-space: nowrap;
+  /* cancel the page-header offsets the theme's global .createButton applies */
+  margin: 0;
 }
 
 .validateHelp {

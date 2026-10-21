@@ -210,6 +210,7 @@
                 }
             },
             "search": {
+                "label": "Search",
                 "search-button": "Search",
                 "visualize-button": "Visualize",
                 "badgeHelpMessage": "This badge represents the number of items selected out of the maximum that is allowed.",
@@ -916,6 +917,10 @@
                 "projects-selected-list-title": "Experiment projects",
                 "placeholder": {
                     "species": "Select one or more species"
+                },
+                "selector": {
+                    "placeholder-multiple": "Select one or more Experiments",
+                    "placeholder": "Select one Experiment"
                 }
             },
             "form-wizard": {
@@ -1328,6 +1333,13 @@
             }
         },
         "datafile": {
+            "image-modal": {
+                "title": "Image"
+            },
+            "provenance-modal": {
+                "data": "Data",
+                "datafile": "Datafile"
+            },
             "create": "Add data file",
             "update": "Update data file",
             "description": "View datafiles",
@@ -1339,7 +1351,64 @@
                 "rdfType-placeholder": "Select the datafile type",
                 "provenance": "Provenance"
             },
-            "list-title": "Datafiles"
+            "list-title": "Datafiles",
+            "list": {
+                "add-event": "Add events",
+                "datafile-not-found": "Datafile not found",
+                "date": "Date",
+                "details": "View datafile metadata",
+                "display": "Display",
+                "displayImage": "Display image",
+                "export": "Export datafiles",
+                "filename": "Filename",
+                "format": "Format",
+                "object": "Target",
+                "provenance": "Provenance",
+                "rdfType": "Type",
+                "selected": "Selected datafiles",
+                "selected-all": "All datafiles",
+                "upload-success-message": "File uploaded and processed successfully."
+            },
+            "form": {
+                "browse": "Browse",
+                "date": "Date",
+                "date-help": "Creation Date",
+                "error": {
+                    "object-not-in-experiment": "Scientific Object is not in this experiment"
+                },
+                "experiment": "Experiment",
+                "external-source": "External source",
+                "fileDX": "File",
+                "fileDX-help": "Insert a file in JCAMP-DX, JDX, DX format. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.",
+                "fileSpectraCSV-help": "Insert a spectra file in CSV format with tabulation separator. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.",
+                "provenance": "Provenance",
+                "targets": "Target(s)",
+                "targets-help": "List of resources's URI concerned by the document",
+                "type": "Type",
+                "type-help": "Datafile type",
+                "add-provenance": "Add provenance",
+                "update-provenance": "Update provenance"
+            },
+            "images": {
+                "no-file": "No file to display",
+                "scroll-to-display": "Scroll to see more images",
+                "goToTopButton": "Go back to top"
+            },
+            "export": {
+                "export": "Export datafiles",
+                "format": "Format",
+                "includeAverage": "Include average",
+                "includeAverage-help": "Add row with average values of the same sample. Only for DX to TSV export.",
+                "includeAverage-title": "Average",
+                "includeSampleDatetime": "Include datetime",
+                "includeSampleDatetime-help": "Add column with datetime. Only for DX to TSV export.",
+                "includeSampleDatetime-title": "Datetime"
+            },
+            "provenance-selector": {
+                "placeholder": "Select a provenance",
+                "placeholder-multiple": "Select one or more provenance(s)",
+                "filter-search-no-result": "No provenance found"
+            }
         },
         "custom-properties" : {
             "linked-resources" : "Linked resources"

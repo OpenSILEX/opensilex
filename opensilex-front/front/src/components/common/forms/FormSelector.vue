@@ -6,6 +6,7 @@
     :helpMessage="helpMessage"
   >
     <template #field="{ id }">
+      <!-- NFormItem gère l'astérisque, la bordure rouge et le message via les rules du NForm parent -->
       <n-form-item :path="path" :show-label="false">
         <div class="select-button-container" :class="{ 'has-side-button': !!viewHandler || !!actionHandler }">
           <CustomTreeselect
@@ -48,10 +49,11 @@
             </template>
           </CustomTreeselect>
 
-          <div v-if="!actionHandler && viewHandler" class="select-side-button">
+          <div v-if="!actionHandler && viewHandler" class="select-side-button select-view-button">
             <DetailButton
               @click="viewHandler"
               :label="viewHandlerDetailsVisible ? t('FormSelector.hideDetails') : t('FormSelector.showDetails')"
+              :detailVisible="viewHandlerDetailsVisible"
               :small="true"
               class="greenThemeColor"
             />
@@ -184,6 +186,27 @@ function updateResultCount (n: number) { resultCount.value = n }
 
 .select-side-button > * {
   height: 100%;
+}
+
+/* Bouton "détails" (oeil) collé au sélecteur */
+.select-view-button {
+  margin-left: 0;
+}
+
+/* padding vertical à 0 : le bouton ne doit pas agrandir le conteneur, il s'étire à la hauteur du sélecteur */
+.select-view-button :deep(.btn) {
+  height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.select-button-container:has(.select-view-button) :deep(.n-base-selection) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .has-side-button .select-side-button {

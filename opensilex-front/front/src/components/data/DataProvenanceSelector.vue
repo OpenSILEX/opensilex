@@ -31,6 +31,7 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
 import type HttpResponse from 'opensilex-core/HttpResponse'
 import type { OpenSilexResponse, ProvenanceGetDTO } from 'opensilex-core/index'
+import {DataService} from "opensilex-core/lib";
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
@@ -91,7 +92,7 @@ function onEnter() {
  */
 function loadProvenances() {
   return $opensilex
-    .getService('opensilex.DataService')
+    .getService<DataService>('opensilex.DataService')
     .getUsedProvenancesByTargets(
       props.experiments,
       props.variables,

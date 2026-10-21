@@ -1259,6 +1259,13 @@
                 "export-wide": "Format large"
             },
             "deleteByBatch": "Suppression par lot",
+            "deleteByBatchModal": {
+                "title": "Suppression par lot",
+                "batch-uri": "URI du lot",
+                "batch-placeholder": "Entrez une URI",
+                "success-message": "données ont été supprimées.",
+                "error-message": "Pas de données trouvées."
+            },
             "dataTable": {
                 "target-object": "Objet cible",
                 "list-data": "Date",
@@ -1289,7 +1296,7 @@
                 "csv-file-drop-placeholder": "Déposez le CSV de données ici ...",
                 "data-duplicated": "Données dupliquées",
                 "data-not-imported": "Données non importées. Une erreur s'est produite durant le processus d'importation",
-                "error": "Error",
+                "error": "Erreur",
                 "errorStandardProvenance": "La provenance selectionnée est",
                 "errorStandardProvenanceTwo": "Pour utiliser la provenance standard, définissez-la au préalable.",
                 "message": "Message",
@@ -1298,7 +1305,9 @@
                 "import": "Importer",
                 "generate-template": "Générer un gabarit",
                 "add-provenance": "Ajouter une provenance",
-                "provenance": "Provenance"
+                "provenance": "Provenance",
+                "update-provenance": "Modifier la provenance",
+                "data-too-much-data": "Trop de données à importer. Réduisez le nombre de lignes du fichier."
             },
             "dataHelp": {
                 "exceptedFormat": "Format attendu",

@@ -1201,6 +1201,13 @@
                 "export-wide": "Wide format"
             },
             "deleteByBatch": "Delete by batch",
+            "deleteByBatchModal": {
+                "title": "Delete by batch",
+                "batch-uri": "Batch URI",
+                "batch-placeholder": "Enter URI",
+                "success-message": "data have been deleted.",
+                "error-message": "No data found."
+            },
             "dataTable": {
                 "target-object": "Object target",
                 "list-data": "Data",
@@ -1231,7 +1238,7 @@
                 "csv-file-drop-placeholder": "Drop CSV Data file here...",
                 "data-duplicated": "Duplicated data",
                 "data-not-imported": "Data has not been imported. An error has occured during the importation process",
-                "error": "Erreur",
+                "error": "Error",
                 "errorStandardProvenance": "The selected provenance is",
                 "errorStandardProvenanceTwo": "To use the standard provenance, define it beforehand.",
                 "message": "Message",
@@ -1240,7 +1247,9 @@
                 "import": "Import",
                 "generate-template": "Generate template",
                 "add-provenance": "Add provenance",
-                "provenance": "Provenance"
+                "provenance": "Provenance",
+                "update-provenance": "Update provenance",
+                "data-too-much-data": "Too much data to import. Reduce the number of lines in the file."
             },
             "dataHelp": {
                 "exceptedFormat": "Expected format",

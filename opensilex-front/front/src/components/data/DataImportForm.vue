@@ -4,12 +4,12 @@
       <b-col cols="5">
         <FormField
           :required="true"
-          label="DataImportForm.use-default-provenance"
-          helpMessage="DataImportForm.use-default-provenance-help"
+          label="component.data.dataImportForm.use-default-provenance"
+          helpMessage="component.data.dataImportForm.use-default-provenance-help"
         >
           <template v-slot:field="field">
             <b-form-checkbox v-model="selectDefaultProvenance" switch @change="changeCheckBox($event)">
-              {{$t('DataImportForm.use-default-provenance-title')}}
+              {{$t('component.data.dataImportForm.use-default-provenance-title')}}
             </b-form-checkbox>
           </template>
         </FormField>
@@ -20,7 +20,7 @@
           ref="provenanceSelector"
           :provenances.sync="form.provenance.uri"
           :filterLabel="filterProvenanceLabel"
-          label="component.data.form.selector.placeholder"
+          label="component.data.dataImportForm.provenance"
           @select="loadProvenanceAndCheckUploadedData"
           @clear="reset()"
           :multiple="false"
@@ -41,8 +41,8 @@
 
     <ProvenanceForm
       ref="provenanceForm"
-      :createTitle="t('ProvenanceView.add')"
-      :editTitle="t('ProvenanceView.update')"
+      :createTitle="t('component.data.dataImportForm.add-provenance')"
+      :editTitle="t('component.data.dataImportForm.update-provenance')"
       @onCreate="afterCreateProvenance"
     ></ProvenanceForm>
     
@@ -54,7 +54,7 @@
       ></GenerateDataTemplateFrom>
       <div>
         <label
-          >{{ $t("DataImportForm.import-file") }}
+          >{{ $t("component.data.dataImportForm.import-file") }}
           <span class="required">*</span></label
         >
 
@@ -65,8 +65,8 @@
               ref="inputFile"
               accept="text/csv, .csv"
               @input="uploadCSV"
-              :placeholder="$t('DataImportForm.csv-file-placeholder')"
-              :drop-placeholder="$t('DataImportForm.csv-file-drop-placeholder')"
+              :placeholder="$t('component.data.dataImportForm.csv-file-placeholder')"
+              :drop-placeholder="$t('component.data.dataImportForm.csv-file-drop-placeholder')"
               :browse-text="$t('component.common.import-files.select-button')"
               v-model="file"
               :state="Boolean(file)"
@@ -78,7 +78,7 @@
               class="mr-2 greenThemeColor"
               :small="false"
               icon:
-              label="DataView.buttons.generate-template"
+              label="component.data.dataImportForm.generate-template"
             ></Button>
           </b-col>
           <b-col cols="5"></b-col>
@@ -97,13 +97,13 @@
       >
       </DataValidationReport>
       <p v-if="!isImported && isValid && insertionError" class="alert-warning">
-        {{ $t("DataImportForm.data-not-imported") }}
+        {{ $t("component.data.dataImportForm.data-not-imported") }}
       </p>
       <p
         v-if="!isImported && tooLargeDataset && insertionError"
         class="alert alert-warning"
       >
-        {{ $t("DataImportForm.data-too-much-data") }}
+        {{ $t("component.data.dataImportForm.data-too-much-data") }}
       </p>
       <p
         v-if="
@@ -111,9 +111,9 @@
         "
         class="alert alert-warning"
       >
-        {{ $t("DataImportForm.error") }} : {{ insertionDataError.title }}
+        {{ $t("component.data.dataImportForm.error") }} : {{ insertionDataError.title }}
         <br />
-        {{ $t("DataImportForm.message") }} : {{ insertionDataError.message }}
+        {{ $t("component.data.dataImportForm.message") }} : {{ insertionDataError.message }}
       </p>
       <br />
   </b-form>
@@ -379,11 +379,11 @@ function create() {
           }).catch((e) => {
             if(standardProvURI.value === undefined) {
               let message =
-                t("DataImportForm.errorStandardProvenance") +
+                t("component.data.dataImportForm.errorStandardProvenance") +
                 " : '" +
                 standardProvURI.value +
                 "' . " +
-                t("DataImportForm.errorStandardProvenanceTwo")
+                t("component.data.dataImportForm.errorStandardProvenanceTwo")
                 opensilex.showErrorToast(message);
             }
             console.error(e);
@@ -510,65 +510,3 @@ function changeCheckBox(value) {
 </script>
 <style scoped lang="scss">
 </style>
-<i18n>
-en:
-  DataImportForm:
-    use-default-provenance: Use standard provenance 
-    use-default-provenance-title: Uncheck to select another provenance
-    use-default-provenance-help: The data will be linked to a default provenance. Uncheck to select another provenance.
-    experiments: Select the experiments associated to the data (optionnal)
-    add-device-column: Add device column 
-    add-device-column-title: Check if you need to specify a device on each piece of data
-    add-device-column-help: Check if you need to add a device column, then select the device types. If the device is already defined in the provenance, then it is not necessary to specify device.
-    create: Add Data
-    update: Update
-    experiment: Choose experiment
-    describe: Describe information involved in the production of data
-    provenance-success-message: Provenance has been successfully created      
-    choose-experiment: First choose an experiment
-    choosen-experiment: Choosen experiment
-    choosen-provenance: Choosen provenance
-    selected-file: Selected file
-    no-selected-file: No selected file
-    csv-file-placeholder: Drop CSV Data file or select a file...
-    csv-file-drop-placeholder: Drop CSV Data file here...
-    data-duplicated: Duplicated data
-    data-not-imported: Data has not been imported. An error has occured during the importation process
-    error: Erreur 
-    errorStandardProvenance: The selected provenance is
-    errorStandardProvenanceTwo: To use the standard provenance, define it beforehand.
-    message: Message
-    reset-file: Reset file
-    import-file : Import data CSV
-    
-fr:
-  DataImportForm:
-    use-default-provenance: Utiliser la provenance standard
-    use-default-provenance-title: Décocher pour choisir une autre provenance
-    use-default-provenance-help: Les données seront liées à la provenance standard. Décocher pour sélectionner une autre provenance.
-    experiments: Selectionner les expérimentations associées aux données (facultatif)
-    add-device-column: Ajouter des colonnes equipement
-    add-device-column-title: Cocher pour spécifier un équipement sur chaque donnée
-    add-device-column-help: Cocher pour ajouter des colonnes équipements et sélectionner les types d'équipements à ajouter. Si l'équipement en question est déjà spécifié dans la provenance, il n'est pas nécessaire de le repréciser dans le fichier d'import.
-    create: Ajouter des données
-    update: Modifier
-    experiment: Choisir une experimentation
-    describe: Décrivez les informations impliquées dans la production des données
-    provenance-success-message: La provenance a été créé avec succès
-    choose-experiment: Choisissez une expérimentation
-    choosen-experiment: Expérimentation choisie
-    choosen-provenance: Provenance choisie
-    selected-file: Fichier sélectionné
-    no-selected-file: Aucun fichier sélectionné
-    csv-file-placeholder: Déposez le CSV de données ici ou sélectionner un fichier..
-    csv-file-drop-placeholder: Déposez le CSV de données ici ...    
-    data-duplicated: Données dupliquées
-    data-not-imported: Données non importées. Une erreur s'est produite durant le processus d'importation
-    error: Error
-    errorStandardProvenance: La provenance selectionnée est
-    errorStandardProvenanceTwo: Pour utiliser la provenance standard, définissez-la au préalable.
-    message: Message
-    reset-file: Reinitialiser fichier
-    import-file : Importez des données
-    
-</i18n>

@@ -3,7 +3,7 @@
       ref="validatorRef">
     <Modal
         ref="modal"
-        :title="$t('DeleteByBatchModal.title')"
+        :title="$t('component.data.deleteByBatchModal.title')"
         no-close-on-backdrop
         no-close-on-esc
     >
@@ -13,7 +13,7 @@
             <i>
               <h4>
                 <Icon icon="fa#trash-alt"/>
-                {{ $t("DeleteByBatchModal.title") }}
+                {{ $t("component.data.deleteByBatchModal.title") }}
               </h4>
             </i>
           </b-col>
@@ -23,10 +23,10 @@
         <!-- Batch URI -->
         <InputForm
             :value.sync="batchUri"
-            label="DeleteByBatchModal.batch-uri"
+            label="component.data.deleteByBatchModal.batch-uri"
             type="text"
             :required="true"
-            placeholder="DeleteByBatchModal.batch-placeholder"
+            :placeholder="t('component.data.deleteByBatchModal.batch-placeholder')"
         ></InputForm>
       </template>
       <template v-slot:modal-footer>
@@ -105,7 +105,7 @@ function hide()
   }
 
   let result = (await dataService.value.deleteDataOnSearch(
-      this.experimentUri,
+      props.experimentUri,
       undefined,
       undefined,
       undefined,
@@ -117,10 +117,10 @@ function hide()
     deletedCount = result.deletedCount;
   }
   if (deletedCount > 0) {
-    opensilex.showSuccessToast(deletedCount + "  " + t("DeleteByBatchModal.success-message"));
+    opensilex.showSuccessToast(deletedCount + "  " + t("component.data.deleteByBatchModal.success-message"));
     emitDeleted();
   } else {
-    opensilex.showErrorToast(t("DeleteByBatchModal.error-message"));
+    opensilex.showErrorToast(t("component.data.deleteByBatchModal.error-message"));
   }
 }
 //#endregion
@@ -140,21 +140,3 @@ defineExpose({
   show
 })
 </script>
-
-<i18n>
-en:
-  DeleteByBatchModal:
-    title: Delete by Batch
-    batch-uri: Batch URI
-    batch-placeholder: Enter URI
-    success-message: data have been deleted.
-    error-message: No data found.
-
-fr:
-  DeleteByBatchModal:
-    title: Suppression par batch
-    batch-uri: URI de Batch
-    batch-placeholder: Entrez URI
-    success-message: données ont étés supprimés.
-    error-message: Pas de données trouvées
-</i18n>

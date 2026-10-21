@@ -154,7 +154,7 @@
             "delete-confirmation": "Cette action est définitive, merci de confirmer la suppression.",
             "success": {
                 "success-title": "Succès",
-                "creation-success-message": " a été crée",
+                "creation-success-message": " a été créé(e)",
                 "creation-success-with-template": "{uri} a été créé",
                 "update-success-message": " a été modifié(e)",
                 "update-success-with-template": "{uri} a été mis à jour",

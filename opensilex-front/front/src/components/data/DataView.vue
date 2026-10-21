@@ -40,17 +40,11 @@
       @deleted="refresh"
     ></DeleteByBatchModal>
 
-    <ModalForm
+    <DataImportForm
         v-if="renderImportForm"
         ref="modalDataForm"
-        createTitle="component.data.view.form.create"
-        editTitle="component.data.view.form.update"
-        component="DataImportForm"
-        icon="ik#ik-bar-chart-line"
-        modalSize="xl"
         @onCreate="afterCreateData"
-        :successMessage="successMessage"
-    ></ModalForm>
+    ></DataImportForm>
 
     <PageContent
         class="pagecontent">
@@ -303,6 +297,8 @@ import DataExportModal from "@/components/data/DataExportModal.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import ResultModalView from "@/components/data/ResultModalView.vue";
 import DeleteByBatchModal from "@/components/data/DeleteByBatchModal.vue";
+import ModalForm from "@/components/common/forms/ModalForm.vue";
+import DataImportForm from "@/components/data/form/DataImportForm.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
@@ -349,7 +345,7 @@ const soFilter = ref({
 //#endregion
 //#region Template refs
 const dataList = ref<InstanceType<typeof DataList> | null>(null);
-const modalDataForm = ref<InstanceType<typeof ModalForm> | null>(null);
+const modalDataForm = ref<InstanceType<typeof DataImportForm> | null>(null);
 const provSelector = ref<InstanceType<typeof DataProvenanceSelector> | null>(null);
 const resultModal = ref<InstanceType<typeof ResultModalView> | null>(null);
 const soSelector = ref<InstanceType<typeof ModalFormSelector> | null>(null);
@@ -504,7 +500,7 @@ function loadAdvancedFilter(names: string[]) {
 function showImportForm() {
   renderImportForm.value = true;
   nextTick(() => {
-    modalDataForm.value.showCreateForm();
+    modalDataForm.value.show();
   });
 }
 //#endregion

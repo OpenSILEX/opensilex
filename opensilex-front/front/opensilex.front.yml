@@ -117,7 +117,7 @@ menu:
             - data-access
           icon: bi#bi-bar-chart
           title: component.menu.data.label
-          description: DataView.description
+          description: component.data.view.description
       - id: datafiles
         label: component.menu.data.datafiles
         route:

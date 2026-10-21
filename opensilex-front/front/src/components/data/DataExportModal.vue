@@ -31,16 +31,11 @@
     </FormField>
 
     <template #footer>
-      <Button
-        label="component.common.close"
-        class="btn-secondary"
-        @click="hide()"
-      />
-
-      <Button
-        label="component.data.export.export"
-        class="greenThemeColor"
-        @click="exportData()"
+      <FormFooter
+        cancelLabel="component.common.close"
+        submitLabel="component.data.export.export"
+        @cancel="hide"
+        @submit="exportData"
       />
     </template>
   </Modal>
@@ -57,7 +52,7 @@ import FormSelector from "@/components/common/forms/FormSelector.vue";
 import FormField from "@/components/common/forms/FormField.vue";
 import Icon from "@/components/common/views/Icon.vue";
 import Modal from "@/components/common/views/Modal.vue";
-import Button from "@/components/common/buttons/Button.vue";
+import FormFooter from "@/components/common/forms/FormFooter.vue";
 
 const props = defineProps<{
   filter: any

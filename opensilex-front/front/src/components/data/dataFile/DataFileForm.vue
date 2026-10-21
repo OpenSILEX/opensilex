@@ -18,7 +18,7 @@
           :key="modalFormLogic.form.value.rdf_type ?? 'no-type'"
           v-model:type="modalFormLogic.form.value.rdf_type"
           :baseType="Oeso.DATAFILE_TYPE_URI"
-          :helpMessage="t('DataFileForm.type-help')"
+          :helpMessage="t('component.datafile.form.type-help')"
           :required="true"
         />
       </n-form-item>
@@ -40,11 +40,12 @@
         </n-form-item>
 
         <!-- provenance -->
+        <n-form-item class="compact-form-item provenanceSelector">
           <ProvenanceSelector
             path="provenance"
             ref="provenanceSelector"
             v-model:provenances="modalFormLogic.form.value.provenance"
-            :label="t('DataFileForm.provenance')"
+            :label="t('component.datafile.form.provenance')"
             :multiple="false"
             @clear="reset"
             :actionHandler="
@@ -54,14 +55,17 @@
             "
             :required="true"
           />
+        </n-form-item>
 
         <!-- experiment -->
+        <n-form-item v-if="!tabExperimentMode" class="compact-form-item">
           <ExperimentSelector
             path="experiments"
-            :label="t('DataFileForm.experiment')"
+            :label="t('component.datafile.form.experiment')"
             v-model:experiments="modalFormLogic.form.value.experiments"
             :required="true"
           />
+        </n-form-item>
 
         <!-- File source -->
         <n-form-item label="Source">
@@ -82,9 +86,9 @@
         <n-form-item v-if="!modalFormLogic.isEditMode.value && selectedSource === 'file'" path="file" ref="fileItem">
           <FileInputForm
             v-model:file="modalFormLogic.form.value.file"
-            :label="t('DataFileForm.fileDX')"
+            :label="t('component.datafile.form.fileDX')"
             type="file"
-            :browse-text="t('DataFileForm.browse')"
+            :browse-text="t('component.datafile.form.browse')"
             :required="true"
             rules="size:100000"
             :helpMessage="helpMessageFile"
@@ -94,7 +98,7 @@
         <!-- External source -->
         <n-form-item v-if="!modalFormLogic.isEditMode.value && selectedSource === 'external'" path="file" ref="externalSourceItem">
           <InputForm
-            :label="t('DataFileForm.external-source')"
+            :label="t('component.datafile.form.external-source')"
             type="text"
             v-model:value="modalFormLogic.form.value.file"
             :required="true"
@@ -105,8 +109,8 @@
         <n-form-item v-if="selectedFormat === 'all' || selectedSource === 'external'" path="date" ref="dateItem">
           <DateForm
             v-model:value="modalFormLogic.form.value.date"
-            :helpMessage="t('DataFileForm.date-help')"
-            :label="t('DataFileForm.date')"
+            :helpMessage="t('component.datafile.form.date-help')"
+            :label="t('component.datafile.form.date')"
             :required="true"
           />
         </n-form-item>
@@ -116,13 +120,21 @@
           <InputForm
             v-model:value="modalFormLogic.form.value.target"
             :baseType="Oeso.targets"
-            :label="t('DataFileForm.targets')"
-            :helpMessage="t('DataFileForm.targets-help')"
+            :label="t('component.datafile.form.targets')"
+            :helpMessage="t('component.datafile.form.targets-help')"
             type="text"
           />
         </n-form-item>
       </template>
     </n-form>
+
+    <ProvenanceForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
+      ref="provenanceForm"
+      :createTitle="t('component.datafile.form.add-provenance')"
+      :editTitle="t('component.datafile.form.update-provenance')"
+      @onCreate="afterCreateProvenance"
+    />
 
     <template #footer>
       <FormFooter @cancel="modalFormLogic.hide" @submit="modalFormLogic.submit" />
@@ -131,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, nextTick, watch, useTemplateRef } from 'vue'
+import { computed, inject, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import {
@@ -141,7 +153,6 @@ import {
   NRadioGroup,
   NSpace
 } from 'naive-ui'
-import type { FormInst, FormItemInst } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import type HttpResponse from '@/lib/HttpResponse'
 import type {
@@ -151,6 +162,7 @@ import type {
 import type { DataService } from 'opensilex-core/api/data.service'
 import TypeForm from '@/components/common/forms/TypeForm.vue'
 import ProvenanceSelector from '@/components/data/ProvenanceSelector.vue'
+import ProvenanceForm from '@/components/data/form/ProvenanceForm.vue'
 import ExperimentSelector from '@/components/experiments/ExperimentSelector.vue'
 import FileInputForm from '@/components/common/forms/FileInputForm.vue'
 import InputForm from '@/components/common/forms/InputForm.vue'
@@ -164,7 +176,7 @@ import useModalFormLogic, {ModalFormEmits, ModalFormProps} from '@/composables/u
 type DataFileFormModel = {
   rdf_type: string | null
   provenance: any
-  experiments: any[]
+  experiments: any
   file: File | string | null
   date: string | null
   target: string | null
@@ -173,6 +185,7 @@ type DataFileFormModel = {
 const emit = defineEmits<ModalFormEmits>();
 const props = defineProps<ModalFormProps & {
   tabExperimentMode?: boolean
+  experimentUri?: string
 }>();
 //#endregion
 
@@ -192,6 +205,7 @@ const serviceOS = opensilex.getService<ScientificObjectsService>(
 const modalRef = useTemplateRef<InstanceType<typeof Modal>>('modalRef')
 const formRef = useTemplateRef<InstanceType<typeof NForm>>('formRef')
 const provenanceSelector = ref<any>(null)
+const provenanceForm = useTemplateRef<InstanceType<typeof ProvenanceForm>>('provenanceForm')
 
 //#region Datas & computed
 const selectedFormat = ref<'all' | 'DX' | 'CSV'>('DX')
@@ -214,11 +228,11 @@ const sources = [
 
 const helpMessageFile = computed(() => {
   if (selectedFormat.value === 'DX') {
-    return 'DataFileForm.fileDX-help'
+    return 'component.datafile.form.fileDX-help'
   }
 
   if (selectedFormat.value === 'CSV') {
-    return 'DataFileForm.fileSpectraCSV-help'
+    return 'component.datafile.form.fileSpectraCSV-help'
   }
 
   return null
@@ -228,7 +242,7 @@ const rules = computed(() => ({
   rdf_type: {
     required: true,
     message: t('validations.required_if', {
-      _field_: t('DataFileForm.type')
+      _field_: t('component.datafile.form.type')
     }),
     trigger: ['change', 'blur']
   },
@@ -240,7 +254,7 @@ const rules = computed(() => ({
         ? true
         : new Error(
             t('validations.required_if', {
-              _field_: t('DataFileForm.provenance')
+              _field_: t('component.datafile.form.provenance')
             }) as string
           )
     }
@@ -257,7 +271,7 @@ const rules = computed(() => ({
         ? true
         : new Error(
             t('validations.required_if', {
-              _field_: t('DataFileForm.experiment')
+              _field_: t('component.datafile.form.experiment')
             }) as string
           )
     }
@@ -271,7 +285,7 @@ const rules = computed(() => ({
           ? true
           : new Error(
               t('validations.required_if', {
-                _field_: t('DataFileForm.fileDX')
+                _field_: t('component.datafile.form.fileDX')
               }) as string
             )
       }
@@ -281,7 +295,7 @@ const rules = computed(() => ({
           ? true
           : new Error(
               t('validations.required_if', {
-                _field_: t('DataFileForm.external-source')
+                _field_: t('component.datafile.form.external-source')
               }) as string
             )
       }
@@ -298,7 +312,7 @@ const rules = computed(() => ({
           ? true
           : new Error(
               t('validations.required_if', {
-                _field_: t('DataFileForm.date')
+                _field_: t('component.datafile.form.date')
               }) as string
             )
       }
@@ -326,7 +340,7 @@ function getEmptyForm(): DataFileFormModel {
   return {
     rdf_type: null,
     provenance: null,
-    experiments: [],
+    experiments: props.experimentUri ?? [],
     file: null,
     date: null,
     target: null
@@ -369,15 +383,18 @@ function getProvenanceUri(provenance: any) {
 }
 
 function showProvenanceCreateForm() {
-  // This would be handled by a separate ProvenanceForm component if needed
-  // For now, kept as placeholder for potential integration
+  provenanceForm.value?.showCreateForm?.()
+}
+
+function afterCreateProvenance(http: HttpResponse<OpenSilexResponse<string>>) {
+  modalFormLogic.form.value.provenance = http.response.result
 }
 
 async function checkOSinExperiment(form: DataFileFormModel) {
   const contextURI = form.experiments
   const target = form.target
 
-  const http = await serviceOS.getScientificObjectsListByUris(
+  const http = await serviceOS.searchScientificObjectsListByUris(
     contextURI,
     [target]
   )
@@ -386,7 +403,7 @@ async function checkOSinExperiment(form: DataFileFormModel) {
 
   if (foundObjects.length === 0) {
     opensilex.showErrorToast(
-      t('DataFileForm.error.object-not-in-experiment')
+      t('component.datafile.form.error.object-not-in-experiment')
     )
     return false
   }
@@ -469,7 +486,7 @@ function createDxFile(submittedForm: DataFileFormModel) {
       const uri = http.response.result
       submittedForm.uri = uri
       console.debug('Datafile created', uri)
-      opensilex.showSuccessToast('File uploaded and processed successfully.')
+      opensilex.showSuccessToast(t('component.datafile.list.upload-success-message'))
       return submittedForm
     })
 }
@@ -497,7 +514,7 @@ function createCsvSpectraFile(submittedForm: DataFileFormModel) {
       const uri = http.response.result
       submittedForm.uri = uri
       console.debug('Datafile created', uri)
-      opensilex.showSuccessToast('File uploaded and processed successfully.')
+      opensilex.showSuccessToast(t('component.datafile.list.upload-success-message'))
       return submittedForm
     })
 }
@@ -555,50 +572,37 @@ defineExpose(modalFormLogic.exposed)
 
 </script>
 
-<i18n>
-en:
-  DataFileForm:
-    add-provenance: Add provenance
-    update-provenance: Update provenance
-    browse: Browse
-    date: Date
-    date-help: Creation Date
-    error:
-      datafile-already-exists: Datafile already exists
-      file-name-too-long: File name is too long
-      object-not-in-experiment: Scientific Object is not in this experiment
-    experiment: Experiment
-    external-source: External source
-    fileDX: File
-    fileDX-help: Insert a file in JCAMP-DX, JDX, DX format. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.
-    fileSpectraCSV-help: Insert a spectra file in CSV format with tabulation separator. A file can contain an infinite number of samples, provided you have created the OS in envibis beforehand.
-    form-selectFormat-placeholder: Select datafile format to insert
-    provenance: Provenance
-    targets-help: List of resources's URI concerned by the document
-    targets-error: Concerned item's URI expected
-    type: Type
-    type-help: Datafile type
+<style scoped lang="scss">
+:deep(.compact-form-item) {
+  --n-label-height: 0px !important;
+  --n-label-padding: 0 !important;
+}
 
-fr:
-  DataFileForm:
-    add-provenance: Ajouter une provenance
-    update-provenance: Modifier une provenance
-    browse: Parcourir
-    date: Date
-    date-help: Date de création
-    error:
-      datafile-already-exists: Le fichier de données existe déjà
-      file-name-too-long: Le nom du fichier est trop long
-      object-not-in-experiment: L'objet scientifique n'est pas inclus dans cette expérience
-    experiment: Expérimentation
-    external-source: Source externe
-    fileDX: Fichier
-    fileDX-help: Insérer un fichier au format JCAMP-DX, JDX, DX. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.
-    fileSpectraCSV-help: Insérer un fichier de spectres au format CSV avec le séparateur tabulation. Un fichier peut comporter une infinité d'échantillons à condition d'avoir créé au préalable les OS dans envibis.
-    form-selectFormat-placeholder: Sélectionner le format du fichier de données à insérer
-    provenance: Provenance
-    targets: Cible(s)
-    targets-help: Liste d'URI des ressources concernées par le document
-    type: Type
-    type-help: Type de datafile
-</i18n>
+.provenanceSelector :deep(.select-button-container) {
+  position: relative;
+}
+
+.provenanceSelector :deep(.select-side-button) {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin-left: 0;
+  z-index: 1;
+}
+
+.provenanceSelector :deep(.select-side-button > *) {
+  height: 100%;
+  padding: 0 12px;
+  border-radius: 0 3px 3px 0;
+}
+
+.provenanceSelector :deep(.n-base-suffix) {
+  right: 40px !important;
+}
+
+.provenanceSelector :deep(.n-base-selection) {
+  --n-padding-single-right: 64px !important;
+  --n-padding-multiple-right: 64px !important;
+}
+</style>

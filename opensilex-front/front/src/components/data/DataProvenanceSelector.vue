@@ -1,16 +1,17 @@
 <template>
-  <opensilex-FormSelector
+  <FormSelector
     ref="formSelector"
     :label="label"
     v-model:selected="provenancesURI"
     :multiple="multiple"
     :optionsLoadingMethod="loadProvenances"
     :placeholder="
-      multiple
-        ? t('DatafileProvenanceSelector.placeholder-multiple')
-        : t('DatafileProvenanceSelector.placeholder')
+      placeholder ??
+      (multiple
+        ? t('component.data.form.selector.placeholder-multiple')
+        : t('component.data.form.selector.placeholder'))
     "
-    :noResultsText="t('DatafileProvenanceSelector.filter-search-no-result')"
+    :noResultsText="t('component.data.form.selector.filter-search-no-result')"
     :disableBranchNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
@@ -28,16 +29,18 @@
 import { computed, inject, ref } from 'vue'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { useI18n } from 'vue-i18n'
+import type HttpResponse from 'opensilex-core/HttpResponse'
+import type { OpenSilexResponse, ProvenanceGetDTO } from 'opensilex-core/index'
 
 const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const { t } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'update:provenances', value: any): void
-  (e: 'select', value: any): void
-  (e: 'deselect', value: any): void
-  (e: 'clear'): void
-  (e: 'handlingEnterKey'): void
+  'update:provenances': [value: any]
+  select: [value: any]
+  deselect: [value: any]
+  clear: []
+  handlingEnterKey: []
 }>()
 
 const props = withDefaults(defineProps<{
@@ -45,9 +48,11 @@ const props = withDefaults(defineProps<{
   provenances?: any
   required?: boolean
   label?: string
+  placeholder?: string
   experiments?: any
   targets?: any
   devices?: any
+  variables?: any
   multiple?: boolean
   viewHandler?: Function
   viewHandlerDetailsVisible?: boolean
@@ -81,15 +86,19 @@ function onEnter() {
   emit('handlingEnterKey')
 }
 
+/**
+ * Load only the provenances used by data of the given experiments/variables/devices/targets
+ */
 function loadProvenances() {
   return $opensilex
     .getService('opensilex.DataService')
-    .getDatafilesProvenancesByTargets(
+    .getUsedProvenancesByTargets(
       props.experiments,
+      props.variables,
       props.devices,
       props.targets
     )
-    .then((http: any) => {
+    .then((http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
       return http.response.result
     })
 }
@@ -98,20 +107,3 @@ defineExpose({
   refresh
 })
 </script>
-
-<style scoped>
-</style>
-<i18n>
-en:
-    DatafileProvenanceSelector:
-        placeholder  : Select a provenance
-        placeholder-multiple  : Select one or more provenance(s)
-        filter-search-no-result : No provenance found
-
-
-fr:
-    DatafileProvenanceSelector:
-        placeholder : Sélectionner une provenance
-        placeholder-multiple : Sélectionner une ou plusieurs provenance(s)   
-        filter-search-no-result : Aucune provenance trouvée
-</i18n>

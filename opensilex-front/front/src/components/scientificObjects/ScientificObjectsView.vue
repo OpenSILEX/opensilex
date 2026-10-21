@@ -56,7 +56,7 @@
             <ExperimentSelector
               :label="t('component.experiment.view.title')"
               v-model:experiments="filter.experiment"
-              :multiple="true"
+              :multiple="false"
               class="searchFilter"
               @handlingEnterKey="soList.refresh()"
               :key="resetExperimentSelectorKey"
@@ -71,7 +71,7 @@
           >
             <ScientificObjectTypeSelector
               id="type"
-              v-model:types="filter.types"
+              v-model:selected="filter.types"
               :multiple="true"
               class="searchFilter"
             />
@@ -237,7 +237,6 @@ const filter = ref<ScientificObjectFilter>({
   criteriaDto: {criteria_list:[]}
 });
 const resetExperimentSelectorKey = ref(0);
-const resetFactorLevelSelectorKey = ref(0);
 const searchFiltersToggle = ref(false);
 const loadAdvancedSearchFilters = ref(false);
 const expandedNCollapseNames = ref<string[]>([])
@@ -349,7 +348,6 @@ function reset(): void {
   criteriaSearchCreateModal.value.resetCriteriaListAndSave();
   soList.value.refresh();
   resetExperimentSelectorKey.value++;
-  resetFactorLevelSelectorKey.value++;
 }
 
 function onCollapseUpdate(names: string[]) {

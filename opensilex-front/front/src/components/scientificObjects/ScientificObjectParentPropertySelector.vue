@@ -1,22 +1,24 @@
 <template>
-  <FormSelector
-    :label="property?.name ?? property?.uri"
+  <InfiniteScrollDropdown
     v-model:selected="internalValue"
+    :fetchPage="searchParents"
+    :itemLoadingMethod="getParentsByURI"
+    :conversionMethod="scientificObjectToSelectOption"
+    :label="property?.name ?? property?.uri"
     :multiple="property?.is_list"
     :required="property?.is_required"
-    :searchMethod="searchParents"
-    :itemLoadingMethod="getParentsByURI"
     :placeholder="t('ScientificObjectParentPropertySelector.parent-placeholder')"
   />
 </template>
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
+import type { SelectOption } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
+import type { ScientificObjectsService } from 'opensilex-core/api/scientificObjects.service'
 import type { VueRDFTypePropertyDTO } from '@/lib'
 import { useI18n } from 'vue-i18n'
-import FormSelector from "@/components/common/forms/FormSelector.vue";
-import {ScientificObjectsService} from "../../../../../opensilex-core/front/src/lib";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 
 
 const props = withDefaults(defineProps<{
@@ -86,32 +88,41 @@ function getSearchTypes() {
   return [props.property.target_property]
 }
 
+const scientificObjectToSelectOption = (so: any): SelectOption => ({
+  label: `${so.name ?? so.uri} (${so.rdf_type_name ?? so.rdf_type ?? ''})`,
+  value: so.uri
+})
+
+/** Loads one page of results. `page` is zero-based. */
 async function searchParents(query: string, page: number, pageSize: number) {
   const types = getSearchTypes()
   const http = await service.searchScientificObjects(
     getExperimentURI(),
     types,
     query,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    [],
+    undefined,       // parent
+    undefined,       // germplasms
+    undefined,       // factor_levels
+    undefined,       // facility
+    undefined,       // variables
+    undefined,       // devices
+    undefined,       // existence_date
+    undefined,       // creation_date
+    undefined,       // criteria_on_data
+    ['name=asc'],    // order_by
     page,
     pageSize
   )
 
+  // The object being edited (and anything else the caller excludes) must not be selectable as its
+  // own parent.
   http.response.result = http.response.result
     .filter((so: any) => !props.excluded?.has(so.uri))
 
   return http
 }
 
+/** Loads the already selected elements (update form), so that their name can be displayed. */
 async function getParentsByURI(soURIs: string[] | string) {
   const uris = Array.isArray(soURIs)
     ? soURIs

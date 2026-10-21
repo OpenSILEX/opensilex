@@ -298,7 +298,7 @@ function deleteExperiment(uri: string) {
   experimentService
       .deleteExperiment(uri)
       .then(() => {
-        let message = t("ExperimentList.name") + " " + uri + " " + t("component.common.success.delete-success-message");
+        let message = t("component.experiment.view.title") + " " + uri + " " + t("component.common.success.delete-success-message");
         opensilex.showSuccessToast(message);
         router.push({
           path: "/experiments",

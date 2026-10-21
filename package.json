@@ -21,6 +21,7 @@
         "@fortawesome/vue-fontawesome": "^3.0.8",
         "@vee-validate/rules": "^4.15.1",
         "core-js": "3.42.0",
+        "echarts": "^6.1.0",
         "highcharts": "^12.2.0",
         "highcharts-custom-events": "^3.0.10",
         "highcharts-vue": "^2.0.1",

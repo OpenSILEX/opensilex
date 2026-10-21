@@ -1818,5 +1818,10 @@
         "export-long-help": "Each line represent an observation (Same as the result table)",
         "batch-uri": "Batch URI",
         "uri-placeholder": "Enter a part of an uri"
+    },
+    "ExperimentDataVisualisationView": {
+        "missingFilters": "Select at least one scientific object and one variable.",
+        "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
+        "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed."
     }
 }

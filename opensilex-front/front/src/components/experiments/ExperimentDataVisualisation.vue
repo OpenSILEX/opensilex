@@ -15,6 +15,7 @@
 import {computed, inject, ref} from "vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useRoute} from "vue-router";
+import ExperimentDataVisualisationView from "@/components/experiments/views/ExperimentDataVisualisationView.vue";
 
 defineProps<{
   elementName?: string

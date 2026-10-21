@@ -975,7 +975,6 @@ en:
   ScientificObjectList:
     selected: Selected Scientific Objects
     selected-all: All scientific objects
-    description: Manage and configure scientific objects
     display: Display
     advancedSearch: Advanced search
     propetiesConfiguration: Properties to display
@@ -1016,7 +1015,6 @@ fr:
   ScientificObjectList:
     selected: Objets Scientifiques Sélectionnés
     selected-all: Tout les objets scientifiques
-    description: Gérer et configurer les objets scientifiques
     display: Affichage
     advancedSearch: Recherche avancée
     propetiesConfiguration: Propriétés à afficher

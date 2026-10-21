@@ -950,6 +950,7 @@
             "parent-placeholder": "Select a parent",
             "objectType": "Object type",
             "alertSelectAllLimitSize": "The selection has too many lines for this feature, refine your search, maximum=",
+            "description": "Manage and configure scientific objects",
             "error" : {
                 "delete" : {
                     "associated-data" : "The object {scientific_object} can't be deleted since there are some associated data. You must delete them first",

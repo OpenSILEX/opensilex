@@ -237,7 +237,7 @@ const filter = ref<ScientificObjectFilter>({
   criteriaDto: {criteria_list:[]}
 });
 const resetExperimentSelectorKey = ref(0);
-const searchFiltersToggle = ref(false);
+const searchFiltersToggle = ref(true);
 const loadAdvancedSearchFilters = ref(false);
 const expandedNCollapseNames = ref<string[]>([])
 //#endregion

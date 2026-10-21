@@ -84,7 +84,7 @@ menu:
             - scientific-objects-access
           icon: bi#bi-bullseye
           title: component.menu.scientificObjects
-          description: ScientificObjectList.description
+          description: component.scientificObjects.description
       - id: variables
         label: component.menu.variables
         route:
@@ -469,7 +469,7 @@ routes:
     credentials: [ ]
     icon: ik#ik-target
     title: component.menu.scientificObjects
-    description: ScientificObjectList.description
+    description: component.scientificObjects.description
     rdfType: vocabulary:ScientificObject
     children:
       - path: ''

@@ -933,6 +933,7 @@
             "parent-placeholder": "Sélectionner un parent",
             "objectType": "Type d'objet",
             "alertSelectAllLimitSize": "La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum=",
+            "description": "Gérer et configurer les objets scientifiques",
             "error": {
                 "delete": {
                     "associated-data": "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des données associées. Vous devez les supprimer d'abord",

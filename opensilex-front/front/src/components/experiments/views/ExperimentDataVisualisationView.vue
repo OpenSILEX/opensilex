@@ -87,6 +87,8 @@
               <DataVisuGraphic
                   :series="series"
                   :yAxisNames="yAxisNames"
+                  :elementName="elementName"
+                  :elementUri="uri"
               ></DataVisuGraphic>
             </n-spin>
           </div>

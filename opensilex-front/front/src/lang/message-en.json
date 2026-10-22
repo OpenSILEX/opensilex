@@ -1823,5 +1823,14 @@
         "missingFilters": "Select at least one scientific object and one variable.",
         "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
         "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed."
+    },
+    "DataVisuGraphic": {
+        "menu": "Graphic options",
+        "scatterPlotView": "Scatter plot view",
+        "chartLineView": "Chart line view",
+        "fullscreen": "Fullscreen",
+        "download": "Download image",
+        "resetZoom": "Reset zoom",
+        "name": "Name"
     }
 }

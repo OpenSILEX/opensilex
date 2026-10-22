@@ -1881,5 +1881,14 @@
         "missingFilters": "Sélectionnez au moins un objet scientifique et une variable.",
         "datatypeMessage": "Le type de donnée de la variable {variable} est {datatype}. Pour le moment, seuls les types decimal ou entier sont acceptés.",
         "dataLimit": "Il y a {total} données pour {serie}. Seules les {limit} premières données sont affichées."
+    },
+    "DataVisuGraphic": {
+        "menu": "Options du graphique",
+        "scatterPlotView": "Mode nuage de points",
+        "chartLineView": "Mode courbe",
+        "fullscreen": "Plein écran",
+        "download": "Télécharger l'image",
+        "resetZoom": "Réinitialiser le zoom",
+        "name": "Nom"
     }
 }

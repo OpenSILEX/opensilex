@@ -6,7 +6,7 @@ Sources: the team's `mr_redaction.md` (separate GitLab repository `OpenSILEX/ope
 The reference structure is the current template,
 [`bug_fix1.md`](../../../../.gitlab/merge_request_templates/bug_fix1.md) (`feature1.md` for a feature). `example-fix.md`
 illustrates a filled body, written as the original MR of the fix (!1570); when it differs from the template, the
-template wins. For its port to `develop` (commit `43a08ce95`), see "Ports".
+template wins. 
 
 ## Readers and languages
 Three readers, in this order:

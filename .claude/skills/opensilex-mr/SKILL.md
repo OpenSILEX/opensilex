@@ -1,6 +1,6 @@
 ---
 name: opensilex-mr
-description: Write and prepare an OpenSILEX GitLab merge request that a reviewer can read in two minutes - a Conventional Commit title in English that passes the CI check, the YAML front matter (always a `changelog` entry in English with `ignore-changelog: false`), and a description built on the team template (.gitlab/merge_request_templates bug_fix1.md / feature1.md, in French) with context, before/after, changes grouped by intent, an honest checklist, review hints, test steps and deployment notes. Gathers facts from git (commits, files, endpoints, DTO fields, migrations, credentials, config), validates the draft against the CI rules and the template, saves it under .git/mr-drafts and only pushes or opens the MR when asked. Use whenever the user asks to write, draft, prepare, fill, rewrite or check a merge request, MR, pull request, PR description or changelog entry, e.g. "rédige ma MR", "prépare la merge request", "description de MR", "remplis le template", "titre de MR", "entrée changelog", "ouvre la MR", even when GitLab is not named.
+description: Write and prepare an OpenSILEX GitLab merge request that a reviewer can read in two minutes - a Conventional Commit title in English that passes the CI check, the YAML front matter (always a `changelog` entry in English with `ignore-changelog: false`), and a description built on the team template (.gitlab/merge_request_templates bug_fix1.md / feature1.md, in French) with context, before/after, changes grouped by intent, an honest checklist, review hints, test steps and deployment notes. Gathers facts from git (commits, files, endpoints, DTO fields, migrations, credentials, config), validates the draft against the CI rules and the template, saves it under .git/mr-drafts and hands it over; never commits, pushes, merges or opens the MR (the user does). Use whenever the user asks to write, draft, prepare, fill, rewrite or check a merge request, MR, pull request, PR description or changelog entry, e.g. "rédige ma MR", "prépare la merge request", "description de MR", "remplis le template", "titre de MR", "entrée changelog", "ouvre la MR", even when GitLab is not named.
 ---
 
 # OpenSILEX merge request
@@ -30,8 +30,8 @@ scope and changelog decision, the template to use, the draft paths and the "new 
 
 Stop and tell the user before writing when:
 - a **CI rule** is broken (wrong branch prefix for the target): renaming the branch is their call;
-- there are **uncommitted changes** that look part of the work: ask whether to commit them first;
-- the target has moved ahead: suggest merging it into the branch (team rule: merge, not rebase), only do it if asked;
+- there are **uncommitted changes** that look part of the work: ask the user to commit them first;
+- the target has moved ahead: suggest the user merges it into the branch (team rule: merge, not rebase);
 - **generated files** were edited by hand (`front/src/lib`, `front/types`).
 
 ## 2. Understand the change
@@ -89,8 +89,11 @@ Show the user, in chat: the title in a code block, then the full description in 
 then the draft path, what you did not verify (tests not run, manual test unknown...) and the open questions. Offer
 (do not do it unasked) to copy it: `xclip -selection clipboard < <draft>.md`.
 
-## 6. Publish (only on explicit request, each step confirmed)
-Never publish
+## 6. Never commit or publish
+The skill stops at the hand-over: never commit, push, merge, or create or update the MR. The user does it from the
+draft: give them the "new MR" URL printed by `mr_facts.py` and tell them to leave the template selector empty
+(choosing a template replaces the pasted text). If the CI check ran before the description was pasted, they re-run
+the `merge-request:check` job.
 
 ## Traps
 - The CI parses the front matter only when it is the **very first line** of the description (`---`).

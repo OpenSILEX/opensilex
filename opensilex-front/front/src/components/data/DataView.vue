@@ -61,6 +61,7 @@
           <!-- Variables -->
           <n-form-item class="compact-form-item">
             <VariableSelectorWithFilter
+                label="component.data.view.filter.variables"
                 placeholder="component.variable.placeholder-multiple"
                 v-model:variables="filter.variables"
                 :withAssociatedData="true"
@@ -69,7 +70,6 @@
           </n-form-item>
 
           <!-- Experiments -->
-          <n-form-item class="compact-form-item">
             <ExperimentSelector
                 :label="t('component.data.view.filter.experiments')"
                 v-model:experiments="filter.experiments"
@@ -79,7 +79,6 @@
                 class="searchFilter"
                 :key="resetExperimentSelectorKey"
             ></ExperimentSelector>
-          </n-form-item>
 
           <!-- Scientific objects -->
           <n-form-item class="compact-form-item">
@@ -88,7 +87,7 @@
                 :label="t('component.data.view.filter.scientificObjects')"
                 :placeholder="t('component.data.view.filter.scientificObjects-placeholder')"
                 v-model:selected="filter.scientificObjects"
-                modalComponent="ScientificObjectModalList"
+                modalComponent="opensilex-ScientificObjectModalList"
                 class="searchFilter"
                 v-model:filter="soFilter"
                 :clearable="true"

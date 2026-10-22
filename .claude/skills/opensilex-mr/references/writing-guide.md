@@ -55,9 +55,7 @@ The description must **start** with it (the CI reads it from the first line). **
 the changelog entry, with `ignore-changelog: false`**, whatever the type of MR (feature, fix, docs, tooling...):
 ```yaml
 ---
-changelog: |-
-  You can now search scientific objects by applying filters on their associated data, for example
-  "all objects with air_temperature between 10 and 20 °C".
+changelog: You can now search scientific objects by applying filters on their associated data
 ignore-changelog: false
 ---
 ```

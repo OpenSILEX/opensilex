@@ -1,7 +1,5 @@
 ---
-changelog: |-
-  Updating a resource no longer removes the links that other resources have towards it. For example, a variable
-  keeps its unit, method, characteristic and entity when one of them is updated.
+changelog: Updating a resource no longer removes the links that other resources have towards it.
 ignore-changelog: false
 ---
 

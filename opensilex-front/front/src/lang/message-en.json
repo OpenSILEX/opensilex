@@ -1820,9 +1820,7 @@
         "uri-placeholder": "Enter a part of an uri"
     },
     "ExperimentDataVisualisationView": {
-        "missingFilters": "Select at least one scientific object and one variable.",
-        "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
-        "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed."
+        "missingFilters": "Select at least one scientific object and one variable."
     },
     "DataVisuGraphic": {
         "menu": "Graphic options",
@@ -1831,6 +1829,15 @@
         "fullscreen": "Fullscreen",
         "download": "Download image",
         "resetZoom": "Reset zoom",
-        "name": "Name"
+        "name": "Name",
+        "eventBegin": "Begin",
+        "eventEnd": "End",
+        "eventOngoing": "ongoing"
+    },
+    "DataVisualisation": {
+        "datatypeMessage": "The datatype of the variable {variable} is {datatype}. At this time only decimal or integer are accepted.",
+        "dataLimit": "There are {total} data for {serie}. Only the {limit} first data are displayed.",
+        "showEvents": "Show events",
+        "events": "Events"
     }
 }

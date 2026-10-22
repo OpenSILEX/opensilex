@@ -1878,9 +1878,7 @@
         "uri-placeholder": "Entrer une partie d'une uri"
     },
     "ExperimentDataVisualisationView": {
-        "missingFilters": "Sélectionnez au moins un objet scientifique et une variable.",
-        "datatypeMessage": "Le type de donnée de la variable {variable} est {datatype}. Pour le moment, seuls les types decimal ou entier sont acceptés.",
-        "dataLimit": "Il y a {total} données pour {serie}. Seules les {limit} premières données sont affichées."
+        "missingFilters": "Sélectionnez au moins un objet scientifique et une variable."
     },
     "DataVisuGraphic": {
         "menu": "Options du graphique",
@@ -1889,6 +1887,15 @@
         "fullscreen": "Plein écran",
         "download": "Télécharger l'image",
         "resetZoom": "Réinitialiser le zoom",
-        "name": "Nom"
+        "name": "Nom",
+        "eventBegin": "Début",
+        "eventEnd": "Fin",
+        "eventOngoing": "en cours"
+    },
+    "DataVisualisation": {
+        "datatypeMessage": "Le type de donnée de la variable {variable} est {datatype}. Pour le moment, seuls les types decimal ou entier sont acceptés.",
+        "dataLimit": "Il y a {total} données pour {serie}. Seules les {limit} premières données sont affichées.",
+        "showEvents": "Voir les événements",
+        "events": "Événements"
     }
 }

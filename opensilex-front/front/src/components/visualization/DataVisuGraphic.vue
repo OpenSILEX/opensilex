@@ -22,18 +22,48 @@
 </template>
 
 <script lang="ts">
+import type {DataGetSearchDTO, EventGetDTO} from "opensilex-core/index";
+
+/**
+ * One point of a series
+ */
+export interface DataVisuPoint {
+  /** Date of the point, in milliseconds */
+  timestamp: number
+  value: number
+  /** The Data this point was made from, kept for the interactions on the point (e.g. displaying its provenance) */
+  data?: DataGetSearchDTO
+}
+
 /**
  * Type to represent one series drawn on the graphic, e.g. the data of one (ScientificObject, Variable) pair.
  */
 export interface DataVisuSerie {
   name: string
-  /** [timestamp in ms, value] couples, sorted by date */
-  data: Array<[number, number]>
+  /** Points sorted by date */
+  points: DataVisuPoint[]
   color?: string
   /** ECharts symbol name (circle, rect, triangle, diamond...) */
   symbol?: string
   /** Index in the yAxisNames prop of the axis this series is drawn on */
   yAxisIndex?: number
+}
+
+/**
+ * One event, drawn as a pin at the bottom of the graphic
+ */
+export interface DataVisuEvent {
+  /** Date where the pin is drawn, in milliseconds */
+  timestamp: number
+  /** Text written in the pin, e.g. the first letter of the event type */
+  label: string
+  /**
+   * Name of the legend entry grouping this event with others, e.g. "Events -> plot 1". Events with the same
+   * seriesName can be hidden together by clicking the legend.
+   */
+  seriesName: string
+  color?: string
+  event: EventGetDTO
 }
 </script>
 
@@ -60,7 +90,11 @@ import type {
   ToolboxComponentOption,
   TooltipComponentOption
 } from "echarts/components";
-import type {TooltipComponentFormatterCallbackParams} from "echarts";
+import type {
+  DefaultLabelFormatterCallbackParams,
+  TooltipComponentFormatterCallbackParams,
+  YAXisComponentOption
+} from "echarts";
 import {CanvasRenderer} from "echarts/renderers";
 
 echarts.use([
@@ -108,8 +142,11 @@ const props = withDefaults(defineProps<{
   elementName?: string
   /** URI of the element the data belongs to, written in the title of the downloaded image */
   elementUri?: string
+  /** Events drawn as pins at the bottom of the graphic, see DataVisuEvent */
+  events?: DataVisuEvent[]
 }>(), {
-  yAxisNames: () => []
+  yAxisNames: () => [],
+  events: () => []
 });
 //#endregion
 
@@ -127,6 +164,16 @@ const chartContainer = useTemplateRef<HTMLDivElement>("chartContainer");
 /** Size of the downloaded image, before the pixel ratio is applied */
 const EXPORT_WIDTH: number = 1600;
 const EXPORT_HEIGHT: number = 800;
+/** Prefix of the ECharts ids of the events series, to tell them apart from the data series */
+const EVENT_SERIES_ID_PREFIX: string = "event:";
+/** Size of the event pins, in pixels. Pins closer than this on the X axis would overlap, so they are stacked */
+const PIN_SIZE: number = 28;
+
+/**
+ * Events grouped by the ECharts id of the series drawing them, in the order of the series data. Used to find the
+ * event of a hovered pin. Rebuilt with the series.
+ */
+let eventsBySeriesId: Map<string, DataVisuEvent[]> = new Map<string, DataVisuEvent[]>();
 
 /**
  * The ECharts instance drawing in chartContainer. Not reactive on purpose: ECharts manages its own state, and
@@ -154,9 +201,14 @@ const menuOptions: ComputedRef<DropdownOption[]> = computed<DropdownOption[]>(()
 onMounted(() => {
   chart = echarts.init(chartContainer.value);
   chart.on("datazoom", onChartDataZoom);
+  // Hidden events series don't take space anymore, the pins of the others can move down
+  chart.on("legendselectchanged", () => layoutEventPins(chart));
   render();
   // The container size changes when the filters sidebar is toggled or in fullscreen, not only when the window is resized
-  resizeObserver = new ResizeObserver(() => chart?.resize());
+  resizeObserver = new ResizeObserver(() => {
+    chart?.resize();
+    layoutEventPins(chart);
+  });
   resizeObserver.observe(chartContainer.value);
 });
 
@@ -166,11 +218,14 @@ onBeforeUnmount(() => {
   chart = undefined;
 });
 
-// Redraw the whole chart when the parent passes new series or axes
-watch(() => [props.series, props.yAxisNames], render);
+// Redraw the whole chart when the parent passes new series, axes or events
+watch(() => [props.series, props.yAxisNames, props.events], render);
 
 // Only the series change, so the zoom and the hidden series are kept
-watch(lineMode, () => chart?.setOption({series: buildSeries()}));
+watch(lineMode, () => {
+  chart?.setOption({series: [...buildSeries(), ...buildEventSeries()]});
+  layoutEventPins(chart);
+});
 //#endregion
 
 //#region Event handlers
@@ -194,6 +249,8 @@ function onMenuSelect(key: MenuKey): void {
 function onChartDataZoom(): void {
   const zoomRange: ZoomRange = getZoomRange();
   isZoomed.value = zoomRange.start > 0 || zoomRange.end < 100;
+  // Pins that overlapped may be far enough apart after zooming, and the other way round
+  layoutEventPins(chart);
 }
 //#endregion
 
@@ -206,16 +263,40 @@ function renderIcon(iconClass: string): () => VNode {
 }
 
 /**
- * Builds the HTML content of the tooltip, the little popup displayed when hovering a point.
- * It displays the series' colored marker and name, the date of the point and its value.
+ * Builds the HTML content of the tooltip, the little popup displayed when hovering a point or an event.
+ * For a point, it displays the series' colored marker and name, the date of the point and its value.
  */
 function formatTooltip(params: TooltipComponentFormatterCallbackParams): string {
   // The tooltip is triggered on a single item, so there is only one param
   const item = Array.isArray(params) ? params[0] : params;
+  // The colored dot of the series, it is an HTML string with the default tooltip renderMode
+  const marker: string = typeof item.marker === "string" ? item.marker : "";
+  const event: DataVisuEvent | undefined = eventsBySeriesId.get(item.seriesId)?.[item.dataIndex];
+  if (event) {
+    return formatEventTooltip(event, marker);
+  }
   const [timestamp, value] = item.value as [number, number];
-  return `${item.marker}${item.seriesName}<br/>`
+  return `${marker}${item.seriesName}<br/>`
       + `${new Date(timestamp).toLocaleString(locale.value)}<br/>`
       + `<b>${value}</b>`;
+}
+
+/**
+ * Event tooltip: its type, and its begin and end dates (only one date for an instant event).
+ */
+function formatEventTooltip(event: DataVisuEvent, marker: string): string {
+  const dto: EventGetDTO = event.event;
+  const title: string = `${marker}<b>${dto.rdf_type_name ?? dto.rdf_type ?? ""}</b><br/>`;
+  if (!dto.start) {
+    return title + formatDate(dto.end);
+  }
+  return title
+      + `${t("DataVisuGraphic.eventBegin")} : ${formatDate(dto.start)}<br/>`
+      + `${t("DataVisuGraphic.eventEnd")} : ${dto.end ? formatDate(dto.end) : t("DataVisuGraphic.eventOngoing")}`;
+}
+
+function formatDate(date: string): string {
+  return new Date(date).toLocaleString(locale.value);
 }
 
 /**
@@ -226,7 +307,26 @@ function formatTooltip(params: TooltipComponentFormatterCallbackParams): string 
  */
 function buildOption(zoomRange?: ZoomRange): DataVisuOption {
   const yAxisNames: string[] = props.yAxisNames.length > 0 ? props.yAxisNames : [""];
+  const option: DataVisuOption = buildBaseOption(yAxisNames, zoomRange);
+  if (props.events.length > 0) {
+    (option.yAxis as YAXisComponentOption[]).push({
+      /**
+       * Hidden axis of the event pins, from 0 to 1. The pins are at 0, so at the bottom of the chart, whatever the
+       * values of the data
+       */
+      type: "value",
+      show: false,
+      min: 0,
+      max: 1
+    });
+  }
+  return option;
+}
 
+/**
+ * The option without the events axis, see buildOption()
+ */
+function buildBaseOption(yAxisNames: string[], zoomRange?: ZoomRange): DataVisuOption {
   return {
     /** Popup displayed when hovering a point */
     tooltip: {
@@ -291,7 +391,7 @@ function buildOption(zoomRange?: ZoomRange): DataVisuOption {
       /** Horizontal background lines: only drawn by the first axis, otherwise the two axes' lines overlap */
       splitLine: {show: index === 0}
     })),
-    series: buildSeries()
+    series: [...buildSeries(), ...buildEventSeries()]
   };
 }
 
@@ -299,13 +399,18 @@ function buildOption(zoomRange?: ZoomRange): DataVisuOption {
  * Converts the series prop into ECharts series, drawn as points or lines depending on lineMode.
  */
 function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
-  return props.series.map((serie: DataVisuSerie): ScatterSeriesOption | LineSeriesOption => {
+  return props.series.map((serie: DataVisuSerie, index: number): ScatterSeriesOption | LineSeriesOption => {
     /** Options shared by the scatter and the line series */
     const common = {
+      /** Identifies the series when only the series are updated (line mode), so ECharts updates the right one */
+      id: `data:${index}`,
       /** Displayed in the legend and the tooltip */
       name: serie.name,
-      /** [timestamp, value] couples, read as [x, y] */
-      data: serie.data,
+      /**
+       * [timestamp, value] couples, read as [x, y]. ECharts only gets plain numbers (faster for big series), the
+       * index of a point in this array is the same as in serie.points, to find its original data
+       */
+      data: serie.points.map((point: DataVisuPoint): [number, number] => [point.timestamp, point.value]),
       /** Color of the points (and lines), and of the series in the legend */
       color: serie.color,
       /** Shape of the points */
@@ -344,6 +449,84 @@ function buildSeries(): Array<ScatterSeriesOption | LineSeriesOption> {
 }
 
 /**
+ * Converts the events prop into ECharts series: one series of pins per seriesName, so each can be hidden from the
+ * legend. Always drawn as independent pins, even in line mode.
+ *
+ * @param pinLevels stacking level of each pin, see layoutEventPins(). Pins without a level are at the bottom (0).
+ */
+function buildEventSeries(pinLevels: Map<DataVisuEvent, number> = new Map<DataVisuEvent, number>()): ScatterSeriesOption[] {
+  const eventsAxisIndex: number = Math.max(props.yAxisNames.length, 1);
+
+  eventsBySeriesId = new Map<string, DataVisuEvent[]>();
+  for (const event of props.events) {
+    const seriesId: string = EVENT_SERIES_ID_PREFIX + event.seriesName;
+    eventsBySeriesId.set(seriesId, [...(eventsBySeriesId.get(seriesId) ?? []), event]);
+  }
+
+  return Array.from(eventsBySeriesId, ([seriesId, events]: [string, DataVisuEvent[]]): ScatterSeriesOption => ({
+    type: "scatter",
+    id: seriesId,
+    name: events[0].seriesName,
+    yAxisIndex: eventsAxisIndex,
+    data: events.map((event: DataVisuEvent) => ({
+      value: [event.timestamp, 0],
+      /**
+       * Moves the pin up by half its height, so its tip (and not its center) is on the bottom of the chart, plus one
+       * pin height per stacking level
+       */
+      symbolOffset: [0, -(PIN_SIZE / 2 + (pinLevels.get(event) ?? 0) * PIN_SIZE)]
+    })),
+    color: events[0].color,
+    /** Map pin shape, its tip is on the event date */
+    symbol: "pin",
+    symbolSize: PIN_SIZE,
+    /** The letter written in the pin */
+    label: {
+      show: true,
+      position: "inside",
+      formatter: (params: DefaultLabelFormatterCallbackParams) => events[params.dataIndex].label,
+      color: "#fff",
+      fontWeight: "bold"
+    }
+    // No emphasis focus: hovering a pin must not fade the data series
+  }));
+}
+
+/**
+ * Stacks the event pins that would overlap: going from left to right, each pin is put on the lowest level where it
+ * is at least PIN_SIZE pixels away from the previous pin of that level. The overlap depends on the zoom and on the
+ * chart width, so this is done again after each zoom and resize.
+ *
+ * @param target the chart to update, the displayed one or the one drawing the downloaded image
+ */
+function layoutEventPins(target: echarts.ECharts | undefined): void {
+  if (!target || props.events.length === 0) {
+    return;
+  }
+  // Events of series hidden from the legend are ignored. Series missing from "selected" are visible.
+  const legend = (target.getOption() as DataVisuOption).legend as LegendComponentOption[];
+  const selected: Record<string, boolean> = legend?.[0]?.selected ?? {};
+  const visibleEvents: Array<{ event: DataVisuEvent, x: number }> = props.events
+      .filter((event: DataVisuEvent) => selected[event.seriesName] !== false)
+      .map((event: DataVisuEvent) => ({event, x: target.convertToPixel({xAxisIndex: 0}, event.timestamp) as number}))
+      .sort((a, b) => a.x - b.x);
+
+  const pinLevels: Map<DataVisuEvent, number> = new Map<DataVisuEvent, number>();
+  /** X position of the last pin placed on each level */
+  const lastXPerLevel: number[] = [];
+  for (const {event, x} of visibleEvents) {
+    let level: number = lastXPerLevel.findIndex((lastX: number) => x - lastX >= PIN_SIZE);
+    if (level === -1) {
+      level = lastXPerLevel.length;
+    }
+    lastXPerLevel[level] = x;
+    pinLevels.set(event, level);
+  }
+
+  target.setOption({series: buildEventSeries(pinLevels)});
+}
+
+/**
  * Draws the chart from the current props. Does nothing before the chart is mounted.
  */
 function render(): void {
@@ -354,6 +537,7 @@ function render(): void {
   chart.setOption(buildOption(), {notMerge: true});
   isZoomed.value = false;
   enableDragZoom();
+  layoutEventPins(chart);
 }
 
 /**
@@ -431,6 +615,7 @@ function downloadImage(): void {
       selected: currentLegend[0]?.selected
     }
   });
+  layoutEventPins(exportChart);
 
   const link: HTMLAnchorElement = document.createElement("a");
   link.href = exportChart.getDataURL({type: "png", pixelRatio: 2, backgroundColor: "#fff"});

@@ -15,7 +15,7 @@ The host front lives in `opensilex-front/front/src`, the shared building blocks 
 side (the `$opensilex` plugin, routes and menus in `opensilex.front.yml`, extension modules, build) is documented next to
 that page (`plugin.md`, `router.md`, `vite.md`) and in `opensilex-module/module-frontend-loading.md`.
 
-Everything below needs only git, a POSIX shell and the Node toolchain of the repository.
+Everything below needs only git, Python 3 and the Node toolchain of the repository.
 
 ## Pick the mode
 
@@ -151,7 +151,7 @@ Check what is correct instead of copying the neighbouring file.
 
 1. **Conventions**, on the touched files:
    ```bash
-   .claude/skills/opensilex-vue/scripts/check-vue-conventions.sh <files.vue>
+   python3 .claude/skills/opensilex-vue/scripts/check_vue_conventions.py <files.vue>
    ```
    Without arguments it checks the `.vue` files changed against `HEAD` and the untracked ones. No `ERROR` may remain in
    the code written; each `WARN` deserves a look.
@@ -182,4 +182,4 @@ Read only the file the task needs.
   its own label, global naive-ui components, known defects.
 - `references/bootstrap-to-naive.md`: when the markup has Bootstrap classes, usually during a migration.
 - `references/review-checklist.md`: for a review. Steps, manual grid, report format.
-- `scripts/check-vue-conventions.sh`: run it, no need to read it. Mechanical convention check.
+- `scripts/check_vue_conventions.py`: run it, no need to read it. Mechanical convention check.

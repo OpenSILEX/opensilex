@@ -12,7 +12,7 @@
    `git diff --name-only <target>...HEAD -- '*.vue' '*.ts'`.
 2. **Run the mechanical check** on those files:
    ```bash
-   .claude/skills/opensilex-vue/scripts/check-vue-conventions.sh <files.vue>
+   python3 .claude/skills/opensilex-vue/scripts/check_vue_conventions.py <files.vue>
    ```
    It reports block order, `<script setup lang="ts">`, `<style scoped lang="scss">`, the `defineEmits` syntax, template
    refs, `any`, Vue 2 leftovers, Bootstrap classes, regions and the place of `defineExpose`. Its `ERROR` lines are certain

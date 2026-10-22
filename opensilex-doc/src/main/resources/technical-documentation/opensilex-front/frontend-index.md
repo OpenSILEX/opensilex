@@ -44,6 +44,7 @@ opensilex-front/
 - [`OpenSilexVuePlugin.ts`](./plugin.md) – Plugin d'intégration OpenSilex
 - [`OpenSilexRouter.ts`](./router.md) – Routage dynamique
 - [`Store.ts`](./store.md) – Gestion des droits et de la session
+- [Structure des fichiers `.vue`](./vuejs-file-structure.md) – Ordre des régions et conventions des composants (en anglais)
 
 ---
 

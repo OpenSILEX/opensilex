@@ -1,11 +1,17 @@
-# Squelette de composant conforme
+# Compliant component skeletons
 
-Ce squelette applique toutes les règles du skill sur un cas concret. L'exemple abstrait de référence, avec la même
-structure, est celui de `opensilex-doc/src/main/resources/technical-documentation/opensilex-front/vuejs-file-structure.md`.
+## Contents
 
-## Composant complet
+- [Complete component](#complete-component): every region, a concrete case, and what it shows
+- [Short component](#short-component): `Public` / `Private` only
+- [Modal form](#modal-form): `Modal` + `n-form` + `useModalFormLogic`
 
-`DeviceSelector` est un vrai composant de l'hôte ; `UsageRow` et `DeviceUsage` sont fictifs.
+These skeletons apply every rule of the skill on a concrete case. The abstract reference example, with the same
+structure, is the one of `opensilex-doc/src/main/resources/technical-documentation/opensilex-front/vuejs-file-structure.md`.
+
+## Complete component
+
+`DeviceSelector` is a real host component; `UsageRow` and `DeviceUsage` are fictional.
 
 ```vue
 <template>
@@ -42,7 +48,7 @@ import type { DevicesService, DeviceGetDTO, NamedResourceDTO } from 'opensilex-c
 import DeviceSelector from '@/components/devices/DeviceSelector.vue'
 import UsageRow from '@/components/devices/UsageRow.vue'
 
-/** Forme locale : aucun DTO généré ne porte ce regroupement. */
+/** Local shape: no generated DTO carries this grouping. */
 interface DeviceUsage {
   uri: string
   name: string
@@ -65,7 +71,7 @@ const props = withDefaults(
   },
 )
 
-/** v-model:value du parent. */
+/** v-model:value of the parent. */
 const value = defineModel<string>('value')
 //#endregion
 
@@ -109,8 +115,8 @@ watch(
 
 //#region Event handlers
 /**
- * DeviceSelector émet `select` avec un payload `any` : on type le paramètre ici,
- * à la frontière, et le reste du composant ne voit que NamedResourceDTO.
+ * DeviceSelector emits `select` with an `any` payload: the parameter is typed here,
+ * at the boundary, and the rest of the component only sees NamedResourceDTO.
  */
 function onDeviceSelectorSelect(device: NamedResourceDTO) {
   value.value = device.uri
@@ -123,7 +129,7 @@ function onUsageRowChanged(count: number, usage: DeviceUsage) {
 
 //#region Methods
 /**
- * Recharge les usages de l'expérimentation courante.
+ * Reloads the usages of the current experiment.
  */
 async function loadUsages() {
   isLoading.value = true
@@ -176,21 +182,31 @@ fr:
 </i18n>
 ```
 
-Ce que montre ce squelette :
+What this skeleton shows:
 
-- **Ordre des blocs** : `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`, `<i18n>`. Les deux derniers sont omis s'ils sont vides : pas de `<style>` vide, contrairement à `SearchFiltersSidebar.vue`.
-- **Imports** en tête, hors région. Les types de l'API passent par `import type`. Les types locaux (`interface`, `type`) suivent les imports.
-- **Région Public** : `defineEmits` (syntaxe tableau nommé, `[]` pour un événement sans payload), `defineProps` (+ `withDefaults`), `defineModel`.
-- **Région Private**, sous-régions toujours dans cet ordre : *Plugins & services* → *Template refs* → *Data & Computed* → *Hooks & watchers* → *Event handlers* → *Methods*.
-- **`defineExpose()` en dernier**, hors des régions.
-- **Gestionnaires** nommés `on<Enfant><Événement>` avec le payload typé. Quand il faut une variable du scope du gabarit en plus, une fonction fléchée appelle la méthode : `(count) => onUsageRowChanged(count, usage)`. Un `emit(...)` d'une ligne peut rester en ligne dans le gabarit.
-- **Interface locale** quand aucun DTO ne correspond à la forme manipulée (`DeviceUsage`) ; jamais `any`.
-- **Ref de gabarit** : la variable peut porter le même nom que l'attribut `ref` (Vue 3.5 le gère), et elle est typée par `InstanceType<typeof Composant>`. Pour un composant naive-ui qui expose une interface d'instance, utiliser ce type : `useTemplateRef<FormInst>('formRef')`, `useTemplateRef<DataTableInst>('tableRef')`.
-- **Credentials** : `store.state.user.hasCredential(credentials.value.CREDENTIAL_…_ID)` ; les constantes sont dans `models/Store.ts`.
+- **Block order**: `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`, `<i18n>`. The last two are
+  left out when empty: no empty `<style>`.
+- **Imports** first, outside any region. API types use `import type`. Local types (`interface`, `type`) follow the
+  imports.
+- **Public region**: `defineEmits` (named tuples, `[]` for an event without payload), `defineProps` (+ `withDefaults`),
+  `defineModel`.
+- **Private region**, sub-regions always in this order: *Plugins & services* → *Template refs* → *Data & Computed* →
+  *Hooks & watchers* → *Event handlers* → *Methods*.
+- **`defineExpose()` last**, outside the regions.
+- **Handlers** named `on<Child><Event>` with a typed payload. When a template-scope variable is needed as well, an arrow
+  function calls the method: `(count) => onUsageRowChanged(count, usage)`. A one-line `emit(...)` may stay inline in the
+  template.
+- **Local interface** when no DTO matches the handled shape (`DeviceUsage`); never `any`.
+- **Template ref**: the variable may have the same name as the `ref` attribute (Vue 3.5 handles it), and it is typed
+  with `InstanceType<typeof Component>`. For a naive-ui component that exposes an instance interface, use that type:
+  `useTemplateRef<FormInst>('formRef')`, `useTemplateRef<DataTableInst>('tableRef')`.
+- **Credentials**: `store.state.user.hasCredential(credentials.value.CREDENTIAL_…_ID)`; the constants are in
+  `models/Store.ts`.
 
-## Composant court
+## Short component
 
-Pour un petit composant, les régions `Public` et `Private` suffisent, à condition que les éléments de même nature restent groupés :
+For a small component, the `Public` and `Private` regions are enough, as long as elements of the same kind stay
+together:
 
 ```vue
 <template>
@@ -229,11 +245,15 @@ fr:
 </i18n>
 ```
 
-## Formulaire modal
+## Modal form
 
-Pour une modale de création ou d'édition, le patron est `Modal.vue` + `n-form` + `useModalFormLogic`. Exemples dans l'hôte : `components/devices/form/DeviceForm.vue`, `components/ontology/OntologyObjectForm.vue` (sources d'API, pas modèles de style). Le skill `opensilex-vue3`, s'il est installé, en donne un gabarit (`references/sfc-templates.md`, gabarit 3). On y applique les règles de ce skill :
+For a create or edit modal, the pattern is `Modal.vue` + `n-form` + `useModalFormLogic`. Host examples:
+`components/devices/form/DeviceForm.vue` and `components/ontology/OntologyObjectForm.vue`. Read them for the API, not for
+the style. Apply the rules of this skill to them:
 
-- `defineEmits<ModalFormEmits>()` et `defineProps<ModalFormProps>()` : ce sont les types du composable ;
-- `useTemplateRef<InstanceType<typeof Modal>>('modalRef')` et `useTemplateRef<FormInst>('formRef')` ;
-- règles de validation calculées dans `setup` (`requiredTrimmed`, `required`, `requiredNotEmpty` de `@/models/FormFieldsFormatter`), jamais dans un callback, parce qu'elles appellent `useI18n()` ;
-- un `n-form-item` par champ **simple**, mais **jamais** autour d'un sélecteur bâti sur `FormSelector` : on lui passe `path` et `label`, il rend lui-même le libellé et branche la validation (voir `common-components.md`).
+- `defineEmits<ModalFormEmits>()` and `defineProps<ModalFormProps>()`: these are the composable's types;
+- `useTemplateRef<InstanceType<typeof Modal>>('modalRef')` and `useTemplateRef<FormInst>('formRef')`;
+- validation rules built in `setup` (`requiredTrimmed`, `required`, `requiredNotEmpty` from
+  `@/models/FormFieldsFormatter`), never in a callback, because they call `useI18n()`;
+- one `n-form-item` per **simple** field, but **never** around a selector built on `FormSelector`: pass it `path` and
+  `label`, it renders the label and wires validation itself (see `common-components.md`).

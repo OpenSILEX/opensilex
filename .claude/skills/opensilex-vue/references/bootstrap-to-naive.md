@@ -1,46 +1,50 @@
-# Remplacer Bootstrap par Naive UI
+# Replacing Bootstrap with Naive UI
 
-Tout composant Bootstrap écrit dans le gabarit, ou recopié de l'ancien composant Vue 2, se remplace par son équivalent Naive UI. Deux exceptions :
+Every Bootstrap component written in the template, or copied from the old Vue 2 component, is replaced with its Naive
+UI equivalent. Two exceptions:
 
-- **une brique `common/` existe déjà** (bouton d'action, `Card`, `Modal` de formulaire, `TableAsyncView`) : on l'utilise, même si elle est en Bootstrap à l'intérieur ;
-- **les utilitaires d'espacement et d'alignement** (`mb-2`, `me-1`, `p-3`, `d-flex`, `text-muted`…) : ils sont tolérés. Pour une mise en page, préférer quand même `n-space` / `n-flex`.
+- **a `common/` building block already exists** (action button, `Card`, form `Modal`, `TableAsyncView`): use it, even
+  if it uses Bootstrap inside;
+- **spacing and alignment utilities** (`mb-2`, `me-1`, `p-3`, `d-flex`, `text-muted`…) are fine. For a layout, prefer
+  `n-space` / `n-flex` anyway.
 
-Rappel : importer chaque composant utilisé, `import { NCard, NGrid, NGridItem } from 'naive-ui'`. Seuls quelques-uns sont globaux (`main.ts`, et la liste varie selon la branche).
+Reminder: import every component used, `import { NCard, NGrid, NGridItem } from 'naive-ui'`. Only a few are global
+(`main.ts`, and the list differs between branches).
 
-| Bootstrap (classes ou `data-bs-*`) | Naive UI | Notes |
+| Bootstrap (classes or `data-bs-*`) | Naive UI | Notes |
 |---|---|---|
-| `container-fluid` / `container` | rien, ou `n-layout-content` | le conteneur de page est fourni par le layout |
-| `row` + `col-*` / `col-lg-6` | `n-grid` + `n-grid-item` | `:cols="2"` ou réactif : `cols="1 m:2"` avec `responsive="screen"` ; `:x-gap`, `:y-gap` |
-| alignement en ligne (`d-flex gap-2`) | `n-space` / `n-flex` | `n-space vertical` pour empiler |
-| page avec panneau de filtres | `n-layout has-sider` + `SearchFiltersSidebar` + `n-layout-content` | voir `list-page.md` |
-| `card`, `card-header`, `card-body` | `n-card` | slots `header`, `header-extra`, défaut, `footer`, `action`. Pour une page de détail, `Card` de `common/` |
-| `btn btn-*` | `n-button` | `type="primary" \| "info" \| "success" \| "warning" \| "error"`, `secondary`, `tertiary`, `quaternary`, `ghost`, `size="small"`, `circle`. Pour créer, éditer, supprimer ou voir le détail : `CreateButton`, `EditButton`, `DeleteButton`, `DetailButton` |
-| `btn-group`, `btn-group-sm` | `n-button-group size="small"` | **sans** remettre `class="btn-group"` dessus |
+| `container-fluid` / `container` | nothing, or `n-layout-content` | the layout provides the page container |
+| `row` + `col-*` / `col-lg-6` | `n-grid` + `n-grid-item` | `:cols="2"` or responsive: `cols="1 m:2"` with `responsive="screen"`; `:x-gap`, `:y-gap` |
+| inline alignment (`d-flex gap-2`) | `n-space` / `n-flex` | `n-space vertical` to stack |
+| page with a filter panel | `n-layout has-sider` + `SearchFiltersSidebar` + `n-layout-content` | see `list-page.md` |
+| `card`, `card-header`, `card-body` | `n-card` | slots `header`, `header-extra`, default, `footer`, `action`. For a detail page, `Card` from `common/` |
+| `btn btn-*` | `n-button` | `type="primary" \| "info" \| "success" \| "warning" \| "error"`, `secondary`, `tertiary`, `quaternary`, `ghost`, `size="small"`, `circle`. To create, edit, delete or show details: `CreateButton`, `EditButton`, `DeleteButton`, `DetailButton` |
+| `btn-group`, `btn-group-sm` | `n-button-group size="small"` | **without** putting `class="btn-group"` back on it |
 | `dropdown`, `dropdown-menu`, `data-bs-toggle="dropdown"` | `n-dropdown` | `:options="DropdownOption[]"`, `@select="(key: string) => …"`, `trigger="click"` |
-| `table`, `table-striped` | `n-data-table` | serveur paginé : `TableAsyncView` ; petite table statique : `n-data-table` + `DataTableColumns<T>` ; table de mise en page : `n-table` |
-| `pagination` | `n-pagination` | inutile avec `TableAsyncView`, qui l'intègre |
-| `form-group` + `label` + `form-control` | `n-form-item` + `n-input` | ou `InputForm` dans un `n-form-item path` sans `label` (voir `common-components.md`) |
-| `form-select`, `<select>` | `n-select` | `:options="SelectOption[]"` ; pour une ressource métier, le sélecteur bâti sur `FormSelector` |
-| `form-check` (case) | `n-checkbox` | `CheckboxForm` dans un formulaire |
+| `table`, `table-striped` | `n-data-table` | server-side paginated: `TableAsyncView`; small static table: `n-data-table` + `DataTableColumns<T>`; layout table: `n-table` |
+| `pagination` | `n-pagination` | not needed with `TableAsyncView`, which includes it |
+| `form-group` + `label` + `form-control` | `n-form-item` + `n-input` | or `InputForm` in an `n-form-item path` without `label` (see `common-components.md`) |
+| `form-select`, `<select>` | `n-select` | `:options="SelectOption[]"`; for a business resource, the selector built on `FormSelector` |
+| `form-check` (checkbox) | `n-checkbox` | `CheckboxForm` in a form |
 | `form-check` (radio) | `n-radio-group` + `n-radio` / `n-radio-button` | |
-| `form-switch` | `n-switch` | plusieurs : `SwitchGroup` |
+| `form-switch` | `n-switch` | several: `SwitchGroup` |
 | `input-group` | `n-input-group` | |
-| `badge`, `badge-pill` | `n-tag size="small" round` (étiquette ou compteur seul) ; `n-badge :value` (pastille sur un élément) | |
+| `badge`, `badge-pill` | `n-tag size="small" round` (label or bare counter); `n-badge :value` (dot on an element) | |
 | `alert alert-*` | `n-alert type="info \| success \| warning \| error"` | |
-| `nav nav-tabs`, `nav-link` | `n-tabs` + `n-tab-pane` | `type="line"` ou `"card"`, `v-model:value` |
+| `nav nav-tabs`, `nav-link` | `n-tabs` + `n-tab-pane` | `type="line"` or `"card"`, `v-model:value` |
 | `list-group`, `list-group-item` | `n-list` + `n-list-item` | |
-| `collapse`, accordéon | `n-collapse` + `n-collapse-item` ; `n-collapse-transition` | |
-| `modal` (balisage Bootstrap) | formulaire : `Modal` de `common/` + `useModalFormLogic` ; simple dialogue : `n-modal preset="card"` ou `preset="dialog"` | |
-| confirmation | `DeleteButton` (confirme lui-même) ; sinon `n-popconfirm` | |
-| `data-bs-toggle="tooltip"`, `title` | `n-tooltip` | slot `trigger` |
-| `spinner-border` | `n-spin` | autour du contenu : `<n-spin :show="loading">` |
+| `collapse`, accordion | `n-collapse` + `n-collapse-item`; `n-collapse-transition` | |
+| `modal` (Bootstrap markup) | form: `Modal` from `common/` + `useModalFormLogic`; simple dialog: `n-modal preset="card"` or `preset="dialog"` | |
+| confirmation | `DeleteButton` (confirms by itself); otherwise `n-popconfirm` | |
+| `data-bs-toggle="tooltip"`, `title` | `n-tooltip` | `trigger` slot |
+| `spinner-border` | `n-spin` | around the content: `<n-spin :show="loading">` |
 | `progress` | `n-progress` | |
-| `toast` | `$opensilex.show*Toast(...)` | ne pas créer de toast |
+| `toast` | `$opensilex.show*Toast(...)` | do not create a toast |
 | `offcanvas` | `n-drawer` + `n-drawer-content` | |
 
-## Exemple : menu d'actions sur la sélection
+## Example: action menu on the selection
 
-Avant (Vue 2 / Bootstrap-Vue) :
+Before (Vue 2 / Bootstrap-Vue):
 
 ```html
 <div class="btn-group btn-group-sm">
@@ -52,7 +56,7 @@ Avant (Vue 2 / Bootstrap-Vue) :
 </div>
 ```
 
-Après :
+After:
 
 ```vue
 <n-space align="center" :size="8">

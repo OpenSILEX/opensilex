@@ -1,150 +1,212 @@
-# Briques partagées de l'hôte (`opensilex-front/front/src/components/common/`)
+# Shared building blocks of the host (`opensilex-front/front/src/components/common/`)
 
-Inventaire du 2026-10-09. En cas de doute, le fichier fait foi : `graft skeleton <fichier>`.
+## Contents
 
-**Trois règles :**
+- [Label and validation: who wraps what](#label-and-validation-who-wraps-what)
+- [Lists and filters](#lists-and-filters): `TableAsyncView`, `SearchFiltersSidebar`, `StringFilter`, `TableView`, trees
+- [Forms](#forms): `Modal`, `useModalFormLogic`, header and footer, wizard, validation rules
+- [Fields](#fields-forms)
+- [Buttons](#buttons-buttons)
+- [Display](#display-views)
+- [Naive UI: what is global](#naive-ui-what-is-global)
+- [Known defects](#known-defects-report-them-do-not-fix-them-on-the-side)
 
-1. **Réutiliser** ces briques plutôt que d'en écrire une nouvelle.
-2. **Ne pas les modifier** sans demande explicite : d'autres listes et vues déjà migrées en dépendent. Si un défaut gêne, le signaler (section « Défauts connus ») et le contourner côté appelant.
-3. **Remplacer Bootstrap par Naive UI** vaut pour le balisage que **tu écris**. Plusieurs briques sont encore en Bootstrap à l'intérieur (`Button` et ses dérivés, `Card`, `Modal`) : on les utilise quand même, puisque c'est la brique commune.
+This catalogue summarises the API; when in doubt, the source file is the authority, so read it.
 
-Chaque `.vue` de `components/` est enregistré globalement sous `opensilex-<NomDuFichier>`. Dans le code neuf, on l'importe explicitement (`import X from '@/components/common/…/X.vue'`) : c'est la tendance des fichiers récents, et c'est la seule façon de typer une ref de gabarit avec `InstanceType<typeof X>`.
+**Three rules:**
 
-## Libellé et validation : qui enveloppe quoi
+1. **Reuse** these building blocks rather than writing a new one.
+2. **Do not modify them** unless asked: lists and views already migrated depend on them. If a defect gets in the way,
+   report it (section "Known defects") and work around it on the caller's side.
+3. **Replacing Bootstrap with Naive UI** applies to the markup being written. Several building blocks still use
+   Bootstrap inside (`Button` and its variants, `Card`, `Modal`): use them anyway, since they are the shared ones.
 
-C'est la source d'erreur la plus fréquente, d'où ce tableau.
+Every `.vue` file under `components/` is registered globally as `opensilex-<FileName>`. In new code, import it
+explicitly (`import X from '@/components/common/…/X.vue'`): recent files do so, and it is the only way to type a template
+ref with `InstanceType<typeof X>`.
 
-| Composant | Rend son libellé ? | Rend son `n-form-item` ? | Usage dans un `n-form` |
+## Label and validation: who wraps what
+
+This is the most frequent source of mistakes, hence this table.
+
+| Component | Renders its label? | Renders its `n-form-item`? | Use in an `n-form` |
 |---|---|---|---|
-| `FormField` | oui (div + `*` rouge, aide en tooltip) | **non**, pas de validation | c'est le wrapper des champs ci-dessous |
-| `InputForm`, `TextAreaForm`, `DateForm`, `DateTimeForm`, `CheckboxForm`, `TagInputForm`, `IconForm`, `GeometryForm`, `FileInputForm`, `UriForm`, `TypeForm` | oui, via la prop `label` | non | `<n-form-item path="champ">` **sans `label`**, le champ porte `label` |
-| `FormSelector` et **tout sélecteur bâti dessus** | oui | **oui** (`path`, `:show-label="false"`) | **ne pas envelopper** : passer `path` et `label` au sélecteur |
-| `DateRangePickerForm`, `AddressForm`, `CSVSelectorInputForm` | oui | oui | ne pas envelopper |
+| `FormField` | yes (div + red `*`, help in a tooltip) | **no**, no validation | the wrapper of the fields below |
+| `InputForm`, `TextAreaForm`, `DateForm`, `DateTimeForm`, `CheckboxForm`, `TagInputForm`, `IconForm`, `GeometryForm`, `FileInputForm`, `UriForm`, `TypeForm` | yes, through the `label` prop | no | `<n-form-item path="field">` **without `label`**; the field carries `label` |
+| `FormSelector` and **every selector built on it** | yes | **yes** (`path`, `:show-label="false"`) | **do not wrap**: pass `path` and `label` to the selector |
+| `DateRangePickerForm`, `AddressForm`, `CSVSelectorInputForm` | yes | yes | do not wrap |
 
-Les deux erreurs à éviter :
+The two mistakes to avoid:
 
-- un `n-form-item` avec `label` autour d'un champ qui a lui aussi un `label`, ce qui affiche deux libellés ;
-- un `n-form-item` autour d'un sélecteur bâti sur `FormSelector`, ce qui donne deux libellés et deux messages de validation.
+- an `n-form-item` with a `label` around a field that also has a `label`, which shows two labels;
+- an `n-form-item` around a selector built on `FormSelector`, which gives two labels and two validation messages.
 
-Les props `rules` et `vid` qu'on voit passées à certains champs sont des restes Vue 2 : `FormField` ne les déclare pas, elles n'ont aucun effet. Les règles se déclarent sur le `n-form` (`:rules`) et s'accrochent par `path`.
+The `rules` and `vid` props passed to some fields are Vue 2 leftovers: `FormField` does not declare them, they have no
+effect. Rules are declared on the `n-form` (`:rules`) and attached through `path`.
 
-**Sélecteurs bâtis sur `FormSelector`** (ne pas envelopper) : `AgentTypeSelector`, `CharacteristicSelector`, `CriteriaOperatorSelector`, `DatafileProvenanceSelector`, `DeviceSelector`, `EntitySelector`, `ExperimentSelector`, `FacilityPropertySelector`, `FacilitySelector`, `FactorLevelSelector`, `FundingSelector`, `GermplasmSelector`, `GroupSelector`, `GroupVariablesSelector`, `InterestEntitySelector`, `MethodSelector`, `OrganizationSelector`, `PersonSelector`, `ProjectSelector`, `ProvenanceSelector`, `ScientificObjectParentPropertySelector`, `ScientificObjectTypeSelector`, `SiteSelector`, `SpeciesSelector`, `UnitSelector`, `VariableDataTypeSelector`, `VariableSelector`, `VariableTimeIntervalSelector`. Pour vérifier un sélecteur absent de cette liste, cherche `<FormSelector` dans son gabarit.
+**Selectors built on `FormSelector`** (do not wrap): `AgentTypeSelector`, `CharacteristicSelector`,
+`CriteriaOperatorSelector`, `DatafileProvenanceSelector`, `DeviceSelector`, `EntitySelector`, `ExperimentSelector`,
+`FacilityPropertySelector`, `FacilitySelector`, `FactorLevelSelector`, `FundingSelector`, `GermplasmSelector`,
+`GroupSelector`, `GroupVariablesSelector`, `InterestEntitySelector`, `MethodSelector`, `OrganizationSelector`,
+`PersonSelector`, `ProjectSelector`, `ProvenanceSelector`, `ScientificObjectParentPropertySelector`,
+`ScientificObjectTypeSelector`, `SiteSelector`, `SpeciesSelector`, `UnitSelector`, `VariableDataTypeSelector`,
+`VariableSelector`, `VariableTimeIntervalSelector`. For a selector missing from this list, look for `<FormSelector` in
+its template.
 
-## Listes et filtres
+## Lists and filters
 
 ### `TableAsyncView` (`views/TableAsyncView.vue`)
 
-Table paginée côté serveur, basée sur `n-data-table` en mode `remote`. C'est **la** table des pages de liste.
+Server-side paginated table, based on `n-data-table` in `remote` mode. It is **the** table of list pages.
 
-- **props** : `fields: TableField[]` (obligatoire) ; `searchMethod` (obligatoire), appelée avec `{ orderBy: string[], currentPage: number /* base 0 */, pageSize: number }` et qui doit renvoyer `Promise<HttpResponse<OpenSilexResponse<T[]>>>` ; `defaultSortBy` (défaut `'name'`) ; `defaultSortDesc` ; `fieldKeyToSortableModelLabelMap` (clé de colonne → nom du champ triable côté API) ; `isSelectable` ; `selectMode: 'multi' | 'single'` ; `maximumSelectedRows` ; `labelNumberOfSelectedRow` ; `iconNumberOfSelectedRow` ; `defaultPageSize` (20) ; `showCount` (true) ; `showHeaderCount` (true).
-- **`TableField`** (`views/TableField.ts`) : `{ key: string; label?: string /* clé i18n */; sortable?: boolean; resizable?: boolean; isSelect?: boolean; naiveProps?: object }`.
-- **slots** : `cell(<key>)` avec la portée `{ data: { item, index } }`, qui est la forme héritée de Bootstrap-Vue ; `row-details` (ligne dépliée, si `item._showDetails`) ; `export` ; `selectableTableButtons` (`{ numberOfSelectedRows }`).
-- **émet** : `select(item)`, `unselect(item)`, `row-selected(count)`, `refreshed`, `selectall(items)`.
-- **expose** : `refresh()`, `getSelected()`, `resetSelection()`, `toggleOnlySelected()`, `setOnlySelected(b)`, `setPage(n)`, `getCurrentPage()`, `getPageSize()`, `getTotalRow()`, `getPaginationInfo()`, `checkSelectedItems(uri)`, `onItemSelected(item)`, `onItemUnselected(item)`.
-- La clé de ligne est `row.uri`. Lancer une recherche, c'est appeler `tableRef.value?.refresh()`.
-- **Frontière faiblement typée** : `searchMethod: Function` et les payloads `select` / `unselect` sont typés `NamedResourceDTO`. Côté appelant, typer `searchMethod` précisément (paramètres et retour), et typer les gestionnaires avec le vrai DTO de ligne.
+- **props**: `fields: TableField[]` (required); `searchMethod` (required), called with
+  `{ orderBy: string[], currentPage: number /* 0-based */, pageSize: number }`, which must return
+  `Promise<HttpResponse<OpenSilexResponse<T[]>>>`; `defaultSortBy` (default `'name'`); `defaultSortDesc`;
+  `fieldKeyToSortableModelLabelMap` (column key → name of the sortable field on the API side); `isSelectable`;
+  `selectMode: 'multi' | 'single'`; `maximumSelectedRows`; `labelNumberOfSelectedRow`; `iconNumberOfSelectedRow`;
+  `defaultPageSize` (20); `showCount` (true); `showHeaderCount` (true).
+- **`TableField`** (`views/TableField.ts`): `{ key: string; label?: string /* i18n key */; sortable?: boolean;
+  resizable?: boolean; isSelect?: boolean; naiveProps?: object }`.
+- **slots**: `cell(<key>)` with the scope `{ data: { item, index } }`, the shape inherited from Bootstrap-Vue;
+  `row-details` (expanded row, when `item._showDetails`); `export`; `selectableTableButtons` (`{ numberOfSelectedRows }`).
+- **emits**: `select(item)`, `unselect(item)`, `row-selected(count)`, `refreshed`, `selectall(items)`.
+- **exposes**: `refresh()`, `getSelected()`, `resetSelection()`, `toggleOnlySelected()`, `setOnlySelected(b)`,
+  `setPage(n)`, `getCurrentPage()`, `getPageSize()`, `getTotalRow()`, `getPaginationInfo()`, `checkSelectedItems(uri)`,
+  `onItemSelected(item)`, `onItemUnselected(item)`.
+- The row key is `row.uri`. Running a search means calling `tableRef.value?.refresh()`.
+- **Weakly typed boundary**: `searchMethod: Function`, and the `select` / `unselect` payloads are typed
+  `NamedResourceDTO`. On the caller's side, type `searchMethod` precisely (parameters and return), and type the handlers
+  with the real row DTO.
 
 ### `SearchFiltersSidebar` (`filters/SearchFiltersSidebar.vue`)
 
-Bouton loupe et panneau latéral de filtres (`n-layout-sider`), à placer **dans un `<n-layout has-sider>`**.
+Magnifier button and side filter panel (`n-layout-sider`), to be placed **inside an `<n-layout has-sider>`**.
 
-- **v-model** : `v-model:filtersCollapsed` (`boolean`).
-- **props** : `activeFiltersCount: number` (obligatoire ; le parent le calcule depuis son objet de filtres), `searchButtonLabelTranslationKey` (défaut `searchfilter.label`).
-- **émet** : `refresh` (bouton Rechercher ou touche Entrée), `reset` (bouton Effacer).
-- **slot par défaut** : les champs de filtre. Le slot est déjà dans un `n-form` (`label-placement="top"`, `size="small"`), donc on y met des `n-form-item` ou des sélecteurs bâtis sur `FormSelector`, sans les envelopper.
-- Les boutons Rechercher et Effacer sont fournis : ne pas en ajouter d'autres.
+- **v-model**: `v-model:filtersCollapsed` (`boolean`).
+- **props**: `activeFiltersCount: number` (required; the parent computes it from its filter object),
+  `searchButtonLabelTranslationKey` (default `searchfilter.label`).
+- **emits**: `refresh` (Search button or Enter key), `reset` (Clear button).
+- **default slot**: the filter fields. The slot already sits in an `n-form` (`label-placement="top"`, `size="small"`),
+  so it holds `n-form-item`s or selectors built on `FormSelector`, without wrapping them.
+- The Search and Clear buttons are provided: do not add others.
 
 ### `StringFilter` (`filters/StringFilter.vue`)
 
-Champ texte de filtre avec bouton d'effacement : `v-model:filter`, `placeholder` (clé i18n, obligatoire), `label?`, `type` (`'text'`), `min` / `max` (pour `number`). Il émet `update`, `handlingEnterKey`. Il est encore en Bootstrap à l'intérieur (`input-group`). Dans un filtre neuf, un `n-input` dans un `n-form-item` convient aussi.
+Text filter field with a clear button: `v-model:filter`, `placeholder` (i18n key, required), `label?`, `type`
+(`'text'`), `min` / `max` (for `number`). It emits `update`, `handlingEnterKey`. It still uses Bootstrap inside
+(`input-group`). In a new filter, an `n-input` in an `n-form-item` works as well.
 
 ### `TableView` (`views/TableView.vue`)
 
-Table **côté client** (données déjà chargées) : `items`, `fields: TableField[]`, `withPagination`, `globalFilterField`. Slot `cell(<key>)` avec la portée `{ data: { item } }`. Ici `field.label` n'est **pas** traduit : l'appelant le passe traduit. Pour une petite table statique, `n-data-table` avec `DataTableColumns<T>` est souvent plus simple.
+**Client-side** table (data already loaded): `items`, `fields: TableField[]`, `withPagination`, `globalFilterField`. Slot
+`cell(<key>)` with the scope `{ data: { item } }`. Here `field.label` is **not** translated: the caller passes it
+translated. For a small static table, `n-data-table` with `DataTableColumns<T>` is often simpler.
 
 ### `TreeView` / `TreeViewAsync` (`views/`)
 
-Arbres `n-tree`. `TreeView<T extends TreeViewOption>` est typé ; il émet `select(T[])`, `toggle(T[])`, avec les slots `node`, `buttons`. `TreeViewAsync` charge à la demande via `searchMethod(parentUri, page, pageSize)` et `searchMethodRoot`, avec `v-model:selection` ; il expose `refresh()`, `reloadNodeChildren(key)`.
+`n-tree` trees. `TreeView<T extends TreeViewOption>` is typed; it emits `select(T[])`, `toggle(T[])`, with the slots
+`node` and `buttons`. `TreeViewAsync` loads on demand through `searchMethod(parentUri, page, pageSize)` and
+`searchMethodRoot`, with `v-model:selection`; it exposes `refresh()`, `reloadNodeChildren(key)`.
 
-## Formulaires
+## Forms
 
-- **`Modal`** (`views/Modal.vue`) : props `modalSize: 'sm' | 'lg' | 'xl'`, `hideHeader`, `hideFooter` ; slots `header`, défaut, `footer` ; expose `show()`, `hide()`. C'est la modale attendue par `useModalFormLogic`. Elle **n'émet rien** à la fermeture par la croix.
-- **`useModalFormLogic<T>`** (`@/composables/useModalFormLogic`) :
-  - **options** : `{ modalRef, nFormRef, getEmptyForm, create, update, props, emit, reset?, onHide?, successMessage?, overrideSuccessMessage? }` ;
-  - **renvoie** : `{ form, isEditMode, showCreateForm, showEditForm, hide, submit, formTitle }` ;
-  - **types exportés** : `ModalFormEmits` (`onCreate`, `onUpdate`, `onSuccess`) et `ModalFormProps` (`createTitle`, `editTitle`) ;
-  - le composable valide le `n-form`, gère le loader et le toast, émet, puis ferme. Il s'appelle dans `setup`.
-- **`FormHeader`** : `title` (affiché tel quel, donc à passer **déjà traduit**), `icon`.
-- **`FormFooter`** : émet `cancel` et `submit` (pas `save`) ; libellés `cancelLabel` / `submitLabel` (clés i18n).
-- **`WizardForm`** : assistant multi-étapes (`steps: WizardStep[]`, `initForm`, `createAction` / `updateAction`), expose `showCreateForm()` / `showEditForm(form)` / `close()`.
-- **Règles de validation** (`@/models/FormFieldsFormatter`) : `requiredTrimmed(labelKey)`, `required(labelKey)`, `requiredNotEmpty(labelKey)`, `validEmail()`, `validUri(message)`. Elles renvoient des `FormItemRule` naive-ui et appellent `useI18n()`, donc on les construit **dans `setup`**, typiquement dans un `computed<FormRules>`.
-- **Conversion** : `DTOConverter.extractURIFromResourceProperties(getDto)` (`@/models/DTOConverter`) transforme un *GetDTO* en *Creation/UpdateDTO* (les `NamedResourceDTO` deviennent des URI).
+- **`Modal`** (`views/Modal.vue`): props `modalSize: 'sm' | 'lg' | 'xl'`, `hideHeader`, `hideFooter`; slots `header`,
+  default, `footer`; exposes `show()`, `hide()`. It is the modal `useModalFormLogic` expects. It emits **nothing** when
+  closed with the cross.
+- **`useModalFormLogic<T>`** (`@/composables/useModalFormLogic`):
+  - **options**: `{ modalRef, nFormRef, getEmptyForm, create, update, props, emit, reset?, onHide?, successMessage?,
+    overrideSuccessMessage? }`;
+  - **returns**: `{ form, isEditMode, showCreateForm, showEditForm, hide, submit, formTitle }`;
+  - **exported types**: `ModalFormEmits` (`onCreate`, `onUpdate`, `onSuccess`) and `ModalFormProps` (`createTitle`,
+    `editTitle`);
+  - the composable validates the `n-form`, handles the loader and the toast, emits, then closes. Call it in `setup`.
+- **`FormHeader`**: `title` (displayed as is, so pass it **already translated**), `icon`.
+- **`FormFooter`**: emits `cancel` and `submit` (not `save`); labels `cancelLabel` / `submitLabel` (i18n keys).
+- **`WizardForm`**: multi-step wizard (`steps: WizardStep[]`, `initForm`, `createAction` / `updateAction`), exposes
+  `showCreateForm()` / `showEditForm(form)` / `close()`.
+- **Validation rules** (`@/models/FormFieldsFormatter`): `requiredTrimmed(labelKey)`, `required(labelKey)`,
+  `requiredNotEmpty(labelKey)`, `validEmail()`, `validUri(message)`. They return naive-ui `FormItemRule`s and call
+  `useI18n()`, so build them **in `setup`**, typically in a `computed<FormRules>`.
+- **Conversion**: `DTOConverter.extractURIFromResourceProperties(getDto)` (`@/models/DTOConverter`) turns a *GetDTO*
+  into a *Creation/UpdateDTO* (`NamedResourceDTO`s become URIs).
 
-## Champs (`forms/`)
+## Fields (`forms/`)
 
-| Composant | v-model | Notes |
+| Component | v-model | Notes |
 |---|---|---|
-| `InputForm` | `value` (`string \| null`) | `type: 'text' \| 'password' \| 'textarea' \| 'email' \| 'number' \| 'date'` ; émet aussi `input`, `change`, `blur`, `handlingEnterKey` |
+| `InputForm` | `value` (`string \| null`) | `type: 'text' \| 'password' \| 'textarea' \| 'email' \| 'number' \| 'date'`; also emits `input`, `change`, `blur`, `handlingEnterKey` |
 | `TextAreaForm` | `value` | |
-| `CheckboxForm` | `value` (`boolean`) | `title` : texte à côté de la case |
+| `CheckboxForm` | `value` (`boolean`) | `title`: text next to the box |
 | `DateForm` | `value` (`yyyy-MM-dd`) | `minDate`, `maxDate` |
-| `DateTimeForm` | `value` (ISO UTC) | émet `clear` |
-| `DateRangePickerForm` | `start`, `end` | rend ses `n-form-item` ; voir défauts connus |
-| `DateTimeRangeForm` | `startDate`, `endDate`, `isInstant` | libellés figés (`component.events.*`) |
+| `DateTimeForm` | `value` (ISO UTC) | emits `clear` |
+| `DateRangePickerForm` | `start`, `end` | renders its `n-form-item`s; see known defects |
+| `DateTimeRangeForm` | `startDate`, `endDate`, `isInstant` | fixed labels (`component.events.*`) |
 | `TagInputForm` | `value` (`string[]`) | |
-| `TypeForm` | `type` | `baseType` (URI de la classe racine, obligatoire), `multiple`, `ignoreRoot` |
-| `UriForm` | `uri`, `generated` | `editMode` ; **`v-model:uri`**, jamais `:uri.sync` (syntaxe Vue 2 cassée, encore présente dans 6 formulaires) |
-| `IconForm` | `value` | icônes `fa#…` |
-| `GeometryForm` | `value` (GeoJSON) | saisie WKT |
+| `TypeForm` | `type` | `baseType` (URI of the root class, required), `multiple`, `ignoreRoot` |
+| `UriForm` | `uri`, `generated` | `editMode`; **`v-model:uri`**, never `:uri.sync` (broken Vue 2 syntax, still found in some forms) |
+| `IconForm` | `value` | `fa#…` icons |
+| `GeometryForm` | `value` (GeoJSON) | WKT input |
 | `FileInputForm` | `file` (`File`) | `accept` |
-| `SwitchGroup` | `value` (`string[]`) | `options: SwitchOption[]` (type exporté) |
-| `AddressForm` | `address` (`FacilityAddressDTO`) | rend ses `n-form-item` |
-| `CustomTreeselect` | `selected` | moteur de `FormSelector` ; ne pas l'utiliser directement |
+| `SwitchGroup` | `value` (`string[]`) | `options: SwitchOption[]` (exported type) |
+| `AddressForm` | `address` (`FacilityAddressDTO`) | renders its `n-form-item`s |
+| `CustomTreeselect` | `selected` | engine of `FormSelector`; do not use it directly |
 
-## Boutons (`buttons/`)
+## Buttons (`buttons/`)
 
-Ils sont en Bootstrap à l'intérieur, mais ce sont **les** boutons d'action de la plateforme. Pour éditer, supprimer, créer ou voir le détail d'une ressource, on les utilise plutôt qu'un `n-button` nu.
+They use Bootstrap inside, but they are **the** action buttons of the platform. To edit, delete, create or show the
+detail of a resource, use them rather than a bare `n-button`.
 
-| Composant | Props | Émet |
+| Component | Props | Emits |
 |---|---|---|
-| `Button` | `label?` (clé i18n), `variant?` (→ `btn-<variant>`), `icon?` (`fa#…` ou `bi-…`), `small?`, `disabled?`, `helpMessage?` | `click` |
+| `Button` | `label?` (i18n key), `variant?` (→ `btn-<variant>`), `icon?` (`fa#…` or `bi-…`), `small?`, `disabled?`, `helpMessage?` | `click` |
 | `CreateButton` | `label` | `click` |
 | `EditButton` | `label` | `click` |
-| `DeleteButton` | `label`, `small` (obligatoire) | `click` **après confirmation** : ne pas redemander confirmation |
+| `DeleteButton` | `label`, `small` (required) | `click` **after confirmation**: do not ask again |
 | `DetailButton` | `label`, `detailVisible?`, `automaticToogle?` | `click` |
 | `AddChildButton`, `HelpButton`, `InteroperabilityButton` | `label` | `click` |
 | `DeprecatedButton` | `deprecated` | `click` |
-| `FavoriteButton` | `uri` | gère seul l'appel d'API |
+| `FavoriteButton` | `uri` | handles the API call itself |
 
-`small: true` **masque le libellé**, qui ne reste qu'en infobulle : c'est le mode icône seule des colonnes d'actions.
+`small: true` **hides the label**, which only remains as a tooltip: it is the icon-only mode of action columns.
 
-## Affichage (`views/`)
+## Display (`views/`)
 
-- `Card` : `label` (clé i18n), `icon` ; slots `title`, `header`, `rightHeader`, `body`, `footer`. C'est le cadre des pages de détail.
-- `StringView` (`label`, `value`, `allowCopy`), `TextView`, `DateView` (`value`, `isDatetime`), `UriView` (`uri`, `value`, `to`), `UriLink`, `UriListView`, `LabelUriView`, `TypeView` (`type`, `typeLabel`), `MetadataView` (`publisher`, `publicationDate`, `lastUpdatedDate`), `AddressView`, `IconView`, `GeometryCopy`.
-- `Icon` : `icon` au format `fa#nom` ou `bi#bi-nom`. Le préfixe `ik#` n'est pas géré, l'icône n'apparaît pas.
-- Toasts : `$opensilex.showSuccessToast / showErrorToast / showInfoToast / showWarningToast`, branchés sur `ToastContainer` par `App.vue`. Ne pas instancier de `n-message` pour ça.
+- `Card`: `label` (i18n key), `icon`; slots `title`, `header`, `rightHeader`, `body`, `footer`. It frames detail pages.
+- `StringView` (`label`, `value`, `allowCopy`), `TextView`, `DateView` (`value`, `isDatetime`), `UriView` (`uri`,
+  `value`, `to`), `UriLink`, `UriListView`, `LabelUriView`, `TypeView` (`type`, `typeLabel`), `MetadataView`
+  (`publisher`, `publicationDate`, `lastUpdatedDate`), `AddressView`, `IconView`, `GeometryCopy`.
+- `Icon`: `icon` as `fa#name` or `bi#bi-name`. The `ik#` prefix is not handled: the icon does not show.
+- Toasts: `$opensilex.showSuccessToast / showErrorToast / showInfoToast / showWarningToast`, wired to `ToastContainer`
+  by `App.vue`. Do not create an `n-message` for that.
 
-## Naive UI : ce qui est global
+## Naive UI: what is global
 
-La liste est dans `opensilex-front/front/src/main.ts` (`create({ components: […] })`), et elle **dépend de la branche** : sur `vue3/main`, seulement `NButton`, `NDataTable`, `NDropdown`, `NTree` ; `feat/aiimport` en ajoute 14 pour le module ai-import. Règle sûre dans l'hôte : importer depuis `naive-ui` chaque `n-*` utilisé. Une balise ni importée ni globale n'est pas résolue et ne rend rien, sans erreur. Sur `vue3/main`, `FormFooter` (`n-button-group`) et `ModalListBuilder` (`n-tag`) ont ce défaut.
+The list is in `opensilex-front/front/src/main.ts` (`create({ components: […] })`). It is short and **differs between
+branches**, so read it on the current branch. The safe rule in the host: import from `naive-ui` every `n-*` used. A tag
+that is neither imported nor global is not resolved and renders nothing, without any error.
 
-Il n'y a pas de `n-config-provider` racine. `App.vue` fournit `n-dialog-provider` et `n-message-provider` aux seules routes connectées.
+There is no root `n-config-provider`. `App.vue` provides `n-dialog-provider` and `n-message-provider` to logged-in
+routes only.
 
-Pour un module d'extension, voir `opensilex-doc/src/main/resources/technical-documentation/opensilex-module/module-frontend-loading.md`, et le skill `opensilex-vue3` (`references/extension-module.md`) s'il est installé.
+An extension module does not import naive-ui itself; its loading is described in
+`opensilex-doc/src/main/resources/technical-documentation/opensilex-module/module-frontend-loading.md`.
 
-## Défauts connus (à signaler, pas à corriger en douce)
+## Known defects (report them, do not fix them on the side)
 
-Constatés le 2026-10-09 ; vérifier qu'ils sont toujours là avant de les citer.
+These were found while writing this skill; check that a defect is still there before citing it.
 
-- `TableAsyncView` : en `onMounted`, il fait `props.fields.unshift({ key: 'select', … })` quand `isSelectable` et `selectMode !== 'single'`. Il **mute le tableau du parent**, en plus de la colonne `selection` qu'il ajoute déjà. Passer un tableau propre au composant, pas une constante partagée.
-- `DateRangePickerForm` : le gabarit lie `startDatePath`, alors que la prop s'appelle `startDateValidatePath`. La validation de la date de début n'est jamais branchée.
-- `FormFooter` : `n-button-group` n'est ni importé ni global ; les émissions passent par `$emit`, sans `defineEmits`.
-- `ModalListBuilder` : `n-tag` n'est pas résolu.
-- `Button` : le mode `href` rend un `<button href>`, qui ne navigue pas.
-- `AddChildButton` : props déstructurées sans réactivité.
-- `DatePeriodPicker` : dates calculées seulement en `onMounted`, donc `update` émet des dates périmées.
-- `WizardForm.getStepRef` utilise `this` dans `<script setup>`.
-- `TreeViewAsync` : fichier encadré par des balises Markdown (lignes 1 et 668), et clés i18n `TreeViewAsync.*` inexistantes.
-- `FormInputLabelHelper` et `UriLink` rendent du `v-html` : ne pas y faire passer de contenu non maîtrisé.
-- `views/NbElementPerPageSelector.vue.vue` : double extension, inutilisable comme balise.
+- `TableAsyncView`: in `onMounted`, it runs `props.fields.unshift({ key: 'select', … })` when `isSelectable` and
+  `selectMode !== 'single'`. It **mutates the parent's array**, on top of the `selection` column it already adds. Pass
+  the component an array of its own, not a shared constant.
+- `DateRangePickerForm`: the template binds `startDatePath`, whereas the prop is named `startDateValidatePath`. The
+  validation of the start date is never wired.
+- `FormFooter`: `n-button-group` is neither imported nor global; emits go through `$emit`, without `defineEmits`.
+- `ModalListBuilder`: `n-tag` is not resolved.
+- `Button`: the `href` mode renders a `<button href>`, which does not navigate.
+- `AddChildButton`: destructured props, without reactivity.
+- `DatePeriodPicker`: dates computed only in `onMounted`, so `update` emits stale dates.
+- `WizardForm.getStepRef` uses `this` in `<script setup>`.
+- `TreeViewAsync`: file wrapped in Markdown fences (first and last lines), and `TreeViewAsync.*` i18n keys that do not
+  exist.
+- `FormInputLabelHelper` and `UriLink` render `v-html`: do not pass uncontrolled content through them.
+- `views/NbElementPerPageSelector.vue.vue`: double extension, unusable as a tag.

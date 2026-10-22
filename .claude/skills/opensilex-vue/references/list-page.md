@@ -1,22 +1,36 @@
-# Page de liste
+# List page
 
-Le patron commun des listes migrées (`DeviceList`, `ProjectList`, `OrganizationList`, `DocumentList`, `EventList`) est le suivant. **La vue** possède le bouton Créer et le formulaire modal. **La liste** possède les filtres, la table et les actions de ligne :
+## Contents
+
+- [Structure](#structure): who owns what between the view and the list
+- [The list](#the-list): filters, table, row actions
+- [The view](#the-view): create button and modal form
+- [Points to watch](#points-to-watch)
+- [Detail page and tabs](#detail-page-and-tabs)
+
+## Structure
+
+The common pattern of migrated lists (`DeviceList`, `ProjectList`, `OrganizationList`, `DocumentList`, `EventList`) is
+the following. **The view** owns the Create button and the modal form. **The list** owns the filters, the table and the
+row actions:
 
 ```
 XxxView.vue
 ├── CreateButton                      → xxxForm.showCreateForm()
 ├── XxxList.vue
 │   ├── n-layout has-sider
-│   │   ├── SearchFiltersSidebar      (v-model:filtersCollapsed, slot = filtres)
+│   │   ├── SearchFiltersSidebar      (v-model:filtersCollapsed, slot = filters)
 │   │   └── n-layout-content
 │   │       └── TableAsyncView        (fields, searchMethod, #cell(...))
-│   └── émet edit(dto)               → xxxForm.showEditForm(dto)
+│   └── emits edit(dto)               → xxxForm.showEditForm(dto)
 └── XxxForm.vue (Modal + useModalFormLogic) → @onCreate / @onUpdate → xxxList.refresh()
 ```
 
-L'exemple ci-dessous part de `ProjectList.vue` / `ProjectsView.vue`, corrigé de leurs écarts. Les API (`ProjectsService.searchProjects`, `deleteProject`), les credentials, la route `/project/details/:uri` et les clés i18n existaient dans le dépôt au 2026-10-09.
+The example below starts from `ProjectList.vue` / `ProjectsView.vue`, with their deviations corrected. The APIs
+(`ProjectsService.searchProjects`, `deleteProject`), the credentials, the route `/project/details/:uri` and the i18n keys
+are those of the repository; check them again if the example no longer builds.
 
-## La liste
+## The list
 
 ```vue
 <template>
@@ -91,13 +105,13 @@ import UriLink from '@/components/common/views/UriLink.vue'
 import EditButton from '@/components/common/buttons/EditButton.vue'
 import DeleteButton from '@/components/common/buttons/DeleteButton.vue'
 
-/** Filtres de la liste. Chaque champ a un contrôle dans la sidebar. */
+/** List filters. Every field has a control in the sidebar. */
 interface ProjectListFilter {
   name: string | undefined
   keyword: string | undefined
 }
 
-/** Paramètres passés par TableAsyncView à searchMethod (currentPage commence à 0). */
+/** Parameters passed by TableAsyncView to searchMethod (currentPage starts at 0). */
 interface TableSearchOptions {
   orderBy: string[]
   currentPage: number
@@ -126,7 +140,7 @@ const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
 
 //#region Data & Computed
 const filter = ref<ProjectListFilter>(getEmptyFilter())
-// Avant le montage : la première recherche de TableAsyncView voit déjà les filtres de l'URL.
+// Before mounting, so that the first TableAsyncView search already sees the URL filters.
 $opensilex.updateFiltersFromURL(route.query, filter.value)
 
 const filtersCollapsed = ref(true)
@@ -142,7 +156,7 @@ const canDelete = computed(() =>
   store.state.user.hasCredential(store.state.credentials.CREDENTIAL_PROJECT_DELETE_ID),
 )
 
-/** Libellés = clés i18n : TableAsyncView les traduit lui-même. */
+/** Labels are i18n keys: TableAsyncView translates them itself. */
 const fields: TableField[] = [
   { key: 'name', label: 'component.common.name', sortable: true },
   { key: 'shortname', label: 'component.project.shortname', sortable: true },
@@ -168,7 +182,7 @@ function searchProjects(options: TableSearchOptions): Promise<HttpResponse<OpenS
   )
 }
 
-/** Relance la recherche depuis la page 1 et reporte les filtres dans l'URL. */
+/** Runs the search again from page 1 and writes the filters into the URL. */
 function refresh() {
   $opensilex.updateURLParameters(filter.value)
   tableRef.value?.setPage(1)
@@ -181,7 +195,7 @@ function resetFilters() {
   refresh()
 }
 
-/** DeleteButton a déjà demandé confirmation. */
+/** DeleteButton has already asked for confirmation. */
 async function deleteProject(project: ProjectGetDTO) {
   try {
     await projectsService.deleteProject(project.uri)
@@ -203,11 +217,13 @@ defineExpose({
 </script>
 ```
 
-Il n'y a ni `<style>` ni `<i18n>` : toutes les clés sont globales. Si la liste a ses propres libellés, ajouter un bloc `<i18n>` `ProjectList:` en fr et en.
+There is neither `<style>` nor `<i18n>`: all keys are global. If the list has its own labels, add an `<i18n>` block
+`ProjectList:` in en and fr.
 
-Le slot `#cell(...)` de `TableAsyncView` n'est pas typé (`data.item` est `any` dans le gabarit). C'est la frontière : le gestionnaire appelé (`deleteProject(project: ProjectGetDTO)`) porte le type précis.
+The `#cell(...)` slot of `TableAsyncView` is not typed (`data.item` is `any` in the template). That is the boundary: the
+called handler (`deleteProject(project: ProjectGetDTO)`) carries the precise type.
 
-## La vue
+## The view
 
 ```vue
 <template>
@@ -230,23 +246,50 @@ Le slot `#cell(...)` de `TableAsyncView` n'est pas typé (`data.item` est `any` 
 </template>
 ```
 
-`createTitle` et `editTitle` sont des **clés** : `useModalFormLogic` appelle `t()` dessus. Le gestionnaire `onProjectListEdit(project: ProjectGetDTO)` appelle `projectForm.value?.showEditForm(…)`. Si le formulaire attend un DTO de mise à jour, convertir avec `DTOConverter.extractURIFromResourceProperties(project)`.
+`createTitle` and `editTitle` are **keys**: `useModalFormLogic` calls `t()` on them. The handler
+`onProjectListEdit(project: ProjectGetDTO)` calls `projectForm.value?.showEditForm(…)`. If the form expects an update
+DTO, convert with `DTOConverter.extractURIFromResourceProperties(project)`.
 
-## Points d'attention
+## Points to watch
 
-- **`v-model:filtersCollapsed`, pas `:filtersCollapsed`.** La sidebar utilise `defineModel`. En liaison à sens unique, le parent ne voit jamais l'ouverture du panneau, et son `filtersCollapsed.value = true` après la recherche ne referme rien. Neuf listes ont ce défaut ; `ExperimentScientificObjects.vue` est correct.
-- **Filtres** : une interface, une fabrique `getEmptyFilter()` réutilisée par la réinitialisation (pas de littéral recopié), un `activeFiltersCount` calculé. Pas de champ sans contrôle dans la sidebar. N'y mettre que des valeurs qui doivent compter comme filtre actif : un `deprecated: false` par défaut fait afficher « 1 filtre » en permanence (`DocumentList`).
-- **`@reset`** remet à vide **et** relance la recherche. Les listes existantes divergent là-dessus ; c'est ce comportement qui est retenu.
-- **Filtres texte** : `n-input clearable` + `@keydown.enter.prevent.stop`. `StringFilter` est l'ancienne forme, en Bootstrap, avec un `<form>` imbriqué dans le `n-form` de la sidebar.
-- **Sélecteurs dans la sidebar** (`TypeForm`, sélecteurs bâtis sur `FormSelector`) : **sans** `n-form-item` autour. Ils portent leur libellé. Le hack CSS `:deep(.compact-form-item)` de `DeviceList` / `EventList` ne sert qu'à masquer le libellé vide de ce doublon.
-- **N'utiliser que l'API exposée** de `TableAsyncView` (`refresh`, `setPage`, `getSelected`, `resetSelection`, `toggleOnlySelected`, `getPaginationInfo`…). `DeviceList` et `EventList` lisent `onlySelected`, `selectAll`, `totalRow`, qui ne sont pas exposés et valent donc `undefined`. Les événements `refreshed` et `selectall` sont déclarés mais **jamais émis**, et la prop `defaultPageSize` n'est pas lue.
-- **Compteur** : `TableAsyncView` affiche déjà « n à m sur N » (`showCount`, vrai par défaut). Si la page affiche son propre compteur dans la barre d'actions, passer `:showCount="false"`.
-- **Sélection** : `:isSelectable="true"`, `selectedCount = computed(() => tableRef.value?.getSelected().length ?? 0)`. Le menu d'actions sur la sélection est un `n-dropdown` avec des `DropdownOption[]` calculés selon les credentials (exemple dans `bootstrap-to-naive.md`).
-- **Export CSV** : `$opensilex.downloadFilefromPostService(path, filename, 'csv', { uris }, lang)` avec `lang = computed(() => store.getters.language)`.
-- **Traductions** : passer des **clés** aux composants qui traduisent eux-mêmes (`label` des boutons, `Card`, `StringView`, `TableField.label` de `TableAsyncView`, `createTitle` / `editTitle`, `searchButtonLabelTranslationKey`, `placeholder` de `StringFilter` et `TypeForm`). Passer des **textes traduits** (`t(…)`) aux props `n-*`, à `TableView` et au `placeholder` de `FormSelector`. Le mélange donne des doubles traductions, avec un avertissement de clé manquante dans la console.
-- **Modales secondaires** dans une liste (ajout d'événement, de document sur la sélection) : `v-if` paresseux, puis `nextTick(() => ref.value?.show())`, comme `DeviceList` et `EventList`.
+- **`v-model:filtersCollapsed`, not `:filtersCollapsed`.** The sidebar uses `defineModel`. With a one-way binding, the
+  parent never sees the panel open, and its `filtersCollapsed.value = true` after a search closes nothing. Several lists
+  have this defect; `ExperimentScientificObjects.vue` is correct.
+- **Filters**: an interface, a `getEmptyFilter()` factory reused by the reset (no copied literal), a computed
+  `activeFiltersCount`. No field without a control in the sidebar. Put in it only values that should count as an active
+  filter: a default `deprecated: false` makes "1 filter" show permanently (`DocumentList`).
+- **`@reset`** clears **and** runs the search again. Existing lists disagree on this; this behaviour is the one kept.
+- **Text filters**: `n-input clearable` + `@keydown.enter.prevent.stop`. `StringFilter` is the older form, in
+  Bootstrap, with a `<form>` nested in the sidebar's `n-form`.
+- **Selectors in the sidebar** (`TypeForm`, selectors built on `FormSelector`): **without** an `n-form-item` around
+  them. They carry their own label. The CSS hack `:deep(.compact-form-item)` of `DeviceList` / `EventList` only hides the
+  empty label of that duplicate.
+- **Use only the exposed API** of `TableAsyncView` (`refresh`, `setPage`, `getSelected`, `resetSelection`,
+  `toggleOnlySelected`, `getPaginationInfo`…). `DeviceList` and `EventList` read `onlySelected`, `selectAll`,
+  `totalRow`, which are not exposed and are therefore `undefined`. The `refreshed` and `selectall` events are declared
+  but **never emitted**, and the `defaultPageSize` prop is not read.
+- **Counter**: `TableAsyncView` already shows "n to m of N" (`showCount`, true by default). If the page shows its own
+  counter in the action bar, pass `:showCount="false"`.
+- **Selection**: `:isSelectable="true"`, `selectedCount = computed(() => tableRef.value?.getSelected().length ?? 0)`.
+  The action menu on the selection is an `n-dropdown` with `DropdownOption[]` computed from the credentials (example in
+  `bootstrap-to-naive.md`).
+- **CSV export**: `$opensilex.downloadFilefromPostService(path, filename, 'csv', { uris }, lang)` with
+  `lang = computed(() => store.getters.language)`.
+- **Translations**: pass **keys** to components that translate by themselves (button `label`, `Card`, `StringView`,
+  `TableField.label` of `TableAsyncView`, `createTitle` / `editTitle`, `searchButtonLabelTranslationKey`, the
+  `placeholder` of `StringFilter` and `TypeForm`). Pass **translated text** (`t(…)`) to `n-*` props, to `TableView` and
+  to the `placeholder` of `FormSelector`. Mixing them gives double translations, with a missing-key warning in the
+  console.
+- **Secondary modals** in a list (add an event, a document on the selection): lazy `v-if`, then
+  `nextTick(() => ref.value?.show())`, as `DeviceList` and `EventList` do.
 
-## Page de détail et onglets
+## Detail page and tabs
 
-- Description : `Card` (`#rightHeader` pour `FavoriteButton` / `EditButton` / `DeleteButton`, `#body` pour `StringView` / `UriView` / `DateView` / `MetadataView`). Édition : `form.showEditForm(DTOConverter.extractURIFromResourceProperties(dto))`. Suppression : toast puis `router.push(<liste>)`.
-- Onglets : la forme la plus propre existante est `ExperimentView.vue`, avec des routes enfants déclarées dans `opensilex.front.yml` et `<router-view v-slot="{ Component }">`. Les liens d'onglets y sont encore en `router-link class="nav-link"`. Dans du code neuf, utiliser `n-tabs` piloté par la route : `:value` = onglet courant, `@update:value` → `router.push`, et le contenu dans `<router-view>`. Ne pas reproduire les onglets maison de `DeviceDetails.vue` (`<button class="tab">`, `localStorage`, analyse de `route.path`).
+- Description: `Card` (`#rightHeader` for `FavoriteButton` / `EditButton` / `DeleteButton`, `#body` for `StringView` /
+  `UriView` / `DateView` / `MetadataView`). Edit: `form.showEditForm(DTOConverter.extractURIFromResourceProperties(dto))`.
+  Delete: toast, then `router.push(<list>)`.
+- Tabs: the cleanest existing form is `ExperimentView.vue`, with child routes declared in `opensilex.front.yml` and
+  `<router-view v-slot="{ Component }">`. Its tab links are still `router-link class="nav-link"`. In new code, use
+  `n-tabs` driven by the route: `:value` = current tab, `@update:value` → `router.push`, and the content in
+  `<router-view>`. Do not reproduce the home-made tabs of `DeviceDetails.vue` (`<button class="tab">`, `localStorage`,
+  parsing of `route.path`).

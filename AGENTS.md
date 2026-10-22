@@ -18,7 +18,7 @@ opensilex dev install [-r]                          # init des données (-r = re
 opensilex dev start [--no-front-dev]                # serveur (+ hot reload front par défaut)
 cd opensilex-front/front && npm run serve           # front seul ; npm run build pour le bundle
 python3 ~/.claude/skills/opensilex-java/scripts/lint.py [--fix]        # lint Java
-.claude/skills/opensilex-vue/scripts/check-vue-conventions.sh          # lint Vue
+python3 .claude/skills/opensilex-vue/scripts/check_vue_conventions.py  # lint Vue
 ```
 
 Il n'y a ni typecheck ni lint front fiable : `npm run lint` appelle `vite lint`, qui n'est pas un linter.

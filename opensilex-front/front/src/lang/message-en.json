@@ -941,6 +941,12 @@
                 "unknownVariety": "The given variety doesn't exist in the database: {unknownVariety}",
                 "unknownAccession": "The given accession doesn't exist in the database: {unknownAccession}",
                 "missingAttribute": "Missing required field : {message}"
+            },
+            "selector-with-filter": {
+                "label": "Germplasm",
+                "placeholder": "Select a germplasm",
+                "placeholder-multiple": "Select one or more germplasm",
+                "filter-search-no-result": "No germplasm found"
             }
         },
         "scientificObjects": {

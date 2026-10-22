@@ -12,20 +12,20 @@
       </CreateButton>
       <!-- Export button-->
       <Button
-        @click="exportModal.show()"
-        class="createButton greenThemeColor"
-        icon="bi-download"
-        :small="false"
-        label="component.data.view.buttons.export"
+          @click="exportModal.show()"
+          class="createButton greenThemeColor"
+          icon="bi-download"
+          :small="false"
+          label="component.data.view.buttons.export"
       ></Button>
       <!-- Delete by batch button -->
       <Button
-        @click="deleteByBatchModal.show()"
-        class="createButton greenThemeColor"
-        icon="fa#trash-alt"
-        :small="false"
-        label="component.data.view.buttons.delete-by-batch"
-        :disabled="false"
+          @click="deleteByBatchModal.show()"
+          class="createButton greenThemeColor"
+          icon="fa#trash-alt"
+          :small="false"
+          label="component.data.view.buttons.delete-by-batch"
+          :disabled="false"
       ></Button>
     </PageActions>
 
@@ -36,9 +36,10 @@
     ></DataExportModal>
 
     <DeleteByBatchModal
-      ref="deleteByBatchModal"
-      @deleted="refresh"
-    ></DeleteByBatchModal>
+        ref="deleteByBatchModal"
+        @deleted="refresh"
+        experiment-uri="">
+    </DeleteByBatchModal>
 
     <DataImportForm
         v-if="renderImportForm"
@@ -101,55 +102,51 @@
           </n-form-item>
 
           <!-- Germplasm Group -->
-          <n-form-item class="compact-form-item">
-            <GermplasmGroupSelector
-                label="component.data.view.filter.germplasm-group"
-                :multiple="false"
-                v-model:germplasmGroup="filter.germplasm_group"
-                class="searchFilter"
-                @handlingEnterKey="refresh()"
-            ></GermplasmGroupSelector>
-          </n-form-item>
+          <GermplasmGroupSelector
+              label="component.data.view.filter.germplasm-group"
+              :multiple="false"
+              v-model:germplasmGroup="filter.germplasm_group"
+              class="searchFilter"
+              @handlingEnterKey="refresh()"
+          ></GermplasmGroupSelector>
 
           <!-- germplasm -->
           <n-form-item class="compact-form-item">
             <GermplasmSelectorWithFilter
-                v-model:germplasmsUris="filter.germplasm"
-            ></GermplasmSelectorWithFilter>
+                v-model:germplasmUris="filter.germplasm"
+                edit-mode
+                experiment-uri="">
+            </GermplasmSelectorWithFilter>
           </n-form-item>
 
           <!-- Devices in provenance-->
-          <n-form-item class="compact-form-item">
-            <DeviceSelector
+          <DeviceSelector
               ref="deviceSelector"
               :multiple="true"
               v-model:value="filter.devices"
               class="searchFilter"
               @handlingEnterKey="refresh()"
-            ></DeviceSelector>
-          </n-form-item>
+          ></DeviceSelector>
 
           <!-- Operator -->
           <n-form-item class="compact-form-item">
             <PersonSelector
-              v-model:persons="filter.operators"
-              label="component.data.view.filter.operator"
-              class="searchFilter"
-              @handlingEnterKey="refresh()"
-              :multiple="true"
+                v-model:persons="filter.operators"
+                label="component.data.view.filter.operator"
+                class="searchFilter"
+                @handlingEnterKey="refresh()"
+                :multiple="true"
             ></PersonSelector>
           </n-form-item>
 
           <!-- Facility -->
-          <n-form-item class="compact-form-item">
-            <FacilitySelector
+          <FacilitySelector
               ref="facilitySelector"
               label="component.experiment.facilities"
               v-model:facilities="filter.facilities"
               :multiple="true"
               class="searchFilter"
-            ></FacilitySelector>
-          </n-form-item>
+          ></FacilitySelector>
 
           <!-- Start Date -->
           <n-form-item class="compact-form-item">
@@ -223,10 +220,10 @@
               <!-- Batch URI -->
               <n-form-item :label="t('component.data.view.filter.batch-uri')" class="compact-form-item">
                 <StringFilter
-                  v-model:filter="filter.batch_uri"
-                  placeholder="component.data.view.filter.uri-placeholder"
-                  class="searchFilter"
-                  @handlingEnterKey="refresh()"
+                    v-model:filter="filter.batch_uri"
+                    placeholder="component.data.view.filter.uri-placeholder"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
                 ></StringFilter>
               </n-form-item>
             </n-collapse-item>
@@ -299,11 +296,13 @@ import ResultModalView from "@/components/data/ResultModalView.vue";
 import DeleteByBatchModal from "@/components/data/DeleteByBatchModal.vue";
 import ModalForm from "@/components/common/forms/ModalForm.vue";
 import DataImportForm from "@/components/data/form/DataImportForm.vue";
+import GermplasmGroupSelector from "@/components/germplasm/GermplasmGroupSelector.vue";
+import GermplasmSelectorWithFilter from "@/components/germplasm/GermplasmSelectorWithFilter.vue";
 
 //#region Constant values
 const $opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const $store = useStore();
-const { t } = useI18n();
+const {t} = useI18n();
 const dataService = $opensilex.getService<DataService>("opensilex.DataService");
 //#endregion
 //#region Reactive Data
@@ -503,6 +502,7 @@ function showImportForm() {
     modalDataForm.value.show();
   });
 }
+
 //#endregion
 </script>
 

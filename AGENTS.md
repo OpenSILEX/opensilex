@@ -1,18 +1,5 @@
 # AGENTS.md — OpenSILEX
 
-## Skills
-
-Versionnés dans `.claude/skills/` (exceptions explicites du `.gitignore` ; le reste de `.claude/` reste ignoré).
-
-| Skill | Usage |
-|---|---|
-<!-- | `opensilex-java` | Écrire, corriger, linter du Java (api/bll/dal, DAO SPARQL, JAX-RS, DTO, migrations, JUnit 4) |
-| `opensilex-vue` | Créer, migrer Vue 2 → 3 ou relire un composant `.vue` |
-| `opensilex-vue3` | Plateforme front : modules, routes, `$opensilex`, i18n, build UMD |
-| `opensilex-review` | Revue de code d'une branche, d'une MR ou d'un commit | -->
-| `opensilex-mr` | Rédiger la MR (titre Conventional Commit, front matter changelog, template) |
-<!-- | `graft`, `codebase-memory` | Navigation dans le code via graphe | -->
-
 ## Setup
 
 - JDK 17 (`java.compiler.version`), Maven 3.9.9, Docker + compose.

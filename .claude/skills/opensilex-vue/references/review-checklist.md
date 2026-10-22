@@ -1,76 +1,111 @@
-# Revue d'un composant Vue OpenSILEX
+# Reviewing an OpenSILEX Vue component
 
-## Déroulé
+## Contents
 
-1. **Délimiter le périmètre.** Les fichiers désignés par l'utilisateur, sinon le diff : `git diff --name-only <base>...HEAD -- '*.vue' '*.ts'` (base habituelle : `vue3/main`).
-2. **Passer le contrôle mécanique** sur ces fichiers :
+- [Steps](#steps)
+- [Manual grid](#manual-grid): structure, typing, UI, reuse, dead code, behaviour
+- [Report format](#report-format)
+
+## Steps
+
+1. **Scope.** The files the user named, otherwise the branch diff against its merge request target:
+   `git diff --name-only <target>...HEAD -- '*.vue' '*.ts'`.
+2. **Run the mechanical check** on those files:
    ```bash
-   .claude/skills/opensilex-vue/scripts/check-vue-conventions.sh <fichiers.vue>
+   .claude/skills/opensilex-vue/scripts/check-vue-conventions.sh <files.vue>
    ```
-   Il signale l'ordre des blocs, `<script setup lang="ts">`, `<style scoped lang="scss">`, la syntaxe de `defineEmits`, les refs de gabarit, `any`, les vestiges Vue 2, les classes Bootstrap, les régions et la place de `defineExpose`. Ses `ERROR` sont des violations certaines. Ses `WARN` sont à examiner : un `ref<InstanceType<…>>` peut être une ref de données légitime, mais c'est rare.
-3. **Faire la revue manuelle**, avec la grille ci-dessous. C'est elle qui trouve les vrais problèmes : le script ne lit pas le sens du code.
-4. **Pour une migration**, comparer avec l'original Vue 2 : `git show origin/develop:<chemin>` (la branche `develop` porte encore le code Vue 2). Chaque filtre, colonne, action et événement de l'ancien composant est soit porté, soit supprimé **volontairement** comme code mort, et la revue dit lequel.
-5. **Rendre le rapport** (format en bas de page).
+   It reports block order, `<script setup lang="ts">`, `<style scoped lang="scss">`, the `defineEmits` syntax, template
+   refs, `any`, Vue 2 leftovers, Bootstrap classes, regions and the place of `defineExpose`. Its `ERROR` lines are certain
+   violations. Its `WARN` lines need a look: a `ref<InstanceType<…>>` can be a legitimate data ref, but rarely is.
+3. **Review by hand** with the grid below. This is where the real problems are found: the script does not read what the
+   code means.
+4. **For a migration**, compare with the Vue 2 original: `git show <vue2-branch>:<path>` (see the Migrate mode of
+   `SKILL.md` to find that branch). Each filter, column, action and event of the old component is either ported or
+   **deliberately** removed as dead code, and the review says which.
+5. **Write the report** (format at the bottom), in the user's language. Report only; fix when asked.
 
-## Grille manuelle
+## Manual grid
 
 ### Structure
 
-- [ ] Blocs dans l'ordre `<template>` → `<script setup lang="ts">` → `<style scoped lang="scss">` → `<i18n>` ; pas de bloc vide.
-- [ ] Région `Public` : `defineEmits`, `defineProps`, `defineModel`, dans cet ordre.
-- [ ] Région `Private` avec ses sous-régions dans l'ordre : Plugins & services → Template refs → Data & Computed → Hooks/watchers → Event handlers → Methods. Un petit fichier peut se limiter à Public / Private.
-- [ ] `defineExpose()` en dernier, et n'expose que ce que le parent appelle réellement (`graft grep` sur le nom de la ref côté parent).
-- [ ] Gestionnaires nommés `on<Événement>` ou `on<Enfant><Événement>`, payload typé, dans la région `Event handlers`. Un gestionnaire en ligne dans le gabarit ne fait qu'une ligne claire ; une fonction fléchée ne sert qu'à passer une variable du scope du gabarit en plus du payload.
+- [ ] Blocks in the order `<template>` → `<script setup lang="ts">` → `<style scoped lang="scss">` → `<i18n>`; no empty
+  block.
+- [ ] `Public` region: `defineEmits`, `defineProps`, `defineModel`, in this order.
+- [ ] `Private` region with its sub-regions in order: Plugins & services → Template refs → Data & Computed → Hooks &
+  watchers → Event handlers → Methods. A small file may keep only Public / Private.
+- [ ] `defineExpose()` last, exposing only what a parent really calls (`git grep` the ref name on the parent side).
+- [ ] Handlers named `on<Event>` or `on<Child><Event>`, typed payload, in the `Event handlers` region. An inline handler
+  in the template is one clear line; an arrow function is used only to pass a template-scope variable along with the
+  payload.
+- [ ] A JSDoc comment on every method or variable whose role is not obvious.
 
-### Typage
+### Typing
 
-- [ ] Aucun `any` : ni `: any`, ni `as any`, ni `ref()` sans type quand l'inférence donne `any`, ni `Record<string, any>`.
-- [ ] Les DTO et services viennent du client généré (`opensilex-core/index`, `opensilex-security/index`, `opensilex-core/api/<x>.service`). Les types d'UI viennent de naive-ui (`DropdownOption`, `DataTableColumns<T>`, `SelectOption`, `TreeSelectOption`, `FormRules`, `FormInst`, `DataTableRowKey`).
-- [ ] Une interface locale existe quand aucun type ne colle à la forme manipulée.
-- [ ] Une assertion de type ciblée n'est tolérée **qu'à la frontière** d'un composant partagé faiblement typé (payload `any` de `select`, `searchMethod: Function` de `TableAsyncView`). Elle ne se propage pas : le reste du composant manipule le type précis.
-- [ ] `defineEmits` en syntaxe tableau nommé : `toto: [payload: string]`.
-- [ ] Refs de gabarit : `useTemplateRef<InstanceType<typeof Composant>>('nom')`, ou le type d'instance naive-ui (`FormInst`…). Jamais `ref<any>(null)` ni `ref(null)`.
+- [ ] No `any`: no `: any`, no `as any`, no untyped `ref()` whose inference gives `any`, no `Record<string, any>`.
+- [ ] DTOs and services come from the generated client (`opensilex-core/index`, `opensilex-security/index`,
+  `opensilex-core/api/<x>.service`). UI types come from naive-ui (`DropdownOption`, `DataTableColumns<T>`,
+  `SelectOption`, `TreeSelectOption`, `FormRules`, `FormInst`, `DataTableRowKey`).
+- [ ] A local interface exists when no type matches the handled shape.
+- [ ] A targeted type assertion appears **only at the boundary** of a weakly typed shared component (`any` payload of
+  `select`, `searchMethod: Function` of `TableAsyncView`). It does not spread: the rest of the component handles the
+  precise type.
+- [ ] `defineEmits` in named-tuple syntax: `toto: [payload: string]`.
+- [ ] Template refs: `useTemplateRef<InstanceType<typeof Component>>('name')`, or the naive-ui instance type
+  (`FormInst`…). No `ref<any>(null)`, no `ref(null)`.
 
 ### UI
 
-- [ ] Plus aucun composant Bootstrap (grille `row`/`col`, `btn`, `card`, `badge`, `table`, `form-group`, `dropdown`, `modal`, `nav-tabs`, `data-bs-*`). Chaque équivalent Naive UI est dans `bootstrap-to-naive.md`. Les utilitaires d'espacement (`mb-2`, `p-3`, `d-flex`) sont tolérés.
-- [ ] Pas de classe Bootstrap résiduelle posée sur un composant Naive UI (`<n-button-group class="btn-group btn-group-sm">`).
-- [ ] Dans l'hôte, chaque `n-*` utilisé est importé depuis `naive-ui` (ou figure dans `create({ components })` de `main.ts` sur la branche courante). Dans un **module d'extension**, qui n'importe pas naive-ui, il doit figurer dans cette liste globale. Sinon la balise reste inerte, sans aucune erreur.
+- [ ] No Bootstrap component left (grid `row`/`col`, `btn`, `card`, `badge`, `table`, `form-group`, `dropdown`, `modal`,
+  `nav-tabs`, `data-bs-*`). Each Naive UI equivalent is in `bootstrap-to-naive.md`. Spacing utilities (`mb-2`, `p-3`,
+  `d-flex`) are fine.
+- [ ] No leftover Bootstrap class on a Naive UI component (`<n-button-group class="btn-group btn-group-sm">`).
+- [ ] In the host, every `n-*` used is imported from `naive-ui` (or listed in `create({ components })` of `main.ts` on
+  the current branch). An **extension module** does not import naive-ui, so the tag must be in that global list.
+  Otherwise the tag stays inert, without any error.
 
-### Réutilisation
+### Reuse
 
-- [ ] Rien n'est réinventé de ce qui existe dans `components/common/` : `TableAsyncView`, `SearchFiltersSidebar`, `FormSelector` et les sélecteurs métier, les `*Button`, `Card`, `Modal`, les champs `*Form` (catalogue dans `common-components.md`).
-- [ ] Aucun composant partagé n'a été modifié sans demande explicite. Si un bug y est trouvé, il est **signalé**, pas corrigé en douce.
-- [ ] Aucun sélecteur bâti sur `FormSelector` n'est enveloppé d'un `n-form-item` : il rend déjà son libellé (`FormField`) et son `n-form-item path`. Le doublon donne deux libellés et deux messages de validation.
-- [ ] Les filtres sont passés comme slot à `SearchFiltersSidebar` ; le composant ne contient pas de second bouton Rechercher ou Réinitialiser.
+- [ ] Nothing reinvents what `components/common/` provides: `TableAsyncView`, `SearchFiltersSidebar`, `FormSelector` and
+  the business selectors, the `*Button`s, `Card`, `Modal`, the `*Form` fields (catalogue in `common-components.md`).
+- [ ] No shared component modified without an explicit request. A bug found there is **reported**, not fixed on the
+  side.
+- [ ] No selector built on `FormSelector` wrapped in an `n-form-item`: it already renders its label (`FormField`) and
+  its `n-form-item path`. The duplicate gives two labels and two validation messages.
+- [ ] Filters are passed as the slot of `SearchFiltersSidebar`; the component has no second Search or Reset button.
 
-### Code mort et fidélité de la migration
+### Dead code and migration fidelity
 
-- [ ] Pas de prop, d'événement, de ref, d'import, de computed ou de méthode inutilisés.
-- [ ] Pas de champ dans l'objet de filtres sans contrôle d'UI qui le modifie, sauf s'il vient de la route ou d'une prop (et c'est alors commenté).
-- [ ] Pas de code commenté recopié de l'ancien composant.
-- [ ] Les raccourcis d'un composant déjà migré n'ont pas été recopiés tels quels (voir « Ne pas recopier » dans `SKILL.md`).
+- [ ] No unused prop, event, ref, import, computed value or method.
+- [ ] No field in the filter object without a UI control that changes it, unless it comes from the route or a prop (and
+  is then commented).
+- [ ] No commented-out code copied from the old component.
+- [ ] The shortcuts of an already migrated component were not copied as is (see "Migrated code is an API source" in
+  `SKILL.md`).
 
-### Comportement
+### Behaviour
 
-- [ ] Les appels d'API passent par `$opensilex.getService<…>` et les erreurs par `$opensilex.errorHandler(error)`. Aucun `catch` ne reste vide.
-- [ ] Les droits sont vérifiés avec `user.hasCredential(credentials.CREDENTIAL_…_ID)` pour toute action de modification ou de suppression.
-- [ ] Aucun texte en dur dans le gabarit : chaque clé existe en **fr et en**, dans le bloc `<i18n>` (préfixé par le nom du composant) ou dans `lang/message-*.json` pour les clés partagées.
-- [ ] Les watchers et `onMounted` ne déclenchent pas deux fois la même recherche au chargement.
-- [ ] Aucun `console.log` de débogage.
+- [ ] API calls go through `$opensilex.getService<…>` and errors through `$opensilex.errorHandler(error)`. No `catch` is
+  left empty.
+- [ ] Rights are checked with `user.hasCredential(credentials.CREDENTIAL_…_ID)` for every update or delete action.
+- [ ] No hard-coded text in the template: every key exists in **en and fr**, in the `<i18n>` block (prefixed with the
+  component name) or in `lang/message-*.json` for shared keys.
+- [ ] Watchers and `onMounted` do not run the same search twice on load.
+- [ ] No debug `console.log`.
 
-## Format du rapport
+## Report format
 
-Constats triés du plus grave au moins grave, un par ligne (exemple fictif) :
+Findings sorted from most to least severe, one per line (fictional example):
 
 ```
-[BLOQUANT] components/foo/FooList.vue:120  template-ref  ref<any>(null) pour la table → useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
-[À CORRIGER] components/foo/FooList.vue:42  bootstrap  <span class="badge"> → <n-tag size="small" round>
-[SUGGESTION] components/foo/FooList.vue:88  dead-code  filters.brand n'a aucun contrôle dans la sidebar → supprimer ou ajouter le champ
+[Bloquant] components/foo/FooList.vue:120  template-ref  ref<any>(null) for the table → useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
+[Important] components/foo/FooList.vue:42  bootstrap  <span class="badge"> → <n-tag size="small" round>
+[Suggestion] components/foo/FooList.vue:88  dead-code  filters.brand has no control in the sidebar → remove it or add the field
 ```
 
-- **BLOQUANT** : casse le comportement, viole le typage (`any`, ref de gabarit non typée), ou modifie un composant partagé sans demande.
-- **À CORRIGER** : convention violée (structure, Bootstrap, emits, régions, i18n manquante, code mort).
-- **SUGGESTION** : lisibilité, nommage, JSDoc manquante sur une méthode non évidente.
+- **Bloquant**: breaks behaviour, breaks typing (`any`, untyped template ref), or modifies a shared component without a
+  request.
+- **Important**: a convention is broken (structure, Bootstrap, emits, regions, missing i18n, dead code).
+- **Suggestion**: readability, naming, missing JSDoc on a non-obvious method.
 
-Terminer par ce qui a été vérifié et ce qui ne l'a pas été. Le build passe-t-il ? La vérification de types a-t-elle pu tourner ? Le rendu dans le navigateur reste à vérifier par l'utilisateur.
+End with what was checked and what was not. Does the build pass? Could a type check run? Rendering in the browser is
+left to the user.

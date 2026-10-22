@@ -1,31 +1,39 @@
 ---
 name: opensilex-vue
-description: Créer, modifier, migrer de Vue 2 vers Vue 3, ou relire un composant .vue du front OpenSILEX selon les conventions de l'équipe. Couvre l'ordre template/script setup/style/i18n, les régions //#region Public/Private, defineEmits en syntaxe tableau, useTemplateRef typé, Naive UI à la place de Bootstrap, la réutilisation des briques common/ (TableAsyncView, SearchFiltersSidebar, FormSelector, boutons d'action), zéro any et la suppression du code mort, selon le document vuejs-file-structure.md de la doc technique. À utiliser dès qu'on écrit, porte, corrige ou revoit un composant Vue OpenSILEX (liste, filtres, formulaire, page de détail, sélecteur), même si l'utilisateur ne parle pas de « conventions ». Create, modify, migrate or review OpenSILEX Vue 3 components.
+description: Creates, migrates from Vue 2, modifies and reviews Vue 3 components of the OpenSILEX front so that they follow the team conventions of the technical documentation page vuejs-file-structure.md - block order, script setup with typed defineEmits, defineProps and defineModel, Public and Private regions, typed template refs, event handlers, no any, Naive UI instead of Bootstrap, reuse of the shared common/ components (TableAsyncView, SearchFiltersSidebar, FormSelector, action buttons), en/fr i18n and removal of dead code. Ships a conventions checker. Use whenever a .vue component or its TypeScript is written, ported, fixed or reviewed in opensilex-front or in an extension module (list, filters, form, modal, detail page, selector), even when the word "conventions" is not used. Also trigger on French requests such as "crée un composant", "migre ce composant en Vue 3", "porte cette liste", "relis ce composant", "revue du composant Vue", "respecte les conventions Vue".
 ---
 
-# Composants Vue OpenSILEX
+# OpenSILEX Vue components
 
-Ce skill fixe **comment s'écrit un composant**. La structure du fichier (régions, ordre, gestionnaires, typage, JSDoc) vient de la documentation technique, [`vuejs-file-structure.md`](../../../opensilex-doc/src/main/resources/technical-documentation/opensilex-front/vuejs-file-structure.md) : c'est elle qui fait foi, et ce skill la complète par les règles d'UI, d'i18n, de réutilisation et de migration. Si le document change, aligne ce skill dessus.
+This skill sets **how a component is written**. The file structure (regions and their order, event handlers, typing,
+JSDoc) comes from the technical documentation page
+[`vuejs-file-structure.md`](../../../opensilex-doc/src/main/resources/technical-documentation/opensilex-front/vuejs-file-structure.md).
+That page is the reference; this skill adds the rules for UI, i18n, reuse and migration. When the page changes, align
+this skill with it.
 
-La **plateforme** (`$opensilex` et les services d'API, routes et menus `opensilex.front.yml`, modules d'extension, build) est décrite dans `opensilex-doc/src/main/resources/technical-documentation/opensilex-front/` (`plugin.md`, `router.md`, `vite.md`) et `opensilex-module/module-frontend-loading.md`. Le skill `opensilex-vue3`, s'il est installé sur ton poste, la couvre aussi ; sur la forme d'un composant, ce skill-ci l'emporte.
+The host front lives in `opensilex-front/front/src`, the shared building blocks in `components/common/`. The platform
+side (the `$opensilex` plugin, routes and menus in `opensilex.front.yml`, extension modules, build) is documented next to
+that page (`plugin.md`, `router.md`, `vite.md`) and in `opensilex-module/module-frontend-loading.md`.
 
-Le front hôte est dans `opensilex-front/front/src`, les briques partagées dans `components/common/`.
+Everything below needs only git, a POSIX shell and the Node toolchain of the repository.
 
-## Choisir le mode
+## Pick the mode
 
-| Demande | Déroulé |
+| Request | Steps |
 |---|---|
-| **Créer** un composant | 1. Chercher la brique existante (`references/common-components.md`, `graft grep`). 2. Partir de `references/component-skeleton.md`, et de `references/list-page.md` pour une liste. 3. Écrire, puis passer « Vérifier ». |
-| **Migrer** un composant Vue 2 | 1. Lire l'original (`git show origin/develop:<chemin>`, la branche `develop` est encore en Vue 2) et inventorier ce qui sert vraiment : filtres, colonnes, actions, événements, props. 2. Écarter le code mort au lieu de le porter. 3. Réécrire selon les conventions avec les briques Vue 3. 4. « Vérifier », puis lister ce qui a été volontairement abandonné. |
-| **Modifier** un composant existant | Le code que tu écris suit les conventions. Ne reformate pas tout le fichier sans demande : signale les écarts restants (sortie du script) dans ton résumé. Exception : en cours de migration, le fichier entier doit être conforme. |
-| **Relire** (revue) | Suivre `references/review-checklist.md` : script, grille manuelle, puis rapport trié par gravité. |
+| **Create** a component | 1. Look for an existing building block: `references/common-components.md`, then `git grep -l <Name> -- opensilex-front/front/src`. 2. Start from `references/component-skeleton.md`, and from `references/list-page.md` for a list page. 3. Write, then run "Verify". |
+| **Migrate** a Vue 2 component | 1. Read the original from a branch that still holds the Vue 2 front (`git show develop:<path>`; check first that `git show develop:package.json` still declares `vue` 2) and list what is actually used: filters, columns, actions, events, props. 2. Drop dead code instead of porting it. 3. Rewrite with the conventions and the Vue 3 building blocks (`references/bootstrap-to-naive.md` for the markup). 4. Verify, then list what was dropped on purpose. |
+| **Modify** a component | Write the new code to the conventions. Do not reformat the whole file unasked, so that the diff stays reviewable: report the remaining deviations (checker output) in the summary. During a migration, the whole file must comply. |
+| **Review** a component or a branch | Follow `references/review-checklist.md`: checker, manual grid, report sorted by severity. Report only; fix when asked. |
 
 ## Conventions
 
-### Fichier
+### File layout
 
-- Blocs dans l'ordre **`<template>` → `<script setup lang="ts">` → `<style scoped lang="scss">` → `<i18n>`**. Pas de bloc vide.
-- Dans `<script setup>`, après les imports et les types locaux, ces régions, avec **ces noms exacts** (le dépôt en compte une trentaine de variantes, ne pas les multiplier) :
+- Blocks in this order: `<template>`, `<script setup lang="ts">`, `<style scoped lang="scss">`, `<i18n>`. Leave out a
+  block that would be empty.
+- In `<script setup>`, after the imports and local types, use these regions with these exact names. The repository
+  already has dozens of spellings; a single one keeps IDE folding and the checker's order test working.
   ```ts
   //#region Public
   //   defineEmits → defineProps (withDefaults) → defineModel
@@ -36,92 +44,142 @@ Le front hôte est dans `opensilex-front/front/src`, les briques partagées dans
   //#region Template refs
   //#region Data & Computed
   //#region Hooks & watchers
-  //#region Event handlers         on<Enfant><Événement>(payload: Type)
+  //#region Event handlers         on<Child><Event>(payload: Type)
   //#region Methods
   //#endregion
 
   defineExpose({ … })
   ```
-  Chaque sous-région se ferme par son `//#endregion`. Un petit composant peut se limiter à `Public` / `Private`, à condition que les éléments de même nature restent groupés.
-- **Gestionnaires d'événements** : l'événement `foo` d'un enfant `Child` est géré par `onFoo` ou `onChildFoo(payload: Type)`, dans la région `Event handlers`, payload typé. Un gestionnaire d'une ligne peut rester en ligne dans le gabarit s'il reste clair (`@updated="emit('saved', item)"`). S'il faut une variable du scope du gabarit en plus du payload, une fonction fléchée appelle la méthode : `@changed="(payload) => onNestedChanged(payload, data)"`.
-- **`defineEmits`** en syntaxe tableau nommé : `defineEmits<{ toto: [payload: string]; closed: [] }>()`. Pas la syntaxe d'overload `(e: 'toto', payload: string): void`, ni `defineEmits(['toto'])`. N'émettre que des événements déclarés, et ne déclarer que ceux qu'on émet.
-- **Refs de gabarit** : `const table = useTemplateRef<InstanceType<typeof TableAsyncView>>('table')`. Pour un composant naive-ui qui expose un type d'instance : `useTemplateRef<FormInst>('formRef')`. Jamais `ref<any>(null)`, `ref(null)` ni `useTemplateRef<any>`.
-- **Injection** : `const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!`, avec ce nom, cette clé et le `!`. Services : `$opensilex.getService<XService>('opensilex.XService')`, **une fois**, au niveau du `setup`.
-- Une méthode ou une variable dont le rôle n'est pas évident porte un commentaire JSDoc `/** … */`.
-- Texte affiché : uniquement par l'i18n, en **fr et en**. Le bloc `<i18n>` est en YAML et préfixé par le nom du composant. Pas de clé empruntée au bloc `<i18n>` local d'un **autre** composant : elle n'existe pas ici.
-- **Clé ou texte traduit ?** Les composants OpenSILEX qui traduisent eux-mêmes reçoivent une **clé** : `label` des boutons, `Card`, `StringView`, `TableField.label` de `TableAsyncView`, `createTitle` / `editTitle` de `useModalFormLogic`, `searchButtonLabelTranslationKey`. Les props `n-*`, `TableView` et le `placeholder` de `FormSelector` reçoivent `t(…)`. Avant de passer `t(...)` à un composant enfant, ouvre-le.
+  Close every sub-region with its `//#endregion`. A short component can keep only `Public` and `Private`, as long as
+  elements of the same kind stay together.
+- **`defineEmits`** uses the named-tuple syntax: `defineEmits<{ toto: [payload: string]; closed: [] }>()`. It is the
+  shortest form that types the payload; avoid the call-overload form `(e: 'toto', payload: string): void` and the
+  untyped `defineEmits(['toto'])`. Emit only declared events, declare only emitted ones.
+- **Event handlers**: event `foo` of a child `Child` is handled by `onFoo` or `onChildFoo(payload: Type)` in the
+  `Event handlers` region, with a typed payload. A one-line handler may stay inline in the template when it reads
+  clearly (`@updated="emit('saved', item)"`). When the handler also needs a variable of the template scope, an arrow
+  function calls the method: `@changed="(payload) => onNestedChanged(payload, data)"`.
+- **Template refs**: `useTemplateRef<InstanceType<typeof TableAsyncView>>('table')`; for a naive-ui component with an
+  instance type, `useTemplateRef<FormInst>('formRef')`. `ref<any>(null)`, `ref(null)` and `useTemplateRef<any>` lose the
+  types of the exposed API.
+- **Injection**: `const $opensilex = inject<OpenSilexVuePlugin>('$opensilex')!`, with this name, this key and the `!`
+  (the host always provides the plugin). Services: `$opensilex.getService<XService>('opensilex.XService')`, once, at
+  `setup` level.
+- A method or variable whose role is not obvious gets a JSDoc comment (`/** … */`).
+- Displayed text goes through i18n, in **en and fr**. The `<i18n>` block is YAML, prefixed with the component name. A
+  key from another component's local `<i18n>` block does not exist in this one.
+- **Key or translated text?** OpenSILEX components that translate by themselves take a **key**: button `label`, `Card`,
+  `StringView`, `TableField.label` of `TableAsyncView`, `createTitle` / `editTitle` of `useModalFormLogic`,
+  `searchButtonLabelTranslationKey`. `n-*` props, `TableView` and the `placeholder` of `FormSelector` take `t(…)`. Open
+  the child component before passing `t(…)` to it: mixing both gives double translations and missing-key warnings.
 
-### Typage : zéro `any`
+### Typing: no `any`
 
-Le `tsconfig` est permissif (`noImplicitAny: false`, `strictNullChecks: false`) et le build ne vérifie pas les types : rien ne t'arrêtera, la discipline est manuelle.
+The `tsconfig` is lenient (`noImplicitAny: false`, `strictNullChecks: false`) and the build does not check types, so
+nothing stops an `any`: the discipline is manual.
 
-- **DTO et services** : ceux du client généré, en `import type` (`opensilex-core/index`, `opensilex-security/index`, `opensilex-core/api/<x>.service`, `opensilex-core/HttpResponse`).
-- **Types d'UI** : ceux de naive-ui (`DropdownOption`, `DataTableColumns<T>`, `SelectOption`, `TreeSelectOption`, `FormRules`, `FormInst`, `DataTableRowKey`).
-- **Store** : `useStore() as OpenSilexStore` (`@/models/Store`).
-- **Interface locale** quand aucun type existant ne correspond à la forme manipulée : filtres d'une liste, options de `searchMethod`, ligne agrégée.
-- **Assertion ciblée** tolérée **à la frontière** d'un composant partagé faiblement typé (`searchMethod: Function` de `TableAsyncView`, `data.item` d'un slot `#cell`, payload `any` d'un `select`). Elle ne se propage pas : le paramètre du gestionnaire porte le type précis, et le reste du composant ne voit que lui.
+- **DTOs and services**: those of the generated client, as `import type` (`opensilex-core/index`,
+  `opensilex-security/index`, `opensilex-core/api/<x>.service`, `opensilex-core/HttpResponse`).
+- **UI types**: those of naive-ui (`DropdownOption`, `DataTableColumns<T>`, `SelectOption`, `TreeSelectOption`,
+  `FormRules`, `FormInst`, `DataTableRowKey`).
+- **Store**: `useStore() as OpenSilexStore` (`@/models/Store`).
+- **Local interface** when no existing type matches the handled shape: list filters, `searchMethod` options, an
+  aggregated row.
+- **Targeted assertion** only **at the boundary** of a weakly typed shared component (`searchMethod: Function` of
+  `TableAsyncView`, `data.item` of a `#cell` slot, the `any` payload of a `select`). It does not spread: the handler's
+  parameter carries the precise type, and the rest of the component only sees that type.
 
-### UI : Naive UI, pas Bootstrap
+### UI: Naive UI, not Bootstrap
 
-- Remplacer **systématiquement** les composants Bootstrap (grille `row`/`col`, `btn`, `card`, `badge`, `table`, `form-group`, `dropdown`, `modal`, `nav-tabs`, `data-bs-*`) par leur équivalent Naive UI : `n-layout`, `n-grid`, `n-form-item`, `n-data-table`, `n-dropdown`, `n-tag`, `n-tabs`… Correspondances dans `references/bootstrap-to-naive.md`.
-- Pas de classe Bootstrap laissée sur un composant naive (`<n-button-group class="btn-group btn-group-sm">`). Les utilitaires d'espacement (`mb-2`, `p-3`, `d-flex`) sont tolérés.
-- **Importer chaque `n-*`** depuis `naive-ui` dans le composant (`import { NCard, NTag } from 'naive-ui'`). Seuls quelques composants sont globaux (`create({ components: […] })` dans `opensilex-front/front/src/main.ts`). La liste dépend de la branche (sur `vue3/main` : `NButton`, `NDataTable`, `NDropdown`, `NTree`) : lis-la sur la branche courante avant d'affirmer qu'un `n-*` est global. Un `n-*` non importé et non global ne rend rien, sans erreur.
+- Replace Bootstrap components (grid `row`/`col`, `btn`, `card`, `badge`, `table`, `form-group`, `dropdown`, `modal`,
+  `nav-tabs`, `data-bs-*`) with their Naive UI equivalent: `references/bootstrap-to-naive.md`.
+- Leave no Bootstrap class on a naive component (`<n-button-group class="btn-group btn-group-sm">`). Spacing utilities
+  (`mb-2`, `p-3`, `d-flex`) are fine.
+- **Import every `n-*`** from `naive-ui` in the component (`import { NCard, NTag } from 'naive-ui'`). Only a few are
+  registered globally, in `create({ components: […] })` of `opensilex-front/front/src/main.ts`, and the list differs
+  between branches: read it on the current branch before calling an `n-*` global. A tag that is neither imported nor
+  global renders nothing, without any error.
 
-### Réutiliser, sans modifier
+### Reuse without modifying
 
-- Chercher dans `components/common/` avant d'écrire quoi que ce soit : table asynchrone (`TableAsyncView`), panneau de filtres (`SearchFiltersSidebar`), sélecteurs (`FormSelector` et la trentaine de sélecteurs métier bâtis dessus), boutons d'action (`CreateButton`, `EditButton`, `DeleteButton`, `DetailButton`), `Card`, `Modal` + `useModalFormLogic`, champs `*Form`. Catalogue et API : `references/common-components.md`.
-- **Ne pas modifier ces briques** sans demande explicite : d'autres listes et vues migrées en dépendent. Un défaut s'y signale ; il ne se corrige pas en douce.
-- **Avant d'envelopper un composant enfant, ouvre son gabarit.** Un sélecteur bâti sur `FormSelector` rend déjà son libellé et son `n-form-item path` : il ne s'enveloppe pas. Les champs `*Form` (`InputForm`…) se placent dans un `n-form-item path` **sans** `label`, c'est le champ qui porte le libellé. Tableau complet dans `references/common-components.md`.
-- N'utiliser que ce qu'une brique **expose** (`defineExpose`) et **émet** réellement. Lire un état interne non exposé renvoie `undefined`, sans erreur.
+- Search `components/common/` before writing anything: server-side table (`TableAsyncView`), filter panel
+  (`SearchFiltersSidebar`), selectors (`FormSelector` and the business selectors built on it), action buttons
+  (`CreateButton`, `EditButton`, `DeleteButton`, `DetailButton`), `Card`, `Modal` + `useModalFormLogic`, `*Form` fields.
+  Catalogue and API: `references/common-components.md`.
+- **Do not modify these building blocks** unless asked: migrated lists and views depend on them. Report a defect found
+  there instead of fixing it on the side.
+- **Open a child component's template before wrapping it.** A selector built on `FormSelector` already renders its label
+  and its `n-form-item path`, so it is not wrapped. `*Form` fields (`InputForm`…) go in an `n-form-item path` **without**
+  `label`: the field carries the label. Full table in `references/common-components.md`.
+- Use only what a building block **exposes** (`defineExpose`) and actually **emits**. Reading non-exposed internal state
+  returns `undefined`, without error.
 
-### Code mort
+### Dead code
 
-Une migration n'est pas une copie fidèle bug pour bug. Supprimer ce que l'ancien composant traînait :
+A migration is not a bug-for-bug copy. Remove what the old component carried along:
 
-- props, refs, imports, computed ou méthodes inutilisés ;
-- champs de filtre sans contrôle d'UI correspondant ;
-- props passées à un enfant qui ne les déclare pas, souvent héritées de l'ancien `opensilex-ModalForm` (`initForm`, `successMessage`, `modalSize`) ;
-- code commenté et `console.log` ;
-- syntaxes Vue 2 mortes (`.sync`, `this.$refs`, `$listeners`).
+- unused props, refs, imports, computed values or methods;
+- filter fields without a matching UI control;
+- props passed to a child that does not declare them, often inherited from the old `opensilex-ModalForm`
+  (`initForm`, `successMessage`, `modalSize`);
+- commented-out code and `console.log`;
+- dead Vue 2 syntax (`.sync`, `this.$refs`, `$listeners`).
 
-Dire dans le résumé ce qui a été retiré, pour que l'utilisateur puisse contester.
+Say in the summary what was removed, so that the user can object.
 
-### Ne pas recopier un composant déjà migré sans le questionner
+### Migrated code is an API source, not a style model
 
-Le code existant est hétérogène : sur 321 `.vue`, 118 ont encore les emits en overload, 53 `ref<any>(null)`, 162 contiennent `any`, et seuls 26 ont la région `Public`. Un composant migré est une source d'**API** (quelles props, quels événements), pas un **modèle de style**. Raccourcis repérés dans les listes migrées, à ne pas reproduire :
+The existing code is heterogeneous: many migrated components still use overload emits, `ref<any>(null)` or `any`, and
+few have the `Public` region. Read a migrated component for its **API** (which props, which events), not for its style.
+Shortcuts found in migrated lists, not to be reproduced:
 
-- `:filtersCollapsed="…"` au lieu de `v-model:filtersCollapsed` sur `SearchFiltersSidebar` (9 listes), ce qui empêche le panneau de se refermer après une recherche ;
-- `n-form-item` autour de `TypeForm` ou d'un sélecteur bâti sur `FormSelector`, plus le hack CSS `:deep(.compact-form-item)` pour cacher le libellé vide ;
-- lecture d'états internes de `TableAsyncView` non exposés (`onlySelected`, `selectAll`, `totalRow`) et écoute de `@refreshed` / `@selectall`, jamais émis ;
-- `t(...)` passé à un composant qui traduit lui-même (double traduction) ;
-- `class="btn-group btn-group-sm"` sur `n-button-group`, `badge badge-pill`, `row` / `col` ;
-- `ref<any>(null)`, `useTemplateRef<any>`, `as any`, `null as any` ;
-- `n-*` utilisé sans import (`<n-p>` dans `ProjectList`) ;
-- filtres réinitialisés en recopiant le littéral au lieu d'une fabrique `getEmptyFilter()`.
+- `:filtersCollapsed="…"` instead of `v-model:filtersCollapsed` on `SearchFiltersSidebar`, so the panel never closes
+  after a search;
+- `n-form-item` around `TypeForm` or a selector built on `FormSelector`, plus the CSS hack `:deep(.compact-form-item)`
+  to hide the empty label;
+- reading non-exposed `TableAsyncView` state (`onlySelected`, `selectAll`, `totalRow`) and listening to `@refreshed` /
+  `@selectall`, which are never emitted;
+- `t(...)` passed to a component that translates by itself (double translation);
+- `class="btn-group btn-group-sm"` on `n-button-group`, `badge badge-pill`, `row` / `col`;
+- `ref<any>(null)`, `useTemplateRef<any>`, `as any`, `null as any`;
+- an `n-*` used without import;
+- filters reset by copying the literal again instead of a `getEmptyFilter()` factory.
 
-Vérifie ce qui est correct au lieu de reproduire le voisin.
+Check what is correct instead of copying the neighbouring file.
 
-## Vérifier
+## Verify
 
-1. **Conventions**, sur les fichiers touchés :
+1. **Conventions**, on the touched files:
    ```bash
-   .claude/skills/opensilex-vue/scripts/check-vue-conventions.sh <fichiers.vue>
+   .claude/skills/opensilex-vue/scripts/check-vue-conventions.sh <files.vue>
    ```
-   Sans argument, il prend les `.vue` modifiés par rapport à `HEAD`. Il ne doit rester aucune `ERROR` dans le code que tu as écrit.
-2. **Build**, avec Node 22 (le Node 18 système fait planter rolldown) :
+   Without arguments it checks the `.vue` files changed against `HEAD` and the untracked ones. No `ERROR` may remain in
+   the code written; each `WARN` deserves a look.
+2. **Build**, with Node 22, the version pinned in `opensilex-parent/pom.xml` (older versions break the vite/rolldown
+   build; check `node --version` first):
    ```bash
-   export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; cd opensilex-front/front && nvm exec 22 npm run build
+   cd opensilex-front/front && npm run build
    ```
-   `vue`, `vite` et `naive-ui` sont déclarés dans le `package.json` **racine**. Si le build échoue sur `Cannot find module 'vite'` ou `'naive-ui'`, ces dépendances ne sont pas installées : le dire, et proposer `nvm exec 22 npm install` à la racine plutôt que de le lancer sans accord.
-3. **Types : le dire franchement.** `npm run build` (`vite build`) **ne vérifie pas les types**. Il efface les `import type`, donc un mauvais chemin de type ou un `any` passent. `vue-tsc` n'est pas une dépendance du projet. De plus, `opensilex-core/front/types/opensilex-core.d.ts`, que le `tsconfig` référence, est généré par le build Maven et peut manquer. Ne prétends donc jamais à une vérification de types complète. Écris plutôt : « build OK, vérification de types (vue-tsc) non disponible dans le projet ».
-4. **Navigateur** : le fonctionnement réel (rendu, filtres, actions, sélection) est vérifié **par l'utilisateur**, sauf s'il demande explicitement que tu le fasses. Termine en listant ce qu'il doit regarder.
+   `vue`, `vite` and `naive-ui` are declared in the **root** `package.json`. If the build fails on
+   `Cannot find module 'vite'` or `'naive-ui'`, the dependencies are not installed: say so and suggest `npm install` at
+   the root rather than running it without agreement.
+3. **Types: say it plainly.** `npm run build` (`vite build`) does not check types: it strips `import type`, so a wrong
+   type path or an `any` gets through. `vue-tsc` is not a project dependency, and
+   `opensilex-core/front/types/opensilex-core.d.ts`, referenced by the `tsconfig`, is generated by the Maven build and
+   may be missing. Never claim a full type check; write "build OK, type check (vue-tsc) not available in the project".
+4. **Browser**: the user checks the real behaviour (rendering, filters, actions, selection), unless they explicitly ask
+   for it to be done here. End by listing what they should look at.
 
-## Références
+## References
 
-- `references/component-skeleton.md` : squelette complet et conforme sur un cas concret, plus la version courte.
-- `references/list-page.md` : page de liste (`n-layout` + `SearchFiltersSidebar` + `TableAsyncView` + actions), vue propriétaire du formulaire, détail et onglets.
-- `references/common-components.md` : API des briques `common/`, qui enveloppe quoi, ce qui est global, défauts connus.
-- `references/bootstrap-to-naive.md` : correspondances Bootstrap → Naive UI, avec exemple.
-- `references/review-checklist.md` : grille de revue et format du rapport.
-- `scripts/check-vue-conventions.sh` : contrôle mécanique des conventions.
-- Source des conventions : `opensilex-doc/src/main/resources/technical-documentation/opensilex-front/vuejs-file-structure.md`.
+Read only the file the task needs.
+
+- `references/component-skeleton.md`: when creating a component. A complete compliant component on a concrete case, a
+  short one, and the modal form pattern.
+- `references/list-page.md`: for a list page. Filter panel, server-side table, row actions, the view that owns the form,
+  detail page and tabs.
+- `references/common-components.md`: before using or wrapping a `common/` building block. API, which component renders
+  its own label, global naive-ui components, known defects.
+- `references/bootstrap-to-naive.md`: when the markup has Bootstrap classes, usually during a migration.
+- `references/review-checklist.md`: for a review. Steps, manual grid, report format.
+- `scripts/check-vue-conventions.sh`: run it, no need to read it. Mechanical convention check.

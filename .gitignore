@@ -2,6 +2,12 @@
 .*/
 !/opensilex-doc/src/main/resources/*/.vitepress/
 !/.gitignore
+# Claude Code: version only the shared project skills, never personal settings (.claude/settings.local.json ...)
+!/.claude/
+/.claude/*
+!/.claude/skills/
+/.claude/skills/*
+!/.claude/skills/opensilex-mr/
 target/
 node_modules/
 **/nb-configuration.xml

@@ -2,6 +2,7 @@ OpenSilex  architecture
 =======================
 
 This document present the general technical architecture of OpenSilex.
+The names of Java packages, types, methods and constants are described in [java-naming-conventions.md](./java-naming-conventions.md).
 
 ## Keywords
 

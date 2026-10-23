@@ -17,7 +17,7 @@ docker compose up -d                                # dans opensilex-dev-tools/s
 opensilex dev install [-r]                          # init des données (-r = reset)
 opensilex dev start [--no-front-dev]                # serveur (+ hot reload front par défaut)
 cd opensilex-front/front && npm run serve           # front seul ; npm run build pour le bundle
-python3 ~/.claude/skills/opensilex-java/scripts/lint.py [--fix]        # lint Java
+python3 .claude/skills/opensilex-java/scripts/lint.py [--fix]          # lint Java
 python3 .claude/skills/opensilex-vue/scripts/check_vue_conventions.py  # lint Vue
 ```
 
@@ -25,7 +25,7 @@ Il n'y a ni typecheck ni lint front fiable : `npm run lint` appelle `vite lint`,
 
 ## Code style
 
-- Java : formatage Google Java Style ; classes en PascalCase, membres en camelCase ; couches `api/` (`*API`, `*DTO`), `bll/` (`*Logic`), `dal/` (`*Model`, `*DAO`).
+- Java : formatage Google Java Style ; classes en PascalCase, membres en camelCase ; couches `api/` (`*API`, `*DTO`), `bll/` (`*Logic`), `dal/` (`*Model`, `*DAO`). Règles de nommage : `opensilex-doc/src/main/resources/technical-documentation/architecture/java-naming-conventions.md`.
 - JSON en snake_case : les champs des DTO restent en camelCase et portent `@JsonProperty("snake_case")`.
 - Vue 3 : `<script setup lang="ts">`, composants en PascalCase enregistrés en `opensilex-<Name>`, Naive UI (pas Bootstrap), i18n en/fr, aucun `any`.
 - Imports front : alias `@/…` et `opensilex-core/…` plutôt que des chemins relatifs. Guillemets : suivre le fichier.

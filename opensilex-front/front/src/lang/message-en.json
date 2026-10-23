@@ -947,6 +947,42 @@
                 "placeholder": "Select a germplasm",
                 "placeholder-multiple": "Select one or more germplasm",
                 "filter-search-no-result": "No germplasm found"
+            },
+            "list": {
+                "name": "Name",
+                "rdfType": "Type",
+                "speciesLabel": "Species",
+                "update": "Update Germplasm",
+                "delete": "Delete Germplasm",
+                "selectLabel": "Select Germplasm",
+                "selected": "Selected Germplasm",
+                "export": "Export Germplasm list",
+                "export-all": "Export all",
+                "display": "Display",
+                "selected-all": "All Germplasm",
+                "is_public": "Visibility",
+                "filter": {
+                    "description": "Germplasm Search",
+                    "species": "Species",
+                    "species-placeholder": "Select a species",
+                    "year": "Production year",
+                    "year-placeholder": "Enter a year",
+                    "institute": "Institute code",
+                    "institute-placeholder": "Enter an institute code",
+                    "label": "Name",
+                    "label-placeholder": "Enter germplasm name",
+                    "rdfType-placeholder": "Select a germplasm type",
+                    "experiment": "Experiment",
+                    "uri": "URI",
+                    "uri-placeholder": "Enter a part of an uri",
+                    "metadataKey": "Attribute name",
+                    "germplasm-group": "Germplasm Group",
+                    "parents": "Parents",
+                    "is_public": "Visibility",
+                    "is_public_true": "Public",
+                    "is_public_false": "Private",
+                    "is_public-placeholder": "Select germplasm visibility"
+                }
             }
         },
         "scientificObjects": {

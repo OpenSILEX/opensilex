@@ -930,6 +930,42 @@
                 "placeholder": "Sélectionner une ressource génétique",
                 "placeholder-multiple": "Sélectionner une ou plusieurs ressources génétiques",
                 "filter-search-no-result": "Aucune ressource génétique trouvée"
+            },
+            "list": {
+                "name": "Nom",
+                "rdfType": "Type",
+                "speciesLabel": "Espèce",
+                "update": "Editer le germplasm",
+                "delete": "Supprimer le germplasm",
+                "selectLabel": "Sélection de Ressources Génétiques",
+                "selected": "Ressource(s) Génétique(s) Sélectionnée(s)",
+                "export": "Exporter la liste",
+                "export-all": "Tout exporter",
+                "display": "Affichage",
+                "selected-all": "Toutes les ressources génétiques",
+                "is_public": "Visibilité",
+                "filter": {
+                    "description": "Recherche de Ressources Génétiques",
+                    "species": "Espèce",
+                    "species-placeholder": "Sélectionner une espèce",
+                    "year": "Année de production",
+                    "year-placeholder": "Entrer une année",
+                    "institute": "Code Institut",
+                    "institute-placeholder": "Entrer le code d'un institut",
+                    "label": "Nom",
+                    "label-placeholder": "Entrer un nom de germplasm",
+                    "rdfType-placeholder": "Sélectionner un type de germplasm",
+                    "experiment": "Expérimentation",
+                    "uri": "URI",
+                    "uri-placeholder": "Entrer une partie d'une uri",
+                    "metadataKey": "Nom de l'attribut",
+                    "germplasm-group": "Groupe de ressources génétiques",
+                    "parents": "Parents",
+                    "is_public": "Visibilité",
+                    "is_public_true": "Publique",
+                    "is_public_false": "Privé",
+                    "is_public-placeholder": "Sélectionner la visibilité du germplasm"
+                }
             }
         },
         "scientificObjects": {

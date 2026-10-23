@@ -16,7 +16,7 @@
           <SearchFilterField
               @search="refresh()"
               @clear="reset()"
-              label="GermplasmList.filter.description"
+              label="component.germplasms.list.filter.description"
               :showAdvancedSearch="true"
               class="searchFilterField"
               advanced-search-label="">
@@ -27,7 +27,7 @@
                   <TypeForm
                       v-model:type="filter.rdf_type"
                       :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
-                      placeholder="GermplasmList.filter.rdfType-placeholder"
+                      placeholder="component.germplasms.list.filter.rdfType-placeholder"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                   ></TypeForm>
@@ -38,8 +38,8 @@
               <div>
                 <FilterField>
                   <FormSelector
-                      label="GermplasmList.filter.species"
-                      placeholder="GermplasmList.filter.species-placeholder"
+                      label="component.germplasms.list.filter.species"
+                      placeholder="component.germplasms.list.filter.species-placeholder"
                       :multiple="false"
                       v-model:selected="filter.species"
                       :options="species"
@@ -52,10 +52,10 @@
               <!-- Year -->
               <div>
                 <FilterField>
-                  <label>{{ $t('GermplasmList.filter.year') }}</label>
+                  <label>{{ $t('component.germplasms.list.filter.year') }}</label>
                   <StringFilter
                       v-model:filter="filter.production_year"
-                      placeholder="GermplasmList.filter.year-placeholder"
+                      placeholder="component.germplasms.list.filter.year-placeholder"
                       type="number"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
@@ -67,10 +67,10 @@
               <!-- Institute -->
               <div>
                 <FilterField>
-                  <label>{{ $t('GermplasmList.filter.institute') }}</label>
+                  <label>{{ $t('component.germplasms.list.filter.institute') }}</label>
                   <StringFilter
                       v-model:filter="filter.institute"
-                      placeholder="GermplasmList.filter.institute-placeholder"
+                      placeholder="component.germplasms.list.filter.institute-placeholder"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                   ></StringFilter>
@@ -81,10 +81,10 @@
               <!-- Name -->
               <div>
                 <FilterField>
-                  <label>{{ $t('GermplasmList.filter.label') }}</label>
+                  <label>{{ $t('component.germplasms.list.filter.label') }}</label>
                   <StringFilter
                       v-model:filter="filter.name"
-                      placeholder="GermplasmList.filter.label-placeholder"
+                      placeholder="component.germplasms.list.filter.label-placeholder"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                   ></StringFilter>
@@ -96,7 +96,7 @@
               <div v-if="!experimentUri">
                 <FilterField>
                   <ExperimentSelector
-                      label="GermplasmList.filter.experiment"
+                      label="component.germplasms.list.filter.experiment"
                       v-model:experiments="filter.experiment"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
@@ -109,7 +109,7 @@
               <div>
                 <FilterField>
                   <GermplasmSelector
-                      label="GermplasmList.filter.parents"
+                      label="component.germplasms.list.filter.parents"
                       :multiple="true"
                       v-model:germplasm="filter.parent_germplasms"
                       class="searchFilter"
@@ -122,7 +122,7 @@
               <div>
                 <FilterField>
                   <GermplasmGroupSelector
-                      label="GermplasmList.filter.germplasm-group"
+                      label="component.germplasms.list.filter.germplasm-group"
                       :multiple="false"
                       v-model:germplasmGroup="filter.germplasm_group"
                       class="searchFilter"
@@ -134,10 +134,10 @@
               <!-- URI -->
               <div>
                 <FilterField>
-                  <label>{{ $t('GermplasmList.filter.uri') }}</label>
+                  <label>{{ $t('component.germplasms.list.filter.uri') }}</label>
                   <StringFilter
                       v-model:filter="filter.uri"
-                      placeholder="GermplasmList.filter.uri-placeholder"
+                      placeholder="component.germplasms.list.filter.uri-placeholder"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                   ></StringFilter>
@@ -153,7 +153,7 @@
                 <FilterField>
                   <GermplasmAttributesSelector
                       v-model:germplasmAttribute="filter.metadataKey"
-                      label="GermplasmList.filter.metadataKey"
+                      label="component.germplasms.list.filter.metadataKey"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                   ></GermplasmAttributesSelector>
@@ -176,16 +176,16 @@
               <div>
                 <FilterField :fullWidth="true">
                   <FormSelector
-                      :label="$t('GermplasmList.filter.is_public')"
+                      :label="$t('component.germplasms.list.filter.is_public')"
                       :options="[
-                                                { id: true, label: $t('GermplasmList.filter.is_public_true') },
-                                                { id: false, label: $t('GermplasmList.filter.is_public_false') }
+                                                { id: true, label: $t('component.germplasms.list.filter.is_public_true') },
+                                                { id: false, label: $t('component.germplasms.list.filter.is_public_false') }
                                               ]"
                       v-model:selected="filter.is_public"
                       :async="false"
                       :multiple="false"
                       :showCount="false"
-                      :placeholder="$t('GermplasmList.filter.is_public-placeholder')"
+                      :placeholder="$t('component.germplasms.list.filter.is_public-placeholder')"
                   />
                 </FilterField>
 
@@ -207,7 +207,7 @@
           @unselect="$emit('unselect', $event)"
           @selectall="$emit('selectall', $event)"
           defaultSortBy="label"
-          labelNumberOfSelectedRow="GermplasmList.selected"
+          labelNumberOfSelectedRow="component.germplasms.list.selected"
           iconNumberOfSelectedRow="fa#seedling"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
@@ -216,10 +216,10 @@
               dropright
               class="mb-2 mr-2"
               :small="true"
-              :text="$t('VariableList.display')">
+              :text="$t('component.germplasms.list.display')">
 
             <b-dropdown-item-button @click="clickOnlySelected()">
-              {{ onlySelected ? $t('GermplasmList.selected-all') : $t("component.common.selected-only") }}
+              {{ onlySelected ? $t('component.germplasms.list.selected-all') : $t("component.common.selected-only") }}
             </b-dropdown-item-button>
             <b-dropdown-item-button @click="resetSelected()">{{ $t("component.common.resetSelected") }}
             </b-dropdown-item-button>
@@ -230,7 +230,7 @@
               class="mb-2 mr-2"
               :small="true"
               :disabled="numberOfSelectedRows == 0"
-              text=actions>
+              :text="$t('component.common.actions')">
             <b-dropdown-item-button
                 v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
                 @click="createDocument()"
@@ -238,7 +238,7 @@
             </b-dropdown-item-button>
             <b-dropdown-item-button
                 @click="exportCSV(false)"
-            >{{ $t('GermplasmList.export') }}
+            >{{ $t('component.germplasms.list.export') }}
             </b-dropdown-item-button>
           </b-dropdown>
 
@@ -247,7 +247,7 @@
               class="mb-2 mr-2"
               @click="exportCSV(true)"
               :disabled="tableRef?.getTotalRow() === 0"
-              label="ScientificObjectList.export-all"
+              label="component.germplasms.list.export-all"
           ></CreateButton>
 
         </template>
@@ -265,7 +265,7 @@
               icon="ik#ik-lock"
               class="text-secondary"
               style="font-size: 1.2em"
-              :title="$t('GermplasmList.filter.is_public_false')"
+              :title="$t('component.germplasms.list.filter.is_public_false')"
           />
         </template>
 
@@ -274,13 +274,13 @@
             <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
                 @click="emit('onEdit', data.item.uri)"
-                label="GermplasmList.update"
+                label="component.germplasms.list.update"
                 :small="true"
             ></EditButton>
             <DeleteButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
                 @click="deleteGermplasm(data.item.uri)"
-                label="GermplasmList.delete"
+                label="component.germplasms.list.delete"
                 :small="true"
             ></DeleteButton>
           </b-button-group>
@@ -477,21 +477,21 @@ const fields = computed(() => {
   let tableFields = [
     {
       key: nameFieldLabel.value,
-      label: "GermplasmList.name",
+      label: "component.germplasms.list.name",
       sortable: true
     },
     {
       key: "rdf_type_name",
-      label: "GermplasmList.rdfType",
+      label: "component.germplasms.list.rdfType",
       sortable: true
     },
     {
       key: "species_name",
-      label: "GermplasmList.speciesLabel"
+      label: "component.germplasms.list.speciesLabel"
     },
     {
       key: "germplasm_is_public",
-      label: "GermplasmList.is_public"
+      label: "component.germplasms.list.is_public"
     }
 
   ];
@@ -698,92 +698,3 @@ defineExpose({
   border-left: none !important;
 }
 </style>
-
-<i18n>
-
-en:
-  GermplasmList:
-    uri: URI
-    name: Name
-    rdfType: Type
-    fromSpecies: Species URI
-    speciesLabel: Species
-    update: Update Germplasm
-    delete: Delete Germplasm
-    selectLabel: Select Germplasm
-    selected: Selected Germplasm
-    export: Export Germplasm list
-    selected-all: All Germplasm
-    is_public: Visibility
-
-    filter:
-      description: Germplasm Search
-      species: Species
-      species-placeholder: Select a species
-      year: Production year
-      year-placeholder: Enter a year
-      institute: Institute code
-      institute-placeholder: Enter an institute code
-      label: Name
-      label-placeholder: Enter germplasm name
-      rdfType: Type
-      rdfType-placeholder: Select a germplasm type
-      experiment: Experiment
-      experiment-placeholder: Select an experiment
-      uri: URI
-      uri-placeholder: Enter a part of an uri
-      search: Search
-      reset: Reset
-      metadataKey: Attribute name
-      metadataValue: Attribute value
-      germplasm-group: Germplasm Group
-      parents: Parents
-      is_public: Visibility
-      is_public_true: Public
-      is_public_false: Private
-      is_public-placeholder: Select germplasm visibility
-
-fr:
-  GermplasmList:
-    uri: URI
-    label: Nom
-    rdfType: Type
-    fromSpecies: URI de l'espèce
-    speciesLabel: Espèce
-    update: Editer le germplasm
-    delete: Supprimer le germplasm
-    selectLabel: Sélection de Ressources Génétiques
-    selected: Ressource(s) Génétique(s) Sélectionnée(s)
-    export: Exporter la liste
-    selected-all: Toutes les ressources génétiques
-    is_public: Visibilité
-
-
-    filter:
-      description: Recherche de Ressources Génétiques
-      species: Espèce
-      species-placeholder: Sélectionner une espèce
-      year: Année de production
-      year-placeholder: Entrer une année
-      institute: Code Institut
-      institute-placeholder: Entrer le code d'un institut
-      label: Nom
-      label-placeholder: Entrer un nom de germplasm
-      rdfType: Type
-      rdfType-placeholder: Sélectionner un type de germplasm
-      experiment: Expérimentation
-      experiment-placeholder: Sélectionner une expérimentation
-      uri: URI
-      uri-placeholder: Entrer une partie d'une uri
-      search: Rechercher
-      reset: Réinitialiser
-      metadataKey: Nom de l'attribut
-      metadataValue: Valeur de l'attribut
-      germplasm-group: Groupe de ressources génétiques
-      parents: Parents
-      is_public: Visibilité
-      is_public_true: Publique
-      is_public_false: Privé
-      is_public-placeholder: Sélectionner la visibilité du germplasm
-
-</i18n>

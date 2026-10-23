@@ -10,7 +10,7 @@
     <template #header>
       <div class="modal-title">
         <i class="ik ik-search mr-1"></i>
-        {{ $t('GermplasmList.selectLabel') }}
+        {{ $t('component.germplasms.list.selectLabel') }}
       </div>
     </template>
 

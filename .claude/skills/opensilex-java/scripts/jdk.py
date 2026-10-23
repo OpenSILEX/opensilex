@@ -14,8 +14,7 @@ Why: the `java` found first on PATH is often older than the project release (a J
 `release 17`), and Maven silently follows it. Never trust the shell default: go through this script.
 
 Override the search with OPENSILEX_JAVA_HOME=/path/to/jdk. The release is read from opensilex-parent/pom.xml
-(first <java.compiler.version>; the opt-in `for-java-11` profile that overrides it further down the file is
-ignored on purpose).
+(<java.compiler.version>).
 """
 import glob
 import os

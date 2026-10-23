@@ -1141,7 +1141,7 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <!-- see https://openjdk.org/jeps/247, java 11 is use in for-java-11 profile -->
+                    <!-- see https://openjdk.org/jeps/247 -->
                     <release>${java.compiler.version}</release>
                     <compilerArgument>-proc:none</compilerArgument>
                     <!--                    <compilerArgs>
@@ -2126,12 +2126,6 @@ Ubuntu 22.04 has upgraded libssl to 3 and does not propose libssl1.1-->
                 <skipIntegrationTest>true</skipIntegrationTest>
                 <ignoreMavenPluginVersion>true</ignoreMavenPluginVersion>
                 <skipTests>true</skipTests>
-            </properties>
-        </profile>
-        <profile>
-            <id>for-java-11</id>
-            <properties>
-                <java.compiler.version>11</java.compiler.version>
             </properties>
         </profile>
 

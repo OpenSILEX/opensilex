@@ -1,16 +1,12 @@
 # Java practices for the release defined in the project
 
-**Source of truth**: `java.compiler.version` in `opensilex-parent/pom.xml` (first occurrence; read it with
+**Source of truth**: `java.compiler.version` in `opensilex-parent/pom.xml` (read it with
 `scripts/jdk.py level`). It feeds `maven-compiler-plugin <release>`, so the compiler rejects every language feature and
 API newer than that release. Value when this file was written: **17**. README: "our project is tested with JDK 17". Annotation processing is
 disabled (`-proc:none`); there is no `-Werror`.
 
 > This file is written for release 17. If `jdk.py level` prints another number, re-validate each row of the tables below
 > against that release before using it, and update the file.
-
-The opt-in profile `-Pfor-java-11` sets `java.compiler.version=11`, but it is **stale**: 317 `.toList()` calls
-(Java 16) in 127 files and 3 records (Java 16) cannot compile with release 11. Do not target 11, do not use that
-profile as an argument against Java 12-17 features.
 
 ## 1. What the code base actually uses (census over 1,155 files)
 

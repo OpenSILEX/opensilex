@@ -60,7 +60,7 @@
                 :label="t('component.experiment.view.experiment-experiments')"
                 v-model:experiments="filter.experiments"
                 :multiple="true"
-                @select="updateSOFilter"
+                @selectionChange="updateSOFilter"
                 @clear="updateSOFilter"
                 class="searchFilter"
                 :key="resetExperimentSelectorKey"

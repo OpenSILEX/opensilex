@@ -18,8 +18,7 @@
           v-model:facilities="formState.from"
           :multiple="false"
           :required="fromRequired"
-          @select="updateRequiredProps"
-          @clear="updateRequiredProps"
+          @selectionChange="updateRequiredProps"
           :helpMessage="t('LocationForm.from-help')"
         />
       </div>
@@ -30,8 +29,7 @@
           v-model:facilities="formState.to"
           :multiple="false"
           :required="toRequired"
-          @select="updateRequiredProps"
-          @clear="updateRequiredProps"
+          @selectionChange="updateRequiredProps"
           :helpMessage="t('LocationForm.to-help')"
         />
       </div>
@@ -175,7 +173,9 @@ onMounted(() => {
   updateRequiredProps()
 })
 
-// règle "required"
+/**
+ * Updates which fields should be denoted as 'required' in function of what's already currently filled
+ */
 function updateRequiredProps() {
   const f = formState.value
 

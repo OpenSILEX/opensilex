@@ -10,7 +10,7 @@
               <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
                 :small="true"
-                @click="factorForm?.showEditForm(structuredClone(toRaw(factor)))"
+                @click="showEditForm"
                 variant="outline-primary"
                 label="component.common.list.buttons.update"
               ></EditButton>
@@ -122,8 +122,9 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, toRaw, useTemplateRef} from "vue";
-import { FactorsService } from 'opensilex-core/index';
+import {computed, inject, onMounted, useTemplateRef} from "vue";
+import { FactorDetailsGetDTO, FactorsService } from 'opensilex-core/index';
+import HttpResponse, { OpenSilexResponse } from '@/lib/HttpResponse';
 import Card from '@/components/common/views/Card.vue';
 import EditButton from '@/components/common/buttons/EditButton.vue';
 import DeleteButton from '@/components/common/buttons/DeleteButton.vue';
@@ -169,7 +170,7 @@ const opensilex = inject<OpenSilexVuePlugin>('$opensilex');
 const store = useStore();
 const { t } = useI18n();
 const skosReferences = useTemplateRef<InstanceType<typeof ExternalReferencesModalForm>>('skosReferences');
-const factorForm = useTemplateRef<any>('factorForm');
+const factorForm = useTemplateRef<InstanceType<typeof FactorForm>>('factorForm');
 const user = computed(() => {
   return store.state.user;
 });
@@ -255,6 +256,15 @@ const factorLevelFields: FactorLevelField[] = [
     sortable: false,
   },
 ];
+function showEditForm() {
+  service
+    .getFactorByURI(props.factor.uri)
+    .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+      factorForm.value?.showEditForm(http.response.result);
+    })
+    .catch(opensilex.errorHandler);
+}
+
 function update() {
   emit('onUpdate');
 }

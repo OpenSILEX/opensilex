@@ -369,6 +369,7 @@ function instanciateTabulator() {
     layout: "fitColumns",
     layoutColumnsOnNewData: true,
     index: "uri",
+    validationMode: "highlight",
   });
 
   tabulator.value.on("dataChanged", (data) => {
@@ -379,7 +380,15 @@ function instanciateTabulator() {
     cellActions(e, cell);
   });
 }
+
+function validate(): boolean {
+  return tabulator.value?.validate() === true;
+}
 //#endregion
+
+defineExpose({
+  validate
+})
 
 </script>
 

@@ -338,7 +338,7 @@
                 "factor-alert-help": "This factor can be linked to existing experiments be careful when update",
                 "factorLevel-alert-help": "Levels can be linked to scientific objects be careful when update",
                 "btn-exportAll": "Export all",
-                "associated-level-factor": "associated level factor"
+                "associated-level-factor": "Associated factor levels"
             },
             "groupVariables": "Variables Groups",
             "organizations": "Organizations",
@@ -935,6 +935,12 @@
             },
             "funding": "Funding",
             "expsInProgress": "Experiments in progress"
+        },
+        "factor": {
+            "label": "Factor",
+            "details": {
+                "no-factorLevels-provided": "No factor levels provided"
+            }
         },
         "germplasms": {
             "errors": {

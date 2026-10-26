@@ -10,7 +10,7 @@
               <EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
                 :small="true"
-                @click="factorForm?.showEditForm(factor)"
+                @click="factorForm?.showEditForm(structuredClone(toRaw(factor)))"
                 variant="outline-primary"
                 label="component.common.list.buttons.update"
               ></EditButton>
@@ -122,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onMounted, useTemplateRef} from "vue";
+import {computed, inject, onMounted, toRaw, useTemplateRef} from "vue";
 import { FactorsService } from 'opensilex-core/index';
 import Card from '@/components/common/views/Card.vue';
 import EditButton from '@/components/common/buttons/EditButton.vue';
@@ -278,26 +278,3 @@ function successMessage(factor) {
   padding-left: 0px !important;
 }
 </style>
-<i18n>
-en:
-  component:
-    factor :
-      details:
-        label: Details
-        description: Description
-        factorLevels: Levels
-        no-factorLevels-provided: No factor levels provided
-        search: Search in name and description
-        export: Export all
-fr:
-  component:
-    factor:
-      details:
-        label: Détails
-        description: Description
-        factorLevels: Niveaux de facteurs associés
-        no-factorLevels-provided: Aucun niveau de facteur associé
-        search: Recherche dans nom et description
-        export: Tout exporter
-
-</i18n>

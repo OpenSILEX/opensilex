@@ -497,6 +497,18 @@ function buildEventSeries(pinLevels: Map<DataVisuEvent, number> = new Map<DataVi
  * is at least PIN_SIZE pixels away from the previous pin of that level. The overlap depends on the zoom and on the
  * chart width, so this is done again after each zoom and resize.
  *
+ * A level is a horizontal row of pins across the whole chart: level 0 is the bottom of the chart, where pins
+ * normally are, level 1 is one pin height above, etc. Levels are not tied to a group of close events, any pin can
+ * use any level. Most pins stay on level 0, a pin only goes up when the levels below already have a pin too close
+ * to it. For example, with pins at 100, 110, 115 and 200 pixels:
+ *
+ *   level 2 |     ▼115
+ *   level 1 |    ▼110
+ *   level 0 |   ▼100            ▼200
+ *           └──────────────────────── X axis
+ *
+ * 100, 110 and 115 are too close, so they are stacked. 200 is far enough from 100, so it goes back to level 0.
+ *
  * @param target the chart to update, the displayed one or the one drawing the downloaded image
  */
 function layoutEventPins(target: echarts.ECharts | undefined): void {

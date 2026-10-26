@@ -8,7 +8,7 @@
       :optionsLoadingMethod="loadFactorLevels"
       :searchMethod="searchFactorLevels"
       :conversionMethod="convertDetail"
-      :disableBranchNodes="true"
+      :disableParentNodes="true"
       :placeholder="placeholder"
       @enterKey="onEnter"
     />

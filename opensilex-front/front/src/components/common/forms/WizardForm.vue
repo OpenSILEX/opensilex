@@ -34,8 +34,8 @@
           </slot>
           {{ translatedTitle }}
         </h4>
-        <!-- TODO implémenter une condition sur l'apparition du bouton d'aide dans les forms en modal ("?")  -->
         <HelpButton
+          v-if="showHelpButton"
           label="component.tutorial.name"
           class="wizard-help-btn"
           @click="startCurrentStepTutorial"
@@ -146,6 +146,7 @@ const props = defineProps<{
   icon?: string
   modalWidth?: string
   isBlockingStep?: boolean
+  showHelpButton?: boolean
   initForm: () => any
   createAction?: (form: any) => Promise<any>
   updateAction?: (form: any) => Promise<any>
@@ -190,6 +191,7 @@ function showCreateForm () {
   form.value = props.initForm()
   editMode.value = false
   currentStepIndex.value = 0
+  opensilex.disableLoader()
   visible.value = true
   nextTick(() => stepComponent.value?.reset?.())
 }
@@ -199,6 +201,7 @@ function showEditForm (inputForm: any) {
   form.value = inputForm
   editMode.value = true
   currentStepIndex.value = 0
+  opensilex.disableLoader()
   visible.value = true
   nextTick(() => stepComponent.value?.reset?.())
 }
@@ -260,6 +263,8 @@ async function submitForm () {
   if (!action) return
 
   try {
+    opensilex.enableLoader()
+    opensilex.showLoader()
     const result = await action(form.value)
     if (result !== false) {
       if (editMode.value) {
@@ -272,6 +277,9 @@ async function submitForm () {
     }
   } catch (e) {
     console.error(e)
+  } finally {
+    opensilex.hideLoader()
+    opensilex.disableLoader()
   }
 }
 

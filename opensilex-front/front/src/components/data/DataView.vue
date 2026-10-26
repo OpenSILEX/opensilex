@@ -128,7 +128,6 @@
           ></DeviceSelector>
 
           <!-- Operator -->
-          <n-form-item class="compact-form-item">
             <PersonSelector
                 v-model:persons="filter.operators"
                 label="component.data.view.filter.operator"
@@ -136,7 +135,6 @@
                 @handlingEnterKey="refresh()"
                 :multiple="true"
             ></PersonSelector>
-          </n-form-item>
 
           <!-- Facility -->
           <FacilitySelector
@@ -170,7 +168,6 @@
           </n-form-item>
 
           <!-- Provenance -->
-          <n-form-item class="compact-form-item">
             <DataProvenanceSelector
                 ref="provSelector"
                 v-model:provenances="filter.provenance"
@@ -185,7 +182,6 @@
                 class="searchFilter"
                 @handlingEnterKey="refresh()"
             ></DataProvenanceSelector>
-          </n-form-item>
 
           <n-collapse-transition
               v-if="selectedProvenance"
@@ -265,14 +261,9 @@ import type {OpenSilexResponse} from "@/lib/HttpResponse";
 import type {DataService} from "opensilex-core/api/data.service";
 import type {ProvenanceGetDTO} from "opensilex-core/index";
 import type OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
-// import DeleteByBatchModal from "./DeleteByBatchModal.vue";
 import DataProvenanceModalView from "@/components/data/DataProvenanceModalView.vue";
 import ProvenanceDetails from "@/components/data/ProvenanceDetails.vue";
-// import DataExportModal from "@/components/data/DataExportModal.vue";
 import DataList from "@/components/data/DataList.vue";
-// import ResultModalView from "@/components/data/ResultModalView.vue";
-// import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
-// import ModalForm from "@/components/common/forms/ModalForm.vue";
 import PageActions from "@/components/layout/PageActions.vue";
 import PageContent from "@/components/layout/PageContent.vue";
 import CreateButton from "@/components/common/buttons/CreateButton.vue";
@@ -281,8 +272,6 @@ import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSideb
 import ExperimentSelector from "@/components/experiments/ExperimentSelector.vue";
 import VariableSelectorWithFilter from "@/components/variables/views/VariableSelectorWithFilter.vue";
 import ModalFormSelector from "@/components/variables/form/ModalFormSelector.vue";
-// import GermplasmGroupSelector from "@/components/germplasmGroup/GermplasmGroupSelector.vue";
-// import GermplasmSelectorWithFilter from "@/components/germplasm/GermplasmSelectorWithFilter.vue";
 import PersonSelector from "@/components/persons/PersonSelector.vue";
 import DateTimeForm from "@/components/common/forms/DateTimeForm.vue";
 import TagInputForm from "@/components/common/forms/TagInputForm.vue";
@@ -293,7 +282,6 @@ import DataExportModal from "@/components/data/DataExportModal.vue";
 import DataProvenanceSelector from "@/components/data/DataProvenanceSelector.vue";
 import ResultModalView from "@/components/data/ResultModalView.vue";
 import DeleteByBatchModal from "@/components/data/DeleteByBatchModal.vue";
-import ModalForm from "@/components/common/forms/ModalForm.vue";
 import DataImportForm from "@/components/data/form/DataImportForm.vue";
 import GermplasmGroupSelector from "@/components/germplasm/GermplasmGroupSelector.vue";
 import GermplasmSelectorWithFilter from "@/components/germplasm/GermplasmSelectorWithFilter.vue";

@@ -241,8 +241,7 @@ export default class OpenSilexVuePlugin {
             .getURILabelsList(objectsToLoad, context, true)
             .then((httpObj) => {
                 for (let obj of httpObj.response.result) {
-                    //@todo corriger
-                    // Vue.set(uriResultMap, obj.uri, obj.name + " (" + obj.rdf_type_name + ")");
+                    uriResultMap[obj.uri] = obj.name + " (" + obj.rdf_type_name + ")";
                 }
             });
     }

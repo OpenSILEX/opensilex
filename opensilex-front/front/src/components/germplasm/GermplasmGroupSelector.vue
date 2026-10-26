@@ -1,36 +1,32 @@
 <template>
-  <FormSelector
-      ref="formSelector"
-      :label="props.label"
+  <InfiniteScrollDropdown
       v-model:selected="groupURI"
-      :multiple="props.multiple"
-      :searchMethod="searchGermplasmGroups"
+      :fetchPage="searchGermplasmGroups"
       :itemLoadingMethod="loadGermplasmGroups"
+      :label="props.label"
+      :multiple="props.multiple"
       :placeholder="placeholder"
-      noResultsText="component.groupGermplasm.form.selector.filter-search-no-result"
+      :noResultsText="t('component.groupGermplasm.form.selector.filter-search-no-result')"
+      @selectionChange="(option) => emit('selectionChange', option)"
       @clear="emit('clear')"
-      @select="select"
-      @deselect="deselect"
-      @keyup.enter="onEnter"
-      @loadMoreItems="loadMoreItems"
+      @handlingEnterKey="emit('handlingEnterKey')"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, useTemplateRef } from "vue";
+import { computed, inject } from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import { GermplasmGroupGetDTO } from "opensilex-core/index";
+import type { SelectOption } from "naive-ui";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { GermplasmService } from "opensilex-core/api/germplasm.service";
-import FormSelector from "@/components/common/forms/FormSelector.vue";
+import InfiniteScrollDropdown from "@/components/common/forms/InfiniteScrollDropdown.vue";
 import { useI18n } from "vue-i18n";
 
 const opensilex = inject<OpenSilexVuePlugin>("$opensilex");
 const { t } = useI18n();
 
-const pageSize = ref<number>(10);
-
-const groupURI = defineModel<string>("selected");
+const groupURI = defineModel<string | string[] | null>("selected");
 
 const props = defineProps<{
   label: string;
@@ -40,13 +36,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   clear: [];
-  select: [value: GermplasmGroupGetDTO];
-  deselect: [value: GermplasmGroupGetDTO];
+  selectionChange: [option: SelectOption | SelectOption[] | undefined];
   handlingEnterKey: [];
 }>();
-
-const formSelector =
-    useTemplateRef<InstanceType<typeof FormSelector>>("formSelector");
 
 const placeholder = computed(() => {
   if (props.placeholder) {
@@ -57,32 +49,7 @@ const placeholder = computed(() => {
       : t("component.groupGermplasm.form.selector.placeholder");
 });
 
-async function loadGermplasmGroups(
-    group: string | string[]
-): Promise<GermplasmGroupGetDTO[]> {
-  try {
-    const service = opensilex?.getService<GermplasmService>(
-        "opensilex.GermplasmService"
-    );
-
-    if (!service) {
-      throw new Error("OpenSilex service is not available");
-    }
-
-    const http = await service.searchGermplasmGroupByURIs(group);
-
-    return http.response.result;
-  } catch (error) {
-    opensilex?.errorHandler(error);
-    return [];
-  }
-}
-
-async function searchGermplasmGroups(
-    name: string
-): Promise<
-    HttpResponse<OpenSilexResponse<GermplasmGroupGetDTO[]>>
-> {
+function getService(): GermplasmService {
   const service = opensilex?.getService<GermplasmService>(
       "opensilex.GermplasmService"
   );
@@ -91,35 +58,38 @@ async function searchGermplasmGroups(
     throw new Error("OpenSilex service is not available");
   }
 
-  return await service.searchGermplasmGroups(
+  return service;
+}
+
+/** Loads the already selected elements, so that their name can be displayed. */
+async function loadGermplasmGroups(
+    uris: string[]
+): Promise<GermplasmGroupGetDTO[]> {
+  try {
+    const http = await getService().searchGermplasmGroupByURIs(uris);
+
+    return http.response.result;
+  } catch (error) {
+    opensilex?.errorHandler(error);
+    return [];
+  }
+}
+
+/** Loads one page of results. `page` is zero-based. */
+function searchGermplasmGroups(
+    name: string,
+    page: number,
+    pageSize: number
+): Promise<
+    HttpResponse<OpenSilexResponse<GermplasmGroupGetDTO[]>>
+> {
+  return getService().searchGermplasmGroups(
       name,
       undefined,
       ["name=asc"],
-      0,
-      pageSize.value
+      page,
+      pageSize
   );
-}
-
-function select(value: GermplasmGroupGetDTO) {
-  emit("select", value);
-}
-
-function deselect(value: GermplasmGroupGetDTO) {
-  emit("deselect", value);
-}
-
-function onEnter() {
-  emit("handlingEnterKey");
-}
-
-async function loadMoreItems() {
-  pageSize.value = 0;
-
-  formSelector.value?.refresh();
-
-  await nextTick();
-
-  formSelector.value?.openTreeselect();
 }
 </script>
 

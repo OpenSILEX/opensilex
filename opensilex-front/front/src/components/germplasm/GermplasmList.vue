@@ -124,7 +124,7 @@
                   <GermplasmGroupSelector
                       label="component.germplasms.list.filter.germplasm-group"
                       :multiple="false"
-                      v-model:germplasmGroup="filter.germplasm_group"
+                      v-model:selected="filter.germplasm_group"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                   ></GermplasmGroupSelector>

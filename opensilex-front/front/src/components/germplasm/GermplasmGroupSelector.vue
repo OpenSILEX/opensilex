@@ -95,23 +95,3 @@ function searchGermplasmGroups(
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  component:
-    groupGermplasm:
-      form:
-        selector:
-          placeholder: Select one germplasm group
-          placeholder-multiple: Select one or more germplasm group
-          filter-search-no-result: No germplasm group found
-
-fr:
-  component:
-    groupGermplasm:
-      form:
-        selector:
-          placeholder: Sélectionner un groupe de ressources génétiques
-          placeholder-multiple: Sélectionner un ou plusieurs groupes de ressources génétiques
-          filter-search-no-result: Aucun groupe de ressources génétiques trouvé
-</i18n>

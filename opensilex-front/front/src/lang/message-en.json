@@ -989,6 +989,15 @@
                 }
             }
         },
+        "groupGermplasm": {
+            "form": {
+                "selector": {
+                    "placeholder": "Select one germplasm group",
+                    "placeholder-multiple": "Select one or more germplasm groups",
+                    "filter-search-no-result": "No germplasm group found"
+                }
+            }
+        },
         "scientificObjects": {
             "modal-title": "Selected scientific objects",
             "scientificObjects": "Scientific object(s)",

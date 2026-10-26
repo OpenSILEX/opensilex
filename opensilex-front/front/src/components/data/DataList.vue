@@ -40,14 +40,14 @@
             </template>
 
             <template v-slot:cell(actions)="{data}">
-                <b-button-group size="sm">
+              <n-button-group size="small" class="btn-group btn-group-sm">
                     <DetailButton
                         v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
                         @click="showDataDetailsModal(data.item)"
                         label="component.data.view.list.details"
                         :small="true"
                     ></DetailButton>
-                </b-button-group>
+                </n-button-group>
             </template>
 
         </TableAsyncView>
@@ -74,6 +74,7 @@ import {computed, inject, ref, useTemplateRef} from "vue";
 import {useStore} from "vuex";
 import {useRoute} from "vue-router";
 import {BatchHistoryGetDTO, ProvenanceGetDTO} from "opensilex-core/lib";
+import {NButton, NButtonGroup} from "naive-ui";
 
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const store = useStore()
@@ -127,9 +128,6 @@ const credentials = computed(() => {
   return store.state.credentials;
 })
 
-const getSelectedProv = computed(() => {
-  return selectedProvenance.value;
-})
 
 const fields = computed(() =>
 {

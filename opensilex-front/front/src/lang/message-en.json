@@ -336,7 +336,7 @@
                 "germplasm": "Germplasm",
                 "factorLevels": "Levels",
                 "factor-alert-help": "This factor can be linked to existing experiments be careful when update",
-                "factorLevel-alert-help": "Levels can be linked to scientific objects be careful when update",
+                "factorLevel-alert-help": "Levels can be linked to scientific objects, be careful when updating",
                 "btn-exportAll": "Export all",
                 "associated-level-factor": "Associated factor levels"
             },
@@ -940,6 +940,19 @@
             "label": "Factor",
             "details": {
                 "no-factorLevels-provided": "No factor levels provided"
+            }
+        },
+        "factorLevel": {
+            "label": "Factor level",
+            "delete": "Delete",
+            "associated": "Levels",
+            "associated-help": "Levels describe the possible values of a factor",
+            "delete-confirmation-table": "This action is final, are you sure you want to empty this table?",
+            "errors": {
+                "associated-factor-level": "You can't remove a factor level which is associated with a scientific object",
+                "factor-empty-levels": "Missing factor levels",
+                "factor-empty-row": "You can't add several empty rows",
+                "minimum-factor-level": "You must have at least one factor level"
             }
         },
         "germplasms": {

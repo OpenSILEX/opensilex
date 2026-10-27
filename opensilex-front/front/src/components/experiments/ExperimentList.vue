@@ -638,8 +638,10 @@ defineExpose({
 }
 
 .funding-badge {
-  width: 24px;
-  height: auto;
+  height: 24px;
+  width: auto;
+  max-width: 52px;
+  object-fit: contain;
   margin-right: 4px;
 }
 

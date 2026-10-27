@@ -521,13 +521,10 @@ function isEnded(experiment: { end_date: string | number | Date; }) {
 <style scoped lang="scss">
 .funding-tag {
   margin: 0 5px;
-  width: clamp(20px, 45px, 60px);
-  border-radius: 50%;
-  transition: box-shadow 0.6s ease-in-out;
-}
-
-.funding-tag:hover {
-  box-shadow: 0 0 15px #00A3A6;
+  height: 40px;
+  width: auto;
+  max-width: 88px;
+  object-fit: contain;
 }
 
 </style>

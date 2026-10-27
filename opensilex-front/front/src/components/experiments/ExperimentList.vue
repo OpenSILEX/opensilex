@@ -160,7 +160,7 @@
             </div>
             <div class="uri-badges">
               <img
-                v-for="fundingUri in data.item.funding.slice(0, 3)"
+                v-for="fundingUri in [...data.item.funding].sort().slice(0, 3)"
                 :key="fundingUri"
                 :src="
                   opensilex.getResourceURI('images/' + opensilex.getShortUri(fundingUri), [

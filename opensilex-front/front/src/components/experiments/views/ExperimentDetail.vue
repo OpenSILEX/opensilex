@@ -111,7 +111,7 @@
                 class="text-right"
             >
               <img
-                  v-for="fundingUri in experiment.funding.slice(0, 3)"
+                  v-for="fundingUri in [...experiment.funding].sort().slice(0, 3)"
                   :key="fundingUri"
                   v-bind:src="opensilex.getResourceURI('images/'+fundingUri, ['png', 'svg', 'jpg'])"
                   class="funding-tag"

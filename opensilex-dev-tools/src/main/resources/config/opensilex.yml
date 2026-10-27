@@ -86,6 +86,30 @@ front:
             - TRANSFORMON
         unit:
             - OBOE
+core:
+    sharedResourceInstances:
+        - uri: https://phenome.inrae.fr/resources/rest
+          apiUrl: https://phenome.inrae.fr/resources/rest
+          label:
+              fr: "PHENOME"
+              en: "PHENOME"
+          accountName: guest@opensilex.org
+          accountPassword: guest
+        - uri: http://138.102.159.36:8082/emphasis/rest
+          apiUrl: http://138.102.159.36:8082/emphasis/rest
+          label:
+              fr: "EMPHASIS"
+              en: "EMPHASIS"
+          accountName: guest@opensilex.org
+          accountPassword: guest
+        - uri: https://vitioeno.mistea.inrae.fr/resource/rest
+          apiUrl: https://vitioeno.mistea.inrae.fr/resource/rest
+          label:
+              fr: "VitiOeno"
+              en: "VitiOeno"
+          accountName: guest@opensilex.org
+          accountPassword: guest
+
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"

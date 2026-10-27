@@ -71,6 +71,16 @@
     @refresh="applyFilters"
     @reset="resetFilters"
   >
+    <!-- Source -->
+    <n-form-item :show-feedback="false">
+      <SharedResourceInstanceSelector
+        label="component.sharedResourceInstances.label"
+        v-model:sharedResourceInstance="filter.sharedResourceInstance"
+        @select="applyFilters"
+        class="searchFilter"
+      />
+    </n-form-item>
+
     <!-- Nom -->
     <n-form-item :label="t('component.common.name')">
       <n-input
@@ -94,6 +104,7 @@
     <n-form-item :label="t('component.variable.characteristic.characteristic')" :show-feedback="false">
       <opensilex-CharacteristicSelector
         v-model:selected="filter.characteristic"
+        :sharedResourceInstance="filter.sharedResourceInstance"
         @handlingEnterKey="applyFilters"
         :placeholder="$t('component.variable.characteristic.characteristic-placeholder')"
       />
@@ -244,6 +255,7 @@ import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSideb
 import EntitySelector from "@/components/variables/form/EntitySelector.vue";
 import SpeciesSelector from "@/components/species/SpeciesSelector.vue";
 import GroupVariablesModalList from "@/components/groupVariable/GroupVariablesModalList.vue";
+import SharedResourceInstanceSelector from "@/components/sharedResouceInstances/SharedResourceInstanceSelector.vue";
 
 /** Refs UI */
 const groupVariableSelection = ref()

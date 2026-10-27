@@ -1176,6 +1176,13 @@
             "no-data": "No data found for this period",
             "deleteByBatch": "Delete by batch",
             "export": "export",
+            "deleteByBatchModal": {
+                "title": "Delete by batch",
+                "batch-uri": "Batch URI",
+                "batch-placeholder": "Enter URI",
+                "success-message": "data have been deleted.",
+                "error-message": "No data found."
+            },
             "dataTable": {
                 "target-object": "Object target",
                 "list-data": "Data",

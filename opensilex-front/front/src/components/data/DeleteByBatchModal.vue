@@ -1,46 +1,41 @@
 <template>
   <n-form
-      ref="validatorRef">
+      ref="validatorRef"
+      :model="form"
+      :rules="rules">
     <Modal
         ref="modal"
-        :title="$t('DeleteByBatchModal.title')"
-        no-close-on-backdrop
-        no-close-on-esc
     >
-      <template v-slot:modal-header>
-        <b-row class="mt-1" style="width: 100%">
-          <b-col cols="10">
-            <i>
-              <h4>
-                <Icon icon="fa#trash-alt"/>
-                {{ $t("DeleteByBatchModal.title") }}
-              </h4>
-            </i>
-          </b-col>
-        </b-row>
+      <template #header>
+        <i>
+          <h4>
+            <Icon icon="fa#trash-alt"/>
+            {{ t("component.data.deleteByBatchModal.title") }}
+          </h4>
+        </i>
       </template>
-      <template>
-        <!-- Batch URI -->
+      <!-- Batch URI -->
+      <n-form-item path="batchUri">
         <InputForm
-            :value.sync="batchUri"
-            label="DeleteByBatchModal.batch-uri"
+            v-model:value="form.batchUri"
+            label="component.data.deleteByBatchModal.batch-uri"
             type="text"
             :required="true"
-            placeholder="DeleteByBatchModal.batch-placeholder"
+            :placeholder="t('component.data.deleteByBatchModal.batch-placeholder')"
         ></InputForm>
-      </template>
-      <template v-slot:modal-footer>
+      </n-form-item>
+      <template #footer>
         <button
             type="button"
             class="btn btn-secondary"
-            v-on:click="hide"
-        >{{ $t('component.common.close') }}
+            @click="hide"
+        >{{ t('component.common.close') }}
         </button>
         <button
             type="button"
             class="btn btn-danger"
-            v-on:click="deleteData()"
-        >{{ $t('component.common.delete') }}
+            @click="deleteData()"
+        >{{ t('component.common.delete') }}
         </button>
       </template>
     </Modal>
@@ -49,13 +44,13 @@
 
 <script setup lang="ts">
 import {DataService} from "opensilex-core/api/data.service";
-import {NForm} from "naive-ui";
+import {NForm, NFormItem} from "naive-ui";
 import Icon from "@/components/common/views/Icon.vue";
 import InputForm from "@/components/common/forms/InputForm.vue";
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
-import {inject, ref, useTemplateRef} from "vue";
+import {computed, inject, ref, useTemplateRef} from "vue";
 import Modal from "@/components/common/views/Modal.vue";
 
 //#region: Props
@@ -70,20 +65,21 @@ const props = defineProps<{
 const opensilex = inject<OpenSilexVuePlugin>('$opensilex')
 const {t} = useI18n()
 const store = useStore()
-const dataService = ref<DataService>('dataService')
-const batchUri = ref<string>('')
+const dataService = opensilex.getService<DataService>("opensilex.DataService")
+const form = ref({batchUri: ''})
+//#endregion
+//#region: Rules
+const rules = computed(() => ({
+  batchUri: {
+    required: true,
+    message: t('validations.required_if', {_field_: t('component.data.deleteByBatchModal.batch-uri')}),
+    trigger: ['change', 'blur']
+  }
+}))
 //#endregion
 //#region: Refs
 const modal = useTemplateRef<InstanceType<typeof Modal>>('modal')
 const validatorRef = useTemplateRef<InstanceType<typeof NForm>>('validatorRef')
-//#endregion
-//#region: hooks
-
-function created()
-{
-  dataService.value = opensilex.getService<DataService>("opensilex.DataService");
-}
-
 //#endregion
 //#region: Methods
 
@@ -99,17 +95,18 @@ function hide()
 
  async function deleteData()
 {
-  const formIsValid = await validatorRef.value.validate();
-  if (!formIsValid) {
+  try {
+    await validatorRef.value.validate();
+  } catch {
     return;
   }
 
-  let result = (await dataService.value.deleteDataOnSearch(
-      this.experimentUri,
+  let result = (await dataService.deleteDataOnSearch(
+      props.experimentUri,
       undefined,
       undefined,
       undefined,
-      batchUri.value
+      form.value.batchUri
   )).response.result as any;
   hide();
   let deletedCount: number = 0;
@@ -117,10 +114,10 @@ function hide()
     deletedCount = result.deletedCount;
   }
   if (deletedCount > 0) {
-    opensilex.showSuccessToast(deletedCount + "  " + t("DeleteByBatchModal.success-message"));
+    opensilex.showSuccessToast(deletedCount + "  " + t("component.data.deleteByBatchModal.success-message"));
     emitDeleted();
   } else {
-    opensilex.showErrorToast(t("DeleteByBatchModal.error-message"));
+    opensilex.showErrorToast(t("component.data.deleteByBatchModal.error-message"));
   }
 }
 //#endregion
@@ -140,21 +137,3 @@ defineExpose({
   show
 })
 </script>
-
-<i18n>
-en:
-  DeleteByBatchModal:
-    title: Delete by Batch
-    batch-uri: Batch URI
-    batch-placeholder: Enter URI
-    success-message: data have been deleted.
-    error-message: No data found.
-
-fr:
-  DeleteByBatchModal:
-    title: Suppression par batch
-    batch-uri: URI de Batch
-    batch-placeholder: Entrez URI
-    success-message: données ont étés supprimés.
-    error-message: Pas de données trouvées
-</i18n>

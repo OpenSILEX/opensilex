@@ -1234,6 +1234,13 @@
             "no-data": "Aucune donnée trouvée pour cette période",
             "deleteByBatch": "Suppression par lot",
             "export": "export",
+            "deleteByBatchModal": {
+                "title": "Suppression par lot",
+                "batch-uri": "URI du lot",
+                "batch-placeholder": "Entrez une URI",
+                "success-message": "données ont été supprimées.",
+                "error-message": "Pas de données trouvées."
+            },
             "dataTable": {
                 "target-object": "Objet cible",
                 "list-data": "Date",

@@ -66,10 +66,10 @@
                 </span>
                 <span
                     v-else
-                    class="badge badge-pill badge-light"
+                    class="badge rounded-pill text-bg-light"
                     :title="t('component.experiment.view.status.finished')"
                 >
-                  <i class="ik ik-archive"></i>
+                  <i class="bi bi-archive me-1"></i>
                   {{ t("component.experiment.common.status.finished") }}
                 </span>
 

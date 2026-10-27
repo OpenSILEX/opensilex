@@ -369,6 +369,7 @@ function instanciateTabulator() {
     layout: "fitColumns",
     layoutColumnsOnNewData: true,
     index: "uri",
+    validationMode: "highlight",
   });
 
   tabulator.value.on("dataChanged", (data) => {
@@ -379,7 +380,15 @@ function instanciateTabulator() {
     cellActions(e, cell);
   });
 }
+
+function validate(): boolean {
+  return tabulator.value?.validate() === true;
+}
 //#endregion
+
+defineExpose({
+  validate
+})
 
 </script>
 
@@ -432,62 +441,3 @@ function instanciateTabulator() {
   margin-top: 10px; // The margin, so the error message isn't right up against the table.
 }
 </style>
-
-<i18n>
-en:
-  component:
-    factorLevel:
-      uri: URI
-      name-placeholder: Enter factor level name
-      selector-placeholder: Please select a factor to search factor levels
-      filter-placeholder: Use this field to search factor levels
-      label: factor level
-      add: Add row
-      associated: Levels
-      associated-help: Levels describe the possible values of a factor
-      alert-help: Levels can be linked to scientific objects be careful when update
-      unique-name: Name is required and must be unique
-      update: update factor level
-      name: name
-      factor: factor
-      description: description
-      hasFactor: has factor
-      delete-confirmation-table: This action is final, are you sure you want to empty this table?
-      errors:
-        factor-already-exists: Factor level already exists with this URI.
-        factor-empty-row: You can't add several empty rows
-        factor-empty-levels: Missing factor levels
-        factor-badname-levels: "Must not contain -,+,=,<>,=,?,/,*,&"
-        associated-factor-level: You can't remove a factor level which is associated to a scientific object
-        minimum-factor-level: You must have one factor level a least
-      delete: delete
-fr:
-  component:
-    factorLevel:
-      uri: URI
-      name-placeholder: Renseignez le nom d'un niveau de facteur
-      factor-selector-placeholder: Sélectionnez un nom de facteur
-      filter-placeholder: Utilisez ce change pour filter vos niveau de facteur
-      label: niveau de facteur
-      add: Ajouter une ligne
-      associated: Niveaux de facteurs associés
-      associated-help: Les niveaux décrivent les valeurs possibles d'un facteur
-      alert-help: Les niveaux peuvent être liés à des objets scientifique faite attention lors de leur édition
-      unique-name: Le nom est requis et doit être unique
-      update: Modifier un niveau de facteur
-      name: nom
-      factor: facteur
-      description: description
-      hasFactor: est lié au facteur
-      delete-confirmation-table: Cette action est définitive, merci de confirmer la suppression des éléments du tableau.
-      errors:
-        factor-already-exists: URI du niveau de facteur déjà existante.
-        factor-empty-row: Vous ne pouvez pas ajouter plusieurs lignes vides
-        factor-empty-levels: Niveaux de facteurs manquants
-        factor-badname-levels: "Ne doit pas contenir -,+,=,<>,=,?,/,*,&"
-        associated-factor-level: Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique
-        minimum-factor-level: Vous devez au moins avoir un niveau de facteur
-      delete: supprimer
-
-
-</i18n>

@@ -14,6 +14,7 @@
     <PageActions
         :tabs="true"
         :returnButton="true"
+        returnTo="/experiments"
     >
       <template v-slot>
         <router-link
@@ -99,7 +100,7 @@ import {useRoute} from 'vue-router';
 import {useStore} from 'vuex';
 import OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin';
 import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse';
-import {ExperimentsService, ScientificObjectsService} from 'opensilex-core';
+import {ExperimentsService, FactorsService, ScientificObjectsService} from 'opensilex-core';
 import type {ExperimentGetDTO} from 'opensilex-core';
 import PageContent from "@/components/layout/PageContent.vue";
 import PageActions from "@/components/layout/PageActions.vue";
@@ -114,6 +115,7 @@ const opensilex = inject<OpenSilexVuePlugin>('$opensilex')!;
 
 const service = opensilex.getService<ExperimentsService>('opensilex.ExperimentsService');
 const scientificObjectsService = opensilex.getService<ScientificObjectsService>('opensilex.ScientificObjectsService');
+const factorsService = opensilex.getService<FactorsService>('opensilex.FactorsService');
 
 const uri = ref<string | null>(null);
 const name = ref('');
@@ -154,8 +156,9 @@ function isExperimentTab(tab: ExperimentTab): boolean {
  */
 const currentTabProps = computed(() => {
   switch (Object.values(ExperimentTab).find(isExperimentTab)) {
-    case ExperimentTab.DETAILS:
     case ExperimentTab.FACTORS:
+      return {uri: uri.value, onFactorsUpdated: loadFactorsCount};
+    case ExperimentTab.DETAILS:
     case ExperimentTab.SCIENTIFIC_OBJECTS:
     case ExperimentTab.DATA:
     case ExperimentTab.MAP:
@@ -210,8 +213,22 @@ onMounted(() => {
         .catch((error) => {
           opensilex.errorHandler(error);
         });
+
+    loadFactorsCount();
   }
 });
+
+function loadFactorsCount() {
+  factorsService
+      .countFactors(uri.value)
+      .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        factors.value = http.response.result;
+        factorsCountIsLoading.value = false;
+      })
+      .catch((error) => {
+        opensilex.errorHandler(error);
+      });
+}
 
 
 </script>

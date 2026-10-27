@@ -110,7 +110,7 @@
             "url-copy": "URL copiée dans le presse-papier",
             "search-prompt-text": "Ecrire pour rechercher...",
             "advanced-search-title": "Recherche Avancée",
-            "search-name-description": "Recherche dans noms et description",
+            "search-name-description": "Recherche dans le nom et la description",
             "not-specified": "Non renseigné(e)",
             "validate": "Valider",
             "apply": "Appliquer",
@@ -338,9 +338,9 @@
                 "germplasm": "Ressources Génétiques",
                 "factorLevels": "Niveaux de facteurs",
                 "factor-alert-help": "Ce facteur peut être lié à des expérimentations faite attention lors de son édition",
-                "factorLevel-alert-help": "Les niveaux peuvent être liés à des objets scientifique faite attention lors de leur édition",
+                "factorLevel-alert-help": "Les niveaux peuvent être liés à des objets scientifiques, faites attention lors de leur édition",
                 "btn-exportAll": "Tout exporter",
-                "associated-level-factor": "Niveau facteur associé"
+                "associated-level-factor": "Niveaux de facteur associés"
             },
             "groupVariables": "Groupe de variables",
             "organizations": "Organisations",
@@ -808,7 +808,7 @@
             "all": "Toutes les expérimentations",
             "selected": "Expérementations sélectionnées",
             "selected-scientific-object": "Objects Scientifiques Sélectionnés",
-            "category": "Categorie",
+            "category": "Catégorie",
             "funding-placeholder": "Selectionner financeurs",
             "filter-search-no-result": "Aucun financeurs trouvés",
             "factors-categories-placeholder": "Select one or more categories",
@@ -919,6 +919,25 @@
             "funding": "Financeurs",
             "expsInProgress": "Experiences en cours"
         },
+        "factor": {
+            "label": "Facteur",
+            "details": {
+                "no-factorLevels-provided": "Aucun niveau de facteur associé"
+            }
+        },
+        "factorLevel": {
+            "label": "Niveau de facteur",
+            "delete": "Supprimer",
+            "associated": "Niveaux de facteurs associés",
+            "associated-help": "Les niveaux décrivent les valeurs possibles d'un facteur",
+            "delete-confirmation-table": "Cette action est définitive, merci de confirmer la suppression des éléments du tableau.",
+            "errors": {
+                "associated-factor-level": "Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique",
+                "factor-empty-levels": "Niveaux de facteurs manquants",
+                "factor-empty-row": "Vous ne pouvez pas ajouter plusieurs lignes vides",
+                "minimum-factor-level": "Vous devez avoir au moins un niveau de facteur"
+            }
+        },
         "germplasms": {
             "errors": {
                 "duplicateUri": "URI en double : {uri}",
@@ -1006,7 +1025,7 @@
             "no-relation": "Sélectionner une relation",
             "no-current-relation": "Aucune relation sélectionnée",
             "current-relation": "Relation actuellement sélectionnée",
-            "ontologies-references-label": "Ontologies de réference",
+            "ontologies-references-label": "Ontologies de référence",
             "link-external": "Références pour l'interopérabilité",
             "link-external-button": "Ajouter des références (optionnel)",
             "no-external-links-provided": "Aucune référence disponible",

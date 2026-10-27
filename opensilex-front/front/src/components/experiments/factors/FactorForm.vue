@@ -153,6 +153,7 @@ const props = defineProps<ModalFormProps & {
 
 const emit = defineEmits<ModalFormEmits>()
 const nformRef = useTemplateRef<InstanceType<typeof NForm>>('nForm')
+const factorLevelTable = useTemplateRef<InstanceType<typeof FactorLevelTable>>('factorLevelTable')
 
 const {form, formTitle, isEditMode, exposed, submit, hide} = useModalFormLogic<FactorCreationDTO>({
   modalRef: useTemplateRef<InstanceType<typeof Modal>>('modal'),
@@ -293,7 +294,8 @@ function validateAndSubmit() {
       levels.length === 0 ||
       levels.some(
           (level) => level.name === null || level.name === ""
-      );
+      ) ||
+      !factorLevelTable.value?.validate();
 
   if (showFactorLevelsWarning.value) {
     nformRef.value.validate()

@@ -1,6 +1,7 @@
 <template>
   <WizardForm
     ref="wizardRef"
+    icon="bi#bi-layers"
     :steps="steps"
     createTitle="component.experiment.add"
     editTitle="component.experiment.update"

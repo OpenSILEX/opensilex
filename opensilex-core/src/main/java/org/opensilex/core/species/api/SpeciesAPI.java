@@ -30,6 +30,12 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 /**
  * @author Renaud COLIN
  */
+
+/**
+ * @deprecated since the generalization of genetic resources: use {@link org.opensilex.core.taxon.api.TaxonAPI}
+ * (GET /core/taxa?rdf_type=oeso:Species). Kept unchanged for existing clients and shared resource instances.
+ */
+@Deprecated
 @Api(SpeciesAPI.CREDENTIAL_SPECIES_GROUP_ID)
 @Path(SpeciesAPI.PATH)
 public class SpeciesAPI {
@@ -51,7 +57,7 @@ public class SpeciesAPI {
     AccountModel user;
 
     @GET
-    @ApiOperation("get species (no pagination)")
+    @ApiOperation(value = "get species (no pagination)", notes = "Deprecated: use GET /core/taxa")
     @ApiTranslatable
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

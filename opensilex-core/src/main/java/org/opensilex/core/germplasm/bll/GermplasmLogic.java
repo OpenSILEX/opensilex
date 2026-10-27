@@ -18,6 +18,8 @@ import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.taxon.dal.TaxonDAO;
+import org.opensilex.core.taxon.dal.TaxonModel;
 import org.opensilex.nosql.mongodb.service.v2.MongoDBServiceV2;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.group.dal.GroupDAO;
@@ -211,6 +213,7 @@ public class GermplasmLogic {
         validateGermplasmDependenciesExists(germplasmModels, errors);
         validateAccessionVarietyOrSpeciesAreGiven(germplasmModels, errors);
         checkSpeciesCoherency(germplasmModels, errors);
+        checkSpeciesIsPlant(germplasmModels, errors);
 
         return errors;
     }
@@ -425,6 +428,34 @@ public class GermplasmLogic {
                             "accession, variety or species");
                     errors.addError(germplasmModel, String.format(missingLinkMessage, typeOfGermplasmMissing));
                 }
+            }
+        }
+    }
+
+    /**
+     * Transition (step 1 of the genetic resources generalization, removed in step 2 by the SHACL rules):
+     * species are still germplasm, and the taxon API can create non plant species.
+     * A germplasm can only reference a plant species. Legacy species without kingdom (before the migration) are accepted.
+     */
+    private void checkSpeciesIsPlant(List<GermplasmModel> germplasmModels, MultipleErrorObjectList<MultipleCreateUpdateErrorObject, GermplasmModel> errors) throws Exception {
+        Map<String, Boolean> isPlantBySpecies = new HashMap<>();
+        TaxonDAO taxonDAO = new TaxonDAO(sparql);
+        URI plantae = URI.create(Oeso.Plantae.getURI());
+        for (GermplasmModel germplasm : germplasmModels) {
+            if (germplasm.getSpecies() == null || germplasm.getSpecies().getUri() == null) {
+                continue;
+            }
+            URI speciesUri = germplasm.getSpecies().getUri();
+            String key = SPARQLDeserializers.formatURI(speciesUri).toString();
+            Boolean isPlant = isPlantBySpecies.get(key);
+            if (isPlant == null) {
+                String lang = currentUser != null ? currentUser.getLanguage() : null;
+                TaxonModel taxon = taxonDAO.get(speciesUri, lang);
+                isPlant = taxon == null || taxon.getKingdom() == null || SPARQLDeserializers.compareURIs(taxon.getKingdom(), plantae);
+                isPlantBySpecies.put(key, isPlant);
+            }
+            if (!isPlant) {
+                errors.addError(germplasm, "A germplasm can only be linked to a plant species (kingdom Plantae): " + speciesUri);
             }
         }
     }

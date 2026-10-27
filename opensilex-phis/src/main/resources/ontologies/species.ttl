@@ -2,6 +2,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX vocabulary: <http://www.opensilex.org/vocabulary/oeso#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdf:type  vocabulary:Species    .
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@en    .
@@ -73,3 +74,55 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 <http://aims.fao.org/aos/agrovoc/c_8283>  rdfs:label  "vigne"@fr    .
 <http://aims.fao.org/aos/agrovoc/c_8283>  rdfs:label  "Vitis vinifera"@la .
 <http://aims.fao.org/aos/agrovoc/c_8283>  vocabulary:isPublic  "true"^^xsd:boolean    .
+
+# ---------------------------------------------------------------------------
+# Taxa (step 1): kingdom and NCBI identifiers of the default species.
+# NCBI identifiers TO BE CHECKED by the team before merge.
+# Known data quality issues kept unchanged for compatibility (reported by the
+# SpeciesToTaxonMigration report):
+#   - "Musa" and "Populus" are genera typed as Species;
+#   - "Oriza sativa" is misspelled (Oryza sativa);
+#   - "Malus × domestica Borkh." contains the author name;
+#   - "Zea mexicana" is now Zea mays subsp. mexicana: kept as a local taxon.
+# ---------------------------------------------------------------------------
+<http://aims.fao.org/aos/agrovoc/c_1066>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_1066>  vocabulary:hasTaxonId  "NCBITaxon:3708"    .
+<http://aims.fao.org/aos/agrovoc/c_1066>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_3708>    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  vocabulary:hasTaxonId  "NCBITaxon:4571"    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4571>    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  vocabulary:hasTaxonId  "NCBITaxon:4577"    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4577>    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  vocabulary:hasTaxonId  "NCBITaxon:4543"    .
+<http://aims.fao.org/aos/agrovoc/c_13199>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4543>    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  vocabulary:hasTaxonId  "NCBITaxon:4565"    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4565>    .
+<http://aims.fao.org/aos/agrovoc/c_15476>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_15476>  vocabulary:isLocalTaxon  "true"^^xsd:boolean    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  vocabulary:hasTaxonId  "NCBITaxon:4640"    .
+<http://aims.fao.org/aos/agrovoc/c_29128>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4640>    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  vocabulary:hasTaxonId  "NCBITaxon:3635"    .
+<http://aims.fao.org/aos/agrovoc/c_3339>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_3635>    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  vocabulary:hasTaxonId  "NCBITaxon:4513"    .
+<http://aims.fao.org/aos/agrovoc/c_3662>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4513>    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  vocabulary:hasTaxonId  "NCBITaxon:3750"    .
+<http://aims.fao.org/aos/agrovoc/c_4555>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_3750>    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  vocabulary:hasTaxonId  "NCBITaxon:4530"    .
+<http://aims.fao.org/aos/agrovoc/c_5438>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4530>    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  vocabulary:hasTaxonId  "NCBITaxon:3689"    .
+<http://aims.fao.org/aos/agrovoc/c_6116>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_3689>    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  vocabulary:hasTaxonId  "NCBITaxon:4558"    .
+<http://aims.fao.org/aos/agrovoc/c_7247>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_4558>    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  vocabulary:belongsTo  vocabulary:Plantae    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  vocabulary:hasTaxonId  "NCBITaxon:29760"    .
+<http://aims.fao.org/aos/agrovoc/c_8283>  skos:exactMatch  <http://purl.obolibrary.org/obo/NCBITaxon_29760>    .

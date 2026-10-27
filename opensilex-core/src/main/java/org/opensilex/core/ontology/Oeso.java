@@ -140,7 +140,7 @@ public class Oeso {
 
     // ---- GERMPLASM ----
     public static final Resource Germplasm = Ontology.resource(NS, "Germplasm");
-    public static final Resource Species = Ontology.resource(NS, "Species");
+    // public static final Resource Species = Ontology.resource(NS, "Species");
     public static final Resource Variety = Ontology.resource(NS, "Variety");
     public static final Resource Accession = Ontology.resource(NS, "Accession");
     public static final Resource PlantMaterialLot = Ontology.resource(NS, "PlantMaterialLot");
@@ -189,4 +189,23 @@ public class Oeso {
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
     public static final Property measures = Ontology.property(NS, "measures");
+
+    // ---- Genetic Resource ----
+    public static final Resource Taxon = Ontology.resource(NS, "Taxon");
+    public static final Resource Species = Ontology.resource(NS, "Species");
+    public static final Resource Genus = Ontology.resource(NS, "Genus");
+    public static final Resource Kingdom = Ontology.resource(NS, "Kingdom");
+    public static final Property belongsTo = Ontology.property(NS, "belongsTo");
+    public static final Property hasTaxonId = Ontology.property(NS, "hasTaxonId");
+    public static final Property hasTaxon = Ontology.property(NS, "hasTaxon");
+    public static final Property hasGenus = Ontology.property(NS, "hasGenus");
+
+
+    // ---- KINGDOMS (individuals of Kingdom) ----
+    public static final Resource Plantae = Ontology.resource(NS, "Plantae");
+    public static final Resource Animalia = Ontology.resource(NS, "Animalia");
+    public static final Resource Fungi = Ontology.resource(NS, "Fungi");
+    public static final Resource Bacteria = Ontology.resource(NS, "Bacteria");
+    public static final Resource Archaea = Ontology.resource(NS, "Archaea");
+    public static final Resource Viruses = Ontology.resource(NS, "Viruses");
 }

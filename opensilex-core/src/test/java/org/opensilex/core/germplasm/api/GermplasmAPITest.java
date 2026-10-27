@@ -457,8 +457,9 @@ public class GermplasmAPITest extends BaseGermplasmAPITest {
     @Test
     public void testSearch() throws Exception {
         GermplasmCreationDTO creationDTO = getCreationSpeciesDTO();
-        getJsonPostResponseAsAdmin(target(createPath), creationDTO);
-
+        Response created = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
+        assertEquals(created.readEntity(String.class), Status.CREATED.getStatusCode(), created.getStatus());
+        
         Map<String, Object> params = new HashMap<>() {
             {
                 put("name", getCreationSpeciesDTO().name);

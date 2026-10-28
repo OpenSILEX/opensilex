@@ -934,7 +934,11 @@
                 "associated-data": "The experiment can't be deleted since there are some associated data"
             },
             "funding": "Funding",
-            "expsInProgress": "Experiments in progress"
+            "expsInProgress": "Experiments in progress",
+            "related-experiments": {
+                "experimentNameFilter": "Search on experiment name",
+                "relatedExperiments": "Related Experiments"
+            }
         },
         "factor": {
             "label": "Factor",

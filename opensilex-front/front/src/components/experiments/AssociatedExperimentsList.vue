@@ -1,12 +1,12 @@
 <template>
-  <Card :label="t('AssociatedExperimentsList.relatedExperiments')" icon="bi-layers" :no-footer="true">
+  <Card :label="t('component.experiment.related-experiments.relatedExperiments')" icon="bi-layers" :no-footer="true">
     <template #body>
       <StringFilter
         v-model:filter="filter"
         @update="updateFilters"
         :debounce="300"
         :lazy="false"
-        :placeholder="t('AssociatedExperimentsList.experimentNameFilter')"
+        :placeholder="t('component.experiment.related-experiments.experimentNameFilter')"
       />
 
       <TableAsyncView

@@ -917,7 +917,11 @@
                 "associated-data": "L'expérimentation ne peut être supprimée car des données lui sont associées"
             },
             "funding": "Financeurs",
-            "expsInProgress": "Experiences en cours"
+            "expsInProgress": "Experiences en cours",
+            "related-experiments": {
+                "experimentNameFilter": "Chercher sur le nom de l'expérimentation",
+                "relatedExperiments": "Expérimentations connexes"
+            }
         },
         "factor": {
             "label": "Facteur",

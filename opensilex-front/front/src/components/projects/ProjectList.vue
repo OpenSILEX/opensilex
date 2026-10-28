@@ -82,13 +82,14 @@
         />
       </n-form-item>
 
-      <n-form-item :label="t('component.common.date-time.year')">
-        <n-input
-          v-model:value="filter.year"
-          clearable
-          type="number"
-          :placeholder="t('component.project.filter-year-placeholder')"
-          @keydown.enter.prevent.stop="applyFilters"
+      <n-form-item>
+        <StringFilter
+            :label="t('component.common.date-time.year')"
+            :placeholder="t('component.project.filter-year-placeholder')"
+            v-model:filter="filter.year"
+            type="number"
+            class="searchFilter"
+            @handlingEnterKey="applyFilters"
         />
       </n-form-item>
 
@@ -192,13 +193,11 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import {
-  NLayout, NLayoutSider, NLayoutContent,
-  NForm, NFormItem, NInput,
+  NLayout, NLayoutContent, NFormItem, NInput,
   NButton, NDropdown, NSpace, NButtonGroup
 } from 'naive-ui'
 import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { ProjectsService } from 'opensilex-core/index'
-import Button from "@/components/common/buttons/Button.vue";
 import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
 import UriLink from "@/components/common/views/UriLink.vue";
 import DateView from "@/components/common/views/DateView.vue";
@@ -207,6 +206,7 @@ import DeleteButton from "@/components/common/buttons/DeleteButton.vue";
 import DocumentForm from "@/components/documents/DocumentForm.vue";
 import {TableField} from "@/components/common/views/TableField";
 import SearchFiltersSidebar from "@/components/common/filters/SearchFiltersSidebar.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
 
 const emit = defineEmits<{
   (e: 'onEdit', project: any): void

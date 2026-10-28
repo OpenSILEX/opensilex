@@ -4,3 +4,6 @@
 [submodule "opensilex-report"]
 	path = opensilex-report
 	url = git@forge.inrae.fr:OpenSILEX/dereferencement/opensilex-report.git
+[submodule "opensilex-incubator"]
+	path = opensilex-incubator
+	url = git@forge.inrae.fr:OpenSILEX/dereferencement/opensilex-incubator.git

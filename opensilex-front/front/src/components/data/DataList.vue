@@ -101,7 +101,7 @@ const dataService = opensilex.getService<DataService>("opensilex.DataService");
 const ontologyService = opensilex.getService<OntologyService>("opensilex.OntologyService");
 const variablesService = opensilex.getService<VariablesService>("opensilex.VariablesService");
 
-const tableRef = useTemplateRef<InstanceType<typeof TableAsyncView>>('tableRef')
+const tableRef = ref<any>(null)
 const dataProvenanceModalView = useTemplateRef<InstanceType<typeof DataProvenanceModalView>>('dataProvenanceModalView')
 
 const objects = ref<Record<string, string>>({});

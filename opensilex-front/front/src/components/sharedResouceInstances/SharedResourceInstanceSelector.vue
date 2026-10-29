@@ -2,7 +2,6 @@
   <FormSelector
       :label="label"
       v-model:selected="selectedSriId"
-      :multiple="false"
       :optionsLoadingMethod="loadSharedResourceInstances"
       :conversionMethod="sharedResourceInstanceToSelectOption"
       :placeholder="t('component.sharedResourceInstances.local-instance')"
@@ -24,11 +23,9 @@ import {SharedResourceInstanceDTO} from "opensilex-core/model/sharedResourceInst
 import OpenSilexVuePlugin from "@/models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import FormSelector from "@/components/common/forms/FormSelector.vue";
+import {SelectorItem} from "@/components/common/forms/CustomTreeselect.vue";
 
-interface SharedResourceInstanceOption {
-  id: string;
-  label: string;
-}
+//#region public
 
 defineProps<{
   label?: string;
@@ -36,10 +33,12 @@ defineProps<{
 
 const emit = defineEmits<{
   select: [value: SharedResourceInstanceDTO | undefined];
-  deselect: [value: SharedResourceInstanceOption];
+  deselect: [value: SelectorItem];
   clear: [];
 }>();
+//#endregion
 
+//#region private
 const $opensilex = inject<OpenSilexVuePlugin>("opensilex")!;
 const {t} = useI18n();
 
@@ -87,14 +86,14 @@ function loadSharedResourceInstances(): Promise<Array<Pick<SharedResourceInstanc
       );
 }
 
-function sharedResourceInstanceToSelectOption(dto: Pick<SharedResourceInstanceDTO, "uri" | "label">): SharedResourceInstanceOption {
+function sharedResourceInstanceToSelectOption(dto: Pick<SharedResourceInstanceDTO, "uri" | "label">): SelectorItem {
   return {
     id: dto.uri,
     label: dto.label
   };
 }
 
-function select(value: SharedResourceInstanceOption) {
+function select(value: SelectorItem) {
   for (let resourceDTO of sharedResourceInstanceDTOs) {
     if (resourceDTO.uri === value.id) {
       emit("select", resourceDTO);
@@ -107,6 +106,9 @@ function select(value: SharedResourceInstanceOption) {
 function deselect(value: SharedResourceInstanceOption) {
   emit("deselect", value);
 }
+
+//#endregion
+
 </script>
 
 <style scoped lang="scss">

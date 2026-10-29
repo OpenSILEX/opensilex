@@ -72,14 +72,12 @@
     @reset="resetFilters"
   >
     <!-- Source -->
-    <n-form-item :show-feedback="false">
       <SharedResourceInstanceSelector
         label="component.sharedResourceInstances.label"
         v-model:sharedResourceInstance="filter.sharedResourceInstance"
         @select="applyFilters"
         class="searchFilter"
       />
-    </n-form-item>
 
     <!-- Nom -->
     <n-form-item :label="t('component.common.name')">

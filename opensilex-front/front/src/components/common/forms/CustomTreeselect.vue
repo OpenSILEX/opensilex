@@ -24,15 +24,15 @@ import {NTreeSelect, TreeSelectOption} from 'naive-ui'
 import { debounce } from 'lodash-es'
 
 
-type InputOpt = {
+export type SelectorItem = {
   id: string
   label: string
   isDisabled?: boolean
-  children?: InputOpt[]
+  children?: SelectorItem[]
   isDefaultExpanded?: boolean
 }
 
-interface NamedResourceDTO {
+  export interface SelectorNamedResource {
   uri: string
   name: string
   isDisabled?: boolean
@@ -43,11 +43,11 @@ const props = defineProps<{
   searchMethod?: (query: string, offset: number, limit: number) => Promise<any>
   multiple?: boolean
   checkable?: boolean
-  itemLoadingMethod?: (uris: string[]) => Promise<NamedResourceDTO[]>
-  options?: InputOpt[]  
+  itemLoadingMethod?: (uris: string[]) => Promise<SelectorNamedResource[]>
+  options?: SelectorItem[]
   resultLimit?: number
   limit?: number
-  optionsLoadingMethod?: () => Promise<NamedResourceDTO[]>
+  optionsLoadingMethod?: () => Promise<SelectorNamedResource[]>
   defaultSelectedValue?: boolean
   placeholder?: string
   actionHandler?: any
@@ -55,7 +55,7 @@ const props = defineProps<{
   viewHandlerDetailsVisible?: boolean
   showCount?: boolean
   disabled?: boolean
-  conversionMethod?: (dto: NamedResourceDTO) => { id: string; label: string; isDisabled?: boolean }
+  conversionMethod?: (dto: SelectorNamedResource) => SelectorItem
   /** If true then only nodes with 0 children can be selected*/
   disableParentNodes?: boolean
 }>()
@@ -130,7 +130,7 @@ const wrapperClass = computed(() => ({
 
 // map helpers
 // --- helpers : conversion récursive -> TreeSelectOption (on garde l’arbre !)
-function toTreeSelectOption(el: InputOpt): TreeSelectOption {
+function toTreeSelectOption(el: SelectorItem): TreeSelectOption {
   const node: TreeSelectOption = {
     key: el.id,
     label: el.label,
@@ -142,7 +142,7 @@ function toTreeSelectOption(el: InputOpt): TreeSelectOption {
   return node
 }
 
-function fromDTO(dto: NamedResourceDTO): { id: string; label: string; isDisabled?: boolean } {
+function fromDTO(dto: SelectorNamedResource): { id: string; label: string; isDisabled?: boolean } {
   if (props.conversionMethod) return props.conversionMethod(dto)
   return { id: dto.uri, label: dto.name, isDisabled: dto.isDisabled }
 }
@@ -243,7 +243,7 @@ async function runSearch(rawQuery: string, overrideLimit?: number) {
   lastQuery.value = query
   const limit = overrideLimit ?? props.resultLimit ?? 10
   const resp = await props.searchMethod(query, 0, limit)
-  const list = resp.response.result as NamedResourceDTO[]
+  const list = resp.response.result as SelectorNamedResource[]
   const newOptions = list.map(fromDTO).map(toTreeSelectOption)
 
   // Conserver les options actuellement sélectionnées si elles ne sont pas dans les résultats
@@ -315,7 +315,7 @@ function handleUpdateValue(v: string | string[] | null) {
 const defaultExpandedKeys = computed(() => {
   // collecte les ids marqués isDefaultExpanded dans les options d’entrée
   const keys: string[] = []
-  function walk(input?: InputOpt[]) {
+  function walk(input?: SelectorItem[]) {
     if (!input) return
     for (const it of input) {
       if (it.isDefaultExpanded) keys.push(it.id)

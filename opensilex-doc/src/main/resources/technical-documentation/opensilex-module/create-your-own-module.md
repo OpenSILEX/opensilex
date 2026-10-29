@@ -156,7 +156,7 @@ There are two ways to do this:
 - When you are developing your module, the easiest way is to modify the global pom.xml. See how in the step B.
 - Once the module is ready for production, build it following the instructions of the step A.
 
-#### A. On an official OpenSILEX release build :
+#### A. On a production OpenSILEX release build :
 
 - Compile your module with `mvn clean install` (launch the command in the opensilex-dev/{module_name} directory)
 - Copy the jar file from `opensilex-dev/{module_name}/target/{module_name}-{version}.jar`
@@ -235,6 +235,23 @@ If you want your new module to be part of the OpenSilex build, you need to add i
     </dependencies>
   <!-- ... etc .......................................  -->  
 ```
+
+## Check that your module is loaded
+
+#### A. On a production OpenSILEX release build :
+
+At this point, the only way you can check that your module is loaded is to add some debug code in your module entry-point (file `{module_name}Module.java`).
+
+A way to do that is by overriding the `initRestApplication` method of the `APIExtension` interface.
+```java
+    @Override
+    public void initRestApplication(RestApplication resourceConfig) {
+        APIExtension.super.initRestApplication(resourceConfig);
+        LOGGER.info("Initializing my new module");
+    }
+```
+
+launch the OpenSilex application in your terminal and your log should appear.
 
 ## Complete module skeleton
 example of what you can find in the skeleton of a complete module :

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="pageActionsBtns">
-      <opensilex-CreateButton
+      <CreateButton
         v-if="user.hasCredential(props.modificationCredentialId)"
         @click="createDocument"
         :label="t('DocumentTabList.add')"
@@ -9,7 +9,7 @@
       />
     </div>
 
-    <opensilex-StringFilter
+    <StringFilter
       v-if="props.search"
       v-model:filter="filter.title"
       @update="updateFilters"
@@ -19,16 +19,16 @@
     />
       
       <div>
-        <opensilex-PageContent v-if="renderComponent">
+        <PageContent v-if="renderComponent">
           <template #default>
-            <opensilex-TableAsyncView
+            <TableAsyncView
               ref="tableRef"
               :searchMethod="searchDocuments"
               :fields="fields"
               defaultSortBy="name"
             >
               <template #cell(uri)="{ data }">
-                <opensilex-UriLink
+                <UriLink
                   :uri="data.item.uri"
                   :value="data.item.title"
                   :to="{ path: '/document/details/' + encodeURIComponent(data.item.uri) }"
@@ -46,28 +46,28 @@
 
               <template #cell(actions)="{ data }">
                 <n-button-group size="small" class="btn-group btn-group-sm">
-                  <opensilex-EditButton
+                  <EditButton
                     v-if="user.hasCredential(props.modificationCredentialId)"
                     @click="() => editDocument(data.item.uri)"
                     :label="t('DocumentTabList.update')"
                     :small="true"
                   />
-                  <opensilex-DeprecatedButton
+                  <DeprecatedButton
                     v-if="user.hasCredential(props.modificationCredentialId)"
                     :deprecated="data.item.deprecated"
                     @click="() => deprecatedDocument(data.item.uri)"
                     :small="true"
                   />
-                  <opensilex-Button
+                  <Button
                     v-if="!data.item.source"
-                    component="opensilex-DocumentDetails"
+                    component="DocumentDetails"
                     @click="() => loadFile(data.item.uri, data.item.title, data.item.format)"
                     :label="t('DocumentTabList.download')"
                     :small="true"
                     icon="bi-download"
                     variant="outline-info"
                   />
-                  <opensilex-Button
+                  <Button
                     v-if="data.item.source"
                     @click="() => browseSource(data.item.source)"
                     :label="t('DocumentTabList.browseSource')"
@@ -77,9 +77,9 @@
                   />
                 </n-button-group>
               </template>
-            </opensilex-TableAsyncView>
+            </TableAsyncView>
           </template>
-        </opensilex-PageContent>
+        </PageContent>
       </div>
 
     <DocumentForm
@@ -101,6 +101,14 @@ import type OpenSilexVuePlugin from '@/models/OpenSilexVuePlugin'
 import { DocumentsService } from 'opensilex-core/api/documents.service'
 import DocumentForm from '@/components/documents/DocumentForm.vue'
 import { NButtonGroup } from 'naive-ui'
+import CreateButton from "@/components/common/buttons/CreateButton.vue";
+import StringFilter from "@/components/common/filters/StringFilter.vue";
+import PageContent from "@/components/layout/PageContent.vue";
+import TableAsyncView from "@/components/common/views/TableAsyncView.vue";
+import UriLink from "@/components/common/views/UriLink.vue";
+import EditButton from "@/components/common/buttons/EditButton.vue";
+import DeprecatedButton from "@/components/common/buttons/DeprecatedButton.vue";
+import Button from "@/components/common/buttons/Button.vue";
 
 const props = defineProps({
   uri: [String, Array] as unknown as () => string | string[] | undefined,
@@ -263,6 +271,9 @@ function browseSource(source: string) {
 .pageActionsBtns {
   margin-left: 10px;
   margin-bottom: 10px;
+}
+.createButton {
+  margin-top: 10px;
 }
 </style>
 

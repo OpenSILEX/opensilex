@@ -95,6 +95,7 @@ let service = opensilex.getService<FactorsService>('opensilex.FactorsService')
 const {t} = useI18n()
 const router = useRouter()
 const route = useRoute()
+const emit = defineEmits(['factorsUpdated'])
 //#endregion
 
 //#region Template refs
@@ -149,6 +150,7 @@ function callUpdateFactorService(form: FactorUpdateDTO, done) {
 }
 
 function showFactorDetails(factorUriResult: any) {
+  emit('factorsUpdated');
   if (factorUriResult instanceof Promise) {
     console.log(factorUriResult);
     factorUriResult.then((factorUri) => {
@@ -224,6 +226,7 @@ function deleteFactor(factor: any) {
                     t("component.common.success.delete-success-message");
                 opensilex.showSuccessToast(message);
                 factorList.value.refresh();
+                emit('factorsUpdated');
               })
               .catch(opensilex.errorHandler);
         }

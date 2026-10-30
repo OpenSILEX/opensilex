@@ -3,7 +3,7 @@
 ## Contents
 
 - [Steps](#steps)
-- [Manual grid](#manual-grid): structure, typing, UI, reuse, dead code, behaviour
+- [Manual grid](#manual-grid): structure, typing, UI, reuse, behaviour
 - [Report format](#report-format)
 
 ## Steps
@@ -19,10 +19,7 @@
    violations. Its `WARN` lines need a look: a `ref<InstanceType<…>>` can be a legitimate data ref, but rarely is.
 3. **Review by hand** with the grid below. This is where the real problems are found: the script does not read what the
    code means.
-4. **For a migration**, compare with the Vue 2 original: `git show <vue2-branch>:<path>` (see the Migrate mode of
-   `SKILL.md` to find that branch). Each filter, column, action and event of the old component is either ported or
-   **deliberately** removed as dead code, and the review says which.
-5. **Write the report** (format at the bottom), in the user's language. Report only; fix when asked.
+4. **Write the report** (format at the bottom), in the user's language. Report only; fix when asked.
 
 ## Manual grid
 
@@ -72,13 +69,6 @@
 - [ ] No selector built on `FormSelector` or `InfiniteScrollDropdown` wrapped in an `n-form-item`: it already renders its label (`FormField`) and
   its `n-form-item path`. The duplicate gives two labels and two validation messages.
 - [ ] Filters are passed as the slot of `SearchFiltersSidebar`; the component has no second Search or Reset button.
-
-### Dead code and migration fidelity
-
-- [ ] No unused prop, event, ref, import, computed value or method.
-- [ ] No field in the filter object without a UI control that changes it, unless it comes from the route or a prop (and
-  is then commented).
-- [ ] No commented-out code copied from the old component.
 - [ ] The shortcuts of an already migrated component were not copied as is (see "Migrated code is an API source" in
   `SKILL.md`).
 
@@ -103,7 +93,7 @@ Findings sorted from most to least severe, one per line (fictional example):
 
 - **Bloquant**: breaks behaviour, breaks typing (`any`, untyped template ref), or modifies a shared component without a
   request.
-- **Important**: a convention is broken (structure, Bootstrap, emits, regions, missing i18n, dead code).
+- **Important**: a convention is broken (structure, Bootstrap, emits, regions, missing i18n).
 - **Suggestion**: readability, naming, missing JSDoc on a non-obvious method.
 
 End with what was checked and what was not. Does the build pass? Could a type check run? Rendering in the browser is

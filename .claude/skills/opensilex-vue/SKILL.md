@@ -1,6 +1,6 @@
 ---
 name: opensilex-vue
-description: Creates, migrates from Vue 2, modifies and reviews Vue 3 components of the OpenSILEX front so that they follow the team conventions of the technical documentation page vuejs-file-structure.md - block order, script setup with typed defineEmits, defineProps and defineModel, Public and Private regions, typed template refs, event handlers, no any, Naive UI instead of Bootstrap, reuse of the shared common/ components (TableAsyncView, SearchFiltersSidebar, FormSelector, action buttons), en/fr i18n and removal of dead code. Ships a conventions checker. Use whenever a .vue component or its TypeScript is written, ported, fixed or reviewed in opensilex-front or in an extension module (list, filters, form, modal, detail page, selector), even when the word "conventions" is not used. Also trigger on French requests such as "crée un composant", "migre ce composant en Vue 3", "porte cette liste", "relis ce composant", "revue du composant Vue", "respecte les conventions Vue".
+description: Creates, modifies and reviews Vue 3 components of the OpenSILEX front so that they follow the team conventions of the technical documentation page vuejs-file-structure.md - block order, script setup with typed defineEmits, defineProps and defineModel, Public and Private regions, typed template refs, event handlers, no any, Naive UI instead of Bootstrap, reuse of the shared common/ components (TableAsyncView, SearchFiltersSidebar, FormSelector, action buttons), en/fr i18n. Ships a conventions checker. Use whenever a .vue component or its TypeScript is written, ported, fixed or reviewed in opensilex-front or in an extension module (list, filters, form, modal, detail page, selector), even when the word "conventions" is not used. Also trigger on French requests such as "crée un composant", "relis ce composant", "revue du composant Vue", "respecte les conventions Vue".
 ---
 
 # OpenSILEX Vue components
@@ -8,7 +8,7 @@ description: Creates, migrates from Vue 2, modifies and reviews Vue 3 components
 This skill sets **how a component is written**. The file structure (regions and their order, event handlers, typing,
 JSDoc) comes from the technical documentation page
 [`vuejs-file-structure.md`](../../../opensilex-doc/src/main/resources/technical-documentation/opensilex-front/vuejs-file-structure.md).
-That page is the reference; this skill adds the rules for UI, i18n, reuse and migration. When the page changes, align
+That page is the reference; this skill adds the rules for UI, i18n and reuse. When the page changes, align
 this skill with it.
 
 The host front lives in `opensilex-front/front/src`, the shared building blocks in `components/common/`. The platform
@@ -22,8 +22,7 @@ Everything below needs only git, Python 3 and the Node toolchain of the reposito
 | Request | Steps |
 |---|---|
 | **Create** a component | 1. Look for an existing building block: `references/common-components.md`, then `git grep -l <Name> -- opensilex-front/front/src`. 2. Start from `references/component-skeleton.md`, and from `references/list-page.md` for a list page. 3. Write, then run "Verify". |
-| **Migrate** a Vue 2 component | 1. Read the original from a branch that still holds the Vue 2 front (`git show develop:<path>`; check first that `git show develop:package.json` still declares `vue` 2) and list what is actually used: filters, columns, actions, events, props. 2. Drop dead code instead of porting it. 3. Rewrite with the conventions and the Vue 3 building blocks (`references/bootstrap-to-naive.md` for the markup). 4. Verify, then list what was dropped on purpose. |
-| **Modify** a component | Write the new code to the conventions. Do not reformat the whole file unasked, so that the diff stays reviewable: report the remaining deviations (checker output) in the summary. During a migration, the whole file must comply. |
+| **Modify** a component | Write the new code to the conventions. Do not reformat the whole file unasked, so that the diff stays reviewable: report the remaining deviations (checker output) in the summary. |
 | **Review** a component or a branch | Follow `references/review-checklist.md`: checker, manual grid, report sorted by severity. Report only; fix when asked. |
 
 ## Conventions
@@ -112,19 +111,6 @@ nothing stops an `any`: the discipline is manual.
 - Use only what a building block **exposes** (`defineExpose`) and actually **emits**. Reading non-exposed internal state
   returns `undefined`, without error.
 
-### Dead code
-
-A migration is not a bug-for-bug copy. Remove what the old component carried along:
-
-- unused props, refs, imports, computed values or methods;
-- filter fields without a matching UI control;
-- props passed to a child that does not declare them, often inherited from the old `opensilex-ModalForm`
-  (`initForm`, `successMessage`, `modalSize`);
-- commented-out code and `console.log`;
-- dead Vue 2 syntax (`.sync`, `this.$refs`, `$listeners`).
-
-Say in the summary what was removed, so that the user can object.
-
 ### Migrated code is an API source, not a style model
 
 The existing code is heterogeneous: many migrated components still use overload emits, `ref<any>(null)` or `any`, and
@@ -178,6 +164,6 @@ Read only the file the task needs.
   detail page and tabs.
 - `references/common-components.md`: before using or wrapping a `common/` building block. API, which component renders
   its own label, global naive-ui components, known defects.
-- `references/bootstrap-to-naive.md`: when the markup has Bootstrap classes, usually during a migration.
+- `references/bootstrap-to-naive.md`: when the markup has Bootstrap classes.
 - `references/review-checklist.md`: for a review. Steps, manual grid, report format.
 - `scripts/check_vue_conventions.py`: run it, no need to read it. Mechanical convention check.
